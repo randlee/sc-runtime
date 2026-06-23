@@ -1,7 +1,7 @@
 # sc-runtime
 
 **Product Requirements Document**
-Version 1.0 · June 2026 · Synaptic Canvas
+Version 1.1 · June 2026 · Synaptic Canvas
 
 ---
 

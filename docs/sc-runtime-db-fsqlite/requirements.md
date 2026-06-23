@@ -71,13 +71,17 @@ URL. The variable is read once at construction time.
 
 ### FR-FSQLITE-04 — WAL and connection pooling
 
-`sc-runtime-db-fsqlite` must support WAL mode and connection pooling
-appropriate for FrankenSQLite's native mode connection API.
+`sc-runtime-db-fsqlite` must support WAL mode and connection pooling for
+FrankenSQLite's native mode connection API. The implementation must support at
+minimum 8 concurrent writer connections without serialization — this is the
+benchmark condition under which FrankenSQLite native mode demonstrates 41×
+throughput improvement over WAL-mode rusqlite. The implementation must not use
+a single-writer mutex unless FrankenSQLite's connection API requires it.
 
 If FrankenSQLite's native mode uses a different concurrency primitive than
-WAL journal mode, the implementation must use whatever mechanism provides
-equivalent or superior concurrent read/write behavior. The requirement is
-concurrent reader/writer capability — not the specific WAL pragma name.
+WAL journal mode, the implementation must use whatever mechanism meets the
+8-concurrent-writer benchmark. The requirement is measurable concurrent
+read/write throughput — not the specific WAL pragma name.
 
 ### FR-FSQLITE-05 — in_memory() constructor
 

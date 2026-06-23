@@ -25,6 +25,11 @@ The host (e.g., Claude Desktop) spawns the tool process. The tool process:
 3. writes newline-delimited JSON-RPC 2.0 responses to stdout
 4. exits when stdin is closed (MCP client disconnected)
 
+The stdio reader processes one complete newline-delimited JSON line at a time.
+Maximum line length: **1 MiB** (1,048,576 bytes). Lines exceeding this limit
+return a JSON-RPC `-32700 Parse error` response and close the connection. This
+limit prevents unbounded memory allocation from a malformed or malicious client.
+
 There are no sockets, no listening ports, and no background processes. The
 process lifetime equals the MCP client connection lifetime.
 

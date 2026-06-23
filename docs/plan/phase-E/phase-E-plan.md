@@ -29,9 +29,14 @@ Phase E is a hardening and release phase, not a feature phase. No new capability
 | API surface review | Audit all `pub` items across the workspace for semver stability intent; seal or restrict anything not ready for public stability commitment; document justified exceptions with `#[sc_lint(allow = ...)]` |
 | README.md | Consumer-facing workspace README: what sc-runtime is, the composability matrix, quick start (Phase A pattern), link to docs/ for depth |
 | CHANGELOG.md | Generated from git log covering all alpha and beta iterations; formatted per Keep a Changelog conventions |
+| MIGRATION.md | Step-by-step guide for SC tool owners migrating from hand-rolled infrastructure to sc-runtime. Covers: (1) creating the `{tool}-types` crate, (2) wiring the sc-runtime builder for their configuration, (3) replacing custom daemon code with sc-runtime-daemon, (4) moving CLI commands to CommandRegistry, (5) updating CI to use sc-lint gates. Format: numbered tutorial with code examples for each step. |
+| CONSUMER.md | Consumer developer guide covering: (1) the `{tool}-types` crate pattern and why it exists, (2) co-development workflow with `[patch.crates-io]`, (3) when to use crates.io vs local path, (4) how to add a new Plugin, (5) StorageBackend selection guide (sqlite vs sqlx vs fsqlite), (6) testing patterns (in_memory backend, simulator transport, compile-fail tests). |
+| Compile-fail test suite | Using `trybuild`, add compile-fail tests for all invalid typestate transitions: (1) `.mcp_http()` on `HasCli` — already in D-4, carry forward; (2) `.daemon()` called twice on `HasDaemon`; (3) `.build()` called on `ScRuntimeBuilder<NoCli>`; (4) `Box<dyn Plugin>` compiles — object-safety verification; (5) `let _: Box<dyn StorageBackend>` — StorageBackend object-safety; (6) external crate attempting `impl StorageBackend` — seal verification. Tests (1)–(5) are compile-fail tests that must produce specific error messages. Test (6) is in a separate workspace-external test crate. |
+| semver baseline capture | After all crates are published to crates.io at v0.1.0: run `cargo semver-checks check-release` against the published baseline to confirm the check passes clean (it will, since this is the first release). Update CI workflow: add `cargo semver-checks` step that compares HEAD against the latest published version on crates.io. This step only runs on PRs targeting `main` (not `develop`). Document in CONTRIBUTING.md that this step gates the main branch. |
 | Dependency audit | `cargo audit` must report no vulnerabilities; review all dependency minimum version constraints and tighten where needed; escalate `[bans] duplicates = "warn"` to `"deny"` in `deny.toml` |
 | Publish sequence | Publish in strict dependency order to crates.io (see sequence below) |
 | sc-runtime-db-fsqlite | Publish the placeholder crate (boundary file, FUTURE annotation, zero implementation code) to reserve the crate name on crates.io before another party can claim it |
+| Windows CI runner | Add `windows-latest` job to `.github/workflows/ci.yml`. Job steps: `cargo check --target x86_64-pc-windows-msvc` (using cross or native runner), `cargo test --target x86_64-pc-windows-msvc` (unit tests only — integration tests requiring a running daemon are excluded from Windows CI in Phase E), `sc-lint check fast`. Note: named pipe integration tests and daemon lifecycle tests on Windows are Phase F work. Phase E Windows CI covers compilation and unit tests only. |
 | Post-publish | Update atm-core, Continuity, and ci Cargo.toml files to remove `[patch.crates-io]` entries and replace with `sc-runtime = "0.1"`, `sc-runtime-core = "0.1"`, etc. |
 
 ---
@@ -68,7 +73,7 @@ xwin:
       run: sc-lint check xwin
 ```
 
-xwin remains in the `full` profile but is not in the `ci` (development) profile. The rationale from ADR-11: real Windows CI (`windows-latest` runner) remains authoritative for Windows correctness. xwin is a pre-release signal, not a replacement for Windows CI. If Windows CI is added to the workflow later, xwin becomes redundant and can be removed from the release gate.
+xwin remains in the `full` profile but is not in the `ci` (development) profile. The rationale from ADR-11: real Windows CI (`windows-latest` runner) remains authoritative for Windows correctness. xwin is a pre-release signal, not a replacement for Windows CI. Phase E adds a `windows-latest` CI job covering compilation and unit tests (see Windows CI runner task); once that job is established, xwin serves as a faster cross-compilation pre-check rather than the sole Windows signal.
 
 ---
 
@@ -100,6 +105,10 @@ Before publishing:
 
 ## Publish Sequence
 
+Before running the publish sequence, verify:
+- `sc-runtime-example` has `publish = false` in its `Cargo.toml` — this crate must never be published to crates.io; confirm before proceeding.
+- `sc-runtime-db-fsqlite` has `description`, `license`, `repository`, `keywords`, and `categories` fields set in its `Cargo.toml` — these fields are required by crates.io for any published crate. Run `cargo publish --dry-run -p sc-runtime-db-fsqlite` to verify the placeholder crate is publish-ready before beginning the sequence.
+
 Publish in strict dependency order. Each crate must be published and visible on crates.io before the next publish begins (allow ~30 seconds between publishes for index propagation).
 
 1. `sc-runtime-core` — foundation; no workspace dependencies
@@ -120,6 +129,8 @@ After all crates publish, run `cargo update` in a clean checkout to verify the p
 ---
 
 ## Consumer Updates (Post-Publish)
+
+**Scope note:** Full structural migration of SC consumer tools (atm-core, Continuity, ci) is out of scope for the 0.1.0 release. Phase E delivers the documentation (MIGRATION.md, CONSUMER.md) and removes `[patch.crates-io]` blocks from any consumer repos that were used for co-development. Consumer migration itself is a per-repo effort tracked in each consumer's project plan, not in sc-runtime's Phase E.
 
 After crates.io publish is confirmed, update each consumer tool:
 

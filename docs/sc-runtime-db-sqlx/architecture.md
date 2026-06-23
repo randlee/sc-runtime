@@ -53,14 +53,22 @@ URL string.
 
 ```rust
 // SQLite
-let backend = SqlxBackend::from_url("sqlite://./my-tool.db")?;
+let backend = SqlxBackend::new("sqlite://./my-tool.db", "migrations")?;
 
-// PostgreSQL — same type, zero other changes
-let backend = SqlxBackend::from_url("postgres://localhost/my-tool")?;
+// PostgreSQL — same type, same migrations_dir, zero other changes
+let backend = SqlxBackend::new("postgres://localhost/my-tool", "migrations")?;
 ```
 
 Both calls produce an `Arc<dyn StorageBackend>`. The downstream code is
 identical.
+
+AnyPool configuration defaults:
+- max_connections: 5
+- min_connections: 0
+- connect_timeout: 5 seconds
+- idle_timeout: 600 seconds (10 minutes)
+- max_lifetime: 1800 seconds (30 minutes)
+- acquire_timeout: 5 seconds (time to wait for a connection from the pool)
 
 ### AnyPool vs. query! macros
 
@@ -82,7 +90,7 @@ rather than `query!` macros. This is an intentional trade-off:
 
 ## URL Scheme Routing
 
-`SqlxBackend::from_url()` parses the scheme prefix of the connection URL to
+`SqlxBackend::new()` parses the scheme prefix of the connection URL to
 select the backend pool:
 
 | URL scheme | Backend |
@@ -99,13 +107,13 @@ enables the runtime backend dispatch.
 "postgres://host/db"         → sqlx selects PostgreSQL driver
 ```
 
-If the URL scheme is not recognized, `from_url()` returns a `StorageError`.
+If the URL scheme is not recognized, `SqlxBackend::new()` returns a `StorageError`.
 
 ---
 
 ## SC_RUNTIME_DB Override
 
-`SqlxBackend::from_url()` checks `SC_RUNTIME_DB` before using its argument:
+`SqlxBackend::new()` checks `SC_RUNTIME_DB` before using its URL argument:
 
 ```rust
 let effective_url = std::env::var("SC_RUNTIME_DB")
@@ -117,23 +125,54 @@ scheme than the original argument. Setting `SC_RUNTIME_DB=sqlite://:memory:`
 in a test environment redirects all `SqlxBackend` constructions to an
 in-memory SQLite database regardless of what URL the application code passes.
 
+The `migrations_dir` argument is not affected by `SC_RUNTIME_DB`; only the
+connection URL is overridden.
+
 ---
 
 ## Migration Runner
 
 `sc-runtime-db-sqlx` uses `sqlx::migrate!` for migration execution.
 
-The `migrate!` macro compiles SQL migration files from a directory into the
-binary at build time. At runtime, `migrate().run(&pool)` applies any
-unapplied migrations.
+The `migrate!` macro is a compile-time macro that embeds `.sql` migration
+files from a directory into the binary, producing a `Migrator` struct. The
+`Migrator` is stored in `SqlxBackend` at construction time and used to apply
+unapplied migrations at runtime.
 
-sqlx maintains its own migrations tracking table (`_sqlx_migrations`) with a
-schema compatible with its built-in versioning. The version numbering scheme
-used in `sc-runtime-db::Migration` (`u32`) maps directly to sqlx's integer
-version field.
+### Constructor: `migrations_dir` Argument
 
-Migration files are stored in the crate under `migrations/`. They follow the
-sqlx naming convention: `<version>_<description>.sql`.
+`SqlxBackend::new(url, migrations_dir)` takes an additional `migrations_dir:
+&str` argument pointing to the directory containing numbered `.sql` migration
+files. This directory is passed to `sqlx::migrate!` at build time:
+
+```rust
+// Construction — migrations_dir points to a directory of .sql files
+let backend = SqlxBackend::new(
+    "sqlite://./my-tool.db",
+    "migrations",            // directory containing 0001_init.sql, etc.
+)?;
+```
+
+The embedded `Migrator` is stored in the `SqlxBackend` struct at construction
+and used whenever `StorageBackend::migrate()` is called.
+
+### `migrate(&[Migration])` Parameter Is Ignored
+
+`StorageBackend::migrate(&self, migrations: &[Migration])` accepts a
+`&[Migration]` slice as defined in the trait. On the sqlx backend, **this
+parameter is unused**. The migration source is the `Migrator` embedded at
+compile time via `sqlx::migrate!(migrations_dir)`. Passing an empty slice or
+any slice to `migrate()` has no effect on which migrations are applied.
+
+This means sqlx consumers must organise their migrations as numbered `.sql`
+files in the directory passed to `SqlxBackend::new()`. They must not rely on
+the `Migration` structs passed to `migrate()` to reach the sqlx backend.
+
+At runtime, `StorageBackend::migrate()` on `SqlxBackend` is equivalent to:
+
+```rust
+self.migrator.run(&self.pool).await?;
+```
 
 ### Idempotency
 
@@ -148,6 +187,20 @@ Vendor-specific syntax (e.g., PostgreSQL sequences without a fallback, or
 SQLite-specific `WITHOUT ROWID`) must not appear in shared migration files.
 Backend-specific migrations, if needed, are handled with separate files
 selected at build time via feature flags.
+
+### Known Limitation: Migration Tracking Table Name Mismatch
+
+`sc-runtime-db-sqlite` tracks applied migrations in a `_sc_migrations` table.
+`sc-runtime-db-sqlx` uses sqlx's built-in tracking table `_sqlx_migrations`.
+These are incompatible schemas.
+
+Consequence: a database file written by one backend cannot be transparently
+handed to the other — the migration state recorded in one table is invisible
+to the other backend. Switching backends requires manual migration state
+reconciliation.
+
+This is a known limitation. A cross-backend migration reconciliation tool is
+planned for Phase E and will be documented in `MIGRATION.md` when implemented.
 
 ---
 
@@ -178,23 +231,23 @@ dependency tree.
 
 ## Consumer Switchover Pattern
 
-A consumer migrating from SQLite to PostgreSQL changes one line:
+A consumer migrating from SQLite to PostgreSQL changes only the URL argument:
 
 ```rust
 // SQLite (development / single-user)
 ScRuntime::builder()
     .name("my-tool")
     .cli(commands::register)
-    .db(Arc::new(SqlxBackend::from_url("sqlite://./my-tool.db")?))
+    .db(Arc::new(SqlxBackend::new("sqlite://./my-tool.db", "migrations")?))
     .logger(logger)
     .build()
     .run()?;
 
-// PostgreSQL (production / multi-user) — only the URL changes
+// PostgreSQL (production / multi-user) — only the URL argument changes
 ScRuntime::builder()
     .name("my-tool")
     .cli(commands::register)
-    .db(Arc::new(SqlxBackend::from_url("postgres://db.host/my-tool")?))
+    .db(Arc::new(SqlxBackend::new("postgres://db.host/my-tool", "migrations")?))
     .logger(logger)
     .build()
     .run()?;

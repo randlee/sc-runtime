@@ -94,6 +94,17 @@ background tasks running after stdin closes.
 connection ends. Persistent background activity after disconnect would
 constitute a resource leak and violate the expected process model.
 
+### FR-STDIO-06 — Maximum line length enforcement
+
+The stdio reader must enforce a maximum line length of 1 MiB (1,048,576 bytes).
+Exceeding this limit must return a JSON-RPC `-32700 Parse error` and close the
+connection — not panic, not allocate the oversized buffer.
+
+**Rationale:** Unbounded line reads allow a malformed or malicious client to
+exhaust process memory by sending a single line without a newline terminator.
+The 1 MiB cap bounds worst-case allocation while comfortably accommodating any
+realistic MCP request payload.
+
 ## Non-Functional Requirements
 
 ### NF-STDIO-01 — `unsafe_code = "forbid"`
@@ -105,6 +116,19 @@ The `sc-runtime-mcp-stdio` crate manifest must set `#![forbid(unsafe_code)]`.
 The `sc-runtime-daemon` crate must not appear anywhere in the transitive
 dependency graph of `sc-runtime-mcp-stdio`. This is verified by the
 `sc-lint-boundary` gate.
+
+## Dependency Boundary Rules
+
+| Category | Rule |
+|----------|------|
+| Permitted workspace dependencies | `sc-runtime-core`, `sc-runtime-cli` |
+| Permitted external dependencies | `serde`, `serde_json`, `tokio` (io features only) |
+| Forbidden | `sc-runtime-daemon`, `sc-runtime-web`, `sc-runtime-db`, `sc-runtime-db-*`; any SC domain crate |
+| Boundary file | `boundaries/sc-runtime-mcp-stdio/Boundary.toml` |
+
+This is a hard compile-time boundary — `sc-runtime-mcp-stdio` must be usable
+without a daemon. A binary that links `mcp_stdio()` must not carry daemon
+infrastructure code. The `sc-lint-boundary` CI gate enforces this.
 
 ## Boundary Governing Document
 

@@ -42,7 +42,7 @@ External crates may not implement the trait.
 
 This requirement derives from RBP-003 (Sealed Trait) and ADR-03.
 
-### FR-DB-03 — Migration type
+### FR-DB-03 — Migration type and transaction signature
 
 The `Migration` type must carry:
 
@@ -55,6 +55,30 @@ The `Migration` type must carry:
 
 `up` and `down` must use a SQL DDL subset compatible with all supported
 backends. Vendor-specific extensions are not permitted in migration definitions.
+
+**`transaction` method signature (object-safe).** The `transaction` method
+on `StorageBackend` must use the following signature, which is object-safe
+and compatible with `Arc<dyn StorageBackend>`:
+
+```rust
+fn transaction(
+    &self,
+    f: Box<dyn FnOnce(&dyn StorageBackend) -> Result<(), StorageError> + Send>,
+) -> Result<(), StorageError>;
+```
+
+The closure returns `()`. Callers that need to extract a value from inside
+the transaction must capture it via a mutable variable in the enclosing
+scope. See `sc-runtime-db/architecture.md` § "Extracting Values from a
+Transaction" for the canonical example.
+
+**`migrate` parameter contract.** The `migrate(&[Migration])` parameter is
+the canonical migration descriptor slice consumed by backends that execute
+SQL from `Migration::up` directly (e.g., `sc-runtime-db-sqlite`). Backends
+that manage their own migration mechanism (e.g., `sc-runtime-db-sqlx` using
+`sqlx::migrate!`) may ignore the parameter; the `migrations_dir` argument
+supplied to their constructor is their migration source. This divergence is a
+known limitation documented in the per-backend architecture files.
 
 ### FR-DB-04 — SC_RUNTIME_DB environment variable contract
 
@@ -91,6 +115,57 @@ This requirement derives from RBP-007 (Infallible accessors).
 `Arc<dyn StorageBackend>` and shared across async tasks in the plugin
 registry. The trait must be usable in a multithreaded async runtime.
 
+### FR-DB-07 — StorageHealth must carry ErrorCode in non-Healthy variants
+
+`StorageHealth::Degraded` and `StorageHealth::Unavailable` must each carry an
+`ErrorCode` field in addition to the human-readable `reason: String`. Consumers
+must be able to branch on a stable, machine-readable code without string parsing.
+
+`StorageHealth::Healthy` carries no payload.
+
+### FR-DB-08 — SqlParam must cover the full common type set
+
+`SqlParam` must have variants covering:
+
+| Variant | Rust type |
+|---------|-----------|
+| `Null` | — |
+| `Integer` | `i64` |
+| `Real` | `f64` |
+| `Text` | `&str` (borrowed) |
+| `Blob` | `&[u8]` (borrowed) |
+| `Bool` | `bool` |
+
+No additional variants may be added without a minor-version bump. Backends
+must map all six to their native parameter binding equivalents.
+
+### FR-DB-09 — Rows::next_row() must return Option\<Row\>, not Result\<Option\<Row\>\>
+
+Row exhaustion is a normal condition, not an error. `next_row()` returns
+`Option<Row>`:
+
+- `Some(Row)` — a row is available
+- `None` — the result set is exhausted
+
+An error during row materialization must be surfaced by the `Row::get_*`
+methods on the row that was returned, not by `next_row()`.
+
+### FR-DB-10 — StorageError variants must carry ErrorCode for programmatic handling
+
+Every `StorageError` variant that represents a backend-originated failure must
+carry a `code: ErrorCode` field. The stable codes defined in the
+`SC_RUNTIME.DB.*` namespace are:
+
+| Code | Variant |
+|------|---------|
+| `SC_RUNTIME.DB.CONNECTION_FAILED` | `Connection` |
+| `SC_RUNTIME.DB.QUERY_FAILED` | `Query` |
+| `SC_RUNTIME.DB.MIGRATION_FAILED` | `Migration` |
+| `SC_RUNTIME.DB.TRANSACTION_ABORTED` | `TransactionAborted` |
+
+Caller-error variants (`ColumnOutOfRange`, `TypeMismatch`) are exempt — they
+indicate programming errors and do not need stable codes.
+
 ---
 
 ## Boundary Requirements
@@ -107,6 +182,20 @@ This boundary is enforced by the `sc-lint-boundary` boundary definition in
 ### BR-DB-02 — Permitted dependencies
 
 The only permitted workspace dependency is `sc-runtime-core`.
+
+### Dependency Boundary Rules
+
+| Category | Rule |
+|----------|------|
+| Permitted workspace dependencies | `sc-runtime-core` only |
+| Permitted external dependencies | `thiserror`, `futures` (for object-safe async in future) |
+| Forbidden | `sc-runtime-cli`, `sc-runtime-daemon`, `sc-runtime-web`, `sc-runtime-db-*`; `rusqlite`, `r2d2-sqlite`, `sqlx`, any FrankenSQLite crate; any SC domain crate |
+| Boundary file | `boundaries/sc-runtime-db/Boundary.toml` |
+
+Note: `sc-runtime-db` defines the trait only — no SQL drivers, no I/O. Keeping
+it clean is critical for the sealed-trait guarantee. The daemon depends on the
+trait (`Arc<dyn StorageBackend>`), not on any impl crate; backend selection is
+deferred to the consumer.
 
 ---
 

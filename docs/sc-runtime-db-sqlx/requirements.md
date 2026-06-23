@@ -23,15 +23,15 @@ those belong to `sc-runtime-db`.
 
 ### FR-SQLX-01 — SQLite and PostgreSQL URL scheme support
 
-`SqlxBackend::from_url()` must accept and correctly route both URL schemes:
+`SqlxBackend::new()` must accept and correctly route both URL schemes:
 
 | URL scheme | Backend |
 |------------|---------|
 | `sqlite://` | SQLite via sqlx AnyPool |
 | `postgres://` or `postgresql://` | PostgreSQL via sqlx AnyPool |
 
-Passing an unsupported URL scheme must return a `StorageError` with a
-descriptive message.
+Passing an unsupported URL scheme to `SqlxBackend::new()` must return a
+`StorageError` with a descriptive message.
 
 ### FR-SQLX-02 — AnyPool for runtime backend selection
 
@@ -45,9 +45,10 @@ changes, no recompilation with different features.
 
 ### FR-SQLX-03 — SC_RUNTIME_DB environment variable override
 
-`SqlxBackend::from_url()` must check the `SC_RUNTIME_DB` environment variable
-at construction time. If set, its value is used as the connection URL instead
-of the caller-supplied argument.
+`SqlxBackend::new()` must check the `SC_RUNTIME_DB` environment variable at
+construction time. If set, its value is used as the connection URL instead of
+the caller-supplied URL argument. The `migrations_dir` argument is not
+affected by this override.
 
 The override is treated as a full connection URL and may reference a different
 backend than the original argument (e.g., `SC_RUNTIME_DB=sqlite://:memory:`
@@ -55,25 +56,55 @@ overrides a `postgres://` URL in test environments).
 
 The variable is read once at construction time.
 
-### FR-SQLX-04 — Migration runner: ordered and idempotent
+### FR-SQLX-04 — Migration runner: `migrations_dir` constructor, ignored parameter, idempotent
 
-The `migrate()` implementation must use sqlx's built-in migration runner
-(`sqlx::migrate!`). Migrations must be applied in version-ascending order.
-Re-running migrations on a database where they are already applied must be a
-no-op (idempotent).
+`SqlxBackend::new(url, migrations_dir)` must accept a `migrations_dir: &str`
+argument pointing to the directory containing numbered `.sql` migration files.
+The `sqlx::migrate!` macro uses this directory at build time to produce a
+`Migrator` struct that is stored in the `SqlxBackend` instance.
+
+The `StorageBackend::migrate(&[Migration])` parameter **must be ignored** by
+this implementation. The migration source is the `Migrator` embedded at
+compile time; the `Migration` structs passed by the caller are not used.
+Callers that pass a non-empty slice must not observe any difference in
+behaviour from passing an empty slice.
+
+`migrate()` must be idempotent: re-running it on a database where all
+migrations are already applied must be a no-op.
 
 Migration SQL must use a DDL subset compatible with both SQLite and PostgreSQL
 backends.
+
+**Known limitation — migration tracking table name mismatch.** The sqlx
+backend tracks applied migrations in `_sqlx_migrations` (sqlx's built-in
+table). The `sc-runtime-db-sqlite` backend uses `_sc_migrations`. These
+schemas are incompatible: a database written by one backend cannot be handed
+to the other without manual reconciliation. This is a known limitation;
+cross-backend migration reconciliation is planned for Phase E (see
+`MIGRATION.md` when published).
 
 ### FR-SQLX-05 — Consumer backend switchover with URL change only
 
 A consumer using `sc-runtime-db-sqlx` must be able to switch from a
 `sqlite://` URL to a `postgres://` URL by changing only the URL string passed
-to `SqlxBackend::from_url()`. No other code changes — not in migration
-definitions, not in query code, not in plugin implementations — must be
-required.
+to `SqlxBackend::new()`. No other code changes — not in migration definitions,
+not in query code, not in plugin implementations — must be required.
 
 This is the primary value proposition of this crate over `sc-runtime-db-sqlite`.
+
+### FR-SQLX-07 — AnyPool default configuration
+
+The sqlx `AnyPool` must be constructed with the following defaults:
+- `max_connections`: 5
+- `min_connections`: 0
+- `connect_timeout`: 5 seconds
+- `idle_timeout`: 600 seconds (10 minutes)
+- `max_lifetime`: 1800 seconds (30 minutes)
+- `acquire_timeout`: 5 seconds (time to wait for a connection from the pool)
+
+Consumers may override these values via
+`SqlxBackend::with_pool_options(PoolOptions<Any>)`. The `with_pool_options`
+method accepts a fully configured `PoolOptions<Any>` and replaces all defaults.
 
 ### FR-SQLX-06 — Full StorageBackend implementation
 

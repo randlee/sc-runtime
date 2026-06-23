@@ -39,29 +39,63 @@ Domain plugins implement it; the daemon registry orchestrates implementations
 at runtime.
 
 ```rust
+use futures::future::BoxFuture;
+use tokio_util::sync::CancellationToken;
+
 pub trait Plugin: Send + Sync {
     fn metadata(&self) -> PluginMetadata;
-    async fn init(&mut self, ctx: &PluginContext) -> Result<(), PluginError>;
-    async fn run(&mut self, cancel: CancellationToken) -> Result<(), PluginError>;
-    async fn shutdown(&mut self) -> Result<(), PluginError>;
+
+    fn init<'a>(&'a mut self, ctx: &'a PluginContext) -> BoxFuture<'a, Result<(), PluginError>>;
+    fn run<'a>(&'a mut self, cancel: CancellationToken) -> BoxFuture<'a, Result<(), PluginError>>;
+    fn shutdown<'a>(&'a mut self) -> BoxFuture<'a, Result<(), PluginError>>;
 }
 ```
 
 ### Object Safety via `BoxFuture`
 
-Rust's object safety rules forbid `async fn` in traits that are used as trait
-objects (`dyn Plugin`). The daemon plugin registry stores plugins as
+**Why `async fn` in traits is not object-safe.** As of Rust 1.94, async
+functions in traits (AFIT/RPITIT) are stable, but using them with `dyn Trait`
+still requires that every `async fn` return a concrete, statically-known future
+type. Because each impl produces a distinct future type, there is no single
+vtable entry that covers all implementations — the compiler rejects
+`Box<dyn Plugin>` when the trait contains bare `async fn` methods.
+
+**Why `BoxFuture<'a, _>` resolves this.** `BoxFuture<'a, T>` is a type alias
+for `Pin<Box<dyn Future<Output = T> + Send + 'a>>`. Returning a heap-allocated,
+type-erased future from each method means every implementation returns the same
+concrete type (`Pin<Box<...>>`), which satisfies the vtable requirement and
+makes `Box<dyn Plugin>` compile. The daemon plugin registry stores plugins as
 `Box<dyn Plugin>` to support heterogeneous plugin collections without
 monomorphization.
 
-To satisfy both constraints — real `async fn` ergonomics for implementors and
-`dyn Plugin` for the registry — `sc-runtime-core` provides a blanket
-`PluginExt` implementation that wraps each async method in
-`BoxFuture<'_, Result<...>>`. Consumers implement `async fn` directly; the
-trait object machinery is internal to the crate.
+**How consumer plugins implement this trait.** Two patterns are valid:
 
-This is the RBP-008 (Trait Object Safety) compliance point: object safety is
-verified at design time, not discovered at compile time.
+1. **`async-trait` proc-macro** (recommended for readability): annotate the
+   impl block with `#[async_trait::async_trait]`. The macro rewrites each
+   `async fn` body to return `BoxFuture` automatically. The impl reads as
+   normal `async fn`.
+
+2. **Manual `BoxFuture` wrapping**: write each method to return
+   `Box::pin(async move { ... })` explicitly. No proc-macro dependency
+   required.
+
+Both patterns produce identical vtable entries. The choice is a per-crate
+style decision.
+
+**RBP-008 compliance and CI enforcement.** This is the RBP-008 (Trait Object
+Safety) compliance point. Object safety is verified at compile time by a CI
+test that asserts `Box<dyn Plugin>` is constructible:
+
+```rust
+#[test]
+fn plugin_trait_is_object_safe() {
+    // This line does not need to run — it only needs to compile.
+    let _: Box<dyn Plugin>;
+}
+```
+
+If the `Plugin` trait definition ever regresses to bare `async fn` methods,
+this test will fail to compile and block the PR.
 
 ### `PluginMetadata`
 
@@ -91,8 +125,9 @@ propagate to the runtime supervisor.
 
 ## `PluginContext`
 
-`PluginContext` is the capability bundle delivered to each plugin during
-`init()`. It carries everything a plugin needs and nothing it should not have.
+`PluginContext` is the base capability bundle delivered to each plugin during
+`init()`. It carries exactly the capabilities that belong to the core layer
+and nothing else.
 
 ```rust
 pub struct PluginContext {
@@ -102,11 +137,47 @@ pub struct PluginContext {
 }
 ```
 
-When the daemon layer is configured with a storage backend, it delivers an
-enriched context variant that additionally carries `Arc<dyn StorageBackend>`.
-The base `PluginContext` in `sc-runtime-core` does not carry storage — that
-association is made by `sc-runtime-daemon` when constructing the context for
-each plugin.
+`PluginContext` is defined and owned entirely by `sc-runtime-core`. It has
+exactly three fields and will never grow additional fields that require
+daemon-layer types (wake channels, storage backends, etc.). This is a
+deliberate ownership boundary: a struct owned by `sc-runtime-core` cannot
+carry fields whose types are defined in `sc-runtime-daemon` without
+introducing an illegal reverse dependency.
+
+Daemon-layer context — a `WakeEvent` receiver and an optional
+`StorageBackend` — is delivered through a separate mechanism. See
+`sc-runtime-daemon` for the `DaemonPluginContext` type and the `DaemonAware`
+supertrait that governs its injection.
+
+### Layered Context Design
+
+`PluginContext` is the base context. `sc-runtime-daemon` defines
+`DaemonPluginContext`, which wraps `PluginContext` and extends it with
+daemon-specific capabilities:
+
+```
+PluginContext          (sc-runtime-core)
+  logger, cancel, home
+
+DaemonPluginContext    (sc-runtime-daemon)
+  base: PluginContext
+  wake: broadcast::Receiver<WakeEvent>
+  storage: Option<Arc<dyn StorageBackend>>
+```
+
+The `Plugin::init` signature takes `&PluginContext` — it receives only the
+base context. Plugins that need daemon-specific capabilities implement the
+optional `DaemonAware` supertrait, defined in `sc-runtime-daemon`. The daemon
+calls `plugin.on_daemon_context(&daemon_ctx)` after `init()` completes for
+any plugin that implements `DaemonAware`.
+
+This layered approach means:
+- Core plugins with no daemon dependencies remain in `sc-runtime-core` and
+  receive only `&PluginContext`.
+- Daemon-aware plugins depend on `sc-runtime-daemon` and opt in to
+  `DaemonPluginContext` injection via `DaemonAware`.
+- The ownership boundary is clean: `sc-runtime-core` never references types
+  from `sc-runtime-daemon`.
 
 ### Logger Injection
 
@@ -120,12 +191,35 @@ Plugins log exclusively through `ctx.logger`. They do not construct loggers
 internally, and they do not use `println!`, `tracing`, or `log` directly for
 structured output.
 
+### Stable `ActionName` Values
+
+sc-runtime emits log events using the following stable `ActionName` values.
+These are stable as of 0.1.0. Removing or renaming an action name is a
+breaking change — `sc-lint-version` will catch it via the public type
+`ActionName`.
+
+| ActionName | When emitted |
+|---|---|
+| `sc_runtime.daemon.started` | Daemon finished init, all plugins running |
+| `sc_runtime.daemon.stopping` | SIGTERM received, shutdown beginning |
+| `sc_runtime.daemon.stopped` | All plugins shut down, process about to exit |
+| `sc_runtime.plugin.init_started` | Plugin `init()` called |
+| `sc_runtime.plugin.init_completed` | Plugin `init()` returned `Ok` |
+| `sc_runtime.plugin.init_failed` | Plugin `init()` returned `Err` |
+| `sc_runtime.plugin.panic` | Plugin panicked, `PluginError::Panic` created |
+| `sc_runtime.rpc.request_received` | RPC server received a request |
+| `sc_runtime.rpc.request_completed` | RPC server sent response |
+| `sc_runtime.storage.migration_started` | `migrate()` called |
+| `sc_runtime.storage.migration_completed` | All migrations applied |
+| `sc_runtime.storage.health_degraded` | `StorageHealth::Degraded` detected |
+
 ### `CancellationToken`
 
 `PluginContext.cancel` is a `tokio_util::sync::CancellationToken`. Plugins must
-poll or select on this token in their `run()` loop. When the token fires,
-`run()` must return in a bounded time. The daemon does not forcibly terminate a
-plugin that ignores cancellation — the plugin is responsible for honoring it.
+poll or select on this token in their `run()` loop. When the cancellation token
+fires, `run()` must return within the `cancellation_ack_timeout` configured in
+`DaemonConfig` (default: 10 seconds). Plugins that do not return within this
+window will be forcibly dropped by the daemon's JoinSet.
 
 ## `ScRuntimeHome`
 
@@ -209,11 +303,116 @@ introspection by the CLI and MCP layers.
 | `sc-observability` | 1.2.0 | `Logger<Running>` type used in `PluginContext` |
 | `tokio-util` | 0.7 | `CancellationToken` used in `PluginContext` and `Plugin::run()` |
 | `thiserror` | 2 | `ScRuntimeError` and `PluginError` derivation |
+| `futures` | 0.3 | `BoxFuture` type alias used in `Plugin` trait method signatures |
 
 `tokio` itself is not a direct dependency of `sc-runtime-core`. The
 `CancellationToken` type from `tokio-util` has no tokio runtime requirement
 at the type level. This keeps `sc-runtime-core` free of async-runtime
 assumptions and usable in sync contexts if needed.
+
+## Supporting Types
+
+### `ErrorCode`
+
+`ErrorCode` is a `&'static str` newtype that carries a stable, machine-readable
+error identifier. Codes use the `SC_RUNTIME.{SUBSYSTEM}.{NAME}` convention —
+all uppercase, dot-separated — and never change within a published version.
+Consumers may match on `ErrorCode` values programmatically.
+
+```rust
+pub struct ErrorCode(pub &'static str);
+
+impl ErrorCode {
+    pub const fn new(code: &'static str) -> Self { Self(code) }
+    pub fn as_str(&self) -> &'static str { self.0 }
+}
+```
+
+Predefined codes defined in `sc-runtime-core`:
+
+| Code | Meaning |
+|------|---------|
+| `SC_RUNTIME.CORE.HOME_NOT_FOUND` | `SC_RUNTIME_HOME` resolves to a nonexistent path |
+| `SC_RUNTIME.CORE.PLUGIN_INIT_FAILED` | A plugin's `init()` returned an error |
+| `SC_RUNTIME.CORE.PLUGIN_RUN_FAILED` | A plugin's `run()` returned an error |
+| `SC_RUNTIME.CORE.PLUGIN_SHUTDOWN_FAILED` | A plugin's `shutdown()` returned an error |
+| `SC_RUNTIME.CORE.PLUGIN_PANIC` | A plugin task panicked |
+| `SC_RUNTIME.PLUGIN.NAME_COLLISION` | Two plugins registered the same name |
+
+Adding a new code is non-breaking. Removing or renaming a code is a
+semver-breaking change subject to `sc-lint-version` enforcement.
+
+### `Remediation`
+
+`Remediation` is a structured suggestion for error recovery, surfaced to
+operators by the CLI and MCP layers.
+
+```rust
+pub struct Remediation {
+    pub suggested_action: String,  // human-readable: what the user/operator should do
+    pub docs_url: Option<String>,  // optional link to relevant documentation
+    pub command: Option<String>,   // optional CLI command to run, e.g. "sc-runtime diagnose"
+}
+```
+
+`Remediation` is always `Some` on `ScRuntimeError` variants where an operator
+corrective action exists. It is `None` only on internal errors where no user
+action can help.
+
+### `PluginError`
+
+`PluginError` is the error type returned by all `Plugin` lifecycle methods
+(`init`, `run`, `shutdown`). It is the only error type permitted in
+`BoxFuture<'a, Result<(), PluginError>>` return positions on the `Plugin`
+trait.
+
+```rust
+#[derive(Debug, thiserror::Error)]
+pub enum PluginError {
+    #[error("plugin init failed: {reason}")]
+    InitFailed {
+        plugin_name: &'static str,
+        reason: String,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+        remediation: Option<Remediation>,
+    },
+
+    #[error("plugin run failed: {reason}")]
+    RunFailed {
+        plugin_name: &'static str,
+        reason: String,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+        remediation: Option<Remediation>,
+    },
+
+    #[error("plugin shutdown failed: {reason}")]
+    ShutdownFailed {
+        plugin_name: &'static str,
+        reason: String,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    },
+
+    #[error("plugin panicked: {message}")]
+    Panic {
+        plugin_name: String,  // String, not &'static str — panic may corrupt statics
+        message: String,      // captured from std::panic::catch_unwind
+    },
+
+    #[error("plugin cancelled")]
+    Cancelled {
+        plugin_name: &'static str,
+    },
+}
+```
+
+The `Panic` variant uses `String` (not `&'static str`) for `plugin_name`
+because a panic may corrupt static memory — allocating a fresh `String` before
+the panic handler runs avoids use-after-free.
+
+The daemon's `JoinSet` catches plugin panics and converts them to
+`PluginError::Panic`. They do not propagate to the runtime supervisor.
+`PluginError` variants are exhaustive and stable; adding a new variant is a
+semver-breaking change.
 
 ## Newtype Inventory
 

@@ -20,24 +20,47 @@ The builder uses Rust's typestate pattern to make illegal configurations into co
 
 ```rust
 pub struct NoCli;      // initial state — nothing configured
-pub struct HasCli;     // CLI layer has been configured
+pub struct HasCli;     // CLI layer has been configured (logger already held)
 pub struct HasDaemon;  // daemon layer has been configured (implies HasCli)
 ```
 
 These are zero-sized marker structs. They carry no runtime data. Their only purpose is to constrain which methods are available at each step.
 
+### Logger as a Positional Argument
+
+The logger is a required argument to `ScRuntime::builder(name, logger)`, not
+an optional builder method. This makes omitting the logger a compile error
+rather than a runtime panic or silent no-op, which would violate FR-RT-08 (no
+panics) and FR-RT-06 (logger required before `run()`).
+
+```rust
+pub fn builder(name: &'static str, logger: Logger<Running>) -> ScRuntimeBuilder<NoCli>
+```
+
+There is no `.logger()` method on the builder. The logger is received at
+construction time and stored in `BuilderInner` immediately. Every builder
+state from `NoCli` onward holds a valid, fully-initialized logger.
+
+This avoids introducing additional typestate variants (`HasLogger`,
+`HasCliAndLogger`, `HasDaemonAndLogger`) that would make the state transition
+graph significantly more complex for a single required field. The positional
+argument is the simpler enforcement.
+
 ### State Transitions
 
+The builder is created with `ScRuntime::builder(name, logger)`. The logger is
+a required positional argument — it cannot be omitted. From that point:
+
 ```
+ScRuntime::builder("tool", logger)  → ScRuntimeBuilder<NoCli>   (logger already held)
+
 ScRuntimeBuilder<NoCli>
-  .name("tool")       → ScRuntimeBuilder<NoCli>      (no state change)
   .cli(register)      → ScRuntimeBuilder<HasCli>      (transition: NoCli → HasCli)
 
 ScRuntimeBuilder<HasCli>
   .mcp_stdio()        → ScRuntimeBuilder<HasCli>      (no state change)
   .db(backend)        → ScRuntimeBuilder<HasCli>      (no state change)
   .web(config)        → ScRuntimeBuilder<HasCli>      (foreground web, no state change)
-  .logger(logger)     → ScRuntimeBuilder<HasCli>      (no state change)
   .plugin(plugin)     → ScRuntimeBuilder<HasCli>      (no state change)
   .daemon()           → ScRuntimeBuilder<HasDaemon>   (transition: HasCli → HasDaemon)
   .build()            → ScRuntime                     (foreground: no daemon)
@@ -46,12 +69,25 @@ ScRuntimeBuilder<HasDaemon>
   .db(backend)        → ScRuntimeBuilder<HasDaemon>   (no state change)
   .web(config)        → ScRuntimeBuilder<HasDaemon>   (supervised web, no state change)
   .mcp_http(addr)     → ScRuntimeBuilder<HasDaemon>   (ONLY on HasDaemon)
-  .logger(logger)     → ScRuntimeBuilder<HasDaemon>   (no state change)
   .plugin(plugin)     → ScRuntimeBuilder<HasDaemon>   (no state change)
   .build()            → ScRuntime                     (daemon-managed)
 ```
 
+There is no `.logger()` method anywhere on the builder. The logger is provided
+once, up front, and is never optional.
+
 `mcp_http()` does not exist on `ScRuntimeBuilder<HasCli>`. Calling it on a non-daemon builder is a compile error — the method is not in scope. This is the central enforcement: HTTP MCP requires persistent connections, which requires a running daemon. The type system enforces this with no runtime check.
+
+### `.web()` Semantics: Foreground vs Supervised
+
+`.web(config: WebConfig)` is available on **both** `HasCli` and `HasDaemon`, but its runtime behaviour differs:
+
+| State | Mode | Behaviour |
+|-------|------|-----------|
+| `HasCli` | **Foreground** | `ScRuntime::run()` blocks on the web server directly. Process lifetime equals server lifetime — when the server exits, the process exits. No daemon process, no plugin JoinSet. |
+| `HasDaemon` | **Supervised** | The web server runs as a `Plugin` inside the daemon JoinSet. It receives a `CancellationToken`, participates in the standard init/run/shutdown lifecycle, and is restartable in principle if the daemon's supervisor policy supports it. |
+
+`.mcp_http()` is only available on `HasDaemon`. It requires persistent SSE connections, which in turn require a daemon process that outlives any single request. Calling `.mcp_http()` on `HasCli` is a compile error.
 
 ### PhantomData Marker (RBP-010)
 
@@ -71,9 +107,11 @@ Builder methods that do not change state consume `self` and return `Self` with t
 ## Builder Method Surface
 
 ```rust
+impl ScRuntime {
+    pub fn builder(name: &'static str, logger: Logger<Running>) -> ScRuntimeBuilder<NoCli>;
+}
+
 impl ScRuntimeBuilder<NoCli> {
-    pub fn new() -> Self;
-    pub fn name(self, name: &'static str) -> Self;
     pub fn cli(self, register: impl FnOnce(&mut CommandRegistry)) -> ScRuntimeBuilder<HasCli>;
 }
 
@@ -81,7 +119,6 @@ impl ScRuntimeBuilder<HasCli> {
     pub fn mcp_stdio(self) -> Self;
     pub fn db(self, backend: Arc<dyn StorageBackend>) -> Self;
     pub fn web(self, config: WebConfig) -> Self;
-    pub fn logger(self, logger: Logger<Running>) -> Self;
     pub fn plugin(self, plugin: impl Plugin + 'static) -> Self;
     pub fn daemon(self) -> ScRuntimeBuilder<HasDaemon>;
     pub fn build(self) -> ScRuntime;
@@ -91,13 +128,17 @@ impl ScRuntimeBuilder<HasDaemon> {
     pub fn db(self, backend: Arc<dyn StorageBackend>) -> Self;
     pub fn web(self, config: WebConfig) -> Self;
     pub fn mcp_http(self, addr: SocketAddr) -> Self;
-    pub fn logger(self, logger: Logger<Running>) -> Self;
     pub fn plugin(self, plugin: impl Plugin + 'static) -> Self;
     pub fn build(self) -> ScRuntime;
 }
 ```
 
-**`.logger(logger: Logger<Running>)`** — accepts a `Logger<Running>` from `sc-observability`. The `Running` typestate from sc-observability guarantees the logger is fully initialized before injection. `sc-runtime` does not construct a logger. It is the consumer's responsibility to call `LoggerBuilder` and inject the result.
+**`ScRuntime::builder(name, logger)`** — the `Logger<Running>` is a required
+positional argument. The `Running` typestate from sc-observability guarantees
+the logger is fully initialized before injection. `sc-runtime` does not
+construct a logger. It is the consumer's responsibility to call `LoggerBuilder`
+and pass the result here. There is no `.logger()` method on the builder —
+omitting the logger is a compile error, not a runtime panic or silent no-op.
 
 **`.db(backend: Arc<dyn StorageBackend>)`** — accepts a trait object, not a concrete backend type. The consumer selects the implementation (`SqliteBackend`, `SqlxBackend`) and wraps it in `Arc`. The builder holds `Arc<dyn StorageBackend>`. This satisfies RBP-003: the `StorageBackend` trait is sealed and consumers hold trait objects, not concrete types.
 
@@ -134,10 +175,8 @@ fn main() -> Result<(), ScRuntimeError> {
         PathBuf::from("/var/log/sc/my-tool"),
     ))?.build();
 
-    ScRuntime::builder()
-        .name("my-tool")
+    ScRuntime::builder("my-tool", logger)
         .cli(commands::register)
-        .logger(logger)
         .build()
         .run()
 }
@@ -149,14 +188,12 @@ A tool that serves both CLI and MCP clients over stdio, backed by a local SQLite
 
 ```rust
 fn main() -> Result<(), ScRuntimeError> {
-    let logger = /* ... */;
+    let logger = LoggerBuilder::new(/* ... */)?.build();
 
-    ScRuntime::builder()
-        .name("my-tool")
+    ScRuntime::builder("my-tool", logger)
         .cli(commands::register)
         .mcp_stdio()
         .db(Arc::new(SqliteBackend::open("my-tool.db")?))
-        .logger(logger)
         .build()
         .run()
 }
@@ -168,13 +205,11 @@ A long-running daemon with plugins, HTTP API, HTTP MCP, and PostgreSQL storage.
 
 ```rust
 fn main() -> Result<(), ScRuntimeError> {
-    let logger = /* ... */;
+    let logger = LoggerBuilder::new(/* ... */)?.build();
 
-    ScRuntime::builder()
-        .name("my-tool")
+    ScRuntime::builder("my-tool", logger)
         .cli(commands::register)
         .db(Arc::new(SqlxBackend::from_url("postgres://localhost/my-tool")?))
-        .logger(logger)
         .daemon()
         .plugin(MyDomainPlugin::new())
         .web(WebConfig::default())

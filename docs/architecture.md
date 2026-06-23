@@ -258,7 +258,7 @@ When `sc-runtime` `0.1.0` publishes to crates.io, remove the `[patch]` block and
 | `thiserror` | 2 | Error type derivation |
 | `uuid` | 1 | RPC `request_id` generation |
 | `rusqlite` | 0.31 (bundled) | SQLite — `sc-runtime-db-sqlite` only |
-| `r2d2-sqlite` | latest | Connection pool — `sc-runtime-db-sqlite` only |
+| `r2d2-sqlite` | 0.23 | Connection pool — `sc-runtime-db-sqlite` only |
 | `sqlx` | 0.8 | sqlx backend — `sc-runtime-db-sqlx` only |
 | `axum` | 0.8 | HTTP server — `sc-runtime-web` only |
 | `libc` | 0.2 | POSIX signals, pid liveness (unix) |

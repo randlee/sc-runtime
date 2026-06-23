@@ -140,6 +140,36 @@ same `CommandTransport` trait as the production IPC transport.
 **Rationale:** sc-ai-cli `designing-cli-simulators` skill. External process
 dependencies in tests introduce non-determinism and slow test execution.
 
+### FR-CLI-10 — `diagnostics` Must Always Be Serialized, Never Omitted
+
+The `diagnostics` field of `CommandEnvelope` must always be present in
+serialized JSON output. It must serialize as a JSON array (`[]` when empty).
+It must never be omitted via `#[serde(skip_serializing_if)]` or any other
+mechanism. A consumer that always expects the field must not have to guard
+against its absence.
+
+A successful response (`ok: true`) may carry non-empty diagnostics — for
+example, a deprecation warning on a command flag scheduled for removal in
+the next major version.
+
+**Rationale:** FR-CLI-01, FR-CLI-05. MCP consumers and CI scripts that
+parse `CommandEnvelope` must be able to read `diagnostics` unconditionally.
+Conditional serialization forces every consumer to handle two schema shapes.
+
+### FR-CLI-11 — `DiagnosticSeverity` Is Closed to Three Values
+
+`DiagnosticSeverity` must be an exhaustive enum with exactly three variants:
+`Info`, `Warning`, `Deprecated`. No catch-all or open-ended variant is
+permitted. Serialization must use `snake_case` (`"info"`, `"warning"`,
+`"deprecated"`).
+
+Adding a new severity variant is a semver-breaking change. Removing or
+renaming a variant is also semver-breaking.
+
+**Rationale:** RBP-003 (Exhaustive Enums). Machine consumers that match on
+`DiagnosticSeverity` to decide alerting thresholds must be able to do so
+exhaustively. An open-ended variant undermines that guarantee.
+
 ## Non-Functional Requirements
 
 ### NF-CLI-01 — `unsafe_code = "forbid"`
@@ -152,6 +182,19 @@ The `sc-runtime-cli` crate manifest must set `#![forbid(unsafe_code)]`.
 `sc-runtime-daemon`. The IPC transport is injected by the daemon layer when
 present. This is enforced by the boundary definition in
 `boundaries/sc-runtime-cli/`.
+
+## Dependency Boundary Rules
+
+| Category | Rule |
+|----------|------|
+| Permitted workspace dependencies | `sc-runtime-core` only |
+| Permitted external dependencies | `clap`, `serde`, `serde_json`, `thiserror`, `futures` |
+| Forbidden | `sc-runtime-daemon`, `sc-runtime-web`, `sc-runtime-db`, `sc-runtime-db-*`; any SC domain crate |
+| Boundary file | `boundaries/sc-runtime-cli/Boundary.toml` |
+
+Note: IPC transport is injected via the `CommandTransport` trait — `sc-runtime-cli`
+carries no direct socket or pipe dependency. Daemon connectivity is wired in by
+the consumer, not by this crate.
 
 ## Related Docs
 

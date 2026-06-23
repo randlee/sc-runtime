@@ -40,7 +40,7 @@
 
 **FR-DAEMON-06** — On Windows, `CTRL_C_EVENT` must map to graceful shutdown with identical semantics to SIGTERM on Unix (FR-DAEMON-04). `CTRL_C_EVENT` must cancel the root `CancellationToken` and trigger the full shutdown sequence.
 
-**FR-DAEMON-07** — There is no SIGUSR1 equivalent on Windows. The wake channel must exist on all platforms, but on Windows it must never be signaled by an OS event. Plugins must treat wake events as optional — their absence must be correct behavior.
+**FR-DAEMON-07** — Windows CTRL_C_EVENT maps to graceful shutdown (required in 0.1.0, identical semantics to SIGTERM on Unix per FR-DAEMON-06). Windows SIGUSR1 equivalent via named Windows Event object `Global\SC_RUNTIME_{TOOL_NAME_UPPER}_WAKE` is required in 0.1.0 — the daemon must attempt to create and monitor this named event via `tokio::task::spawn_blocking` with `WaitForSingleObject`. When the event is signaled, `WakeEvent::UserSignal` must be sent on the broadcast channel. If creation fails due to permissions or policy, a warning must be logged and the wake feature must degrade gracefully for that session — this is not a startup failure. An outright stub (no attempt to create the named event) does not satisfy this requirement. The wake channel must exist on all platforms; plugins must treat wake events as optional — their absence must be correct behavior.
 
 **FR-DAEMON-08** — Every `#[cfg(unix)]` signal-handling block must have a `#[cfg(windows)]` companion block. PORT-010 must pass in CI.
 
@@ -50,6 +50,14 @@
 - macOS / Linux: Unix domain socket at `{SC_RUNTIME_HOME}/.sc/runtime/{tool}.sock`
 - Windows: Named pipe at `\\.\pipe\sc-{tool}`
 - Fallback (all platforms): TCP loopback, port registered in `{SC_RUNTIME_HOME}/.sc/runtime/{tool}.port`
+
+**FR-DAEMON-09a** — When the TCP fallback transport is used, the daemon must bind to `127.0.0.1:0` (OS-assigned ephemeral port) and write the decimal port number as a UTF-8 string to `{SC_RUNTIME_HOME}/.sc/runtime/{tool}.port`. The write must be atomic: write to `{tool}.port.tmp` then rename to `{tool}.port`.
+
+**FR-DAEMON-09b** — The port file must be deleted in the same shutdown step as the PID file. Deletion failure must be logged but must not affect the process exit code.
+
+**FR-DAEMON-09c** — Stale port file detection: the client must check the PID file before using a port file. If the PID stored in `{tool}.pid` refers to a dead process, the port file is considered stale and the TCP fallback must not be attempted regardless of the port file's age or content.
+
+**FR-DAEMON-09d** — The CLI client connect timeout for TCP fallback is the same 500ms as for Unix socket and named pipe connects. If the connect to `127.0.0.1:{port}` fails or times out, the daemon is considered unreachable and the router falls back to direct execution.
 
 **FR-DAEMON-10** — The RPC wire protocol must be newline-delimited JSON on all transports. The same `CommandEnvelope<T>` types used by the CLI must be used on all transports. There must be no transport-specific DTOs.
 
@@ -71,6 +79,14 @@
 
 **FR-DAEMON-18** — If the `JoinSet` drain during shutdown exceeds the configurable drain timeout (default 30 seconds), the remaining tasks must be forcibly cancelled and shutdown must proceed. The daemon must not block indefinitely on a misbehaving plugin.
 
+**FR-DAEMON-19** — `DaemonConfig` must be accepted via the `ScRuntimeBuilder<HasCli>::daemon_config(config: DaemonConfig)` builder method. If not supplied, `DaemonConfig::default()` must be used. The `SC_RUNTIME_SHUTDOWN_TIMEOUT_SECS` environment variable must override `DaemonConfig::shutdown_drain_timeout` at startup (integer seconds). An invalid env var value must produce a logged warning and fall back to the configured or default value — it must not cause the daemon to fail to start.
+
+**FR-DAEMON-20** — The wake channel must be a `tokio::sync::broadcast` channel with a capacity of 16. The daemon must hold the `broadcast::Sender<WakeEvent>` and deliver a cloned `broadcast::Receiver<WakeEvent>` to each plugin via `DaemonPluginContext` at registration time. Lagging receivers that miss events due to the channel being full are acceptable — `WakeEvent` is edge-triggered and plugins must remain correct in the absence of wake events.
+
+**FR-DAEMON-21** — On Windows, the daemon must create a named Windows Event object at `Global\SC_RUNTIME_{TOOL_NAME_UPPER}_WAKE` and poll it via `tokio::task::spawn_blocking` with `WaitForSingleObject`. When the event is signaled, `WakeEvent::UserSignal` must be sent on the broadcast channel. If the named event object cannot be created (e.g., insufficient permissions), the daemon must log a warning and silently disable the wake feature for that session. The daemon must not fail to start due to wake event unavailability.
+
+**FR-DAEMON-22** — `HealthResult::healthy` must be `true` if and only if all plugin `HealthCheck::healthy` values are `true` and all `StorageBackend::health()` results are `StorageHealth::Healthy`. A single degraded or unavailable storage backend or a single failing plugin health check must set `HealthResult::healthy` to `false`. `StorageBackend::health()` must be infallible — it must return `StorageHealth`, not `Result`. A backend that cannot determine its health must return `StorageHealth::Degraded` with a reason; it must not panic.
+
 ---
 
 ## Non-Functional Requirements
@@ -84,3 +100,19 @@
 **NF-DAEMON-04** — `sc-runtime-daemon` must compile for macOS, Linux, and Windows. The `cargo xwin check` and `cargo xwin clippy` targets must pass in the `full` lint profile.
 
 **NF-DAEMON-05** — `unsafe_code = "forbid"` applies to `sc-runtime-daemon`. Any unsafe block requires a documented justification and a reviewer-approved `#[sc_lint(allow = "...")]` annotation.
+
+---
+
+## Dependency Boundary Rules
+
+| Category | Rule |
+|----------|------|
+| Permitted workspace dependencies | `sc-runtime-core`, `sc-runtime-cli`, `sc-runtime-db` (trait only — optional) |
+| Permitted external dependencies | `tokio` (full), `tokio-util`, `futures`, `thiserror`, `uuid`, `libc` (unix), `windows-sys` (windows) |
+| Forbidden | `sc-runtime-web`, `sc-runtime-db-sqlite`, `sc-runtime-db-sqlx`, `sc-runtime-db-fsqlite` (daemon depends on the trait, not any impl); any SC domain crate |
+| Boundary file | `boundaries/sc-runtime-daemon/Boundary.toml` |
+
+Note: storage backends (`sc-runtime-db-sqlite`, `sc-runtime-db-sqlx`, etc.) are
+injected by the consumer via `Arc<dyn StorageBackend>` — the daemon never links
+them directly. This ensures the daemon binary does not carry SQL driver code
+unless the consumer explicitly opts in.

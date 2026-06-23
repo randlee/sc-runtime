@@ -72,4 +72,4 @@ After Phase A, `sc-runtime-example` uses `ScRuntimeBuilder<HasCli>` with a minim
 - [Phase B: Storage](./phase-B/phase-B-plan.md) — StorageBackend sealed trait, rusqlite backend, sqlx backend, facade .db()
 - [Phase C: Daemon + RPC](./phase-C/phase-C-plan.md) — daemon lifecycle, signals, cross-platform RPC, facade HasCli→HasDaemon
 - [Phase D: Web + HTTP MCP](./phase-D/phase-D-plan.md) — axum server, HttpRouteRegistry, HTTP MCP SSE, facade .web() and .mcp_http()
-- [Phase E: Release](./phase-E/phase-E-plan.md) — sc-lint-version gate, xwin CI, API surface review, crates.io publish sequence
+- [Phase E: Release](./phase-E/phase-E-plan.md) — sc-lint-version gate, xwin CI, Windows CI (compilation + unit tests via `windows-latest` runner; full Windows daemon integration tests are post-0.1.0), API surface review, crates.io publish sequence

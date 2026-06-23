@@ -62,6 +62,13 @@ Pool parameters:
 | `min_idle` | 1 | Keep at least one connection warm |
 | `connection_timeout` | 10s | Error if pool exhausted for this long |
 
+Pool configuration defaults:
+- max_size: 4 connections (SQLite WAL supports multiple readers; a small pool avoids write contention)
+- min_idle: None (connections are created on demand)
+- max_lifetime: None (SQLite connections are cheap; no recycling needed)
+- idle_timeout: 60 seconds (close idle connections after 1 minute)
+- connection_timeout: 5 seconds (fail fast if pool is exhausted)
+
 The pool is held in `SqliteBackend` behind an `Arc`, making `SqliteBackend`
 cheaply cloneable and shareable across threads as `Arc<dyn StorageBackend>`.
 
@@ -200,7 +207,7 @@ call and return it on drop.
 |-------|---------|---------|
 | `sc-runtime-db` | workspace | `StorageBackend` trait, `Migration`, `StorageError` |
 | `rusqlite` | 0.31 (bundled) | SQLite connection and query execution |
-| `r2d2-sqlite` | latest | Connection pool management |
+| `r2d2-sqlite` | 0.23 | Connection pool management |
 
 No other sc-runtime crates appear in `sc-runtime-db-sqlite`'s dependency tree.
 This boundary is enforced by `sc-lint-boundary`.

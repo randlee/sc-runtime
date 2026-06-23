@@ -103,6 +103,7 @@ Tasks:
 - Create `Cargo.toml` workspace root with all members, lints, and resolver configuration
 - Create `rust-toolchain.toml`, `deny.toml`, `.cargo/config.toml`
 - Scaffold all 10 crate directories with minimal `lib.rs` files that re-export nothing but compile
+- Add `publish = false` to `sc-runtime-example/Cargo.toml` — this crate demonstrates consumer patterns and must never be published to crates.io; set this at creation time so it is never accidentally included in a publish sequence
 - Write all boundary TOML files in `boundaries/`
 - Write `Justfile` with all targets
 - Write `.github/workflows/ci.yml` skeleton

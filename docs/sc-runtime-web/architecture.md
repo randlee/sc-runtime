@@ -60,6 +60,83 @@ The request body at `POST /mcp/message` is deserialized into the same `CommandEn
 
 ---
 
+## WebConfig
+
+`WebConfig` is the consumer-facing configuration type for the HTTP server. It is axum-free and appears in the builder's `.web(config)` method and in the `sc-runtime` re-export surface.
+
+```rust
+pub struct WebConfig {
+    pub bind: SocketAddr,                    // default: 127.0.0.1:0 (OS-assigned port)
+    pub request_timeout: Duration,           // default: 30s — max time to process a single request
+    pub shutdown_drain_timeout: Duration,    // default: 5s — wait for in-flight before force-close
+    pub max_connections: usize,              // default: 100
+    pub max_request_body_bytes: usize,       // default: 1 MiB (1_048_576)
+    pub max_sse_sessions: usize,             // default: 50 — max concurrent SSE sessions
+}
+
+impl Default for WebConfig {
+    fn default() -> Self {
+        Self {
+            bind: "127.0.0.1:0".parse().unwrap(),
+            request_timeout: Duration::from_secs(30),
+            shutdown_drain_timeout: Duration::from_secs(5),
+            max_connections: 100,
+            max_request_body_bytes: 1024 * 1024,
+            max_sse_sessions: 50,
+        }
+    }
+}
+```
+
+`bind` defaults to `127.0.0.1:0` (loopback, OS-assigned port). This is intentionally localhost-only for the default case — external-facing deployments must explicitly set a routable address. Port `0` causes the OS to assign an ephemeral port; the assigned port is available after `.run()` via `ScRuntime::bound_addr()` (when implemented).
+
+`max_sse_sessions` caps concurrent SSE connections to prevent unbounded memory growth from abandoned connections. When the limit is reached, new `GET /mcp/sse` requests are rejected with `503 Service Unavailable`.
+
+---
+
+## HTTP MCP SSE Session Management
+
+The HTTP MCP endpoint uses two routes with a session correlation model:
+
+- `GET /mcp/sse` — opens a persistent SSE stream; the server assigns a UUID session ID and immediately sends it as the first SSE event:
+  ```
+  event: session
+  data: {"session_id": "<uuid>"}
+
+  ```
+- `POST /mcp/message?session_id=<uuid>` — client sends a JSON-RPC 2.0 request body; `session_id` is a required query parameter; the server routes the response back to the matching SSE stream as an SSE event on that stream
+
+### Session Lifecycle
+
+```
+GET /mcp/sse
+  → server creates session entry (session_id → SSE sender)
+  → sends: event: session\ndata: {"session_id": "<uuid>"}\n\n
+  → holds connection open, sending JSON-RPC responses as events
+
+POST /mcp/message?session_id=<uuid>
+  → server looks up session_id in active session map
+  → deserializes body as JSON-RPC 2.0 request (CommandEnvelope)
+  → dispatches to operation layer
+  → sends result as SSE event on the matched SSE stream
+
+SSE connection drops (TCP close)
+  → server removes session entry from session map
+  → no keep-alive timeout needed — TCP close is the cleanup signal
+```
+
+Sessions are stored in an in-process map keyed by session UUID. There is no persistence — a server restart clears all sessions and connected SSE clients must reconnect.
+
+**Error: session not found.** If the `session_id` in a `POST /mcp/message` request does not match any active session (connection already dropped, bad UUID, etc.), the server returns HTTP 200 with a JSON-RPC error body:
+
+```json
+{"error": {"code": -32001, "message": "session not found"}}
+```
+
+**Concurrent session limit.** `WebConfig::max_sse_sessions` (default: 50) caps concurrent SSE connections. New `GET /mcp/sse` requests beyond the limit return `503 Service Unavailable` with no SSE event sent.
+
+---
+
 ## HttpRouteRegistry Trait
 
 The `HttpRouteRegistry` trait is the seam between consumer operations and the axum router. The consumer implements this trait to register routes; `sc-runtime-web` calls it to construct the server.

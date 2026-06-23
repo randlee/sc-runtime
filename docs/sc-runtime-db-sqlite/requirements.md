@@ -30,6 +30,12 @@ the connection is established, before it is returned from the pool for use.
 Connections that do not carry WAL mode are a correctness defect: a write may
 block a concurrent reader, violating the expected concurrency model.
 
+Additionally, `PRAGMA busy_timeout = 5000` must be set on every connection.
+Without the busy timeout, concurrent write attempts return `SQLITE_BUSY`
+immediately rather than retrying — this is the primary source of spurious
+failures under concurrent load. Both pragmas must be applied in the r2d2
+connection customizer so they are present on every connection in the pool.
+
 ### FR-SQLITE-02 — Connection pooling via r2d2-sqlite
 
 Connection pooling must be implemented using `r2d2-sqlite`. A raw rusqlite
@@ -87,6 +93,19 @@ The bundled feature compiles SQLite from source as part of the Cargo build. No
 system SQLite library (libsqlite3) must be required to build or run this crate.
 This is NF-04 from the PRD.
 
+### FR-SQLITE-08 — Connection pool default configuration
+
+The r2d2 connection pool must be configured with the following defaults:
+- `max_size`: 4 connections
+- `min_idle`: None (connections are created on demand)
+- `max_lifetime`: None (SQLite connections are cheap; no recycling needed)
+- `idle_timeout`: 60 seconds (close idle connections after 1 minute)
+- `connection_timeout`: 5 seconds (fail fast if pool is exhausted)
+
+Consumers may override `max_size` and `connection_timeout` via
+`SqliteBackend::with_pool_config(max_size, connection_timeout)`. All other
+pool parameters remain at their defaults and are not consumer-configurable.
+
 ### FR-SQLITE-07 — StorageBackend implementation completeness
 
 `SqliteBackend` must implement all methods of `StorageBackend`:
@@ -105,7 +124,7 @@ This is NF-04 from the PRD.
 `sc-runtime-db-sqlite` may depend on:
 - `sc-runtime-db` (workspace) — required for the `StorageBackend` trait
 - `rusqlite` (0.31, bundled feature)
-- `r2d2-sqlite` (latest)
+- `r2d2-sqlite` (0.23)
 
 It must not depend on `sc-runtime-db-sqlx`, `sc-runtime-db-fsqlite`, or any
 other backend implementation crate.

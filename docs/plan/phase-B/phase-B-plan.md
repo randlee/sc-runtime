@@ -62,9 +62,12 @@ The trait is also object-safe by design (RBP-008): the `transaction` method uses
 
 ## PluginContext Storage Access
 
-When storage is not configured, `PluginContext` must not expose an `Option<Arc<dyn StorageBackend>>` that plugins need to unwrap. The design uses a sealed access pattern: `PluginContext` carries storage internally, and a companion `PluginContextWithStorage` wrapper provides the `storage()` method. Plugins that require storage declare `fn init(&mut self, ctx: &PluginContextWithStorage)` at the type level. This is a compile-time guarantee, not a runtime check.
+**Design decision (Sprint B-1):** Two options were evaluated for how plugins receive storage:
 
-The exact mechanism is deferred to the implementation sprint; the key constraint is that a plugin cannot accidentally ignore a missing storage dependency — the compiler enforces it.
+- **(a)** `PluginContext` carries `Option<Arc<dyn StorageBackend>>` — simple but creates an Option footgun for plugins that require storage.
+- **(b)** `DaemonPluginContext` (defined in `sc-runtime-daemon`) carries `Option<Arc<dyn StorageBackend>>` — consistent with the layered context design where the daemon crate adds its own fields.
+
+**Decision: Option (b).** This is consistent with the `DaemonAware` / `DaemonPluginContext` design already decided for Phase C (Sprint B-4 target). Plugins that need storage receive it via `DaemonPluginContext.storage` (`Option<Arc<dyn StorageBackend>>`). Plugins that unconditionally require storage may check in `on_daemon_context()` and return `PluginError::InitFailed` if `storage` is `None`.
 
 ---
 
@@ -85,8 +88,9 @@ Tasks:
 - Write `static_assertions::assert_obj_safe!(StorageBackend)` test
 - Update `boundaries/sc-runtime-db/Boundary.toml`: no dependency on any `sc-runtime-db-*` implementation crate
 - Run `sc-lint lint fast`: boundary gate must pass on the new crate
+- **Design decision: Storage access pattern in plugins.** The two options are: (a) `PluginContext` carries `Option<Arc<dyn StorageBackend>>` — simple but creates an Option footgun for plugins that require storage; (b) `DaemonPluginContext` (defined in `sc-runtime-daemon`) carries `Option<Arc<dyn StorageBackend>>` — consistent with the layered context design where daemon adds its own fields. **Decision: Option (b)** — consistent with the DaemonAware / DaemonPluginContext design already decided for B-4. Plugins that need storage receive it via `DaemonPluginContext.storage` (Option). Plugins that unconditionally require storage may check in `on_daemon_context()` and return `PluginError::InitFailed` if `storage` is None.
 
-Deliverable: `sc-runtime-db` compiles with sealed trait. Boundary gate passes.
+Deliverable: `sc-runtime-db` compiles with sealed trait. Boundary gate passes. Storage access pattern decision recorded.
 
 ### Sprint B-2: sc-runtime-db-sqlite
 
@@ -134,7 +138,7 @@ Deliverable: sqlx backend works. `sqlite://` and `postgres://` paths validated. 
 Tasks:
 - Add `.db(Arc<dyn StorageBackend>) -> Self` to `ScRuntimeBuilder<HasCli>` (and stub it for `HasDaemon` for Phase C)
 - Wire the backend into `ScRuntime`: when `.build()` is called with a backend, the runtime stores `Arc<dyn StorageBackend>` and passes it to `PluginContext` during plugin init
-- Implement the `PluginContextWithStorage` companion (or whichever access pattern is chosen in B-1 design review) so storage-requiring plugins declare their dependency at compile time
+- Implement `DaemonPluginContext.storage: Option<Arc<dyn StorageBackend>>` in `sc-runtime-daemon` (stub for Phase C), following the access pattern decided in B-1: plugins that need storage receive it via `DaemonPluginContext`; plugins that unconditionally require storage check in `on_daemon_context()` and return `PluginError::InitFailed` if `storage` is `None`
 - Update `sc-runtime-example`: add a `StoragePlugin` that requires storage, call `.db(Arc::new(SqliteBackend::in_memory()?))`, verify the plugin's `init()` receives storage and can execute a simple `INSERT` + `SELECT` round-trip
 - Integration test: run the example binary with storage configured, assert query results match inserted values; run without `.db()`, assert `StoragePlugin` produces a compile error (compile-fail test)
 - Run `cargo test --workspace`; run `sc-lint lint fast`

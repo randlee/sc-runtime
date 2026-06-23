@@ -38,14 +38,31 @@ The following do not belong in `sc-runtime-core`:
 ### FR-CORE-01 — Plugin Trait Must Be Object-Safe
 
 The `Plugin` trait must be usable as `Box<dyn Plugin>` without any
-`where Self: Sized` escape hatch on the lifecycle methods. Async methods must
-be wrapped in `BoxFuture` (or equivalent) to satisfy object safety. Object
-safety must be verified at design time as a stated constraint, not discovered
-at first use.
+`where Self: Sized` escape hatch on the lifecycle methods.
+
+The lifecycle methods (`init`, `run`, `shutdown`) must use
+`BoxFuture<'a, Result<(), PluginError>>` return types — not bare `async fn` —
+to maintain object safety. Bare `async fn` in a trait is not compatible with
+`dyn Trait` in stable Rust (as of 1.94) because each impl produces a distinct,
+unnameable future type that cannot be placed in a vtable.
+
+A compile-time test asserting `Box<dyn Plugin>` compiles must exist in the
+`sc-runtime-core` test suite:
+
+```rust
+#[test]
+fn plugin_trait_is_object_safe() {
+    let _: Box<dyn Plugin>;
+}
+```
+
+This test need not execute — it only needs to compile. If it fails to compile,
+the PR must not merge.
 
 **Rationale:** The daemon plugin registry stores heterogeneous plugin
 collections. Monomorphization across an open set of consumer plugin types is
-not viable.
+not viable. Verifying object safety at compile time via a test catches
+regressions that design-time review may miss.
 
 ### FR-CORE-02 — `PluginContext` Must Carry an Injected `Logger<Running>`
 
@@ -106,6 +123,45 @@ known at compile time and must not require error handling at call sites.
 **Rationale:** RBP-007 (Infallible). Wrapping a static string return in
 `Result` adds noise at every call site with no benefit.
 
+### FR-CORE-07 — `ErrorCode` Must Be a `&'static str` Newtype
+
+`ErrorCode` must be defined as a newtype wrapping `&'static str`. It must
+expose a `const fn new(code: &'static str) -> Self` constructor and an
+`as_str(&self) -> &'static str` accessor. All predefined codes must be
+`const` values so that pattern matching and equality checks are zero-cost.
+
+No variant of `ScRuntimeError` or `PluginError` may carry an error code
+that is a runtime-constructed `String` — all codes must be `&'static str`
+values traceable to a declaration in source.
+
+**Rationale:** FR-CORE-04. Machine consumers key on `ErrorCode` for
+programmatic handling. A dynamically constructed string code cannot be
+matched exhaustively and is not stable across releases.
+
+### FR-CORE-08 — All `PluginError` Variants Must Be Enumerated and Stable
+
+The `PluginError` enum must enumerate all possible plugin lifecycle failure
+modes as named variants. The following variants are required and stable:
+
+- `InitFailed` — plugin `init()` returned an error
+- `RunFailed` — plugin `run()` returned an error
+- `ShutdownFailed` — plugin `shutdown()` returned an error
+- `Panic` — plugin task panicked; `plugin_name` must be `String` (not
+  `&'static str`) because a panic may corrupt static memory
+- `Cancelled` — plugin was cancelled before completing
+
+No `Other(String)` or open-ended catch-all variant is permitted. Adding a
+new variant is a semver-breaking change and requires a PRD update. Removing
+or renaming a variant is also semver-breaking.
+
+`PluginError` must derive `Debug` and implement `thiserror::Error`. Every
+variant that represents an operator-recoverable condition should carry
+`remediation: Option<Remediation>`.
+
+**Rationale:** RBP-003 (Exhaustive Enums). The daemon's error handling and
+the CLI's exit code mapping depend on matching `PluginError` exhaustively.
+An open-ended variant undermines both.
+
 ## Non-Functional Requirements
 
 ### NF-CORE-01 — `unsafe_code = "forbid"`
@@ -128,6 +184,20 @@ avoids coupling the foundation layer to a specific tokio feature set.
 The crate must compile without warnings under `clippy::pedantic` and
 `clippy::nursery` at the deny level, consistent with the sc-lint workspace
 Clippy policy.
+
+## Dependency Boundary Rules
+
+| Category | Rule |
+|----------|------|
+| Permitted workspace dependencies | **none** — zero `sc-runtime-*` dependencies |
+| Permitted external dependencies | `sc-observability`, `tokio-util` (CancellationToken only), `futures` (BoxFuture), `thiserror` |
+| Forbidden | any `sc-runtime-*` crate; any SC domain crate (`atm-core`, `continuity`, etc.) |
+| Boundary file | `boundaries/sc-runtime-core/Boundary.toml` |
+
+`sc-runtime-core` is the foundation layer. Depending on any peer `sc-runtime-*`
+crate would create a cycle. Depending on a domain crate would allow
+domain-specific concepts to accumulate in the foundation, undermining the
+zero-domain-dependency invariant.
 
 ## Boundary Governing Document
 

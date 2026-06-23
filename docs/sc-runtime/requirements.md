@@ -36,7 +36,13 @@
 
 ### Logger Injection
 
-**FR-RT-06** — `.logger(logger)` must accept `Logger<Running>` from `sc-observability`. The `Running` typestate guarantees the logger is fully initialized before injection. `sc-runtime` must not construct a `Logger` internally, at any point, in any code path.
+**FR-RT-06** — `Logger<Running>` must be a required positional argument to
+`ScRuntime::builder(name, logger)`. There must be no optional `.logger()`
+method on the builder. Omitting the logger must be a compile error. The
+`Running` typestate from sc-observability guarantees the logger is fully
+initialized before it is passed to the builder. `sc-runtime` must not
+construct a `Logger` internally, at any point, in any code path. A builder
+instance without a valid logger must not be constructible.
 
 ### Storage Backend
 
@@ -69,3 +75,19 @@
 **NF-RT-05** — `unsafe_code = "forbid"` applies to `sc-runtime`. The facade crate contains no unsafe code.
 
 **NF-RT-06** — `sc-runtime` must not introduce any dependency that is not already present in one of its sub-crates. It is a composition layer, not an implementation layer.
+
+---
+
+## Dependency Boundary Rules
+
+| Category | Rule |
+|----------|------|
+| Permitted workspace dependencies | all `sc-runtime-*` crates (feature-gated — only those the consumer has configured) |
+| Permitted external dependencies | none beyond what it re-exports from sub-crates (the facade adds no direct external dependencies) |
+| Forbidden | any SC domain crate (`atm-core`, `continuity`, `ci`, etc.) |
+| Boundary file | `boundaries/sc-runtime/Boundary.toml` (planned — not yet created) |
+
+Note: `sc-runtime` re-exports public APIs from sub-crates but must not leak
+sub-crate implementation details (e.g., `axum` types from `sc-runtime-web`,
+`rusqlite` types from `sc-runtime-db-sqlite`). FR-RT-10 enforces the axum
+non-leakage rule explicitly.
