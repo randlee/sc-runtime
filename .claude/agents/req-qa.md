@@ -183,13 +183,15 @@ Gate-artifact rule:
   evidence
 
 Presence-check examples that must be treated as req-qa work:
-- "`daemon.lock` singleton" means a second daemon on the same instance root
-  is actually refused, shown by a test, not just that a lock type exists
-- "no panics in `sc-config`" means no `unwrap`, `expect`, `panic!` or indexing
-  panic is reachable from a public method, not just that methods return
-  `Result`
-- "CLI does not link axum or sqlx" means the dependency tree of the CLI
-  proves it, not that the manifest looks right
+- "X exists" means the named modules are present and the production path
+  actually flows through them
+- "remove X" means X is absent from the production path, not just unused
+- "a singleton, limit, or refusal" means a test shows the second attempt is
+  actually refused, not just that a guard type exists
+- "no panics" means no `unwrap`, `expect`, `panic!` or indexing panic is
+  reachable from a public method, not just that methods return `Result`
+- "binary A does not link dependency B" means the dependency tree proves it,
+  not that the manifest looks right
 - "required artifact list" means the named files exist and contain the claimed
   role
 
@@ -228,11 +230,11 @@ Return fenced JSON only.
   ],
   "requirement_checks": [
     {
-      "id": "NFR-CONFIG-001",
-      "source": "docs/sc-config/requirements.md:31",
+      "id": "NFR-<CRATE>-001",
+      "source": "docs/<crate>/requirements.md:31",
       "listed_in_sprint_doc": true,
       "result": "upheld | violated | not-applicable | not-verifiable",
-      "evidence_refs": ["crates/sc-config/src/lib.rs:42"]
+      "evidence_refs": ["crates/<crate>/src/lib.rs:42"]
     }
   ],
   "deliverable_checks": [
@@ -257,7 +259,7 @@ Return fenced JSON only.
         "docs/project-plan.md:45"
       ],
       "target_refs": [
-        "docs/sc-config/requirements.md:31"
+        "docs/<crate>/requirements.md:31"
       ],
       "issue": "clear statement of mismatch",
       "required_correction": "specific corrective action",

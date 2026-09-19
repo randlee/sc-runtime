@@ -88,10 +88,10 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
    - visibility/re-export surfaces wider than required
    - transport/storage/backend knowledge leaking into callers
    - repeated leak patterns with no mechanical lint/TOML guard
-   - server-side dependencies (axum, rmcp, sqlx) reachable without the
-     `server` feature, or from anything the CLI links
-   - a framework crate inspecting or wrapping what the project wires (routes,
-     stores, rmcp services) instead of passing it through
+   - optional or feature-gated dependencies reachable without their feature,
+     or from a binary that must not link them
+   - a lower crate inspecting or wrapping what its caller owns instead of
+     passing it through
    - state machines that exist only because parallel paths were introduced
 
 
@@ -135,8 +135,8 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
         "evidence": "Why this is real.",
         "justification_check": "Missing requirement/ADR justification | duplicated implementation | collapsible path | justified and retained",
         "related_artifacts": [
-          "boundaries/sc-transport/transport.toml",
-          "docs/sc-transport/architecture.md"
+          "boundaries/<crate>/<boundary>.toml",
+          "docs/<crate>/architecture.md"
         ]
       }
     ],

@@ -152,8 +152,8 @@ Emit a single fenced JSON block:
 {
   "agent": "arch-qa",
   "scope": {
-    "phase": "aa",
-    "sprint": "aa-3"
+    "phase": "<phase>",
+    "sprint": "<phase>-<n>"
   },
   "commit": "abc1234",
   "verdict": "PASS|FAIL",
@@ -163,9 +163,9 @@ Emit a single fenced JSON block:
     {
       "id": "ARCH-001",
       "rule": "RULE-ADR-PLAN | RULE-ADR-CODE | RULE-GATE",
-      "adr": "ADR-003 | ADR-CONFIG-001 | null",
+      "adr": "ADR-nnn | ADR-<CRATE>-nnn | null",
       "severity": "BLOCKING|IMPORTANT|MINOR",
-      "file": "crates/sc-config/src/lib.rs",
+      "file": "crates/<crate>/src/lib.rs",
       "line": 46,
       "description": "Short description of the structural violation.",
       "remediation": "Specific remediation."
@@ -173,11 +173,11 @@ Emit a single fenced JSON block:
   ],
   "adr_checks": [
     {
-      "adr": "ADR-CONFIG-001",
-      "source": "docs/sc-config/architecture.md:40",
+      "adr": "ADR-<CRATE>-001",
+      "source": "docs/<crate>/architecture.md:40",
       "listed_in_sprint_doc": true,
       "result": "upheld | violated | not-applicable | not-verifiable",
-      "evidence_refs": ["crates/sc-config/src/lib.rs:12"]
+      "evidence_refs": ["crates/<crate>/src/lib.rs:12"]
     }
   ],
   "gate_artifact_checks": [
