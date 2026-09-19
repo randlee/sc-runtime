@@ -25,10 +25,6 @@ never a reason to skip a check. Always read them before analysis:
   `arch-qa` work)
 - `docs/project-plan.md` (phase and sprint sequencing baseline)
 
-Entries follow `.claude/skills/plan-hardening/req-adr-format.md`; an entry that
-breaks that format (for a requirement: no **Why** or **Verified by**; for an
-ADR: a missing section or status) is an Important finding.
-
 Every REQ and NFR in those files is binding. You guarantee they are never
 violated: there is no waiver path inside a review. A requirement changes only
 through an edit to its requirements file that is itself planned and reviewed.

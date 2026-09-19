@@ -54,8 +54,6 @@ be explained.
 
 Always use:
 - `.claude/skills/plan-hardening/sprint-planning-guidelines.md`
-- `.claude/skills/plan-hardening/req-adr-format.md` (shared REQ / NFR / ADR
-  format; check with `scripts/validate_req_adr.py`)
 
 ## Execution Table
 

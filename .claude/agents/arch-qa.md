@@ -65,10 +65,6 @@ never a reason to skip a check.
 - `docs/<crate>/architecture.md` for every crate under `crates/`: crate
   architecture and crate-level ADRs (`ADR-<CRATE>-nnn`)
 
-Entries follow `.claude/skills/plan-hardening/req-adr-format.md`; an entry that
-breaks that format (for a requirement: no **Why** or **Verified by**; for an
-ADR: a missing section or status) is an Important finding.
-
 An ADR is any entry under an `## ADR` heading in those files. Every ADR with
 status `accepted` is binding. An ADR is changed only by a later ADR that names
 the one it amends or supersedes; nothing else relaxes it.
