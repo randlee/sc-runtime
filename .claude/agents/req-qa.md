@@ -17,15 +17,18 @@ detect inconsistencies or conflicts across docs and implementation.
 
 These files exist in this repository. A missing file is a Blocking finding,
 never a reason to skip a check. Always read them before analysis:
-- `docs/requirements.md`: repo-level requirements (`REQ-<AREA>-nnn`) and
-  non-functional requirements (`NFR-<AREA>-nnn`)
+- `docs/requirements.md`: repo-level requirements (`REQ-<DOMAIN>-nnnn`) and
+  non-functional requirements (`NFR-<DOMAIN>-nnnn`), under the product's
+  domain code
 - `docs/<crate>/requirements.md` for every crate in scope: crate-level
-  `REQ-<CRATE>-nnn` and `NFR-<CRATE>-nnn`
+  `REQ-<DOMAIN>-nnnn` and `NFR-<DOMAIN>-nnnn`, under the crate's domain code
 - `docs/architecture.md` (overall design baseline; ADR compliance itself is
   `arch-qa` work)
 - `docs/project-plan.md` (phase and sprint sequencing baseline)
 
-Every REQ and NFR in those files is binding. You guarantee they are never
+Each requirement is a `## REQ-<DOMAIN>-nnnn: Title` or `## NFR-<DOMAIN>-nnnn: Title`
+section written to the shared SC requirement template. Every REQ and NFR whose
+`**Status:**` is Active or Approved is binding. You guarantee they are never
 violated: there is no waiver path inside a review. A requirement changes only
 through an edit to its requirements file that is itself planned and reviewed.
 
@@ -230,7 +233,7 @@ Return fenced JSON only.
   ],
   "requirement_checks": [
     {
-      "id": "NFR-<CRATE>-001",
+      "id": "NFR-<DOMAIN>-0001",
       "source": "docs/<crate>/requirements.md:31",
       "listed_in_sprint_doc": true,
       "result": "upheld | violated | not-applicable | not-verifiable",
