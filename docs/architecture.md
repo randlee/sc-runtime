@@ -82,17 +82,18 @@ code in `sc-transport` and `sc-command` (anything needing axum or rmcp) sits
 behind a `server` feature that is off by default, so a CLI never links axum,
 rmcp or sqlx. `sc-runtime` is a daemon-only dependency.
 
-### ADR-005 Observability is not wrapped
+### ADR-005 `sc-observability` is used directly, not wrapped
 
 Status: accepted (decisions 8, 34).
 
-`sc-observability` and its OTel export crate are independent of every crate
-here. No crate in this repo depends on `sc-observability`; the generated
-`main.rs` initialises it directly with plain config values. The only
-observability dependency is `sc-observability-types` in `sc-command`, for the
-error code and remediation types the envelope is defined on. No crate defines
-logging wrapper functions. Whether a `tracing` bridge is acceptable is open
-(decision 23) and nothing may assume it.
+`sc-observability` 1.2.x is the observability stack of every generated
+project: the generated `main.rs` reads config, then initialises it directly
+with plain values. The four library crates do not wrap it, re-export it, or
+depend on it, and they define no logging wrapper functions, so it stays
+independent of config and of assembly. The one observability dependency
+inside the crates is `sc-observability-types` in `sc-command`, for the error
+code and remediation types the envelope is defined on. Whether a `tracing`
+bridge is acceptable is open (decision 23) and nothing may assume it.
 
 ### ADR-006 One router: REST, OpenAPI and MCP
 

@@ -96,6 +96,10 @@ one or two sqlx stores. The framework instantiates; the project wires.
   (read pool plus a one-connection write pool, WAL on), embedded migrations,
   checked queries, `sqlx.toml` naming `SQLITE_DATABASE_URL`, and a checked-in
   `.sqlx/`. Nothing but `service` calls it.
+- `REQ-TEMPLATE-009` The generated daemon uses `sc-observability` 1.2.x for
+  logging: `main.rs` reads config, then initialises `sc-observability`
+  directly with plain config values before assembling the daemon. A project
+  adds the OTel export crate itself.
 
 ## Answers contract
 
