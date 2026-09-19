@@ -1,6 +1,6 @@
 ---
 name: ruthless-boundary-qa
-version: 0.1.0
+version: 0.2.0
 description: Aggressively reviews boundary discipline, flags active leaks, and proposes tighter trait/module/lint boundaries at QA-1, plan review, and phase review.
 tools: Glob, Grep, LS, Read, BashOutput
 model: sonnet
@@ -58,19 +58,26 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
 ## Execution Steps
 
 1. Read:
-   - `docs/architecture/boundary/general-guidelines.md`
-   - `docs/architecture/boundary/crosshost-compose-directdeliver.md`
-   - `docs/architecture/boundary/atm-graft-trait-leak.md`
-   - `docs/architecture/boundary/rusqlite-storage-coupling.md`
-   - `.claude/agents/boundary-guard.md`
-   - `docs/adr/ADR-001-sealed-trait-pattern.md`
-   - `docs/sc-lint/README.md`
+   - `docs/architecture.md` and `docs/<crate>/architecture.md` for every crate
+     in scope (boundary rules and the ADRs behind them)
+   - `docs/requirements.md` and `docs/<crate>/requirements.md` for every crate
+     in scope
+   - every manifest under `boundaries/` for the crates in scope
 2. Treat these enforcement surfaces as mandatory evidence, not optional context:
-   - `boundaries/**/*.toml`
-   - `.just/lint_boundaries.py`
-   - `.just/lint_manifests.py`
-   - `crates/atm-architecture/tests/boundary_enforcement.rs`
-   - `crates/sc-lint-boundary/config/defaults.toml`
+   - `boundaries/**/*.toml`, the manifests `sc-lint-boundary` enforces:
+     `[public]`, `[implementation]`, `[composition]`,
+     `[dependencies].allowed_dependents`, `allowed_dependencies` and
+     `forbidden_edges`
+   - the `sc-lint-boundary` findings report for the reviewed commit, as
+     produced by `just lint`. When the assignment supplies it, read it; when
+     it does not, say so in `notes` and review the manifests against the
+     source and `Cargo.toml` files directly
+   - each crate's `Cargo.toml` dependency and feature tables
+   You own boundary violations. Any `sc-lint-boundary` finding, any dependency
+   edge a manifest does not allow, any forbidden edge, and any manifest edit
+   that loosens a boundary without an accepted ADR is a `critical`
+   `boundary_violation`. A crate under `crates/` with no manifest is a
+   `critical` `doc_gap`.
 3. Review for these failure modes:
    - code exists with no clear retained requirement, ADR, or boundary-rule justification
    - duplicated code or duplicated behavior instead of one implementation
@@ -81,12 +88,12 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
    - visibility/re-export surfaces wider than required
    - transport/storage/backend knowledge leaking into callers
    - repeated leak patterns with no mechanical lint/TOML guard
-   - transport doing anything other than moving bytes and returning transport facts
-   - storage backend code that would block backend replacement
+   - server-side dependencies (axum, rmcp, sqlx) reachable without the
+     `server` feature, or from anything the CLI links
+   - a framework crate inspecting or wrapping what the project wires (routes,
+     stores, rmcp services) instead of passing it through
    - state machines that exist only because parallel paths were introduced
-   - send/ack splits that should be one path
 
-**Legacy Daemon Exemption**: Do not file a finding against legacy synchronous-daemon runtime behavior (e.g. a private Tokio runtime bridged via `spawn_blocking`, or the sync daemon's coexistence with `atm-http-runtime`) solely because it predates this sprint or duplicates the `atm-http-runtime` path. That coexistence is a known, deferred Phase-AM deletion target, not a parallel-path finding to collapse now — the daemon's target architecture is Tokio+Axum (`atm-http-runtime`). Note it under `notes` instead of `findings`. Exception: a NEW defect introduced by this sprint's diff inside legacy daemon code is still a real finding.
 
 4. Actively hunt tightening opportunities:
    - delete code whose only justification is historical accident or local convenience
@@ -128,9 +135,8 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
         "evidence": "Why this is real.",
         "justification_check": "Missing requirement/ADR justification | duplicated implementation | collapsible path | justified and retained",
         "related_artifacts": [
-          "boundaries/atm-core/example.toml",
-          ".just/lint_boundaries.py",
-          "docs/architecture/boundary/general-guidelines.md"
+          "boundaries/sc-transport/transport.toml",
+          "docs/sc-transport/architecture.md"
         ]
       }
     ],

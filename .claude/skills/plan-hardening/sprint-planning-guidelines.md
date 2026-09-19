@@ -9,7 +9,8 @@ in parallel are preferred over five in series, and five are preferred over
 ten when the extra five buy no parallel work.
 
 Crate boundaries are the default place to cut, because they are trait-bound
-contracts recorded in `boundaries/<crate>/*.toml` and enforced by `just lint`:
+contracts recorded in `boundaries/<crate>/*.toml` and enforced by
+`sc-lint-boundary` through `just lint`:
 independence this architecture already checks mechanically. A plan that cuts
 every sprint by feature makes each sprint touch the same crate stack and
 forces a serial chain. A plan that cuts every change by layer has the opposite
@@ -48,7 +49,7 @@ A cross-boundary track has three kinds of sprint, in this order:
    against the test double. Both depend only on the contract sprint, so they
    are `parallel_safe` with each other.
 3. **Integration sprints** (last wave of each track). Composition-root
-   wiring, end-to-end and CLI behaviour, colima/smoke procedures, and
+   wiring, end-to-end and CLI behaviour, smoke procedures, and
    user-facing docs. Every feature-level acceptance criterion of the phase
    lives in one of them, exactly once.
 
@@ -193,7 +194,13 @@ the sprint count low.
 
 Each sprint doc should have one authoritative list for:
 
-- deliverables
+- `requirements`: every REQ and NFR id the sprint implements or is
+  constrained by, from `docs/requirements.md` and
+  `docs/<crate>/requirements.md`
+- `adrs`: every ADR id that governs the sprint, from `docs/architecture.md`
+  and `docs/<crate>/architecture.md`; a new or amended ADR is also a
+  deliverable
+- deliverables, each naming the REQ/NFR id it serves
 - acceptance criteria, each with its root
 - owned paths
 - paths to delete, when applicable
@@ -257,8 +264,13 @@ and suit one developer and one QA pass each, running concurrently.
 
 Sprint docs must be short and structured enough that:
 
-- `req-qa` can enumerate deliverables and acceptance criteria directly
-- `arch-qa` can identify structural gate artifacts directly
+- `req-qa` can enumerate the `requirements` list, deliverables and
+  acceptance criteria directly, and rejects a sprint doc whose REQ/NFR list
+  is missing or incomplete
+- `arch-qa` can enumerate the `adrs` list and structural gate artifacts
+  directly, and rejects a sprint doc whose ADR list is missing or incomplete
+- `ruthless-boundary-qa` can check `owned_paths` and `target_boundary`
+  against the manifests `sc-lint-boundary` enforces
 - `quality-mgr` can route QA without copying scope by hand
 
 QA scope follows the closure type: a `boundary` sprint is reviewed against
@@ -277,6 +289,9 @@ Structural findings:
 - incorrect command, test name, or grep gate
 - uncovered call site, file, module, or runtime path
 - missing type, trait, function, boundary contract, or ADR
+- a sprint doc with a missing or incomplete `requirements` or `adrs` list, a
+  deliverable that traces to no REQ/NFR, or plan content that contradicts a
+  REQ, NFR or accepted ADR
 - a multi-boundary sprint without `vertical_rationale`, overlapping
   `owned_paths`, or a `must_follow` edge with no named contract artifact
 - a thin sprint, a layer cut that creates no parallel work, or a single
