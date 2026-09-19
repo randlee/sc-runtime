@@ -69,7 +69,7 @@ Verdict: **{{ verdict }}**
     "important": {{ findings_important }},
     "minor": {{ findings_minor }}
   },
-  "blocking_ids": {{ blocking_ids_json }},
+  "blocking_ids": {{ blocking_ids_json | safe }},
   "merge_readiness": "{{ merge_readiness }}",
   "merge_reason": "{{ merge_reason }}",
   "next_action": "{{ next_action }}",
