@@ -459,7 +459,10 @@ until the contract sprint pins it.
 - The fixture MUST expose its resolved endpoint, including in the string form
   accepted by the `--endpoint` flag and the `SC_ENDPOINT` environment
   variable, so that a test can point a CLI child process or a plain HTTP or
-  MCP client at the daemon (decided in this document).
+  MCP client at the daemon (decided in this document). The string is produced
+  by the endpoint-to-string conversion that `sc-transport` provides
+  ([REQ-TRN-0001](../sc-transport/requirements.md)); `sc-runtime` does not
+  format it.
 - The fixture MUST expose its instance-root path (decided in this document).
 - The fixture MUST stop its daemon through a crate-private trigger that runs
   the same shutdown sequence a signal starts (stop accepting, drain in-flight
@@ -713,15 +716,17 @@ counterpart, that the generated `cli` and `daemon` each accept a global
    (a tempdir) and no endpoint override, and asserts that while it serves,
    `R/daemon.lock` exists and is locked and `R/daemon.sock` exists and
    accepts a connection.
-2. A test starts a daemon whose `DaemonConfig` carries an endpoint override
-   (a UDS path in a second tempdir on Unix; a free loopback TCP port
-   otherwise). A client that calls the `sc-transport` resolver with the same
+2. A test starts a daemon whose `DaemonConfig` carries an explicit instance
+   root that is a fresh tempdir and an endpoint override (a UDS path in a
+   second tempdir on Unix; a free loopback TCP port otherwise). A client that calls the `sc-transport` resolver with the same
    inputs and connects to the result receives a response from that daemon,
    and on Unix no socket file exists at the default path
    `<instance-root>/daemon.sock`.
-3. A test starts a daemon in a child process with `SC_ENDPOINT` set and no
-   flag value or configured endpoint; a client resolving with the same
-   `SC_ENDPOINT` value reaches it.
+3. A test starts a daemon in a child process with an explicit instance root
+   that is a fresh tempdir, with `SC_ENDPOINT` set, and with no flag value or
+   configured endpoint; a client resolving with the same `SC_ENDPOINT` value
+   reaches it, and `daemon.lock` exists inside that tempdir and nowhere
+   else.
 4. `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
    line outside `#[cfg(test)]` code. Once the second OPEN above is decided in
    favour of the convenience form, the same holds for `SC_ENDPOINT`.

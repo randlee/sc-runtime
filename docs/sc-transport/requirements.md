@@ -100,6 +100,17 @@ A source value that cannot be parsed as an endpoint MUST produce an `Err` of
 the crate's error enum `TransportError`. The resolver MUST NOT panic and MUST
 NOT silently fall through to the next source in that case.
 
+The crate MUST also provide, with default features, the reverse conversion:
+from a resolved endpoint to the string form accepted by `--endpoint` and
+`SC_ENDPOINT`. Parsing the rendered string MUST yield an endpoint equal to
+the original. Any code that needs that string, including
+`sc_runtime::testing::DaemonFixture`
+([REQ-RT-0006](../sc-runtime/requirements.md)), obtains it from this
+conversion and does not format it itself. This follows from REQ-RT-0006 and
+[REQ-RT-0008](../sc-runtime/requirements.md), which bar `sc-runtime` from
+holding endpoint logic; the name of the conversion (for example a `Display`
+implementation on the endpoint type) is covered by the OPEN on names below.
+
 **OPEN:** The names `Endpoint`, `Uds`, `Tcp`, `resolve_endpoint` and the
 resolver's parameter list are illustrative until the contract sprint pins
 them. This includes the name of the convenience form, if any, and the name
@@ -170,6 +181,10 @@ resolves the daemon's bind endpoint only through this resolver
     that type compiles.
 11. Inspection of non-test code in `crates/sc-transport/src` finds no
     literal TCP port number used as a default endpoint.
+12. A unit test renders one UDS endpoint and one TCP endpoint to the string
+    form, parses each string back as an explicit `--endpoint` value, and
+    asserts the result equals the original endpoint. Once the OPEN on the
+    string syntax is decided, the test also asserts the literal strings.
 
 ---
 

@@ -567,7 +567,8 @@ sprint, named sprint aa-1 (the work in `examples/spike` plus a scratch
 true, or as false together with what was found instead.
 
 This table is the only definition of that evidence. The two Proposed ADRs
-named below refer to its rows by id and do not restate them.
+named below refer to its rows by id. Any text beside a row id in those ADRs is
+a non-normative summary; the rows of this item govern.
 
 | Row | Fact to verify | Evidence required |
 |---|---|---|
@@ -641,7 +642,8 @@ them.
 6. The `**Status:**` lines of ADR-RUN-0001 and ADR-RUN-0201 in
    `docs/architecture.md` read `Active`.
 7. The evidence tables of ADR-RUN-0203 and ADR-RUN-0402 cite rows of this
-   item by id (V1 to V4b) and contain no evidence text of their own.
+   item by id (V1 to V4b); any text beside the id states nothing the row
+   does not, and is marked as a non-normative summary.
 
 ---
 
@@ -732,6 +734,14 @@ the template's example operation `widget.create`.
    `sc-command`; `Stores` is defined in the `service` crate. Both facts, and
    the rest of the generated crate graph, are owned by
    [REQ-RUN-0301](requirements.md).
+
+   Which derives the struct carries, and that the same struct is the rmcp
+   `Parameters<T>` input, is conditional on
+   [ADR-RUN-0203](architecture.md) (spike row V2 of
+   [REQ-RUN-0102](requirements.md)), which stays Proposed until the spike
+   proves it. If V2 is false, these clauses are amended in the same change to
+   what the spike found. The rule that every surface calls one service
+   function does not depend on it.
 
 3. REST handlers, MCP tools and CLI commands MUST NOT contain SQL, MUST NOT
    call `sqlx`, and MUST NOT call a store crate directly.
@@ -1204,6 +1214,14 @@ wired through all three surfaces:
 | MCP | `crates/daemon/src/mcp.rs` (only when option `mcp` is `true`) | `rmcp` `#[tool]` methods named `widget_create` and `widget_get`, taking `Parameters<...>` of the same `api-types` request structs and returning through `.into_mcp()`. The service returned by `mcp::service` MUST be an `rmcp` `StreamableHttpService` configured in stateless mode, and the template MUST NOT contain an MCP session store |
 | CLI | `crates/cli` | one `clap` command per operation; each builds the `api-types` request struct, sends it with `sc_transport::Client::post` (method name illustrative until pinned by [REQ-TRN-0005](sc-transport/requirements.md)) to the matching `/ops/...` path, and supports `--json` and the global `--endpoint` option ([REQ-RUN-0310](requirements.md)) |
 | Test | the generated project's test suite | at least one test that starts a daemon with `sc_runtime::testing::DaemonFixture` and exercises the example through REST, through MCP (when `mcp` is `true`) and through the CLI |
+
+Which derives the struct carries, and that the same struct is the rmcp
+`Parameters<T>` input, is conditional on
+[ADR-RUN-0203](architecture.md) (spike row V2 of
+[REQ-RUN-0102](requirements.md)), which stays Proposed until the spike
+proves it. If V2 is false, these clauses are amended in the same change to
+what the spike found. The rule that every surface calls one service
+function does not depend on it.
 
 1. Every handler, tool and command MUST call the service function and
    contain no SQL ([REQ-RUN-0201](requirements.md) states this rule in full:
@@ -1849,10 +1867,16 @@ than one instance of a generated daemon, and every test author, is affected.
 3. A test runs the CLI with `--endpoint` set to the fixture's endpoint
    string and `SC_ENDPOINT` set to a socket path where nothing listens; the
    command succeeds, showing the option takes precedence.
-4. A Unix-only test starts the generated `daemon` binary with
-   `--endpoint <socket path inside a fresh tempdir>`, waits until that
-   socket file exists, and runs the CLI with the same `--endpoint` value;
-   the command reaches the daemon. The test then stops the daemon.
+4. Conditional on the OPEN above on whether the binaries accept an option
+   for an explicit instance root: a Unix-only test starts the generated `daemon`
+   binary with a fresh tempdir as its instance root and with
+   `--endpoint <socket path inside that tempdir>`, waits until that socket
+   file exists, and runs the CLI with the same `--endpoint` value; the
+   command reaches the daemon, and `daemon.lock` exists inside that tempdir.
+   The test then stops the daemon. Until that OPEN is decided this criterion
+   is not run, because starting the binary without an explicit instance root
+   would lock the developer's real one
+   ([NFR-RUN-0005](requirements.md)).
 5. `<cli> --help` and `<daemon> --help` each list `--endpoint`.
 6. `grep -rn 'daemon\.sock' template/crates` prints nothing, and inspection
    of `template/crates/cli` and `template/crates/daemon` finds every endpoint

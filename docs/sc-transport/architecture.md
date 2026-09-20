@@ -28,6 +28,7 @@ operations or stores.
 |---|---|---|
 | `Endpoint` (`Uds(PathBuf)` or `Tcp(SocketAddr)`) | default | a resolved address |
 | `resolve_endpoint(...)`, `instance_root(app)` | default | the one resolver both sides call |
+| endpoint-to-string conversion (name OPEN, [REQ-TRN-0001](requirements.md)) | default | renders a resolved endpoint in the form `--endpoint` and `SC_ENDPOINT` accept; parsing it back gives an equal endpoint |
 | endpoint and instance-root configuration type (name OPEN, [REQ-TRN-0001](requirements.md)) | default | `serde::Deserialize` value a CLI config uses directly and `sc_runtime::DaemonConfig` embeds |
 | `Client`, `Client::connect`, `get`, `post` | default | typed HTTP client over reqwest |
 | `TransportError` | default | typed errors, including `DaemonNotRunning` |

@@ -415,8 +415,9 @@ as its own selection.
    document).
 6. `sc-runtime` MUST enable `server` on both crates. A generated `cli` crate
    MUST NOT enable `server` on either crate and MUST NOT depend on
-   `sc-runtime`. The full crate graph of a generated project is
-   [ADR-RUN-0303](architecture.md).
+   `sc-runtime` as a normal (non-dev) dependency; the rule and its scope are
+   owned by [NFR-RUN-0001](requirements.md). The full crate graph of a
+   generated project is [ADR-RUN-0303](architecture.md).
 7. Feature-gated code MUST be tested both with and without
    `--features server` (decided in this document). The `just test` recipe of
    [REQ-RUN-0004](requirements.md) runs `cargo test -p <crate>` with default features for
@@ -1145,8 +1146,11 @@ If row 1 is false, sprint aa-1 MUST amend point 1 to the versions the spike
 found to work before setting Status to Active;
 [ADR-RUN-0202](architecture.md) does not change. If row 2 is false, sprint
 aa-1 MUST amend point 2 to what the spike found to work, and MUST in the same
-change amend point 3 of [ADR-RUN-0302](architecture.md) (no struct defined
-twice), because that point presumes one struct can serve both surfaces. What
+change amend points 2 and 3 of [ADR-RUN-0302](architecture.md) (every
+surface uses the one struct; no struct defined twice), because those points
+presume one struct can serve both surfaces, and the clauses of
+[REQ-RUN-0201](requirements.md) and [REQ-RUN-0302](requirements.md) that are
+marked conditional on this ADR. What
 replaces it is undecided until the finding is known.
 
 ### Alternatives Considered
@@ -1294,8 +1298,8 @@ invites the two to drift apart.
 Which derives the struct carries, and that it is the rmcp `Parameters<T>`
 input, is not decided here: it rests on an unverified fact and is held in
 [ADR-RUN-0203](architecture.md). If that fact proves false,
-[ADR-RUN-0203](architecture.md) requires point 3 of this ADR to be amended in
-the same change.
+[ADR-RUN-0203](architecture.md) requires points 2 and 3 of this ADR to be
+amended in the same change.
 
 ### Consequences
 
@@ -1377,14 +1381,21 @@ The owner of these edges and of their criteria is
    depend on the store crates whose handles `Stores` holds.
 4. `api-types` MUST NOT depend on any other crate of the generated workspace
    or on any of the four library crates.
-5. `cli` MUST NOT depend, directly or transitively, on `service`, `daemon`,
-   any `store-*` crate, `sc-runtime`, `sqlx`, `axum` or `rmcp`.
+5. `cli` MUST NOT have a normal (non-dev) dependency, direct or transitive,
+   on `service`, `daemon`, any `store-*` crate, `sc-runtime`, `sqlx`, `axum`
+   or `rmcp`. The rule and its scope are owned by
+   [NFR-RUN-0001](requirements.md).
 6. `store-*` crates MUST NOT depend on `service`, `daemon` or `cli`.
-7. Only `daemon` may depend on `sc-runtime`.
+7. Only `daemon` may have a normal (non-dev) dependency on `sc-runtime`. A
+   dev-dependency for the example test is covered by the OPEN in
+   [REQ-RUN-0302](requirements.md) on which crate hosts that test.
 
-**OPEN:** whether `service` and `daemon` take `sc-command` as a direct
-dependency, or through a re-export from `sc-runtime`, is undecided. A
-re-export would have to be added to the public surface of `sc-runtime`
+`service` takes `sc-command` as a direct dependency: by point 7 it may not
+depend on `sc-runtime`, so a re-export cannot reach it.
+
+**OPEN:** whether `daemon` takes `sc-command` as a direct dependency, or
+through a re-export from `sc-runtime`, is undecided. A re-export would have
+to be added to the public surface of `sc-runtime`
 ([NFR-RT-0001](sc-runtime/requirements.md)). Until this is decided, point 1
 fixes only that the `sc-command` items are reachable from those crates, with
 `server` enabled for `daemon` only.
