@@ -1,6 +1,6 @@
 ---
 name: schema-reviewer-assignment
-version: 1.0.0
+version: 1.0.1
 description: Render a fenced-JSON assignment for schema-reviewer.
 format: json
 required_variables:
@@ -14,9 +14,9 @@ optional_variables:
   - reference_docs
   - notes
 defaults:
-  policy_path: '".claude/project/quality-policy.md"'
+  policy_path: .claude/project/quality-policy.md
   reference_docs: []
-  notes: '""'
+  notes: ""
 ---
 {
   "review_mode": {{ review_mode }},

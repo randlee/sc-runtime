@@ -238,6 +238,16 @@ def main() -> int:
         if "{{ blocking_ids_json | safe }}" not in text:
             fail(f"{relative}: blocking_ids_json must remain typed JSON", failures)
 
+    schema_assignment = (
+        ROOT / ".claude/skills/codex-orchestration/schema-reviewer-assignment.json.j2"
+    ).read_text()
+    for fragment in (
+        "  policy_path: .claude/project/quality-policy.md",
+        '  notes: ""',
+    ):
+        if fragment not in schema_assignment:
+            fail(f"schema-reviewer-assignment.json.j2: invalid default {fragment}", failures)
+
     for root in SHARED_ROOTS:
         for path in sorted((ROOT / root).rglob("*")):
             if not path.is_file():
