@@ -462,8 +462,9 @@ until the contract sprint pins it.
   daemon's endpoint (decided in this document).
 - The fixture MUST expose its resolved endpoint, including in the string form
   accepted by the `--endpoint` flag and the `SC_ENDPOINT` environment
-  variable, so that a test can point a CLI child process or a plain HTTP or
-  MCP client at the daemon (decided in this document). The string is produced
+  variable, so that a test can point a plain HTTP or MCP client at the
+  daemon, and so that an isolated-machine test can point the CLI binary at it
+  (decided in this document). The string is produced
   by the endpoint-to-string conversion that `sc-transport` provides
   ([REQ-TRN-0001](../sc-transport/requirements.md)); `sc-runtime` does not
   format it.
@@ -514,15 +515,16 @@ could not run in parallel, and could collide with a developer's real daemon;
 the repo-level rule that every test uses its own tempdir instance root and
 runs in parallel is [NFR-RUN-0005](../requirements.md). The template's worked
 example (`widget.create` and `widget.get`) ships with a test built on this
-fixture ([REQ-RUN-0302](../requirements.md)). That test drives the generated
-CLI binary and an MCP client as well as REST, which is why the fixture must
-hand out its endpoint and not only a connected client.
+fixture ([REQ-RUN-0302](../requirements.md)). That test drives an MCP client
+as well as REST, which is why the fixture must hand out its endpoint and not
+only a connected client. It does not run the CLI binary; host-run tests never
+do ([REQ-RUN-0312](../requirements.md)).
 
 ### Success Criteria
 
-A criterion below that spawns a CLI or other client child process on a
-developer's host runs it with the CLI's auto-start disabled
-([NFR-RUN-0010](../requirements.md)).
+A criterion below that spawns a client child process on a developer's host
+spawns a test helper, never the generated CLI binary
+([REQ-RUN-0312](../requirements.md)).
 
 1. A test starts a fixture, calls a project route through the fixture's
    client, and asserts the expected response.

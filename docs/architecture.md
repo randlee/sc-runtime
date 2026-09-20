@@ -965,10 +965,11 @@ virtual-machine runtime for macOS.
    derive from the instance root (the Windows TCP default, OPEN in
    [ADR-RT-0004](sc-runtime/architecture.md)), fixture tests are
    daemon-process tests under point 3 until that is decided.
-   A host-run test that executes the CLI binary MUST run it with auto-start
-   disabled; a CLI invocation with auto-start enabled is a daemon-process
-   test under point 3, because the CLI starts a real, detached daemon when it
-   cannot reach one ([ADR-RUN-0204](architecture.md)).
+   A host-run test MUST NOT execute the CLI binary; every test that does is
+   a daemon-process test under point 3, because the CLI starts a real,
+   detached daemon when it cannot reach one
+   ([ADR-RUN-0204](architecture.md)). CLI commands are proven on the host by
+   no-daemon unit tests ([ADR-RUN-0304](architecture.md)).
 5. The `daemon.lock` singleton MUST NOT be weakened for tests.
 6. Building or provisioning a virtual machine is not part of v0.1. The rule
    MUST reach generated projects as written guidance in their `AGENTS.md` and
@@ -1097,10 +1098,11 @@ hosts.
 
 **Enforced by:** [NFR-RUN-0001](requirements.md) (for the generated `cli` crate,
 `cargo tree -p cli -e normal --prefix none` prints no line beginning with
-`sqlx `, so the CLI cannot open a database); the test in
-[REQ-RUN-0202](requirements.md) that runs a CLI command with no daemon, and with auto-start disabled or
-failing, and asserts the code
-`DAEMON.NOT_RUNNING`, the suggested action and a non-zero exit; the two-daemon
+`sqlx `, so the CLI cannot open a database); the tests of
+[REQ-RUN-0202](requirements.md): a unit test of the CLI's rendering of
+`DaemonNotRunning`, and an isolated-machine run of the CLI with no daemon and
+auto-start disabled or failing, each asserting the code `DAEMON.NOT_RUNNING`,
+the suggested action and a non-zero exit; the two-daemon
 test in [REQ-RT-0002](sc-runtime/requirements.md).
 
 ### Related Documents
@@ -1722,13 +1724,19 @@ on the developer's machine ([ADR-RUN-0009](architecture.md)).
    between them in the command's entry point.
 2. The template ships unit tests of both functions for every example
    command. They need no daemon, socket, network or child process.
-3. Host-run tests MUST NOT run the CLI binary against a daemon. A host-run
+3. Host-run tests MUST NOT run the CLI binary at all. A host-run
    test that needs the CLI's path to a fixture daemon composes the two
    functions with `sc_transport::Client` inside the test process.
 4. No mock transport, transport trait or other test-only abstraction is
    added.
 5. One end-to-end run of the real binaries exists and runs only on an
    isolated machine.
+6. This binds the template's commands. A project may write later commands
+   differently, and nothing in the four library crates enforces the shape.
+7. Auto-start ([ADR-RUN-0204](architecture.md)) runs in the command's entry
+   point, between the two functions, never inside either of them. The
+   rendering function sees `DaemonNotRunning` only when auto-start is
+   disabled or failed.
 
 **OPEN:** how the route path is kept the same in the CLI and the daemon (a
 shared constant, or reliance on the tests of points 3 and 5) is undecided;
@@ -1762,7 +1770,10 @@ compiler does not check, which is why it is recorded as OPEN.
 **Enforced by:** the success criteria of [REQ-RUN-0312](requirements.md)
 (`cargo test -p cli` passes with no daemon and no network; no host-run test
 spawns the `cli` binary; no mock transport or test-only trait in
-`template/`); `arch-qa` review of new CLI commands for I/O inside the two
+`template/`); for point 5, the isolated-machine criteria of
+[REQ-RUN-0310](requirements.md) and [REQ-RUN-0206](requirements.md), run on
+the CI runner by the fixture matrix ([NFR-RUN-0010](requirements.md));
+`arch-qa` review of commands added to `template/` for I/O inside the two
 functions.
 
 ### Related Documents

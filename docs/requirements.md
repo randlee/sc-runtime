@@ -868,27 +868,32 @@ suggested action that says how to fix it.
 
 ### Success Criteria
 
-Criteria 1 and 2 run the CLI with auto-start disabled. They are conditional
-on the OPEN in [REQ-RUN-0206](requirements.md) on how auto-start is
-disabled, and are not run until it is decided. The other case this item
-covers, a started daemon that does not become reachable, is checked by
-criterion 8 of REQ-RUN-0206.
+No host-run test runs the CLI binary ([REQ-RUN-0312](requirements.md)), so
+criteria 1 and 4 are unit tests of the command's rendering function, and
+criterion 2 runs the real binary on an isolated machine.
 
-1. A test runs a generated CLI command with `--json` against an endpoint
-   where no daemon is listening (a socket path inside a fresh tempdir). It
-   asserts: exit status is non-zero; stdout parses as JSON; `ok` is `false`;
+1. A unit test gives the rendering function of a generated CLI command
+   `TransportError::DaemonNotRunning` with `--json` rendering. It asserts:
+   the exit status is non-zero; the output parses as JSON; `ok` is `false`;
    `data` is `null`; `error.code` is `"DAEMON.NOT_RUNNING"`;
    `error.suggested_action` is `"run <app> daemon start"` with the
    application name substituted.
-2. The same test uses the fresh tempdir as the instance root and asserts
-   that after the command the tempdir contains no `daemon.lock`, no
-   `daemon.sock` and no database file, and that connecting to the endpoint
-   still fails.
+2. On an isolated machine ([NFR-RUN-0010](requirements.md)), and once the
+   OPEN in [REQ-RUN-0206](requirements.md) on how auto-start is disabled is
+   decided: a test runs the real CLI binary with `--json` and auto-start
+   disabled against an endpoint where no daemon is listening. It asserts the
+   same envelope as criterion 1 and a non-zero exit status, and that
+   afterwards the instance root contains no `daemon.lock`, no `daemon.sock`
+   and no database file. The case of a started daemon that does not become
+   reachable is criterion 8 of REQ-RUN-0206.
 3. `cargo tree -p cli -e normal --prefix none` in the generated project
    prints no line beginning with `sqlx `, `service ` or `store-sqlite ` (the
    name followed by a space).
-4. A test that points the CLI at a listener answering HTTP 500 asserts that
-   `error.code` is not `"DAEMON.NOT_RUNNING"`.
+4. A unit test gives the rendering function a transport failure that is not
+   `DaemonNotRunning` (an undecodable response body) and asserts that
+   `error.code` is not `"DAEMON.NOT_RUNNING"`. How a non-2xx response reaches
+   the rendering function follows the OPEN in
+   [REQ-TRN-0006](sc-transport/requirements.md).
 
 ---
 
@@ -1473,8 +1478,10 @@ function does not depend on it.
 3. The template MUST NOT contain a second example operation.
 
 **OPEN:** which generated crate or directory hosts the example test, and how
-that test obtains the built `cli` binary, is not decided. If it lives in
-`cli`, it needs `sc-runtime` as a dev-dependency, which is why the CLI
+it reaches the `cli` crate's request-construction and rendering functions and
+the `daemon` crate's router (library targets in `cli` and `daemon`, or
+another arrangement), is not decided. Whichever crate hosts it needs
+`sc-runtime` as a dev-dependency; if that crate is `cli`, that is why the CLI
 dependency rules count normal dependencies only
 ([NFR-RUN-0001](requirements.md)).
 
@@ -2183,9 +2190,10 @@ Both rendered documents MUST state, in plain language, all of the following:
    `sc_runtime::testing::DaemonFixture` on a temporary instance root are safe
    on the host and are the default way to test an operation, provided the
    test keeps its database under that temporary instance root.
-5. A test on the host that runs the project's CLI binary runs it with
-   auto-start disabled, because the CLI starts a real daemon by default when
-   it cannot reach one.
+5. Tests on the host never run the project's CLI binary, because the CLI
+   starts a real daemon by default when it cannot reach one. A CLI command is
+   proven by unit tests of its request-construction and rendering functions,
+   which need no daemon ([REQ-RUN-0312](requirements.md)).
 
 The template MUST NOT ship a virtual machine definition, a colima
 configuration or provisioning scripts in v0.1; the rule itself is stated in
@@ -2254,7 +2262,9 @@ to the example commands `widget.create` and `widget.get`
      unchanged and the exit status is non-zero;
    - given `TransportError::DaemonNotRunning`, rendering produces the
      `DAEMON.NOT_RUNNING` envelope of [REQ-RUN-0202](requirements.md) and a
-     non-zero exit status.
+     non-zero exit status;
+   - given any other `TransportError`, rendering produces a failure whose
+     code is not `DAEMON.NOT_RUNNING` and a non-zero exit status.
 3. These unit tests, together with three things that already exist, are the
    proof that a command works: the HTTP hop is tested in `sc-transport`
    ([REQ-TRN-0005](sc-transport/requirements.md)); the route and its handler
@@ -2262,8 +2272,11 @@ to the example commands `widget.create` and `widget.get`
    `sc_transport::Client` ([REQ-RUN-0201](requirements.md)); and the request
    and response types are the same `api-types` structs on both sides, checked
    by the compiler ([ADR-RUN-0302](architecture.md)).
-4. A test that may run on a developer's host MUST NOT run the CLI binary
-   against a daemon. Where a host-run test needs the CLI's path to a fixture
+4. A test that may run on a developer's host MUST NOT run the CLI binary at
+   all (decided in this document). Every test that executes the CLI binary
+   is a daemon-process test and runs only on an isolated machine
+   ([NFR-RUN-0010](requirements.md)), because the binary auto-starts a daemon
+   by default. Where a host-run test needs the CLI's path to a fixture
    daemon, it calls the command's request-construction function, sends the
    result with `sc_transport::Client`, and passes the reply to the rendering
    function, all inside the test process. This never reaches the CLI's
@@ -2283,8 +2296,9 @@ the route string (`/ops/widget.create`) is written once in the daemon's
 routes and once in the CLI; either it becomes a shared constant, or the
 host-run test of obligation 4 and the end-to-end run of obligation 6 are
 what catch a mismatch.  
-**OPEN:** the names and signatures of the two functions are not decided; they
-are pinned with the rest of the template's example code.
+**OPEN:** the names and signatures of the two functions, and the names of the
+unit tests, are not decided; they are pinned with the rest of the template's
+example code.
 
 ### Rationale
 
@@ -2302,8 +2316,9 @@ functions costs nothing and needs no mocking layer.
 ### Success Criteria
 
 1. In a project generated from each fixture, `cargo test -p cli` passes with
-   no daemon running and with networking unavailable, and its output lists,
-   for `widget.create` and for `widget.get`, the four tests of obligation 2.
+   no daemon running and with networking unavailable. Once the test names
+   are pinned (the OPEN above): its output lists, for `widget.create` and for
+   `widget.get`, the five tests of obligation 2.
 2. Inspection of `template/crates/cli` finds, for each command, one
    request-construction function and one rendering function, neither of
    which calls `sc_transport`, reads `std::env`, or writes to stdout
@@ -2311,7 +2326,7 @@ functions costs nothing and needs no mocking layer.
 3. `grep -rn 'Command::new\|process::Command' template/crates/cli` prints
    nothing outside the auto-start code of
    [REQ-RUN-0206](requirements.md), and no host-run test in the template
-   spawns the `cli` binary.
+   spawns the `cli` binary for any purpose.
 4. Inspection of `template/` finds no mock transport and no trait whose only
    implementors are a real transport and a test double.
 5. The host-run example test ([REQ-RUN-0302](requirements.md)) exercises the
@@ -3817,18 +3832,15 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    are daemon-process tests under obligation 2 until that is decided. The
    template's example test MUST place its database under the fixture's
    `<instance-root>` ([REQ-RUN-0302](requirements.md)).
-6. A test that may run on a developer's host and executes the CLI binary MUST
-   run it with auto-start disabled, so that an unreachable endpoint yields
-   `DAEMON.NOT_RUNNING` and never a started daemon. A CLI invocation with
-   auto-start enabled is a daemon-process test under obligation 2. Without
-   this, a host-run fixture test whose fixture has stopped, failed to bind or
-   handed out a wrong endpoint would make the CLI start a real, detached
-   daemon on the developer's machine
-   ([REQ-RUN-0206](requirements.md)), which is the leak this item exists to
-   prevent. How auto-start is disabled is OPEN in
-   [REQ-RUN-0206](requirements.md); it MUST be decided before the template's
-   example test is written, because `just test` being green with no edits on
-   a host depends on it.
+6. A test that may run on a developer's host MUST NOT execute the CLI
+   binary (decided in this document; [REQ-RUN-0312](requirements.md) owns the
+   rule and the no-daemon unit tests that replace such runs). The binary
+   auto-starts a daemon by default when it cannot reach one
+   ([REQ-RUN-0206](requirements.md)), so a host-run test whose fixture has
+   stopped, failed to bind or handed out a wrong endpoint would otherwise
+   start a real, detached daemon on the developer's machine, which is the
+   leak this item exists to prevent. Every test that executes the CLI binary
+   is a daemon-process test under obligation 2.
 7. Building, provisioning or scripting a virtual machine is not part of
    v0.1 of this repository (decided by the owner). In v0.1 the isolated
    machine for this repository's own tests is the CI runner.
@@ -3880,7 +3892,8 @@ test daemon.
    developer's host, whichever command started the run.
 3. Run on a machine that is not marked isolated, a test of obligation 2
    exits without starting a daemon and reports that it needs an isolated
-   machine. This criterion is conditional on the first OPEN above.
+   machine. This criterion is conditional on the selection and detection OPEN
+   above.
 4. This repository's crate CI workflow runs this repository's tests of
    obligation 2, and, once the selection OPEN is decided, the fixture-matrix
    workflow runs the generated project's tests of obligation 2 for every
@@ -3888,8 +3901,6 @@ test daemon.
 5. After the full test suite has run on a developer's host, no daemon
    process started by a test is still running. The same holds after a run in
    which a fixture was made to fail.
-6. A host-run test points the CLI, with auto-start disabled the way the
-   template's example test disables it, at an endpoint where nothing listens,
-   and asserts the `DAEMON.NOT_RUNNING` result and that no daemon process
-   exists afterwards. This criterion is conditional on the OPEN in
-   [REQ-RUN-0206](requirements.md) on how auto-start is disabled.
+6. Inspection of this repository's tests and of `template/` finds no test
+   that spawns the generated `cli` binary other than the isolated-machine
+   tests of obligation 2.
