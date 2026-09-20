@@ -44,7 +44,7 @@ observability, and nothing in this workspace is a dependency of it.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19; applies the repository rule that library errors are typed values ([ADR-RUN-0006](../architecture.md))  
+**Source:** sc-runtime design, 2026-09-19; applies the repository rule that library errors are typed values ([ADR-RUN-0006](../architecture.md)); the `ConfigError` variant set is decided in this document  
 
 ### Context
 
@@ -62,23 +62,36 @@ dependencies to `serde` and `serde_json`, which rules out error-helper crates.
 
 ### Decision
 
-1. Every public function and method of `sc-config` returns
+1. Every public function and method of `sc-config` that can fail returns
    `Result<T, ConfigError>`.
 2. `ConfigError` is one public enum, written by hand in `crates/sc-config`.
    It implements `std::fmt::Debug`, `std::fmt::Display` and
    `std::error::Error` without a derive macro from another crate.
-3. `ConfigError` has a distinct variant for each of: `default.json` missing; a
+3. Decided in this document: `ConfigError` has a distinct variant for each
+   of: `default.json` missing; a
    file that exists but cannot be read; a file that is not valid JSON; an
    environment override whose key path passes through a non-object value; the
    merged document failing to deserialise into the caller's type.
 4. Each variant carries, as typed fields, the file path or the environment
    variable name at fault ([REQ-CFG-0004](requirements.md)).
-5. No code reachable from the public API panics: non-test code contains no
-   `.unwrap()`, `.expect(`, `panic!`, `unreachable!`, `todo!`,
-   `unimplemented!`, `assert!` family macro or `[...]` index expression, and
-   reads the process environment with `std::env::vars_os`, not
-   `std::env::vars`, which panics on a variable that is not valid Unicode.
-6. `thiserror` and `anyhow` are not dependencies of `sc-config`.
+5. No code reachable from the public API panics. The repository rule
+   ([NFR-RUN-0009](../requirements.md)) applies with no commented-exception
+   allowance: no `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`,
+   `unimplemented!`, or panicking `[]` indexing, reachable from a public
+   function.
+6. Stricter than the repository rule, decided in this document: `sc-config`
+   also bans `assert!`, `assert_eq!` and `assert_ne!` in code reachable from a
+   public function, and non-test code reads the process environment with
+   `std::env::vars_os`, not `std::env::vars`, which panics on a variable that
+   is not valid Unicode.
+7. `thiserror` and `anyhow` are not dependencies of `sc-config`.
+
+**OPEN:** Whether a public `Loader` constructor or builder method that cannot
+fail MUST also return `Result<T, ConfigError>` is undecided
+([NFR-CFG-0001](requirements.md)). The design says every public method
+returns a discriminated union and names no exception. The options are: every
+public function and method returns `Result` without exception, or only those
+that can fail.
 
 ### Consequences
 
@@ -121,6 +134,8 @@ panicking constructs and opaque error types in the public API.
   each carries
 - [ADR-RUN-0006](../architecture.md): the repository-wide rule that public
   library APIs return typed errors and do not panic
+- [NFR-RUN-0009](../requirements.md): owner of the list of banned panicking
+  constructs for the four library crates
 
 ---
 
@@ -128,16 +143,18 @@ panicking constructs and opaque error types in the public API.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19 (JSON files with environment overrides); merge strategy decided in this document  
+**Source:** sc-runtime design, 2026-09-19 (JSON files with environment overrides); merge strategy and environment-variable naming scheme decided in this document  
 
 ### Context
 
 `sc-config` (`crates/sc-config`) builds one configuration from three layers,
 lowest precedence first: `config/default.json` (checked in),
-`config/local.json` (gitignored, optional), and environment variables named
-`<APP>__<KEY>__<KEY>`. The result must be the caller's own serde type, for
-example a generated project's `AppConfig` struct. The design fixes the layers
-and the JSON format and does not say how layers are combined.
+`config/local.json` (gitignored, optional), and environment variables. The
+result must be the caller's own serde type, for example a generated project's
+`AppConfig` struct. The design fixes the layers and the JSON format. It does
+not say how layers are combined, and it states no naming scheme for the
+environment variables. The naming scheme `<APP>__<KEY>__<KEY>` is decided in
+this document ([REQ-CFG-0002](requirements.md)).
 
 Layering can be done in two places. It can be done on typed structs: each
 layer is deserialised into a "partial" version of the caller's type in which
@@ -229,17 +246,18 @@ and async interop are wanted eventually. Building them now would bring an
 async runtime (`tokio`) and a file watcher into every program that only reads
 its configuration once at start-up, including small CLIs where compile time
 and binary size matter. The design lists the crate's dependencies as `serde`
-and `serde_json`, states that it does not depend on `sc-observability`, and
-records the reload features as a note for later, possibly as a separate
+and `serde_json`, states that `sc-observability` and its OTel export crate
+(`sc-observability-otlp`) stay independent of `sc-config`, and records the
+reload features as a note for later, possibly as a separate
 `sc-config-tokio` crate.
 
 ### Decision
 
 1. The `[dependencies]` table of `crates/sc-config/Cargo.toml` contains
    exactly `serde` and `serde_json`.
-2. `sc-config` does not depend on `tokio`, on `sc-observability`, or on any
-   other crate of this workspace (`sc-transport`, `sc-command`,
-   `sc-runtime`).
+2. `sc-config` does not depend on `tokio`, on `sc-observability`, on
+   `sc-observability-otlp`, or on any other crate of this workspace
+   (`sc-transport`, `sc-command`, `sc-runtime`).
 3. The public API is synchronous: no `async fn`, no returned `Future`, no
    spawned thread or task.
 4. `sc-config` does not watch files, reload, or notify callers of changes.
@@ -265,19 +283,29 @@ records the reload features as a note for later, possibly as a separate
 ### Alternatives Considered
 
 - Async and reload support inside `sc-config` behind a Cargo feature.
-  Rejected: Cargo features are unified across a workspace, so one crate
-  enabling the feature would pull `tokio` into every other user of
-  `sc-config` in that build, the CLI included; it also doubles the API surface
-  to test.
+  Rejected: cargo unifies the features of a crate across all packages built
+  in one invocation, so under `cargo build --workspace` one crate enabling
+  the feature would pull `tokio` into every other user of `sc-config` in that
+  build, the CLI included; it also doubles the API surface to test. The same
+  unification applies to the `server` feature of `sc-transport` and
+  `sc-command`. Whether workspace-wide builds are exempt from the rule that a
+  CLI links no server-side dependency, or those crates must be split into
+  client and server crates instead, is recorded as **OPEN** in
+  [NFR-RUN-0001](../requirements.md) and
+  [ADR-RUN-0003](../architecture.md), to be measured by the spike. This ADR
+  does not depend on the outcome: `sc-config` has no such feature either way.
 
 ### Implementation
 
-**Enforced by:** the `forbidden_edges` entries (`tokio`, `sc-observability`,
-`sc-transport`, `sc-command`, `sc-runtime`) in the boundary manifest under
-`boundaries/sc-config/`, checked by `sc-lint-boundary`, which `just lint`
-runs; the `Cargo.toml` inspection and `cargo tree` checks in
-[NFR-CFG-0002](requirements.md); the `async fn` and `.await` grep in
-[NFR-CFG-0003](requirements.md).
+**Enforced by:** the `forbidden_edges` entries (`sc-observability`,
+`sc-observability-otlp`, `tokio`, `sc-transport`, `sc-command`, `sc-runtime`)
+in the boundary manifest under `boundaries/sc-config/`, checked by
+`sc-lint-boundary`, which `just lint` runs
+([REQ-RUN-0005](../requirements.md) owns those entries); the `Cargo.toml`
+inspection in [NFR-CFG-0002](requirements.md) and its check that
+`cargo tree -p sc-config -e normal --prefix none` prints no line beginning
+with a forbidden crate name followed by a space; the `async fn` and `.await`
+grep in [NFR-CFG-0003](requirements.md).
 
 ### Related Documents
 
@@ -285,3 +313,9 @@ runs; the `Cargo.toml` inspection and `cargo tree` checks in
   only
 - [NFR-CFG-0003](requirements.md): synchronous API in v0.1; reload,
   notification and async out of scope
+- [ADR-RUN-0007](../architecture.md): the repository is async end to end on
+  Tokio, and records `sc-config` as the synchronous exception
+- [REQ-RUN-0005](../requirements.md): owner of the workspace-internal edges
+  and forbidden edges of all four crates
+- [NFR-RUN-0001](../requirements.md) and [ADR-RUN-0003](../architecture.md):
+  hold the OPEN on cargo feature unification under `cargo build --workspace`

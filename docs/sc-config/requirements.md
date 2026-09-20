@@ -12,16 +12,16 @@ Crate-level requirements for `sc-config`. Repo-level requirements are in
 [`../requirements.md`](../requirements.md); this crate's architecture and ADRs
 are in [`architecture.md`](architecture.md). Extracted from
 [`../sc-runtime-design.md`](../sc-runtime-design.md). Entries follow the
-shared SC requirement and ADR templates:
-the obligation, then **Why** and **Verified by**. Every id is binding and is
-never reused.
+shared SC requirement and ADR templates: each entry has the sections
+Requirement Statement, Rationale and Success Criteria, in that order. Every id
+is binding and is never reused.
 
 ## Purpose
 
 `sc-config` gives any Rust program its configuration: JSON files with
 environment-variable overrides, deserialised into the caller's own serde types.
 It is useful on its own, outside any sc-runtime daemon. In a generated project
-both the daemon and the CLI use it to load the same `AppConfig`, which is how
+both the daemon and the CLI use it to load the same config files, which is how
 they agree on the endpoint and the instance root.
 
 ## ID Ranges
@@ -152,6 +152,10 @@ equality, so key order is irrelevant.
    ([REQ-CFG-0004](requirements.md)).
 8. A unit test lists the temporary config directory before and after a load
    and asserts the file names and file contents are unchanged.
+9. A unit test loads one temporary config directory twice with an empty
+   environment, once for app `my-app` and once for app `other-app`, and
+   asserts the two results are equal: the app name does not change which
+   files are read (entry 9).
 
 ---
 
@@ -177,7 +181,9 @@ Variable name:
    upper-cased and every `-` replaced by `_`, followed by `__` (two
    underscores). App `my-app` gives prefix `MY_APP__`.
 2. A variable MUST be treated as an override if and only if its name starts
-   with that prefix. The comparison is exact and case-sensitive.
+   with that prefix, subject to the OPEN items below on empty segments and
+   on names or values that are not valid Unicode. The comparison is exact and
+   case-sensitive.
 3. Every variable whose name does not start with the prefix MUST be ignored,
    whatever its value. `OTHER_APP__DAEMON__PORT` and `MY_APP_DAEMON_PORT`
    (single underscores) are both ignored for app `my-app`.
@@ -368,7 +374,18 @@ This item covers the `Loader` type of the `sc-config` crate
    any variable is not valid Unicode.
 10. No code in the crate may call `std::env::set_var`,
     `std::env::remove_var` or `std::env::set_current_dir`, in `src/` or in
-    tests.
+    tests. Setting the environment or the working directory of a child
+    process with `std::process::Command::env` and
+    `std::process::Command::current_dir` is allowed, because it does not
+    change the state of the test process.
+11. No file under `crates/sc-config`, code or tests, may contain a literal
+    temporary-directory path or a literal home-directory path (`/tmp/`,
+    `/home/`, `/Users/`). Tests MUST obtain their directories from a
+    temporary-directory API. The repository-wide rule is
+    [NFR-RUN-0005](../requirements.md): non-test code contains no such
+    literal, and every test that writes files uses its own temporary
+    directory. Extending the literal-path ban to this crate's test code is
+    decided in this document.
 
 Using `./config` and the process environment as the defaults of `load` is
 decided in this document; the design fixes only the file names
@@ -402,14 +419,28 @@ for the tests of any program that uses it.
    `Loader` for app `my-app` over file value `{"a":0}`, without setting any
    process variable, and asserts the result is `{"a":1}`.
 4. A unit test passes an empty in-memory environment and asserts the result
-   equals the file value, showing that the process environment is not read.
-5. `cargo test -p sc-config` passes with the default parallel test runner,
+   equals the file value.
+5. An integration test covers the free function `load` (entries 8 and 9). It
+   writes `config/default.json` with content `{"a":0}` under a temporary
+   directory `D`. It starts a helper executable with `std::process::Command`,
+   with `.current_dir(D)` and `.env("MY_APP__A", "1")`. The helper calls
+   `sc_config::load::<serde_json::Value>("my-app")` and prints the result as
+   JSON on standard output. The test asserts the printed value is `{"a":1}`.
+   How the helper executable is built (for example a test-only binary target
+   of the crate) is left to the implementation.
+6. An integration test covers entry 6. It starts a helper executable the same
+   way, with `.env("MY_APP__A", "1")` set on the child. The helper builds a
+   `Loader` for app `my-app` over a directory whose `default.json` is
+   `{"a":0}`, with an empty in-memory environment, and prints the result. The
+   test asserts the printed value is `{"a":0}`: a matching variable in the
+   process environment is not read.
+7. `cargo test -p sc-config` passes with the default parallel test runner,
    and passes when two such commands run at the same time.
-6. `grep -rnE "set_var|remove_var|set_current_dir" crates/sc-config` returns
+8. `grep -rnE "set_var|remove_var|set_current_dir" crates/sc-config` returns
    no match.
-7. `grep -rn "env::vars()" crates/sc-config/src` returns no match.
-8. `grep -rnE "/tmp/|/home/|/Users/" crates/sc-config` returns no match: no
-   fixed temporary or home path in code or tests.
+9. `grep -rn "env::vars()" crates/sc-config/src` returns no match.
+10. `grep -rnE "/tmp/|/home/|/Users/" crates/sc-config` returns no match: no
+    fixed temporary or home path in code or tests (entry 11).
 
 ---
 
@@ -506,9 +537,16 @@ directory and an in-memory environment.
 
 This item binds all code under `crates/sc-config/src`.
 
-1. Every public function and public method of `sc-config` MUST return
-   `Result<T, ConfigError>`, where `ConfigError` is the crate's public typed
-   error enum ([REQ-CFG-0004](requirements.md)). In Rust this is the
+The panic rule for the four library crates of this repository is owned by
+[NFR-RUN-0009](../requirements.md). That rule is: code reachable from a public
+function MUST NOT use `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`,
+`unimplemented!`, or panicking `[]` indexing. There is no allowance for a
+commented exception. Test code is exempt. This item applies that rule to
+`sc-config` and adds the crate-specific entries 5 and 6.
+
+1. Every public function and public method of `sc-config` that can fail MUST
+   return `Result<T, ConfigError>`, where `ConfigError` is the crate's public
+   typed error enum ([REQ-CFG-0004](requirements.md)). In Rust this is the
    discriminated union the design calls for: the caller receives either the
    value or a typed error and must handle both.
 2. No public function or method may return `Option` to signal failure, return
@@ -517,23 +555,30 @@ This item binds all code under `crates/sc-config/src`.
 3. No code path reachable from a public function or method may panic, for any
    input: any app name, any directory path, any file content, any environment
    content including variables that are not valid Unicode.
-4. Non-test code MUST NOT contain `.unwrap()`, `.expect(`, `panic!`,
-   `unreachable!`, `todo!`, `unimplemented!`, `assert!`, `assert_eq!` or
+4. Code reachable from a public function MUST NOT use `unwrap`, `expect`,
+   `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or panicking `[]`
+   indexing ([NFR-RUN-0009](../requirements.md)). Where a slice, string, `Vec`
+   or `serde_json::Value` is accessed, the code MUST use `get`, pattern
+   matching or iterators.
+5. Stricter than the repository rule, decided in this document: code reachable
+   from a public function MUST NOT use `assert!`, `assert_eq!` or
    `assert_ne!`.
-5. Non-test code MUST NOT index a slice, string, `Vec` or `serde_json::Value`
-   with `[...]`. It MUST use `get`, pattern matching or iterators.
-6. Non-test code MUST NOT call `std::env::vars()`, which panics on a variable
-   that is not valid Unicode. It MUST use `std::env::vars_os()`.
+6. Stricter than the repository rule, decided in this document: non-test code
+   MUST NOT call `std::env::vars()`, which panics on a variable that is not
+   valid Unicode. It MUST use `std::env::vars_os()`.
 7. Implementations of standard traits on public types (`Display`, `Debug`,
    `std::error::Error`, `From`) are not "public methods" for entry 1, but
-   entry 3 applies to them.
+   entries 3, 4 and 5 apply to them.
 8. Code inside `#[cfg(test)]` modules and under `crates/sc-config/tests/` is
    exempt from entries 4 and 5.
 
-**OPEN:** Whether an infallible `Loader` constructor or builder method (one
-that only stores its arguments) is exempt from entry 1 is undecided. The
-design says every method returns a discriminated union and names no
-exception.
+**OPEN:** Whether a public `Loader` constructor or builder method that cannot
+fail (one that only stores its arguments) MUST also return
+`Result<T, ConfigError>` is undecided. The design says every public method
+returns a discriminated union and names no exception;
+[NFR-RUN-0009](../requirements.md) requires `Result` only of operations that
+can fail. The options are: every public function and method returns `Result`
+without exception, or only those that can fail.
 
 ### Rationale
 
@@ -549,11 +594,16 @@ code.
 
 1. `grep -rnE
    "\.unwrap\(\)|\.expect\(|panic!|unreachable!|todo!|unimplemented!|assert(_eq|_ne)?!"
-   crates/sc-config/src` returns matches only inside `#[cfg(test)]` modules.
-2. Inspection of every `pub fn` in `crates/sc-config/src`: the return type is
-   `Result<_, ConfigError>`, apart from standard trait implementations.
-3. Inspection of non-test code in `crates/sc-config/src` finds no `[` index
-   expression on a slice, string, `Vec` or `serde_json::Value`.
+   crates/sc-config/src` prints no line outside `#[cfg(test)]` modules, or
+   each remaining match is shown by review to be unreachable from a public
+   function. A comment on the line is not grounds for accepting a match.
+2. Inspection of every `pub fn` in `crates/sc-config/src` that can fail: the
+   return type is `Result<_, ConfigError>`. Standard trait implementations
+   are outside this check. Once the OPEN above is decided: if every public
+   function must return `Result`, the same inspection covers every `pub fn`.
+3. Inspection of code reachable from a public function in
+   `crates/sc-config/src` finds no `[` index expression on a slice, string,
+   `Vec` or `serde_json::Value`.
 4. `grep -rn "env::vars()" crates/sc-config/src` returns no match.
 5. A test feeds each of these to a `Loader` and asserts the call returns
    `Err(ConfigError)` and does not panic: an empty `default.json`; a
@@ -574,22 +624,26 @@ code.
 
 ### Requirement Statement
 
-This item binds `crates/sc-config/Cargo.toml` and the boundary manifest of the
-crate, the TOML file or files under `boundaries/sc-config/`.
+This item binds `crates/sc-config/Cargo.toml`. It is the owner of the list of
+third-party crates `sc-config` may depend on. The edges between the crates of
+this workspace, the forbidden edges, and the boundary manifest under
+`boundaries/sc-config/` that encodes them are owned by
+[REQ-RUN-0005](../requirements.md), which refers to this item for the
+third-party list.
 
 1. The `[dependencies]` table of `crates/sc-config/Cargo.toml` MUST contain
    exactly two entries: `serde` and `serde_json`.
 2. `[dependencies]` MUST NOT contain optional dependencies or
    target-specific dependency tables that add a third crate.
-3. `sc-config` MUST NOT depend on `sc-observability` or on `tokio`.
-4. `sc-config` MUST NOT depend on any other crate of this workspace:
-   `sc-transport`, `sc-command` or `sc-runtime`.
-5. The `ConfigError` type MUST be written by hand. `thiserror` and `anyhow`
+3. The `ConfigError` type MUST be written by hand. `thiserror` and `anyhow`
    MUST NOT be added.
-6. The boundary manifest under `boundaries/sc-config/` MUST list
-   `sc-observability`, `tokio`, `sc-transport`, `sc-command` and `sc-runtime`
-   under `forbidden_edges`, so that `sc-lint-boundary`, run by `just lint`,
-   fails if one is added.
+4. The forbidden edges of `sc-config` are `sc-observability`,
+   `sc-observability-otlp` (the OTel export crate of `sc-observability`),
+   `tokio`, `sc-transport`, `sc-command` and `sc-runtime`. The obligation,
+   and the `forbidden_edges` entries of the boundary manifest that
+   `sc-lint-boundary` checks, are stated in
+   [REQ-RUN-0005](../requirements.md). This item adds only the `cargo tree`
+   check in criterion 3.
 
 **OPEN:** Whether `[dev-dependencies]` is restricted is undecided. The tests
 need temporary directories, which the standard library does not provide. The
@@ -599,7 +653,8 @@ mention test-only dependencies.
 ### Rationale
 
 The design lists exactly `serde` and `serde_json` as the dependencies of
-`sc-config` and states that it has no dependency on `sc-observability`.
+`sc-config` and states that `sc-observability` and its OTel export crate stay
+independent of `sc-config`.
 `sc-config` is the first thing a program calls and is linked into every CLI as
 well as every daemon. A configuration crate that pulled in an async runtime or
 a logging stack would add compile time and binary size to every small tool
@@ -613,13 +668,15 @@ circular: logging is configured from the values this crate loads.
    `[target.*.dependencies]` table.
 2. `cargo tree -p sc-config -e normal --depth 1` lists `serde` and
    `serde_json` as the only direct dependencies.
-3. `cargo tree -p sc-config -e normal` output contains none of `tokio`,
-   `sc-observability`, `sc-transport`, `sc-command`, `sc-runtime`,
-   `thiserror`, `anyhow`.
-4. Inspection of the manifest under `boundaries/sc-config/`: `forbidden_edges`
-   names `sc-observability`, `tokio`, `sc-transport`, `sc-command` and
-   `sc-runtime`.
-5. `just lint` runs `sc-lint-boundary` and exits 0.
+3. `cargo tree -p sc-config -e normal --prefix none` prints no line beginning
+   with `<name> ` (the crate name followed by a space) for each of these
+   names: `sc-observability`, `sc-observability-otlp`, `tokio`,
+   `sc-transport`, `sc-command`, `sc-runtime`, `thiserror`, `anyhow`. The
+   match is on the start of the line because the first line of the output
+   holds the checkout path, which may itself contain `sc-runtime`.
+4. The boundary manifest under `boundaries/sc-config/` and the
+   `sc-lint-boundary` run are checked by the criteria of
+   [REQ-RUN-0005](../requirements.md).
 
 ---
 

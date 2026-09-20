@@ -12,9 +12,9 @@ Crate-level requirements for `sc-command`. Repo-level requirements are in
 [`../requirements.md`](../requirements.md); this crate's architecture and ADRs
 are in [`architecture.md`](architecture.md). Extracted from
 [`../sc-runtime-design.md`](../sc-runtime-design.md). Entries follow the
-shared SC requirement and ADR templates: the obligation, then **Why** and
-**Verified by**. Every id is binding and is
-never reused.
+shared SC requirement template: each has the sections **Requirement
+Statement**, **Rationale** and **Success Criteria**, in that order. Every id
+is binding and is never reused.
 
 ## Purpose
 
@@ -68,9 +68,24 @@ this document; the design gives only the key list.)
 Key order in the serialised object is not significant. Tests MUST compare
 parsed JSON values, not byte strings.
 
+Deserialisation MUST discriminate on the value of `ok`. With `ok: true` the
+`data` value, including a JSON `null`, MUST be deserialised as `T`, and the
+result is the success case. With `ok: false` the `error` value MUST be
+deserialised as `OpError`, and the result is the failure case. A `data` of
+`null` therefore never by itself means "failure": for `T = ()` and for
+`T = Option<U>` a success envelope legitimately carries `data: null`.
+(Decided in this document; it follows from the round-trip obligation below,
+which could not otherwise hold for those `T`.)
+
 For any `T: Serialize + DeserializeOwned + PartialEq`, serialising an
 `Envelope<T>` to JSON and deserialising it back MUST yield a value equal to
-the original, in both the success case and the failure case.
+the original, in both the success case and the failure case. This includes
+`T = ()` and `T = Option<U>`, for both `Some` and `None`.
+
+`Envelope<T>` MUST implement `Debug` where `T: Debug`, `Clone` where
+`T: Clone`, and `PartialEq` where `T: PartialEq`. (Decided in this document;
+the round-trip tests below need `PartialEq` and `Debug`. The same traits are
+required of `OpError` by [REQ-CMD-0002](requirements.md).)
 
 **OPEN:** The Rust type and the literal value of `version` are not decided
 (for example a string such as `"1"` or `"v1"`, or an integer). The design
@@ -80,11 +95,15 @@ is present and that the same value appears in the success and failure cases.
 **OPEN:** The Rust-side representation of `Envelope<T>` is not decided: a
 struct with public fields `data: Option<T>` and `error: Option<OpError>`, or
 an enum with a custom serde implementation, and which accessors a CLI uses to
-reach `data`. Only the JSON shape above is binding.
+reach `data`. Only the JSON shape and the behaviour above are binding.
+Whichever representation is chosen MUST satisfy the discriminate-on-`ok`
+rule: a struct with `data: Option<T>` and a derived `Deserialize` does not,
+because it reads a success `data: null` as "no data".
 
 **OPEN:** Behaviour when deserialising an object whose `ok` disagrees with
-its content (for example `ok: true` with a non-null `error`, or a missing
-key) is not decided: reject with a serde error, or accept.
+its content (`ok: true` with a non-null `error`, `ok: false` with a non-null
+`data`, or a missing key) is not decided: reject with a serde error, or
+accept and ignore the other key.
 
 ### Rationale
 
@@ -110,7 +129,19 @@ sides agree on the shape at compile time.
    serialises an `Envelope<T>` with `serde_json::to_string`, deserialises the
    string with `serde_json::from_str::<Envelope<T>>`, and asserts equality
    with the original value.
-5. `cargo test -p sc-command` (default features) runs the tests above and
+5. A round-trip test does the same for a success `Envelope<()>` and asserts:
+   the serialised `data` is JSON `null`, `ok` is `true`, and the
+   deserialised value equals the original success envelope (it is not the
+   failure case and deserialisation does not fail).
+6. A round-trip test does the same for `Envelope<Option<Sample>>` three
+   times: success with `Some(sample)`, success with `None` (serialised
+   `data` is JSON `null`, and the deserialised value equals the original
+   success envelope holding `None`), and the failure case.
+7. A compile-time check in a test requires
+   `Envelope<Sample>: Debug + Clone + PartialEq` for a `Sample` that derives those three traits (for example
+   a function `fn assert_traits<X: Debug + Clone + PartialEq>()` called with
+   `Envelope<Sample>`).
+8. `cargo test -p sc-command` (default features) runs the tests above and
    exits 0.
 
 ---
@@ -124,10 +155,18 @@ sides agree on the shape at compile time.
 The crate `sc-command` MUST export a public type `sc_command::OpError` from
 its crate root, available with default features. `OpError` is the error half
 of the response envelope `Envelope<T>` ([REQ-CMD-0001](requirements.md)) and
-the error type service functions return in `Result<T, OpError>`.
+the error type service functions return in `Result<T, OpError>`. A generated
+project's `service` crate therefore uses `sc-command` with default features;
+the generated workspace's crate graph, including how `service` and `daemon`
+obtain `sc-command`, is owned by [REQ-RUN-0301](../requirements.md).
 
-`OpError` MUST carry exactly these five fields, and MUST serialise to a JSON
-object whose keys have exactly these names:
+`OpError` MUST carry exactly these five fields. It MUST serialise to a JSON
+object whose keys are drawn from exactly these five names and no others. The
+keys `kind`, `code` and `message` MUST always be present. The keys `details`
+and `suggested_action` MUST be present whenever the field holds a value;
+whether they are present when the field is empty is an OPEN below. This item
+is the owner of which `OpError` keys are present on the wire; other items
+refer to "the keys defined by REQ-CMD-0002".
 
 | Field | Meaning | Type |
 |---|---|---|
@@ -135,11 +174,14 @@ object whose keys have exactly these names:
 | `code` | stable machine-readable code that automation branches on, for example `DAEMON.NOT_RUNNING` | `sc_observability_types::ErrorCode` |
 | `message` | human-readable summary | `String` |
 | `details` | structured machine-readable context | see OPEN below |
-| `suggested_action` | what the caller can do to recover, for example `run <app> daemon start` | see OPEN below |
+| `suggested_action` | what the caller can do to recover, for example `run <app> daemon start` | Rust type: see OPEN below; on the wire a JSON string |
 
 `OpError` and `ErrorKind` MUST implement `serde::Serialize` and
 `serde::Deserialize`, because the CLI parses errors it receives from the
-daemon.
+daemon. `OpError` and `ErrorKind` MUST also implement `Debug`, `Clone` and
+`PartialEq`. (The three extra traits are decided in this document; the
+round-trip tests need them, and `sc_observability_types::ErrorCode` already
+implements all three.)
 
 `code` MUST be the type `ErrorCode` from the published crate
 `sc-observability-types` (1.2 series). `sc-command` MUST NOT define its own
@@ -147,9 +189,16 @@ error-code type. `ErrorCode` is a newtype over a string and serialises as a
 JSON string, so `code` appears on the wire as, for example,
 `"DAEMON.NOT_RUNNING"`.
 
-The remediation information in `suggested_action` MUST be expressed with
-types from `sc-observability-types`. `sc-command` MUST NOT define a parallel
-remediation type.
+When a suggestion is supplied, `suggested_action` MUST serialise as a JSON
+string equal to the text supplied: an `OpError` built with the suggestion
+`run my-app daemon start` serialises with
+`"suggested_action": "run my-app daemon start"`. It MUST NOT serialise as a
+JSON object. (The design's only example shows a plain string.)
+
+`sc-command` MUST NOT define a parallel remediation type. If `OpError`
+carries, or is built from, structured remediation, that structure MUST be
+`sc_observability_types::Remediation` or
+`sc_observability_types::RecoverableSteps`.
 
 Whatever type is chosen for `details` MUST be able to hold arbitrary JSON and
 return it unchanged when re-serialised
@@ -163,15 +212,22 @@ not decided. The design names the field `kind` and gives no values.
 `Option` of either), nor whether an empty `details` serialises as `{}`,
 `null`, or is omitted.
 
-**OPEN:** The type of `suggested_action` is not decided. The design's only
-example is a plain string (`suggested_action: "run <app> daemon start"`).
+**OPEN:** The Rust type of `suggested_action` is not decided. It is
+constrained to a type that serialises as a JSON string (see above).
 `sc-observability-types` 1.2.0 has no type or field named
 `suggested_action`; its remediation types are the enum `Remediation`
 (variants `Recoverable { steps: RecoverableSteps }` and
 `NotRecoverable { justification: String }`) and the struct
-`RecoverableSteps`. Whether `suggested_action` is a `Remediation`, a
-`String` taken from `RecoverableSteps::first_step()`, or an `Option` of
-either, and what it serialises to when there is no suggestion, is undecided.
+`RecoverableSteps`. `Remediation` serialises as a JSON object tagged with
+`kind`, so it cannot itself be the field's serialised form. The options are
+a `String`, an `Option<String>`, or a type of `sc-command` holding a
+`Remediation` whose `Serialize` writes a string (for example the text of
+`RecoverableSteps::first_step()`); which one is undecided.
+
+**OPEN:** What `suggested_action` serialises to when there is no suggestion
+is not decided: the key present with value `null`, or the key omitted. The
+same question for an empty `details` is in the OPEN above. Until both are
+decided no test may assert either form.
 
 **OPEN:** Which further `sc-observability-types` types `OpError` uses beyond
 `ErrorCode` is not decided: in particular whether `OpError` converts to or
@@ -183,18 +239,24 @@ from `sc_observability_types::Diagnostic` (fields `timestamp`, `code`,
 
 `code` is what automation branches on. `suggested_action` is what lets an
 agent recover without a human. `kind` lets the REST edge pick an HTTP status
-without parsing codes. Taking the code and remediation types from
-`sc-observability-types`, the crate the SC logging stack already uses for
-them, keeps an error code identical in an API response and in the log line
-about the same failure, with one definition to maintain.
+without parsing codes. Taking the code type, and any structured remediation,
+from `sc-observability-types`, the crate the SC logging stack already uses
+for them, keeps an error code identical in an API response and in the log
+line about the same failure, with one definition to maintain.
+`suggested_action` is a plain string on the wire because that is the form
+the CLI's `DAEMON.NOT_RUNNING` error is specified in
+([REQ-RUN-0202](../requirements.md)) and the simplest form for an agent to
+act on.
 
 ### Success Criteria
 
-1. A unit test constructs an `OpError` with all five fields set, serialises
-   it with `serde_json::to_value`, and asserts the object has exactly the
-   keys `kind`, `code`, `message`, `details`, `suggested_action` (subject to
-   the omission rule once the OPEN items on `details` and `suggested_action`
-   are decided).
+1. A unit test constructs an `OpError` with all five fields set (`details`
+   holding at least one entry, and the suggestion
+   `run my-app daemon start`), serialises it with `serde_json::to_value`,
+   and asserts the
+   object has exactly the keys `kind`, `code`, `message`, `details`,
+   `suggested_action`, and that `suggested_action` is the JSON string
+   `"run my-app daemon start"`.
 2. The same test asserts `code` serialises as a JSON string equal to the
    code given at construction (use `DAEMON.NOT_RUNNING`) and `message` as a
    JSON string.
@@ -207,6 +269,14 @@ about the same failure, with one definition to maintain.
    is listed under `[dependencies]` and is not `optional`.
 6. Inspection of `crates/sc-command/src`: no type defined there duplicates
    `ErrorCode`, `Remediation` or `RecoverableSteps`.
+7. A unit test constructs an `OpError` with no details and no suggestion,
+   serialises it, and asserts: the keys `kind`, `code` and `message` are
+   present; every key of the object is one of the five names. Once the two
+   OPEN items on the empty forms are decided: the same test also asserts
+   the decided form of `details` and of `suggested_action`.
+8. A compile-time check in a test requires
+   `OpError: Debug + Clone + PartialEq` and
+   `ErrorKind: Debug + Clone + PartialEq`.
 
 ---
 
@@ -365,6 +435,13 @@ an rmcp `#[tool]` function returns, so that a tool declared
 trait name `IntoMcp` is decided in this document; the design fixes only the
 method name `into_mcp()` and its use on a `Result<T, OpError>`.
 
+The error type of this signature is rmcp's, not an error enum of
+`sc-command`, because rmcp dictates the signature of a `#[tool]` function.
+This is the recorded exception to the repository rule that a fallible public
+function returns the crate's own typed error enum
+([NFR-RUN-0009](../requirements.md), restated for this crate in
+[NFR-CMD-0003](requirements.md)).
+
 **OPEN:** The exact rmcp paths of the two types (in recent rmcp releases
 `rmcp::model::CallToolResult` and `rmcp::ErrorData`, the latter
 conventionally imported as `McpError`) and the name of the error flag on
@@ -513,7 +590,15 @@ list.
 With default features the crate MUST compile and MUST provide `Envelope<T>`,
 `OpError`, `ErrorKind` and `From<Result<T, OpError>> for Envelope<T>`. With
 default features the crate's direct non-dev dependencies MUST be `serde` and
-`sc-observability-types`.
+`sc-observability-types`, plus `serde_json` only if the OPEN below is
+resolved that way. With `--features server` the direct non-dev dependencies
+MUST be those plus `axum` and `rmcp`, and nothing else.
+
+This item is the owner of the list of third-party crates `sc-command` may
+depend on. The repository-level boundary table
+([REQ-RUN-0005](../requirements.md)) refers to this item for that list and
+owns only the workspace-internal and forbidden edges, which are restated for
+this crate in [NFR-CMD-0002](requirements.md).
 
 With `--features server` the crate MUST additionally provide
 `impl IntoResponse for Envelope<T>` and the `IntoMcp::into_mcp` conversion.
@@ -529,7 +614,8 @@ not decided. The design lists only `serde` and `sc-observability-types`, but
 a `details` field holding arbitrary JSON (open item in
 [REQ-CMD-0002](requirements.md)) would need it. `sc-observability-types`
 1.2.0 itself depends on `serde_json`, so it is in the dependency tree either
-way.
+way. The same applies under `server`: `into_response` and `into_mcp` both
+produce JSON.
 
 ### Rationale
 
@@ -551,7 +637,18 @@ daemon and the CLI share one crate.
 5. Inspection of `crates/sc-command/Cargo.toml`: `axum` and `rmcp` each
    have `optional = true`; `[features]` has a `server` entry enabling both;
    `default` does not list `server`.
-6. CI runs the commands in criteria 3 and 4 as separate steps.
+6. CI runs the commands in criteria 3 and 4 through the `just test` recipe,
+   which runs both of them ([REQ-RUN-0004](../requirements.md)); CI does not
+   call cargo directly.
+7. `cargo tree -p sc-command -e normal --depth 1 --prefix none` (default
+   features) prints, below the `sc-command` root line, exactly one line
+   beginning with `serde ` and one beginning with `sc-observability-types `,
+   and no other line. Once the `serde_json` OPEN is decided in favour of a
+   direct dependency: one further line beginning with `serde_json ` is
+   allowed.
+8. The same command with `--features server` prints the lines of criterion
+   7 plus exactly one line beginning with `axum ` and one beginning with
+   `rmcp `, and no other line.
 
 ---
 
@@ -572,10 +669,17 @@ daemon and the CLI share one crate.
 
 These rules apply to every feature combination, including `server`.
 
-The boundary manifest for this crate, the TOML under
-`boundaries/sc-command/`, MUST list `sc-config`, `sc-transport`,
-`sc-runtime` and `sc-observability` under `forbidden_edges`. The tool
-`sc-lint-boundary`, run by `just lint`, enforces the manifest.
+The five forbidden crates are therefore `sc-config`, `sc-transport`,
+`sc-runtime`, `sc-observability` and `sc-observability-otlp`. The boundary
+manifest under `boundaries/sc-command/` that encodes them as
+`forbidden_edges` entries of the form `"sc-command -> <crate>"`, and the
+`sc-lint-boundary` check run by `just lint`, are owned by
+[REQ-RUN-0005](../requirements.md), whose table lists the same five crates
+for `sc-command`. `sc-lint-boundary` checks inter-crate edges and the public
+facade list only; it has no cargo-feature key, so the feature-conditional
+dependencies on axum and rmcp are checked with `cargo tree`
+([NFR-CMD-0001](requirements.md)). The third-party crates `sc-command` may
+depend on are listed in [NFR-CMD-0001](requirements.md).
 
 ### Rationale
 
@@ -597,20 +701,20 @@ error code and remediation types are defined there
    `sc-observability-otlp` appears in `[dependencies]`,
    `[dev-dependencies]` or `[build-dependencies]`;
    `sc-observability-types` appears in `[dependencies]`.
-2. `cargo tree -p sc-command --features server --prefix none` prints no
-   line beginning with `sc-config `, `sc-transport `, `sc-runtime `,
-   `sc-observability ` or `sc-observability-otlp `, and prints a line
-   beginning with `sc-observability-types `.
-3. A TOML manifest exists under `boundaries/sc-command/` and its
-   `forbidden_edges` names `sc-config`, `sc-transport`, `sc-runtime` and
-   `sc-observability`.
-4. `just lint` runs `sc-lint-boundary` and exits 0.
-5. Adding `sc-transport` as a dependency of `sc-command` in a scratch
-   branch makes `just lint` exit non-zero.
+2. `cargo tree -p sc-command -e normal --prefix none` (default features)
+   prints no line beginning with `sc-config `, `sc-transport `,
+   `sc-runtime `, `sc-observability ` or `sc-observability-otlp ` (each name
+   followed by a space, so that `sc-observability-types` and the repository
+   path do not match), and prints a line beginning with
+   `sc-observability-types `.
+3. `cargo tree -p sc-command -e normal --prefix none --features server`
+   gives the same result as criterion 2.
+4. The manifest and `just lint` criteria for this crate are those of
+   [REQ-RUN-0005](../requirements.md); this item adds none.
 
 ---
 
-## NFR-CMD-0003: No public `sc-command` function panics
+## NFR-CMD-0003: `sc-command` never panics; `into_mcp` error exception
 
 **Status:** Active  
 
@@ -622,10 +726,13 @@ on any caller input. This covers constructors of `Envelope<T>` and
 implementations, `IntoResponse::into_response` for `Envelope<T>`, and
 `IntoMcp::into_mcp`.
 
-Code reachable from a public item in `crates/sc-command/src` MUST NOT
-contain `unwrap()`, `expect()`, `panic!`, `unreachable!`, `todo!`,
-`unimplemented!`, or slice or map indexing that can panic. Test code
-(`#[cfg(test)]` modules and `crates/sc-command/tests/`) is exempt.
+The repository-wide rule is owned by [NFR-RUN-0009](../requirements.md) and
+applies to `crates/sc-command/src` unchanged: non-test code MUST NOT contain
+`unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, or
+panicking `[]` indexing, reachable from a public function. There is no
+allowance for a commented exception. Test code (`#[cfg(test)]` modules and
+`crates/sc-command/tests/`) is exempt. This item adds only the
+`sc-command`-specific points below.
 
 A failure inside a conversion, in particular a `T` whose `Serialize`
 implementation returns an error, MUST surface as a returned value: an HTTP
@@ -633,18 +740,39 @@ response from `into_response`, and a returned `Result` from `into_mcp`.
 (Which response and which result are open items recorded in
 [REQ-CMD-0004](requirements.md) and [REQ-CMD-0005](requirements.md).)
 
+The same repository rule requires a fallible public function to return
+`Result<T, E>` where `E` is a typed error enum owned by the crate
+(`ConfigError`, `TransportError` and `RuntimeError` in the other three
+crates). It applies to errors a crate itself originates, and it is decided
+in this document for `sc-command` (the design states it for `sc-config`
+only). Two `sc-command` signatures are the recorded exception, because a
+third-party crate dictates them: `sc_command::IntoMcp::into_mcp` returns
+`Result<CallToolResult, McpError>` with rmcp's `McpError`, which is what an
+rmcp `#[tool]` function must return; and axum's
+`IntoResponse::into_response` is infallible. `into_mcp` is the only fallible
+public function this document requires of `sc-command`.
+
+**OPEN:** Whether `sc-command` needs a typed error enum of its own is not
+decided. No function required by [REQ-CMD-0001](requirements.md) through
+[REQ-CMD-0006](requirements.md) originates an error other than through
+serde or rmcp. If a later public function does, it MUST return an enum owned
+by `sc-command`, whose name is undecided.
+
 ### Rationale
 
 These conversions run inside the request handlers of a long-lived daemon. A
 panic there aborts the request, or the whole process under some panic
 settings, and the client receives no envelope it can parse. Library errors
 in this repository are typed values, not panics
-([ADR-RUN-0006](../architecture.md)).
+([ADR-RUN-0006](../architecture.md)). The exception for `into_mcp` and
+`into_response` is recorded here so that a reviewer applying the typed-enum
+rule does not reject the two signatures that rmcp and axum require.
 
 ### Success Criteria
 
-1. `grep -rnE 'unwrap\(\)|\.expect\(|panic!|unreachable!|todo!|unimplemented!' crates/sc-command/src`
-   returns no match outside `#[cfg(test)]` modules.
+1. `grep -rnE '\.unwrap\(|\.expect\(|panic!|unreachable!|todo!|unimplemented!' crates/sc-command/src`
+   returns no match outside `#[cfg(test)]` modules, and no match is excused
+   by a comment.
 2. Source review of `crates/sc-command/src` finds no `[...]` indexing on a
    slice, `Vec` or map in non-test code.
 3. A test compiled with `--features server` defines a type whose
@@ -653,3 +781,7 @@ in this repository are typed values, not panics
    panicking.
 4. A test calls `.into_mcp()` on `Ok(value)` of that same type and
    completes without panicking.
+5. Inspection of the public API of `crates/sc-command/src`: apart from the
+   `serde::Serialize` and `serde::Deserialize` implementations, whose error
+   types serde dictates, the only public function returning a `Result` is
+   `IntoMcp::into_mcp`, and its error type is rmcp's `McpError`.

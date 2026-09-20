@@ -61,10 +61,16 @@ observability directly).
 
 ### Decision
 
-`OpError.code` is `sc_observability_types::ErrorCode`. The remediation
-information in `OpError.suggested_action` is expressed with the remediation
-types of `sc-observability-types`. `sc-command` defines no error-code type
-and no remediation type of its own.
+`OpError.code` is `sc_observability_types::ErrorCode`. `sc-command` defines
+no error-code type and no remediation type of its own: if `OpError` carries,
+or is built from, structured remediation, that structure is
+`sc_observability_types::Remediation` or
+`sc_observability_types::RecoverableSteps`.
+
+`OpError.suggested_action` serialises as a plain JSON string, for example
+`"run <app> daemon start"`, never as a JSON object. Its Rust type is not
+decided (see the OPEN below) and is constrained to a type that serialises as
+a string.
 
 `sc-command` depends on `sc-observability-types` as an ordinary,
 non-optional dependency. It does not depend on `sc-observability` or on
@@ -75,13 +81,16 @@ of this repository (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`),
 and it is a types-only crate (its 1.2.0 dependencies are `serde`,
 `serde_json`, `thiserror` and `time`).
 
-**OPEN:** Which `sc-observability-types` type backs `suggested_action`
-(`Remediation`, or a `String` derived from it), the type of `details`, and
-whether `OpError` converts to or from
-`sc_observability_types::Diagnostic` are not decided; they are recorded on
-[REQ-CMD-0002](requirements.md). `sc-observability-types` 1.2.0 has no
-`ErrorKind`, `OpError` or `suggested_action`; `ErrorKind` is defined in
-`sc-command`.
+**OPEN:** The Rust type of `suggested_action` is not decided: a `String`, an
+`Option<String>`, or a type of `sc-command` that holds a `Remediation` and
+whose `Serialize` writes a string. `Remediation` alone cannot be the
+serialised form, because it serialises as a JSON object tagged with `kind`.
+Also undecided: the type of `details`; whether `details` and
+`suggested_action` are present as `null` or omitted when empty; and whether
+`OpError` converts to or from `sc_observability_types::Diagnostic`. All are
+recorded on [REQ-CMD-0002](requirements.md), which owns them.
+`sc-observability-types` 1.2.0 has no `ErrorKind`, `OpError` or
+`suggested_action`; `ErrorKind` is defined in `sc-command`.
 
 ### Consequences
 
@@ -104,11 +113,18 @@ no SC logging still compiles `sc-observability-types`, which is small.
 ### Implementation
 
 **Enforced by:** The boundary manifest under `boundaries/sc-command/`,
-checked by `sc-lint-boundary` through `just lint`: `sc-observability` is
-listed under `forbidden_edges` and `sc-observability-types` is an allowed
-dependency. `crates/sc-command/Cargo.toml` lists `sc-observability-types`
-under `[dependencies]` without `optional`. A test binds `OpError`'s `code`
-to a value of type `sc_observability_types::ErrorCode`.
+checked by `sc-lint-boundary` through `just lint`: its `forbidden_edges`
+holds `"sc-command -> sc-observability"` and
+`"sc-command -> sc-observability-otlp"`, and `sc-observability-types` is in
+`allowed_dependencies` ([REQ-RUN-0005](../requirements.md) owns the
+manifest). `cargo tree -p sc-command -e normal --prefix none`, with default
+features and with `--features server`, prints no line beginning with
+`sc-observability ` or `sc-observability-otlp ` (name then a space).
+`crates/sc-command/Cargo.toml` lists `sc-observability-types` under
+`[dependencies]` without `optional`. A test binds `OpError`'s `code` to a
+value of type `sc_observability_types::ErrorCode`, and a test asserts that a
+supplied `suggested_action` serialises as a JSON string
+([REQ-CMD-0002](requirements.md)).
 
 ### Related Documents
 
@@ -154,6 +170,19 @@ own and standard types, and nothing else:
 Handlers are ordinary axum handlers registered with `utoipa-axum`; tools are
 ordinary rmcp `#[tool]` functions.
 
+Because the conversions are implementations of, or feed, third-party
+contracts, their signatures are dictated by axum and rmcp:
+`IntoResponse::into_response` is infallible, and `IntoMcp::into_mcp` returns
+`Result<CallToolResult, McpError>` with rmcp's `McpError`, which is what an
+rmcp `#[tool]` function must return. These two signatures are the recorded
+exception to the repository rule that a fallible public function returns a
+typed error enum owned by its crate ([ADR-RUN-0006](../architecture.md),
+[NFR-RUN-0009](../requirements.md)); that rule applies to errors a crate
+itself originates.
+
+**OPEN:** Whether `sc-command` needs a typed error enum of its own is not
+decided; it is recorded on [NFR-CMD-0003](requirements.md).
+
 `sc-command` MUST NOT define: a handler type or trait; an axum extractor
 (`FromRequest` or `FromRequestParts` implementation); a tower `Layer` or
 `Service`; a procedural or declarative macro; a newtype or struct that wraps
@@ -197,7 +226,9 @@ repository rule against wrappers and macro systems
 - [REQ-CMD-0003](requirements.md)
 - [REQ-CMD-0004](requirements.md)
 - [REQ-CMD-0005](requirements.md)
+- [NFR-CMD-0003](requirements.md)
 - [NFR-RUN-0003](../requirements.md)
+- [NFR-RUN-0009](../requirements.md)
 
 ---
 
@@ -230,43 +261,73 @@ implementation are compiled only under `#[cfg(feature = "server")]`.
 Everything else (`Envelope<T>`, `OpError`, `ErrorKind`,
 `From<Result<T, OpError>>`) compiles with default features.
 
-Only `sc-runtime` and the generated `daemon` crate enable `server`. The
-generated `cli` crate depends on `sc-command` with default features.
+With default features the crate's direct dependencies are `serde` and
+`sc-observability-types`; `server` adds `axum` and `rmcp` and nothing else.
 
-**OPEN:** How the generated `daemon` crate obtains `sc-command` is not
-decided. The design's dependency table for `daemon` lists `service`,
-`sc-runtime` and `sc-config` and not `sc-command`, yet its handlers name
-`Envelope<T>` and call `into_mcp()`. Either `daemon` declares
-`sc-command` with `features = ["server"]` directly, or `sc-runtime`
-re-exports it.
+**OPEN:** Whether `serde_json` is also a direct default dependency is not
+decided; it is recorded on [NFR-CMD-0001](requirements.md), which owns the
+list of third-party crates `sc-command` may depend on.
+
+Within this repository `sc-runtime` depends on `sc-command` with `server`
+enabled. In a generated project the `cli` crate and the `service` crate use
+`sc-command` with default features (`service` returns `OpError`; `cli`
+parses `Envelope<T>`), and the `daemon` crate needs the `server` conversions
+(its handlers return `Envelope<T>` and its tools call `into_mcp()`). The
+generated workspace's crate graph is owned by
+[REQ-RUN-0301](../requirements.md) and
+[ADR-RUN-0303](../architecture.md); this ADR does not decide it.
+
+**OPEN:** Whether the generated `daemon` and `service` crates take
+`sc-command` as a direct dependency (`daemon` with
+`features = ["server"]`), or reach it through a re-export from `sc-runtime`,
+is not decided. A re-export would have to be added to the public surface of
+`sc-runtime`, and `service` does not depend on `sc-runtime`. Once decided in
+favour of direct dependencies: the generated `daemon` is the only generated
+crate that enables `server`.
 
 ### Consequences
 
 The crate is two build configurations, and CI builds and tests both:
 `cargo test -p sc-command` and `cargo test -p sc-command --features server`.
 A mistake in gating shows up as axum or rmcp in the CLI's `cargo tree`.
-Cargo unifies features across a workspace build, so evidence that the CLI is
-clean must come from `cargo tree -p` on the CLI crate or on `sc-command`
-alone, not from a whole-workspace build.
+Cargo unifies features across a workspace build, so the property "the CLI
+links no axum or rmcp" is defined for the CLI built as its own selection
+(`cargo build -p cli`), and evidence must come from `cargo tree -p` on the
+CLI crate or on `sc-command` alone, not from a whole-workspace build.
+
+**OPEN:** Under `cargo build --workspace` cargo unifies features, so the CLI
+is built against a `server`-enabled `sc-command`. Whether workspace-wide
+builds are exempt from the property, or the crates must instead be split
+into client and server crates, is not decided; it is recorded on
+[NFR-RUN-0001](../requirements.md) and
+[ADR-RUN-0003](../architecture.md) and is to be measured by the spike.
 
 ### Alternatives Considered
 
 - A separate `sc-command-server` crate holding the two conversions.
   Rejected: Rust's orphan rule forbids implementing axum's `IntoResponse`
   for `Envelope<T>` outside the crate that defines `Envelope<T>` without a
-  wrapper type, and it would double the crates to publish and version for
-  the same effect.
+  wrapper type, and it would double the crates to publish and version.
+  (The feature-unification OPEN above may reopen a client/server split; the
+  orphan-rule obstacle would then have to be solved first.)
 - No gating, with axum and rmcp as ordinary dependencies. Rejected: every
   CLI would link the server stack.
 
 ### Implementation
 
-**Enforced by:** `cargo tree -p sc-command -e normal` with default features
-showing neither `axum` nor `rmcp`, and with `--features server` showing
-both; CI steps running the crate's tests with and without `--features
-server`; the boundary manifest under `boundaries/sc-command/`, checked by
-`sc-lint-boundary` through `just lint`.
+**Enforced by:** `cargo tree -p sc-command -e normal --prefix none` with
+default features printing no line beginning with `axum ` or `rmcp ` (name
+then a space), and with `--features server` printing a line beginning with
+each; `just test`, which runs `cargo test -p sc-command` and
+`cargo test -p sc-command --features server`
+([REQ-RUN-0004](../requirements.md)). `sc-lint-boundary` is not part of this
+enforcement: its manifest format has no cargo-feature key, so it checks
+inter-crate edges and the public facade list only and cannot express "axum
+only with `server`".
 
 ### Related Documents
 
 - [NFR-CMD-0001](requirements.md)
+- [NFR-RUN-0001](../requirements.md)
+- [REQ-RUN-0301](../requirements.md)
+- [ADR-RUN-0303](../architecture.md)

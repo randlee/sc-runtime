@@ -17,9 +17,15 @@ and binding; an ADR changes only through a later ADR that names it.
 
 ## Role
 
-The single assembly point. It is the only crate that knows the other three, and
-it is a dependency of the daemon only. Everything it receives from the project
-(config, stores, router, MCP service) it passes through untouched.
+The single assembly point. It is the only one of the four library crates that
+may depend on the others, and it is a dependency of the daemon only. It
+depends on `sc-transport` and `sc-command`, each with the `server` feature;
+the edge to `sc-config` is allowed but has no named use and is recorded as an
+OPEN in [NFR-RT-0003](requirements.md), which owns this crate's full
+allowed-dependency list (`axum`, `tokio`, `fd-lock`, `utoipa-axum`, `utoipa`,
+`serde`, with `rmcp` and the tempdir facility still open). Everything it
+receives from the project (config, stores, router, MCP service) it passes
+through untouched.
 
 ## Public surface
 
@@ -27,9 +33,9 @@ it is a dependency of the daemon only. Everything it receives from the project
 |---|---|
 | `Daemon::builder(app, &DaemonConfig)` | start assembly |
 | `DaemonBuilder::stores / routes / mcp / run` | the project's three closures, then serve |
-| `DaemonConfig` | the daemon's own settings, deserialisable as part of the project's config; its fields are undecided (see REQ-RT-0001) |
+| `DaemonConfig` | the daemon's own settings; implements `serde::Deserialize` so the project loads it as part of its config; carries the `--endpoint` value, the configured endpoint and an explicit instance root (REQ-RT-0008); its field names are undecided (see REQ-RT-0001) |
 | `RuntimeError` | typed error naming the failing step |
-| `testing::DaemonFixture` | an isolated daemon per test |
+| `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
 
 Shape of use, from the design:
 
@@ -65,6 +71,13 @@ types ([ADR-RUN-0001](../architecture.md)). The daemon is the only process
 that opens the local database, guarded by an OS lock on
 `<instance-root>/daemon.lock` ([ADR-RUN-0201](../architecture.md)), so
 start-up order is a safety property and not a preference.
+`<instance-root>` is the per-application, per-user directory resolved by
+sc-transport, or an explicitly supplied path; its default location is
+undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
+The same crate owns the one endpoint resolver that the daemon and the CLI
+share ([ADR-TRN-0002](../sc-transport/architecture.md)), so some component of
+the daemon has to call it, and the builder has only four methods through
+which inputs could arrive.
 
 ### Decision
 
@@ -72,19 +85,46 @@ start-up order is a safety property and not a preference.
 does exactly five things, always in this order:
 
 1. take the `DaemonConfig` the project already loaded;
-2. resolve the instance root and take the exclusive lock on
-   `<instance-root>/daemon.lock`;
+2. resolve the instance root by calling the `sc-transport` instance-root
+   function, and take the exclusive lock on `<instance-root>/daemon.lock`;
 3. call the project's stores closure;
 4. merge the project's `utoipa_axum::OpenApiRouter`, the OpenAPI document
    route, a health route, and the rmcp service at `/mcp` if one was given;
-5. bind the listener through `sc-transport` and serve until SIGINT or SIGTERM.
+5. resolve the bind endpoint by calling the `sc-transport` endpoint resolver,
+   bind through `sc-transport`, and serve until SIGINT or SIGTERM. It is one
+   `axum::Router`, served unchanged on every listener `run()` binds.
+
+In the daemon, the component that calls the `sc-transport` instance-root
+function and endpoint resolver is `run()`; the generated `main.rs` does not,
+and `sc-runtime` has no endpoint logic of its own. The `--endpoint` flag
+value (parsed by the project's `main`), the configured endpoint and an
+explicit instance root reach `run()` inside `DaemonConfig`; the builder gains
+no method for them. Honouring `SC_ENDPOINT` through the resolver is not
+loading configuration. This paragraph is decided in this document
+([REQ-RT-0008](requirements.md)); the design says only that the daemon binds
+"through sc-transport".
 
 The lock is taken before the stores closure is called. Binding is the last
 step. A failure in any step returns a `RuntimeError` and no later step runs.
 The builder has no hook, callback, plugin registry or option that inserts
-work between steps or changes their order. API names are illustrative until
+work between steps or changes their order (decided in this document; the
+design lists the five steps and calls the crate a bootstrap, not a framework
+layer). API names are illustrative until
 the contract sprint pins them; the five steps and their order are the
 decision.
+
+**OPEN:** whether `Daemon::builder()` supports two listeners in v0.1. A
+daemon MAY bind a Unix domain socket listener and a TCP listener at once, and
+`sc-transport` provides that capability
+([REQ-TRN-0003](../sc-transport/requirements.md)). Whether `DaemonConfig` can
+request both, so that step 5 binds two listeners, or v0.1 binds exactly one,
+is not decided. The resolver returns one endpoint, so supporting two also
+needs a decision on where the second comes from.
+
+**OPEN:** the `DaemonConfig` field names that carry the three inputs, and how
+the `SC_ENDPOINT` value reaches the resolver (a convenience form of the
+resolver that reads it, or `run()` passing it explicitly), are not decided
+([REQ-RT-0008](requirements.md)).
 
 ### Consequences
 
@@ -112,12 +152,17 @@ and `sc-command`.
 ### Implementation
 
 **Enforced by:** the step-order and failure-stops-later-steps tests required
-by [REQ-RT-0001](requirements.md); `arch-qa` architecture review of the
-public surface of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `run`).
+by [REQ-RT-0001](requirements.md); the explicit-instance-root and
+endpoint-override tests of [REQ-RT-0008](requirements.md), and its check that
+`grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
+line outside test code; `arch-qa` architecture review of the public surface
+of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `run`).
 
 ### Related Documents
 
 - [REQ-RT-0001](requirements.md)
+- [REQ-RT-0008](requirements.md)
+- [ADR-TRN-0002](../sc-transport/architecture.md)
 - [NFR-RT-0001](requirements.md)
 
 ---
@@ -130,8 +175,11 @@ public surface of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `run`).
 
 ### Context
 
-Only one daemon may run per instance root (the per-user directory for an
-application, or a tempdir in tests), because the daemon is the only process
+Only one daemon may run per instance root.
+`<instance-root>` is the per-application, per-user directory resolved by
+sc-transport, or an explicitly supplied path; its default location is
+undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
+Tests supply a tempdir. The limit exists because the daemon is the only process
 allowed to open the local database and SQLite allows one writer. Singletons
 are commonly implemented with a PID file or by probing the listening port.
 A PID file goes stale when the process crashes, and PIDs are reused. Probing
@@ -144,7 +192,9 @@ both start. Both need clean-up code that does not run on a crash.
 the file `<instance-root>/daemon.lock`. The lock is taken in `run()` before
 the project's stores closure is called and before any listener is bound, and
 is held for the life of the process. If the lock is already held, `run()`
-returns the "lock held" variant of `RuntimeError` without waiting. The crate
+returns the "lock held" variant of `RuntimeError` without waiting: the
+attempt is a non-blocking try-lock (decided in this document; the design
+states the exclusive lock but not whether the attempt waits). The crate
 writes no PID file and probes no port.
 
 ### Consequences
@@ -153,9 +203,10 @@ The kernel releases the lock on any exit, including a crash or `kill -9`, so
 there is nothing to clean up and the file `daemon.lock` may stay on disk.
 Holding the lock also proves no other daemon for this instance root is alive,
 which is what makes it safe for `sc-transport` to replace a stale Unix socket
-file when binding ([REQ-TRN-0004](../sc-transport/requirements.md)). The
-guarantee covers the local instance root only; a shared Postgres store may
-still be written by daemons on several hosts. File-lock semantics on network
+file when binding ([REQ-TRN-0004](../sc-transport/requirements.md); the
+unlink-on-bind behaviour and its caller precondition are recorded in
+[ADR-TRN-0006](../sc-transport/architecture.md)). The guarantee covers the
+local instance root only; a shared Postgres store may still be written by daemons on several hosts. File-lock semantics on network
 filesystems are weaker, so an instance root on such a filesystem is not
 protected.
 
@@ -182,6 +233,7 @@ returns the "lock held" error and its stores closure never runs.
 
 - [REQ-RT-0002](requirements.md)
 - [REQ-TRN-0004](../sc-transport/requirements.md)
+- [ADR-TRN-0006](../sc-transport/architecture.md)
 
 ---
 
@@ -210,7 +262,10 @@ and optional MCP closure. `sc-runtime` never reads a field of it, calls a
 method on it, or requires a trait describing its contents. The
 `utoipa_axum::OpenApiRouter` returned by the routes closure and the rmcp
 Streamable HTTP service returned by the MCP closure are mounted as they are,
-without being wrapped in an `sc-runtime` type. Opening pools and running
+without being wrapped in an `sc-runtime` type. `sc-runtime` adds no MCP
+session store or other session state; running the rmcp service in stateless
+mode is configured by the generated project's `mcp::service`
+([REQ-RUN-0302](../requirements.md)). Opening pools and running
 migrations happen inside the project's closure. API names are illustrative
 until the contract sprint pins them.
 
@@ -234,10 +289,13 @@ the process only.
 
 ### Implementation
 
-**Enforced by:** the `forbidden_edges` entry for `sqlx` in the boundary
-manifest under `boundaries/sc-runtime/`, checked by `sc-lint-boundary`
-through `just lint`; the opaque-`Stores` tests required by
-[REQ-RT-0003](requirements.md).
+**Enforced by:** the `forbidden_edges` entry `sc-runtime -> sqlx` in the
+boundary manifest under `boundaries/sc-runtime/`, checked by
+`sc-lint-boundary` through `just lint`; `cargo tree -p sc-runtime -e normal
+--prefix none` printing no line beginning with `sqlx ` or `sqlx-`
+([NFR-RT-0002](requirements.md)); the opaque-`Stores` tests required by
+[REQ-RT-0003](requirements.md); `arch-qa` review that no public type wraps an
+`axum`, `rmcp` or `sqlx` type.
 
 ### Related Documents
 
@@ -273,11 +331,34 @@ There is one daemon per fixture and one fixture per test. There is no
 in-memory or listener-less mode. The name is illustrative until the contract
 sprint pins it.
 
+The design states only that the fixture starts a daemon on a tempdir instance
+root per test so tests run in parallel. The following points are decided in
+this document:
+
+1. the fixture exposes a connected `sc_transport::Client`;
+2. the fixture also exposes its resolved endpoint in the string form accepted
+   by `--endpoint` and `SC_ENDPOINT`, and its instance-root path, so a test
+   can point a CLI child process or an MCP client at it;
+3. one fixture per test, and no in-memory mode;
+4. the fixture stops its daemon through a crate-private trigger that runs the
+   same shutdown sequence a signal starts
+   ([REQ-RT-0005](requirements.md)), never a process signal and never a
+   public builder method;
+5. dropping the fixture stops the daemon, and drop (or an explicit async
+   shutdown) returns only after the listener is closed.
+
+**OPEN:** the endpoint a fixture uses on Windows, where the default transport
+is TCP on `127.0.0.1` and a tempdir alone does not make the endpoint unique,
+is not decided.
+
 ### Consequences
 
-Every test exercises lock, bind, transport and shutdown. Because each fixture
-has its own instance root, fixtures share no socket, lock or database file
-and run in parallel in one test binary. Each fixture costs a tempdir and a
+Every test exercises lock, bind, transport and shutdown. On platforms whose
+default endpoint is a Unix domain socket (macOS and Linux), each fixture has
+its own instance root and so shares no socket, lock or database file with any
+other, and fixtures run in parallel in one test binary. On Windows the lock
+and database files are isolated the same way, but endpoint isolation depends
+on the OPEN above. Each fixture costs a tempdir and a
 socket, which is cheap enough for that. A bug in start-up or shutdown shows
 up as a failure in many tests at once, which is the intended signal.
 
@@ -293,11 +374,13 @@ up as a failure in many tests at once, which is the intended signal.
 ### Implementation
 
 **Enforced by:** `req-qa` requirements review of the tests required by
-[REQ-RT-0006](requirements.md), in particular the concurrent-fixtures test;
+[REQ-RT-0006](requirements.md), in particular the concurrent-fixtures test,
+the `SC_ENDPOINT` child-process test and the stop-one-of-two test;
 inspection that `DaemonFixture` calls `Daemon::builder()` and has no separate
 serve path.
 
 ### Related Documents
 
 - [REQ-RT-0006](requirements.md)
+- [REQ-RT-0005](requirements.md)
 - [NFR-RUN-0005](../requirements.md)
