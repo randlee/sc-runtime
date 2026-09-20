@@ -206,6 +206,38 @@ def main() -> int:
         if fragment not in quality_manager:
             fail(f"quality-mgr.md: missing {fragment}", failures)
 
+    report_json_fields = {
+        ".claude/skills/quality-management-gh/findings-report.md.j2": (
+            "sprint_id",
+            "task_id",
+            "branch",
+            "commit",
+            "verdict",
+            "merge_readiness",
+            "merge_reason",
+            "next_action",
+            "action_owner",
+        ),
+        ".claude/skills/quality-management-gh/quality-report.md.j2": (
+            "sprint_id",
+            "task_id",
+            "branch",
+            "commit",
+            "verdict",
+            "merge_readiness",
+            "merge_reason",
+            "recommendation",
+        ),
+    }
+    for relative, fields in report_json_fields.items():
+        text = (ROOT / relative).read_text()
+        for field in fields:
+            fragment = f"{{{{ {field} | tojson }}}}"
+            if fragment not in text:
+                fail(f"{relative}: machine-status string {field} must use tojson", failures)
+        if "{{ blocking_ids_json | safe }}" not in text:
+            fail(f"{relative}: blocking_ids_json must remain typed JSON", failures)
+
     for root in SHARED_ROOTS:
         for path in sorted((ROOT / root).rglob("*")):
             if not path.is_file():
