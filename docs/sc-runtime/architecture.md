@@ -338,7 +338,7 @@ this document:
 1. the fixture exposes a connected `sc_transport::Client`;
 2. the fixture also exposes its resolved endpoint in the string form accepted
    by `--endpoint` and `SC_ENDPOINT`, and its instance-root path, so a test
-   can point a CLI child process or an MCP client at it;
+   can point an MCP client at it, or, on an isolated machine, the CLI binary;
 3. one fixture per test, and no in-memory mode;
 4. the fixture stops its daemon through a crate-private trigger that runs the
    same shutdown sequence a signal starts
