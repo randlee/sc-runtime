@@ -79,9 +79,17 @@ def main() -> int:
                 fail(f"{relative}: missing rendered field {field}", failures)
 
     qa_template = (ROOT / ".claude/skills/codex-orchestration/qa-template.xml.j2").read_text()
-    for fragment in ("  - commit", "<commit>{{ commit }}</commit>", "bd close {{ task_id }}"):
+    for fragment in (
+        "  - commit",
+        "<commit><![CDATA[{{ cdata_value(commit) }}]]></commit>",
+        "bd close {{ cdata_value(task_id) }}",
+        "<![CDATA[",
+    ):
         if fragment not in qa_template:
             fail(f"qa-template.xml.j2: missing {fragment}", failures)
+    for forbidden in ("{% autoescape false", "&lt;", "&gt;", "&amp;", "&quot;"):
+        if forbidden in qa_template:
+            fail(f"qa-template.xml.j2: forbidden blanket/raw entity workaround {forbidden}", failures)
 
     quality_manager = (ROOT / ".claude/agents/quality-mgr.md").read_text()
     for fragment in (
