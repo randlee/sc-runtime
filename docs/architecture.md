@@ -980,11 +980,13 @@ undecided; [NFR-RUN-0010](requirements.md) owns both questions.
 
 ### Consequences
 
-Production daemon code has one shape, and tests exercise it. A developer's
-`just test` stays safe and fast, because it runs only in-process fixture
-tests. The tests that need a real daemon process, the real singleton and the
-real service manager run where a leaked or colliding daemon costs nothing.
-Until a virtual machine is set up for a project, those tests run only in CI.
+Production daemon code has one shape, and tests exercise it. Nothing a developer runs on the host can start, collide with or leak a
+daemon process: host-run tests use the in-process fixture and the no-daemon
+CLI unit tests ([ADR-RUN-0304](architecture.md)). The tests that need a real
+daemon process, the real singleton and the real service manager execute where
+a leaked or colliding daemon costs nothing, whichever command starts them;
+whether `just test` starts them inside a virtual machine is a question for
+the standard SC `just` system. Until a virtual machine is set up for a project, those tests run only in CI.
 The launchd comparison needs macOS, which a Linux virtual machine cannot
 give.
 
@@ -1005,8 +1007,8 @@ give.
 ### Implementation
 
 **Enforced by:** the success criteria of [NFR-RUN-0010](requirements.md)
-(no test-daemon crate, binary, feature or `cfg`; daemon-process tests
-excluded from `just test` on a host and run in CI) and of
+(no test-daemon crate, binary, feature or `cfg`; no daemon-process test
+executes on a developer's host, and they run in CI) and of
 [REQ-RUN-0311](requirements.md) (the guidance is present in every generated
 project); `arch-qa` review of any new crate, binary or feature whose purpose
 is testing the daemon.
