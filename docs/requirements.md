@@ -863,10 +863,11 @@ suggested action that says how to fix it.
 
 ### Success Criteria
 
-Criteria 1 and 2 run the CLI with auto-start disabled; how it is disabled
-is OPEN in [REQ-RUN-0206](requirements.md), and until that is decided they
-are run in the other case this item covers, a started daemon that cannot
-become reachable (REQ-RUN-0206 criterion 7).
+Criteria 1 and 2 run the CLI with auto-start disabled. They are conditional
+on the OPEN in [REQ-RUN-0206](requirements.md) on how auto-start is
+disabled, and are not run until it is decided. The other case this item
+covers, a started daemon that does not become reachable, is checked by
+criterion 7 of REQ-RUN-0206.
 
 1. A test runs a generated CLI command with `--json` against an endpoint
    where no daemon is listening (a socket path inside a fresh tempdir). It
@@ -1095,11 +1096,15 @@ explicitly supplied path; its default location is undecided
    daemon, wait until the daemon accepts a connection on the resolved
    endpoint, and then run the command the user asked for.
 2. The daemon the CLI starts MUST be started the same way it starts when
-   launchd launches it cleanly from its service definition. The started
-   process MUST be the same program with the same arguments, and its
+   launchd (the macOS service manager) launches it cleanly from its service
+   definition. The started process MUST be the same program, and its
    environment, working directory, standard input, output and error, and
    session MUST be the ones a launchd launch gives it, not the ones the CLI
-   process has.
+   process has. Its arguments MUST be the service definition's arguments,
+   plus only the explicit values obligation 4 adds. That exception is
+   decided in this document: the owner decided the clean, launchd-equivalent
+   launch and that the environment must not leak; the alternative that needs
+   no exception is recorded in the first OPEN below.
 3. The daemon MUST NOT inherit the environment of the CLI process. No
    environment variable set in the shell, agent session or parent process
    that ran the CLI may appear in the daemon's environment because the CLI
@@ -1121,7 +1126,9 @@ explicitly supplied path; its default location is undecided
    one daemon. The `daemon.lock` singleton
    ([REQ-RT-0002](sc-runtime/requirements.md)) decides the winner; the CLI
    whose daemon lost MUST NOT treat that as a failure and MUST connect to
-   the daemon that won.
+   the daemon that won. If the daemon that won is not reachable at the
+   endpoint this CLI resolved (for example it was started on the default
+   socket while this CLI was given another endpoint), obligation 7 applies.
 7. When auto-start is disabled, or when the daemon the CLI started does not
    become reachable, the CLI MUST report `DAEMON.NOT_RUNNING` exactly as
    [REQ-RUN-0202](requirements.md) states, and MUST NOT retry without bound.
@@ -1132,28 +1139,57 @@ explicitly supplied path; its default location is undecided
    ([NFR-RUN-0005](requirements.md)): every auto-start test MUST give the CLI
    a fresh tempdir instance root, and the started daemon MUST use it.
 
+**OPEN:** what auto-start does when the CLI's resolved endpoint or instance
+root is not the default (an `--endpoint` value, `SC_ENDPOINT`, or an explicit
+instance root is in effect) is not decided. Either the daemon is started with
+those values passed explicitly, which is the exception in obligation 2; or
+auto-start applies only to the default endpoint and the CLI reports
+`DAEMON.NOT_RUNNING` whenever an override is in effect, which keeps the launch
+exactly equal to the launchd launch but leaves obligation 9's tests needing
+another way to reach a tempdir.  
+**OPEN:** the carrier by which the CLI passes a resolved endpoint and
+instance root to the daemon it starts is not decided: command-line arguments
+of the daemon (the `--endpoint` option of
+[REQ-RUN-0310](requirements.md); whether the binaries accept an
+instance-root option is OPEN there), or a configuration value and where it is
+stored.  
 **OPEN:** the mechanism that satisfies obligation 2 is not decided: asking
 launchd to start the daemon's registered job (so launchd itself performs the
 launch), or spawning the daemon directly with an environment, working
 directory, standard streams and session constructed to match a launchd
-launch.  
+launch. A job started from its registered definition takes no
+per-invocation values, so the first mechanism cannot satisfy obligation 4 or
+obligation 9 on its own; if it is chosen, the decision MUST also say how a
+non-default endpoint or instance root is handled.  
 **OPEN:** the equivalent on Linux (for example a systemd user unit) and on
 Windows is not decided; obligations 3 to 9 apply on every platform.  
 **OPEN:** whether the generated project ships a launchd service definition
 (and the Linux and Windows equivalents), where it is installed, and what
 program path, arguments, environment and working directory it names, are not
 decided. Obligation 2 needs that definition to exist, because it is what
-"the same way" is measured against.  
+"the same way" is measured against; until it and the mechanism are decided,
+the equality clause of obligation 2 cannot be checked, and the binding floor
+on every platform is obligation 3 together with: the daemon does not inherit
+the CLI's working directory, terminal, standard streams or session. A
+shipped definition is a rendered file, so it also changes the layout owned by
+[REQ-RUN-0301](requirements.md).  
 **OPEN:** how auto-start is disabled (a command-line option, a configuration
 value, an environment variable, or more than one) is not decided.  
 **OPEN:** how long the CLI waits for the started daemon to accept a
 connection, and how it polls, are not decided.  
-**OPEN:** which crate holds the auto-start code is not decided: the generated
-`cli` crate, `sc-transport`, or a new library crate. The `sc-transport`
-`Client` itself does not start processes
-([REQ-TRN-0006](sc-transport/requirements.md)). Code that every project
-needs unchanged belongs in a published crate
-([ADR-RUN-0002](architecture.md)).  
+**OPEN:** which crate holds the auto-start code is not decided. Each option
+has a cost. The generated `cli` crate conflicts with nothing, but the code is
+then copied into every project and cannot be upgraded
+([ADR-RUN-0002](architecture.md)). `sc-transport` requires narrowing the
+crate-wide ban on process spawning in
+[REQ-TRN-0006](sc-transport/requirements.md) (its criterion on
+`std::process::Command` and `tokio::process`) to the `Client` code, and
+amending [NFR-TRN-0001](sc-transport/requirements.md) if a dependency is
+added. A new library crate requires amending
+[REQ-RUN-0001](requirements.md) (exactly four workspace crates),
+[REQ-RUN-0005](requirements.md), [ADR-RUN-0002](architecture.md) and
+[ADR-RUN-0003](architecture.md), and the crate must itself satisfy
+[NFR-RUN-0001](requirements.md).  
 **OPEN:** whether the generated CLI also provides explicit `daemon start`
 and `daemon stop` subcommands is not decided
 ([REQ-RUN-0202](requirements.md)).
@@ -1173,6 +1209,14 @@ CLI-started daemon indistinguishable from the service-started one.
 
 ### Success Criteria
 
+Criteria 1 to 7 give the CLI a fresh tempdir instance root that the started
+daemon must use. They are conditional on the OPEN of
+[REQ-RUN-0310](requirements.md) on whether the binaries accept an explicit
+instance-root option, and on the carrier OPEN and the non-default-endpoint
+OPEN of this item. Until those are decided they are not run, because a daemon
+started without an explicit instance root would lock the developer's real one
+([NFR-RUN-0005](requirements.md)).
+
 1. A test runs a generated CLI command with a fresh tempdir instance root
    and no daemon running. It asserts: the command succeeds and returns the
    operation's result; afterwards a daemon holds `daemon.lock` in that
@@ -1190,8 +1234,11 @@ CLI-started daemon indistinguishable from the service-started one.
 4. A test runs two CLI commands at the same moment against one fresh tempdir
    instance root with no daemon running. Both succeed, and exactly one
    daemon process holds `daemon.lock` afterwards.
-5. A test starts the daemon through a CLI command, waits for the CLI process
-   to exit, and asserts the daemon still answers a request.
+5. A test starts the daemon through a CLI command run under a
+   pseudo-terminal, waits for the CLI process to exit, closes the terminal,
+   and asserts the daemon still answers a request. It also asserts the
+   daemon's standard input is not that terminal and its session id differs
+   from the CLI's.
 6. A test runs a command with auto-start disabled and no daemon running, and
    asserts the `DAEMON.NOT_RUNNING` result of
    [REQ-RUN-0202](requirements.md) and that no daemon was started (the
@@ -1199,12 +1246,17 @@ CLI-started daemon indistinguishable from the service-started one.
    This criterion is conditional on the OPEN above on how auto-start is
    disabled.
 7. A test makes the started daemon fail to become reachable (for example the
-   instance root is a regular file) and asserts the CLI reports
-   `DAEMON.NOT_RUNNING` within the bounded wait and exits non-zero.
-8. Once the mechanism OPEN is decided: on macOS, a test compares the
-   environment, working directory and arguments of a CLI-started daemon with
-   those of the same daemon started by launchd from its service definition,
-   and asserts they are equal.
+   instance root is a regular file) and runs the command with `--json`. It
+   asserts that within the bounded wait the CLI exits non-zero and prints the
+   envelope of [REQ-RUN-0202](requirements.md): `ok` is `false`, `data` is
+   `null`, `error.code` is `"DAEMON.NOT_RUNNING"` and
+   `error.suggested_action` is `"run <app> daemon start"` with the
+   application name substituted.
+8. Once the mechanism and service-definition OPENs are decided: on macOS, a
+   test compares a CLI-started daemon with the same daemon started by launchd
+   from its service definition, and asserts that the environment, working
+   directory, standard streams and session are equal, and that the arguments
+   are equal apart from the explicit values of obligation 4.
 
 ---
 
@@ -1296,6 +1348,12 @@ is not decided. A re-export would have to be added to the public surface of
 decided. The constraints are: `cli` cannot take it from `daemon` or
 `service` (forbidden edges above), and `api-types` may depend only on
 `serde`, `schemars` and `utoipa`.
+
+**OPEN:** whether the template renders a service definition for the daemon
+(a launchd property list on macOS, and the Linux and Windows equivalents), and
+where in the rendered project it lives, is not decided; the question is owned
+by [REQ-RUN-0206](requirements.md), which needs such a definition for the
+CLI's auto-start.
 
 **OPEN:** whether v0.1 renders a default TCP port into
 `config/default.json` is not decided. If it does, the port MUST come from

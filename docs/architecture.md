@@ -986,7 +986,8 @@ hosts.
 **Enforced by:** [NFR-RUN-0001](requirements.md) (for the generated `cli` crate,
 `cargo tree -p cli -e normal --prefix none` prints no line beginning with
 `sqlx `, so the CLI cannot open a database); the test in
-[REQ-RUN-0202](requirements.md) that runs a CLI command with no daemon and asserts the code
+[REQ-RUN-0202](requirements.md) that runs a CLI command with no daemon, and with auto-start disabled or
+failing, and asserts the code
 `DAEMON.NOT_RUNNING`, the suggested action and a non-zero exit; the two-daemon
 test in [REQ-RT-0002](sc-runtime/requirements.md).
 
@@ -1219,9 +1220,12 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    daemon is not running, wait for it to accept a connection, and then run
    the requested command.
 2. The CLI-started daemon MUST be started the same way it starts when
-   launchd launches it cleanly from its service definition: same program and
-   arguments, and the environment, working directory, standard streams and
-   session of a launchd launch.
+   launchd (the macOS service manager) launches it cleanly from its service
+   definition: the same program, the environment, working directory, standard
+   streams and session of a launchd launch, and the service definition's
+   arguments plus only the explicit values of point 4. That exception is
+   decided in this document; the alternative without it is the first OPEN
+   below.
 3. The daemon MUST NOT inherit the CLI's environment. Environment leakage is
    the named risk of this decision and MUST be prevented by construction and
    proven by test, not left to convention.
@@ -1234,12 +1238,36 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    the started daemon does not become reachable. The CLI still has no
    direct-database mode.
 
-**OPEN:** the launch mechanism (ask launchd to start the registered job, or
-spawn directly with a constructed clean launch), the Linux and Windows
-equivalents, whether the template ships the service definitions, how
-auto-start is disabled, the wait bound, and which crate holds the auto-start
-code are undecided. They are listed in
-[REQ-RUN-0206](requirements.md), which owns the behaviour.
+Points 1 and 3 to 6 are binding now. The equality clause of point 2 is
+conditional on the service-definition and launch-mechanism OPENs of
+[REQ-RUN-0206](requirements.md), and binds on macOS once they are decided.
+The sprint that implements auto-start MUST decide them first and amend this
+ADR and [REQ-RUN-0301](requirements.md) (the rendered layout) in the same
+change. Until then the binding floor on every platform is point 3 together
+with: the daemon inherits no working directory, terminal, standard streams or
+session from the CLI.
+
+**OPEN:** what auto-start does when the CLI's resolved endpoint or instance
+root is not the default is undecided: pass the values explicitly (the
+exception in point 2), or auto-start only for the default endpoint and report
+`DAEMON.NOT_RUNNING` when an override is in effect.  
+**OPEN:** the carrier for the explicit values of point 4 (daemon command-line
+arguments, or a configuration value and where it is stored) is undecided.  
+**OPEN:** the launch mechanism is undecided: ask launchd to start the
+registered job, or spawn directly with a constructed clean launch. A job
+started from its registered definition takes no per-invocation values, so
+that mechanism cannot satisfy point 4 on its own.  
+**OPEN:** the Linux and Windows equivalents, whether the template ships the
+service definitions, how auto-start is disabled, and the wait bound are
+undecided.  
+**OPEN:** which crate holds the auto-start code is undecided. The generated
+`cli` crate conflicts with nothing but cannot be upgraded after generation;
+`sc-transport` requires narrowing its crate-wide ban on process spawning
+([REQ-TRN-0006](sc-transport/requirements.md)); a new library crate requires
+amending the four-crate rule ([REQ-RUN-0001](requirements.md),
+[ADR-RUN-0002](architecture.md), [ADR-RUN-0003](architecture.md)).
+
+[REQ-RUN-0206](requirements.md) owns the behaviour and these questions.
 
 ### Consequences
 
