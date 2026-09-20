@@ -3,8 +3,13 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
+import shutil
+import subprocess
 import sys
+import tempfile
+from xml.etree import ElementTree
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,6 +63,51 @@ def fail(message: str, failures: list[str]) -> None:
     failures.append(message)
 
 
+def render_qa_strict(variables: dict[str, object], failures: list[str]) -> ElementTree.Element | None:
+    executable = shutil.which("sc-compose")
+    if executable is None:
+        return None
+    template = ROOT / ".claude/skills/codex-orchestration/qa-template.xml.j2"
+    with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8") as handle:
+        json.dump(variables, handle)
+        handle.flush()
+        result = subprocess.run(
+            [
+                executable,
+                "render",
+                "--root",
+                str(ROOT),
+                "--strict",
+                "--check-render",
+                "--json",
+                "--file",
+                str(template),
+                "--var-file",
+                handle.name,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    if result.returncode != 0:
+        fail(f"qa-template.xml.j2: strict render failed: {result.stderr.strip()}", failures)
+        return None
+    envelope = json.loads(result.stdout)
+    errors = [
+        diagnostic
+        for diagnostic in envelope["diagnostics"]
+        if diagnostic["severity"] == "error"
+    ]
+    if errors:
+        fail(f"qa-template.xml.j2: strict validation errors: {errors}", failures)
+        return None
+    try:
+        return ElementTree.fromstring(envelope["payload"]["body"])
+    except ElementTree.ParseError as error:
+        fail(f"qa-template.xml.j2: rendered invalid XML: {error}", failures)
+        return None
+
+
 def main() -> int:
     failures: list[str] = []
 
@@ -81,15 +131,70 @@ def main() -> int:
     qa_template = (ROOT / ".claude/skills/codex-orchestration/qa-template.xml.j2").read_text()
     for fragment in (
         "  - commit",
-        "<commit><![CDATA[{{ cdata_value(commit) }}]]></commit>",
-        "bd close {{ cdata_value(task_id) }}",
+        "<commit><![CDATA[{{ commit | string | cdata_escape }}]]></commit>",
+        "bd close {{ task_id | string | cdata_escape }}",
         "<![CDATA[",
     ):
         if fragment not in qa_template:
             fail(f"qa-template.xml.j2: missing {fragment}", failures)
-    for forbidden in ("{% autoescape false", "&lt;", "&gt;", "&amp;", "&quot;"):
+    for forbidden in ("{% autoescape false", "{% macro", "&lt;", "&gt;", "&amp;", "&quot;"):
         if forbidden in qa_template:
             fail(f"qa-template.xml.j2: forbidden blanket/raw entity workaround {forbidden}", failures)
+
+    adversarial = 'quoted "value" \\ path\nline <tag>& snowman ☃ ]]> twice ]]>'
+    attribute_adversarial = adversarial.replace("\n", " ")
+    qa_variables: dict[str, object] = {
+        "task_id": attribute_adversarial,
+        "sprint": attribute_adversarial,
+        "sprint_doc": adversarial,
+        "review_mode": adversarial,
+        "description": adversarial,
+        "pr_number": 8,
+        "branch": adversarial,
+        "commit": adversarial,
+        "worktree_path": adversarial,
+        "commits": [adversarial, "def456"],
+        "review_targets": [adversarial],
+        "references": [adversarial],
+        "lead": adversarial,
+        "cc": adversarial,
+        "changed_files": [adversarial],
+        "triage_records": [adversarial],
+    }
+    root = render_qa_strict(qa_variables, failures)
+    if root is not None:
+        for field, variable in (
+            ("pr-number", "pr_number"),
+            ("commits", "commits"),
+            ("review-targets", "review_targets"),
+            ("changed-files", "changed_files"),
+            ("triage-records", "triage_records"),
+            ("references", "references"),
+        ):
+            if json.loads(root.findtext(field, default="null")) != qa_variables[variable]:
+                fail(f"qa-template.xml.j2: {field} did not round-trip", failures)
+
+    string_variables = {
+        **qa_variables,
+        "pr_number": "",
+        "commits": "HEAD",
+        "review_targets": "- src/",
+        "changed_files": "",
+        "triage_records": "",
+        "references": "- plan",
+    }
+    string_root = render_qa_strict(string_variables, failures)
+    if string_root is not None:
+        for field, expected in (
+            ("pr-number", ""),
+            ("commits", "HEAD"),
+            ("review-targets", "\n- src/\n  "),
+            ("changed-files", "\n\n  "),
+            ("triage-records", "\n\n  "),
+            ("references", "\n- plan\n  "),
+        ):
+            if string_root.findtext(field) != expected:
+                fail(f"qa-template.xml.j2: {field} string semantics changed", failures)
 
     quality_manager = (ROOT / ".claude/agents/quality-mgr.md").read_text()
     for fragment in (
