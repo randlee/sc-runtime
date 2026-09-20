@@ -725,8 +725,7 @@ counterpart, that the generated `cli` and `daemon` each accept a global
 3. A test starts a daemon in a child process with an explicit instance root
    that is a fresh tempdir, with `SC_ENDPOINT` set, and with no flag value or
    configured endpoint; a client resolving with the same `SC_ENDPOINT` value
-   reaches it, and `daemon.lock` exists inside that tempdir and nowhere
-   else.
+   reaches it, and `daemon.lock` exists inside that tempdir.
 4. `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
    line outside `#[cfg(test)]` code. Once the second OPEN above is decided in
    favour of the convenience form, the same holds for `SC_ENDPOINT`.
@@ -768,9 +767,10 @@ counterpart, that the generated `cli` and `daemon` each accept a global
   free function, no public macro, and no `pub use` of an item from another
   crate.
 
-**OPEN:** whether a generated project's `daemon` and `service` crates take
-`sc-command` as a direct dependency or through a re-export from `sc-runtime`
-is not decided (owner: [REQ-RUN-0301](../requirements.md)). If the re-export
+**OPEN:** whether a generated project's `daemon` crate takes `sc-command` as
+a direct dependency or through a re-export from `sc-runtime` is not decided
+(owner: [REQ-RUN-0301](../requirements.md)); the `service` crate takes it
+directly, because it may not depend on `sc-runtime`. If the re-export
 is chosen, it MUST be added to the table above as a further kind of item;
 until then no re-export is allowed.
 

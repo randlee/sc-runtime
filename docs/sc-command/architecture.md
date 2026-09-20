@@ -277,11 +277,13 @@ generated workspace's crate graph is owned by
 [REQ-RUN-0301](../requirements.md) and
 [ADR-RUN-0303](../architecture.md); this ADR does not decide it.
 
-**OPEN:** Whether the generated `daemon` and `service` crates take
-`sc-command` as a direct dependency (`daemon` with
-`features = ["server"]`), or reach it through a re-export from `sc-runtime`,
-is not decided. A re-export would have to be added to the public surface of
-`sc-runtime`, and `service` does not depend on `sc-runtime`. Once decided in
+The generated `service` crate takes `sc-command` (default features) as a
+direct dependency, because it may not depend on `sc-runtime`.
+
+**OPEN:** Whether the generated `daemon` crate takes `sc-command` as a direct
+dependency with `features = ["server"]`, or reaches it through a re-export
+from `sc-runtime`, is not decided. A re-export would have to be added to the
+public surface of `sc-runtime`. Once decided in
 favour of direct dependencies: the generated `daemon` is the only generated
 crate that enables `server`.
 

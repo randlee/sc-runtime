@@ -1127,19 +1127,23 @@ release, in which the only database option is SQLite.
    - `api-types` on any other crate of the generated workspace;
    - any crate other than a `store-*` crate on `sqlx` directly;
    - any crate other than `service` on a `store-*` crate;
-   - `store-sqlite` on `service`, `daemon` or `cli`.
+   - `store-sqlite` on `service`, `daemon` or `cli`;
+   - any crate other than `daemon` on `sc-runtime` as a normal (non-dev)
+     dependency.
 8. `cli` MUST use `sc-transport` and `sc-command` without their `server`
    cargo feature.
 9. TCP ports come from project configuration. Port ranges are allocated per
    project in the synaptic-canvas port registry. No file under `template/`
    and none of the four library crates may hard-code a TCP port.
 
-**OPEN:** whether `service` and `daemon` take `sc-command` as a direct
-dependency (`service` with default features, `daemon` with
-`features = ["server"]`), or reach it through a re-export from `sc-runtime`,
+`service` MUST take `sc-command` (default features) as a direct dependency:
+by rule 7 it may not have a dependency on `sc-runtime`, so a re-export from
+`sc-runtime` cannot reach it.
+
+**OPEN:** whether `daemon` takes `sc-command` as a direct dependency with
+`features = ["server"]`, or reaches it through a re-export from `sc-runtime`,
 is not decided. A re-export would have to be added to the public surface of
-`sc-runtime`, which [NFR-RT-0001](sc-runtime/requirements.md) limits, and
-would make `service` depend on `sc-runtime`.
+`sc-runtime`, which [NFR-RT-0001](sc-runtime/requirements.md) limits.
 
 **OPEN:** which generated crate defines the project's config struct
 `AppConfig`, and whether `cli` and `daemon` load the same type, is not
@@ -1172,9 +1176,10 @@ REST and MCP have exactly one place to call.
 2. In each rendered project, `cargo metadata --format-version 1` shows the
    workspace members `api-types`, `store-sqlite`, `service`, `daemon`, `cli`
    and no others, and every "MUST depend on" edge of the table other than
-   the `sc-command` edges of `service` and `daemon`. Once the direct
-   dependency or re-export question is decided: it shows those edges in the
-   decided form.
+   the `sc-command` edge of `daemon`; this includes the direct edge from
+   `service` to `sc-command`. Once the direct dependency or re-export
+   question for `daemon` is decided: it shows that edge in the decided
+   form.
 3. In each rendered project,
    `cargo tree -p cli -e normal --prefix none` prints no line beginning with
    `sqlx `, `axum `, `rmcp `, `sc-runtime `, `service `, `store-sqlite ` or
