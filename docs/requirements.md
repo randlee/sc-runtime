@@ -51,7 +51,7 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0311 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. |
+| REQ-RUN-0301 through REQ-RUN-0312 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
@@ -771,19 +771,15 @@ and every client gets it.
 
 ### Success Criteria
 
-Where a criterion below runs the CLI binary in a test that may run on a
-developer's host, the CLI is run with auto-start disabled
-([NFR-RUN-0010](requirements.md)).
-
 1. A test in the generated project starts one daemon with
    `sc_runtime::testing::DaemonFixture` and creates three widgets with
    distinct names: one by `POST /ops/widget.create`, one by an MCP
-   `tools/call` of `widget_create` sent to `/mcp`, and one by running the
-   generated CLI binary against the fixture's endpoint. The fixture exposes
-   its endpoint as a string in the form `--endpoint` and `SC_ENDPOINT`
-   accept ([REQ-RT-0006](sc-runtime/requirements.md)); the test passes that
-   string to the CLI with `--endpoint` or `SC_ENDPOINT`
-   ([REQ-RUN-0310](requirements.md)). It then reads all three back with
+   `tools/call` of `widget_create` sent to `/mcp`, and one through the CLI's
+   code path without running the CLI binary: the test calls the
+   `widget.create` command's request-construction function with
+   command-line arguments, sends the result with the fixture's
+   `sc_transport::Client`, and passes the reply to the command's rendering
+   function ([REQ-RUN-0312](requirements.md)). It then reads all three back with
    `widget.get` and asserts each is returned with the name it was created
    with.
 2. `cargo metadata` in the generated project shows `sqlx` as a direct
@@ -950,13 +946,11 @@ anything.
 
 ### Success Criteria
 
-Where a criterion below runs the CLI binary in a test that may run on a
-developer's host, the CLI is run with auto-start disabled
-([NFR-RUN-0010](requirements.md)).
-
 1. A test against one `DaemonFixture` daemon calls `widget.get` for the same
    existing widget through REST, through an MCP `tools/call`, and through the
-   CLI with `--json`; it parses the three results as JSON and asserts all
+   CLI's code path with `--json` rendering, composed inside the test process
+   as [REQ-RUN-0312](requirements.md) describes, without running the CLI
+   binary; it parses the three results as JSON and asserts all
    three are equal, with `ok` equal to `true` and `error` equal to `null`.
 2. The same test repeats the three calls for a widget that does not exist and
    asserts the three envelopes are equal, with `ok` equal to `false`, `data`
@@ -1461,7 +1455,7 @@ wired through all three surfaces:
 | REST | `crates/daemon/src/routes.rs` | `POST /ops/widget.create` and `POST /ops/widget.get`, each an `axum` handler annotated with `#[utoipa::path(...)]`, registered with `utoipa_axum` `routes!` on an `OpenApiRouter`, returning `Envelope<Widget>` |
 | MCP | `crates/daemon/src/mcp.rs` (only when option `mcp` is `true`) | `rmcp` `#[tool]` methods named `widget_create` and `widget_get`, taking `Parameters<...>` of the same `api-types` request structs and returning through `.into_mcp()`. The service returned by `mcp::service` MUST be an `rmcp` `StreamableHttpService` configured in stateless mode, and the template MUST NOT contain an MCP session store |
 | CLI | `crates/cli` | one `clap` command per operation; each builds the `api-types` request struct, sends it with `sc_transport::Client::post` (method name illustrative until pinned by [REQ-TRN-0005](sc-transport/requirements.md)) to the matching `/ops/...` path, and supports `--json` and the global `--endpoint` option ([REQ-RUN-0310](requirements.md)) |
-| Test | the generated project's test suite | at least one test that starts a daemon with `sc_runtime::testing::DaemonFixture` and exercises the example through REST, through MCP (when `mcp` is `true`) and through the CLI. The test runs on a developer's host, so it MUST keep its database under the fixture's temporary instance root and MUST run the CLI binary with auto-start disabled ([NFR-RUN-0010](requirements.md)) |
+| Test | the generated project's test suite | at least one test that starts a daemon with `sc_runtime::testing::DaemonFixture` and exercises the example through REST, through MCP (when `mcp` is `true`) and through the CLI's code path, composed inside the test process without running the CLI binary ([REQ-RUN-0312](requirements.md)). The test runs on a developer's host, so it MUST keep its database under the fixture's temporary instance root ([NFR-RUN-0010](requirements.md)). The `cli` crate also carries the no-daemon unit tests of REQ-RUN-0312 |
 
 Which derives the struct carries, and that the same struct is the rmcp
 `Parameters<T>` input, is conditional on
@@ -1838,11 +1832,11 @@ does, the template supplies a stand-in.
    | `just test` | runs the generated workspace's tests, including the `DaemonFixture` example test; exits non-zero on any failure |
    | `just db-prepare` | regenerates the checked-in `sqlx` offline query data in `crates/store-sqlite/.sqlx/` |
 
-   `just test` runs only tests that are safe on a developer's host. Tests
-   that start the daemon as a separate process are not part of it
-   ([NFR-RUN-0010](requirements.md)); if the way those tests are selected
-   turns out to be a `just` recipe, this list gains that recipe in the same
-   change that decides it.
+   Tests that start the daemon as a separate process never execute on a
+   developer's host ([NFR-RUN-0010](requirements.md)). Whether `just test`
+   also runs them, by executing them inside an isolated machine, or a
+   separate recipe does, is the standard-wording question recorded there; if
+   it adds a recipe, this list gains it in the same change.
 3. The recipe names `lint` and `test` are the standard SC base command names
    and MUST NOT be changed.
 4. The `Justfile` MUST be minimal: no `just` modules, no imports, no lint
@@ -2126,24 +2120,22 @@ than one instance of a generated daemon, and every test author, is affected.
 
 Criteria that start a daemon in a child process run only on an isolated
 machine, never on a developer's host
-([NFR-RUN-0010](requirements.md)); `just test` on a host does not run
-them.
+([NFR-RUN-0010](requirements.md)).
 
-Criteria 1 to 3 run on a host against a `DaemonFixture` daemon; they run
-the CLI with auto-start disabled, for the same reason.
+Criteria 1 to 3 are unit tests with no daemon and no child process
+([REQ-RUN-0312](requirements.md)); the precedence logic itself is tested in
+`sc-transport` ([REQ-TRN-0001](sc-transport/requirements.md)).
 
-1. A test starts a daemon with `sc_runtime::testing::DaemonFixture`, takes
-   the fixture's endpoint string (the form accepted by `--endpoint` and
-   `SC_ENDPOINT`, [REQ-RT-0006](sc-runtime/requirements.md)), and runs the
-   generated CLI's `widget.create` command with `--endpoint <string>` and
-   `--json`, with `SC_ENDPOINT` unset. It asserts exit status 0 and `ok`
-   equal to `true`.
-2. The same test runs the CLI again with no `--endpoint` option and with
-   `SC_ENDPOINT` set to that string in the child process environment only,
-   and makes the same assertions.
-3. A test runs the CLI with `--endpoint` set to the fixture's endpoint
-   string and `SC_ENDPOINT` set to a socket path where nothing listens; the
-   command succeeds, showing the option takes precedence.
+1. A unit test in the generated `cli` crate parses a command line containing
+   `--endpoint <value>` and asserts that the inputs the CLI hands to the
+   `sc-transport` resolver carry that value as the explicit flag value.
+2. A unit test gives the CLI's resolver call an `SC_ENDPOINT` value through
+   an explicit environment input, with no `--endpoint` option, and asserts
+   the resolved endpoint is that value; a third case gives both and asserts
+   the `--endpoint` value wins.
+3. The same three cases are asserted for the generated `daemon` binary's
+   argument handling: the `DaemonConfig` it builds carries the `--endpoint`
+   value.
 4. Conditional on the OPEN above on whether the binaries accept an option
    for an explicit instance root: a Unix-only test starts the generated `daemon`
    binary with a fresh tempdir as its instance root and with
@@ -2218,6 +2210,112 @@ the owner decided that building a virtual machine is not part of v0.1.
    files, and `grep -il "test daemon" AGENTS.md CLAUDE.md` lists both files.
 3. `find . -iname '*colima*' -o -iname 'Vagrantfile' -o -iname '*.lima.yaml'`
    in the generated project prints nothing.
+
+---
+
+## REQ-RUN-0312: Generated CLI commands are proven by unit tests with no daemon
+
+**Status:** Active  
+
+### Requirement Statement
+
+Direction given by the owner on 2026-09-20: one purpose of sc-runtime is to
+reduce the complexity of testing a CLI that posts and gets over HTTP, and
+because the CLI code and its tests are generated, a command's input and
+output can be proven in a simple unit test without a daemon. The shape below
+is decided in this document to carry out that direction, and is pending the
+owner's confirmation.
+
+This applies to the `cli` crate of a project generated from `template/`, and
+to the example commands `widget.create` and `widget.get`
+([REQ-RUN-0302](requirements.md)), which are the pattern a project copies.
+
+1. Each CLI command MUST be written as two pure functions with the HTTP call
+   between them:
+   - request construction: from the command-line arguments to the HTTP
+     method, the route path and the JSON body that would be posted (the
+     serialised `api-types` request value). In the owner's words: the command
+     `my-cli <args>` posts `<expected JSON>` over HTTP, and that is what the
+     test asserts;
+   - result rendering: from what came back, either the received
+     `sc_command::Envelope<T>` or the `sc_transport::TransportError`, to the
+     text written to stdout and the process exit status, for both the
+     `--json` form and the plain form.
+   Neither function may perform I/O, read the environment, or call the
+   network.
+2. The template MUST ship unit tests for each example command that need no
+   daemon, no socket, no network and no child process:
+   - given the command-line arguments of a command, request construction
+     yields the expected HTTP method and route path, and a JSON body equal,
+     compared as JSON, to the expected document written in the test;
+   - given a success envelope as JSON text, rendering with `--json` writes
+     that envelope unchanged and the exit status is 0;
+   - given a failure envelope as JSON text, rendering with `--json` writes it
+     unchanged and the exit status is non-zero;
+   - given `TransportError::DaemonNotRunning`, rendering produces the
+     `DAEMON.NOT_RUNNING` envelope of [REQ-RUN-0202](requirements.md) and a
+     non-zero exit status.
+3. These unit tests, together with three things that already exist, are the
+   proof that a command works: the HTTP hop is tested in `sc-transport`
+   ([REQ-TRN-0005](sc-transport/requirements.md)); the route and its handler
+   are tested against a `DaemonFixture` daemon through
+   `sc_transport::Client` ([REQ-RUN-0201](requirements.md)); and the request
+   and response types are the same `api-types` structs on both sides, checked
+   by the compiler ([ADR-RUN-0302](architecture.md)).
+4. A test that may run on a developer's host MUST NOT run the CLI binary
+   against a daemon. Where a host-run test needs the CLI's path to a fixture
+   daemon, it calls the command's request-construction function, sends the
+   result with `sc_transport::Client`, and passes the reply to the rendering
+   function, all inside the test process. This never reaches the CLI's
+   auto-start ([REQ-RUN-0206](requirements.md)), so it cannot start a daemon
+   on the developer's machine ([NFR-RUN-0010](requirements.md)).
+5. The template MUST NOT add a mock transport, a transport trait, or any
+   other abstraction whose only purpose is to make the CLI testable
+   ([NFR-RUN-0004](requirements.md)); the split into two functions is the
+   whole mechanism.
+6. One end-to-end run of the real `cli` binary against the real `daemon`
+   binary is a daemon-process test and runs only on an isolated machine
+   ([NFR-RUN-0010](requirements.md)).
+
+**OPEN:** how the CLI and the daemon are kept to the same route path is not
+decided. The request and response types are shared through `api-types`, but
+the route string (`/ops/widget.create`) is written once in the daemon's
+routes and once in the CLI; either it becomes a shared constant, or the
+host-run test of obligation 4 and the end-to-end run of obligation 6 are
+what catch a mismatch.  
+**OPEN:** the names and signatures of the two functions are not decided; they
+are pinned with the rest of the template's example code.
+
+### Rationale
+
+Testing a CLI by running its binary against a running service is slow,
+needs a daemon, and on a development machine risks colliding with or leaking
+daemons. Almost none of that test is about the CLI: the CLI's own work is
+turning arguments into a request and a reply into output. Those two steps are
+pure, so a unit test proves them completely, and because the code is
+generated the tests are generated with it and every project starts with them.
+The parts a unit test does not reach are already proven elsewhere: the
+transport by its own crate's tests, the server by fixture tests, and the
+agreement between client and server types by the compiler. Splitting into two
+functions costs nothing and needs no mocking layer.
+
+### Success Criteria
+
+1. In a project generated from each fixture, `cargo test -p cli` passes with
+   no daemon running and with networking unavailable, and its output lists,
+   for `widget.create` and for `widget.get`, the four tests of obligation 2.
+2. Inspection of `template/crates/cli` finds, for each command, one
+   request-construction function and one rendering function, neither of
+   which calls `sc_transport`, reads `std::env`, or writes to stdout
+   directly; the command's entry point is the only code that does.
+3. `grep -rn 'Command::new\|process::Command' template/crates/cli` prints
+   nothing outside the auto-start code of
+   [REQ-RUN-0206](requirements.md), and no host-run test in the template
+   spawns the `cli` binary.
+4. Inspection of `template/` finds no mock transport and no trait whose only
+   implementors are a real transport and a test double.
+5. The host-run example test ([REQ-RUN-0302](requirements.md)) exercises the
+   CLI leg as obligation 4 describes and passes under `just test`.
 
 ---
 
@@ -3685,9 +3783,16 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    by colima) or an ephemeral CI runner. It MUST NOT run on a developer's
    host, where the application's own daemon may be running and where a
    leaked test daemon would keep running after the test.
-3. `just test` on a developer's host MUST NOT run the tests of obligation 2.
-   They MUST be selected explicitly, and they MUST refuse to start a daemon
-   when they are not on an isolated machine. Such tests exist in two places:
+3. The rule is about where a daemon-process test executes, not about which
+   command starts it. A test of obligation 2 MUST NOT execute on a
+   developer's host, and MUST refuse to start a daemon when it finds it is
+   not on an isolated machine. `just test` MAY run these tests by executing
+   them inside an isolated machine (for example a virtual machine it can
+   start); when no isolated machine is available it MUST NOT fall back to
+   executing them on the host, and it MUST say that they were not run. What
+   `just test` covers is part of the standard SC `just` system, whose source
+   of truth is the sc-lint project; this item constrains only where the tests
+   execute. Such tests exist in two places:
    this repository's crate tests, and the tests of the generated `cli` and
    `daemon` binaries, which live in `template/` and are rendered into every
    project ([REQ-RUN-0206](requirements.md), [REQ-RUN-0310](requirements.md)
@@ -3728,11 +3833,16 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    v0.1 of this repository (decided by the owner). In v0.1 the isolated
    machine for this repository's own tests is the CI runner.
 
+**OPEN:** the standard wording of what `just test` runs is not decided: only
+host-safe tests, or also the daemon-process tests by executing them inside an
+isolated machine when one can be started. It belongs to the standard SC
+`just` system (sc-lint) and applies to every repository, not only this one.  
 **OPEN:** how the tests of obligation 2 are selected and how they detect that
-they are on an isolated machine (a `just` recipe name, an environment marker
-set by the runner, a cargo test filter or `#[ignore]`) is not decided. If the
-answer is a `just` recipe, the closed recipe list of the generated `Justfile`
-([REQ-RUN-0307](requirements.md)) is amended in the same change.  
+they are on an isolated machine (an environment marker set by the runner, a
+cargo test filter or `#[ignore]`, a separate `just` recipe) is not decided.
+If the answer adds a `just` recipe, the closed recipe list of the generated
+`Justfile` ([REQ-RUN-0307](requirements.md)) is amended in the same
+change.  
 **OPEN:** the launchd comparison of [REQ-RUN-0206](requirements.md) needs
 macOS, and a colima virtual machine runs Linux; where that one test runs (a
 macOS CI runner, a macOS virtual machine, or a recorded manual check) is not
@@ -3766,8 +3876,8 @@ test daemon.
    (the child-process tests of [REQ-RT-0005](sc-runtime/requirements.md),
    [REQ-RT-0008](sc-runtime/requirements.md),
    [REQ-RUN-0310](requirements.md) and [REQ-RUN-0206](requirements.md)) is
-   among the explicitly selected tests of obligation 3; `just test` on a
-   developer's host runs none of them.
+   among the tests obligation 3 governs; none of them executes on a
+   developer's host, whichever command started the run.
 3. Run on a machine that is not marked isolated, a test of obligation 2
    exits without starting a daemon and reports that it needs an isolated
    machine. This criterion is conditional on the first OPEN above.

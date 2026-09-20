@@ -419,8 +419,7 @@ socket file behind that the next start or a client would trip over.
 
 Criteria that start a daemon in a child process run only on an isolated
 machine, never on a developer's host
-([NFR-RUN-0010](../requirements.md)); `just test` on a host does not run
-them.
+([NFR-RUN-0010](../requirements.md)).
 
 1. A `#[cfg(unix)]` test starts a daemon in a child process with a route that
    sleeps before replying, sends a request, sends SIGTERM to the child while
@@ -723,8 +722,7 @@ counterpart, that the generated `cli` and `daemon` each accept a global
 
 Criteria that start a daemon in a child process run only on an isolated
 machine, never on a developer's host
-([NFR-RUN-0010](../requirements.md)); `just test` on a host does not run
-them.
+([NFR-RUN-0010](../requirements.md)).
 
 1. A `#[cfg(unix)]` test starts a daemon with an explicit instance root `R`
    (a tempdir) and no endpoint override, and asserts that while it serves,

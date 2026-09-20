@@ -155,6 +155,7 @@ sprint) makes it `Active` or amends it.
 | ADR-RUN-0301 | One store crate per database backend | Active |
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
+| ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Proposed |
 
@@ -1690,6 +1691,87 @@ crate name followed by a space; `arch-qa` review of `template/` for point 3.
 - [ADR-CMD-0003](sc-command/architecture.md): the `server` cargo feature of `sc-command`.
 - [NFR-RT-0001](sc-runtime/requirements.md): the public surface of `sc-runtime`, which a
   re-export would extend.
+
+---
+
+## ADR-RUN-0304: CLI commands are two pure functions, tested without a daemon
+
+**Status:** Active  
+**Decision Date:** 2026-09-20  
+**Source:** direction given by the owner on 2026-09-20 (reduce the complexity of testing a CLI that posts and gets over HTTP; generated code with generated tests can be proven in a unit test without a daemon); the two-function shape is decided in this document and is pending the owner's confirmation  
+
+### Context
+
+A generated CLI command is thin: it builds an `api-types` request from its
+arguments, sends it over HTTP with `sc_transport::Client`, and prints the
+envelope that comes back. The usual way to test such a CLI is to run its
+binary against a running daemon. That is slow and needs a daemon, and on a
+developer's machine it collides with the daemon in use. Since the CLI
+auto-starts a daemon by default ([ADR-RUN-0204](architecture.md)), a test
+whose daemon is unreachable would make the CLI start a real, detached daemon
+on the developer's machine ([ADR-RUN-0009](architecture.md)).
+
+### Decision
+
+1. Each generated CLI command is two pure functions, request construction
+   (arguments to HTTP method, route path and the JSON body to post) and
+   result rendering (envelope
+   or transport error to output text and exit status), with the HTTP call
+   between them in the command's entry point.
+2. The template ships unit tests of both functions for every example
+   command. They need no daemon, socket, network or child process.
+3. Host-run tests MUST NOT run the CLI binary against a daemon. A host-run
+   test that needs the CLI's path to a fixture daemon composes the two
+   functions with `sc_transport::Client` inside the test process.
+4. No mock transport, transport trait or other test-only abstraction is
+   added.
+5. One end-to-end run of the real binaries exists and runs only on an
+   isolated machine.
+
+**OPEN:** how the route path is kept the same in the CLI and the daemon (a
+shared constant, or reliance on the tests of points 3 and 5) is undecided;
+[REQ-RUN-0312](requirements.md) owns the question.
+
+### Consequences
+
+A command's behaviour is proven in milliseconds, in every project, from the
+moment of generation. `just test` on a developer's host needs no daemon for
+the CLI and cannot trigger auto-start. What the unit tests do not reach is
+covered elsewhere: the transport by `sc-transport`'s tests, the handler by
+fixture tests, and type agreement by the shared `api-types` structs
+([ADR-RUN-0302](architecture.md)). The route string is the one thing the
+compiler does not check, which is why it is recorded as OPEN.
+
+### Alternatives Considered
+
+- Test the CLI by running its binary against a `DaemonFixture` daemon on the
+  host. Rejected: it is slow, it proves mostly the transport and the server,
+  which are tested elsewhere, and with auto-start on by default it can start
+  a real daemon on the developer's machine.
+- Abstract the transport behind a trait and test the CLI against a mock.
+  Rejected: it adds code and an abstraction that exist only for tests, which
+  [ADR-RUN-0008](architecture.md) rules out, and a mock can drift from the
+  real client.
+- Test the CLI only end to end on an isolated machine. Rejected as the only
+  test: it leaves a developer with no fast check of a command on the host.
+
+### Implementation
+
+**Enforced by:** the success criteria of [REQ-RUN-0312](requirements.md)
+(`cargo test -p cli` passes with no daemon and no network; no host-run test
+spawns the `cli` binary; no mock transport or test-only trait in
+`template/`); `arch-qa` review of new CLI commands for I/O inside the two
+functions.
+
+### Related Documents
+
+- [REQ-RUN-0312](requirements.md): owns the behaviour and the route-path question
+- [REQ-RUN-0302](requirements.md): the example operation and its host-run test
+- [REQ-RUN-0201](requirements.md): one operation, three surfaces, one path to SQL
+- [NFR-RUN-0010](requirements.md): what may run on a developer's host
+- [ADR-RUN-0009](architecture.md): no test daemon; isolated machine as the escape path
+- [ADR-RUN-0204](architecture.md): the CLI auto-starts the daemon
+- [ADR-RUN-0302](architecture.md): one `api-types` struct shared by all surfaces
 
 ---
 
