@@ -1255,7 +1255,8 @@ started without an explicit instance root would lock the developer's real one
 8. Once the mechanism and service-definition OPENs are decided: on macOS, a
    test compares a CLI-started daemon with the same daemon started by launchd
    from its service definition, and asserts that the environment, working
-   directory, standard streams and session are equal, and that the arguments
+   directory and standard streams are equal, that each daemon is the leader
+   of its own session with no controlling terminal, and that the arguments
    are equal apart from the explicit values of obligation 4.
 
 ---
