@@ -528,8 +528,11 @@ variant `DaemonNotRunning`.
    `DAEMON.NOT_RUNNING`, and the suggested action, exactly
    `run <app> daemon start` with `<app>` replaced by the application name
    given to `Client::connect` (for `"my-app"`: `run my-app daemon start`).
-3. The client MUST NOT start the daemon, spawn any process, or retry in
-   order to wait for a daemon.
+3. The `Client` MUST NOT start the daemon, spawn any process, or retry in
+   order to wait for a daemon. A generated CLI does auto-start the daemon
+   ([REQ-RUN-0206](../requirements.md)); that is a separate step taken after
+   the `Client` reports `DaemonNotRunning`, and which crate holds its code
+   is OPEN there.
 4. A response body that cannot be deserialised into the requested type MUST
    produce a `TransportError` variant other than `DaemonNotRunning`.
 
@@ -559,9 +562,9 @@ connection errors (for example permission denied on the socket file) map to
 The daemon being down is the most common CLI failure. It must be told apart
 from every other failure so that an agent or a person knows the fix is to
 start the daemon, and automation can branch on the stable code
-`DAEMON.NOT_RUNNING`. The client only reports: whether a CLI should start
-the daemon automatically is an undecided question, and until it is decided
-the default is report-only. The code and action are plain strings because
+`DAEMON.NOT_RUNNING`. The `Client` only reports; starting the daemon is the
+CLI's auto-start step ([REQ-RUN-0206](../requirements.md)), which acts on
+this variant. The code and action are plain strings because
 this crate must not depend on `sc-command`, where `OpError` lives; the
 project's CLI maps this variant into an `OpError`. Which `code` and envelope
 a CLI prints for the other `TransportError` variants is not decided in this

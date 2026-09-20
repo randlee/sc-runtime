@@ -150,6 +150,7 @@ sprint) makes it `Active` or amends it.
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Proposed |
+| ADR-RUN-0204 | The CLI auto-starts the daemon, launched as launchd would | Active |
 | ADR-RUN-0301 | One store crate per database backend | Active |
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
@@ -941,7 +942,11 @@ happens to be up.
    code `DAEMON.NOT_RUNNING` and
    `suggested_action: "run <app> daemon start"` (a plain JSON string), and
    MUST exit non-zero (the non-zero exit is decided in this document).
-6. The CLI MUST NOT start the daemon itself.
+6. The CLI auto-starts the daemon by default, launched the way launchd
+   launches it and never inheriting the CLI's environment
+   ([ADR-RUN-0204](architecture.md), which amends this point). Point 5 is
+   what the CLI reports when auto-start is disabled or the started daemon
+   does not become reachable.
 
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
@@ -959,9 +964,9 @@ There is one code path to SQL and one writer of the local store. Every CLI
 command needs a running daemon, so the error for its absence is typed and
 carries a suggested action that a person or an agent can follow.
 
-Whether a later version lets the CLI auto-start the daemon is undecided.
-Report-only (points 5 and 6) is the binding behaviour until a later ADR
-changes it, and nothing may assume auto-start.
+The owner decided on 2026-09-20 that the CLI auto-starts the daemon by
+default; [ADR-RUN-0204](architecture.md) records that decision and the clean
+launch it requires.
 
 The singleton governs the local store only. A shared Postgres store, when
 `store-postgres` arrives after v0.1, may be written by daemons on several
@@ -1182,6 +1187,102 @@ structs.
 - [ADR-RUN-0202](architecture.md): the accepted shape these facts sit under.
 - [ADR-RUN-0302](architecture.md): one shared `api-types` struct; no generated client.
 - [NFR-RUN-0007](requirements.md): rmcp is pinned to a minor version in every manifest.
+
+---
+
+## ADR-RUN-0204: The CLI auto-starts the daemon, launched as launchd would
+
+**Status:** Active  
+**Decision Date:** 2026-09-20  
+**Source:** decided by the owner on 2026-09-20. The sc-runtime design, 2026-09-19, records report-only as the default and lists auto-start as undecided; this ADR replaces that default  
+**Amends:** [ADR-RUN-0201](architecture.md) point 6 (the CLI never starts the daemon)  
+
+### Context
+
+Every CLI command needs a running daemon
+([ADR-RUN-0201](architecture.md)). Under report-only behaviour a person or an
+agent has to start the daemon by hand before the first command works.
+Starting it from the CLI removes that step, and experience with auto-start
+in other SC projects shows its cost: a daemon started as a child of the CLI
+inherits the caller's environment. Variables from a shell, an agent session
+or a CI job leak into a long-lived process, so the daemon's behaviour depends
+on who happened to run the first command, and the difference lasts until the
+daemon restarts.
+
+`<instance-root>` is the per-application, per-user directory resolved by
+sc-transport, or an explicitly supplied path; its default location is
+undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
+
+### Decision
+
+1. The generated CLI MUST auto-start the daemon by default when it finds the
+   daemon is not running, wait for it to accept a connection, and then run
+   the requested command.
+2. The CLI-started daemon MUST be started the same way it starts when
+   launchd launches it cleanly from its service definition: same program and
+   arguments, and the environment, working directory, standard streams and
+   session of a launchd launch.
+3. The daemon MUST NOT inherit the CLI's environment. Environment leakage is
+   the named risk of this decision and MUST be prevented by construction and
+   proven by test, not left to convention.
+4. Values the daemon needs from the CLI's invocation (a resolved endpoint or
+   instance root) MUST be passed explicitly, never through inherited
+   environment.
+5. The `daemon.lock` singleton resolves concurrent auto-starts; exactly one
+   daemon survives and every CLI connects to it.
+6. `DAEMON.NOT_RUNNING` remains the result when auto-start is disabled or
+   the started daemon does not become reachable. The CLI still has no
+   direct-database mode.
+
+**OPEN:** the launch mechanism (ask launchd to start the registered job, or
+spawn directly with a constructed clean launch), the Linux and Windows
+equivalents, whether the template ships the service definitions, how
+auto-start is disabled, the wait bound, and which crate holds the auto-start
+code are undecided. They are listed in
+[REQ-RUN-0206](requirements.md), which owns the behaviour.
+
+### Consequences
+
+A first command works with no set-up. The daemon a CLI starts is
+indistinguishable from the one the service manager starts, so a fault can be
+reproduced by restarting the service. The project needs a service definition
+to measure "the same way" against, and the CLI needs a way to hand the daemon
+its endpoint and instance root without the environment. Tests must prove the
+absence of leaked variables from outside the daemon process. The singleton
+lock that already exists makes concurrent auto-start safe without new
+coordination code.
+
+### Alternatives Considered
+
+- Report-only, the design's recorded default: the CLI prints
+  `DAEMON.NOT_RUNNING` and the user starts the daemon. Rejected by the owner
+  as the default because every first command fails; it remains the behaviour
+  when auto-start is disabled or fails.
+- Auto-start by spawning the daemon as an ordinary child process of the CLI.
+  Rejected because the child inherits the caller's environment, working
+  directory and terminal, which is exactly the leak this decision exists to
+  prevent.
+- Auto-start with a filtered copy of the CLI's environment (an allow-list or
+  deny-list of variables). Rejected because the result still depends on the
+  caller, and a list of variables is never complete; the requirement is
+  equality with the launchd launch, not a cleaned-up caller environment.
+
+### Implementation
+
+**Enforced by:** the success criteria of [REQ-RUN-0206](requirements.md), in
+particular the sentinel-variable test that reads the started daemon's
+environment from outside the process and the macOS comparison with a
+launchd-started daemon; `arch-qa` review of the auto-start code for any
+process spawn that inherits the caller's environment.
+
+### Related Documents
+
+- [REQ-RUN-0206](requirements.md): owns the auto-start behaviour and its open questions
+- [REQ-RUN-0202](requirements.md): `DAEMON.NOT_RUNNING` when auto-start is disabled or fails
+- [REQ-RUN-0310](requirements.md): `--endpoint` and `SC_ENDPOINT` in the generated binaries
+- [REQ-RT-0002](sc-runtime/requirements.md): the `daemon.lock` singleton
+- [NFR-RUN-0005](requirements.md): tests never use the developer's real instance root
+- [ADR-RUN-0201](architecture.md): amended by this ADR
 
 ---
 

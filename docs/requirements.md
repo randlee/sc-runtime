@@ -50,7 +50,7 @@ Three principles decide what belongs here:
 |---|---|---|
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
-| REQ-RUN-0201 through REQ-RUN-0205 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
+| REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
 | REQ-RUN-0301 through REQ-RUN-0310 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
@@ -70,7 +70,6 @@ each waits until a project asks for it.
 | SQL Server | never; sqlx has no driver |
 | SQLite batched write actor | ported from atm-core when a project measures write contention |
 | `tracing` bridge into `sc-observability` | undecided |
-| CLI auto-starts the daemon | undecided; default report-only |
 | Bearer token for TCP; Origin and Host checks on `/mcp` | ideas only; relevant only on TCP |
 | Surface snapshots and adapter-drift tooling | owned by sc-lint |
 | `sc-lint create` driver step | added when sc-lint ships that command |
@@ -199,8 +198,12 @@ This requirement applies to each of the four workspace crates: `sc-config`,
 7. Each crate MUST be published to crates.io separately (one
    `cargo publish -p <crate>` per crate).
 
-**OPEN:** the licence identifier to put in `license` (and whether a licence
-file is shipped per crate) is not decided.
+The `license` field of every crate MUST be `MIT` (decided by the owner on
+2026-09-20), and the repository's `LICENSE` file MUST be the MIT licence
+text.
+
+**OPEN:** whether each crate directory also ships its own copy of the licence
+file is not decided.
 
 **OPEN:** the minimum cargo version this repository requires is not decided.
 Success criterion 2 needs a cargo whose `cargo publish` accepts
@@ -784,7 +787,7 @@ and every client gets it.
 
 ---
 
-## REQ-RUN-0202: CLI reports `DAEMON.NOT_RUNNING`; no fallback
+## REQ-RUN-0202: CLI reports `DAEMON.NOT_RUNNING`; no database fallback
 
 **Status:** Active  
 
@@ -798,7 +801,11 @@ This applies to the `cli` crate of a project generated from `template/`.
    crate MUST NOT have `sqlx` or any generated `store-*` or `service` crate
    among its normal (non-dev) dependencies; the rule that a CLI links no
    daemon-side dependency is owned by [NFR-RUN-0001](requirements.md).
-2. The CLI MUST NOT start the daemon, neither automatically nor as a retry.
+2. The CLI auto-starts the daemon by default
+   ([REQ-RUN-0206](requirements.md)). Obligations 3 to 6 describe what the
+   CLI reports when the daemon cannot be reached and auto-start is disabled,
+   or when the daemon the CLI started does not become reachable. In neither
+   case may the CLI retry without bound.
 3. When the daemon cannot be reached (the socket file does not exist, or the
    connection is refused), the `sc-transport` client returns the typed error
    `TransportError::DaemonNotRunning`
@@ -838,9 +845,6 @@ or stderr) of the message when `--json` is not given, are not stated.
 the generated CLI provides a `daemon start` subcommand is not stated. The
 string is fixed either way.
 
-**OPEN:** whether the CLI may auto-start the daemon in a later version is
-undecided. Until it is decided the behaviour is report-only, and nothing may
-be built that assumes otherwise.
 
 ### Rationale
 
@@ -851,12 +855,18 @@ sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)). A CLI that fell
 back to opening the database itself would be a second
 writer to a SQLite file and a second code path to SQL, and would behave
-differently depending on whether a daemon happened to be up. Because every
-CLI command therefore needs a running daemon, its absence is the most common
-CLI failure, so it gets a typed code an agent can branch on and a suggested
-action that says how to fix it.
+differently depending on whether a daemon happened to be up. Every CLI
+command therefore needs a running daemon. The CLI starts one by default
+([REQ-RUN-0206](requirements.md)); when that is disabled or does not work,
+the absence of a daemon gets a typed code an agent can branch on and a
+suggested action that says how to fix it.
 
 ### Success Criteria
+
+Criteria 1 and 2 run the CLI with auto-start disabled; how it is disabled
+is OPEN in [REQ-RUN-0206](requirements.md), and until that is decided they
+are run in the other case this item covers, a started daemon that cannot
+become reachable (REQ-RUN-0206 criterion 7).
 
 1. A test runs a generated CLI command with `--json` against an endpoint
    where no daemon is listening (a socket path inside a fresh tempdir). It
@@ -1059,6 +1069,142 @@ it prefers, without this project choosing one.
    `/mcp` returns HTTP 404 while the other three still answer.
 3. Inspect the generated `crates/daemon`: it starts one process and no code
    in it binds a second listener for MCP.
+
+---
+
+## REQ-RUN-0206: CLI auto-starts the daemon with a clean, launchd-equivalent launch
+
+**Status:** Active  
+
+### Requirement Statement
+
+Decided by the owner on 2026-09-20. The sc-runtime design document records
+report-only as the default and leaves auto-start undecided; this item
+replaces that default.
+
+This applies to the `cli` crate of a project generated from `template/`.
+`<app>` is the project's application name. `<instance-root>` is the
+per-application, per-user directory resolved by sc-transport, or an
+explicitly supplied path; its default location is undecided
+([REQ-TRN-0002](sc-transport/requirements.md)).
+
+1. Auto-start MUST be the default. When a CLI command finds that the daemon
+   is not running (the `sc-transport` client returns
+   `TransportError::DaemonNotRunning`,
+   [REQ-TRN-0006](sc-transport/requirements.md)), the CLI MUST start the
+   daemon, wait until the daemon accepts a connection on the resolved
+   endpoint, and then run the command the user asked for.
+2. The daemon the CLI starts MUST be started the same way it starts when
+   launchd launches it cleanly from its service definition. The started
+   process MUST be the same program with the same arguments, and its
+   environment, working directory, standard input, output and error, and
+   session MUST be the ones a launchd launch gives it, not the ones the CLI
+   process has.
+3. The daemon MUST NOT inherit the environment of the CLI process. No
+   environment variable set in the shell, agent session or parent process
+   that ran the CLI may appear in the daemon's environment because the CLI
+   started it. This is the known failure mode of auto-start: variables
+   leaking from whichever caller happened to start the daemon make the
+   daemon behave differently from one start to the next, and the leak
+   persists for the life of the daemon.
+4. Every value the daemon needs from the CLI's invocation MUST be passed
+   explicitly and visibly, never through inherited environment. In
+   particular, an endpoint or instance root that the CLI resolved from
+   `--endpoint` or from `SC_ENDPOINT` in its own environment
+   ([REQ-RUN-0310](requirements.md)) MUST reach the daemon as an explicit
+   argument or configuration value; otherwise the daemon, which does not see
+   the CLI's `SC_ENDPOINT`, would bind somewhere else and the CLI would never
+   reach it.
+5. The daemon MUST outlive the CLI command that started it, and MUST NOT be
+   stopped by the CLI process exiting or by its terminal closing.
+6. Two CLI commands that auto-start at the same time MUST end with exactly
+   one daemon. The `daemon.lock` singleton
+   ([REQ-RT-0002](sc-runtime/requirements.md)) decides the winner; the CLI
+   whose daemon lost MUST NOT treat that as a failure and MUST connect to
+   the daemon that won.
+7. When auto-start is disabled, or when the daemon the CLI started does not
+   become reachable, the CLI MUST report `DAEMON.NOT_RUNNING` exactly as
+   [REQ-RUN-0202](requirements.md) states, and MUST NOT retry without bound.
+8. The CLI MUST still have no direct-database mode
+   ([REQ-RUN-0202](requirements.md)); starting the daemon is the only thing
+   it does about a missing daemon.
+9. No test may start a daemon on the developer's real instance root
+   ([NFR-RUN-0005](requirements.md)): every auto-start test MUST give the CLI
+   a fresh tempdir instance root, and the started daemon MUST use it.
+
+**OPEN:** the mechanism that satisfies obligation 2 is not decided: asking
+launchd to start the daemon's registered job (so launchd itself performs the
+launch), or spawning the daemon directly with an environment, working
+directory, standard streams and session constructed to match a launchd
+launch.  
+**OPEN:** the equivalent on Linux (for example a systemd user unit) and on
+Windows is not decided; obligations 3 to 9 apply on every platform.  
+**OPEN:** whether the generated project ships a launchd service definition
+(and the Linux and Windows equivalents), where it is installed, and what
+program path, arguments, environment and working directory it names, are not
+decided. Obligation 2 needs that definition to exist, because it is what
+"the same way" is measured against.  
+**OPEN:** how auto-start is disabled (a command-line option, a configuration
+value, an environment variable, or more than one) is not decided.  
+**OPEN:** how long the CLI waits for the started daemon to accept a
+connection, and how it polls, are not decided.  
+**OPEN:** which crate holds the auto-start code is not decided: the generated
+`cli` crate, `sc-transport`, or a new library crate. The `sc-transport`
+`Client` itself does not start processes
+([REQ-TRN-0006](sc-transport/requirements.md)). Code that every project
+needs unchanged belongs in a published crate
+([ADR-RUN-0002](architecture.md)).  
+**OPEN:** whether the generated CLI also provides explicit `daemon start`
+and `daemon stop` subcommands is not decided
+([REQ-RUN-0202](requirements.md)).
+
+### Rationale
+
+Every CLI command needs a running daemon, so a person or an agent who types a
+command should get its result, not an instruction to start something first.
+Auto-start is only safe if the daemon it produces is the same daemon every
+time. A daemon that inherits the environment of whoever ran the first
+command carries that caller's variables (credentials, proxy settings, tool
+overrides, an agent session's variables) for as long as it lives, behaves
+differently depending on who started it, and cannot be reproduced when it
+misbehaves. Requiring the launch to be the one launchd performs gives one
+definition of a clean start, used both at login and on demand, and makes the
+CLI-started daemon indistinguishable from the service-started one.
+
+### Success Criteria
+
+1. A test runs a generated CLI command with a fresh tempdir instance root
+   and no daemon running. It asserts: the command succeeds and returns the
+   operation's result; afterwards a daemon holds `daemon.lock` in that
+   tempdir; a second command succeeds without starting another daemon.
+2. The same test runs the first command with a sentinel environment variable
+   set in the CLI's environment only (a name no service definition sets). It
+   reads the started daemon's environment from outside the process (the
+   operating system's process-inspection facility) and asserts the sentinel
+   is absent.
+3. A test sets `SC_ENDPOINT` in the CLI's environment only, to a socket path
+   in the tempdir, and runs a command with no daemon running. It asserts the
+   command succeeds, which shows the endpoint reached the daemon explicitly
+   (obligation 4), and that the daemon's environment does not contain
+   `SC_ENDPOINT`.
+4. A test runs two CLI commands at the same moment against one fresh tempdir
+   instance root with no daemon running. Both succeed, and exactly one
+   daemon process holds `daemon.lock` afterwards.
+5. A test starts the daemon through a CLI command, waits for the CLI process
+   to exit, and asserts the daemon still answers a request.
+6. A test runs a command with auto-start disabled and no daemon running, and
+   asserts the `DAEMON.NOT_RUNNING` result of
+   [REQ-RUN-0202](requirements.md) and that no daemon was started (the
+   tempdir instance root contains no `daemon.lock` and no `daemon.sock`).
+   This criterion is conditional on the OPEN above on how auto-start is
+   disabled.
+7. A test makes the started daemon fail to become reachable (for example the
+   instance root is a regular file) and asserts the CLI reports
+   `DAEMON.NOT_RUNNING` within the bounded wait and exits non-zero.
+8. Once the mechanism OPEN is decided: on macOS, a test compares the
+   environment, working directory and arguments of a CLI-started daemon with
+   those of the same daemon started by launchd from its service definition,
+   and asserts they are equal.
 
 ---
 
