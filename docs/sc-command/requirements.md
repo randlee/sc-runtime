@@ -491,6 +491,11 @@ client sees, which the product requires of every surface
 
 ### Success Criteria
 
+In criteria 1 to 3, "the envelope JSON extracted from the `CallToolResult`"
+means the envelope read from wherever the OPEN above on how the envelope is
+carried places it; until that OPEN is decided the tests read it through one
+helper function so that only the helper changes.
+
 1. A test compiled with `--features server` calls
    `Ok::<Sample, OpError>(sample).into_mcp()` and asserts: the result is
    `Ok`; `is_error` is `None` or `Some(false)`; the envelope JSON extracted
