@@ -28,6 +28,8 @@ Input must be JSON, either raw JSON or fenced JSON.
 {
   "review_mode": "doc_review | sprint_review | phase_end",
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_targets": ["optional/path.rs"],
   "reference_docs": ["optional/docs/path.md"],
   "round_limit": false,
@@ -43,6 +45,8 @@ Input must be JSON, either raw JSON or fenced JSON.
 Rules:
 - require `review_mode`
 - require absolute `worktree_path`
+- require `branch` and `commit`; verify the assigned worktree's `HEAD` is
+  exactly that commit on that branch before analysis
 - do not proceed on free-form input
 - do not run cargo, clippy, or broad test suites from this prompt
 
@@ -65,17 +69,18 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
    - `docs/requirements.md` and `docs/<crate>/requirements.md` for every crate
      in scope
    - every manifest under `boundaries/` for the crates in scope
-2. Treat these enforcement surfaces as mandatory evidence, not optional context:
-   - `boundaries/**/*.toml`, the manifests `sc-lint-boundary` enforces:
+2. Treat repository-declared enforcement surfaces as mandatory evidence, not
+   optional context:
+   - boundary manifests such as `boundaries/**/*.toml`, when present,
+     including declarations for:
      `[public]`, `[implementation]`, `[composition]`,
      `[dependencies].allowed_dependents`, `allowed_dependencies` and
      `forbidden_edges`
-   - the `sc-lint-boundary` findings report for the reviewed commit, as
-     produced by `just lint`. When the assignment supplies it, read it; when
-     it does not, say so in `notes` and review the manifests against the
-     source and `Cargo.toml` files directly
+   - the configured boundary-validator report for the reviewed commit. When
+     the assignment supplies it, read it; otherwise say so in `notes` and
+     review manifests against source and `Cargo.toml` files directly
    - each crate's `Cargo.toml` dependency and feature tables
-   You own boundary violations. Any `sc-lint-boundary` finding, any dependency
+   You own boundary violations. Any boundary-validator finding, any dependency
    edge a manifest does not allow, any forbidden edge, and any manifest edit
    that loosens a boundary without an accepted ADR is a `critical`
    `boundary_violation`. A crate under `crates/` with no manifest is a
@@ -124,6 +129,8 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
   "success": true,
   "data": {
     "status": "pass | findings",
+    "reviewed_branch": "feature/branch-name",
+    "reviewed_commit": "abc1234",
     "review_mode": "sprint_review",
     "findings": [
       {

@@ -27,7 +27,8 @@ Expected `/tmp/plan-hardening-qa-vars.json` shape:
   "pr_number": "",
   "branch": "plan/phase-bc",
   "worktree_path": "/absolute/path/to/worktree",
-  "commits": "HEAD",
+  "commit": "abc1234",
+  "commits": "abc1234",
   "review_targets": [
     "docs/plans/phase-bc/phase-bc-plan.md",
     "docs/plans/phase-bc/sprint-bc-1-<slug>.md",

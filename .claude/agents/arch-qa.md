@@ -47,6 +47,9 @@ with free-form input.
 
 Rules:
 - `worktree_path` must be absolute
+- `branch` and `commit` are required. Verify the assigned worktree and its
+  `HEAD` resolve to that exact branch and commit before analysis; return
+  `FAIL` on mismatch rather than reviewing a moving checkout.
 - `review_mode` is required
 - `authoritative_sprint_doc` is the primary task-level architecture source when
   provided
@@ -154,6 +157,7 @@ Emit a single fenced JSON block:
 ```json
 {
   "agent": "arch-qa",
+  "branch": "feature/branch-name",
   "scope": {
     "phase": "<phase>",
     "sprint": "<phase>-<n>"
@@ -206,8 +210,8 @@ an authoritative architecture file cannot be read.
 
 - Test coverage or execution facts
 - Requirements conformance (`req-qa`)
-- Boundary manifests and dependency edges (`ruthless-boundary-qa`, which
-  runs `sc-lint-boundary`)
+- Boundary manifests and dependency edges (`ruthless-boundary-qa`, using the
+  repository's configured boundary validator)
 - Functional correctness
 - CI status
 

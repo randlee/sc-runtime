@@ -53,8 +53,8 @@ with free-form input.
   ],
   "authoritative_sprint_doc": "docs/path/to/authoritative-sprint-doc.md",
   "worktree_path": "/absolute/path/to/worktree",
-  "branch": "optional branch name",
-  "commit": "optional commit sha",
+  "branch": "assigned branch name",
+  "commit": "assigned commit sha",
   "review_targets": [
     "optional file/dir paths to inspect for implementation compliance"
   ],
@@ -71,6 +71,10 @@ with free-form input.
 ```
 
 Rules:
+- `worktree_path`, `branch`, and `commit` are required. Before reading review
+  targets, verify that the worktree belongs to the assigned branch and that
+  its `HEAD` is exactly the assigned commit. Return `INPUT.INVALID` rather
+  than reviewing a different or moving checkout.
 - `phase_or_sprint_docs` is an array and must contain one or more repo-relative
   paths.
 - `phase_sprint_documents` is a supported alias; if both are provided, merge
@@ -213,6 +217,8 @@ Return fenced JSON only.
 ```json
 {
   "status": "PASS | FAIL",
+  "reviewed_branch": "feature/branch-name",
+  "reviewed_commit": "abc1234",
   "errors": [
     {
       "code": "INPUT.INVALID | FILE.NOT_FOUND | ANALYSIS.ERROR",

@@ -6,6 +6,8 @@ format: json
 required_variables:
   - review_mode
   - worktree_path
+  - branch
+  - commit
   - review_targets
 optional_variables:
   - practice_mode
@@ -27,6 +29,8 @@ defaults:
 {
   "review_mode": {{ review_mode }},
   "worktree_path": {{ worktree_path }},
+  "branch": {{ branch }},
+  "commit": {{ commit }},
   "review_targets": [{% for target in review_targets %}{{ target }}{% if not loop.last %}, {% endif %}{% endfor %}],
   "practice_mode": {% if practice_mode %}{{ practice_mode }}{% elif review_mode == "phase_end" %}"all"{% else %}"selected"{% endif %},
   "practice_ids": {% if practice_ids and practice_mode != "all" %}

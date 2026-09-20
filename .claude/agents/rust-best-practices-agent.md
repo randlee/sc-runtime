@@ -39,6 +39,8 @@ with free-form input.
 {
   "review_mode": "doc_review | sprint_review | phase_end",
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_targets": [
     "src/",
     "Cargo.toml"
@@ -54,6 +56,9 @@ with free-form input.
 Rules:
 - `review_mode` is required.
 - `worktree_path` is required and must be absolute.
+- `branch` and `commit` are required. Verify the worktree's `HEAD` is exactly
+  the assigned commit on the assigned branch before analysis; return an input
+  error on mismatch.
 - `practice_mode` is required.
 - `review_targets` is optional. Omit to review default changed-file scope plus directly impacted boundaries.
 - `practice_ids` must be non-empty when `practice_mode` is `selected`.
@@ -108,6 +113,8 @@ Return fenced JSON only.
   "success": true,
   "data": {
     "status": "pass | findings",
+    "reviewed_branch": "feature/branch-name",
+    "reviewed_commit": "abc1234",
     "review_mode": "sprint_review",
     "practice_mode": "selected",
     "practices_reviewed": ["RBP-001", "RBP-004"],

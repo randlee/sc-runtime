@@ -63,6 +63,10 @@ Render Rust reviewer assignments with `sc-compose` from these installed template
 
 The rendered output is JSON and should be passed directly to the worker prompt. Keep the worker prompts sparse; do not push orchestration logic down into the workers.
 
+Every assignment must receive the same exact `branch`, `commit`, and
+`worktree_path` from the parent QA assignment. These are required pinning
+fields, not optional reviewer hints.
+
 ### QA Assignment Example
 
 ```bash
@@ -71,6 +75,8 @@ cat > "$_VARS" <<'JSON'
 {
   "review_mode": "sprint_review",
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_targets": ["src/", "Cargo.toml"]
 }
 JSON
@@ -89,6 +95,8 @@ cat > "$_VARS" <<'JSON'
 {
   "review_mode": "sprint_review",
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_targets": ["src/", "Cargo.toml"],
   "practice_mode": "selected",
   "practice_ids": ["RBP-001", "RBP-004", "RBP-006", "RBP-007"]
@@ -109,6 +117,8 @@ cat > "$_VARS" <<'JSON'
 {
   "review_mode": "phase_end",
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_targets": ["src/", "Cargo.toml"]
 }
 JSON
