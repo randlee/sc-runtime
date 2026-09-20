@@ -147,6 +147,7 @@ sprint) makes it `Active` or amends it.
 | ADR-RUN-0006 | Library errors are typed values; no public panics | Active |
 | ADR-RUN-0007 | Async end to end on Tokio; `sc-config` is synchronous | Active |
 | ADR-RUN-0008 | Requirements must mean less code; prefer standard designs | Active |
+| ADR-RUN-0009 | Daemon-process tests run in a virtual machine; no test daemon | Active |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Proposed |
@@ -912,6 +913,93 @@ saves a project from writing); [NFR-RUN-0003](requirements.md), by its `proc-mac
 
 ---
 
+## ADR-RUN-0009: Daemon-process tests run in a virtual machine; no test daemon
+
+**Status:** Active  
+**Decision Date:** 2026-09-20  
+**Source:** decided by the owner on 2026-09-20, from experience in another SC project; not stated in the sc-runtime design  
+
+### Context
+
+Integration tests want to run the daemon. A developer's machine usually has
+the application's real daemon running, so a test that starts a daemon there
+either collides with it or must be made different from it. In another SC
+project this produced thousands of daemons left running by tests, and the
+daemon's singleton requirements and gates had to be strengthened to stop
+them. The obvious way out is a test daemon: a crate or executable that is
+mostly the daemon but safe to start in tests. It drifts from the production
+daemon and increases the code to maintain, and tests against it stop proving
+anything about the code that ships.
+
+### Decision
+
+1. The escape path for a test that is not safe on a developer's host is a
+   virtual machine (colima is the named example) or an ephemeral CI runner.
+   It is never a test variant of the daemon.
+2. There MUST NOT be a test daemon: no crate, binary, cargo feature or build
+   configuration that reproduces the daemon for tests, and no test-only
+   switch in production daemon code.
+3. A test that starts a daemon as a separate process, uses the default
+   instance root, or involves the service manager or CLI auto-start MUST run
+   only on an isolated machine and MUST NOT run on a developer's host.
+4. A test that runs the daemon in-process through
+   `sc_runtime::testing::DaemonFixture` on a temporary instance root MAY run
+   on a developer's host (decided in this document;
+   [ADR-RT-0004](sc-runtime/architecture.md) makes that fixture the real
+   builder path, not a separate implementation).
+5. The `daemon.lock` singleton MUST NOT be weakened for tests.
+6. Building or provisioning a virtual machine is not part of v0.1. The rule
+   MUST reach generated projects as written guidance in their `AGENTS.md` and
+   `CLAUDE.md`.
+
+**OPEN:** how daemon-process tests are selected and how they detect an
+isolated machine, and where the macOS-only launchd comparison runs, are
+undecided; [NFR-RUN-0010](requirements.md) owns both questions.
+
+### Consequences
+
+Production daemon code has one shape, and tests exercise it. A developer's
+`just test` stays safe and fast, because it runs only in-process fixture
+tests. The tests that need a real daemon process, the real singleton and the
+real service manager run where a leaked or colliding daemon costs nothing.
+Until a virtual machine is set up for a project, those tests run only in CI.
+The launchd comparison needs macOS, which a Linux virtual machine cannot
+give.
+
+### Alternatives Considered
+
+- A test daemon crate or executable, mostly like the daemon. Rejected: it
+  drifts from the production daemon, doubles the maintenance, and its tests
+  do not prove production behaviour. This is the alternative the decision
+  exists to rule out.
+- Run daemon-process tests on the developer's host with a separate instance
+  root for every test. Rejected as the general answer: it depends on every
+  test, including future ones, getting the isolation right, and a test that
+  gets it wrong collides with or leaks beside the developer's real daemon.
+  It remains correct for the in-process fixture, which cannot leak a process.
+- Build and ship a virtual machine definition as part of v0.1. Rejected by
+  the owner for the MVP; the rule is delivered as guidance.
+
+### Implementation
+
+**Enforced by:** the success criteria of [NFR-RUN-0010](requirements.md)
+(no test-daemon crate, binary, feature or `cfg`; daemon-process tests
+excluded from `just test` on a host and run in CI) and of
+[REQ-RUN-0311](requirements.md) (the guidance is present in every generated
+project); `arch-qa` review of any new crate, binary or feature whose purpose
+is testing the daemon.
+
+### Related Documents
+
+- [NFR-RUN-0010](requirements.md): the rule for this repository and its open questions
+- [REQ-RUN-0311](requirements.md): the guidance in generated projects
+- [NFR-RUN-0005](requirements.md): isolated, parallel tests on temporary instance roots
+- [REQ-RUN-0206](requirements.md): CLI auto-start, whose tests start real daemon processes
+- [REQ-RT-0002](sc-runtime/requirements.md): the `daemon.lock` singleton
+- [ADR-RT-0004](sc-runtime/architecture.md): the fixture is the real daemon
+
+---
+
 ## ADR-RUN-0201: Daemon owns the database; all clients use HTTP
 
 **Status:** Active  
@@ -1225,7 +1313,10 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    streams and session of a launchd launch, and the service definition's
    arguments plus only the explicit values of point 4. That exception is
    decided in this document; the alternative without it is the first OPEN
-   below.
+   below. The daemon's startup directory MUST always be the same directory,
+   whoever starts it and from wherever, and never the CLI's current
+   directory (decided by the owner on 2026-09-20); which directory is OPEN in
+   [REQ-RUN-0206](requirements.md).
 3. The daemon MUST NOT inherit the CLI's environment. Environment leakage is
    the named risk of this decision and MUST be prevented by construction and
    proven by test, not left to convention.

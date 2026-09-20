@@ -1,6 +1,6 @@
 # sc-runtime Requirements
 
-**ID Range:** REQ-RUN-0001 through REQ-RUN-0702; NFR-RUN-0001 through NFR-RUN-0009  
+**ID Range:** REQ-RUN-0001 through REQ-RUN-0702; NFR-RUN-0001 through NFR-RUN-0010  
 **Status:** Draft  
 **Created:** 2026-09-19  
 **Last Updated:** 2026-09-19  
@@ -51,12 +51,12 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0310 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. |
+| REQ-RUN-0301 through REQ-RUN-0311 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
 | REQ-RUN-0701 through REQ-RUN-0702 | Release | - |
-| NFR-RUN-0001 through NFR-RUN-0009 | Non-functional requirements | - |
+| NFR-RUN-0001 through NFR-RUN-0010 | Non-functional requirements | - |
 
 ## Out of scope for v0.1
 
@@ -75,6 +75,7 @@ each waits until a project asks for it.
 | `sc-lint create` driver step | added when sc-lint ships that command |
 | `sc-config` reload, change notification, async interop | later, possibly `sc-config-tokio` |
 | stdio MCP clients | a stdio-to-HTTP shim is a later option |
+| A virtual machine definition, colima configuration or provisioning scripts for daemon-process tests | not built in v0.1, in this repository or in the template; the rule is delivered as a requirement and as guidance ([NFR-RUN-0010](requirements.md), [REQ-RUN-0311](requirements.md)) |
 | Forwarding, replication, an outbox or routing policy between stores | never; data flow between stores is project code |
 | A query layer portable across database backends | never; each store crate has one fixed backend |
 | Web-application features: HTML templating, sessions, user authentication | never; this is not a web-app framework |
@@ -198,9 +199,13 @@ This requirement applies to each of the four workspace crates: `sc-config`,
 7. Each crate MUST be published to crates.io separately (one
    `cargo publish -p <crate>` per crate).
 
-The `license` field of every crate MUST be `MIT` (decided by the owner on
-2026-09-20), and the repository's `LICENSE` file MUST be the MIT licence
-text.
+This repository and every crate it publishes (`sc-config`, `sc-transport`,
+`sc-command`, `sc-runtime`) MUST be MIT licensed (decided by the owner on
+2026-09-20): the `license` field of each of the four crates MUST be `MIT`,
+and the repository's `LICENSE` file MUST be the MIT licence text. This says
+nothing about the licence of a generated project, which is a generation
+option ([REQ-RUN-0401](requirements.md)): the generator is also used for
+projects that are not MIT licensed and not open source.
 
 **OPEN:** whether each crate directory also ships its own copy of the licence
 file is not decided.
@@ -867,7 +872,7 @@ Criteria 1 and 2 run the CLI with auto-start disabled. They are conditional
 on the OPEN in [REQ-RUN-0206](requirements.md) on how auto-start is
 disabled, and are not run until it is decided. The other case this item
 covers, a started daemon that does not become reachable, is checked by
-criterion 7 of REQ-RUN-0206.
+criterion 8 of REQ-RUN-0206.
 
 1. A test runs a generated CLI command with `--json` against an endpoint
    where no daemon is listening (a socket path inside a fresh tempdir). It
@@ -1083,7 +1088,10 @@ Decided by the owner on 2026-09-20. The sc-runtime design document records
 report-only as the default and leaves auto-start undecided; this item
 replaces that default.
 
-This applies to the `cli` crate of a project generated from `template/`.
+This applies to the production code of the `cli` crate of a project
+generated from `template/`: it describes how a real user's or agent's
+command starts the real daemon. How tests may start daemons is a separate
+rule ([NFR-RUN-0010](requirements.md)).
 `<app>` is the project's application name. `<instance-root>` is the
 per-application, per-user directory resolved by sc-transport, or an
 explicitly supplied path; its default location is undecided
@@ -1105,6 +1113,11 @@ explicitly supplied path; its default location is undecided
    decided in this document: the owner decided the clean, launchd-equivalent
    launch and that the environment must not leak; the alternative that needs
    no exception is recorded in the first OPEN below.
+   The daemon's startup directory (its working directory when it starts)
+   MUST always be the same directory, whoever starts it and from wherever:
+   the same for a launchd start and a CLI start, and the same whatever
+   directory the CLI was run from (decided by the owner on 2026-09-20). It
+   MUST NOT be the CLI's current directory.
 3. The daemon MUST NOT inherit the environment of the CLI process. No
    environment variable set in the shell, agent session or parent process
    that ran the CLI may appear in the daemon's environment because the CLI
@@ -1135,9 +1148,20 @@ explicitly supplied path; its default location is undecided
 8. The CLI MUST still have no direct-database mode
    ([REQ-RUN-0202](requirements.md)); starting the daemon is the only thing
    it does about a missing daemon.
-9. No test may start a daemon on the developer's real instance root
-   ([NFR-RUN-0005](requirements.md)): every auto-start test MUST give the CLI
-   a fresh tempdir instance root, and the started daemon MUST use it.
+9. Auto-start starts a real daemon process, so the tests of this item MUST
+   run only on an isolated machine, a virtual machine or an ephemeral CI
+   runner, and never on a developer's host
+   ([NFR-RUN-0010](requirements.md)). On that machine they MAY use the
+   default `<instance-root>`; tests that share one `<instance-root>` MUST NOT
+   run at the same time.
+
+**OPEN:** which directory the fixed startup directory is (for example
+`<instance-root>`, or a directory the service definition names) is not
+decided. It matters beyond auto-start: `sc_config::load` reads the `config`
+directory relative to the current working directory
+([REQ-CFG-0003](sc-config/requirements.md)), so the startup directory decides
+which configuration files the daemon reads unless the daemon is given the
+config directory explicitly.
 
 **OPEN:** what auto-start does when the CLI's resolved endpoint or instance
 root is not the default (an `--endpoint` value, `SC_ENDPOINT`, or an explicit
@@ -1209,13 +1233,14 @@ CLI-started daemon indistinguishable from the service-started one.
 
 ### Success Criteria
 
-Criteria 1 to 7 give the CLI a fresh tempdir instance root that the started
-daemon must use. They are conditional on the OPEN of
-[REQ-RUN-0310](requirements.md) on whether the binaries accept an explicit
-instance-root option, and on the carrier OPEN and the non-default-endpoint
-OPEN of this item. Until those are decided they are not run, because a daemon
-started without an explicit instance root would lock the developer's real one
-([NFR-RUN-0005](requirements.md)).
+Every criterion below starts a real daemon process, so all of them run only
+on an isolated machine ([NFR-RUN-0010](requirements.md)), never on a
+developer's host. Where a criterion says "a fresh tempdir instance root", the
+test on that machine MAY use the default `<instance-root>` instead, emptied
+before the test, when the binaries have no way to be given an explicit one
+(that is OPEN in [REQ-RUN-0310](requirements.md)). Criterion 3 is
+conditional on the non-default-endpoint OPEN and the carrier OPEN of this
+item.
 
 1. A test runs a generated CLI command with a fresh tempdir instance root
    and no daemon running. It asserts: the command succeeds and returns the
@@ -1234,25 +1259,30 @@ started without an explicit instance root would lock the developer's real one
 4. A test runs two CLI commands at the same moment against one fresh tempdir
    instance root with no daemon running. Both succeed, and exactly one
    daemon process holds `daemon.lock` afterwards.
-5. A test starts the daemon through a CLI command run under a
+5. A test runs a CLI command from one directory, stops the daemon, and runs
+   a CLI command from a different directory; each time it reads the started
+   daemon's working directory from outside the process and asserts it is the
+   same directory and is neither of the two directories the CLI was run
+   from.
+6. A test starts the daemon through a CLI command run under a
    pseudo-terminal, waits for the CLI process to exit, closes the terminal,
    and asserts the daemon still answers a request. It also asserts the
    daemon's standard input is not that terminal and its session id differs
    from the CLI's.
-6. A test runs a command with auto-start disabled and no daemon running, and
+7. A test runs a command with auto-start disabled and no daemon running, and
    asserts the `DAEMON.NOT_RUNNING` result of
    [REQ-RUN-0202](requirements.md) and that no daemon was started (the
    tempdir instance root contains no `daemon.lock` and no `daemon.sock`).
    This criterion is conditional on the OPEN above on how auto-start is
    disabled.
-7. A test makes the started daemon fail to become reachable (for example the
+8. A test makes the started daemon fail to become reachable (for example the
    instance root is a regular file) and runs the command with `--json`. It
    asserts that within the bounded wait the CLI exits non-zero and prints the
    envelope of [REQ-RUN-0202](requirements.md): `ok` is `false`, `data` is
    `null`, `error.code` is `"DAEMON.NOT_RUNNING"` and
    `error.suggested_action` is `"run <app> daemon start"` with the
    application name substituted.
-8. Once the mechanism and service-definition OPENs are decided: on macOS, a
+9. Once the mechanism and service-definition OPENs are decided: on macOS, a
    test compares a CLI-started daemon with the same daemon started by launchd
    from its service definition, and asserts that the environment, working
    directory and standard streams are equal, that each daemon is the leader
@@ -1495,7 +1525,8 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
 `template/cargo-generate.toml`.
 
 1. The list of v0.1 options (project name, a string; `db`, a string enum of
-   `sqlite`, `postgres`, `both`; `mcp`, a boolean), their types and the rule
+   `sqlite`, `postgres`, `both`; `mcp`, a boolean; the licence, a string
+   whose default is `MIT`), their types and the rule
    that the list is closed are owned by [REQ-RUN-0401](requirements.md).
    This item owns what each option does to the rendered project:
 
@@ -1504,6 +1535,12 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
    | project name | names the generated project |
    | `db` | selects which `store-*` crates are rendered |
    | `mcp` | `true` renders `crates/daemon/src/mcp.rs`, the `mod mcp;` line and the `.mcp(...)` line in `crates/daemon/src/main.rs`; `false` omits all three |
+   | licence | sets the licence stated in the `Cargo.toml` of every crate of the generated project; `MIT` when not supplied. The rendered project MUST NOT state `MIT` when a different licence was supplied |
+
+   **OPEN:** whether the template also renders a licence file into the
+   generated project, and for which licence values, is not decided. The
+   licence text of a project that is not MIT licensed is not something this
+   template can supply.
 
 2. In v0.1 the only accepted value of `db` is `sqlite`. The values `postgres`
    and `both` MUST be present in the schema's enum, so the published schema
@@ -2065,6 +2102,11 @@ than one instance of a generated daemon, and every test author, is affected.
 
 ### Success Criteria
 
+Criteria that start a daemon in a child process run only on an isolated
+machine, never on a developer's host
+([NFR-RUN-0010](requirements.md)); `just test` on a host does not run
+them.
+
 1. A test starts a daemon with `sc_runtime::testing::DaemonFixture`, takes
    the fixture's endpoint string (the form accepted by `--endpoint` and
    `SC_ENDPOINT`, [REQ-RT-0006](sc-runtime/requirements.md)), and runs the
@@ -2094,6 +2136,62 @@ than one instance of a generated daemon, and every test author, is affected.
 
 ---
 
+## REQ-RUN-0311: Generated agent documents state the daemon-testing rule
+
+**Status:** Active  
+
+### Requirement Statement
+
+Decided by the owner on 2026-09-20. This applies to the `AGENTS.md` and
+`CLAUDE.md` files of a project generated from `template/`, which are rendered
+from `template/AGENTS.md.j2` and `template/CLAUDE.md.j2`
+([REQ-RUN-0305](requirements.md)). These are the documents an AI agent or a
+developer reads before working in the generated project.
+
+Both rendered documents MUST state, in plain language, all of the following:
+
+1. Integration tests that run the daemon as a separate process, that use the
+   default instance root, or that involve the service manager or the CLI's
+   auto-start, run on an isolated machine: a virtual machine (colima is named
+   as the example) or an ephemeral CI runner. They do not run on a
+   developer's host, where the project's own daemon may be running.
+2. The reason: on a development machine a test daemon collides with the
+   daemon in use, and daemons started by tests can be left running.
+3. The virtual machine is the escape path. When a test cannot be made safe
+   on the host, run it in a virtual machine. Do not create a test daemon (a
+   crate, binary or feature that is mostly the daemon but built for tests),
+   do not weaken the daemon singleton, and do not add test-only switches to
+   daemon code.
+4. Tests that run the daemon in-process through
+   `sc_runtime::testing::DaemonFixture` on a temporary instance root are safe
+   on the host and are the default way to test an operation.
+
+The template MUST NOT ship a virtual machine definition, a colima
+configuration or provisioning scripts in v0.1; the rule itself is stated in
+full by [NFR-RUN-0010](requirements.md), and this item only requires that it
+reaches generated projects as guidance.
+
+### Rationale
+
+The rule protects against a mistake that is cheap to make and expensive to
+undo, and the people most likely to make it are agents and developers working
+in a generated project long after generation, who will never read this
+repository's requirements. Putting the rule in the documents they do read is
+what makes it reach them. It is stated as guidance and not as tooling because
+the owner decided that building a virtual machine is not part of v0.1.
+
+### Success Criteria
+
+1. In a project generated from each fixture, `AGENTS.md` and `CLAUDE.md` each
+   contain a section on testing the daemon that states points 1 to 4; an
+   inspection checks each point against the rendered text.
+2. `grep -il "colima" AGENTS.md CLAUDE.md` in the generated project lists both
+   files, and `grep -il "test daemon" AGENTS.md CLAUDE.md` lists both files.
+3. `find . -iname '*colima*' -o -iname 'Vagrantfile' -o -iname '*.lima.yaml'`
+   in the generated project prints nothing.
+
+---
+
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 
 **Status:** Active  
@@ -2113,7 +2211,7 @@ conditional requirement between options. No other file in the repository may
 introduce an option that is absent from the schema.
 
 This item owns the list of v0.1 options. In v0.1 the schema MUST define these
-three options and MUST NOT define any other. That the v0.1 list is closed is
+four options and MUST NOT define any other. That the v0.1 list is closed is
 decided in this document.
 
 | Option | JSON type | Values the schema lists |
@@ -2121,6 +2219,17 @@ decided in this document.
 | project name | string | any non-empty string |
 | `db` | string | `sqlite`, `postgres`, `both` |
 | `mcp` | boolean | `true`, `false` |
+| licence | string | the licence of the generated project's crates; default `MIT` when the answers object does not supply it |
+
+The licence option is decided by the owner on 2026-09-20. The generator is
+used for projects that are not MIT licensed and not open source, so the
+licence of a generated project MUST be an input and MUST NOT be fixed by the
+template. `MIT` is only the default.
+
+**OPEN:** the property key of the licence option, the form of its value (an
+SPDX licence expression as Cargo's `license` field takes, or something else),
+and how a project that is not open source states its licence (Cargo offers a
+`license-file` field for non-SPDX licences) are not decided.
 
 What each option does to the rendered project, and the rule that `postgres`
 and `both` are listed in the enum but not accepted in v0.1, are owned by
@@ -3199,6 +3308,10 @@ here are decided in this document: no literal temporary-directory or
 home-directory path in non-test code, no fixed TCP port, and two copies of
 the whole suite passing at the same time on one machine.
 
+This item governs tests that may run on a developer's host. A test that
+starts a daemon as a separate process does not run there at all
+([NFR-RUN-0010](requirements.md)).
+
 ### Rationale
 
 A fixed path or a shared instance root makes tests interfere with each other
@@ -3493,3 +3606,94 @@ into four different lists of banned constructs.
    [NFR-CMD-0003](sc-command/requirements.md),
    [NFR-RT-0004](sc-runtime/requirements.md)) references this item and does
    not restate a different list of banned constructs or a weaker rule.
+
+---
+
+## NFR-RUN-0010: Daemon-process tests run on an isolated machine; no test daemon
+
+**Status:** Active  
+
+### Requirement Statement
+
+Decided by the owner on 2026-09-20; not stated by the sc-runtime design. It
+applies to this repository and, through
+[REQ-RUN-0311](requirements.md), to every generated project.
+
+`<instance-root>` is the per-application, per-user directory resolved by
+sc-transport, or an explicitly supplied path; its default location is
+undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
+
+1. There MUST NOT be a test variant of the daemon: no crate, binary, cargo
+   feature or build configuration that is "the daemon, but for tests" (a
+   daemon-like executable, a stub daemon, a daemon with parts switched off).
+   Tests exercise the production daemon code: either in-process through
+   `sc_runtime::testing::DaemonFixture`, which runs the same
+   `Daemon::builder()` path ([REQ-RT-0006](sc-runtime/requirements.md)), or
+   by starting the real daemon binary.
+2. A test that starts a daemon as a separate operating-system process, or
+   that uses the default `<instance-root>`, or that involves the service
+   manager or the CLI's auto-start ([REQ-RUN-0206](requirements.md)), MUST
+   run only on an isolated machine: a virtual machine (for example one run
+   by colima) or an ephemeral CI runner. It MUST NOT run on a developer's
+   host, where the application's own daemon may be running and where a
+   leaked test daemon would keep running after the test.
+3. `just test` on a developer's host MUST NOT run the tests of obligation 2.
+   They MUST be selected explicitly, and they MUST refuse to start a daemon
+   when they are not on an isolated machine.
+4. When a test cannot be made safe on a developer's host, the answer MUST be
+   to run it on an isolated machine. It MUST NOT be to add a test-only
+   daemon, to weaken the `daemon.lock` singleton
+   ([REQ-RT-0002](sc-runtime/requirements.md)), or to add a test-only switch
+   to production daemon code.
+5. Decided in this document: a test that runs the daemon in-process through
+   `DaemonFixture` on a fresh tempdir `<instance-root>` MAY run on a
+   developer's host. It cannot collide with the developer's daemon, because
+   it never touches the default `<instance-root>`
+   ([NFR-RUN-0005](requirements.md)), and it cannot outlive the test process,
+   because it is not a separate process.
+6. Building, provisioning or scripting a virtual machine is not part of
+   v0.1 of this repository (decided by the owner). In v0.1 the isolated
+   machine for this repository's own tests is the CI runner.
+
+**OPEN:** how the tests of obligation 2 are selected and how they detect that
+they are on an isolated machine (a `just` recipe name, an environment marker
+set by the runner, a cargo test filter or `#[ignore]`) is not decided.  
+**OPEN:** the launchd comparison of [REQ-RUN-0206](requirements.md) needs
+macOS, and a colima virtual machine runs Linux; where that one test runs (a
+macOS CI runner, a macOS virtual machine, or a recorded manual check) is not
+decided.
+
+### Rationale
+
+Integration tests want to run the daemon. On a development machine the
+application's real daemon is usually running too, so a test daemon either
+collides with it or has to be made different from it. Both paths have been
+taken in another SC project, with a known result: thousands of daemons left
+running by tests, and a singleton gate that had to be strengthened to stop
+them. The tempting fix is a test daemon, an executable that is mostly the
+daemon but safe to run in tests. It drifts from the real daemon, it doubles
+the code to maintain, and the tests stop proving anything about production.
+A virtual machine removes the collision instead of working around it: the
+real daemon, the real singleton and the real service manager can all be
+exercised with nothing on the developer's machine at stake. Naming the
+virtual machine as the escape path keeps the next person from designing the
+test daemon.
+
+### Success Criteria
+
+1. Inspection of the workspace finds no crate, binary target, cargo feature
+   or `cfg` flag whose purpose is a test variant of the daemon, and no
+   `cfg(test)` or test-only branch in non-test daemon code paths of
+   `crates/sc-runtime/src`.
+2. Every test in this repository that starts a daemon as a separate process
+   (the child-process tests of [REQ-RT-0005](sc-runtime/requirements.md),
+   [REQ-RT-0008](sc-runtime/requirements.md),
+   [REQ-RUN-0310](requirements.md) and [REQ-RUN-0206](requirements.md)) is
+   among the explicitly selected tests of obligation 3; `just test` on a
+   developer's host runs none of them.
+3. Run on a machine that is not marked isolated, a test of obligation 2
+   exits without starting a daemon and reports that it needs an isolated
+   machine. This criterion is conditional on the first OPEN above.
+4. The CI workflow runs the tests of obligation 2.
+5. After the full test suite has run on a developer's host, no daemon
+   process started by a test is still running.
