@@ -318,7 +318,7 @@ define these three recipes:
 
 | Recipe | Behaviour |
 |---|---|
-| `just lint` | Runs every static check for this repository and exits non-zero if any check fails. It MUST include the `sc-lint-boundary` check ([REQ-RUN-0005](requirements.md)) and the 1000-line source file limit ([NFR-RUN-0008](requirements.md)). |
+| `just lint` | Runs every static check for this repository and exits non-zero if any check fails. It MUST include the `sc-lint-boundary` check ([REQ-RUN-0005](requirements.md)) and the `sc-lint` source file length check, 1000 source lines not counting blank and comment-only lines ([NFR-RUN-0008](requirements.md)). |
 | `just test` | Runs every command of the `just test` list below, and exits non-zero if any of them fails. |
 | `just new <dest>` | Runs the generation driver `scripts/new_project.py` with `<dest>` as the destination directory of the new project. Any further arguments (for example `--var-file <answers.json>` or `--prefill <json>`) MUST be passed through to the driver unchanged. |
 
@@ -3117,51 +3117,63 @@ A pin turns every upgrade into a reviewed change that CI has tested.
 
 ---
 
-## NFR-RUN-0008: File size limit
+## NFR-RUN-0008: Source file length limit (enforced by sc-lint)
 
 **Status:** Active  
 
 ### Requirement Statement
 
-This item is decided in this document; not stated by the sc-runtime design.
+The rule comes from the `sc-lint` package, which is the source of truth for
+it; it is not stated by the sc-runtime design. This item adopts it for this
+repository.
 
-No non-test source file in this repository may exceed 1000 lines. Lines are
-physical lines as `wc -l` counts them, including blank lines and comments.
+No non-test source file in this repository may exceed 1000 source lines. A
+source line is a line that is neither blank (whitespace only) nor made up
+only of a comment. Blank lines and comment-only lines are not counted.
 
 The rule MUST apply at least to every `.rs` file under `crates/*/src/` and to
 every `.rs` file under `template/`. Files under a `tests/` directory are test
 files and are exempt.
 
-`just lint` at the repository root MUST perform this check and MUST fail,
-naming the file and its line count, when a file exceeds the limit. The check
-MUST be made with standard tools already on a developer machine (`find`,
-`wc`, `awk`, as in Success Criteria 1) inside the `lint` recipe. It MUST NOT
-be a program written for this repository.
+The check MUST be the one the `sc-lint` package provides, run through
+`just lint` at the repository root ([REQ-RUN-0004](requirements.md)).
+`just lint` MUST fail, naming the file and its source-line count, when a file
+exceeds the limit. This repository MUST NOT carry a line-counting script or
+program of its own for this rule
+([NFR-RUN-0004](requirements.md), [ADR-RUN-0008](architecture.md)).
 
-**OPEN:** the written source of the 1000-line rule is not identified. It is
-applied across SC projects as a standing architectural rule, but no document
-that states it has been named; until one is, this item is the only statement
-of the rule for this repository.  
+**OPEN:** the name of the `sc-lint` rule or configuration key that sets the
+limit, and how this repository's `sc-lint` configuration enables it, are not
+stated here; they are taken from the `sc-lint` package when the standard
+`sc-lint` setup is installed in this repository.  
 **OPEN:** whether the limit also applies to non-Rust source (for example
 `scripts/new_project.py` and the wizard's HTML and JavaScript) is not
-decided.  
+decided; it follows what the `sc-lint` rule covers.  
 **OPEN:** whether a Rust file that holds only a `#[cfg(test)]` module inside
-`src/` counts as a test file is not decided.
+`src/` counts as a test file is not decided; it follows what the `sc-lint`
+rule does.
 
 ### Rationale
 
-The limit is a rule applied across SC projects and is adopted here by this
-document. A file that large is a
-module boundary that was not drawn: it is slow to review, and agents working
-on it spend their context on code unrelated to the change.
+The limit is a standing rule across SC projects, defined and enforced by
+`sc-lint` so that every repository measures it the same way. A file with more
+than 1000 lines of actual source is a module boundary that was not drawn: it
+is slow to review, and agents working on it spend their context on code
+unrelated to the change. Counting only source lines means documentation
+comments and spacing are never a reason to split a file or to strip comments.
 
 ### Success Criteria
 
-1. `find crates/*/src template -name '*.rs' -not -path '*/tests/*' -exec wc
-   -l {} + | awk '$2 != "total" && $1 > 1000'` prints nothing.
-2. `just lint` on an unmodified checkout exits 0.
-3. Adding a 1001-line `.rs` file under `crates/sc-config/src/` makes
-   `just lint` exit non-zero with a message that names that file.
+1. `just lint` on an unmodified checkout exits 0, and its output shows that
+   the `sc-lint` source-length check ran.
+2. Adding a `.rs` file with 1001 source lines under `crates/sc-config/src/`
+   makes `just lint` exit non-zero with a message that names that file.
+3. Adding a `.rs` file with 900 source lines plus 200 blank and comment-only
+   lines (1100 physical lines) under `crates/sc-config/src/` does not make
+   `just lint` fail.
+4. Inspection of the root `justfile`, `scripts/` and `.github/workflows/`
+   finds no line-counting command or script for this rule other than the
+   call into `sc-lint`.
 
 ---
 
