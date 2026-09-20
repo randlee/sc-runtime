@@ -771,6 +771,10 @@ and every client gets it.
 
 ### Success Criteria
 
+Where a criterion below runs the CLI binary in a test that may run on a
+developer's host, the CLI is run with auto-start disabled
+([NFR-RUN-0010](requirements.md)).
+
 1. A test in the generated project starts one daemon with
    `sc_runtime::testing::DaemonFixture` and creates three widgets with
    distinct names: one by `POST /ops/widget.create`, one by an MCP
@@ -945,6 +949,10 @@ matter which surface it used, and can move between surfaces without relearning
 anything.
 
 ### Success Criteria
+
+Where a criterion below runs the CLI binary in a test that may run on a
+developer's host, the CLI is run with auto-start disabled
+([NFR-RUN-0010](requirements.md)).
 
 1. A test against one `DaemonFixture` daemon calls `widget.get` for the same
    existing widget through REST, through an MCP `tools/call`, and through the
@@ -1453,7 +1461,7 @@ wired through all three surfaces:
 | REST | `crates/daemon/src/routes.rs` | `POST /ops/widget.create` and `POST /ops/widget.get`, each an `axum` handler annotated with `#[utoipa::path(...)]`, registered with `utoipa_axum` `routes!` on an `OpenApiRouter`, returning `Envelope<Widget>` |
 | MCP | `crates/daemon/src/mcp.rs` (only when option `mcp` is `true`) | `rmcp` `#[tool]` methods named `widget_create` and `widget_get`, taking `Parameters<...>` of the same `api-types` request structs and returning through `.into_mcp()`. The service returned by `mcp::service` MUST be an `rmcp` `StreamableHttpService` configured in stateless mode, and the template MUST NOT contain an MCP session store |
 | CLI | `crates/cli` | one `clap` command per operation; each builds the `api-types` request struct, sends it with `sc_transport::Client::post` (method name illustrative until pinned by [REQ-TRN-0005](sc-transport/requirements.md)) to the matching `/ops/...` path, and supports `--json` and the global `--endpoint` option ([REQ-RUN-0310](requirements.md)) |
-| Test | the generated project's test suite | at least one test that starts a daemon with `sc_runtime::testing::DaemonFixture` and exercises the example through REST, through MCP (when `mcp` is `true`) and through the CLI |
+| Test | the generated project's test suite | at least one test that starts a daemon with `sc_runtime::testing::DaemonFixture` and exercises the example through REST, through MCP (when `mcp` is `true`) and through the CLI. The test runs on a developer's host, so it MUST keep its database under the fixture's temporary instance root and MUST run the CLI binary with auto-start disabled ([NFR-RUN-0010](requirements.md)) |
 
 Which derives the struct carries, and that the same struct is the rmcp
 `Parameters<T>` input, is conditional on
@@ -1514,7 +1522,7 @@ example keeps the template thin and leaves little to delete.
 
 ---
 
-## REQ-RUN-0303: Template options in v0.1: project name, `db`, `mcp`
+## REQ-RUN-0303: Template options in v0.1: project name, `db`, `mcp`, licence
 
 **Status:** Active  
 
@@ -1595,8 +1603,10 @@ compilable as Rust.
 
 ### Success Criteria
 
-1. `template/cargo-generate.toml` defines a placeholder named `db` and a
-   placeholder named `mcp`. Once the project-name question above is decided:
+1. `template/cargo-generate.toml` defines a placeholder named `db`, a
+   placeholder named `mcp` and a placeholder for the licence (its name
+   follows the licence OPEN of [REQ-RUN-0401](requirements.md)). Once the
+   project-name question above is decided:
    it defines, or does not define, a project-name placeholder as decided.
    (The schema side is checked by [REQ-RUN-0401](requirements.md).)
 2. Generating from `wizard/fixtures/sqlite-mcp.json` (`db` `sqlite`, `mcp`
@@ -1611,6 +1621,13 @@ compilable as Rust.
    `cargo generate`, and creates no destination directory.
 5. `template/cargo-generate.toml` contains a conditional `ignore` entry for
    `crates/daemon/src/mcp.rs` keyed on `mcp`.
+6. Generating from the fixture whose licence is not `MIT`
+   ([REQ-RUN-0403](requirements.md)) yields a project in which every crate's
+   `Cargo.toml` states that licence, and
+   `grep -rn 'MIT' --include=Cargo.toml .` in the project prints nothing.
+7. Generating with plain `cargo generate` and accepting the licence
+   placeholder's default yields a project in which every crate's
+   `Cargo.toml` states `MIT`.
 
 ---
 
@@ -1821,6 +1838,11 @@ does, the template supplies a stand-in.
    | `just test` | runs the generated workspace's tests, including the `DaemonFixture` example test; exits non-zero on any failure |
    | `just db-prepare` | regenerates the checked-in `sqlx` offline query data in `crates/store-sqlite/.sqlx/` |
 
+   `just test` runs only tests that are safe on a developer's host. Tests
+   that start the daemon as a separate process are not part of it
+   ([NFR-RUN-0010](requirements.md)); if the way those tests are selected
+   turns out to be a `just` recipe, this list gains that recipe in the same
+   change that decides it.
 3. The recipe names `lint` and `test` are the standard SC base command names
    and MUST NOT be changed.
 4. The `Justfile` MUST be minimal: no `just` modules, no imports, no lint
@@ -2107,6 +2129,9 @@ machine, never on a developer's host
 ([NFR-RUN-0010](requirements.md)); `just test` on a host does not run
 them.
 
+Criteria 1 to 3 run on a host against a `DaemonFixture` daemon; they run
+the CLI with auto-start disabled, for the same reason.
+
 1. A test starts a daemon with `sc_runtime::testing::DaemonFixture`, takes
    the fixture's endpoint string (the form accepted by `--endpoint` and
    `SC_ENDPOINT`, [REQ-RT-0006](sc-runtime/requirements.md)), and runs the
@@ -2164,7 +2189,11 @@ Both rendered documents MUST state, in plain language, all of the following:
    daemon code.
 4. Tests that run the daemon in-process through
    `sc_runtime::testing::DaemonFixture` on a temporary instance root are safe
-   on the host and are the default way to test an operation.
+   on the host and are the default way to test an operation, provided the
+   test keeps its database under that temporary instance root.
+5. A test on the host that runs the project's CLI binary runs it with
+   auto-start disabled, because the CLI starts a real daemon by default when
+   it cannot reach one.
 
 The template MUST NOT ship a virtual machine definition, a colima
 configuration or provisioning scripts in v0.1; the rule itself is stated in
@@ -2183,7 +2212,7 @@ the owner decided that building a virtual machine is not part of v0.1.
 ### Success Criteria
 
 1. In a project generated from each fixture, `AGENTS.md` and `CLAUDE.md` each
-   contain a section on testing the daemon that states points 1 to 4; an
+   contain a section on testing the daemon that states points 1 to 5; an
    inspection checks each point against the rendered text.
 2. `grep -il "colima" AGENTS.md CLAUDE.md` in the generated project lists both
    files, and `grep -il "test daemon" AGENTS.md CLAUDE.md` lists both files.
@@ -2283,12 +2312,13 @@ and sc-lint, so the schema is versioned like any other published contract.
    `$schema` value.
 2. The same test asserts that the top-level `type` is `object`, that `db` is
    a string property whose `enum` is exactly `sqlite`, `postgres`, `both`,
-   that `mcp` is a boolean property, and that a string property for the
-   project name exists.
+   that `mcp` is a boolean property, that a string property for the project
+   name exists, and that a string property for the licence exists whose
+   default is `MIT` (its key name follows the licence OPEN above).
 3. The same test asserts that the top-level `properties` object has exactly
-   three keys: `db`, `mcp` and the project-name key. Once the way the schema
-   version is carried is decided: if it is carried as a property, that key is
-   the only permitted fourth key.
+   four keys: `db`, `mcp`, the project-name key and the licence key. Once the
+   way the schema version is carried is decided: if it is carried as a
+   property, that key is the only permitted fifth key.
 4. The same test asserts that the schema version is present and non-empty.
 5. Inspection: `scripts/new_project.py` contains no list of option names or
    option defaults of its own; it reads both from the schema. Once the
@@ -2381,7 +2411,12 @@ every file matching that glob.
 
 `wizard/fixtures/` MUST contain `sqlite-mcp.json`, the variant with
 `db = sqlite` and `mcp = true`. It MUST also contain a variant with
-`db = sqlite` and `mcp = false`.
+`db = sqlite` and `mcp = false`, and a variant whose licence is not `MIT`,
+because projects that are not MIT licensed are the reason the licence is an
+option. Every fixture MUST state the licence explicitly, including the ones
+that use `MIT`, so that a fixture and the wizard's output for the same
+choices are equal JSON ([REQ-RUN-0603](requirements.md)). The default is
+exercised by [REQ-RUN-0303](requirements.md) criterion 7, not by a fixture.
 
 The repository MUST also hold answers files that must be refused, used only
 by unit tests. None of them may match the glob `wizard/fixtures/*.json`.
@@ -2842,7 +2877,7 @@ the template, the driver or CI.
 ### Success Criteria
 
 1. On a machine with Wyvern installed, run the wizard and choose the project
-   name, `db = sqlite` and `mcp = true` exactly as
+   name, `db = sqlite`, `mcp = true` and the licence exactly as
    `wizard/fixtures/sqlite-mcp.json` has them. Save the resulting answers
    object to `out.json`.
 2. `out.json` validates against `wizard/answers.schema.json`.
@@ -2872,6 +2907,11 @@ this order and MUST fail when any of them exits non-zero:
    runs the generation driver `scripts/new_project.py` without the wizard.
 2. `just lint` inside the generated project at `<dest>`.
 3. `just test` inside the generated project at `<dest>`.
+4. Once the selection question of [NFR-RUN-0010](requirements.md) is
+   decided: the generated project's daemon-process tests (the tests that
+   start the generated `daemon` binary or rely on the CLI's auto-start),
+   selected the way that decision says. The CI runner is the isolated machine
+   those tests need.
 
 No step of the workflow may write to `<dest>` between those commands. This
 is the "green with no edits" sequence that
@@ -3630,6 +3670,14 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    `sc_runtime::testing::DaemonFixture`, which runs the same
    `Daemon::builder()` path ([REQ-RT-0006](sc-runtime/requirements.md)), or
    by starting the real daemon binary.
+   The `testing::DaemonFixture` module of `sc-runtime`, its crate-private
+   shutdown trigger (which starts the same shutdown sequence a signal starts,
+   [REQ-RT-0006](sc-runtime/requirements.md)) and a cargo feature that only
+   gates that module (OPEN in [NFR-RT-0003](sc-runtime/requirements.md)) are
+   not a test variant of the daemon and not a test-only switch in the sense
+   of this obligation and obligation 4. What is forbidden is any code path
+   that makes the daemon behave differently under test: a skipped lock, a
+   different start-up order, stubbed stores or stubbed transport.
 2. A test that starts a daemon as a separate operating-system process, or
    that uses the default `<instance-root>`, or that involves the service
    manager or the CLI's auto-start ([REQ-RUN-0206](requirements.md)), MUST
@@ -3639,25 +3687,52 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    leaked test daemon would keep running after the test.
 3. `just test` on a developer's host MUST NOT run the tests of obligation 2.
    They MUST be selected explicitly, and they MUST refuse to start a daemon
-   when they are not on an isolated machine.
+   when they are not on an isolated machine. Such tests exist in two places:
+   this repository's crate tests, and the tests of the generated `cli` and
+   `daemon` binaries, which live in `template/` and are rendered into every
+   project ([REQ-RUN-0206](requirements.md), [REQ-RUN-0310](requirements.md)
+   criterion 4). The fixture-matrix workflow
+   ([REQ-RUN-0701](requirements.md)) MUST run the generated project's
+   daemon-process tests on the CI runner for every fixture, after
+   `just test`. That clause is conditional on the selection OPEN below.
 4. When a test cannot be made safe on a developer's host, the answer MUST be
    to run it on an isolated machine. It MUST NOT be to add a test-only
    daemon, to weaken the `daemon.lock` singleton
    ([REQ-RT-0002](sc-runtime/requirements.md)), or to add a test-only switch
    to production daemon code.
-5. Decided in this document: a test that runs the daemon in-process through
-   `DaemonFixture` on a fresh tempdir `<instance-root>` MAY run on a
-   developer's host. It cannot collide with the developer's daemon, because
-   it never touches the default `<instance-root>`
-   ([NFR-RUN-0005](requirements.md)), and it cannot outlive the test process,
-   because it is not a separate process.
-6. Building, provisioning or scripting a virtual machine is not part of
+5. Decided in this document, as an interpretation of the owner's decision
+   that the owner has not yet confirmed: a test that runs the daemon
+   in-process through `DaemonFixture` on a fresh tempdir `<instance-root>`
+   MAY run on a developer's host, provided every resource the fixture daemon
+   opens (the lock, the endpoint, the database files) is under that temporary
+   `<instance-root>`. Then it cannot collide with the developer's daemon, and
+   it cannot outlive the test process, because it is not a separate process.
+   Where the endpoint does not derive from `<instance-root>` (the Windows TCP
+   default, OPEN in [REQ-RT-0006](sc-runtime/requirements.md)), fixture tests
+   are daemon-process tests under obligation 2 until that is decided. The
+   template's example test MUST place its database under the fixture's
+   `<instance-root>` ([REQ-RUN-0302](requirements.md)).
+6. A test that may run on a developer's host and executes the CLI binary MUST
+   run it with auto-start disabled, so that an unreachable endpoint yields
+   `DAEMON.NOT_RUNNING` and never a started daemon. A CLI invocation with
+   auto-start enabled is a daemon-process test under obligation 2. Without
+   this, a host-run fixture test whose fixture has stopped, failed to bind or
+   handed out a wrong endpoint would make the CLI start a real, detached
+   daemon on the developer's machine
+   ([REQ-RUN-0206](requirements.md)), which is the leak this item exists to
+   prevent. How auto-start is disabled is OPEN in
+   [REQ-RUN-0206](requirements.md); it MUST be decided before the template's
+   example test is written, because `just test` being green with no edits on
+   a host depends on it.
+7. Building, provisioning or scripting a virtual machine is not part of
    v0.1 of this repository (decided by the owner). In v0.1 the isolated
    machine for this repository's own tests is the CI runner.
 
 **OPEN:** how the tests of obligation 2 are selected and how they detect that
 they are on an isolated machine (a `just` recipe name, an environment marker
-set by the runner, a cargo test filter or `#[ignore]`) is not decided.  
+set by the runner, a cargo test filter or `#[ignore]`) is not decided. If the
+answer is a `just` recipe, the closed recipe list of the generated `Justfile`
+([REQ-RUN-0307](requirements.md)) is amended in the same change.  
 **OPEN:** the launchd comparison of [REQ-RUN-0206](requirements.md) needs
 macOS, and a colima virtual machine runs Linux; where that one test runs (a
 macOS CI runner, a macOS virtual machine, or a recorded manual check) is not
@@ -3682,10 +3757,12 @@ test daemon.
 ### Success Criteria
 
 1. Inspection of the workspace finds no crate, binary target, cargo feature
-   or `cfg` flag whose purpose is a test variant of the daemon, and no
-   `cfg(test)` or test-only branch in non-test daemon code paths of
-   `crates/sc-runtime/src`.
-2. Every test in this repository that starts a daemon as a separate process
+   or `cfg` flag whose purpose is a test variant of the daemon, and no branch
+   in `crates/sc-runtime/src` that changes the daemon's behaviour under test.
+   The `testing` module, its crate-private shutdown trigger and a feature
+   that only gates that module are not such branches (obligation 1).
+2. Every test, in this repository and in a generated project, that starts a
+   daemon as a separate process
    (the child-process tests of [REQ-RT-0005](sc-runtime/requirements.md),
    [REQ-RT-0008](sc-runtime/requirements.md),
    [REQ-RUN-0310](requirements.md) and [REQ-RUN-0206](requirements.md)) is
@@ -3694,6 +3771,15 @@ test daemon.
 3. Run on a machine that is not marked isolated, a test of obligation 2
    exits without starting a daemon and reports that it needs an isolated
    machine. This criterion is conditional on the first OPEN above.
-4. The CI workflow runs the tests of obligation 2.
+4. This repository's crate CI workflow runs this repository's tests of
+   obligation 2, and, once the selection OPEN is decided, the fixture-matrix
+   workflow runs the generated project's tests of obligation 2 for every
+   fixture.
 5. After the full test suite has run on a developer's host, no daemon
-   process started by a test is still running.
+   process started by a test is still running. The same holds after a run in
+   which a fixture was made to fail.
+6. A host-run test points the CLI, with auto-start disabled the way the
+   template's example test disables it, at an endpoint where nothing listens,
+   and asserts the `DAEMON.NOT_RUNNING` result and that no daemon process
+   exists afterwards. This criterion is conditional on the OPEN in
+   [REQ-RUN-0206](requirements.md) on how auto-start is disabled.

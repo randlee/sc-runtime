@@ -933,20 +933,41 @@ anything about the code that ships.
 
 ### Decision
 
+The instance root is the per-application, per-user directory resolved by
+sc-transport, or an explicitly supplied path; its default location is
+undecided ([REQ-TRN-0002](sc-transport/requirements.md)). colima is a Linux
+virtual-machine runtime for macOS.
+
 1. The escape path for a test that is not safe on a developer's host is a
    virtual machine (colima is the named example) or an ephemeral CI runner.
    It is never a test variant of the daemon.
 2. There MUST NOT be a test daemon: no crate, binary, cargo feature or build
    configuration that reproduces the daemon for tests, and no test-only
-   switch in production daemon code.
+   switch in production daemon code. `sc_runtime::testing::DaemonFixture`,
+   its crate-private shutdown trigger (which starts the same shutdown
+   sequence a signal starts, [ADR-RT-0004](sc-runtime/architecture.md)) and a
+   cargo feature that only gates the `testing` module are not a test daemon
+   and not a test-only switch: they change no behaviour of `run()` and select
+   no alternative code path. What is forbidden is code that makes the daemon
+   behave differently under test.
 3. A test that starts a daemon as a separate process, uses the default
    instance root, or involves the service manager or CLI auto-start MUST run
    only on an isolated machine and MUST NOT run on a developer's host.
 4. A test that runs the daemon in-process through
    `sc_runtime::testing::DaemonFixture` on a temporary instance root MAY run
-   on a developer's host (decided in this document;
+   on a developer's host, provided every resource the fixture daemon opens
+   (lock, endpoint, database files) is under that temporary instance root.
+   This is decided in this document as an interpretation of the owner's
+   decision, which the owner has not yet confirmed;
    [ADR-RT-0004](sc-runtime/architecture.md) makes that fixture the real
-   builder path, not a separate implementation).
+   builder path, not a separate implementation. Where the endpoint does not
+   derive from the instance root (the Windows TCP default, OPEN in
+   [ADR-RT-0004](sc-runtime/architecture.md)), fixture tests are
+   daemon-process tests under point 3 until that is decided.
+   A host-run test that executes the CLI binary MUST run it with auto-start
+   disabled; a CLI invocation with auto-start enabled is a daemon-process
+   test under point 3, because the CLI starts a real, detached daemon when it
+   cannot reach one ([ADR-RUN-0204](architecture.md)).
 5. The `daemon.lock` singleton MUST NOT be weakened for tests.
 6. Building or provisioning a virtual machine is not part of v0.1. The rule
    MUST reach generated projects as written guidance in their `AGENTS.md` and
@@ -1329,7 +1350,11 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    the started daemon does not become reachable. The CLI still has no
    direct-database mode.
 
-Points 1 and 3 to 6 are binding now. The equality clause of point 2 is
+Points 1 and 3 to 6 are binding now, and so is the startup-directory rule of
+point 2 on every platform; only which directory it is remains OPEN. That
+choice also decides which configuration the daemon reads, because
+`sc_config::load` reads `config` relative to the working directory. The
+equality clause of point 2 is
 conditional on the service-definition and launch-mechanism OPENs of
 [REQ-RUN-0206](requirements.md), and binds on macOS once they are decided.
 The sprint that implements auto-start MUST decide them first and amend this
@@ -1676,7 +1701,8 @@ crate name followed by a space; `arch-qa` review of `template/` for point 3.
 
 ### Context
 
-A new project is generated from a set of options (project name, `db`, `mcp`).
+A new project is generated from a set of options (project name, `db`, `mcp`,
+licence).
 The private repository `p3-nuget-template` already proved a pipeline for
 this: a Wyvern wizard emits an answers JSON file, a JSON Schema validates it,
 and a driver script renders the project. That repository uses a custom render

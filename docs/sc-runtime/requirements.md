@@ -521,6 +521,10 @@ hand out its endpoint and not only a connected client.
 
 ### Success Criteria
 
+A criterion below that spawns a CLI or other client child process on a
+developer's host runs it with the CLI's auto-start disabled
+([NFR-RUN-0010](../requirements.md)).
+
 1. A test starts a fixture, calls a project route through the fixture's
    client, and asserts the expected response.
 2. A test starts several fixtures concurrently in one test binary, each writes
