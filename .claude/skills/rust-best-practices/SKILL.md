@@ -1,6 +1,6 @@
 ---
 name: rust-best-practices
-version: 0.12.1
+version: 0.12.2
 description: Review Rust architecture plans, crate boundaries, and code for structural design-pattern compliance. Use when the task involves typestate, sealed traits, error contracts, wrapper/newtype design, object safety, interior mutability, or other type-system-driven Rust correctness patterns that go beyond general style guidance.
 depends_on:
   rust-best-practices-agent: 0.x
@@ -90,6 +90,10 @@ This skill delegates pattern review work to existing Rust agents when specialize
 | Pattern discovery across a codebase | `rust-code-explorer` | Fenced JSON `{success,data,error}` with located files and pattern usage |
 
 Invoke these agents via Agent Runner using `.claude/agents/registry.yaml`. Require them to load `rust-best-practices` and the specific pattern references relevant to the requested review.
+
+Every `rust-code-reviewer` delegation must use that agent's fenced-JSON input
+contract and pass the exact `worktree_path`, `branch`, `commit`, and
+`review_targets`; never dispatch it against implicit unstaged changes.
 
 Dedicated `rust-best-practices-agent` assignment template:
 

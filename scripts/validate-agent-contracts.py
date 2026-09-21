@@ -21,6 +21,7 @@ REVIEWER_PROMPTS = (
     ".claude/agents/ruthless-boundary-qa.md",
     ".claude/agents/rust-qa-agent.md",
     ".claude/agents/rust-best-practices-agent.md",
+    ".claude/agents/rust-code-reviewer.md",
     ".claude/agents/rust-service-hardening-agent.md",
     ".claude/agents/schema-reviewer.md",
 )
@@ -301,6 +302,8 @@ def main() -> int:
     for field in ('"branch"', '"commit"', '"carry_forward_findings"', '"findings_scope_locked"'):
         if field not in rust_best_practices_skill:
             fail(f"rust-best-practices/SKILL.md: assignment example missing {field}", failures)
+    if "never dispatch it against implicit unstaged changes" not in rust_best_practices_skill:
+        fail("rust-best-practices/SKILL.md: unpinned rust-code-reviewer delegation", failures)
 
     rust_service_skill = (
         ROOT / ".claude/skills/rust-service-hardening/SKILL.md"
@@ -316,6 +319,19 @@ def main() -> int:
                 f"rust-service-hardening/SKILL.md: assignment examples missing {field}",
                 failures,
             )
+    if "never dispatch it against implicit unstaged changes" not in rust_service_skill:
+        fail("rust-service-hardening/SKILL.md: unpinned rust-code-reviewer delegation", failures)
+
+    rust_code_reviewer = (ROOT / ".claude/agents/rust-code-reviewer.md").read_text()
+    for fragment in (
+        "git show <commit>:<path>",
+        '"reviewed_branch"',
+        '"reviewed_commit"',
+    ):
+        if fragment not in rust_code_reviewer:
+            fail(f"rust-code-reviewer.md: missing pinned-review invariant {fragment}", failures)
+    if "review unstaged changes from `git diff`" in rust_code_reviewer:
+        fail("rust-code-reviewer.md: moving-checkout default remains", failures)
 
     for root in SHARED_ROOTS:
         for path in sorted((ROOT / root).rglob("*")):

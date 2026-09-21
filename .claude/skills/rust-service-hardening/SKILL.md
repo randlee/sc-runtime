@@ -1,6 +1,6 @@
 ---
 name: rust-service-hardening
-version: 0.12.1
+version: 0.12.2
 description: Harden Rust backend services for production readiness. Use when working on Tokio, Axum, Hyper, Tonic, or Reqwest-based services and you need guidance or review for config validation, structured tracing, request IDs, timeouts, retries, graceful shutdown, backpressure, body limits, health checks, metrics, and dependency hygiene. Not for non-service Rust crates, embedded Rust, pure sync CLI tools, or low-level libraries without runtime, network, or server concerns.
 depends_on:
   rust-service-hardening-agent: 0.x
@@ -83,6 +83,10 @@ Use these existing `sc-rust` agents for service-hardening workflows:
 | Validation pass after changes | `rust-qa-agent` | Fenced JSON `{success,data,error}` QA report covering tests, quality gates, and broader validation after hardening work |
 
 Invoke these agents via Agent Runner using `.claude/agents/registry.yaml`, and keep the prompt focused on service-hardening concerns rather than general Rust style issues.
+
+Every `rust-code-reviewer` delegation must use that agent's fenced-JSON input
+contract and pass the exact `worktree_path`, `branch`, `commit`, and
+`review_targets`; never dispatch it against implicit unstaged changes.
 
 Dedicated `rust-service-hardening-agent` assignment template:
 
