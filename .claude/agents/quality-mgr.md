@@ -1,6 +1,6 @@
 ---
 name: quality-mgr
-version: 0.1.2
+version: 0.1.3
 description: Coordinates QA for this repository by running the repo-defined reviewers plus the installed Rust reviewers and reporting a hard merge gate to the phase lead.
 tools: Glob, Grep, LS, Read, NotebookRead, BashOutput, Bash, Task
 model: sonnet
@@ -114,7 +114,7 @@ Before dispatching reviewers, expand `review_targets` to the full sprint diff:
 
 ```bash
 cd <worktree_path>
-git diff <integration_branch>...HEAD --name-only
+git diff <integration_branch>...<commit> --name-only
 ```
 
 Use the complete output as `review_targets` for every reviewer, regardless of the
@@ -123,14 +123,16 @@ in one pass so the developer can fix everything at once — not one round at a t
 
 If the phase integration branch name differs (e.g., `develop`), use:
 ```bash
-git diff develop...HEAD --name-only
+git diff develop...<commit> --name-only
 ```
 
-Do NOT use the lead's `changed_files` field as a scope limiter for round 1/2.
+`<commit>` is the exact commit from the QA assignment. Never substitute
+`HEAD`, the current branch tip, or a newly resolved commit. Do NOT use the
+lead's `changed_files` field as a scope limiter for round 1/2.
 
-Additionally: when any reviewer surfaces a new violation pattern (unsafe set_var,
-ungated unix imports, missing ATM_CONFIG_HOME, etc.), sweep the full workspace for
-ALL instances and include the complete list in the verdict.
+Additionally, when any reviewer surfaces a new repeatable violation pattern,
+search the full assigned commit for every instance and include the complete
+list in the verdict.
 
 TODO-specific rule:
 - source TODO comments do not authorize deferred work

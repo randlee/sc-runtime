@@ -1,6 +1,6 @@
 ---
 name: quality-management-gh
-version: 1.0.1
+version: 1.0.2
 description: Reusable QA orchestration skill for GitHub PRs. Use for multi-pass QA, CI monitoring, and template-driven findings and final quality reports.
 ---
 
@@ -31,8 +31,8 @@ mkdir -p ~/.atm/templates/quality-management-gh && cp .claude/skills/quality-man
 
 Build the `--vars` JSON for this run from the selected template's frontmatter
 `required_variables`; both templates list them. Every value comes from the
-run: `task_id` from the QA assignment, `commit` from `git rev-parse`, and
-counts from the reviewer outputs. Keep numeric fields as JSON numbers and
+run: `task_id` and `commit` unchanged from the QA assignment, and counts from
+the reviewer outputs. Keep numeric fields as JSON numbers and
 `blocking_ids_json` as a JSON string because the templates embed it as JSON.
 Write the vars file outside the repository working tree (in the session
 scratchpad or a temp directory); never commit or stage it, and delete it or

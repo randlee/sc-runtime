@@ -211,12 +211,15 @@ def main() -> int:
         ".claude/project/quality-policy.md",
         "exact `branch`, `commit`, and `worktree_path`",
         "git show <commit>:<path>",
+        "git diff <integration_branch>...<commit> --name-only",
         "every carried finding remains part of the merge gate",
         "bd update <task-id> --claim",
         "bd close <task-id>",
     ):
         if fragment not in quality_manager:
             fail(f"quality-mgr.md: missing {fragment}", failures)
+    if "...HEAD --name-only" in quality_manager:
+        fail("quality-mgr.md: moving HEAD used for review target discovery", failures)
 
     review_template = (
         ROOT / ".claude/skills/codex-orchestration/review-template.xml.j2"
@@ -333,6 +336,14 @@ def main() -> int:
             fail(f"rust-code-reviewer.md: missing pinned-review invariant {fragment}", failures)
     if "review unstaged changes from `git diff`" in rust_code_reviewer:
         fail("rust-code-reviewer.md: moving-checkout default remains", failures)
+
+    quality_management_skill = (
+        ROOT / ".claude/skills/quality-management-gh/SKILL.md"
+    ).read_text()
+    if "`commit` unchanged from the QA assignment" not in quality_management_skill:
+        fail("quality-management-gh/SKILL.md: report commit is not assignment-pinned", failures)
+    if "`commit` from `git rev-parse`" in quality_management_skill:
+        fail("quality-management-gh/SKILL.md: report commit uses moving checkout", failures)
 
     for root in SHARED_ROOTS:
         for path in sorted((ROOT / root).rglob("*")):
