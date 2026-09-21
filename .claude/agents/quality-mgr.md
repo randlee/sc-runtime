@@ -1,6 +1,6 @@
 ---
 name: quality-mgr
-version: 0.1.0
+version: 0.1.1
 description: Coordinates QA for this repository by running the repo-defined reviewers plus the installed Rust reviewers and reporting a hard merge gate to the phase lead.
 tools: Glob, Grep, LS, Read, NotebookRead, BashOutput, Bash, Task
 model: sonnet
@@ -178,8 +178,10 @@ TODO-specific rule:
    - skipped
    Reject a reviewer result whose reported branch or commit differs from the
    parent assignment; do not merge findings produced from another revision.
-   Before citing any reviewer-supplied `file:line`, re-resolve it in the
-   current branch/worktree. Missing or stale evidence is a finding.
+   Before citing any reviewer-supplied `file:line`, re-resolve it at the
+   assigned commit with `git show <commit>:<path>` or another read guaranteed
+   to use that immutable tree. Never substitute the current branch tip or
+   moving worktree state. Missing or stale evidence is a finding.
 9. Check PR CI state when a PR number is present:
    - prefer `atm gh monitor status`
    - prefer `atm gh monitor pr <PR> --start-timeout 120`

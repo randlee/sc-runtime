@@ -200,11 +200,32 @@ def main() -> int:
     for fragment in (
         ".claude/project/quality-policy.md",
         "exact `branch`, `commit`, and `worktree_path`",
+        "git show <commit>:<path>",
         "bd update <task-id> --claim",
         "bd close <task-id>",
     ):
         if fragment not in quality_manager:
             fail(f"quality-mgr.md: missing {fragment}", failures)
+
+    review_template = (
+        ROOT / ".claude/skills/codex-orchestration/review-template.xml.j2"
+    ).read_text()
+    for fragment in (
+        "HEAD` exactly `{{ commit | string | cdata_escape }}",
+        "git show {{ commit | string | cdata_escape }}:<path>",
+        "never at a newer branch tip or moving worktree state",
+    ):
+        if fragment not in review_template:
+            fail(f"review-template.xml.j2: missing pinned-review invariant {fragment}", failures)
+
+    for relative, text in (
+        (".claude/agents/quality-mgr.md", quality_manager),
+        (".claude/skills/codex-orchestration/qa-template.xml.j2", qa_template),
+        (".claude/skills/codex-orchestration/review-template.xml.j2", review_template),
+    ):
+        for forbidden in ("current branch/worktree", "current branch and worktree"):
+            if forbidden in text:
+                fail(f"{relative}: moving-checkout evidence instruction {forbidden!r}", failures)
 
     report_json_fields = {
         ".claude/skills/quality-management-gh/findings-report.md.j2": (
