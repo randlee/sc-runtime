@@ -128,6 +128,14 @@ def main() -> int:
             if field not in text:
                 fail(f"{relative}: missing rendered field {field}", failures)
 
+    for relative in (
+        ".claude/skills/codex-orchestration/ruthless-boundary-qa-assignment.json.j2",
+        ".claude/assets/sc-rust/quality-mgr/templates/rust-best-practices-assignment.json.j2",
+        ".claude/assets/sc-rust/quality-mgr/templates/rust-service-hardening-assignment.json.j2",
+    ):
+        if '"findings_scope_locked"' not in (ROOT / relative).read_text():
+            fail(f"{relative}: missing fix-round scope lock", failures)
+
     qa_template = (ROOT / ".claude/skills/codex-orchestration/qa-template.xml.j2").read_text()
     for fragment in (
         "  - commit",
@@ -201,6 +209,7 @@ def main() -> int:
         ".claude/project/quality-policy.md",
         "exact `branch`, `commit`, and `worktree_path`",
         "git show <commit>:<path>",
+        "every carried finding remains part of the merge gate",
         "bd update <task-id> --claim",
         "bd close <task-id>",
     ):
@@ -226,6 +235,23 @@ def main() -> int:
         for forbidden in ("current branch/worktree", "current branch and worktree"):
             if forbidden in text:
                 fail(f"{relative}: moving-checkout evidence instruction {forbidden!r}", failures)
+
+    for fragment in (
+        "`RBQA-*`, `RBP-*`, or `RSH-*`",
+        "Every carried finding remains in the merge gate",
+    ):
+        if fragment not in qa_template:
+            fail(f"qa-template.xml.j2: missing fix-round invariant {fragment}", failures)
+
+    for relative in (
+        ".claude/agents/quality-mgr.md",
+        ".claude/skills/codex-orchestration/SKILL.md",
+        ".claude/skills/quality-management-gh/SKILL.md",
+    ):
+        text = (ROOT / relative).read_text()
+        for forbidden in ("unconditionally omit", "carry to the next phase backlog"):
+            if forbidden in text:
+                fail(f"{relative}: contradictory fix-round policy {forbidden!r}", failures)
 
     report_json_fields = {
         ".claude/skills/quality-management-gh/findings-report.md.j2": (

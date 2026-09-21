@@ -1,6 +1,6 @@
 ---
 name: quality-management-gh
-version: 1.0.0
+version: 1.0.1
 description: Reusable QA orchestration skill for GitHub PRs. Use for multi-pass QA, CI monitoring, and template-driven findings and final quality reports.
 ---
 
@@ -84,12 +84,14 @@ Use fenced JSON for machine-readable status payloads:
 ## QA Lifecycle (Multi-Pass)
 
 1. Initial pass: usually `FAIL` with findings.
-   - If Rust best-practices review is in scope, run it in QA-1 only.
+   - If Rust best-practices review is in scope, run its open-ended pass in QA-1.
 2. Fix passes: `IN-FLIGHT` or `FAIL` while fixes are in progress.
-   - QA-2 and later rounds must not re-run Rust best-practices review on the
-     same sprint branch.
-   - Unresolved QA-1 RBP findings that are not fixed in the first fix round
-     carry to the next phase backlog instead of being re-raised in later rounds.
+   - QA-2 and later rounds must not re-run subjective reviewers open-ended on
+     the same sprint branch.
+   - Dispatch a subjective reviewer only to verify explicitly assigned
+     carry-forward findings it owns, with its output scope-locked to those ids.
+   - Every prior finding remains in the merge gate until its owning reviewer
+     verifies it as fixed; do not defer unresolved findings to a later phase.
 3. Final pass: `PASS` with final quality report and merge recommendation.
 
 Do not treat QA as single-shot.
