@@ -295,6 +295,28 @@ def main() -> int:
         if fragment not in schema_assignment:
             fail(f"schema-reviewer-assignment.json.j2: invalid default {fragment}", failures)
 
+    rust_best_practices_skill = (
+        ROOT / ".claude/skills/rust-best-practices/SKILL.md"
+    ).read_text()
+    for field in ('"branch"', '"commit"', '"carry_forward_findings"', '"findings_scope_locked"'):
+        if field not in rust_best_practices_skill:
+            fail(f"rust-best-practices/SKILL.md: assignment example missing {field}", failures)
+
+    rust_service_skill = (
+        ROOT / ".claude/skills/rust-service-hardening/SKILL.md"
+    ).read_text()
+    for field, minimum_count in (
+        ('"branch"', 2),
+        ('"commit"', 2),
+        ('"carry_forward_findings"', 1),
+        ('"findings_scope_locked"', 1),
+    ):
+        if rust_service_skill.count(field) < minimum_count:
+            fail(
+                f"rust-service-hardening/SKILL.md: assignment examples missing {field}",
+                failures,
+            )
+
     for root in SHARED_ROOTS:
         for path in sorted((ROOT / root).rglob("*")):
             if not path.is_file():

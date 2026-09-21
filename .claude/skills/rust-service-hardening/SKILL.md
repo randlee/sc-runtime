@@ -1,6 +1,6 @@
 ---
 name: rust-service-hardening
-version: 0.12.0
+version: 0.12.1
 description: Harden Rust backend services for production readiness. Use when working on Tokio, Axum, Hyper, Tonic, or Reqwest-based services and you need guidance or review for config validation, structured tracing, request IDs, timeouts, retries, graceful shutdown, backpressure, body limits, health checks, metrics, and dependency hygiene. Not for non-service Rust crates, embedded Rust, pure sync CLI tools, or low-level libraries without runtime, network, or server concerns.
 depends_on:
   rust-service-hardening-agent: 0.x
@@ -90,6 +90,8 @@ Dedicated `rust-service-hardening-agent` assignment template:
 {
   "review_mode": "doc_review | sprint_review | phase_end",
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_targets": [
     "src/",
     "Cargo.toml"
@@ -108,6 +110,8 @@ Dedicated `rust-service-hardening-agent` assignment template:
     "actix-web",
     "reqwest"
   ],
+  "carry_forward_findings": [],
+  "findings_scope_locked": false,
   "notes": "optional context"
 }
 ```
@@ -151,6 +155,8 @@ Suggested `rust-qa-agent` assignment:
 ```json
 {
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_mode": "sprint_review | phase_end",
   "review_targets": [
     "src/",

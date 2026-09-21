@@ -1,6 +1,6 @@
 ---
 name: rust-best-practices
-version: 0.12.0
+version: 0.12.1
 description: Review Rust architecture plans, crate boundaries, and code for structural design-pattern compliance. Use when the task involves typestate, sealed traits, error contracts, wrapper/newtype design, object safety, interior mutability, or other type-system-driven Rust correctness patterns that go beyond general style guidance.
 depends_on:
   rust-best-practices-agent: 0.x
@@ -97,6 +97,8 @@ Dedicated `rust-best-practices-agent` assignment template:
 {
   "review_mode": "doc_review | sprint_review | phase_end",
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_targets": [
     "src/",
     "Cargo.toml"
@@ -106,6 +108,8 @@ Dedicated `rust-best-practices-agent` assignment template:
     "RBP-001",
     "RBP-004"
   ],
+  "carry_forward_findings": [],
+  "findings_scope_locked": false,
   "notes": "optional context"
 }
 ```
