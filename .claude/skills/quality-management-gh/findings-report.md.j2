@@ -1,6 +1,6 @@
 ---
 name: findings-report
-version: 1.0.1
+version: 1.0.2
 description: Multi-pass QA findings report template for FAIL and IN-FLIGHT updates.
 format: markdown
 required_variables:
@@ -27,6 +27,8 @@ required_variables:
   - action_owner
 optional_variables:
   - resolved_findings_md
+defaults:
+  resolved_findings_md: ""
 metadata:
   type: qa-findings-report
   tags:
