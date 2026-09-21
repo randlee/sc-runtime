@@ -1,6 +1,6 @@
 ---
 name: rust-best-practices
-version: 0.12.2
+version: 0.12.3
 description: Review Rust architecture plans, crate boundaries, and code for structural design-pattern compliance. Use when the task involves typestate, sealed traits, error contracts, wrapper/newtype design, object safety, interior mutability, or other type-system-driven Rust correctness patterns that go beyond general style guidance.
 depends_on:
   rust-best-practices-agent: 0.x
@@ -11,7 +11,7 @@ depends_on:
 
 # Rust Best Practices
 
-This skill is the canonical source of truth for structural Rust pattern review in Synaptic Canvas. It complements `rust-development` by focusing on type-system-driven correctness, API-boundary design, and the lifecycle stage where each pattern should be enforced.
+This skill is the canonical source of truth for structural Rust pattern review. It complements `rust-development` by focusing on type-system-driven correctness, API-boundary design, and the lifecycle stage where each pattern should be enforced.
 
 ## Scope
 

@@ -51,6 +51,7 @@ FORBIDDEN = (
     "sc-runtime",
     "sc-lint",
     "atm-core",
+    "synaptic canvas",
     "herdr",
     "rand's",
     "randlee",
