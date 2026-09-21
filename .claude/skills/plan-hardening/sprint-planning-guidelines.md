@@ -8,10 +8,10 @@ shortest critical path with the fewest sprints. Ten non-intersecting sprints
 in parallel are preferred over five in series, and five are preferred over
 ten when the extra five buy no parallel work.
 
-Crate boundaries are the default place to cut, because they are trait-bound
-contracts recorded in `boundaries/<crate>/*.toml` and enforced by
-`sc-lint-boundary` through `just lint`:
-independence this architecture already checks mechanically. A plan that cuts
+Crate boundaries are the default place to cut when the repository records
+them in boundary manifests and enforces them through its configured boundary
+validation command. This is independence the architecture already checks
+mechanically. A plan that cuts
 every sprint by feature makes each sprint touch the same crate stack and
 forces a serial chain. A plan that cuts every change by layer has the opposite
 defect: thin sprints, a sprint-sized overhead on each, and all integration
@@ -100,8 +100,8 @@ Every sprint doc declares one `closure_type` and one `target_boundary`.
 
 | `closure_type` | Closes when | Required validation |
 |---|---|---|
-| `contract` | every interface the phase changes is committed as signatures, types, manifests and ADR text; test doubles and contract tests compile; workspace builds | `cargo build --workspace`, `just lint` |
-| `boundary` | the sprint's side of the contract is fully implemented in its one crate; contract tests pass against it (implementer) or its tests pass against the test double (consumer); boundary lint is clean; no `todo!`, `unimplemented!` or stubbed branch remains | `cargo test -p <crate>`, `cargo clippy -p <crate> -- -D warnings`, `cargo build --workspace`, `just lint` |
+| `contract` | every interface the phase changes is committed as signatures, types, manifests and ADR text; test doubles and contract tests compile; workspace builds | workspace build plus the repository's configured boundary validation |
+| `boundary` | the sprint's side of the contract is fully implemented in its one crate; contract tests pass against it (implementer) or its tests pass against the test double (consumer); boundary lint is clean; no `todo!`, `unimplemented!` or stubbed branch remains | target-crate tests and lints, workspace build, and configured boundary validation |
 | `integration` | every feature-level acceptance criterion of the phase passes through the real composition; the phase leaves no contract without a production consumer | full workspace validation plus the phase's end-to-end procedures |
 | `docs` | the named documents match the shipped surface | doc lint |
 
@@ -270,7 +270,7 @@ Sprint docs must be short and structured enough that:
 - `arch-qa` can enumerate the `adrs` list and structural gate artifacts
   directly, and rejects a sprint doc whose ADR list is missing or incomplete
 - `ruthless-boundary-qa` can check `owned_paths` and `target_boundary`
-  against the manifests `sc-lint-boundary` enforces
+  against the repository's declared boundary manifests and validation policy
 - `quality-mgr` can route QA without copying scope by hand
 
 QA scope follows the closure type: a `boundary` sprint is reviewed against

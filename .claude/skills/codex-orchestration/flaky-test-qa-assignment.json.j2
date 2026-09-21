@@ -5,6 +5,8 @@ description: Render a fenced-JSON assignment for flaky-test-qa.
 format: json
 required_variables:
   - worktree_path
+  - branch
+  - commit
   - review_targets
 optional_variables:
   - phase
@@ -25,6 +27,8 @@ defaults:
 ---
 {
   "worktree_path": {{ worktree_path }},
+  "branch": {{ branch }},
+  "commit": {{ commit }},
   "scope": {
     "phase": {% if phase %}{{ phase }}{% else %}null{% endif %},
     "sprint": {% if sprint %}{{ sprint }}{% else %}null{% endif %}

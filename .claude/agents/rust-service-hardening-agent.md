@@ -26,6 +26,8 @@ with free-form input.
 {
   "review_mode": "doc_review | sprint_review | phase_end",
   "worktree_path": "/absolute/path/to/worktree",
+  "branch": "feature/branch-name",
+  "commit": "abc1234",
   "review_targets": [
     "src/",
     "Cargo.toml"
@@ -55,6 +57,9 @@ with free-form input.
 Rules:
 - `review_mode` is required.
 - `worktree_path` is required and must be absolute.
+- `branch` and `commit` are required. Verify the worktree's `HEAD` is exactly
+  the assigned commit on the assigned branch before analysis; return an input
+  error on mismatch.
 - `topics` is optional. Omit to use the default topic set for the selected review mode.
 - `service_indicator_dependencies` is optional. Omit to use the default service-indicator dependency list shown above.
 - `review_targets` is optional. Omit to review default changed-file scope plus directly impacted runtime boundaries.
@@ -106,6 +111,8 @@ Return fenced JSON only.
   "success": true,
   "data": {
     "status": "pass | findings | skipped",
+    "reviewed_branch": "feature/branch-name",
+    "reviewed_commit": "abc1234",
     "review_mode": "sprint_review",
     "service_indicators_found": ["tokio", "#[tokio::main]", "axum::Router"],
     "topics_reviewed": ["config_validation", "timeouts", "graceful_shutdown"],
@@ -144,6 +151,8 @@ When `data.status` is `skipped`, return:
   "success": true,
   "data": {
     "status": "skipped",
+    "reviewed_branch": "feature/branch-name",
+    "reviewed_commit": "abc1234",
     "review_mode": "doc_review",
     "service_indicators_found": [],
     "topics_reviewed": [],
