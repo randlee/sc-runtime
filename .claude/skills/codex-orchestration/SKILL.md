@@ -1,6 +1,6 @@
 ---
 name: codex-orchestration
-version: 0.1.0
+version: 0.1.1
 description: Orchestrate sprint work where an appointed lead coordinates, the developer the lead assigns each sprint to is its sole developer, and quality-mgr enforces the QA gate.
 depends_on:
   quality-management-gh: 1.x
@@ -147,19 +147,20 @@ This is the lifecycle contract for development, fix, and QA work.
    - `rust-best-practices-agent`
    - `rust-service-hardening-agent`
    - `flaky-test-qa` when test instability risk is present
-7. QA-2 and later (fix-verification) rounds on the same sprint branch omit
-   `ruthless-boundary-qa`, `rust-best-practices-agent`, and
-   `rust-service-hardening-agent` unconditionally — they reliably surface
-   findings on any diff regardless of size, which turns a small fix-round
-   into unbounded review churn. QA-2+ rounds launch `req-qa` + `arch-qa`
-   (scoped to the dispatched finding ids) plus `rust-qa-agent` (its
-   objective execution-fact gates — fmt, clippy, tests, lint, RULE-003,
-   pytests — are not a subjective findings pass and stay in every round).
+7. QA-2 and later (fix-verification) rounds on the same sprint branch never
+   rerun `ruthless-boundary-qa`, `rust-best-practices-agent`, or
+   `rust-service-hardening-agent` open-ended. Dispatch one only when the round
+   carries an assigned finding that reviewer owns (`RBQA-*`, `RBP-*`, or
+   `RSH-*`), and scope-lock its output to those ids. QA-2+ rounds always launch
+   `req-qa` + `arch-qa` (scoped to the dispatched finding ids) plus
+   `rust-qa-agent` (its objective execution-fact gates — fmt, clippy, tests,
+   lint, RULE-003, pytests — are not a subjective findings pass and stay in
+   every round).
    The verdict is each dispatched finding's fixed/regressed/open status
    plus `rust-qa-agent`'s gate results, nothing else. Anything req-qa or
    arch-qa notices outside the dispatched findings goes in a debt-notes
-   section of the report and does not affect the verdict. All QA-1
-   first-pass findings from every reviewer must still be fixed before
+   section of the report and does not affect the verdict. Every QA-1
+   first-pass finding from every reviewer must be fixed and verified before
    merge — merge gate is 0B+0I+0m with no exceptions and no backlog
    deferral. QA-1 findings route back to the developer via
    `fix-assignment.xml.j2` before QA-2, following the standard

@@ -21,6 +21,7 @@ REVIEWER_PROMPTS = (
     ".claude/agents/ruthless-boundary-qa.md",
     ".claude/agents/rust-qa-agent.md",
     ".claude/agents/rust-best-practices-agent.md",
+    ".claude/agents/rust-code-reviewer.md",
     ".claude/agents/rust-service-hardening-agent.md",
     ".claude/agents/schema-reviewer.md",
 )
@@ -50,6 +51,7 @@ FORBIDDEN = (
     "sc-runtime",
     "sc-lint",
     "atm-core",
+    "synaptic canvas",
     "herdr",
     "rand's",
     "randlee",
@@ -128,6 +130,14 @@ def main() -> int:
             if field not in text:
                 fail(f"{relative}: missing rendered field {field}", failures)
 
+    for relative in (
+        ".claude/skills/codex-orchestration/ruthless-boundary-qa-assignment.json.j2",
+        ".claude/assets/sc-rust/quality-mgr/templates/rust-best-practices-assignment.json.j2",
+        ".claude/assets/sc-rust/quality-mgr/templates/rust-service-hardening-assignment.json.j2",
+    ):
+        if '"findings_scope_locked"' not in (ROOT / relative).read_text():
+            fail(f"{relative}: missing fix-round scope lock", failures)
+
     qa_template = (ROOT / ".claude/skills/codex-orchestration/qa-template.xml.j2").read_text()
     for fragment in (
         "  - commit",
@@ -200,11 +210,56 @@ def main() -> int:
     for fragment in (
         ".claude/project/quality-policy.md",
         "exact `branch`, `commit`, and `worktree_path`",
+        "git show <commit>:<path>",
+        "git diff <integration_branch>...<commit> --name-only",
+        "phase-end QA cannot PASS",
+        "every carried finding remains part of the merge gate",
         "bd update <task-id> --claim",
         "bd close <task-id>",
     ):
         if fragment not in quality_manager:
             fail(f"quality-mgr.md: missing {fragment}", failures)
+    if "...HEAD --name-only" in quality_manager:
+        fail("quality-mgr.md: moving HEAD used for review target discovery", failures)
+    if "phase-end artifact command, when configured" in quality_manager:
+        fail("quality-mgr.md: phase-end artifact gate is optional", failures)
+
+    review_template = (
+        ROOT / ".claude/skills/codex-orchestration/review-template.xml.j2"
+    ).read_text()
+    for fragment in (
+        "HEAD` exactly `{{ commit | string | cdata_escape }}",
+        "git show {{ commit | string | cdata_escape }}:<path>",
+        "never at a newer branch tip or moving worktree state",
+    ):
+        if fragment not in review_template:
+            fail(f"review-template.xml.j2: missing pinned-review invariant {fragment}", failures)
+
+    for relative, text in (
+        (".claude/agents/quality-mgr.md", quality_manager),
+        (".claude/skills/codex-orchestration/qa-template.xml.j2", qa_template),
+        (".claude/skills/codex-orchestration/review-template.xml.j2", review_template),
+    ):
+        for forbidden in ("current branch/worktree", "current branch and worktree"):
+            if forbidden in text:
+                fail(f"{relative}: moving-checkout evidence instruction {forbidden!r}", failures)
+
+    for fragment in (
+        "`RBQA-*`, `RBP-*`, or `RSH-*`",
+        "Every carried finding remains in the merge gate",
+    ):
+        if fragment not in qa_template:
+            fail(f"qa-template.xml.j2: missing fix-round invariant {fragment}", failures)
+
+    for relative in (
+        ".claude/agents/quality-mgr.md",
+        ".claude/skills/codex-orchestration/SKILL.md",
+        ".claude/skills/quality-management-gh/SKILL.md",
+    ):
+        text = (ROOT / relative).read_text()
+        for forbidden in ("unconditionally omit", "carry to the next phase backlog"):
+            if forbidden in text:
+                fail(f"{relative}: contradictory fix-round policy {forbidden!r}", failures)
 
     report_json_fields = {
         ".claude/skills/quality-management-gh/findings-report.md.j2": (
@@ -247,6 +302,51 @@ def main() -> int:
     ):
         if fragment not in schema_assignment:
             fail(f"schema-reviewer-assignment.json.j2: invalid default {fragment}", failures)
+
+    rust_best_practices_skill = (
+        ROOT / ".claude/skills/rust-best-practices/SKILL.md"
+    ).read_text()
+    for field in ('"branch"', '"commit"', '"carry_forward_findings"', '"findings_scope_locked"'):
+        if field not in rust_best_practices_skill:
+            fail(f"rust-best-practices/SKILL.md: assignment example missing {field}", failures)
+    if "never dispatch it against implicit unstaged changes" not in rust_best_practices_skill:
+        fail("rust-best-practices/SKILL.md: unpinned rust-code-reviewer delegation", failures)
+
+    rust_service_skill = (
+        ROOT / ".claude/skills/rust-service-hardening/SKILL.md"
+    ).read_text()
+    for field, minimum_count in (
+        ('"branch"', 2),
+        ('"commit"', 2),
+        ('"carry_forward_findings"', 1),
+        ('"findings_scope_locked"', 1),
+    ):
+        if rust_service_skill.count(field) < minimum_count:
+            fail(
+                f"rust-service-hardening/SKILL.md: assignment examples missing {field}",
+                failures,
+            )
+    if "never dispatch it against implicit unstaged changes" not in rust_service_skill:
+        fail("rust-service-hardening/SKILL.md: unpinned rust-code-reviewer delegation", failures)
+
+    rust_code_reviewer = (ROOT / ".claude/agents/rust-code-reviewer.md").read_text()
+    for fragment in (
+        "git show <commit>:<path>",
+        '"reviewed_branch"',
+        '"reviewed_commit"',
+    ):
+        if fragment not in rust_code_reviewer:
+            fail(f"rust-code-reviewer.md: missing pinned-review invariant {fragment}", failures)
+    if "review unstaged changes from `git diff`" in rust_code_reviewer:
+        fail("rust-code-reviewer.md: moving-checkout default remains", failures)
+
+    quality_management_skill = (
+        ROOT / ".claude/skills/quality-management-gh/SKILL.md"
+    ).read_text()
+    if "`commit` unchanged from the QA assignment" not in quality_management_skill:
+        fail("quality-management-gh/SKILL.md: report commit is not assignment-pinned", failures)
+    if "`commit` from `git rev-parse`" in quality_management_skill:
+        fail("quality-management-gh/SKILL.md: report commit uses moving checkout", failures)
 
     for root in SHARED_ROOTS:
         for path in sorted((ROOT / root).rglob("*")):

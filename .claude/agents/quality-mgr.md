@@ -1,6 +1,6 @@
 ---
 name: quality-mgr
-version: 0.1.0
+version: 0.1.4
 description: Coordinates QA for this repository by running the repo-defined reviewers plus the installed Rust reviewers and reporting a hard merge gate to the phase lead.
 tools: Glob, Grep, LS, Read, NotebookRead, BashOutput, Bash, Task
 model: sonnet
@@ -114,7 +114,7 @@ Before dispatching reviewers, expand `review_targets` to the full sprint diff:
 
 ```bash
 cd <worktree_path>
-git diff <integration_branch>...HEAD --name-only
+git diff <integration_branch>...<commit> --name-only
 ```
 
 Use the complete output as `review_targets` for every reviewer, regardless of the
@@ -123,14 +123,16 @@ in one pass so the developer can fix everything at once — not one round at a t
 
 If the phase integration branch name differs (e.g., `develop`), use:
 ```bash
-git diff develop...HEAD --name-only
+git diff develop...<commit> --name-only
 ```
 
-Do NOT use the lead's `changed_files` field as a scope limiter for round 1/2.
+`<commit>` is the exact commit from the QA assignment. Never substitute
+`HEAD`, the current branch tip, or a newly resolved commit. Do NOT use the
+lead's `changed_files` field as a scope limiter for round 1/2.
 
-Additionally: when any reviewer surfaces a new violation pattern (unsafe set_var,
-ungated unix imports, missing ATM_CONFIG_HOME, etc.), sweep the full workspace for
-ALL instances and include the complete list in the verdict.
+Additionally, when any reviewer surfaces a new repeatable violation pattern,
+search the full assigned commit for every instance and include the complete
+list in the verdict.
 
 TODO-specific rule:
 - source TODO comments do not authorize deferred work
@@ -178,8 +180,10 @@ TODO-specific rule:
    - skipped
    Reject a reviewer result whose reported branch or commit differs from the
    parent assignment; do not merge findings produced from another revision.
-   Before citing any reviewer-supplied `file:line`, re-resolve it in the
-   current branch/worktree. Missing or stale evidence is a finding.
+   Before citing any reviewer-supplied `file:line`, re-resolve it at the
+   assigned commit with `git show <commit>:<path>` or another read guaranteed
+   to use that immutable tree. Never substitute the current branch tip or
+   moving worktree state. Missing or stale evidence is a finding.
 9. Check PR CI state when a PR number is present:
    - prefer `atm gh monitor status`
    - prefer `atm gh monitor pr <PR> --start-timeout 120`
@@ -230,9 +234,12 @@ For QA-2 and later (fix-verification) rechecks of implementation work:
 - always run `arch-qa`
 - always run `rust-qa-agent` (objective execution-fact gates: fmt, clippy,
   tests, lint, RULE-003, pytests — not a subjective findings pass)
-- do not run `ruthless-boundary-qa`
-- do not run `rust-best-practices-agent`
-- do not run `rust-service-hardening-agent`
+- run `ruthless-boundary-qa` only when assigned carry-forward `RBQA-*`
+  findings require verification; scope-lock it to those ids
+- run `rust-best-practices-agent` only when assigned carry-forward `RBP-*`
+  findings require verification; scope-lock it to those ids
+- run `rust-service-hardening-agent` only when assigned carry-forward `RSH-*`
+  findings require verification; scope-lock it to those ids
 - run `flaky-test-qa` when tests changed, CI shows intermittent behavior, or
   `rust-qa-agent` surfaces unstable execution symptoms
 - verdict = each dispatched finding's fixed/regressed/open status plus
@@ -240,15 +247,15 @@ For QA-2 and later (fix-verification) rechecks of implementation work:
   notices outside the dispatched findings goes in a debt-notes section of
   the report and does not affect the verdict
 
-Boundary-review deployment rule:
+Subjective-review fix-round rule:
 - `ruthless-boundary-qa`, `rust-best-practices-agent`, and
-  `rust-service-hardening-agent` are QA-1 only — unconditionally omit all
-  three from QA-2 and later fix-verification rounds on the same sprint
-  branch, with no lead-narrowing carve-out needed
-- their job is to find a finding and their acceptance criteria is
-  subjective, so they reliably surface something on any diff regardless of
-  size; running them on a fix round guarantees a new round instead of
-  verifying the fix
+  `rust-service-hardening-agent` run open-ended in QA-1, plan review, and
+  phase-ending review; never rerun them open-ended during fix verification
+- in QA-2 and later, dispatch one of these reviewers only for explicitly
+  assigned carry-forward findings it owns, with `findings_scope_locked: true`
+- every carried finding remains part of the merge gate until its owning
+  reviewer reports it fixed; unsolicited observations from a locked round are
+  future triage input and do not expand that round's canonical finding set
 - keep all three on docs-only plan review and phase-ending review
 
 For phase-ending QA, launch the reviewers selected by repository policy and:
@@ -261,8 +268,10 @@ For phase-ending QA, launch the reviewers selected by repository policy and:
 - always run `flaky-test-qa`
 - run `schema-reviewer` only when repository policy defines a governed
   interface relevant to the review
-- require the repository policy's phase-end artifact command, when configured,
-  to succeed through the assigned execution reviewer before reporting PASS
+- require repository policy to define a phase-end artifact command; if none is
+  configured, phase-end QA cannot PASS
+- require that command to succeed through the assigned execution reviewer
+  before reporting PASS
 - do not run the repository-wide artifact command yourself in the foreground;
   verify the delegated result and its source revision
 
