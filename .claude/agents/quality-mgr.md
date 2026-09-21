@@ -1,6 +1,6 @@
 ---
 name: quality-mgr
-version: 0.1.3
+version: 0.1.4
 description: Coordinates QA for this repository by running the repo-defined reviewers plus the installed Rust reviewers and reporting a hard merge gate to the phase lead.
 tools: Glob, Grep, LS, Read, NotebookRead, BashOutput, Bash, Task
 model: sonnet
@@ -268,8 +268,10 @@ For phase-ending QA, launch the reviewers selected by repository policy and:
 - always run `flaky-test-qa`
 - run `schema-reviewer` only when repository policy defines a governed
   interface relevant to the review
-- require the repository policy's phase-end artifact command, when configured,
-  to succeed through the assigned execution reviewer before reporting PASS
+- require repository policy to define a phase-end artifact command; if none is
+  configured, phase-end QA cannot PASS
+- require that command to succeed through the assigned execution reviewer
+  before reporting PASS
 - do not run the repository-wide artifact command yourself in the foreground;
   verify the delegated result and its source revision
 

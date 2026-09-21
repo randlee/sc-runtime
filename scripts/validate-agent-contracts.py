@@ -212,6 +212,7 @@ def main() -> int:
         "exact `branch`, `commit`, and `worktree_path`",
         "git show <commit>:<path>",
         "git diff <integration_branch>...<commit> --name-only",
+        "phase-end QA cannot PASS",
         "every carried finding remains part of the merge gate",
         "bd update <task-id> --claim",
         "bd close <task-id>",
@@ -220,6 +221,8 @@ def main() -> int:
             fail(f"quality-mgr.md: missing {fragment}", failures)
     if "...HEAD --name-only" in quality_manager:
         fail("quality-mgr.md: moving HEAD used for review target discovery", failures)
+    if "phase-end artifact command, when configured" in quality_manager:
+        fail("quality-mgr.md: phase-end artifact gate is optional", failures)
 
     review_template = (
         ROOT / ".claude/skills/codex-orchestration/review-template.xml.j2"
