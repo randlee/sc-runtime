@@ -134,7 +134,7 @@ project. Template CI runs the same driver over every fixture in
 
 ## Index of ADRs
 
-`Active` is binding. `Proposed` is not binding until sprint aa-1 (the spike
+`Active` is binding. `Proposed` is not binding until sprint a-1 (the spike
 sprint) makes it `Active` or amends it.
 
 | Id | Title | Status |
@@ -151,11 +151,11 @@ sprint) makes it `Active` or amends it.
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Proposed |
-| ADR-RUN-0204 | The CLI auto-starts the daemon, launched as launchd would | Active |
+| ADR-RUN-0204 | The CLI auto-starts the daemon, launched as launchd would | Deferred — post-core application layer |
 | ADR-RUN-0301 | One store crate per database backend | Active |
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
-| ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Active |
+| ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Proposed |
 
@@ -441,7 +441,7 @@ generated project, cargo unifies features, so `sc-transport` and `sc-command`
 are compiled once with `server` enabled and the `cli` binary is built against
 them. Whether workspace-wide builds are exempt from the property in point 8,
 or the two crates must instead be split into client and server crates, is
-undecided. Sprint aa-1 (the spike sprint) MUST measure what a `cli` binary
+undecided. Sprint a-1 (the spike sprint) MUST measure what a `cli` binary
 links under both build selections before this is decided.
 
 ### Consequences
@@ -952,8 +952,9 @@ virtual-machine runtime for macOS.
    no alternative code path. What is forbidden is code that makes the daemon
    behave differently under test.
 3. A test that starts a daemon as a separate process, uses the default
-   instance root, or involves the service manager or CLI auto-start MUST run
-   only on an isolated machine and MUST NOT run on a developer's host.
+   instance root, or involves the service manager MUST run only on an
+   isolated machine and MUST NOT run on a developer's host. Any future
+   auto-start tests introduced with deferred ADR-RUN-0204 inherit this rule.
 4. A test that runs the daemon in-process through
    `sc_runtime::testing::DaemonFixture` on a temporary instance root MAY run
    on a developer's host, provided every resource the fixture daemon opens
@@ -966,30 +967,29 @@ virtual-machine runtime for macOS.
    [ADR-RT-0004](sc-runtime/architecture.md)), fixture tests are
    daemon-process tests under point 3 until that is decided.
    A host-run test MUST NOT execute the CLI binary; every test that does is
-   a daemon-process test under point 3, because the CLI starts a real,
-   detached daemon when it cannot reach one
-   ([ADR-RUN-0204](architecture.md)). CLI commands are proven on the host by
-   no-daemon unit tests ([ADR-RUN-0304](architecture.md)).
+   a process test under point 3. In Phase A, CLI behavior is proven on the
+   host through an in-process path and by an isolated real-binary smoke. This
+   safety rule does not prescribe the deferred ADR-RUN-0304 helper shape.
 5. The `daemon.lock` singleton MUST NOT be weakened for tests.
-6. Building or provisioning a virtual machine is not part of v0.1. The rule
-   MUST reach generated projects as written guidance in their `AGENTS.md` and
-   `CLAUDE.md`.
+6. Building or provisioning a virtual machine is not part of v0.1. Phase A
+   records the rule in this repository; generated-project wording is deferred
+   with REQ-RUN-0311.
 
 **OPEN:** how daemon-process tests are selected and how they detect an
-isolated machine, and where the macOS-only launchd comparison runs, are
-undecided; [NFR-RUN-0010](requirements.md) owns both questions.
+isolated machine is undecided; [NFR-RUN-0010](requirements.md) owns the
+question. The launchd comparison belongs to deferred ADR-RUN-0204.
 
 ### Consequences
 
 Production daemon code has one shape, and tests exercise it. Nothing a developer runs on the host can start, collide with or leak a
-daemon process: host-run tests use the in-process fixture and the no-daemon
-CLI unit tests ([ADR-RUN-0304](architecture.md)). The tests that need a real
+daemon process: host-run tests use the in-process fixture and the host-safe
+CLI path. The tests that need a real
 daemon process, the real singleton and the real service manager execute where
 a leaked or colliding daemon costs nothing, whichever command starts them;
 whether `just test` starts them inside a virtual machine is a question for
 the standard SC `just` system. Until a virtual machine is set up for a project, those tests run only in CI.
-The launchd comparison needs macOS, which a Linux virtual machine cannot
-give.
+Any future launchd comparison needs macOS, which a Linux virtual machine
+cannot give.
 
 ### Alternatives Considered
 
@@ -1009,17 +1009,15 @@ give.
 
 **Enforced by:** the success criteria of [NFR-RUN-0010](requirements.md)
 (no test-daemon crate, binary, feature or `cfg`; no daemon-process test
-executes on a developer's host, and they run in CI) and of
-[REQ-RUN-0311](requirements.md) (the guidance is present in every generated
-project); `arch-qa` review of any new crate, binary or feature whose purpose
-is testing the daemon.
+executes on a developer's host, and they run in CI); `arch-qa` review of any
+new crate, binary or feature whose purpose is testing the daemon.
 
 ### Related Documents
 
 - [NFR-RUN-0010](requirements.md): the rule for this repository and its open questions
-- [REQ-RUN-0311](requirements.md): the guidance in generated projects
+- [REQ-RUN-0311](requirements.md): deferred generated-project guidance
 - [NFR-RUN-0005](requirements.md): isolated, parallel tests on temporary instance roots
-- [REQ-RUN-0206](requirements.md): CLI auto-start, whose tests start real daemon processes
+- [REQ-RUN-0206](requirements.md): deferred CLI auto-start, whose future tests inherit this rule
 - [REQ-RT-0002](sc-runtime/requirements.md): the `daemon.lock` singleton
 - [ADR-RT-0004](sc-runtime/architecture.md): the fixture is the real daemon
 
@@ -1055,11 +1053,9 @@ happens to be up.
    code `DAEMON.NOT_RUNNING` and
    `suggested_action: "run <app> daemon start"` (a plain JSON string), and
    MUST exit non-zero (the non-zero exit is decided in this document).
-6. The CLI auto-starts the daemon by default, launched the way launchd
-   launches it and never inheriting the CLI's environment
-   ([ADR-RUN-0204](architecture.md), which amends this point). Point 5 is
-   what the CLI reports when auto-start is disabled or the started daemon
-   does not become reachable.
+6. In Phase A the CLI is report-only and MUST NOT start the daemon. Deferred
+   [ADR-RUN-0204](architecture.md) preserves a possible optional auto-start
+   layer for later evaluation; it does not amend this point in Phase A.
 
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
@@ -1077,9 +1073,9 @@ There is one code path to SQL and one writer of the local store. Every CLI
 command needs a running daemon, so the error for its absence is typed and
 carries a suggested action that a person or an agent can follow.
 
-The owner decided on 2026-09-20 that the CLI auto-starts the daemon by
-default; [ADR-RUN-0204](architecture.md) records that decision and the clean
-launch it requires.
+The owner-directed Phase A recut keeps the CLI report-only. Deferred
+[ADR-RUN-0204](architecture.md) preserves the previously proposed auto-start
+design as history and future input.
 
 The singleton governs the local store only. A shared Postgres store, when
 `store-postgres` arrives after v0.1, may be written by daemons on several
@@ -1100,8 +1096,8 @@ hosts.
 `cargo tree -p cli -e normal --prefix none` prints no line beginning with
 `sqlx `, so the CLI cannot open a database); the tests of
 [REQ-RUN-0202](requirements.md): a unit test of the CLI's rendering of
-`DaemonNotRunning`, and an isolated-machine run of the CLI with no daemon and
-auto-start disabled or failing, each asserting the code `DAEMON.NOT_RUNNING`,
+`DaemonNotRunning`, and an isolated-machine run of the report-only CLI with
+no daemon, each asserting the code `DAEMON.NOT_RUNNING`,
 the suggested action and a non-zero exit; the two-daemon
 test in [REQ-RT-0002](sc-runtime/requirements.md).
 
@@ -1212,7 +1208,7 @@ nothing.
 **Status:** Proposed  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: both facts are marked by the design as unverified and to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0202 and ADR-RUN-0302 so that those two hold only accepted decisions  
-**Acceptance:** made Active, or amended, by sprint aa-1  
+**Acceptance:** made Active, or amended, by sprint a-1
 
 ### Context
 
@@ -1248,24 +1244,24 @@ The right-hand column summarises the rows; the rows in
 [REQ-RUN-0102](requirements.md) are the definition of "proven".
 
 **OPEN:** the exact version pins for `axum`, `utoipa`, `utoipa-axum` and
-`rmcp` are not known until sprint aa-1 records them.
+`rmcp` are not known until sprint a-1 records them.
 
 ### Consequences
 
-This ADR is Proposed. It is not binding, and no sprint other than aa-1 may
-depend on it, until both rows are proven. Sprint aa-1 is the spike sprint: it
+This ADR is Proposed. It is not binding, and no sprint other than a-1 may
+depend on it, until both rows are proven. Sprint a-1 is the spike sprint: it
 builds the throwaway binary `examples/spike` (axum, utoipa-axum, an rmcp
 stateless service at `/mcp`, sqlx SQLite, a UDS listener, and a clap client
 using reqwest `unix_socket`).
 
-When both rows are proven, sprint aa-1 MUST write the evidence and the exact
+When both rows are proven, sprint a-1 MUST write the evidence and the exact
 version pins into this Consequences section, remove the `**OPEN:**` line, and
 set Status to Active.
 
-If row 1 is false, sprint aa-1 MUST amend point 1 to the versions the spike
+If row 1 is false, sprint a-1 MUST amend point 1 to the versions the spike
 found to work before setting Status to Active;
 [ADR-RUN-0202](architecture.md) does not change. If row 2 is false, sprint
-aa-1 MUST amend point 2 to what the spike found to work, and MUST in the same
+a-1 MUST amend point 2 to what the spike found to work, and MUST in the same
 change amend points 2 and 3 of [ADR-RUN-0302](architecture.md) (every
 surface uses the one struct; no struct defined twice), because those points
 presume one struct can serve both surfaces, and the clauses of
@@ -1286,7 +1282,7 @@ replaces it is undecided until the finding is known.
 ### Implementation
 
 **Enforced by:** before acceptance, the spike `examples/spike` built in sprint
-aa-1, which produces the evidence of rows V1 and V2 of
+a-1, which produces the evidence of rows V1 and V2 of
 [REQ-RUN-0102](requirements.md). After acceptance, because the spike is deleted before
 `v0.1.0`: the fixture matrix ([REQ-RUN-0701](requirements.md)) and the example test of
 [REQ-RUN-0302](requirements.md), in which MCP `tools/list` returns the example tools and
@@ -1307,10 +1303,17 @@ structs.
 
 ## ADR-RUN-0204: The CLI auto-starts the daemon, launched as launchd would
 
-**Status:** Active  
+**Status:** Deferred — post-core application layer
 **Decision Date:** 2026-09-20  
 **Source:** decided by the owner on 2026-09-20. The sc-runtime design, 2026-09-19, records report-only as the default and lists auto-start as undecided; this ADR replaces that default  
 **Amends:** [ADR-RUN-0201](architecture.md) point 6 (the CLI never starts the daemon)  
+
+**Disposition Date:** 2026-09-21
+**Disposition:** The owner-directed Phase A recut restores report-only as the
+minimal core/template behavior and defers auto-start to a later optional
+application layer. The decision text below remains design history and future
+input; it does not amend ADR-RUN-0201 for Phase A and is not a Phase A closure
+gate.
 
 ### Context
 
@@ -1700,9 +1703,15 @@ crate name followed by a space; `arch-qa` review of `template/` for point 3.
 
 ## ADR-RUN-0304: CLI commands are two pure functions, tested without a daemon
 
-**Status:** Active  
+**Status:** Deferred — architecture reopened
 **Decision Date:** 2026-09-20  
 **Source:** direction given by the owner on 2026-09-20 (reduce the complexity of testing a CLI that posts and gets over HTTP; generated code with generated tests can be proven in a unit test without a daemon); the two-function shape is decided in this document and is pending the owner's confirmation  
+
+**Disposition Date:** 2026-09-21
+**Disposition:** The pending two-function shape is not part of Phase A. The
+post-core direction is attribute-generated CLI testing, to be evaluated using
+the completed runtime and minimal generated application. The text below is
+preserved as rejected-for-Phase-A design history and is not binding on Phase A.
 
 ### Context
 
@@ -1910,7 +1919,7 @@ failing before `cargo generate` runs); the fixture matrix in
 **Status:** Proposed  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: the design describes these `cargo-generate` behaviours and marks them as unverified, to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0401 so that it holds only accepted decisions  
-**Acceptance:** made Active, or amended, by sprint aa-1  
+**Acceptance:** made Active, or amended, by sprint a-1
 
 ### Context
 
@@ -1920,7 +1929,7 @@ include or exclude whole files; `AGENTS.md.j2` and `CLAUDE.md.j2` reach the
 generated project unrendered so that `sc-compose` can render them. Each of
 these relies on a `cargo-generate` behaviour that nobody has yet verified on a
 fixed `cargo-generate` version. The version that counts is the
-`cargo-generate` version pinned by sprint aa-1.
+`cargo-generate` version pinned by sprint a-1.
 
 ### Decision
 
@@ -1935,7 +1944,7 @@ fixed `cargo-generate` version. The version that counts is the
 4. The driver writes the validated answers as a `[values]` TOML file and runs
    `cargo generate --path template --template-values-file values.toml --name <project> --silent`.
    That command runs with no prompt, including when a value is an `array`.
-5. `cargo-generate` is pinned to the version recorded by sprint aa-1, in the
+5. `cargo-generate` is pinned to the version recorded by sprint a-1, in the
    driver's tool check and in CI.
 
 All five points are unverified. The evidence that proves them is defined in
@@ -1943,7 +1952,7 @@ one place, the evidence table of [REQ-RUN-0102](requirements.md):
 
 | # | Unverified fact | Evidence row in REQ-RUN-0102 |
 |---|---|---|
-| 1 | On the `cargo-generate` version pinned by sprint aa-1, `cargo-generate.toml` accepts `string`, `bool` and `array` placeholders, a conditional `ignore` list and an `exclude` list; the exact syntax of each is known | V3a: a scratch `cargo-generate.toml` using every one of these constructs, copied into the record, that the pinned version parses without error |
+| 1 | On the `cargo-generate` version pinned by sprint a-1, `cargo-generate.toml` accepts `string`, `bool` and `array` placeholders, a conditional `ignore` list and an `exclude` list; the exact syntax of each is known | V3a: a scratch `cargo-generate.toml` using every one of these constructs, copied into the record, that the pinned version parses without error |
 | 2 | A conditional `ignore` list includes or excludes a whole file | V3b: two runs of the scratch template that differ only in one `bool` value; the conditionally ignored file is present in one output and absent in the other |
 | 3 | `cargo generate` with `--template-values-file` and `--silent` runs with no prompt, including when a placeholder is an `array` | V4a: the command line used; run with stdin closed it exits 0 and prints no prompt, and the output contains the `string`, `bool` and `array` values |
 | 4 | A file listed under `exclude` is copied without rendering | V4b: a `.j2` file containing `{{ }}` expressions is byte-identical in the template and in the generated output |
@@ -1952,24 +1961,24 @@ The right-hand column summarises the rows; the rows in
 [REQ-RUN-0102](requirements.md) are the definition of "proven".
 
 **OPEN:** the exact `cargo-generate.toml` syntax for placeholders, conditional
-`ignore` and `exclude` is not known until sprint aa-1 records it.
+`ignore` and `exclude` is not known until sprint a-1 records it.
 
 **OPEN:** the exact `cargo-generate` version pin is not known until sprint
-aa-1 records it.
+a-1 records it.
 
 ### Consequences
 
-This ADR is Proposed. It is not binding, and no sprint other than aa-1 may
-depend on it, until every row is proven. Sprint aa-1 is the spike sprint; it
+This ADR is Proposed. It is not binding, and no sprint other than a-1 may
+depend on it, until every row is proven. Sprint a-1 is the spike sprint; it
 proves these rows with a throwaway template and values file. A requirement
 whose mechanism clause names conditional `ignore`, `exclude` or
 `--template-values-file` is conditional on this ADR.
 
-When every row is proven, sprint aa-1 MUST write the evidence, the working
+When every row is proven, sprint a-1 MUST write the evidence, the working
 `cargo-generate.toml` syntax and the `cargo-generate` version pin into this
 Consequences section, remove both `**OPEN:**` lines, and set Status to Active.
 
-If any row is false, sprint aa-1 MUST amend the Decision to the mechanism the
+If any row is false, sprint a-1 MUST amend the Decision to the mechanism the
 spike found to work before setting Status to Active, and the requirements
 that are conditional on this ADR MUST be amended in the same change.
 [ADR-RUN-0401](architecture.md) does not change.
@@ -1990,7 +1999,7 @@ that are conditional on this ADR MUST be amended in the same change.
 ### Implementation
 
 **Enforced by:** before acceptance, the scratch template and values file of
-sprint aa-1, which produce the evidence of rows V3a, V3b, V4a and V4b of
+sprint a-1, which produce the evidence of rows V3a, V3b, V4a and V4b of
 [REQ-RUN-0102](requirements.md). After acceptance: the fixture matrix
 ([REQ-RUN-0701](requirements.md)), which runs the pinned `cargo-generate` through the
 driver for every fixture; the criteria of [REQ-RUN-0301](requirements.md) (a file that an

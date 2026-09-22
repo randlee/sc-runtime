@@ -97,6 +97,86 @@ Boundary manifests and repository linting protect this repository's four
 libraries. They are not copied into generated applications and must not force
 application structure.
 
+## Minimal public contract handoff
+
+The sprint cut intentionally avoids a separate shape-only contract sprint.
+Instead, each leaf sprint commits its facade and behavior together; a-5 is not
+dispatched until those three facade commits are merged. The following minimal
+surface is normative for planning. Error variant details and third-party type
+paths are finalized in the owning source ADR using a-1's recorded evidence,
+before implementation code beyond the facade begins.
+
+```rust
+// sc-config (default features)
+pub fn load<T: serde::de::DeserializeOwned>(app: &str)
+    -> Result<T, ConfigError>;
+
+impl Loader {
+    pub fn new(
+        app: &str,
+        config_dir: std::path::PathBuf,
+        environment: Vec<(std::ffi::OsString, std::ffi::OsString)>,
+    ) -> Self;
+    pub fn load<T: serde::de::DeserializeOwned>(&self)
+        -> Result<T, ConfigError>;
+}
+
+// sc-transport (default features unless marked server)
+pub enum Endpoint { Uds(std::path::PathBuf), Tcp(std::net::SocketAddr) }
+pub struct TransportConfig {
+    pub endpoint: Option<String>,
+    pub instance_root: Option<std::path::PathBuf>,
+    pub port: Option<u16>,
+}
+pub fn resolve_endpoint(
+    app: &str,
+    flag: Option<&std::ffi::OsStr>,
+    environment: Option<&std::ffi::OsStr>,
+    config: &TransportConfig,
+) -> Result<Endpoint, TransportError>;
+impl Client {
+    pub fn new(endpoint: Endpoint) -> Result<Self, TransportError>;
+    pub async fn get<T: serde::de::DeserializeOwned>(&self, path: &str)
+        -> Result<T, TransportError>;
+    pub async fn post<B: serde::Serialize, T: serde::de::DeserializeOwned>(
+        &self, path: &str, body: &B,
+    ) -> Result<T, TransportError>;
+}
+// #[cfg(feature = "server")]
+pub async fn bind(endpoint: &Endpoint) -> Result<Listener, TransportError>;
+
+// sc-command (default features)
+pub enum Envelope<T> { Success { version: String, data: T }, Failure { version: String, error: OpError } }
+pub struct OpError {
+    pub kind: ErrorKind,
+    pub code: sc_observability_types::ErrorCode,
+    pub message: String,
+    pub details: Option<serde_json::Value>,
+    pub suggested_action: Option<String>,
+}
+pub enum ErrorKind { InvalidInput, NotFound, Conflict, Unavailable, Internal }
+impl<T> From<Result<T, OpError>> for Envelope<T>;
+// server: IntoResponse for Envelope<T> and IntoMcp for Result<T, OpError>
+```
+
+`Envelope<T>` uses a custom serde representation with exactly the four wire
+keys `version`, `ok`, `data`, and `error`; contradictory/missing discriminant
+content is rejected. The contract version is the string `"1"`. Absent details
+or suggestion serialize as JSON `null`. HTTP mapping is InvalidInput→400,
+NotFound→404, Conflict→409, Unavailable→503, Internal→500. a-1 records the
+exact rmcp/Axum type paths before a-4 implements the server conversions.
+
+The runtime contract is the five-step builder table and code sample in
+`docs/sc-runtime/requirements.md` REQ-RT-0001: configuration is loaded by the
+application; runtime acquires the lock before invoking the async stores
+closure; it then builds ordinary routes/MCP and binds last. a-5 pins only the
+generic bounds and concrete proved rmcp service type needed to compile that
+existing shape. It may not add hooks, wrapper traits, or reorder the steps.
+
+These signatures constrain reusable crate interoperability, not generated
+application organization. If a-1 disproves a referenced third-party type,
+the owning source ADR and this sheet are amended before the leaf sprint starts.
+
 ## Minimal deliverable scope
 
 - Four independently usable and publishable library crates with focused tests,
@@ -148,7 +228,7 @@ editable.
 | 1 | core | a-3 transport | boundary | sc-transport | `crates/sc-transport/**`, `boundaries/sc-transport/**` |
 | 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**` |
 | 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, rewritten spike, core CI/just recipes |
-| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**`, schema/fixtures, driver, generation tests and template CI |
+| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**`, schema/fixtures, driver, root `justfile` generation entry, generation tests and template CI |
 | 4 | release | a-7 core release | integration | release-distribution | release workflow/docs, root release metadata, spike removal |
 | 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, wizard runner/tests, narrow driver entry-mode change |
 
@@ -175,7 +255,9 @@ blocking the core release.
 
 Parent development is merged into a child before each development/fix round;
 parent PR merges before the child PR. Shared root files have one sequential
-owner: a-5 creates the core workspace/CI registries, a-6 adds generator entries,
+owner: a-5 creates the core workspace/CI registries, a-6 owns the sequential
+root `justfile` edit that adds `just new` and automatic generation/wizard test
+discovery,
 and a-7 performs release-only cleanup. A discovered leaf-crate defect returns
 to a-2, a-3, or a-4 rather than expanding a consumer sprint's ownership.
 

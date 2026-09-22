@@ -15,6 +15,7 @@ must_follow: [a-5]
 parallel_safe: []
 requirements:
   - REQ-RUN-0003
+  - REQ-RUN-0004
   - REQ-RUN-0201
   - REQ-RUN-0202
   - REQ-RUN-0203
@@ -68,6 +69,7 @@ owned_paths:
   - "wizard/fixtures/**"
   - "tests/fixtures/refused/**"
   - "scripts/new_project.py"
+  - "justfile"
   - "tests/unit/generation/**"
   - "tests/integration/generation/**"
   - ".github/workflows/template.yml"
@@ -107,6 +109,10 @@ its only meaningful proof.
 2. **REQ-RUN-0501 / REQ-RUN-0502** — A small `--var-file` driver sequences
    validation, cargo-generate, sc-compose, and the generated project's own
    lint/test commands. It does not include wizard logic yet.
+   In development/PR mode the driver writes a generated-root
+   `[patch.crates-io]` table pointing at the four crates in the checkout before
+   its first Cargo invocation; release mode writes no patch and requires
+   registry sources. The template always retains version requirements.
 3. **REQ-RUN-0301 / REQ-RUN-0302** — An editable five-crate example with one
    create/get operation and thin REST, optional MCP, and CLI transport adapters.
 4. **REQ-RUN-0303 through REQ-RUN-0310** — Minimal conditional generation,
@@ -127,13 +133,36 @@ its only meaningful proof.
 2. `req:REQ-RUN-0201` — the generated example creates and gets one widget via
    the shared service path from REST, optional MCP, and a real transport client.
    This proves connectivity, not permanent application architecture.
-3. `req:REQ-RUN-0303` — MCP on/off and project-licence fixtures generate the
+3. `req:REQ-RUN-0202` — report-only `--json` against an unreachable endpoint
+   returns a nonzero status and the exact `DAEMON.NOT_RUNNING` envelope without
+   creating daemon, lock, socket, or database artifacts. The real CLI-binary
+   proof runs only on an isolated CI runner; a host-safe proof exercises the
+   same reporting path without prescribing helper functions.
+4. `req:REQ-RUN-0203` — success and operation-failure envelopes are equal as
+   JSON across REST, MCP and CLI `--json`; unknown `data` and `error.details`
+   content and the received version survive CLI output unchanged.
+5. `req:REQ-RUN-0301` / `req:REQ-RUN-0302` — generation produces the minimal
+   editable api-types/store-sqlite/service/daemon/cli example, and the create/get
+   operation reaches one service path through all enabled surfaces.
+6. `req:REQ-RUN-0310` — CLI and daemon accept the same endpoint text and use
+   only `sc-transport` resolution; an override points both at the same fixture
+   endpoint and no template code computes its own default.
+7. `req:REQ-RUN-0303` — MCP on/off and project-licence fixtures generate the
    expected files; unsupported database choices fail before generation.
-4. `req:REQ-RUN-0306` — plain cargo-generate creates a buildable default project
-   without Python or Wyvern; Jinja document handling is documented honestly.
-5. `req:REQ-RUN-0701` — fixture CI generates, lints, tests, and builds without
+8. `req:REQ-RUN-0306` — plain cargo-generate creates the default project
+   without Python or Wyvern. Before publication, its separate CI smoke applies
+   the same checkout patch immediately after generation and before the first
+   Cargo command; after publication it uses registry mode. Jinja document
+   handling is documented honestly.
+9. `req:REQ-RUN-0701` — fixture CI generates, lints, tests, and builds without
    modifying the result between generation and validation.
-6. `ADR-RUN-0303` — inspection confirms that reusable runtime behavior remains
+   PR-mode lockfiles resolve all four libraries to the checkout paths; release
+   lockfiles resolve all four to the crates.io registry.
+10. `req:NFR-RUN-0001` — `cargo build -p cli` and its normal dependency tree
+    contain none of Axum, rmcp, sqlx, daemon, service, store, or sc-runtime;
+    the a-1 measurement decides and documents the separate workspace-wide
+    feature-unification policy.
+11. `ADR-RUN-0303` — inspection confirms that reusable runtime behavior remains
    in the published crates while routes, schema, queries, and application
    composition remain editable template code.
 
@@ -155,4 +184,3 @@ Run root lint/test, all fixture generations, generated workspace build/test,
 plain cargo-generate smoke, schema/refused-input tests, and static checks for
 unrendered Jinja/Liquid. No daemon child process runs on the host. Record the
 supported variants and results in `docs/validation/phase-a-generation.md`.
-

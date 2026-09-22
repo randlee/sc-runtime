@@ -91,18 +91,20 @@ or application test architecture in this sprint.
   loading is retained as a dependency; otherwise records that applications load
   config before calling runtime.
 - `must_follow a-3`: consumes endpoint/listener types and binding behavior.
-- `must_follow a-4`: consumes envelope/server conversions only where the
-  runtime contract truly needs them; avoid a dependency if ordinary Axum/rmcp
-  types suffice.
+- `must_follow a-4`: consumes the required `sc-command` server facade. The
+  `sc-runtime -> sc-command/server` edge is binding in REQ-RUN-0005 and
+  ADR-RUN-0003; application handlers still use ordinary Axum/rmcp types.
 
 The three parent implementations may run in parallel. A dependency discovered
 to be unnecessary is removed rather than preserved for symmetry.
 
 ## Deliverables
 
-1. **REQ-RT-0001 / REQ-RT-0003 / REQ-RT-0008** — A small builder accepts
-   application-created stores and ordinary routers/services, resolves runtime
-   resources, and serves without owning a command or store registry.
+1. **REQ-RT-0001 / REQ-RT-0003 / REQ-RT-0008** — The application loads typed
+   configuration before calling `Daemon::builder`. The builder receives that
+   loaded `DaemonConfig`, acquires the singleton lock, and only then invokes
+   the application's async store-opening closure. It accepts ordinary
+   routers/services and serves without owning a command or store registry.
 2. **REQ-RT-0002** — A retained nonblocking singleton lock protects one daemon
    instance without PID/probe machinery.
 3. **REQ-RT-0004 / REQ-RT-0005** — One router/listener composition and graceful
@@ -129,16 +131,23 @@ to be unnecessary is removed rather than preserved for symmetry.
    types.
 3. `req:REQ-RT-0006` — two in-process fixtures run concurrently on independent
    temporary roots, stop independently, and clean up their runtime resources.
-4. `boundary:sc-runtime` — crate tests, README example, default/server feature
+4. `req:REQ-RT-0001` — an ordering test proves lock acquisition precedes the
+   single stores invocation; lock contention never invokes stores, a stores
+   error never binds, and success proceeds stores → routes/MCP → bind.
+5. `req:REQ-RT-0005` — ephemeral-CI-only real-process tests prove SIGINT and
+   SIGTERM use the production shutdown path, release the lock, and allow an
+   immediate restart. They refuse to start on an unmarked host and add no test
+   daemon, VM definition, or test-only production switch.
+6. `boundary:sc-runtime` — crate tests, README example, default/server feature
    checks, workspace build, and all four boundary manifests are green.
-5. `ADR-RUN-0004` — inspection finds no application command registry, generated
+7. `ADR-RUN-0004` — inspection finds no application command registry, generated
    CLI testing abstraction, service-manager launcher, SQL schema, or
    observability wrapper in the reusable libraries.
 
 ## This sprint does not close
 
 Generated application structure, JSON-driven generation, registry publication,
-CLI auto-start, process-level daemon tests, attribute-generated tests, and the
+CLI auto-start, generated-application process tests, attribute-generated tests, and the
 wizard remain open.
 
 ## Paths to delete
@@ -150,5 +159,5 @@ None. a-7 removes the rewritten spike after release evidence is preserved.
 Run root lint/test recipes, workspace build, all default/server package
 selections, doctests, boundary validation, feature-specific dependency-tree
 checks, and the rewritten spike proofs. Host validation uses only in-process
-fixtures. Record results in `docs/validation/phase-a-runtime.md`.
-
+fixtures; signal/process proofs run only on an ephemeral CI runner with an
+explicit isolation guard. Record results in `docs/validation/phase-a-runtime.md`.
