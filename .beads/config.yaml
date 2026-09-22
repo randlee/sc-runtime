@@ -3,4 +3,4 @@
 
 dolt.shared-server: true
 sync:
-    remote: "https://doltremoteapi.dolthub.com/randlee/sc-runtime"
+    remote: "https://doltremoteapi.dolthub.com/synaptic-canvas/sc-runtime"
