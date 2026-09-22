@@ -1,7 +1,8 @@
 # Phase A — core runtime and minimal generator
 
-Status: initial plan; scope reconciliation and owner decisions remain before
-hardening or implementation dispatch.
+Status: review iteration 2 fix applied; compatibility evidence, crate-local
+implementation decisions, and external-Dolt development records remain before
+implementation dispatch.
 
 Phase id: `a`. Plan branch: `plan/phase-a`. Phase branch:
 `integrate/phase-a`.
@@ -32,16 +33,13 @@ their supporting abstraction are deferred until the core APIs and one minimal
 generated application exist. The phase must not introduce speculative traits,
 macros, registries, or adapters merely to support that future work.
 
-## Authority and unresolved source conflict
+## Authority and completed source reconciliation
 
 The user-discussed scope and `docs/sc-runtime-design.md` define the intended
-milestones. Existing requirements and Active ADRs remain authoritative until
-amended, so this plan is not dispatch-ready while they conflict with the
-reduced scope.
-
-Before hardening, reconcile these later additions explicitly. This table is
-the authoritative deferred-scope record for identifiers absent from sprint
-frontmatter:
+milestones. Commit `3e0aace` amended the source requirements and ADRs to
+remove the conflicts found in review iteration 1 while preserving their
+decision history. This table is the authoritative deferred-scope record for
+identifiers absent from sprint frontmatter:
 
 | Source id | Phase A disposition | Justification |
 |---|---|---|
@@ -53,8 +51,10 @@ frontmatter:
 daemon process test runs only on an isolated machine. Phase A adds no VM
 definition, provisioning system, test daemon, or host fallback.
 
-This plan does not silently edit those source documents. Source amendments
-are a prerequisite to dispatch and must preserve the owner decision history.
+The remaining dispatch prerequisites are the a-1 compatibility evidence, the
+crate-local decisions assigned below, convergence of the two review rounds,
+and development-record creation against the repository's configured external
+Dolt service. No embedded Dolt database is authorized.
 
 ## Five milestones and eight sprints
 
@@ -103,8 +103,9 @@ The sprint cut intentionally avoids a separate shape-only contract sprint.
 Instead, each leaf sprint commits its facade and behavior together; a-5 is not
 dispatched until those three facade commits are merged. The following minimal
 surface is normative for planning. Error variant details and third-party type
-paths are finalized in the owning source ADR using a-1's recorded evidence,
-before implementation code beyond the facade begins.
+paths are finalized by the owning leaf sprint in its crate-local source ADR,
+using a-1's recorded evidence, before implementation proceeds beyond the
+facade.
 
 ```rust
 // sc-config (default features)
@@ -135,7 +136,7 @@ pub fn resolve_endpoint(
     config: &TransportConfig,
 ) -> Result<Endpoint, TransportError>;
 impl Client {
-    pub fn new(endpoint: Endpoint) -> Result<Self, TransportError>;
+    pub fn new(app: &str, endpoint: Endpoint) -> Result<Self, TransportError>;
     pub async fn get<T: serde::de::DeserializeOwned>(&self, path: &str)
         -> Result<T, TransportError>;
     pub async fn post<B: serde::Serialize, T: serde::de::DeserializeOwned>(
@@ -175,7 +176,8 @@ existing shape. It may not add hooks, wrapper traits, or reorder the steps.
 
 These signatures constrain reusable crate interoperability, not generated
 application organization. If a-1 disproves a referenced third-party type,
-the owning source ADR and this sheet are amended before the leaf sprint starts.
+dependent sprint dispatch stops; the owning leaf sprint records the proved
+replacement in its source ADR and this handoff is corrected before code lands.
 
 ## Minimal deliverable scope
 
@@ -224,10 +226,10 @@ editable.
 | Wave | Milestone | Sprint | Closure | Target boundary | Owned paths |
 |---|---|---|---|---|---|
 | 0 | spike | a-1 compatibility spike | contract | compatibility-evidence | `examples/spike/**`, `docs/architecture.md` |
-| 1 | core | a-2 config | boundary | sc-config | `crates/sc-config/**`, `boundaries/sc-config/**` |
-| 1 | core | a-3 transport | boundary | sc-transport | `crates/sc-transport/**`, `boundaries/sc-transport/**` |
-| 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**` |
-| 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, rewritten spike, core CI/just recipes |
+| 1 | core | a-2 config | boundary | sc-config | `crates/sc-config/**`, `boundaries/sc-config/**`, sc-config requirement/ADR sources |
+| 1 | core | a-3 transport | boundary | sc-transport | `crates/sc-transport/**`, `boundaries/sc-transport/**`, sc-transport requirement/ADR sources |
+| 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**`, sc-command requirement/ADR sources |
+| 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, sc-runtime requirement/ADR sources, rewritten spike, core CI/just recipes |
 | 3 | template | a-6 template from JSON | integration | template-from-json | `template/**`, schema/fixtures, driver, root `justfile` generation entry, generation tests and template CI |
 | 4 | release | a-7 core release | integration | release-distribution | release workflow/docs, root release metadata, spike removal |
 | 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, wizard runner/tests, narrow driver entry-mode change |
@@ -261,26 +263,23 @@ discovery,
 and a-7 performs release-only cleanup. A discovered leaf-crate defect returns
 to a-2, a-3, or a-4 rather than expanding a consumer sprint's ownership.
 
-## Scope reconciliation before hardening
+## Reconciliation and dispatch record
 
-Before `/plan-hardening`, perform a source-only reconciliation pass that:
+The first review fix (`3e0aace`) deferred `REQ-RUN-0206`, `ADR-RUN-0204`,
+`REQ-RUN-0311`, `REQ-RUN-0312`, and `ADR-RUN-0304`; retained the process
+safety constraints; and reconciled the active CLI behavior to report-only.
+Iteration 2 removes the remaining active reference to the deferred CLI helper
+shape and assigns every crate-local source decision to its implementing
+sprint. The mechanical inventory is 120 source IDs: 115 represented in sprint
+frontmatter and the five IDs above represented only in the deferred-scope
+table.
 
-1. marks the prescribed CLI test architecture and its generated-agent guidance
-   as deferred to the attribute-generation follow-up;
-2. records the disposition of auto-start without embedding it in the core
-   library milestone;
-3. removes acceptance criteria that mandate application-internal organization
-   rather than an interoperability contract;
-4. retains safety constraints for any process tests that remain; and
-5. confirms every Phase A REQ/NFR and ADR appears in exactly one sprint's
-   authoritative lists or in a named deferred-scope record.
-
-After the sprint cut is approved and before dispatch, create the eight
-`.sprints/` `triage:branch` declarations from the exact branch values in the
-sprint frontmatter, using the repository tool's verified current format. Do
-not invent that format in the plan.
-
-No Beads are created until that reconciliation and plan hardening converge.
+Before development dispatch, create the eight `.sprints/` `triage:branch`
+declarations from the exact branch values in sprint frontmatter using the
+repository tool's verified current format. This plan PR does not create them:
+the current `bd context --json` reports `dolt_mode: embedded`, while the owner
+has explicitly required the external Dolt service. Correct that configuration
+first; do not write development records to embedded Dolt.
 
 ## QA consumption
 

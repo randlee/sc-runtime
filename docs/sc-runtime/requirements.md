@@ -94,8 +94,10 @@ which deserialises with serde.
    `/mcp`. The relative order in which the routes closure and the MCP closure
    are called is not binding.
 5. Bind through `sc-transport` (built with its `server` feature) and serve
-   the merged router until SIGINT or SIGTERM. It is one `axum::Router`, served
-   unchanged on every listener `run()` binds.
+   the merged router until SIGINT or SIGTERM. For a UDS endpoint, `bind`
+   acquires and retains the endpoint-scoped lock required by REQ-TRN-0004
+   before it inspects or replaces the socket. It is one `axum::Router`,
+   served unchanged on every listener `run()` binds.
 
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
@@ -164,9 +166,13 @@ last so no request is accepted before it can be served.
 4. A test that makes the bind fail (the TCP port is already in use) asserts
    `run()` returns `Err` after the stores closure ran, and that no request was
    served.
-5. Inspection of the public API of `crates/sc-runtime`: `DaemonBuilder` has no
+5. On Unix, a first daemon uses instance root `R1` and UDS override `S`. A
+   second daemon uses distinct root `R2` and the same override `S`; its
+   startup fails safely, the first daemon remains reachable through `S`, and
+   the failed startup and cleanup do not remove `S`.
+6. Inspection of the public API of `crates/sc-runtime`: `DaemonBuilder` has no
    public method other than `stores`, `routes`, `mcp` and `run`.
-6. A test deserialises a `DaemonConfig` from a JSON document with
+7. A test deserialises a `DaemonConfig` from a JSON document with
    `serde_json` (a dev-dependency) and passes it to `Daemon::builder`; it
    compiles, which shows `DaemonConfig: serde::Deserialize`.
 
@@ -381,10 +387,11 @@ On shutdown `run()` MUST:
 
 1. Stop accepting new connections.
 2. Let requests already in flight run to completion and send their responses.
-3. Close the listener.
-4. Before returning, remove the socket file if the endpoint is a Unix domain
-   socket (`<instance-root>/daemon.sock` by default) (decided in this
-   document).
+3. Stop serving on the listener while retaining its UDS endpoint ownership.
+4. Before returning, if the endpoint is a Unix domain socket, remove the
+   selected socket file while the listener still holds its endpoint lock,
+   then release that endpoint lock (decided in this document and
+   ADR-TRN-0006). Do not delete the endpoint-lock file.
 5. Before returning, release the lock on `<instance-root>/daemon.lock`.
 6. Return `Ok(())` (decided in this document, following from the
    `Result<(), RuntimeError>` return type in [REQ-RT-0007](requirements.md)).
@@ -393,8 +400,8 @@ On shutdown `run()` MUST:
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
 
-Steps 1 to 3 happen in that order. The relative order of steps 4 and 5 is not
-stated by the design.
+Steps 1 to 5 happen in that order. Endpoint cleanup must precede release of
+endpoint ownership; the instance-root lock is released afterwards.
 
 `run()` MUST NOT delete `daemon.lock`; releasing the lock is sufficient.
 
@@ -736,14 +743,18 @@ machine, never on a developer's host
    inputs and connects to the result receives a response from that daemon,
    and on Unix no socket file exists at the default path
    `<instance-root>/daemon.sock`.
-3. A test starts a daemon in a child process with an explicit instance root
+3. On Unix, two daemon startups use distinct fresh instance roots but the
+   same UDS endpoint override. The second fails before replacing the endpoint;
+   the first remains reachable, and cleanup from the failed startup cannot
+   remove the first daemon's socket.
+4. A test starts a daemon in a child process with an explicit instance root
    that is a fresh tempdir, with `SC_ENDPOINT` set, and with no flag value or
    configured endpoint; a client resolving with the same `SC_ENDPOINT` value
    reaches it, and `daemon.lock` exists inside that tempdir.
-4. `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
+5. `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
    line outside `#[cfg(test)]` code. Once the second OPEN above is decided in
    favour of the convenience form, the same holds for `SC_ENDPOINT`.
-5. Inspection of `crates/sc-runtime/src`: outside `#[cfg(test)]` code, the
+6. Inspection of `crates/sc-runtime/src`: outside `#[cfg(test)]` code, the
    only source of an instance-root path is the `sc-transport` instance-root
    function, the only source of an endpoint value is the `sc-transport`
    resolver, and there is no use of `std::env::args` or `std::env::args_os`.

@@ -62,6 +62,8 @@ owned_paths:
   - "boundaries/sc-runtime/**"
   - "examples/spike/**"
   - ".github/workflows/crates.yml"
+  - "docs/sc-runtime/requirements.md"
+  - "docs/sc-runtime/architecture.md"
   - "docs/validation/phase-a-runtime.md"
 ---
 
@@ -83,7 +85,17 @@ without increasing width.
 Resolve only the runtime API choices needed for builder inputs, router/service
 types, lock behavior, health/OpenAPI mounting, shutdown, fixture cleanup, and
 typed errors. Do not resolve CLI auto-start, generated command declarations,
-or application test architecture in this sprint.
+or application test architecture in this sprint. Record the necessary builder,
+listener-ownership, and lifecycle choices in the owned sc-runtime requirement
+and ADR sources before implementation proceeds beyond the facade.
+
+## Public contracts consumed
+
+This sprint consumes the three canonical leaf facades from the
+[minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff)
+after a-2, a-3, and a-4 have recorded their decisions in their owned source
+documents. It produces the runtime builder contract already rooted in
+REQ-RT-0001; the sc-runtime requirement and ADR sources remain authoritative.
 
 ## Dependencies and parallel safety
 
@@ -138,9 +150,13 @@ to be unnecessary is removed rather than preserved for symmetry.
    SIGTERM use the production shutdown path, release the lock, and allow an
    immediate restart. They refuse to start on an unmarked host and add no test
    daemon, VM definition, or test-only production switch.
-6. `boundary:sc-runtime` — crate tests, README example, default/server feature
+6. `req:REQ-RT-0008` — with two distinct temporary instance roots and one UDS
+   endpoint override, the second startup fails before unlinking or replacing
+   the live endpoint; the first daemon remains reachable and cleanup by the
+   failed startup cannot remove its socket.
+7. `boundary:sc-runtime` — crate tests, README example, default/server feature
    checks, workspace build, and all four boundary manifests are green.
-7. `ADR-RUN-0004` — inspection finds no application command registry, generated
+8. `ADR-RUN-0004` — inspection finds no application command registry, generated
    CLI testing abstraction, service-manager launcher, SQL schema, or
    observability wrapper in the reusable libraries.
 

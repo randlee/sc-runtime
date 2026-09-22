@@ -952,10 +952,14 @@ anything.
 
 1. A test against one `DaemonFixture` daemon calls `widget.get` for the same
    existing widget through REST, through an MCP `tools/call`, and through the
-   CLI's code path with `--json` rendering, composed inside the test process
-   as [REQ-RUN-0312](requirements.md) describes, without running the CLI
-   binary; it parses the three results as JSON and asserts all
-   three are equal, with `ok` equal to `true` and `error` equal to `null`.
+   production CLI command path with `--json` rendering: parsed arguments,
+   endpoint resolution, `sc_transport::Client`, and unchanged JSON output are
+   exercised inside the test process without running the CLI binary. This
+   criterion does not prescribe the deferred helper or test-generation shape
+   of [REQ-RUN-0312](requirements.md). It parses the three results as JSON and
+   asserts all three are equal, with `ok` equal to `true` and `error` equal to
+   `null`. Any real CLI-binary proof follows the process-isolation rule in
+   [NFR-RUN-0010](requirements.md).
 2. The same test repeats the three calls for a widget that does not exist and
    asserts the three envelopes are equal, with `ok` equal to `false`, `data`
    equal to `null`, and `error` containing `kind`, `code` and `message`.
@@ -2636,9 +2640,9 @@ where `<dest>` is where the new project is created. The driver and
 are never copied into a generated project; the repository layout that
 guarantees this is owned by [REQ-RUN-0001](requirements.md).
 
-The driver MUST obtain one answers JSON object, either from the file given
-with `--var-file` or from the Wyvern wizard, and then MUST run these steps in
-this order:
+The base driver delivered with the template milestone MUST obtain one complete
+answers JSON object from the file given with `--var-file` and then MUST run
+these steps in this order:
 
 | # | Step | What the driver does |
 |---|---|---|
@@ -2660,9 +2664,10 @@ included.
 The driver MUST NOT render any template file itself; rendering is done only
 by `cargo generate` and `sc-compose`.
 
-`scripts/run_wizard.py` SHOULD be reused from the `p3-nuget-template`
-repository (`.scaffold/scripts/run_wizard.py`) with as few changes as
-possible, because that script is already driven by the schema file.
+The later wizard milestone extends answer acquisition under
+[REQ-RUN-0602](requirements.md). It MUST feed the resulting complete JSON
+object through this same validation and six-step pipeline; it does not create
+a second driver or a second owner for these steps.
 
 The mechanism clauses of steps 2 and 3 are conditional on
 [ADR-RUN-0402](architecture.md), which is Proposed. Those clauses are: the
@@ -2744,12 +2749,11 @@ mechanic held in [ADR-RUN-0402](architecture.md), which is Proposed and
 unverified until the spike has run it with stdin closed. The obligation that
 nothing prompts is not conditional; the flags that achieve it are.
 
-The driver MUST locate its two external tools in this order:
+The base driver MUST locate `sc-compose` in this order:
 
 | Tool | First | Then |
 |---|---|---|
 | `sc-compose` | the executable named by the environment variable `SC_COMPOSE`, when set | `sc-compose` on `PATH` |
-| `wyvern` | the executable named by the environment variable `WYVERN_BIN`, when set | `wyvern` on `PATH` |
 
 When a required tool is found in neither place the driver MUST exit with a
 non-zero status. It MUST do so before running `cargo generate`, so that no
@@ -2758,15 +2762,15 @@ document). Its stderr message MUST name
 the missing tool and MUST state both ways to supply it: the environment
 variable and `PATH`.
 
-The driver MUST NOT contain a hard-coded install path for either tool.
+The driver MUST NOT contain a hard-coded install path for `sc-compose`.
+Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 
 ### Rationale
 
 CI and agents generate projects, and neither can answer a prompt or open a
-wizard window. Wyvern is a desktop UI tool that CI does not install, so the
-non-interactive mode must not depend on it. An environment-variable override
-lets a machine point at an install that is not on `PATH` without the script
-guessing install prefixes.
+wizard window. The non-interactive mode therefore has no Wyvern dependency.
+An environment-variable override lets a machine point at sc-compose when it
+is not on `PATH` without the script guessing install prefixes.
 
 ### Success Criteria
 
@@ -2784,11 +2788,8 @@ guessing install prefixes.
 5. A driver test with `SC_COMPOSE` unset and no `sc-compose` on `PATH`
    asserts a non-zero exit, that stderr contains `sc-compose`, `SC_COMPOSE`
    and `PATH`, and that `cargo generate` was not called.
-6. A driver test in wizard mode (no `--var-file`) with `WYVERN_BIN` unset and
-   no `wyvern` on `PATH` asserts a non-zero exit and that stderr contains
-   `wyvern`, `WYVERN_BIN` and `PATH`.
-7. Inspection: `scripts/new_project.py` and `scripts/run_wizard.py` contain
-   no absolute path to `wyvern` or `sc-compose`.
+6. Inspection: `scripts/new_project.py` contains no absolute path to
+   `sc-compose` and no Wyvern invocation or discovery logic.
 
 ---
 
@@ -2934,6 +2935,14 @@ In all three modes the answers object MUST then be validated against
 No later step may behave differently depending on which mode supplied the
 answers.
 
+Wizard acquisition is an extension owned by this requirement. It MAY add
+entry-mode selection to `scripts/new_project.py` and SHOULD reuse
+`scripts/run_wizard.py` from `p3-nuget-template` with as few changes as
+possible. Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set,
+then as `wyvern` on `PATH`; if neither exists it MUST fail before
+`cargo generate`, name `wyvern`, `WYVERN_BIN`, and `PATH` on stderr, and leave
+no destination. Neither script may contain a hard-coded Wyvern install path.
+
 Prefill values are suggestions only. The answers that are validated and used
 are the ones the wizard returns after the person finishes it.
 
@@ -2975,6 +2984,10 @@ was given and prints a canned finished-wizard result.
    the criteria of REQ-RUN-0502.)
 5. A driver test whose stub prints a cancelled-wizard result asserts that
    `cargo generate` was not called.
+6. With `WYVERN_BIN` unset and no `wyvern` on `PATH`, interactive mode fails
+   before `cargo generate`, names `wyvern`, `WYVERN_BIN`, and `PATH` on
+   stderr, and creates no destination.
+7. Inspection finds no absolute Wyvern path in either driver script.
 
 ---
 

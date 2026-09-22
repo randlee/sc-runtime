@@ -36,6 +36,8 @@ adrs:
 owned_paths:
   - "crates/sc-command/**"
   - "boundaries/sc-command/**"
+  - "docs/sc-command/requirements.md"
+  - "docs/sc-command/architecture.md"
 ---
 
 # Sprint a-4 — sc-command
@@ -50,7 +52,17 @@ handler framework, CLI generator, or test-generation system.
 
 Resolve the envelope version/representation, error-kind/status mapping,
 details and suggestion forms, concrete rmcp carrier, and serialization-failure
-behavior needed for interoperability. Leave application command shape open.
+behavior needed for interoperability. Record those choices in the owned
+sc-command requirement/ADR sources before implementation proceeds beyond the
+facade. Leave application command shape open.
+
+## Public contract produced
+
+This sprint owns the sc-command types and conversions in the canonical
+[minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff):
+`Envelope`, `OpError`, `ErrorKind`, result conversion, and server-feature
+Axum/rmcp conversions. The crate-local requirement and ADR sources are the
+decision record; application command shape remains outside this boundary.
 
 ## Dependencies and parallel safety
 

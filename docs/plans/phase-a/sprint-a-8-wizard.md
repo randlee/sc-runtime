@@ -17,8 +17,6 @@ requirements:
   - REQ-RUN-0401
   - REQ-RUN-0402
   - REQ-RUN-0403
-  - REQ-RUN-0501
-  - REQ-RUN-0502
   - REQ-RUN-0601
   - REQ-RUN-0602
   - REQ-RUN-0603
@@ -70,8 +68,9 @@ Do not add application options or reopen the schema during UI work.
    no destination.
 3. **REQ-RUN-0603** — Demonstrate fixture-equivalent answers and generated
    output without changing the core crates or template contract.
-4. **REQ-RUN-0501 / REQ-RUN-0502** — Narrowly extend the existing driver to
-   select the wizard only when no `--var-file` is provided.
+4. **Inherited constraint** — Preserve the a-6-owned REQ-RUN-0501/0502
+   pipeline and non-interactive guarantees unchanged while adding the two
+   wizard modes.
 
 ## Acceptance criteria
 

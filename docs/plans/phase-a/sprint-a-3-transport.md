@@ -40,6 +40,8 @@ adrs:
 owned_paths:
   - "crates/sc-transport/**"
   - "boundaries/sc-transport/**"
+  - "docs/sc-transport/requirements.md"
+  - "docs/sc-transport/architecture.md"
 ---
 
 # Sprint a-3 — sc-transport
@@ -54,7 +56,18 @@ It discovers and reports; it does not own application launch policy.
 
 Resolve endpoint syntax and precedence, OS defaults, directory ownership,
 listener representation, UDS permissions/stale-file behavior, timeout/status
-classification, and the public error surface. Do not add auto-start APIs.
+classification, and the public error surface. Record those choices in the
+owned sc-transport requirement/ADR sources before implementation proceeds
+beyond the facade. Do not add auto-start APIs.
+
+## Public contract produced
+
+This sprint owns the sc-transport types and methods in the canonical
+[minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff):
+`Endpoint`, `TransportConfig`, `resolve_endpoint`, `Client::new`, `get`,
+`post`, `bind`, `Listener`, and `TransportError`. `Client::new` retains the
+application name needed for `DAEMON.NOT_RUNNING`; endpoint resolution remains
+separate. The crate-local requirement and ADR sources are the decision record.
 
 ## Dependencies and parallel safety
 
@@ -78,6 +91,10 @@ classification, and the public error surface. Do not add auto-start APIs.
 
 1. `boundary:sc-transport` — default and server feature tests pass, including
    real loopback UDS/TCP behavior where supported and pure OS-path tests.
+   Two application names using the same unreachable endpoint produce the same
+   `DAEMON.NOT_RUNNING` code and their respective suggested actions.
+   UDS bind tests also prove endpoint-scoped ownership prevents a second
+   owner from unlinking a live listener.
 2. `boundary:sc-transport` — the default dependency graph contains no Axum,
    rmcp, sqlx, runtime crate, process launcher, or application command type.
 3. `ADR-TRN-0005` — client failures remain transport facts; generated CLI
@@ -96,4 +113,3 @@ None.
 
 Run default and server crate tests/doctests, feature-specific dependency-tree
 checks, workspace build once registered, and boundary validation.
-

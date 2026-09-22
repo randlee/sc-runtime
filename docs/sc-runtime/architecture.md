@@ -201,12 +201,14 @@ writes no PID file and probes no port.
 
 The kernel releases the lock on any exit, including a crash or `kill -9`, so
 there is nothing to clean up and the file `daemon.lock` may stay on disk.
-Holding the lock also proves no other daemon for this instance root is alive,
-which is what makes it safe for `sc-transport` to replace a stale Unix socket
-file when binding ([REQ-TRN-0004](../sc-transport/requirements.md); the
-unlink-on-bind behaviour and its caller precondition are recorded in
-[ADR-TRN-0006](../sc-transport/architecture.md)). The guarantee covers the
-local instance root only; a shared Postgres store may still be written by daemons on several hosts. File-lock semantics on network
+Holding the lock proves no other daemon for this instance root is alive, but
+it does not prove ownership of an overridden endpoint outside that root.
+`sc-transport` therefore acquires and retains a separate endpoint-scoped lock
+before replacing a stale Unix socket
+([REQ-TRN-0004](../sc-transport/requirements.md),
+[ADR-TRN-0006](../sc-transport/architecture.md)). The instance lock remains
+earlier because it protects stores; the endpoint lock protects the selected
+listener path. The instance guarantee covers the local instance root only; a shared Postgres store may still be written by daemons on several hosts. File-lock semantics on network
 filesystems are weaker, so an instance root on such a filesystem is not
 protected.
 

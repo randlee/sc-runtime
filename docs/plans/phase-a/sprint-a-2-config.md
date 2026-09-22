@@ -35,6 +35,8 @@ adrs:
 owned_paths:
   - "crates/sc-config/**"
   - "boundaries/sc-config/**"
+  - "docs/sc-config/requirements.md"
+  - "docs/sc-config/architecture.md"
 ---
 
 # Sprint a-2 — sc-config
@@ -49,7 +51,17 @@ environment overrides; it does not prescribe generated application structure.
 
 Resolve the source requirements' OPEN choices for environment ordering,
 invalid names, non-Unicode values, public constructor signatures, and error
-variant names. Record only decisions necessary to make the crate coherent.
+variant names. Record those choices in the owned sc-config requirement/ADR
+sources before implementation proceeds beyond the facade. Record only
+decisions necessary to make the crate coherent.
+
+## Public contract produced
+
+This sprint owns the sc-config types and methods in the canonical
+[minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff):
+`load`, `Loader::new`, `Loader::load`, and `ConfigError`. The crate-local
+requirement and ADR sources record any remaining signature decisions; this
+sprint does not create a second copy of the signature contract.
 
 ## Dependencies and parallel safety
 
@@ -91,4 +103,3 @@ None.
 
 Run crate tests, doctests, formatting/linting, workspace build once registered,
 and configured boundary validation. Check the default dependency tree.
-
