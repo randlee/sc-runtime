@@ -1,11 +1,11 @@
 # Phase A — core runtime and minimal generator
 
-Status: review iteration 2 fix applied; compatibility evidence, crate-local
-implementation decisions, and external-Dolt development records remain before
-implementation dispatch.
+Status: review iteration 2 fix applied; the external-Dolt development graph
+and sprint declarations are recorded. Compatibility evidence and crate-local
+implementation decisions remain before their dependent implementation work.
 
 Phase id: `a`. Plan branch: `plan/phase-a`. Phase branch:
-`integrate/phase-a`.
+`integrate/phase-a`. Beads epic: `run-phase-a`.
 
 The owner explicitly selected the existing single-letter Phase A name. This is
 a grandfathered exception to the guideline's default next-unused letter-pair
@@ -51,10 +51,11 @@ identifiers absent from sprint frontmatter:
 daemon process test runs only on an isolated machine. Phase A adds no VM
 definition, provisioning system, test daemon, or host fallback.
 
-The remaining dispatch prerequisites are the a-1 compatibility evidence, the
-crate-local decisions assigned below, convergence of the two review rounds,
-and development-record creation against the repository's configured external
-Dolt service. No embedded Dolt database is authorized.
+The remaining dispatch prerequisites are plan approval, the a-1 compatibility
+evidence, and the crate-local decisions assigned below. The two review rounds
+have converged and the development records now exist in the repository's
+configured shared external Dolt service. No embedded Dolt database is
+authorized.
 
 ## Five milestones and eight sprints
 
@@ -274,12 +275,24 @@ sprint. The mechanical inventory is 120 source IDs: 115 represented in sprint
 frontmatter and the five IDs above represented only in the deferred-scope
 table.
 
-Before development dispatch, create the eight `.sprints/` `triage:branch`
-declarations from the exact branch values in sprint frontmatter using the
-repository tool's verified current format. This plan PR does not create them:
-the current `bd context --json` reports `dolt_mode: embedded`, while the owner
-has explicitly required the external Dolt service. Correct that configuration
-first; do not write development records to embedded Dolt.
+The plan-to-development handoff is now recorded in both durable systems:
+
+| Sprint | Bead | Declared branch | Predecessor beads |
+|---|---|---|---|
+| a-1 | `run-a-1` | `sprint/a-1-compatibility-spike` | — |
+| a-2 | `run-a-2` | `sprint/a-2-config` | `run-a-1` |
+| a-3 | `run-a-3` | `sprint/a-3-transport` | `run-a-1` |
+| a-4 | `run-a-4` | `sprint/a-4-command` | `run-a-1` |
+| a-5 | `run-a-5` | `sprint/a-5-runtime-core` | `run-a-2`, `run-a-3`, `run-a-4` |
+| a-6 | `run-a-6` | `sprint/a-6-template-from-json` | `run-a-5` |
+| a-7 | `run-a-7` | `sprint/a-7-core-release` | `run-a-6` |
+| a-8 | `run-a-8` | `sprint/a-8-wizard` | `run-a-6` |
+
+All eight records are open, unclaimed children of `run-phase-a`; dependency
+edges enforce the wave graph above. `.sprints/a/structure.ttl` declares the
+same sprint ids, branches, order, and criteria documents. Development does not
+begin merely because the records exist: dispatch claims the ready bead only
+after this plan is approved and its predecessor evidence is satisfied.
 
 ## QA consumption
 
