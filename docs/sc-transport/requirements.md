@@ -360,20 +360,26 @@ feature) when the endpoint is a UDS path.
    for group and for others MUST all be zero (`mode & 0o077 == 0`). These
    permissions are the only access control on a UDS listener
    ([ADR-TRN-0005](architecture.md)).
-2. When a socket file already exists at the path, left behind by a daemon
-   process that died without removing it, the function MUST remove that file
-   and bind a new socket at the same path. It MUST NOT fail with "address in
-   use" for that reason.
-3. The function MUST NOT try to decide whether another daemon is alive. The
-   caller MUST guarantee, before calling, that no live process is listening
-   on that path. In `sc-runtime` the daemon takes an OS exclusive lock on
-   `<instance-root>/daemon.lock` before it binds, which proves no other
-   daemon for that instance root is running.
-4. The rustdoc comment of the bind function MUST state the precondition of
-   point 3 in words: the function removes an existing socket file, and the
-   caller must ensure no live process is listening there. `sc-transport` is
-   published for use without `sc-runtime`, so a standalone caller has no
-   other way to learn it.
+2. Before inspecting or removing an existing UDS socket file, `bind` MUST
+   acquire a nonblocking OS-exclusive endpoint lock at the sibling path
+   `<socket-path>.lock`. The returned `Listener` MUST retain that lock for
+   its lifetime. Failure to acquire it is a typed bind error and MUST NOT
+   inspect, remove, or replace the socket file. The lock path is formed by
+   appending the literal `.lock` to the full socket path, not by replacing
+   its extension.
+3. Once it holds the endpoint lock, `bind` MUST remove an existing stale
+   socket file and bind the new socket at the same path. It MUST NOT fail
+   with "address in use" merely because a socket file was left by a process
+   that no longer holds the endpoint lock. It MUST NOT use a connect probe
+   or process check to infer liveness.
+4. Cleanup MUST remove the socket only while the same `Listener` still holds
+   the endpoint lock. A failed competing bind or its cleanup MUST NOT remove
+   another listener's socket. This endpoint lock is distinct from
+   `<instance-root>/daemon.lock`: the runtime lock serializes one application
+   instance before stores open, while the endpoint lock protects an arbitrary
+   overridden UDS path shared by otherwise different instance roots. The
+   endpoint-lock file is never deleted; releasing the OS lock is sufficient
+   and avoids a remove/recreate inode race.
 
 Points 2, 3 and 4 are decided in this document
 ([ADR-TRN-0006](architecture.md)); the sc-runtime design states only that
@@ -400,9 +406,9 @@ file or a directory) is not decided.
 File permissions are the only access control on the default transport, so a
 socket that other users can open would expose the daemon to them. A leftover
 socket file would make every restart after a crash fail with "address in
-use". Replacing it is safe only because the caller already holds the
-`daemon.lock` singleton; without that guarantee, removing the file would cut
-off a live daemon.
+use". Replacing it is safe only after acquiring ownership scoped to the
+endpoint itself. An instance-root lock is insufficient because two distinct
+instance roots may resolve to the same overridden socket path.
 
 ### Success Criteria
 
@@ -415,12 +421,14 @@ off a live daemon.
    same path and asserts `Ok`.
 3. The same test then serves a router on the new listener and asserts a
    request over the socket gets status 200.
-4. `cargo doc -p sc-transport --features server`: the documentation of the
-   bind function contains a sentence saying an existing socket file is
-   removed, and a sentence saying the caller must ensure no live process is
-   listening on the path.
-5. Inspection of the bind function finds no attempt to connect to the
-   existing socket and no process or lock check before the file is removed.
+4. A first listener binds a UDS path. A second bind of that same path fails
+   without unlinking it; a request still reaches the first listener. Dropping
+   the failed result cannot remove the first listener's socket.
+5. `cargo doc -p sc-transport --features server` states the endpoint-lock
+   path, retention lifetime, stale-file replacement, and cleanup rule.
+6. Inspection finds no connect probe or process check before stale-file
+   removal, and proves the endpoint lock is acquired first and retained by
+   `Listener`; no path deletes the endpoint-lock file.
 
 ---
 
@@ -435,16 +443,16 @@ features), a public HTTP client type. In the design sketch it is used as:
 
 ```rust
 // names are illustrative
-let client = sc_transport::Client::connect("my-app", &cfg.endpoint).await?;
+let client = sc_transport::Client::new("my-app", cfg.endpoint.clone())?;
 let widget: Envelope<Widget> =
     client.post("/ops/widget.create", &CreateWidget { name }).await?;
 ```
 
-1. `Client::connect(app, endpoint)` MUST take the application name (used in
+1. `Client::new(app, endpoint)` MUST take the application name (used in
    the `DAEMON.NOT_RUNNING` suggested action,
    [REQ-TRN-0006](requirements.md)) and an endpoint (a UDS path or a TCP
    address). The endpoint argument is the value returned by the endpoint
-   resolver of [REQ-TRN-0001](requirements.md). `connect` MUST NOT perform
+   resolver of [REQ-TRN-0001](requirements.md). `Client::new` MUST NOT perform
    any endpoint resolution of its own: it MUST NOT read `SC_ENDPOINT`,
    configuration or the instance root. This is decided in this document;
    the sketch above, taken from the sc-runtime design, passes
@@ -462,13 +470,12 @@ let widget: Envelope<Widget> =
    `Envelope<T>`; the caller chooses `T`.
 7. No method may panic; every failure is a `TransportError` value.
 
-**OPEN:** The names `Client`, `connect`, `get`, `post` and their exact
-signatures are illustrative until the contract sprint pins them.
-
-**OPEN:** Whether `connect` itself contacts the daemon (and with what
-request) or only builds the client, so that an unreachable daemon is first
-reported by `get` or `post`, is not decided. The design sketch comments
-`connect` with "Err = DAEMON.NOT_RUNNING" but does not say how.
+The constructor signature is
+`Client::new(app: &str, endpoint: Endpoint) -> Result<Client, TransportError>`.
+It stores an owned application name and endpoint and builds the reqwest
+client; it does not contact the daemon. An unreachable daemon is first
+reported by `get` or `post`. The generic method signatures are pinned in the
+Phase A public-contract handoff and recorded here by sprint a-3.
 
 **OPEN:** Client timeouts (connect timeout, whole-request timeout, and
 whether the caller can set them) are not decided.
@@ -477,12 +484,12 @@ whether the caller can set them) are not decided.
 decided: see [REQ-TRN-0006](requirements.md), which carries the same open
 point.
 
-**OPEN:** The behaviour of `connect` with a UDS endpoint on Windows, where
+**OPEN:** The behaviour of `new` with a UDS endpoint on Windows, where
 `unix_socket` does not exist, is not decided.
 
 ### Rationale
 
-This is the whole client a CLI needs: one call to connect and one call per
+This is the whole client a CLI needs: one constructor call and one call per
 operation. Building on `reqwest` gives one well-known HTTP client for both
 transports with no extra crate. Being generic over `T` keeps `sc-transport`
 free of any dependency on `sc-command`, where the response envelope lives;
@@ -492,8 +499,9 @@ the two crates must stay independent so either can be used alone
 ### Success Criteria
 
 1. A test on Unix starts an HTTP server on a UDS path in a tempdir with a
-   `POST` route that echoes a JSON struct, calls `connect` with that path,
-   calls `post` with a test struct `Req { name: String }`, and asserts the
+   `POST` route that echoes a JSON struct, calls `new` with an application
+   name and that endpoint, calls `post` with a test struct
+   `Req { name: String }`, and asserts the
    returned test struct `Resp` has the expected field values.
 2. The same test over TCP on `127.0.0.1` with an ephemeral port.
 3. A test calls `get` on a route that returns a fixed JSON document and
@@ -504,7 +512,7 @@ the two crates must stay independent so either can be used alone
    `ClientBuilder::unix_socket` and no mention of `Envelope` or `OpError`.
 6. The client compiles with default features: `cargo build -p sc-transport`
    (no `--features`) succeeds, and `cargo doc -p sc-transport` for that
-   build lists the client type with its `connect`, `get` and `post` methods.
+   build lists the client type with its `new`, `get` and `post` methods.
 
 ---
 
@@ -517,22 +525,20 @@ the two crates must stay independent so either can be used alone
 The error enum `TransportError` of the crate `sc-transport` MUST have a
 variant `DaemonNotRunning`.
 
-1. The client ([REQ-TRN-0005](requirements.md): `Client::connect`, `get`,
-   `post`; these names are illustrative until pinned there, and whether
-   `connect` or the first `get` or `post` reports the failure is an OPEN
-   there) MUST return `TransportError::DaemonNotRunning` when it cannot open
+1. The client ([REQ-TRN-0005](requirements.md): `Client::new`, `get`,
+   `post`) MUST return `TransportError::DaemonNotRunning` from the first
+   `get` or `post` when it cannot open
    a connection to the endpoint for one of these reasons: the UDS socket
    file does not exist; the UDS socket file exists but nothing is listening
    (connection refused); the TCP connection is refused.
 2. `DaemonNotRunning` MUST carry two plain strings: the code, exactly
    `DAEMON.NOT_RUNNING`, and the suggested action, exactly
    `run <app> daemon start` with `<app>` replaced by the application name
-   given to `Client::connect` (for `"my-app"`: `run my-app daemon start`).
+   given to `Client::new` (for `"my-app"`: `run my-app daemon start`).
 3. The `Client` MUST NOT start the daemon, spawn any process, or retry in
-   order to wait for a daemon. A generated CLI does auto-start the daemon
-   ([REQ-RUN-0206](../requirements.md)); that is a separate step taken after
-   the `Client` reports `DaemonNotRunning`, and which crate holds its code
-   is OPEN there.
+   order to wait for a daemon. Phase A's generated CLI is report-only.
+   Deferred [REQ-RUN-0206](../requirements.md) preserves a possible later
+   optional auto-start layer outside this transport boundary.
 4. A response body that cannot be deserialised into the requested type MUST
    produce a `TransportError` variant other than `DaemonNotRunning`.
 
@@ -562,9 +568,9 @@ connection errors (for example permission denied on the socket file) map to
 The daemon being down is the most common CLI failure. It must be told apart
 from every other failure so that an agent or a person knows the fix is to
 start the daemon, and automation can branch on the stable code
-`DAEMON.NOT_RUNNING`. The `Client` only reports; starting the daemon is the
-CLI's auto-start step ([REQ-RUN-0206](../requirements.md)), which acts on
-this variant. The code and action are plain strings because
+`DAEMON.NOT_RUNNING`. The `Client` only reports; any later optional auto-start
+layer under deferred [REQ-RUN-0206](../requirements.md) would act outside
+this boundary. The code and action are plain strings because
 this crate must not depend on `sc-command`, where `OpError` lives; the
 project's CLI maps this variant into an `OpError`. Which `code` and envelope
 a CLI prints for the other `TransportError` variants is not decided in this
@@ -573,9 +579,9 @@ crate; that open point is recorded in
 
 ### Success Criteria
 
-1. A test on Unix calls the client against a UDS path in a tempdir where no
-   file exists and asserts the first `Err` returned by `connect` or the
-   following `get` is `TransportError::DaemonNotRunning`.
+1. A test on Unix constructs the client against a UDS path in a tempdir where
+   no file exists and asserts the first `Err` returned by `get` is
+   `TransportError::DaemonNotRunning`.
 2. A test on Unix does the same against a stale socket file (a listener
    bound and dropped without removing the file) and asserts
    `DaemonNotRunning`.
@@ -584,13 +590,16 @@ crate; that open point is recorded in
 4. Each of tests 1 to 3 uses the application name `"my-app"` and asserts the
    code equals `DAEMON.NOT_RUNNING` and the suggested action equals
    `run my-app daemon start`.
-5. A test asserts that an undecodable response body gives a variant that is
+5. A second client using the same unreachable endpoint and application name
+   `"other-app"` returns the same code and suggested action
+   `run other-app daemon start`.
+6. A test asserts that an undecodable response body gives a variant that is
    not `DaemonNotRunning`.
-6. Inspection of `crates/sc-transport/src` finds no use of
+7. Inspection of `crates/sc-transport/src` finds no use of
    `std::process::Command` or `tokio::process`.
-7. Once a request timeout is decided to exist: a test calls the client
+8. Once a request timeout is decided to exist: a test calls the client
    against a route that never responds and asserts an `Err` whose variant is
-   neither `DaemonNotRunning` nor the variant asserted in test 5.
+   neither `DaemonNotRunning` nor the variant asserted in test 6.
 
 ---
 

@@ -30,7 +30,7 @@ operations or stores.
 | `resolve_endpoint(...)`, `instance_root(app)` | default | the one resolver both sides call |
 | endpoint-to-string conversion (name OPEN, [REQ-TRN-0001](requirements.md)) | default | renders a resolved endpoint in the form `--endpoint` and `SC_ENDPOINT` accept; parsing it back gives an equal endpoint |
 | endpoint and instance-root configuration type (name OPEN, [REQ-TRN-0001](requirements.md)) | default | `serde::Deserialize` value a CLI config uses directly and `sc_runtime::DaemonConfig` embeds |
-| `Client`, `Client::connect`, `get`, `post` | default | typed HTTP client over reqwest |
+| `Client`, `Client::new`, `get`, `post` | default | typed HTTP client over reqwest |
 | `TransportError` | default | typed errors, including `DaemonNotRunning` |
 | `bind(&Endpoint)`, `Listener` | `server` | a listener `axum::serve` accepts |
 
@@ -456,7 +456,7 @@ default TCP address other than `127.0.0.1`.
 
 ---
 
-## ADR-TRN-0006: `bind` unlinks an existing socket file; caller guarantees
+## ADR-TRN-0006: endpoint lock guards UDS replacement and listener lifetime
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
@@ -471,30 +471,33 @@ that cannot restart after a crash without manual cleanup is not acceptable.
 But a socket file that exists may also belong to a daemon that is alive, and
 removing it cuts that daemon off from every new client. The listener-binding
 function of `sc-transport` (sketched as `bind(&Endpoint)`, behind the
-`server` cargo feature) cannot tell the two cases apart reliably on its own.
-In `sc-runtime` the question is already answered before bind is called:
-`run()` takes an OS exclusive lock on `<instance-root>/daemon.lock` first,
-and holding that lock proves no other daemon for that instance root is
-alive. `<instance-root>` is the per-application, per-user directory resolved
-by sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](requirements.md)). `sc-transport` is also
-published for use without `sc-runtime`, where no such lock exists unless the
-caller provides one.
+`server` cargo feature) cannot tell the two cases apart reliably with a
+connect probe. The runtime's `<instance-root>/daemon.lock` is not sufficient:
+two daemons may use different instance roots while an endpoint override makes
+them target the same UDS path. Ownership must therefore be scoped to the
+endpoint itself and must also protect standalone users of `sc-transport`.
 
 ### Decision
 
-1. When the endpoint is a UDS path and a socket file already exists there,
-   the bind function removes (unlinks) the file and binds a new socket at
-   the same path. It does not return "address in use" for that reason.
-2. The bind function does not try to find out whether another process is
-   listening: no connect probe, no process check, no lock of its own.
-3. The caller must guarantee, before calling, that no live process is
-   listening on the path. `sc-runtime` meets this by holding the
-   `daemon.lock` exclusive lock before it binds. A standalone caller must
-   provide an equivalent guarantee.
-4. The rustdoc of the bind function states points 1 and 3, because the
-   precondition is otherwise invisible to a standalone user.
-5. This decision is made in this document; the sc-runtime design states
+1. For a UDS endpoint `S`, `bind` first opens `S.lock` and attempts a
+   nonblocking OS-exclusive lock. It performs no inspection or removal of
+   `S` unless that lock succeeds. `S.lock` means the literal `.lock` suffix is
+   appended to the complete socket path.
+2. The returned `Listener` retains the endpoint lock for its lifetime. A
+   competing bind that cannot acquire it returns a typed bind error and does
+   not unlink, replace, chmod, or clean up `S`.
+3. Once the lock is held, `bind` removes an existing stale socket file and
+   binds a new socket at `S`. It does not use a connect probe or process
+   check. Cleanup removes `S` only while the same listener holds `S.lock`.
+   The `S.lock` file is never deleted; only the OS lock is released, avoiding
+   an inode-replacement race between old and new contenders.
+4. The endpoint lock complements rather than replaces
+   `<instance-root>/daemon.lock`: runtime holds its instance lock before
+   stores open, then `bind` acquires endpoint ownership immediately before
+   touching the selected UDS path.
+5. The bind rustdoc states the lock path, retention, replacement, failure,
+   and cleanup behavior.
+6. This decision is made in this document; the sc-runtime design states
    only that file permissions restrict access to the socket.
 
 **OPEN:** The behaviour when the existing path is not a socket (a regular
@@ -502,12 +505,11 @@ file or a directory) is not decided ([REQ-TRN-0004](requirements.md)).
 
 ### Consequences
 
-A daemon restarts cleanly after a crash with no manual step. `sc-transport`
-needs no locking dependency and keeps a single job. The cost is a sharp
-edge: a standalone caller that ignores the precondition and binds a path a
-live daemon is using silently disconnects that daemon from new clients. The
-unlink and the permission change are blocking file operations done once at
-bind time, outside the request path, so they do not conflict with the
+A daemon restarts cleanly after a crash with no manual step, and endpoint
+overrides cannot let a second instance unlink a live listener. The server
+feature gains one small locking dependency and `Listener` retains one guard.
+The lock, unlink, and permission change are blocking file operations done
+once at bind time, outside the request path, so they do not conflict with the
 async-end-to-end rule ([NFR-RUN-0002](../requirements.md)).
 
 ### Alternatives Considered
@@ -519,16 +521,16 @@ async-end-to-end rule ([NFR-RUN-0002](../requirements.md)).
 - Fail with "address in use" and leave cleanup to the caller or the user.
   Rejected because every restart after a crash would then need a manual
   step or the same unlink code copied into every caller.
-- Take a lock file inside `bind`. Rejected because it would add a locking
-  dependency to `sc-transport` and duplicate `sc-runtime`'s `daemon.lock`,
-  which must be taken earlier than bind, before the stores are opened.
+- Rely only on `sc-runtime`'s instance lock. Rejected because an endpoint
+  override may point two independently locked instance roots at the same
+  socket.
 
 ### Implementation
 
-**Enforced by:** the stale-socket test, the rustdoc criterion and the
-no-probe inspection of [REQ-TRN-0004](requirements.md) (criteria 2 to 5);
-on the caller side, the start-up order of `sc_runtime`'s `run()`, which
-takes `daemon.lock` before it binds
+**Enforced by:** the stale-socket, competing-owner, rustdoc, cleanup, and
+no-probe criteria of [REQ-TRN-0004](requirements.md); on the caller side, the
+start-up order of `sc_runtime`'s `run()`, which takes `daemon.lock` before
+`bind` acquires endpoint ownership
 ([REQ-RT-0001](../sc-runtime/requirements.md)).
 
 ### Related Documents
