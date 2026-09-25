@@ -68,6 +68,10 @@ never a reason to skip a check.
 - `docs/<crate>/architecture.md` for every crate under `crates/`: crate
   architecture and crate-level ADRs (`ADR-<DOMAIN>-nnnn`, the crate's domain
   code)
+- `.claude/project/quality-policy.md`: rules under its `Architectural Rules`
+  section, when present, are binding like an Active ADR; an entry under
+  `Repository Exceptions` that names `arch-qa` governs how the rules below
+  apply
 
 An ADR is any `## ADR-<DOMAIN>-nnnn: Title` section in those files, written to
 the shared SC ADR template. Every ADR whose `**Status:**` is Active or Approved
@@ -169,7 +173,7 @@ Emit a single fenced JSON block:
   "findings": [
     {
       "id": "ARCH-001",
-      "rule": "RULE-ADR-PLAN | RULE-ADR-CODE | RULE-GATE",
+      "rule": "RULE-ADR-PLAN | RULE-ADR-CODE | RULE-GATE | <policy rule id>",
       "adr": "ADR-<DOMAIN>-nnnn | null",
       "severity": "BLOCKING|IMPORTANT|MINOR",
       "file": "crates/<crate>/src/lib.rs",
@@ -215,4 +219,5 @@ an authoritative architecture file cannot be read.
 - Functional correctness
 - CI status
 
-Report only ADR coverage, ADR violations, and open structural gate artifacts.
+Report only ADR coverage, ADR violations, policy architectural-rule
+violations, and open structural gate artifacts.

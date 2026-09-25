@@ -1,6 +1,6 @@
 ---
 name: codex-orchestration
-version: 0.1.1
+version: 0.2.0
 description: Orchestrate sprint work where an appointed lead coordinates, the developer the lead assigns each sprint to is its sole developer, and quality-mgr enforces the QA gate.
 depends_on:
   quality-management-gh: 1.x
@@ -124,7 +124,10 @@ This is the lifecycle contract for development, fix, and QA work.
    Every dev assignment must include the sprint-plan document path as
    `sprint_doc`, and that sprint document is the authoritative source for the
    task. Assignment prose may summarize, but it must not replace or weaken the
-   sprint doc.
+   sprint doc. If the task touches Rust, the developer first reads
+   `.claude/skills/rust-development/guidelines.txt` and
+   `.claude/skills/rust-best-practices/patterns/practice-inventory.md`; the
+   reviewers score against them.
 2. the developer claims the bead with task start, implements, commits, pushes,
    reports branch plus SHA, and closes both task and bead after validation.
 3. Before QA-1, the developer performs a self-directed Rust best-practices sweep on
@@ -151,7 +154,10 @@ This is the lifecycle contract for development, fix, and QA work.
    rerun `ruthless-boundary-qa`, `rust-best-practices-agent`, or
    `rust-service-hardening-agent` open-ended. Dispatch one only when the round
    carries an assigned finding that reviewer owns (`RBQA-*`, `RBP-*`, or
-   `RSH-*`), and scope-lock its output to those ids. QA-2+ rounds always launch
+   `RSH-*`), and scope-lock its output to those ids; a reviewer that raised
+   no QA-1 findings is not re-run. As open reviews they reliably surface
+   findings on any diff regardless of size, which turns a small fix-round
+   into unbounded review churn. QA-2+ rounds always launch
    `req-qa` + `arch-qa` (scoped to the dispatched finding ids) plus
    `rust-qa-agent` (its objective execution-fact gates — fmt, clippy, tests,
    lint, RULE-003, pytests — are not a subjective findings pass and stay in
@@ -165,8 +171,8 @@ This is the lifecycle contract for development, fix, and QA work.
    deferral. QA-1 findings route back to the developer via
    `fix-assignment.xml.j2` before QA-2, following the standard
    triage-and-fix path. `ruthless-boundary-qa`, `rust-best-practices-agent`,
-   and `rust-service-hardening-agent` remain part of docs-only plan review
-   and phase-ending review regardless of sprint round.
+   and `rust-service-hardening-agent` run open reviews on plan QA-1 and
+   phase-ending review.
 8. After QA closes, the lead reads the verdict before `bd ready`. PASS and
    green CI permit merge work to become ready; FAIL must not expose merge.
 9. On FAIL, the lead triages the findings, creates fix child beads and a
@@ -176,7 +182,9 @@ This is the lifecycle contract for development, fix, and QA work.
    runs `/triaging-findings` (where the repository carries that skill) the
    same way: every finding is recorded, correlated
    across worktrees, and promoted to the current top layer of the stack. No
-   finding is skipped, deferred, or left without a fix dispatch.
+   finding is skipped, deferred, or left without a fix dispatch, except a
+   finding the lead upholds as `rejected: ceremony` under quality-mgr's
+   Ceremony Disputes rule.
 11. After triage completes, the lead routes concrete fixes to a developer of
    the tier the fix needs, using `fix-assignment.xml.j2`: easy fixes go to the
    fast tier for speed, not back to the sprint's developer by default. Fix assignments must also include
@@ -191,14 +199,18 @@ above `integrate/phase-N`. Repository branch policy is defined in
 the stack and each dev owns exactly one layer; every dispatch below — dev,
 fix, cleanup — is a new worktree cut from the current top, and the
 `<stack-discipline>` element every template carries is the dev-facing copy
-of §0.
+of §0. Never interrupt a task in progress for fix work, and never put fix
+work on the sprint branch under review: each fix goes on a new branch on top
+of the stack.
 
 ## Plan Review Flow
 
 1. the lead completes `/plan-hardening` steps 1 through 5.
 2. the lead assigns plan QA to `quality-mgr` using `qa-template.xml.j2`
    with `review_mode: plan`.
-3. The QA assignment must include the phase-plan document as `sprint_doc`, and
+3. Every QA assignment, plan or sprint, requires an open PR; quality-mgr
+   posts its report to that PR after every round. The QA assignment must
+   include the phase-plan document as `sprint_doc`, and
    that plan document is the authoritative scope source for plan QA.
 4. `quality-mgr` treats `review_mode: plan` as docs-only review and launches:
    - `req-qa`
@@ -206,9 +218,15 @@ of §0.
    - `ruthless-boundary-qa`
    - `rust-best-practices-agent`
    - `rust-service-hardening-agent`
+   - `ceremony-qa`
+   on plan QA-1 (the set in `.claude/project/quality-policy.md` governs).
+   Later rounds, the minor-findings rule, and the `ceremony-finding-screen`
+   step follow `quality-mgr.md` "Reviewer Selection" and "Ceremony Disputes".
 5. If plan QA passes, the hardened plan is ready for implementation dispatch.
 6. If plan QA fails, the lead uses the normal codex-orchestration
    triage-and-fix loop to route concrete fixes back to the developer.
+7. Plan QA is capped at 3 rounds (`plan_qa_cycle_limit`); see
+   `/plan-hardening` Reviewer Cycle Caps.
 
 ## QA Coverage Rule
 
@@ -291,7 +309,8 @@ qa-template.xml.j2`), for two reasons:
 `<agent>` is the only routing input. `atm send <agent> --task-id ... --template
 ... --vars ...` is the same operation under its alias and is acceptable;
 nothing else is. A re-dispatch to an idle or silent agent re-issues the same
-`atm task assign` with the same `--task-id`, template and vars. Status
+`atm task assign` with the same `--task-id`, template and vars; a nudge
+alone is `atm send <agent> "check atm for <TASK-ID>"`. Status
 questions, notices and replies that assign no work stay plain `atm send` or
 `atm queue`.
 
