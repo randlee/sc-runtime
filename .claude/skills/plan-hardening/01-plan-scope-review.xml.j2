@@ -1,6 +1,6 @@
 ---
 name: 01-plan-scope-review-task
-version: 2.1.0
+version: 2.2.0
 description: lead assignment template for the initial developer guidelines pass before background scope review.
 format: xml
 required_variables:
@@ -18,6 +18,17 @@ required_variables:
 optional_variables:
   - lead
   - cc
+  - questions_or_concerns
+  - reviewer_findings_json
+  - previous_reviewed_commit
+  - supersedes_task_id
+  - plan_scope_review_cycle_limit
+  - critical_review_cycle_limit
+  - plan_qa_cycle_limit
+  - reviewer
+  - findings_hash
+  - reviewed_commit
+  - previous_step_json
 defaults:
   lead: team-lead
   cc: team-lead
@@ -25,6 +36,13 @@ defaults:
   reviewer_findings_json: ""
   previous_reviewed_commit: ""
   supersedes_task_id: ""
+  plan_scope_review_cycle_limit: 3
+  critical_review_cycle_limit: 3
+  plan_qa_cycle_limit: 3
+  reviewer: ""
+  findings_hash: ""
+  reviewed_commit: ""
+  previous_step_json: ""
 metadata:
   type: plan-scope-review
   tags:
@@ -81,16 +99,17 @@ metadata:
 
     In this pass:
     - tighten the current plan docs to match the sprint-planning guidelines
-    - build the boundary map from `boundaries/<crate>/*.toml` and lay the
+    - build the boundary map from the repository's boundary manifests (see
+      `.claude/project/quality-policy.md`) and lay the
       plan out as parallel tracks per "Tracks And Balance": a cross-boundary
       feature becomes a contract sprint, parallel layer sprints that each own
       one boundary, and its own integration sprint; independent changes and
       single-boundary features stay one sprint or one stacked track; no thin
       or pass-through sprints; aim for the shortest critical path with the
       fewest sprints
-    - apply "Naming" from the guidelines to every plan path, sprint doc,
-      sprint id and branch: lower case, `docs/plans/phase-<phase>/`,
-      `integrate/phase-<phase>`, `sprint/<phase>-<n>-<slug>`
+    - apply "Naming" from the guidelines and "Plan Naming" from
+      `.claude/project/quality-policy.md` to every plan path, sprint doc,
+      sprint id and branch
     - give every sprint a `closure_type`, a `target_boundary` and disjoint
       `owned_paths`, and publish the wave table with critical path and width
     - default every relation to `parallel_safe`; keep a `must_follow` only

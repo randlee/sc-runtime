@@ -1,6 +1,6 @@
 ---
 name: plan-hardening
-version: 1.6.0
+version: 1.7.0
 description: >
   Team-lead drives plan hardening after the current plan state already exists
   in repo docs.
@@ -34,7 +34,7 @@ Use this only for phase-plan hardening before implementation starts or resumes.
 Sprint plan approved by:
 - `plan-scope-reviewer`
 - `critical-plan-reviewer`
-- `quality-mgr`
+- `quality-mgr` (plan QA-1 includes `ceremony-qa`)
 
 The approved plan is a set of parallel tracks with non-intersecting
 `owned_paths`, aiming at the shortest critical path with the fewest sprints.
@@ -50,10 +50,20 @@ parallel; it must never make a plan more serial. Record `critical_path` and
 column, and treat a round that lengthens the critical path as a regression to
 be explained.
 
+Hardening improves the plan's deliverables; it does not grow process.
+Findings whose only remedy is a new manifest, inventory, receipt, or CI gate
+must pass the "Process Artifacts" rule in `sprint-planning-guidelines.md`.
+Before routing step 2 or step 4 findings to the developer, `team-lead` runs
+`ceremony-finding-screen` over them and drops any `ceremony` or
+`concern_valid_remedy_ceremony` verdict it upholds as `rejected: ceremony`,
+recording the reason in the round table Note.
+
 ## Required Reference
 
 Always use:
 - `.claude/skills/plan-hardening/sprint-planning-guidelines.md`
+- `.claude/project/quality-policy.md` for repository-specific plan naming,
+  boundary manifests, and validation commands
 
 ## Execution Table
 
@@ -80,11 +90,12 @@ Use the example in:
 
 ## Reviewer Cycle Caps
 
-- `plan-scope-reviewer` and `critical-plan-reviewer` both default to a
-  3-cycle cap
+- `plan-scope-reviewer`, `critical-plan-reviewer`, and step-6 plan QA
+  (`quality-mgr`) all default to a 3-cycle cap
 - these caps must be carried in JSON:
   - `plan_scope_review_cycle_limit`
   - `critical_review_cycle_limit`
+  - `plan_qa_cycle_limit`
 - reviewer launch payloads must also include:
   - `review_cycle_limit`
   - `review_cycle_index`

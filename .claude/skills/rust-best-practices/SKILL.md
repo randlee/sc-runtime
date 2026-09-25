@@ -112,6 +112,9 @@ Dedicated `rust-best-practices-agent` assignment template:
     "RBP-001",
     "RBP-004"
   ],
+  "round_limit": false,
+  "changed_files": ["optional changed-file hint for limited recheck rounds"],
+  "triage_records": ["optional prior finding records to recheck"],
   "carry_forward_findings": [],
   "findings_scope_locked": false,
   "notes": "optional context"

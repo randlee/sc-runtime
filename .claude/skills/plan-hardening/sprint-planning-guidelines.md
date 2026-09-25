@@ -152,6 +152,11 @@ List each related sprint as `must_follow` or `parallel_safe` with a rationale.
 - `must_follow` merge-forward trigger: parent development is pushed, not QA;
   merge parent → child before every dev/fix round. PR-completion trigger:
   parent PR merges first.
+- A `must_follow` edge needs concrete coupling: the same files/crates/public
+  types, or the child consumes the parent's code. Shared release/version
+  baseline alone is not coupling; handle it with a final integration step.
+- Parallel tracks run as separate gh-stack stacks with named branches,
+  worktrees, and assigned agents.
 
 The phase plan publishes a **wave table**: each track, its sprints by wave,
 their `target_boundary` and `owned_paths`, plus three numbers: **critical
@@ -162,6 +167,19 @@ single-boundary or vertical track is shorter. Every `must_follow` edge that
 lengthens the critical path past three needs a recorded reason a reviewer can
 check. A re-cut that raises sprint count without shortening the critical path
 or raising usable width is a regression.
+
+## Process Artifacts
+
+A plan may require a process artifact (manifest, inventory, ledger, receipt,
+matrix, docs-consistency check, new CI gate) only if the sprint doc names:
+its consumer, the capability it gates, the observed defect it prevents (not
+speculative), and when it is retired. Otherwise leave it out. Prefer what
+already enforces the property: the compiler, existing tests, existing CI,
+git history. A plan-writing rule (e.g. single ownership of a contract) stays
+a plan rule; it does not become a product CI gate.
+
+Frontmatter `status` describes the sprint, not the plan: an unimplemented
+sprint is `planned`, never `complete`.
 
 ## Vertical Exceptions
 
@@ -195,11 +213,11 @@ the sprint count low.
 Each sprint doc should have one authoritative list for:
 
 - `requirements`: every REQ and NFR id the sprint implements or is
-  constrained by, from `docs/requirements.md` and
-  `docs/<crate>/requirements.md`
-- `adrs`: every ADR id that governs the sprint, from `docs/architecture.md`
-  and `docs/<crate>/architecture.md`; a new or amended ADR is also a
-  deliverable
+  constrained by, from the requirements index and crate requirements docs
+  named in `.claude/project/quality-policy.md`
+- `adrs`: every ADR id that governs the sprint, from the architecture index
+  and crate architecture docs named in `.claude/project/quality-policy.md`;
+  a new or amended ADR is also a deliverable
 - deliverables, each naming the REQ/NFR id it serves
 - acceptance criteria, each with its root
 - owned paths
@@ -211,34 +229,23 @@ wording.
 
 ## Naming
 
-One convention for every phase. Everything is lower case.
+One convention per repository, recorded under "Plan Naming" in
+`.claude/project/quality-policy.md`: phase id form, sprint id form, plan
+directory, phase plan and sprint doc file names, and plan, phase, sprint and
+fix branch names. Every plan path, sprint doc, sprint id and branch follows
+it. Rules that hold in every repository:
 
-| Thing | Form | Example |
-|---|---|---|
-| Phase id | next unused letter pair, lower case | `bc` |
-| Sprint id | `<phase>-<n>`, `n` from 1 | `bc-4` |
-| Plan directory | `docs/plans/phase-<phase>/` | `docs/plans/phase-bc/` |
-| Phase plan | `docs/plans/phase-<phase>/phase-<phase>-plan.md` | `phase-bc-plan.md` |
-| Sprint doc | `docs/plans/phase-<phase>/sprint-<phase>-<n>-<slug>.md` | `sprint-bc-4-task-ledger-writer.md` |
-| Plan branch | `plan/phase-<phase>`, PR to `develop` | `plan/phase-bc` |
-| Phase branch | `integrate/phase-<phase>`, cut from `develop` | `integrate/phase-bc` |
-| Sprint branch | `sprint/<phase>-<n>-<slug>` | `sprint/bc-4-task-ledger-writer` |
-| Fix layer | `fix/<phase>-<n>-<slug>`; phase-level: `fix/<phase>-<slug>` | `fix/bc-4-qa1` |
-
+- File names, branch names, front matter `id` values and template variables
+  are lower case. Prose and titles may use the upper-case display form.
 - The slug is the same in the sprint doc name and the sprint branch name.
 - Slugs use `a-z`, `0-9` and `-` only. No dots, no underscores, no capitals.
-- All phase work happens on `integrate/phase-<phase>`. Sprint and fix
+- All phase work happens on the phase integration branch. Sprint and fix
   branches are cut from it, or from the top of their track's stack, and their
   PRs target it or the layer below. Only the plan PR and the final phase PR
   target `develop`.
 - `feature/` is not used for sprint work.
-- Phase plans never live outside `docs/plans/phase-<phase>/`. The worktree
-  directory equals the branch name.
-- Prose and titles may write "Phase BC" and "BC.4". File names, branch names,
-  front matter `id` values and template variables use the lower-case forms.
-- Every sprint declares its branch in `.sprints/` (`triage:branch`). Tools
-  read the declared branch and never infer it from a file name.
-- Phases before this rule keep their existing names. Do not rename merged
+- The worktree directory equals the branch name.
+- Phases before a naming rule keep their existing names. Do not rename merged
   history.
 
 ## Code Samples
@@ -254,8 +261,8 @@ Each sprint names its agent and model in `recommended_agent` /
 `recommended_model`, chosen by the tier the work needs: a fast agent for
 bounded or documentation work; the workhorse for typical work; a
 deep-reasoning agent for algorithmic, architectural, or performance work.
-When the repository keeps a developer roster
-(`docs/development/developer-roster.md`), name the agent from it, preferring
+When the repository keeps a developer roster (its path is in
+`.claude/project/quality-policy.md`), name the agent from it, preferring
 a named team member over a background agent. How many agents run is decided
 at dispatch, not in the plan. Layer sprints are bounded by construction
 and suit one developer and one QA pass each, running concurrently.
@@ -302,6 +309,12 @@ Structural findings:
 Structural findings always remain in the main `findings` array and must be
 rated `Blocking` or `Important` when they affect implementability, closure,
 or the plan's ability to run in parallel.
+
+A "missing gate" finding is structural only when a deliverable's behavior
+would otherwise go unverified. A finding whose only remedy is a new process
+artifact must pass the Process Artifacts rule above; otherwise it is debt
+notes, not a finding. Over-specification (unjustified artifacts, restated
+contracts, redundant inventories) is itself a valid finding.
 
 Wording findings:
 - prose ambiguity that does not change scope or closure meaning

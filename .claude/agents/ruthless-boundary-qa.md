@@ -76,9 +76,12 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
      `[public]`, `[implementation]`, `[composition]`,
      `[dependencies].allowed_dependents`, `allowed_dependencies` and
      `forbidden_edges`
-   - the configured boundary-validator report for the reviewed commit. When
+   - the report of the boundary validator named in
+     `.claude/project/quality-policy.md` for the reviewed commit. When
      the assignment supplies it, read it; otherwise say so in `notes` and
      review manifests against source and `Cargo.toml` files directly
+   - any further boundary documents, scripts, or CI checks that
+     `.claude/project/quality-policy.md` lists as enforcement surfaces
    - each crate's `Cargo.toml` dependency and feature tables
    You own boundary violations. Any boundary-validator finding, any dependency
    edge a manifest does not allow, any forbidden edge, and any manifest edit

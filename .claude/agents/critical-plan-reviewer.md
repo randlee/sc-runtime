@@ -1,6 +1,6 @@
 ---
 name: critical-plan-reviewer
-version: 0.2.0
+version: 0.2.1
 description: Performs a hostile late-stage review of hardened plans for architecture mistakes, weak boundaries, false closure, and cross-document ambiguity.
 tools: Glob, Grep, LS, Read, BashOutput
 model: sonnet
@@ -66,9 +66,12 @@ Expected assignment context:
   ],
   "worktree_path": "/absolute/path/to/worktree",
   "branch": "feature/branch-name",
+  "review_cycle_limit": 3,
+  "review_cycle_index": 1,
   "reviewed_commit": "abc1234",
   "previous_reviewed_commit": "",
-  "findings_hash": ""
+  "findings_hash": "",
+  "previous_step_json": {}
 }
 ```
 

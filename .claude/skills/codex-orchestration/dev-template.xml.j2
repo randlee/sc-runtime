@@ -1,6 +1,6 @@
 ---
 name: dev-task
-version: 1.1.0
+version: 1.2.0
 description: lead sprint assignment template for codex-orchestration development work.
 format: xml
 required_variables:
@@ -69,6 +69,7 @@ metadata:
   <workflow>
     <step id="a"><![CDATA[Start the task immediately with `atm task start {{ task_id | string | cdata_escape }} "<one line: what you will do first>"`, then claim the matching bead with `bd update {{ task_id | string | cdata_escape }} --claim` and begin executing in the same work session. Make reasonable assumptions and do not ask clarifying questions unless a real blocker prevents execution.]]></step>
     <step id="c"><![CDATA[Read `{{ sprint_doc | string | cdata_escape }}` before coding. Treat it as the authoritative source for scope, deliverables, deletion targets, validation, and acceptance criteria. If this assignment summary and the sprint doc differ, the sprint doc wins and the mismatch must be reported.]]></step>
+    <step id="c0"><![CDATA[If this task touches Rust, read `.claude/skills/rust-development/guidelines.txt` and `.claude/skills/rust-best-practices/patterns/practice-inventory.md` before editing; the reviewers score against them.]]></step>
     <step id="d"><![CDATA[Before coding, update the worktree from the sprint target branch and include prior fixes already merged to that target.]]></step>
     <step id="d1"><![CDATA[Honor `<dependency-relations>`: must-follow merge-forward trigger is parent dev push, not QA; merge parent → child before every round. PR-completion trigger is parent PR merge first. Stop if a parallel-safe relation intersects.]]></step>
     <step id="e"><![CDATA[As soon as the development changes are complete and the branch is pushable, commit and push immediately. Send branch name and commit hash right away to the assigner (the sender of this message) with a plain `atm send {{ lead | string | cdata_escape }} --stdin` — a progress report, not a close; never close the task on a push. This lets PR work and QA preparation begin in parallel.{% if cc and cc != lead %} Copy a one-line summary to `{{ cc | string | cdata_escape }}` with a plain `atm send {{ cc | string | cdata_escape }} --stdin`.{% endif %}]]></step>

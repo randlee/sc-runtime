@@ -4,7 +4,7 @@
   "sprint_doc": "docs/plans/phase-bc/phase-bc-plan.md",
   "review_mode": "plan",
   "description": "Focused plan QA for phase-bc after consistency hardening",
-  "pr_number": "",
+  "pr_number": "<required: open PR number>",
   "branch": "plan/phase-bc",
   "worktree_path": "/absolute/path/to/worktree",
   "commit": "abc1234",
