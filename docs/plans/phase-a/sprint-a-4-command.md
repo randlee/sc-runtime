@@ -80,7 +80,10 @@ decision record; application command shape remains outside this boundary.
    Axum and rmcp response types and do not panic on serialization failure.
 4. **NFR-CMD-0001 / NFR-CMD-0002** — Minimal default/server feature graphs,
    focused tests, and a compiling standalone README example.
-5. **REQ-RUN-0005** — Boundary manifest for the actual facade and edges.
+5. **REQ-RUN-0005** — Boundary manifest at `boundaries/sc-command/*.toml` for
+   the actual facade and edges. The manifest must be valid for
+   `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
+   exists; this sprint does not install sc-lint or own the root `justfile`.
 
 ## Acceptance criteria
 
@@ -95,7 +98,7 @@ decision record; application command shape remains outside this boundary.
 
 Application command declarations, CLI rendering policy, attribute generation,
 and end-to-end surface parity close outside Phase A or in the minimal template
-proof only.
+proof only. Root `just lint` and `sc-lint-boundary analyze` close in a-5.
 
 ## Paths to delete
 
@@ -103,5 +106,7 @@ None.
 
 ## Required validation
 
-Run default/server tests and doctests, dependency-tree checks, workspace build
-once registered, and boundary validation.
+Run default/server tests and doctests, dependency-tree checks, and workspace
+build once registered. Review the manifest against REQ-RUN-0005.
+`sc-lint-boundary analyze` is the a-5 root-lint gate, not a command this
+sprint adds.

@@ -85,7 +85,10 @@ separate. The crate-local requirement and ADR sources are the decision record.
    spawning, retrying for readiness, or knowing application envelopes.
 4. **NFR-TRN-0001 / NFR-TRN-0002** — Default/server builds use standard
    Tokio, reqwest, and Axum facilities with no custom connector or raw HTTP.
-5. **REQ-RUN-0005** — Boundary manifest for the actual facade and edges.
+5. **REQ-RUN-0005** — Boundary manifest at `boundaries/sc-transport/*.toml`
+   for the actual facade and edges. The manifest must be valid for
+   `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
+   exists; this sprint does not install sc-lint or own the root `justfile`.
 
 ## Acceptance criteria
 
@@ -103,7 +106,8 @@ separate. The crate-local requirement and ADR sources are the decision record.
 ## This sprint does not close
 
 Daemon lifecycle, CLI auto-start, application retries, service-manager
-integration, and generated CLI tests are outside this boundary.
+integration, and generated CLI tests are outside this boundary. Root
+`just lint` and `sc-lint-boundary analyze` close in a-5.
 
 ## Paths to delete
 
@@ -112,4 +116,6 @@ None.
 ## Required validation
 
 Run default and server crate tests/doctests, feature-specific dependency-tree
-checks, workspace build once registered, and boundary validation.
+checks, and workspace build once registered. Review the manifest against
+REQ-RUN-0005. `sc-lint-boundary analyze` is the a-5 root-lint gate, not a
+command this sprint adds.

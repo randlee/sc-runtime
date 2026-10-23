@@ -78,8 +78,11 @@ sprint does not create a second copy of the signature contract.
    reachable panic path for malformed external input.
 4. **NFR-CFG-0002 / NFR-CFG-0003** — Minimal dependencies, no async/reload
    layer, focused tests, and a compiling standalone README example.
-5. **REQ-RUN-0005** — The sc-config boundary manifest describing only its
-   facade and actual dependency restrictions.
+5. **REQ-RUN-0005** — The sc-config boundary manifest at
+   `boundaries/sc-config/*.toml`, describing only its facade and actual
+   dependency restrictions. The manifest must be valid for
+   `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
+   exists; this sprint does not install sc-lint or own the root `justfile`.
 
 ## Acceptance criteria
 
@@ -93,7 +96,8 @@ sprint does not create a second copy of the signature contract.
 ## This sprint does not close
 
 Daemon assembly, template configuration layout, application defaults, and
-generated-project behavior close in a-5 or a-6.
+generated-project behavior close in a-5 or a-6. Root `just lint` and
+`sc-lint-boundary analyze` close in a-5.
 
 ## Paths to delete
 
@@ -101,5 +105,7 @@ None.
 
 ## Required validation
 
-Run crate tests, doctests, formatting/linting, workspace build once registered,
-and configured boundary validation. Check the default dependency tree.
+Run crate tests, doctests, formatting/linting, and workspace build once
+registered. Check the default dependency tree. Review the manifest against
+REQ-RUN-0005. `sc-lint-boundary analyze` is the a-5 root-lint gate, not a
+command this sprint adds.

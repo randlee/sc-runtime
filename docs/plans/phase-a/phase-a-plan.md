@@ -1,8 +1,10 @@
 # Phase A — core runtime and minimal generator
 
 Status: review iteration 2 fix applied; the external-Dolt development graph
-and sprint declarations are recorded. Compatibility evidence and crate-local
-implementation decisions remain before their dependent implementation work.
+and sprint declarations are recorded. sc-lint 0.8.0 is in scope and folded
+into a-5 (source-maintainer install) and a-6 (generated consumer install).
+Compatibility evidence and crate-local implementation decisions remain before
+their dependent implementation work.
 
 Phase id: `a`. Plan branch: `plan/phase-a`. Phase branch:
 `integrate/phase-a`. Beads epic: `run-phase-a`.
@@ -62,7 +64,8 @@ authorized.
 The sprint count is eight because the core milestone contains three genuinely
 independent leaf-crate boundaries. Keeping those as parallel boundary sprints
 is required by the sprint-planning guidelines and buys real width. Everything
-else stays at the original milestone granularity.
+else stays at the original milestone granularity. sc-lint 0.8.0 is not a ninth
+sprint; see [Boundary and lint tooling](#boundary-and-lint-tooling).
 
 | Milestone | Sprint(s) | Result |
 |---|---|---|
@@ -193,8 +196,8 @@ replacement in its source ADR and this handoff is corrected before code lands.
 - A small answers schema and fixtures for project name, SQLite, MCP on/off, and
   project licence; unsupported database choices fail before generation.
 - A small Python driver for validated `--var-file` generation through
-  cargo-generate and sc-compose, followed by the generated project's own lint
-  and test commands.
+  cargo-generate and sc-compose, followed by the generated project's consumer
+  `just setup` and `just lint`, then its own test command.
 - Fixture CI, four crates.io publications, a registry-backed generated-project
   check, and tag `v0.1.0`.
 - A final wizard milestone copied from the specified working p3 example and
@@ -213,14 +216,50 @@ Phase A does not deliver:
   portable query layer, generated Rust clients, or custom HTTP/MCP wrappers;
 - configuration reload/watch/async layers, tracing bridges, OTel export,
   TCP authentication, or stdio bridges;
-- sc-lint installation into generated projects, prototype-repository handoff,
-  VM provisioning, or a custom test daemon;
+- prototype-repository handoff to the sc-lint team, VM provisioning, or a
+  custom test daemon;
 - enforcement that an application keep the example's crate graph, route names,
   operation names, pool counts, or internal helper functions after generation.
 
 The generated example may demonstrate a good default, but only wire contracts
 needed for interoperability are normative. Application organization stays
-editable.
+editable. Generated projects do receive the sc-lint 0.8.0 consumer install
+described under Boundary and lint tooling. They do not receive this
+repository's boundary manifests.
+
+## Boundary and lint tooling
+
+sc-lint 0.8.0 is the lint and `just` system for this phase. Two roles stay
+distinct, matching the sc-lint source-maintainer and consumer docs.
+
+This repository is the source maintainer. a-5 owns that install. The root
+`justfile` is maintained here and is not produced by `sc-lint init --just`.
+Its public recipes include `setup`, `lint`, `test`, and `upgrade`, and they
+call `.sc-lint/bootstrap.py` with `sc-lint.toml`. `just lint` includes
+`sc-lint-boundary analyze` over `boundaries/<crate>/*.toml` for the four
+library crates (REQ-RUN-0005) and the sc-lint line-counts check at 1000
+source lines, blank and comment-only lines excluded (REQ-RUN-0004,
+NFR-RUN-0008).
+This checkout does not build sc-lint, so `setup` installs the verified 0.8.0
+release. Maintainer profiles stay in this `justfile`; they are not inferred
+from a directory name.
+
+Generated applications are consumers. a-6 installs that contract into the
+template with `sc-lint init --just` at sc-lint 0.8.0. The committed consumer
+files are `sc-lint.toml`, `.sc-lint/bootstrap.py`, and a `Justfile` whose
+public recipes are `setup`, `lint`, `test`, and `upgrade`. `db-prepare` stays
+a consumer-owned recipe beside those four (REQ-RUN-0307). The template
+carries that product-owned install, not a hand-written lint configuration,
+a `boundaries/` tree, or a `just` import (NFR-RUN-0006). Fixture CI runs
+`just setup && just lint`
+in each generated project. a-7's release gate checks that the template pin
+remains sc-lint 0.8.0.
+
+No sprint a-0 is added. The install is not its own boundary, and it creates
+no parallel work. a-1 is disposable evidence and must not become the permanent
+lint install. The root `justfile` already has one sequential owner. Putting
+the maintainer install in a-5 and the consumer install in a-6 keeps the
+critical path at five sprints and the sprint count at eight.
 
 ## Wave table
 
@@ -230,8 +269,8 @@ editable.
 | 1 | core | a-2 config | boundary | sc-config | `crates/sc-config/**`, `boundaries/sc-config/**`, sc-config requirement/ADR sources |
 | 1 | core | a-3 transport | boundary | sc-transport | `crates/sc-transport/**`, `boundaries/sc-transport/**`, sc-transport requirement/ADR sources |
 | 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**`, sc-command requirement/ADR sources |
-| 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, sc-runtime requirement/ADR sources, rewritten spike, core CI/just recipes |
-| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**`, schema/fixtures, driver, root `justfile` generation entry, generation tests and template CI |
+| 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, source-maintainer `sc-lint.toml` and `.sc-lint/bootstrap.py`, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, sc-runtime requirement/ADR sources, rewritten spike, core CI/just recipes |
+| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, schema/fixtures, driver, root `justfile` generation entry, generation tests and template CI |
 | 4 | release | a-7 core release | integration | release-distribution | release workflow/docs, root release metadata, spike removal |
 | 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, wizard runner/tests, narrow driver entry-mode change |
 
@@ -250,7 +289,7 @@ blocking the core release.
 | Child | Parent(s) | Relation and named artifact |
 |---|---|---|
 | a-2, a-3, a-4 | a-1 | `must_follow`: consume verified dependency versions and demonstrated third-party signatures. |
-| a-5 | a-2, a-3, a-4 | `must_follow`: consumes the three real public crate facades; speculative facade stubs are intentionally not hoisted. |
+| a-5 | a-2, a-3, a-4 | `must_follow`: consumes the three real public crate facades and their `boundaries/<crate>/*.toml` manifests; speculative facade stubs are intentionally not hoisted. Root `just lint` is the first `sc-lint-boundary analyze` of all four manifests. |
 | a-6 | a-5 | `must_follow`: consumes the production runtime facade and rewritten-spike composition pattern. |
 | a-7 | a-6 | `must_follow`: publishes only after one real generated project is green against the release candidates. |
 | a-8 | a-6 | `must_follow`: consumes the settled answers schema and `--var-file` pipeline. |
@@ -258,11 +297,13 @@ blocking the core release.
 
 Parent development is merged into a child before each development/fix round;
 parent PR merges before the child PR. Shared root files have one sequential
-owner: a-5 creates the core workspace/CI registries, a-6 owns the sequential
-root `justfile` edit that adds `just new` and automatic generation/wizard test
-discovery,
-and a-7 performs release-only cleanup. A discovered leaf-crate defect returns
-to a-2, a-3, or a-4 rather than expanding a consumer sprint's ownership.
+owner: a-5 creates the core workspace/CI registries and the source-maintainer
+sc-lint install, a-6 owns the sequential root `justfile` edit that adds
+`just new` and automatic generation/wizard test discovery plus the template
+consumer install, and a-7 performs release-only cleanup, including the
+sc-lint 0.8.0 pin check. A discovered leaf-crate defect returns to a-2, a-3,
+or a-4 rather than expanding a consumer sprint's ownership. a-6 must not
+replace the maintainer `justfile` with the generated consumer file.
 
 ## Reconciliation and dispatch record
 
@@ -297,11 +338,15 @@ after this plan is approved and its predecessor evidence is satisfied.
 ## QA consumption
 
 Boundary QA for a-2 through a-4 reviews one crate, its manifest, tests, README,
-and boundary manifest. a-5 reviews real composition and the rewritten spike.
-a-6 reviews only the minimal generated application and `--var-file` workflow;
-it must reject framework-like abstractions that are unnecessary for that proof.
-a-7 reviews packaging/registry evidence. a-8 reviews wizard/schema equivalence
-without reopening core code.
+and boundary manifest. Those three manifests are written to pass
+`sc-lint-boundary analyze`, which first runs in a-5 once root lint exists.
+a-5 reviews real composition, the rewritten spike, and the source-maintainer
+sc-lint 0.8.0 install. a-6 reviews only the minimal generated application,
+the consumer install, and the `--var-file` workflow; it must reject
+framework-like abstractions that are unnecessary for that proof, and it must
+reject copying `boundaries/` into the template. a-7 reviews packaging,
+registry evidence, and the sc-lint 0.8.0 pin in the template bootstrap.
+a-8 reviews wizard/schema equivalence without reopening core code.
 
 QA must distinguish normative interoperability contracts from illustrative
 template choices. An example layout is not a boundary rule for generated

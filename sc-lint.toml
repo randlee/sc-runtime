@@ -1,0 +1,32 @@
+# Managed by sc-lint; regenerate with `sc-lint init --just`, then re-apply
+# sc-runtime maintainer profiles below (REQ-RUN-0004 / REQ-RUN-0005).
+[tool.sc-lint]
+minimum_version = "0.8.0"
+
+# Source-maintainer checks (this repository). Generated applications use the
+# consumer template from sprint a-6 with the same minimum_version floor.
+[[tool.sc-lint.lint]]
+name = "boundary"
+command = ["sc-lint", "lint", "sc-boundary", "--root", ".", "--config", "sc-lint.toml"]
+
+[[tool.sc-lint.lint]]
+name = "line-counts"
+command = ["sc-lint", "lint", "line-counts", "--root", ".", "--config", "sc-lint.toml"]
+
+[[tool.sc-lint.lint]]
+name = "fmt"
+command = ["cargo", "fmt", "--all", "--check"]
+
+[[tool.sc-lint.lint]]
+name = "clippy"
+command = ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
+
+[tool.sc-lint.lint_profiles]
+# Fast boundary-only pass while leaf crates land (a-2..a-4).
+gates = ["boundary", "line-counts"]
+# Full maintainer gate once the workspace exists (a-5+).
+full = ["boundary", "line-counts", "fmt", "clippy"]
+
+[[tool.sc-lint.test]]
+name = "workspace"
+command = ["cargo", "test", "--workspace"]

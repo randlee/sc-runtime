@@ -50,10 +50,25 @@ rounds.
 
 ## Boundary Enforcement
 
-No boundary validator or manifests exist yet. `docs/architecture.md` names
-`sc-lint-boundary` as the intended validator; when it and its manifests land,
-record the command and manifest paths here. Until then, boundary relaxation
-follows the path lead ruling -> ADR -> boundary record update.
+**Product:** sc-lint **0.8.0** (`minimum_version` in root `sc-lint.toml`).
+
+**Local integration:** `sc-lint init --just` manages `justfile`, `sc-lint.toml`,
+and `.sc-lint/bootstrap.py`. First use on a clean checkout: `just setup`.
+
+| Check | Command |
+| --- | --- |
+| Full maintainer lint (after workspace exists) | `just lint full` or `just lint` |
+| Boundary + line counts only (early sprints) | `just lint gates` |
+| Boundary analyzer directly | `sc-lint lint sc-boundary --root . --config sc-lint.toml` |
+
+**Manifest paths:** `boundaries/<crate>/*.toml` for `sc-config`, `sc-transport`,
+`sc-command`, and `sc-runtime` (see `boundaries/README.md`).
+
+**Generated projects:** template ships the consumer contract (`sc-lint.toml`,
+`.sc-lint/bootstrap.py`, public `setup`/`lint`/`test`/`upgrade`); fixture CI
+runs `just setup && just lint` (sprint a-6).
+
+Boundary relaxation until manifests exist: lead ruling -> ADR -> manifest update.
 
 ## Plan Naming
 

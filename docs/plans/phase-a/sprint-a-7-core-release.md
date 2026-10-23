@@ -59,7 +59,9 @@ milestone and does not claim deferred application-policy layers are complete.
 Confirm release credentials, actual crate versions, minimum supported Cargo,
 MIT repository/crate licensing, and whether per-crate licence copies are
 required. Deferred requirements must be recorded as deferred rather than
-waived or falsely closed.
+waived or falsely closed. Confirm the generated consumer pin is sc-lint
+0.8.0 in `template/sc-lint.toml` (`minimum_version = "0.8.0"`) and
+`template/.sc-lint/bootstrap.py`. Do not float that pin at tag time.
 
 ## Dependencies and parallel safety
 
@@ -80,6 +82,12 @@ waived or falsely closed.
    versions with no path/git/patch substitute for the four libraries.
 5. **REQ-RUN-0503** — Release README and evidence explain the supported core
    generation path and name deferred layers without promising them.
+6. **REQ-RUN-0004 / NFR-RUN-0008** — Release gate for the sc-lint 0.8.0 pin.
+   `template/sc-lint.toml` pins `minimum_version` to `0.8.0`, and
+   `template/.sc-lint/bootstrap.py` is the matching 0.8.0 consumer helper.
+   Registry-backed fixture CI runs `just setup && just lint` in the generated
+   project before test and build. The source-maintainer install from a-5
+   stays on the same 0.8.0 pin.
 
 ## Acceptance criteria
 
@@ -92,6 +100,10 @@ waived or falsely closed.
    workflow, recipe, or README reference.
 4. `req:REQ-RUN-0503` — release notes distinguish the shipped core/template path
    from deferred auto-start, attribute-generated CLI tests, and wizard work.
+5. `req:NFR-RUN-0008` — `template/sc-lint.toml` pins `minimum_version` to
+   `0.8.0`, and `template/.sc-lint/bootstrap.py` is the matching 0.8.0
+   consumer helper. The registry-backed generated fixture runs
+   `just setup && just lint` and exits 0. Release notes name that pin.
 
 ## This sprint does not close
 
@@ -104,6 +116,9 @@ The wizard and all explicitly deferred application-policy layers remain open.
 ## Required validation
 
 Run final root validation after spike removal, package and publish dry-runs,
-publication in dependency order, registry-backed fixture generation, generated
-lockfile-source inspection, and exact commit/tag checks. Actual publication
-requires separate release authorization at execution time.
+publication in dependency order, registry-backed fixture generation,
+`just setup && just lint` in that generated project, generated
+lockfile-source inspection, the sc-lint 0.8.0 pin check on
+`template/sc-lint.toml` and `template/.sc-lint/bootstrap.py`, and exact
+commit/tag checks. Actual publication requires separate release authorization
+at execution time.

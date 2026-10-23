@@ -58,6 +58,8 @@ owned_paths:
   - "Cargo.toml"
   - "Cargo.lock"
   - "justfile"
+  - "sc-lint.toml"
+  - ".sc-lint/bootstrap.py"
   - "crates/sc-runtime/**"
   - "boundaries/sc-runtime/**"
   - "examples/spike/**"
@@ -88,6 +90,19 @@ typed errors. Do not resolve CLI auto-start, generated command declarations,
 or application test architecture in this sprint. Record the necessary builder,
 listener-ownership, and lifecycle choices in the owned sc-runtime requirement
 and ADR sources before implementation proceeds beyond the facade.
+
+Install sc-lint 0.8.0 as the source-maintainer model from the sc-lint docs.
+This repository's root `justfile` stays maintained here. `sc-lint init --just`
+is the consumer generator and is not how this file is produced. Public
+recipes are `setup`, `lint`, `test`, and `upgrade`. Each calls
+`.sc-lint/bootstrap.py` with `sc-lint.toml`. This checkout does not build
+sc-lint, so `setup` installs the verified 0.8.0 release rather than a
+`target/debug` binary or a source-checkout `--dry-run`. `just lint` runs
+`sc-lint-boundary analyze` on every `boundaries/<crate>/*.toml` manifest and
+the sc-lint line-counts check at 1000 source lines (NFR-RUN-0008). The
+line-counts configuration key is the one the 0.8.0 package provides; record
+that key when the install lands.
+`just new` is not added here.
 
 ## Public contracts consumed
 
@@ -130,7 +145,15 @@ to be unnecessary is removed rather than preserved for symmetry.
    REST/OpenAPI/MCP composition.
 7. **REQ-RUN-0001 / REQ-RUN-0004 / REQ-RUN-0005** — Create the four-member
    workspace, root core recipes/CI, and runtime boundary manifest without
-   registering template packages as workspace members.
+   registering template packages as workspace members. `boundaries/sc-runtime/`
+   joins the three leaf manifests. Root `just lint` is the first run of
+   `sc-lint-boundary analyze` across all four.
+8. **REQ-RUN-0004 / NFR-RUN-0008** — Source-maintainer sc-lint 0.8.0 install:
+   `sc-lint.toml` pins `minimum_version` to `0.8.0`, `.sc-lint/bootstrap.py`
+   is the 0.8.0 helper, and `just lint` includes `sc-lint-boundary analyze`
+   plus the 1000-line line-counts check. Crate CI calls `just setup` before
+   `just lint` and `just test`. Do not copy boundary manifests into the
+   template.
 
 ## Acceptance criteria
 
@@ -159,12 +182,19 @@ to be unnecessary is removed rather than preserved for symmetry.
 8. `ADR-RUN-0004` — inspection finds no application command registry, generated
    CLI testing abstraction, service-manager launcher, SQL schema, or
    observability wrapper in the reusable libraries.
+9. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
+   shows `setup`, `lint`, `test`, and `upgrade`. `just lint` invokes
+   `sc-lint-boundary analyze` and exits 0 on the four manifests. The same
+   recipe runs the sc-lint line-counts check and fails, naming the file, when
+   a non-test source file exceeds 1000 source lines. The root `justfile` is
+   not the output of `sc-lint init --just`.
 
 ## This sprint does not close
 
-Generated application structure, JSON-driven generation, registry publication,
-CLI auto-start, generated-application process tests, attribute-generated tests, and the
-wizard remain open.
+Generated application structure, the consumer sc-lint install inside the
+template, JSON-driven generation, registry publication, CLI auto-start,
+generated-application process tests, attribute-generated tests, and the
+wizard remain open. `just new` is added by a-6.
 
 ## Paths to delete
 
@@ -172,8 +202,9 @@ None. a-7 removes the rewritten spike after release evidence is preserved.
 
 ## Required validation
 
-Run root lint/test recipes, workspace build, all default/server package
-selections, doctests, boundary validation, feature-specific dependency-tree
+Run `just setup`, then root `just lint` and `just test`, workspace build, all
+default/server package selections, doctests, `sc-lint-boundary analyze` over
+the four manifests, the line-counts check, feature-specific dependency-tree
 checks, and the rewritten spike proofs. Host validation uses only in-process
 fixtures; signal/process proofs run only on an ephemeral CI runner with an
 explicit isolation guard. Record results in `docs/validation/phase-a-runtime.md`.
