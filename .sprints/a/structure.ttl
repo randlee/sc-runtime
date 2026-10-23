@@ -1,0 +1,51 @@
+@prefix triage: <urn:atm:triage:> .
+
+triage:PhaseA a triage:Phase .
+
+triage:a-1 a triage:Sprint ;
+  triage:inPhase triage:PhaseA ;
+  triage:order 1 ;
+  triage:branch "sprint/a-1-compatibility-spike" ;
+  triage:criteria "docs/plans/phase-a/sprint-a-1-compatibility-spike.md" .
+
+triage:a-2 a triage:Sprint ;
+  triage:inPhase triage:PhaseA ;
+  triage:order 2 ;
+  triage:branch "sprint/a-2-config" ;
+  triage:criteria "docs/plans/phase-a/sprint-a-2-config.md" .
+
+triage:a-3 a triage:Sprint ;
+  triage:inPhase triage:PhaseA ;
+  triage:order 3 ;
+  triage:branch "sprint/a-3-transport" ;
+  triage:criteria "docs/plans/phase-a/sprint-a-3-transport.md" .
+
+triage:a-4 a triage:Sprint ;
+  triage:inPhase triage:PhaseA ;
+  triage:order 4 ;
+  triage:branch "sprint/a-4-command" ;
+  triage:criteria "docs/plans/phase-a/sprint-a-4-command.md" .
+
+triage:a-5 a triage:Sprint ;
+  triage:inPhase triage:PhaseA ;
+  triage:order 5 ;
+  triage:branch "sprint/a-5-runtime-core" ;
+  triage:criteria "docs/plans/phase-a/sprint-a-5-runtime-core.md" .
+
+triage:a-6 a triage:Sprint ;
+  triage:inPhase triage:PhaseA ;
+  triage:order 6 ;
+  triage:branch "sprint/a-6-template-from-json" ;
+  triage:criteria "docs/plans/phase-a/sprint-a-6-template-from-json.md" .
+
+triage:a-7 a triage:Sprint ;
+  triage:inPhase triage:PhaseA ;
+  triage:order 7 ;
+  triage:branch "sprint/a-7-core-release" ;
+  triage:criteria "docs/plans/phase-a/sprint-a-7-core-release.md" .
+
+triage:a-8 a triage:Sprint ;
+  triage:inPhase triage:PhaseA ;
+  triage:order 8 ;
+  triage:branch "sprint/a-8-wizard" ;
+  triage:criteria "docs/plans/phase-a/sprint-a-8-wizard.md" .

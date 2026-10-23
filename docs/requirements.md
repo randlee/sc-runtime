@@ -75,7 +75,7 @@ each waits until a project asks for it.
 | `sc-lint create` driver step | added when sc-lint ships that command |
 | `sc-config` reload, change notification, async interop | later, possibly `sc-config-tokio` |
 | stdio MCP clients | a stdio-to-HTTP shim is a later option |
-| A virtual machine definition, colima configuration or provisioning scripts for daemon-process tests | not built in v0.1, in this repository or in the template; the rule is delivered as a requirement and as guidance ([NFR-RUN-0010](requirements.md), [REQ-RUN-0311](requirements.md)) |
+| A virtual machine definition, colima configuration or provisioning scripts for daemon-process tests | not built in v0.1, in this repository or in the template; the safety rule remains in [NFR-RUN-0010](requirements.md), while generated-project wording is deferred with [REQ-RUN-0311](requirements.md) |
 | Forwarding, replication, an outbox or routing policy between stores | never; data flow between stores is project code |
 | A query layer portable across database backends | never; each store crate has one fixed backend |
 | Web-application features: HTML templating, sessions, user authentication | never; this is not a web-app framework |
@@ -570,7 +570,7 @@ four crates and a template are built on the assumption.
 ### Requirement Statement
 
 The sc-runtime design relies on four facts it has not verified. The spike
-sprint, named sprint aa-1 (the work in `examples/spike` plus a scratch
+sprint, named sprint a-1 (the work in `examples/spike` plus a scratch
 `cargo-generate` template), MUST answer each one with recorded evidence, as
 true, or as false together with what was found instead.
 
@@ -582,7 +582,7 @@ a non-normative summary; the rows of this item govern.
 |---|---|---|
 | V1 | `rmcp` 3.x, `utoipa-axum` 0.2 and `axum` 0.8 coexist on one `axum::Router` with no dependency version conflict. | `examples/spike` compiles with all three in one binary; `cargo tree -i axum` run on the spike package shows exactly one `axum` version; with the spike running, `curl --unix-socket`, the `clap` client and an MCP client each reach the one service function through that one router ([REQ-RUN-0101](requirements.md)). |
 | V2 | `rmcp`'s `Parameters<T>` accepts a struct `T` that derives both `schemars::JsonSchema` and `utoipa::ToSchema`, with no clash between the two derives or their schemas. | The spike's request struct derives `Serialize`, `Deserialize`, `schemars::JsonSchema` and `utoipa::ToSchema`; it is used as an `axum` `Json<T>` body and as `Parameters<T>` in a `#[tool]`; it compiles and both calls answer; MCP `tools/list` returns an input schema for that tool, and `openapi.json` contains the same struct as a component schema. |
-| V3a | The `cargo-generate` version pinned by sprint aa-1 accepts, in `cargo-generate.toml`, placeholders of type `string`, `bool` and `array`, a conditional `ignore` list keyed on a placeholder value, and an `exclude` list; the exact syntax of each is known. | A scratch `cargo-generate.toml` using every one of these constructs, copied into the record, that the pinned version parses without error. |
+| V3a | The `cargo-generate` version pinned by sprint a-1 accepts, in `cargo-generate.toml`, placeholders of type `string`, `bool` and `array`, a conditional `ignore` list keyed on a placeholder value, and an `exclude` list; the exact syntax of each is known. | A scratch `cargo-generate.toml` using every one of these constructs, copied into the record, that the pinned version parses without error. |
 | V3b | A conditional `ignore` list includes or excludes a whole file. | Two runs of the scratch template that differ only in one `bool` value: the conditionally ignored file is present in one output and absent in the other. |
 | V4a | `cargo generate --path <template> --template-values-file <file> --name <n> --silent` runs with no prompt, including when a value is of type `array`. | The command line used; run with stdin closed it exits 0 and prints no prompt, and the rendered output contains the `string`, `bool` and `array` values from the values file. |
 | V4b | A file listed under `exclude` (for example `AGENTS.md.j2`) is copied byte-for-byte without Liquid rendering. | A `.j2` file containing `{{ }}` expressions is byte-identical in the template and in the generated output (`cmp` exits 0). |
@@ -771,17 +771,17 @@ and every client gets it.
 
 ### Success Criteria
 
-1. A test in the generated project starts one daemon with
+1. A host-safe test in the generated project starts one daemon with
    `sc_runtime::testing::DaemonFixture` and creates three widgets with
    distinct names: one by `POST /ops/widget.create`, one by an MCP
-   `tools/call` of `widget_create` sent to `/mcp`, and one through the CLI's
-   code path without running the CLI binary: the test calls the
-   `widget.create` command's request-construction function with
-   command-line arguments, sends the result with the fixture's
-   `sc_transport::Client`, and passes the reply to the command's rendering
-   function ([REQ-RUN-0312](requirements.md)). It then reads all three back with
-   `widget.get` and asserts each is returned with the name it was created
-   with.
+   `tools/call` of `widget_create` sent to `/mcp`, and one through the CLI
+   command path using the same parsed arguments, endpoint resolver,
+   `sc_transport::Client`, and envelope renderer as production, but without
+   spawning the CLI binary. The test does not prescribe a permanent helper
+   function, trait, mock transport, or generated unit-test layout. It then
+   reads all three back with `widget.get` and asserts each is returned with
+   the name it was created with. One real CLI-binary smoke runs separately
+   on an isolated runner under NFR-RUN-0010.
 2. `cargo metadata` in the generated project shows `sqlx` as a direct
    dependency of `store-*` packages only.
 3. `grep -rn 'sqlx' crates/api-types crates/service crates/daemon crates/cli`
@@ -806,11 +806,11 @@ This applies to the `cli` crate of a project generated from `template/`.
    crate MUST NOT have `sqlx` or any generated `store-*` or `service` crate
    among its normal (non-dev) dependencies; the rule that a CLI links no
    daemon-side dependency is owned by [NFR-RUN-0001](requirements.md).
-2. The CLI auto-starts the daemon by default
-   ([REQ-RUN-0206](requirements.md)). Obligations 3 to 6 describe what the
-   CLI reports when the daemon cannot be reached and auto-start is disabled,
-   or when the daemon the CLI started does not become reachable. In neither
-   case may the CLI retry without bound.
+2. In Phase A the CLI is report-only: it MUST NOT start the daemon. Obligations
+   3 to 6 describe what it reports when the daemon cannot be reached. A later
+   optional auto-start layer may amend this behavior under deferred
+   [REQ-RUN-0206](requirements.md), but the reusable transport client remains
+   report-only and MUST NOT spawn or retry for readiness.
 3. When the daemon cannot be reached (the socket file does not exist, or the
    connection is refused), the `sc-transport` client returns the typed error
    `TransportError::DaemonNotRunning`
@@ -861,35 +861,34 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)). A CLI that fell
 back to opening the database itself would be a second
 writer to a SQLite file and a second code path to SQL, and would behave
 differently depending on whether a daemon happened to be up. Every CLI
-command therefore needs a running daemon. The CLI starts one by default
-([REQ-RUN-0206](requirements.md)); when that is disabled or does not work,
-the absence of a daemon gets a typed code an agent can branch on and a
-suggested action that says how to fix it.
+command therefore needs a running daemon. In Phase A the absence of a daemon
+gets a typed code an agent can branch on and a suggested action that says how
+to fix it. Deferred REQ-RUN-0206 may later add an optional auto-start layer
+without changing the transport or envelope contracts.
 
 ### Success Criteria
 
-No host-run test runs the CLI binary ([REQ-RUN-0312](requirements.md)), so
-criteria 1 and 4 are unit tests of the command's rendering function, and
-criterion 2 runs the real binary on an isolated machine.
+These criteria constrain externally observable behavior and do not prescribe
+the CLI's internal helper-function or generated-test architecture. A host-safe
+in-process test may exercise the CLI command path without spawning the binary;
+criterion 2 runs the real binary only on an isolated runner.
 
-1. A unit test gives the rendering function of a generated CLI command
-   `TransportError::DaemonNotRunning` with `--json` rendering. It asserts:
+1. A host-safe test gives the generated CLI command path
+   `TransportError::DaemonNotRunning` with `--json` selected. It asserts:
    the exit status is non-zero; the output parses as JSON; `ok` is `false`;
    `data` is `null`; `error.code` is `"DAEMON.NOT_RUNNING"`;
    `error.suggested_action` is `"run <app> daemon start"` with the
    application name substituted.
-2. On an isolated machine ([NFR-RUN-0010](requirements.md)), and once the
-   OPEN in [REQ-RUN-0206](requirements.md) on how auto-start is disabled is
-   decided: a test runs the real CLI binary with `--json` and auto-start
-   disabled against an endpoint where no daemon is listening. It asserts the
+2. On an isolated machine ([NFR-RUN-0010](requirements.md)), a test runs the
+   real Phase A CLI binary with `--json` against an endpoint where no daemon is
+   listening. It asserts the
    same envelope as criterion 1 and a non-zero exit status, and that
    afterwards the instance root contains no `daemon.lock`, no `daemon.sock`
-   and no database file. The case of a started daemon that does not become
-   reachable is criterion 8 of REQ-RUN-0206.
+   and no database file.
 3. `cargo tree -p cli -e normal --prefix none` in the generated project
    prints no line beginning with `sqlx `, `service ` or `store-sqlite ` (the
    name followed by a space).
-4. A unit test gives the rendering function a transport failure that is not
+4. A host-safe test gives the same CLI reporting path a transport failure that is not
    `DaemonNotRunning` (an undecodable response body) and asserts that
    `error.code` is not `"DAEMON.NOT_RUNNING"`. How a non-2xx response reaches
    the rendering function follows the OPEN in
@@ -953,10 +952,14 @@ anything.
 
 1. A test against one `DaemonFixture` daemon calls `widget.get` for the same
    existing widget through REST, through an MCP `tools/call`, and through the
-   CLI's code path with `--json` rendering, composed inside the test process
-   as [REQ-RUN-0312](requirements.md) describes, without running the CLI
-   binary; it parses the three results as JSON and asserts all
-   three are equal, with `ok` equal to `true` and `error` equal to `null`.
+   production CLI command path with `--json` rendering: parsed arguments,
+   endpoint resolution, `sc_transport::Client`, and unchanged JSON output are
+   exercised inside the test process without running the CLI binary. This
+   criterion does not prescribe the deferred helper or test-generation shape
+   of [REQ-RUN-0312](requirements.md). It parses the three results as JSON and
+   asserts all three are equal, with `ok` equal to `true` and `error` equal to
+   `null`. Any real CLI-binary proof follows the process-isolation rule in
+   [NFR-RUN-0010](requirements.md).
 2. The same test repeats the three calls for a widget that does not exist and
    asserts the three envelopes are equal, with `ok` equal to `false`, `data`
    equal to `null`, and `error` containing `kind`, `code` and `message`.
@@ -1087,7 +1090,15 @@ it prefers, without this project choosing one.
 
 ## REQ-RUN-0206: CLI auto-starts the daemon with a clean, launchd-equivalent launch
 
-**Status:** Active  
+**Status:** Deferred — post-core application layer
+
+**Disposition (2026-09-21):** The owner-directed Phase A recut returns to the
+original five-milestone core plan. Auto-start is not required to prove or
+publish the reusable crates or the minimal JSON-driven template. The detailed
+design below is preserved as decision history and as input to a later optional
+application layer, but it is not binding on Phase A and no Phase A criterion
+may claim it complete. Its future design must be evaluated against generated
+applications after the core release.
 
 ### Requirement Statement
 
@@ -1460,7 +1471,7 @@ wired through all three surfaces:
 | REST | `crates/daemon/src/routes.rs` | `POST /ops/widget.create` and `POST /ops/widget.get`, each an `axum` handler annotated with `#[utoipa::path(...)]`, registered with `utoipa_axum` `routes!` on an `OpenApiRouter`, returning `Envelope<Widget>` |
 | MCP | `crates/daemon/src/mcp.rs` (only when option `mcp` is `true`) | `rmcp` `#[tool]` methods named `widget_create` and `widget_get`, taking `Parameters<...>` of the same `api-types` request structs and returning through `.into_mcp()`. The service returned by `mcp::service` MUST be an `rmcp` `StreamableHttpService` configured in stateless mode, and the template MUST NOT contain an MCP session store |
 | CLI | `crates/cli` | one `clap` command per operation; each builds the `api-types` request struct, sends it with `sc_transport::Client::post` (method name illustrative until pinned by [REQ-TRN-0005](sc-transport/requirements.md)) to the matching `/ops/...` path, and supports `--json` and the global `--endpoint` option ([REQ-RUN-0310](requirements.md)) |
-| Test | the generated project's test suite | at least one test that starts a daemon with `sc_runtime::testing::DaemonFixture` and exercises the example through REST, through MCP (when `mcp` is `true`) and through the CLI's code path, composed inside the test process without running the CLI binary ([REQ-RUN-0312](requirements.md)). The test runs on a developer's host, so it MUST keep its database under the fixture's temporary instance root ([NFR-RUN-0010](requirements.md)). The `cli` crate also carries the no-daemon unit tests of REQ-RUN-0312 |
+| Test | the generated project's test suite | at least one test that starts a daemon with `sc_runtime::testing::DaemonFixture` and exercises the example through REST, through MCP (when `mcp` is `true`) and through the production CLI command path, composed inside the test process without running the CLI binary. The test runs on a developer's host, so it MUST keep its database under the fixture's temporary instance root ([NFR-RUN-0010](requirements.md)). This contract does not prescribe the deferred REQ-RUN-0312 helper or test-generation architecture. |
 
 Which derives the struct carries, and that the same struct is the rmcp
 `Parameters<T>` input, is conditional on
@@ -2129,9 +2140,11 @@ Criteria that start a daemon in a child process run only on an isolated
 machine, never on a developer's host
 ([NFR-RUN-0010](requirements.md)).
 
-Criteria 1 to 3 are unit tests with no daemon and no child process
-([REQ-RUN-0312](requirements.md)); the precedence logic itself is tested in
-`sc-transport` ([REQ-TRN-0001](sc-transport/requirements.md)).
+Criteria 1 to 3 are focused, host-safe parser/resolver tests with no daemon
+and no child process. They assert the boundary between generated argument
+parsing and `sc-transport` without prescribing the CLI's internal helper
+functions or test-generation architecture. The precedence logic itself is
+tested in `sc-transport` ([REQ-TRN-0001](sc-transport/requirements.md)).
 
 1. A unit test in the generated `cli` crate parses a command line containing
    `--endpoint <value>` and asserts that the inputs the CLI hands to the
@@ -2162,7 +2175,13 @@ Criteria 1 to 3 are unit tests with no daemon and no child process
 
 ## REQ-RUN-0311: Generated agent documents state the daemon-testing rule
 
-**Status:** Active  
+**Status:** Deferred — follows generated test architecture
+
+**Disposition (2026-09-21):** The process-isolation safety rule remains Active
+in NFR-RUN-0010, but prescribing generated agent-document wording is deferred
+with the generated CLI-test layer. Phase A may document the safety rule in
+this repository; it does not freeze generated application guidance before the
+post-core attribute-generation work is evaluated.
 
 ### Requirement Statement
 
@@ -2223,7 +2242,15 @@ the owner decided that building a virtual machine is not part of v0.1.
 
 ## REQ-RUN-0312: Generated CLI commands are proven by unit tests with no daemon
 
-**Status:** Active  
+**Status:** Deferred — architecture reopened
+
+**Disposition (2026-09-21):** The two-pure-function shape was pending owner
+confirmation and is not part of the recut Phase A. The intended direction is
+attribute-generated CLI testing layered after the reusable core and minimal
+generated application exist. The detailed proposal below is preserved as
+decision history, not as a binding Phase A implementation contract. Phase A
+must still prove the CLI's externally observable interoperability, but it must
+not introduce either this helper shape or a speculative attribute framework.
 
 ### Requirement Statement
 
@@ -2613,9 +2640,9 @@ where `<dest>` is where the new project is created. The driver and
 are never copied into a generated project; the repository layout that
 guarantees this is owned by [REQ-RUN-0001](requirements.md).
 
-The driver MUST obtain one answers JSON object, either from the file given
-with `--var-file` or from the Wyvern wizard, and then MUST run these steps in
-this order:
+The base driver delivered with the template milestone MUST obtain one complete
+answers JSON object from the file given with `--var-file` and then MUST run
+these steps in this order:
 
 | # | Step | What the driver does |
 |---|---|---|
@@ -2637,9 +2664,10 @@ included.
 The driver MUST NOT render any template file itself; rendering is done only
 by `cargo generate` and `sc-compose`.
 
-`scripts/run_wizard.py` SHOULD be reused from the `p3-nuget-template`
-repository (`.scaffold/scripts/run_wizard.py`) with as few changes as
-possible, because that script is already driven by the schema file.
+The later wizard milestone extends answer acquisition under
+[REQ-RUN-0602](requirements.md). It MUST feed the resulting complete JSON
+object through this same validation and six-step pipeline; it does not create
+a second driver or a second owner for these steps.
 
 The mechanism clauses of steps 2 and 3 are conditional on
 [ADR-RUN-0402](architecture.md), which is Proposed. Those clauses are: the
@@ -2721,12 +2749,11 @@ mechanic held in [ADR-RUN-0402](architecture.md), which is Proposed and
 unverified until the spike has run it with stdin closed. The obligation that
 nothing prompts is not conditional; the flags that achieve it are.
 
-The driver MUST locate its two external tools in this order:
+The base driver MUST locate `sc-compose` in this order:
 
 | Tool | First | Then |
 |---|---|---|
 | `sc-compose` | the executable named by the environment variable `SC_COMPOSE`, when set | `sc-compose` on `PATH` |
-| `wyvern` | the executable named by the environment variable `WYVERN_BIN`, when set | `wyvern` on `PATH` |
 
 When a required tool is found in neither place the driver MUST exit with a
 non-zero status. It MUST do so before running `cargo generate`, so that no
@@ -2735,15 +2762,15 @@ document). Its stderr message MUST name
 the missing tool and MUST state both ways to supply it: the environment
 variable and `PATH`.
 
-The driver MUST NOT contain a hard-coded install path for either tool.
+The driver MUST NOT contain a hard-coded install path for `sc-compose`.
+Wyvern discovery belongs exclusively to [REQ-RUN-0602](requirements.md).
 
 ### Rationale
 
 CI and agents generate projects, and neither can answer a prompt or open a
-wizard window. Wyvern is a desktop UI tool that CI does not install, so the
-non-interactive mode must not depend on it. An environment-variable override
-lets a machine point at an install that is not on `PATH` without the script
-guessing install prefixes.
+wizard window. The non-interactive mode therefore has no Wyvern dependency.
+An environment-variable override lets a machine point at sc-compose when it
+is not on `PATH` without the script guessing install prefixes.
 
 ### Success Criteria
 
@@ -2761,11 +2788,8 @@ guessing install prefixes.
 5. A driver test with `SC_COMPOSE` unset and no `sc-compose` on `PATH`
    asserts a non-zero exit, that stderr contains `sc-compose`, `SC_COMPOSE`
    and `PATH`, and that `cargo generate` was not called.
-6. A driver test in wizard mode (no `--var-file`) with `WYVERN_BIN` unset and
-   no `wyvern` on `PATH` asserts a non-zero exit and that stderr contains
-   `wyvern`, `WYVERN_BIN` and `PATH`.
-7. Inspection: `scripts/new_project.py` and `scripts/run_wizard.py` contain
-   no absolute path to `wyvern` or `sc-compose`.
+6. Inspection: `scripts/new_project.py` contains no absolute path to
+   `sc-compose` and no Wyvern invocation or discovery logic.
 
 ---
 
@@ -2911,6 +2935,14 @@ In all three modes the answers object MUST then be validated against
 No later step may behave differently depending on which mode supplied the
 answers.
 
+Wizard acquisition is an extension owned by this requirement. It MAY add
+entry-mode selection to `scripts/new_project.py` and SHOULD reuse
+`scripts/run_wizard.py` from `p3-nuget-template` with as few changes as
+possible. Wizard code MUST locate Wyvern first through `WYVERN_BIN`, when set,
+then as `wyvern` on `PATH`; if neither exists it MUST fail before
+`cargo generate`, name `wyvern`, `WYVERN_BIN`, and `PATH` on stderr, and leave
+no destination. Neither script may contain a hard-coded Wyvern install path.
+
 Prefill values are suggestions only. The answers that are validated and used
 are the ones the wizard returns after the person finishes it.
 
@@ -2952,6 +2984,10 @@ was given and prints a canned finished-wizard result.
    the criteria of REQ-RUN-0502.)
 5. A driver test whose stub prints a cancelled-wizard result asserts that
    `cargo generate` was not called.
+6. With `WYVERN_BIN` unset and no `wyvern` on `PATH`, interactive mode fails
+   before `cargo generate`, names `wyvern`, `WYVERN_BIN`, and `PATH` on
+   stderr, and creates no destination.
+7. Inspection finds no absolute Wyvern path in either driver script.
 
 ---
 
@@ -3022,7 +3058,7 @@ this order and MUST fail when any of them exits non-zero:
 3. `just test` inside the generated project at `<dest>`.
 4. Once the selection question of [NFR-RUN-0010](requirements.md) is
    decided: the generated project's daemon-process tests (the tests that
-   start the generated `daemon` binary or rely on the CLI's auto-start),
+   start the generated `daemon` binary),
    selected the way that decision says. The CI runner is the isolated machine
    those tests need.
 
@@ -3792,8 +3828,7 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    that makes the daemon behave differently under test: a skipped lock, a
    different start-up order, stubbed stores or stubbed transport.
 2. A test that starts a daemon as a separate operating-system process, or
-   that uses the default `<instance-root>`, or that involves the service
-   manager or the CLI's auto-start ([REQ-RUN-0206](requirements.md)), MUST
+   that uses the default `<instance-root>`, MUST
    run only on an isolated machine: a virtual machine (for example one run
    by colima) or an ephemeral CI runner. It MUST NOT run on a developer's
    host, where the application's own daemon may be running and where a
@@ -3808,10 +3843,9 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    `just test` covers is part of the standard SC `just` system, whose source
    of truth is the sc-lint project; this item constrains only where the tests
    execute. Such tests exist in two places:
-   this repository's crate tests, and the tests of the generated `cli` and
-   `daemon` binaries, which live in `template/` and are rendered into every
-   project ([REQ-RUN-0206](requirements.md), [REQ-RUN-0310](requirements.md)
-   criterion 4). The fixture-matrix workflow
+   this repository's crate tests, and any tests of the generated `cli` and
+   `daemon` binaries that live in `template/` and are rendered into a project
+   ([REQ-RUN-0310](requirements.md) criterion 4). The fixture-matrix workflow
    ([REQ-RUN-0701](requirements.md)) MUST run the generated project's
    daemon-process tests on the CI runner for every fixture, after
    `just test`. That clause is conditional on the selection OPEN below.
@@ -3832,15 +3866,12 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    are daemon-process tests under obligation 2 until that is decided. The
    template's example test MUST place its database under the fixture's
    `<instance-root>` ([REQ-RUN-0302](requirements.md)).
-6. A test that may run on a developer's host MUST NOT execute the CLI
-   binary (decided in this document; [REQ-RUN-0312](requirements.md) owns the
-   rule and the no-daemon unit tests that replace such runs). The binary
-   auto-starts a daemon by default when it cannot reach one
-   ([REQ-RUN-0206](requirements.md)), so a host-run test whose fixture has
-   stopped, failed to bind or handed out a wrong endpoint would otherwise
-   start a real, detached daemon on the developer's machine, which is the
-   leak this item exists to prevent. Every test that executes the CLI binary
-   is a daemon-process test under obligation 2.
+6. A test that may run on a developer's host MUST NOT execute the CLI binary.
+   Phase A proves CLI behavior primarily through host-safe in-process paths and
+   runs the minimal real-binary smoke on an isolated CI runner. This rule does
+   not prescribe helper functions, attributes, or a generated unit-test
+   layout. Every test that executes the CLI binary is treated as a process
+   test under obligation 2 even though the Phase A CLI is report-only.
 7. Building, provisioning or scripting a virtual machine is not part of
    v0.1 of this repository (decided by the owner). In v0.1 the isolated
    machine for this repository's own tests is the CI runner.
@@ -3855,10 +3886,8 @@ cargo test filter or `#[ignore]`, a separate `just` recipe) is not decided.
 If the answer adds a `just` recipe, the closed recipe list of the generated
 `Justfile` ([REQ-RUN-0307](requirements.md)) is amended in the same
 change.  
-**OPEN:** the launchd comparison of [REQ-RUN-0206](requirements.md) needs
-macOS, and a colima virtual machine runs Linux; where that one test runs (a
-macOS CI runner, a macOS virtual machine, or a recorded manual check) is not
-decided.
+The launchd comparison formerly described by deferred REQ-RUN-0206 is not a
+Phase A test. Its future execution venue is decided with that optional layer.
 
 ### Rationale
 
@@ -3886,8 +3915,9 @@ test daemon.
 2. Every test, in this repository and in a generated project, that starts a
    daemon as a separate process
    (the child-process tests of [REQ-RT-0005](sc-runtime/requirements.md),
-   [REQ-RT-0008](sc-runtime/requirements.md),
-   [REQ-RUN-0310](requirements.md) and [REQ-RUN-0206](requirements.md)) is
+   [REQ-RT-0008](sc-runtime/requirements.md) and
+   [REQ-RUN-0310](requirements.md), plus any future tests introduced with
+   deferred [REQ-RUN-0206](requirements.md)) is
    among the tests obligation 3 governs; none of them executes on a
    developer's host, whichever command started the run.
 3. Run on a machine that is not marked isolated, a test of obligation 2
