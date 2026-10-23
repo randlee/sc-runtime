@@ -24,7 +24,7 @@ Expected `/tmp/plan-hardening-qa-vars.json` shape:
   "sprint_doc": "docs/plans/phase-bc/phase-bc-plan.md",
   "review_mode": "plan",
   "description": "Focused plan QA for phase-bc after consistency hardening",
-  "pr_number": "",
+  "pr_number": "<required: open PR number>",
   "branch": "plan/phase-bc",
   "worktree_path": "/absolute/path/to/worktree",
   "commit": "abc1234",
@@ -61,6 +61,11 @@ atm task assign quality-mgr --task-id "$(jq -r .task_id "$VARS")" \
 
 Never send a rendered file with `--file` or `--stdin`: it drops the template's
 workflow metadata, so the QA round cannot be found or counted afterwards.
+
+Open the plan PR before sending; plan QA requires it, so `pr_number` must
+be that open PR. Plan QA is capped at `plan_qa_cycle_limit` rounds (from
+`/tmp/plan-hardening-vars.json`, default 3); `quality-mgr` enforces the cap,
+and a non-default cap is stated in the assignment `description`.
 
 **3. Handoff**
 

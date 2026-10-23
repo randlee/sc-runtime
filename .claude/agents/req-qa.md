@@ -25,6 +25,8 @@ never a reason to skip a check. Always read them before analysis:
 - `docs/architecture.md` (overall design baseline; ADR compliance itself is
   `arch-qa` work)
 - `docs/project-plan.md` (phase and sprint sequencing baseline)
+- `.claude/project/quality-policy.md` (an entry under `Repository Exceptions`
+  that names `req-qa` governs how the rules below apply)
 
 Each requirement is a `## REQ-<DOMAIN>-nnnn: Title` or `## NFR-<DOMAIN>-nnnn: Title`
 section written to the shared SC requirement template. Every REQ and NFR whose

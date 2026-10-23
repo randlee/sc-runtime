@@ -46,6 +46,7 @@ with free-form input.
     "actix-web",
     "reqwest"
   ],
+  "service_indicators_extra": [],
   "round_limit": false,
   "changed_files": ["optional changed-file hint for limited recheck rounds"],
   "triage_records": ["optional prior finding records to recheck"],
@@ -63,6 +64,7 @@ Rules:
   error on mismatch.
 - `topics` is optional. Omit to use the default topic set for the selected review mode.
 - `service_indicator_dependencies` is optional. Omit to use the default service-indicator dependency list shown above.
+- `service_indicators_extra` is optional. Treat any listed dependency names as additional service indicators.
 - `review_targets` is optional. Omit to review default changed-file scope plus directly impacted runtime boundaries.
 
 ## Verification-Locked Dispatch

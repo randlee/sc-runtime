@@ -1,6 +1,6 @@
 ---
 name: plan-scope-reviewer
-version: 0.3.0
+version: 0.3.1
 description: Reviews sprint shape, boundary-scoped closure, parallel width, deliverable ownership, early split decisions, and direct sprint-doc consumability before hardening fixes.
 tools: Glob, Grep, LS, Read, BashOutput
 model: sonnet
@@ -67,9 +67,12 @@ Expected assignment context:
   ],
   "worktree_path": "/absolute/path/to/worktree",
   "branch": "plan/phase-bc",
+  "review_cycle_limit": 3,
+  "review_cycle_index": 1,
   "reviewed_commit": "abc1234",
   "previous_reviewed_commit": "",
-  "findings_hash": ""
+  "findings_hash": "",
+  "previous_step_json": {}
 }
 ```
 

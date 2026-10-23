@@ -1,6 +1,6 @@
 ---
 name: quality-management-gh
-version: 1.0.2
+version: 1.1.0
 description: Reusable QA orchestration skill for GitHub PRs. Use for multi-pass QA, CI monitoring, and template-driven findings and final quality reports.
 ---
 
@@ -74,10 +74,34 @@ Use fenced JSON for machine-readable status payloads:
     "minor": 0
   },
   "blocking_ids": ["QA-001"],
-  "next_action": "Fix lock acquisition rollback semantics",
-  "owner": "<assignee>",
   "merge_readiness": "not ready",
-  "merge_reason": "Blocking findings remain"
+  "merge_reason": "Blocking findings remain",
+  "next_action": "Fix lock acquisition rollback semantics",
+  "owner": "team-lead"
+}
+```
+
+A `PASS` report (`quality-report.md.j2`) emits this shape:
+
+```json
+{
+  "sprint": "M.1",
+  "task": "mailbox-locking",
+  "branch": "feature/pM-s1-mailbox-locking",
+  "commit": "abc1234",
+  "pr": 123,
+  "verdict": "PASS",
+  "findings": {
+    "blocking": 0,
+    "important": 0,
+    "minor": 0
+  },
+  "blocking_ids": [],
+  "merge_readiness": "ready",
+  "merge_reason": "All reviewers PASS",
+  "next_action": "none",
+  "owner": "none",
+  "recommendation": "Merge"
 }
 ```
 
@@ -92,7 +116,11 @@ Use fenced JSON for machine-readable status payloads:
      carry-forward findings it owns, with its output scope-locked to those ids.
    - Every prior finding remains in the merge gate until its owning reviewer
      verifies it as fixed; do not defer unresolved findings to a later phase.
+     The only exclusion is a finding the lead upholds as `rejected: ceremony`
+     under `quality-mgr.md` "Ceremony Disputes"; record it in the next report.
 3. Final pass: `PASS` with final quality report and merge recommendation.
+   A plan-review round that leaves only minor findings reports
+   `PASS — minor fixes required, no re-QA`, listing them.
 
 Do not treat QA as single-shot.
 

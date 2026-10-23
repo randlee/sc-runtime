@@ -68,6 +68,9 @@ Save the extracted fenced JSON to `/tmp/step-2.json`.
   `reviewer_findings_json` contains the Step 2 fenced JSON, then re-run Step 1
 - every Step 2 `FAIL` must be routed to Step 1; there is no accept-and-proceed
   path
+- before routing, run `ceremony-finding-screen` over the Step 2 findings and
+  remove any finding upheld as `rejected: ceremony` from
+  `reviewer_findings_json`, recording the reason in the round table Note
 - after Step 1 returns updated fenced JSON, update:
   - `previous_reviewed_commit`
   - `reviewed_commit`

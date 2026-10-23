@@ -114,6 +114,10 @@ Dedicated `rust-service-hardening-agent` assignment template:
     "actix-web",
     "reqwest"
   ],
+  "service_indicators_extra": [],
+  "round_limit": false,
+  "changed_files": ["optional changed-file hint for limited recheck rounds"],
+  "triage_records": ["optional prior finding records to recheck"],
   "carry_forward_findings": [],
   "findings_scope_locked": false,
   "notes": "optional context"
@@ -175,6 +179,10 @@ Suggested `rust-qa-agent` assignment:
   "baseline_ref": "optional git ref",
   "artifact_regeneration_required": false,
   "artifact_commands": "",
+  "round_limit": false,
+  "changed_files": ["optional changed-file hint for limited recheck rounds"],
+  "triage_records": ["optional prior finding records to recheck"],
+  "carry_forward_findings": [],
   "notes": "optional context"
 }
 ```
