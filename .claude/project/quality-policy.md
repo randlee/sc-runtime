@@ -10,6 +10,7 @@ their own prompts.
 - Default comparison branch: `develop`
 - Requirements index: `docs/requirements.md`
 - Architecture index: `docs/architecture.md`
+- Framework charter (multi-consumer posture): `docs/framework-charter.md`
 - Project plan: `docs/project-plan.md` when present (not yet created)
 - Team protocol: `docs/team-protocol.md`
 - Crate docs: `docs/<crate>/requirements.md` and
@@ -19,14 +20,14 @@ their own prompts.
 ## Reviewer Policy
 
 - Initial implementation review: `req-qa`, `arch-qa`,
-  `ruthless-boundary-qa`, `rust-qa-agent`,
+  `extensibility-qa`, `ruthless-boundary-qa`, `rust-qa-agent`,
   `rust-best-practices-agent`, and `rust-service-hardening-agent`
 - Fix verification: `req-qa`, `arch-qa`, and `rust-qa-agent`; dispatch an
   additional reviewer only when rechecking a carry-forward finding owned by
   that reviewer
-- Plan review QA-1: `req-qa`, `arch-qa`, `ruthless-boundary-qa`,
-  `rust-best-practices-agent`, `rust-service-hardening-agent`, and
-  `ceremony-qa`
+- Plan review QA-1: `req-qa`, `arch-qa`, `extensibility-qa`,
+  `ruthless-boundary-qa`, `rust-best-practices-agent`,
+  `rust-service-hardening-agent`, and `ceremony-qa`
 - Plan review QA-2 and later: `req-qa` and `arch-qa` scoped to the
   dispatched findings; dispatch another reviewer only when rechecking a
   carry-forward finding it owns. Plan QA is capped at 3 rounds

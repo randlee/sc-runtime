@@ -24,7 +24,7 @@ Does **not** modify `.claude/skills/codex-orchestration/` or
 | Orchestrator | this parent session | spawns `rust-developer`, reviewers, `cursor-quality-mgr`, `qa-triage` |
 | Developer | `rust-developer` | parent Task `subagent_type: rust-developer` |
 | Quality manager | **`cursor-quality-mgr` only** | parent Task — **spawn/evidence enforcer** (see **cursor-quality-mgr enforcer role**) |
-| Reviewers | shared `.claude` agents | **parent** Task spawns: `req-qa`, `arch-qa`, `rust-qa-agent`, `rust-best-practices-agent`, `rust-service-hardening-agent`, `flaky-test-qa` |
+| Reviewers | shared `.claude` agents | **parent** Task spawns: `req-qa`, `arch-qa`, `extensibility-qa` (QA-1 / plan only), `rust-qa-agent`, `rust-best-practices-agent`, `rust-service-hardening-agent`, `flaky-test-qa` |
 
 ### Quality-mgr binding (critical)
 
@@ -572,8 +572,9 @@ sc-compose render \
 rm -f "$_VARS"
 ```
 
-Render `arch-qa-assignment.json.j2` and `flaky-test-qa-assignment.json.j2` the
-same way (see each template's `required_variables`). Rust reviewer templates:
+Render `arch-qa-assignment.json.j2`, `extensibility-qa-assignment.json.j2`, and
+`flaky-test-qa-assignment.json.j2` the same way (see each template's
+`required_variables`). Rust reviewer templates:
 
 ```bash
 sc-compose render \

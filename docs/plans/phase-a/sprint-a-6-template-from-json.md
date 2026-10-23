@@ -84,6 +84,8 @@ owned_paths:
 Generate one minimal, editable SQLite application from a validated answers JSON
 file. The generated project proves the four libraries are useful together; it
 is not a framework whose internal organization is imposed on future projects.
+It proves the [`framework-charter`](../../framework-charter.md) consumer model:
+published crates plus an editable generated tree for many independent teams.
 
 ## Decision prerequisites
 
@@ -106,6 +108,12 @@ that runs `just setup` needs Python 3.11, which the bootstrap requires. Do
 not rewrite the a-5 source-maintainer root `justfile` into the consumer file.
 The only root `justfile` edit here is `just new` and generation-test
 discovery.
+
+Pin generated `crates/daemon` to the `sc-observability` version a-1 recorded
+(the latest release at spike time; 1.5.0 as of this plan). `main` loads
+config, initialises `sc-observability` with plain values from that config,
+then calls `Daemon::builder`. Leave `sc-observability-otlp` out of the
+template. OpenTelemetry export stays optional for a later project change.
 
 ## Dependencies and parallel safety
 
@@ -132,9 +140,10 @@ its only meaningful proof.
 3. **REQ-RUN-0301 / REQ-RUN-0302** — An editable five-crate example with one
    create/get operation and thin REST, optional MCP, and CLI transport adapters.
 4. **REQ-RUN-0303 through REQ-RUN-0310** — Minimal conditional generation,
-   SQLite store/config/observability wiring, agent-document rendering, and
-   standard generated recipes needed for the example to compile and run.
-   Concrete example choices are documented as examples, not extension rules.
+   SQLite store and config wiring, agent-document rendering, and standard
+   generated recipes needed for the example to compile and run. Daemon
+   observability init is deliverable 9. Concrete example choices are
+   documented as examples, not extension rules.
 5. **REQ-RUN-0201 / REQ-RUN-0203** — One host-safe in-process smoke proves the
    example service through REST, optional MCP, and the CLI's transport path.
 6. **REQ-RUN-0701** — Fixture CI discovers supported answers files and verifies
@@ -151,6 +160,12 @@ its only meaningful proof.
    runs `just setup && just lint` before `just test` and build, with no edits
    between generation and those commands. Boundary manifests stay in this
    repository.
+9. **REQ-RUN-0309 / ADR-RUN-0004** — Generated `crates/daemon` depends on
+   `sc-observability` at the exact version a-1 recorded. Rendered `main`
+   loads config with `sc-config`, initialises `sc-observability`, then calls
+   `Daemon::builder`. The template does not depend on
+   `sc-observability-otlp`. The four library crates still do not depend on
+   the logging runtime.
 
 ## Acceptance criteria
 
@@ -185,10 +200,10 @@ its only meaningful proof.
    validation.
    PR-mode lockfiles resolve all four libraries to the checkout paths; release
    lockfiles resolve all four to the crates.io registry.
-10. `req:NFR-RUN-0001` — `cargo build -p cli` and its normal dependency tree
-    contain none of Axum, rmcp, sqlx, daemon, service, store, or sc-runtime;
-    the a-1 measurement decides and documents the separate workspace-wide
-    feature-unification policy.
+10. `req:NFR-RUN-0001` / `ADR-RUN-0003` — Generated `cli` crate isolation
+    matches the **Active** policy closed in a-5: either no server-enabled SC
+    deps on `cli`, or the documented exemption plus fixture CI
+    `cargo tree -p cli -e normal` (and named forbidden crates absent).
 11. `ADR-RUN-0303` — inspection confirms that reusable runtime behavior remains
    in the published crates while routes, schema, queries, and application
    composition remain editable template code.
@@ -199,6 +214,13 @@ its only meaningful proof.
     from sc-lint 0.8.0, and it contains no `boundaries/` directory, no
     clippy/rustfmt/deny config, and no `mod` or `import` in the `Justfile`.
     `minimum_version` is `0.8.0`.
+13. `req:REQ-RUN-0309` / `ADR-RUN-0004` — rendered `crates/daemon/Cargo.toml`
+    requires the a-1 `sc-observability` version and has no
+    `sc-observability-otlp` requirement. Rendered `main.rs` orders config
+    load, then `sc-observability` init, then `Daemon::builder`.
+    `cargo tree` of `sc-config`, `sc-transport`, `sc-command`, and
+    `sc-runtime` in the generated project has no `sc-observability ` or
+    `sc-observability-otlp ` line (crate name, then a space).
 
 ## This sprint does not close
 
@@ -220,5 +242,6 @@ Run root lint/test, all fixture generations, and in each generated project
 `just setup && just lint` followed by `just test` and the workspace build.
 Also run the plain cargo-generate smoke, schema/refused-input tests, and
 static checks for unrendered Jinja/Liquid. No daemon child process runs on
-the host. Record the supported variants, the sc-lint 0.8.0 pin, and results
-in `docs/validation/phase-a-generation.md`.
+the host. Record the supported variants, the sc-lint 0.8.0 pin, the
+`sc-observability` pin copied from a-1, and results in
+`docs/validation/phase-a-generation.md`.

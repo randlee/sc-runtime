@@ -343,7 +343,7 @@ cat > "$_VARS" <<'JSON'
   "worktree_path": "<resolved-worktree-path>",
   "branch": "<branch>",
   "review_targets": ["<path>"],
-  "reference_docs": ["docs/architecture.md"],
+  "reference_docs": ["docs/framework-charter.md", "docs/sc-runtime-design.md", "docs/architecture.md"],
   "commit": "<sha>",
   "phase": "1",
   "sprint": "1a",
@@ -581,15 +581,17 @@ launching you. Your job is to **audit the handoff** against this list and
 
 Implementation QA-1:
 
-- always: `req-qa`, `arch-qa`, `rust-qa-agent`, `rust-best-practices-agent`,
-  `rust-service-hardening-agent`
+- always: `req-qa`, `arch-qa`, `extensibility-qa`, `rust-qa-agent`,
+  `rust-best-practices-agent`, `rust-service-hardening-agent`
 - conditional: `flaky-test-qa` when tests changed, CI flakes, or rust-qa
   surfaces instability
 
 QA-2 and later rechecks:
 
 - always: `req-qa`, `arch-qa`, `rust-qa-agent`
-- do **not** run `rust-best-practices-agent` or `rust-service-hardening-agent`
+- do **not** run `extensibility-qa`, `rust-best-practices-agent`, or
+  `rust-service-hardening-agent` (spawn with `round_limit: true` if a stub is
+  required; `extensibility-qa` returns SKIPPED)
 - conditional: `flaky-test-qa` as above
 
 Phase-ending QA: all six reviewers (flaky always on).
@@ -600,8 +602,12 @@ Phase-ending QA: all six reviewers (flaky always on).
 
 Docs-only plan review (`review_mode: plan`):
 
-- `req-qa`, `arch-qa`, `rust-best-practices-agent`, `rust-service-hardening-agent`
+- `req-qa`, `arch-qa`, `extensibility-qa`, `rust-best-practices-agent`,
+  `rust-service-hardening-agent`
 - do **not** run `rust-qa-agent`
+- `arch-qa` / `extensibility-qa` `reference_docs` must include
+  `docs/framework-charter.md`, `docs/sc-runtime-design.md`, and
+  `docs/architecture.md`
 
 Ownership:
 

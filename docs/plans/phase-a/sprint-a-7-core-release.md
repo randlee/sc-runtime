@@ -62,6 +62,10 @@ required. Deferred requirements must be recorded as deferred rather than
 waived or falsely closed. Confirm the generated consumer pin is sc-lint
 0.8.0 in `template/sc-lint.toml` (`minimum_version = "0.8.0"`) and
 `template/.sc-lint/bootstrap.py`. Do not float that pin at tag time.
+Confirm the template daemon's `sc-observability` requirement and the
+registry-backed fixture lockfile's `sc-observability` and
+`sc-observability-types` versions match the a-1 record. Repeat the a-5 CLI
+isolation check on that fixture.
 
 ## Dependencies and parallel safety
 
@@ -88,6 +92,16 @@ waived or falsely closed. Confirm the generated consumer pin is sc-lint
    Registry-backed fixture CI runs `just setup && just lint` in the generated
    project before test and build. The source-maintainer install from a-5
    stays on the same 0.8.0 pin.
+7. **NFR-RUN-0001 / ADR-RUN-0003** — Release gate runs the CLI isolation check
+   closed in a-5 on the registry-backed generated project. When a-5 chose the
+   exemption, `cargo tree -p cli -e normal` lists none of the server-only
+   crates the ADR names. When a-5 chose a crate split, `cli` does not depend
+   on server-enabled SC crates (RBP-F004).
+8. **REQ-RUN-0309 / ADR-RUN-0004** — Release gate confirms the template daemon
+   requirement and the registry-backed fixture lockfile resolve
+   `sc-observability` and `sc-observability-types` to the exact versions a-1
+   recorded. The generated daemon manifest does not require
+   `sc-observability-otlp`.
 
 ## Acceptance criteria
 
@@ -104,6 +118,15 @@ waived or falsely closed. Confirm the generated consumer pin is sc-lint
    `0.8.0`, and `template/.sc-lint/bootstrap.py` is the matching 0.8.0
    consumer helper. The registry-backed generated fixture runs
    `just setup && just lint` and exits 0. Release notes name that pin.
+6. `req:NFR-RUN-0001` / `ADR-RUN-0003` — the registry-backed generated project
+   passes the isolation check closed in a-5. Under the exemption,
+   `cargo tree -p cli -e normal` omits every server-only crate the Active ADR
+   names, and that command is part of the release workflow. Under a crate
+   split, `cli`'s normal tree has no server-enabled SC crate (RBP-F004).
+7. `req:REQ-RUN-0309` / `ADR-RUN-0004` — `template/` daemon dependency text and
+   the registry-backed fixture lockfile match the a-1 recorded
+   `sc-observability` and `sc-observability-types` versions. The generated
+   daemon manifest does not require `sc-observability-otlp`.
 
 ## This sprint does not close
 
@@ -119,6 +142,8 @@ Run final root validation after spike removal, package and publish dry-runs,
 publication in dependency order, registry-backed fixture generation,
 `just setup && just lint` in that generated project, generated
 lockfile-source inspection, the sc-lint 0.8.0 pin check on
-`template/sc-lint.toml` and `template/.sc-lint/bootstrap.py`, and exact
-commit/tag checks. Actual publication requires separate release authorization
-at execution time.
+`template/sc-lint.toml` and `template/.sc-lint/bootstrap.py`, the a-5 CLI
+isolation check (`cargo tree -p cli -e normal` when that was the closed
+policy), the a-1 observability version check on the template and fixture
+lockfile, and exact commit/tag checks. Actual publication requires separate
+release authorization at execution time.

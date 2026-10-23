@@ -50,11 +50,15 @@ handler framework, CLI generator, or test-generation system.
 
 ## Decision prerequisites
 
-Resolve the envelope version/representation, error-kind/status mapping,
-details and suggestion forms, concrete rmcp carrier, and serialization-failure
-behavior needed for interoperability. Record those choices in the owned
-sc-command requirement/ADR sources before implementation proceeds beyond the
-facade. Leave application command shape open.
+Resolve envelope version/representation, error-kind/status mapping, and
+serialization-failure behavior. **Close REQ-CMD-0002:** `OpError` stores
+`sc_observability_types::Remediation` (wire `suggested_action` derived at
+serialize time; no bare `Option<String>` as the authoritative type). Publish
+an **operation error inventory** before the facade freezes (RBP-F001). **Seal
+`IntoMcp`** with a private supertrait; only `Result<T, OpError>` implements
+it (RBP-F006). Record in the ADR that **`IntoMcp` is static dispatch only**
+(`self` by value; no `dyn IntoMcp`) (RBP-F008). Leave application command
+shape open.
 
 ## Public contract produced
 
@@ -74,10 +78,21 @@ decision record; application command shape remains outside this boundary.
 1. **REQ-CMD-0001 / REQ-CMD-0003 / REQ-CMD-0006** — A generic, lossless
    envelope that converts results without discarding received versions or
    unknown JSON payload content.
-2. **REQ-CMD-0002** — Typed operation errors reuse published observability
-   error-code/remediation types rather than duplicating them.
+2. **REQ-CMD-0002 / ADR-CMD-0001** — `OpError` stores
+   `sc_observability_types::ErrorCode` and
+   `sc_observability_types::Remediation`. Wire `suggested_action` is derived
+   from `Remediation` at serialization time. The crate depends on the
+   `sc-observability-types` version a-1 recorded and does not depend on
+   `sc-observability` or `sc-observability-otlp`. Before the facade freezes,
+   ADR-CMD-0001 holds an operation error inventory: one row per Phase A
+   envelope operation, with stable code, cause, recovery steps, and a docs
+   link where one exists (RBP-F001).
 3. **REQ-CMD-0004 / REQ-CMD-0005** — Server-feature conversions use ordinary
-   Axum and rmcp response types and do not panic on serialization failure.
+   Axum and rmcp types. `IntoMcp` is sealed with a private supertrait and
+   implemented only for `Result<T, OpError>`; downstream callers can still
+   call the method (RBP-F006). `into_mcp` takes `self` by value. ADR-CMD-0001
+   records that dispatch is static and that `dyn IntoMcp` is not a supported
+   API (RBP-F008). Serialization failure returns an error and does not panic.
 4. **NFR-CMD-0001 / NFR-CMD-0002** — Minimal default/server feature graphs,
    focused tests, and a compiling standalone README example.
 5. **REQ-RUN-0005** — Boundary manifest at `boundaries/sc-command/*.toml` for
@@ -93,6 +108,18 @@ decision record; application command shape remains outside this boundary.
    carriers with the same envelope semantics.
 3. `ADR-CMD-0003` — inspection finds no registry, handler macro, attribute
    macro, transport client, runtime dependency, or generated-test framework.
+4. `ADR-CMD-0001` — `IntoMcp` is sealed by a private supertrait; the only
+   implementation is `Result<T, OpError>`; a downstream crate can call
+   `into_mcp` and cannot implement the trait; `into_mcp` takes `self` by
+   value; the ADR states that dispatch is static and that `dyn IntoMcp` is
+   not a supported API (RBP-F006, RBP-F008).
+5. `ADR-CMD-0001` — the operation error inventory lists every Phase A
+   envelope operation with a stable code, cause, recovery steps, and a docs
+   link where one exists. `OpError.remediation` is
+   `sc_observability_types::Remediation`. `cargo tree -p sc-command -e normal --prefix none`
+   has a `sc-observability-types ` line at the a-1 recorded version and has no
+   `sc-observability ` or `sc-observability-otlp ` line (crate name, then a
+   space) (RBP-F001).
 
 ## This sprint does not close
 
@@ -107,6 +134,8 @@ None.
 ## Required validation
 
 Run default/server tests and doctests, dependency-tree checks, and workspace
-build once registered. Review the manifest against REQ-RUN-0005.
+build once registered. Review the manifest against REQ-RUN-0005. Confirm
+the ADR-CMD-0001 error inventory, the `Remediation` field, the sealed
+`IntoMcp` impl, and the absence of `sc-observability` from the normal tree.
 `sc-lint-boundary analyze` is the a-5 root-lint gate, not a command this
 sprint adds.

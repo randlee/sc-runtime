@@ -1,10 +1,15 @@
 # Phase A — core runtime and minimal generator
 
-Status: review iteration 2 fix applied; the external-Dolt development graph
-and sprint declarations are recorded. sc-lint 0.8.0 is in scope and folded
-into a-5 (source-maintainer install) and a-6 (generated consumer install).
-Compatibility evidence and crate-local implementation decisions remain before
-their dependent implementation work.
+Status: review iteration 2 fix applied. RBP sprint-doc pass on this branch
+assigns findings RBP-F001–F008 (plan review on develop `5240774`) to sprint
+deliverables and acceptance criteria; formal QA-1 has not run. The
+external-Dolt development graph and sprint declarations are recorded.
+sc-lint 0.8.0 is in scope (a-5 maintainer, a-6 consumer). Observability
+pins follow the latest released `sc-observability` and
+`sc-observability-types` versions that a-1 records (1.5.0 on crates.io as
+of this plan; the 1.2.x wording in source requirements is stale and is not
+the Phase A pin). Compatibility evidence and crate-local implementation
+decisions remain before dependent implementation work.
 
 Phase id: `a`. Plan branch: `plan/phase-a`. Phase branch:
 `integrate/phase-a`. Beads epic: `run-phase-a`.
@@ -15,6 +20,15 @@ rule; all new plan files, ids, branches, and worktrees consistently use lower
 case `a`.
 
 ## Intent
+
+**Framework posture:** Phase A ships reusable **published crates** and a
+**cargo-generate template** consumed by many unrelated projects—not a single
+product application. Normative framing is in
+[`docs/framework-charter.md`](../../framework-charter.md): agent-first JSON
+CLI, **mandatory actionable errors** (stable codes plus remediation on every
+cross-boundary failure), MCP on the shared daemon router, SQLite in the example
+store with Postgres as an add-on store crate, and **minimal scaffolding**
+without registries or application-framework opinions inside the libraries.
 
 Phase A follows the five milestones in `docs/sc-runtime-design.md`:
 
@@ -105,20 +119,29 @@ application structure.
 
 The sprint cut intentionally avoids a separate shape-only contract sprint.
 Instead, each leaf sprint commits its facade and behavior together; a-5 is not
-dispatched until those three facade commits are merged. The following minimal
-surface is normative for planning. Error variant details and third-party type
-paths are finalized by the owning leaf sprint in its crate-local source ADR,
-using a-1's recorded evidence, before implementation proceeds beyond the
-facade.
+dispatched until those three facade commits are merged. The following minimal surface is normative for planning. Each leaf sprint
+publishes an **error inventory** (failure mode, stable code, cause payload,
+recovery steps) in its crate-local ADR **before** the public facade is frozen
+(RBP-F002). Third-party type paths are finalized from a-1 evidence. `AppName`
+is a validated newtype at every public API that accepts an application name.
+Construction is the only validation site. Display uses `as_str` or
+`AsRef<str>`. The type does not implement `Deref` (RBP-F005).
 
 ```rust
+// Shared (sc-config, sc-transport, sc-runtime public APIs)
+pub struct AppName(/* validated; TryFrom<&str> or constructor returns the crate error */);
+impl AppName {
+    pub fn as_str(&self) -> &str;
+}
+// AsRef<str> for display. Deref is not implemented.
+
 // sc-config (default features)
-pub fn load<T: serde::de::DeserializeOwned>(app: &str)
+pub fn load<T: serde::de::DeserializeOwned>(app: AppName)
     -> Result<T, ConfigError>;
 
 impl Loader {
     pub fn new(
-        app: &str,
+        app: AppName,
         config_dir: std::path::PathBuf,
         environment: Vec<(std::ffi::OsString, std::ffi::OsString)>,
     ) -> Self;
@@ -128,27 +151,21 @@ impl Loader {
 
 // sc-transport (default features unless marked server)
 pub enum Endpoint { Uds(std::path::PathBuf), Tcp(std::net::SocketAddr) }
-pub struct TransportConfig {
-    pub endpoint: Option<String>,
-    pub instance_root: Option<std::path::PathBuf>,
-    pub port: Option<u16>,
-}
+pub struct TransportConfig { /* unchanged fields */ }
 pub fn resolve_endpoint(
-    app: &str,
+    app: AppName,
     flag: Option<&std::ffi::OsStr>,
     environment: Option<&std::ffi::OsStr>,
     config: &TransportConfig,
 ) -> Result<Endpoint, TransportError>;
 impl Client {
-    pub fn new(app: &str, endpoint: Endpoint) -> Result<Self, TransportError>;
-    pub async fn get<T: serde::de::DeserializeOwned>(&self, path: &str)
-        -> Result<T, TransportError>;
-    pub async fn post<B: serde::Serialize, T: serde::de::DeserializeOwned>(
-        &self, path: &str, body: &B,
-    ) -> Result<T, TransportError>;
+    pub fn new(app: AppName, endpoint: Endpoint) -> Result<Self, TransportError>;
+    /* get/post unchanged */
 }
 // #[cfg(feature = "server")]
 pub async fn bind(endpoint: &Endpoint) -> Result<Listener, TransportError>;
+// TransportError::DaemonNotRunning carries sc_observability_types::ErrorCode
+// (types-only dependency; no edge to sc-command or sc-observability)
 
 // sc-command (default features)
 pub enum Envelope<T> { Success { version: String, data: T }, Failure { version: String, error: OpError } }
@@ -157,12 +174,19 @@ pub struct OpError {
     pub code: sc_observability_types::ErrorCode,
     pub message: String,
     pub details: Option<serde_json::Value>,
-    pub suggested_action: Option<String>,
+    pub remediation: sc_observability_types::Remediation,
 }
 pub enum ErrorKind { InvalidInput, NotFound, Conflict, Unavailable, Internal }
 impl<T> From<Result<T, OpError>> for Envelope<T>;
-// server: IntoResponse for Envelope<T> and IntoMcp for Result<T, OpError>
+// server: IntoResponse for Envelope<T>; sealed IntoMcp for Result<T, OpError> only (static dispatch)
 ```
+
+`OpError` closes REQ-CMD-0002: the field type is
+`sc_observability_types::Remediation`, and wire `suggested_action` is derived
+from that value at serialization time (RBP-F001). The a-4 crate ADR holds
+the operation error inventory before the facade freezes: one row per Phase A
+operation that crosses the envelope, with stable code, cause, recovery
+steps, and a docs link where one exists.
 
 `Envelope<T>` uses a custom serde representation with exactly the four wire
 keys `version`, `ok`, `data`, and `error`; contradictory/missing discriminant
@@ -171,12 +195,15 @@ or suggestion serialize as JSON `null`. HTTP mapping is InvalidInput→400,
 NotFound→404, Conflict→409, Unavailable→503, Internal→500. a-1 records the
 exact rmcp/Axum type paths before a-4 implements the server conversions.
 
-The runtime contract is the five-step builder table and code sample in
-`docs/sc-runtime/requirements.md` REQ-RT-0001: configuration is loaded by the
-application; runtime acquires the lock before invoking the async stores
-closure; it then builds ordinary routes/MCP and binds last. a-5 pins only the
-generic bounds and concrete proved rmcp service type needed to compile that
-existing shape. It may not add hooks, wrapper traits, or reorder the steps.
+The runtime contract is the builder sequence in REQ-RT-0001. a-5 chooses
+**consuming typestate** (`stores` → `routes` → optional `mcp` → `run`) so
+omitting a required step is unrepresentable; if typestate is rejected in the
+ADR, a-5 adds an explicit `RuntimeError` for a missing required closure
+(RBP-F007). `StoresFailed` carries a concrete, matchable source type;
+`Box<dyn Error>` and generic `RuntimeError<E>` are rejected (RBP-F003).
+Configuration is loaded by the application; runtime acquires the lock before
+stores, then routes/MCP, then bind. a-5 may not add wrapper traits or reorder
+steps inside `run`.
 
 These signatures constrain reusable crate interoperability, not generated
 application organization. If a-1 disproves a referenced third-party type,
@@ -261,6 +288,58 @@ lint install. The root `justfile` already has one sequential owner. Putting
 the maintainer install in a-5 and the consumer install in a-6 keeps the
 critical path at five sprints and the sprint count at eight.
 
+## CLI/server feature enforcement
+
+`sc-lint-boundary` enforces inter-crate edges and facade lists only; it has
+no cargo-feature key (ADR-RUN-0003). Server-only items (`bind`, `Listener`,
+sealed `IntoMcp`, Axum/rmcp conversions) stay behind the `server` feature and
+**off the default facade** checked by boundary lint.
+
+| Sprint | Responsibility |
+|---|---|
+| a-1 | Measure default vs `server` graphs for the spike workspace; record facts and **policy options** in `docs/architecture.md` without choosing the product policy alone. |
+| a-5 | **Close the workspace-unification OPEN in ADR-RUN-0003** before a-7, leaving the ADR Active: either (A) crate split so the generated `cli` crate never depends on server-enabled SC crates, or (B) documented workspace exemption plus mandatory CI `cargo tree -p cli -e normal`. |
+| a-6 | Generated fixture CI runs the same CLI isolation check a-5 closed. |
+| a-7 | Release gate repeats that check on the registry-backed fixture, including `cargo tree -p cli -e normal` when a-5 chose the exemption. |
+
+a-6 waits until a-5 records the closed workspace-unification choice
+(RBP-F004). a-7 repeats that check on the registry-backed fixture and keeps
+the command output as release evidence.
+
+## Observability placement
+
+ADR-RUN-0004 stays the placement rule. The generated daemon initialises
+logging after configuration. The four library crates do not take the logging
+runtime.
+
+Generated `crates/daemon` `main` loads configuration with `sc-config`,
+initialises `sc-observability` with plain values from that config, then calls
+`Daemon::builder`. The template depends on the full `sc-observability` crate
+for that call. The template does not depend on `sc-observability-otlp`.
+OpenTelemetry export stays an optional project addition and is deferred.
+
+`sc-config`, `sc-transport`, `sc-command`, and `sc-runtime` do not depend on
+`sc-observability` or `sc-observability-otlp`, and they do not initialise or
+wrap logging. `sc-command` depends on `sc-observability-types` for `OpError`.
+`sc-transport` depends on `sc-observability-types` for `ErrorCode` on
+`DaemonNotRunning`. That edge is types-only: it is not an edge to
+`sc-command` and it is not a dependency on the logging runtime. `sc-config`
+stays on `serde` and `serde_json`. `sc-runtime` does not add a direct logging
+dependency; shared codes it needs come through `sc-command`.
+
+Version policy: a-1 records the exact `sc-observability` and
+`sc-observability-types` versions the spike resolves. The pin is the latest
+crates.io release at spike time (1.5.0 as of this plan). a-4, a-6, and a-7
+use that recorded pair. Source-requirement sentences that still say 1.2.x
+are stale and are not the Phase A pin.
+
+| Sprint | Responsibility |
+|---|---|
+| a-1 | Depend on both crates in the spike and record the exact resolved versions in `docs/architecture.md`. |
+| a-4 | `sc-command` depends on the recorded `sc-observability-types` version and not on `sc-observability`. |
+| a-6 | Generated daemon depends on the recorded `sc-observability` version; init order is config, then observability, then `Daemon::builder`; no OTLP crate in the template. |
+| a-7 | Release gate checks the template requirement and the registry-backed fixture lockfile against the a-1 record. |
+
 ## Wave table
 
 | Wave | Milestone | Sprint | Closure | Target boundary | Owned paths |
@@ -337,6 +416,11 @@ after this plan is approved and its predecessor evidence is satisfied.
 
 ## QA consumption
 
+Plan and sprint **QA-1** include `extensibility-qa` (adversarial multi-consumer
+review against `docs/framework-charter.md`). It does **not** rerun on QA-2+
+fix rounds. `arch-qa` must read the framework charter and
+`docs/sc-runtime-design.md` for every phase plan review.
+
 Boundary QA for a-2 through a-4 reviews one crate, its manifest, tests, README,
 and boundary manifest. Those three manifests are written to pass
 `sc-lint-boundary analyze`, which first runs in a-5 once root lint exists.
@@ -345,7 +429,9 @@ sc-lint 0.8.0 install. a-6 reviews only the minimal generated application,
 the consumer install, and the `--var-file` workflow; it must reject
 framework-like abstractions that are unnecessary for that proof, and it must
 reject copying `boundaries/` into the template. a-7 reviews packaging,
-registry evidence, and the sc-lint 0.8.0 pin in the template bootstrap.
+registry evidence, the sc-lint 0.8.0 pin in the template bootstrap, the a-5
+CLI isolation check on the registry-backed fixture, and the a-1
+observability version pins in the template and fixture lockfile.
 a-8 reviews wizard/schema equivalence without reopening core code.
 
 QA must distinguish normative interoperability contracts from illustrative

@@ -59,10 +59,18 @@ demonstrated third-party signatures.
 2. **REQ-RUN-0102** — Record the actual versions and results for the design's
    Verify items, including the concrete third-party Rust type paths and call
    signatures used by the spike and cargo-generate
-   conditional/exclude/value-file syntax. Update the corresponding Proposed
-   verification ADRs to Active, or amend them to the proved mechanism.
-3. **NFR-RUN-0001** — Measure whether the selected feature layout keeps Axum,
-   rmcp, and sqlx out of the default CLI dependency graph.
+   conditional/exclude/value-file syntax. The spike manifest depends on
+   `sc-observability` and `sc-observability-types`. Record the exact resolved
+   versions from the spike lockfile or `cargo tree` in `docs/architecture.md`.
+   The pin is the latest crates.io release at spike time (1.5.0 as of this
+   plan). Dependent sprints copy that recorded pair. Update the corresponding
+   Proposed verification ADRs to Active, or amend them to the proved mechanism.
+3. **NFR-RUN-0001 / ADR-RUN-0003** — Measure default vs `server` feature
+   graphs for the spike workspace. Record whether Axum, rmcp, and sqlx stay
+   out of the default **CLI** dependency graph, and document **policy options**
+   (crate split vs workspace build with CI `cargo tree -p cli` gate) in
+   `docs/architecture.md`. Do not alone close the product policy; a-5 owns
+   the binding ADR decision before release (RBP-F004).
 4. **REQ-RUN-0306** — Prove plain cargo-generate can consume the proposed
    template mechanics; do not build the product template here.
 
@@ -72,9 +80,13 @@ demonstrated third-party signatures.
    MCP tools call all reach the same service function in one process.
 2. `boundary:compatibility-evidence` — every recorded version and signature is
    taken from the running spike or tool output, not memory or proposed prose.
-3. `ADR-RUN-0003` — the dependency measurement records default and server
-   selections without inventing a policy that remains an owner decision.
-4. `ADR-RUN-0203` / `ADR-RUN-0402` — every evidence row is recorded with the
+3. `boundary:compatibility-evidence` — `docs/architecture.md` records the exact
+   `sc-observability` and `sc-observability-types` versions resolved by the
+   spike, and names that pair as the Phase A pin for a-4, a-6, and a-7.
+4. `ADR-RUN-0003` — the dependency measurement records default and server
+   selections and lists policy options with evidence. a-1 leaves the
+   workspace-unification OPEN for a-5 to close.
+5. `ADR-RUN-0203` / `ADR-RUN-0402` — every evidence row is recorded with the
    exact version, type path, signature or template syntax, both ADRs are made
    Active (or amended to the proved result), and no dependent sprint starts
    while either remains Proposed.
@@ -93,5 +105,6 @@ None in this sprint. a-7 deletes `examples/spike/**` before the release tag.
 Build and run each proof with the exact recorded versions on an ephemeral CI
 runner; refuse any child-process proof on an unmarked developer host. Save
 commands, platform, commit, concrete type/signature evidence, and results in
-`docs/architecture.md`. If a Verify item fails, stop dependent planning rather
-than adding an adapter automatically.
+`docs/architecture.md`, including the resolved `sc-observability` and
+`sc-observability-types` versions. If a Verify item fails, stop dependent
+planning rather than adding an adapter automatically.

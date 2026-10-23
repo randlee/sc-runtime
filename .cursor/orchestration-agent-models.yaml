@@ -36,6 +36,10 @@ agents:
     model: cursor-grok-4.6-high-fast
     notes: Precision / boundary gate; Grok (not Sonnet) per team preference
 
+  extensibility-qa:
+    model: cursor-grok-4.6-high-fast
+    notes: Adversarial multi-consumer review; QA-1 and plan review only — skip on round_limit
+
   rust-qa-agent:
     model: grok-4.5-fast-xhigh
     notes: Normal QA rounds; see phase-ending override in cursor-quality-mgr.md

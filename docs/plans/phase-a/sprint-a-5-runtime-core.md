@@ -84,12 +84,18 @@ without increasing width.
 
 ## Decision prerequisites
 
-Resolve only the runtime API choices needed for builder inputs, router/service
-types, lock behavior, health/OpenAPI mounting, shutdown, fixture cleanup, and
-typed errors. Do not resolve CLI auto-start, generated command declarations,
-or application test architecture in this sprint. Record the necessary builder,
-listener-ownership, and lifecycle choices in the owned sc-runtime requirement
-and ADR sources before implementation proceeds beyond the facade.
+Resolve builder inputs, router/service types, lock behavior, health/OpenAPI,
+shutdown, fixture cleanup, and typed errors. **Close the
+workspace-unification OPEN in ADR-RUN-0003** using a-1 evidence. The ADR
+stays Active and records either crate split or a CI `cargo tree -p cli`
+exemption (RBP-F004).
+Choose **consuming typestate** for `DaemonBuilder` or explicit
+`RuntimeError` for missing required closures (RBP-F007). Reject
+`Box<dyn Error>` and generic `RuntimeError<E>` for `StoresFailed`; use
+concrete source variants (RBP-F003). Publish runtime **error inventory**
+(RBP-F002). Do not resolve CLI auto-start or application test architecture
+here. Record builder and lifecycle choices in the owned ADR before the facade
+freezes.
 
 Install sc-lint 0.8.0 as the source-maintainer model from the sc-lint docs.
 This repository's root `justfile` stays maintained here. `sc-lint init --just`
@@ -127,19 +133,31 @@ to be unnecessary is removed rather than preserved for symmetry.
 
 ## Deliverables
 
-1. **REQ-RT-0001 / REQ-RT-0003 / REQ-RT-0008** — The application loads typed
-   configuration before calling `Daemon::builder`. The builder receives that
-   loaded `DaemonConfig`, acquires the singleton lock, and only then invokes
-   the application's async store-opening closure. It accepts ordinary
-   routers/services and serves without owning a command or store registry.
+1. **REQ-RT-0001 / REQ-RT-0003 / REQ-RT-0008 / ADR-RUN-0003** — Application
+   loads config before `Daemon::builder(AppName, &DaemonConfig)`. Builder uses
+   consuming typestate so `run` exists only after `stores` and `routes`, with
+   optional `mcp` on that ready state. The call chain remains
+   `stores` → `routes` → optional `mcp` → `run`. If ADR-RT-0001 rejects
+   typestate, a missing required closure returns an explicit `RuntimeError`
+   (RBP-F007). The in-run ordering test does not replace that caller-facing
+   check. Lock precedes stores; bind is last. Close the workspace-unification
+   OPEN in ADR-RUN-0003 before a-7, leaving the ADR Active: crate split, or a
+   documented exemption whose CI command is `cargo tree -p cli -e normal`
+   with the named server-only crates absent (RBP-F004). Ordinary
+   routers/services; no command or store registry.
 2. **REQ-RT-0002** — A retained nonblocking singleton lock protects one daemon
    instance without PID/probe machinery.
 3. **REQ-RT-0004 / REQ-RT-0005** — One router/listener composition and graceful
    shutdown use standard Axum/Tokio/rmcp facilities.
 4. **REQ-RT-0006** — An in-process `DaemonFixture` uses the production assembly
    path and a fresh temporary instance root; it never launches a daemon process.
-5. **REQ-RT-0007** — Typed runtime failures preserve their sources and never
-   call `process::exit`.
+5. **REQ-RT-0007** — Before the facade freezes, the crate ADR holds a runtime
+   error inventory: every `RuntimeError` variant has a failure mode, stable
+   code, cause payload, and recovery text (RBP-F002). `StoresFailed` carries
+   a concrete `Send + Sync` source behind `Error::source` or as a named
+   payload the caller can match. `Box<dyn Error>` and generic
+   `RuntimeError<E>` are rejected. Static, matchable errors are the dispatch
+   model (RBP-F003). `run` never calls `process::exit`.
 6. **REQ-RUN-0103 / REQ-RUN-0204 / REQ-RUN-0205** — Rewrite the spike against
    the four crates, keep its server `main.rs` small, and prove one-listener
    REST/OpenAPI/MCP composition.
@@ -179,15 +197,35 @@ to be unnecessary is removed rather than preserved for symmetry.
    failed startup cannot remove its socket.
 7. `boundary:sc-runtime` — crate tests, README example, default/server feature
    checks, workspace build, and all four boundary manifests are green.
-8. `ADR-RUN-0004` — inspection finds no application command registry, generated
-   CLI testing abstraction, service-manager launcher, SQL schema, or
-   observability wrapper in the reusable libraries.
-9. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
+8. `ADR-RUN-0003` — the workspace-unification OPEN is closed and the ADR
+   stays Active with either the crate split or the documented exemption.
+   Under the exemption, CI runs `cargo tree -p cli -e normal` and the named
+   server-only crates are absent. Under the split, the generated `cli` crate
+   does not depend on server-enabled SC crates. Server items stay off the
+   default facade (RBP-F004).
+9. `ADR-RUN-0004` — inspection finds no application command registry, generated
+   CLI testing abstraction, service-manager launcher, or SQL schema in the
+   reusable libraries. Those libraries do not depend on `sc-observability` or
+   `sc-observability-otlp` and do not wrap logging. `sc-observability-types`
+   appears only on `sc-command` and, for `ErrorCode`, on `sc-transport`.
+10. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
    shows `setup`, `lint`, `test`, and `upgrade`. `just lint` invokes
    `sc-lint-boundary analyze` and exits 0 on the four manifests. The same
    recipe runs the sc-lint line-counts check and fails, naming the file, when
    a non-test source file exceeds 1000 source lines. The root `justfile` is
    not the output of `sc-lint init --just`.
+11. `req:REQ-RT-0007` — the crate ADR error-inventory table gives every
+    `RuntimeError` variant a stable code, cause payload, and recovery text.
+    A test matches `StoresFailed` and reads the store error from `source()`
+    or the named payload without downcasting a trait object. Public
+    signatures contain no `Box<dyn Error>`, and `RuntimeError` is not generic
+    (RBP-F002, RBP-F003).
+12. `req:REQ-RT-0001` — caller-facing builder sequence is closed in
+    ADR-RT-0001: either consuming typestate makes `run` available only after
+    `stores` and `routes`, with optional `mcp` on that ready state, or the
+    ADR rejects typestate and a missing required closure returns an explicit
+    `RuntimeError`. The in-run ordering test remains, and it is not the only
+    proof of the caller-facing sequence (RBP-F007).
 
 ## This sprint does not close
 
@@ -205,6 +243,9 @@ None. a-7 removes the rewritten spike after release evidence is preserved.
 Run `just setup`, then root `just lint` and `just test`, workspace build, all
 default/server package selections, doctests, `sc-lint-boundary analyze` over
 the four manifests, the line-counts check, feature-specific dependency-tree
-checks, and the rewritten spike proofs. Host validation uses only in-process
-fixtures; signal/process proofs run only on an ephemeral CI runner with an
-explicit isolation guard. Record results in `docs/validation/phase-a-runtime.md`.
+checks, the CLI isolation command chosen for ADR-RUN-0003, the runtime
+error-inventory table, the `StoresFailed` match test, the caller-facing
+builder check, and the rewritten spike proofs. Host validation uses only
+in-process fixtures; signal/process proofs run only on an ephemeral CI runner
+with an explicit isolation guard. Record results in
+`docs/validation/phase-a-runtime.md`.
