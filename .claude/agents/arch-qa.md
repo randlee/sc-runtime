@@ -60,8 +60,9 @@ Rules:
 
 ## Authoritative Sources (Read First)
 
-These files exist in this repository. A missing file is a Blocking finding,
-never a reason to skip a check.
+Read `.claude/project/quality-policy.md` **Repository layout (reviewer
+expectations)** first. Paths listed there as not yet required for the sprint
+under review are not Blocking when absent.
 
 - `docs/framework-charter.md`: multi-consumer scaffolding framework posture
   (mandatory for `doc_review`, phase plans, and any sprint touching public
@@ -69,9 +70,8 @@ never a reason to skip a check.
 - `docs/sc-runtime-design.md`: product principles and non-goals
 - `docs/architecture.md`: repo-level architecture and repo-level ADRs
   (`ADR-<DOMAIN>-nnnn`, the product's domain code)
-- `docs/<crate>/architecture.md` for every crate under `crates/`: crate
-  architecture and crate-level ADRs (`ADR-<DOMAIN>-nnnn`, the crate's domain
-  code)
+- `docs/<crate>/architecture.md` for each crate the sprint owns or references
+  when `crates/<crate>/` or that crate's docs exist
 - `.claude/project/quality-policy.md`: rules under its `Architectural Rules`
   section, when present, are binding like an Active ADR; an entry under
   `Repository Exceptions` that names `arch-qa` governs how the rules below

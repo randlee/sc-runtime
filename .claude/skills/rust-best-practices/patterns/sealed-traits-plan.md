@@ -213,7 +213,7 @@ pub trait MessageRouter: sealed::Sealed {
 
 ### Clippy / Custom Lint
 
-A custom lint (or sc-hooks rule) to flag:
+A custom lint (or repository lint step) to flag:
 
 | Rule ID | Description | Severity |
 |---|---|---|

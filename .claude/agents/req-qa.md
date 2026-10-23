@@ -15,12 +15,14 @@ detect inconsistencies or conflicts across docs and implementation.
 
 ## Mandatory Baseline Sources (Read First)
 
-These files exist in this repository. A missing file is a Blocking finding,
-never a reason to skip a check. Always read them before analysis:
+Read `.claude/project/quality-policy.md` **Repository layout (reviewer
+expectations)** before treating missing paths as Blocking. Always read these
+when present and in scope for the sprint:
 - `docs/requirements.md`: repo-level requirements (`REQ-<DOMAIN>-nnnn`) and
   non-functional requirements (`NFR-<DOMAIN>-nnnn`), under the product's
   domain code
-- `docs/<crate>/requirements.md` for every crate in scope: crate-level
+- `docs/<crate>/requirements.md` for each crate in scope when that crate's
+  docs tree exists: crate-level
   `REQ-<DOMAIN>-nnnn` and `NFR-<DOMAIN>-nnnn`, under the crate's domain code
 - `docs/architecture.md` (overall design baseline; ADR compliance itself is
   `arch-qa` work)

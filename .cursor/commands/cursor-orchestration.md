@@ -77,15 +77,16 @@ sc-compose render \
      to completed Task subagents; `pr_comment_url` present; FAIL rounds cite
      triage `.ttl` paths; orchestration state `qa_rounds[]` updated.
    - On spawn-gate FAIL: parent re-spawns missing reviewers → re-run enforcer.
-   - On finding FAIL: `/triaging-findings` → fix **all** finding ids + `.ttl`
-     paths → push → parent re-spawns reviewers → re-run enforcer.
+   - On finding FAIL: triage per **Finding triage** in the cursor-orchestration
+     skill (parent `.ttl` or `/triaging-findings` when that skill is installed)
+     → fix **all** finding ids + `.ttl` paths → push → parent re-spawns
+     reviewers → re-run enforcer.
 8. On **PASS + green CI + evidence chain complete**: merge; start next sprint.
 
-**Phase-end release (after integrate → `main`):** hand off to sc-publish — run
-`/cursor-publish` in a **foreground** session (never a background Task). See
-`.cursor/skills/cursor-publish/SKILL.md` and
-`.claude/skills/publishing/ref/cursor-runtime.md`. Publisher runs channel steps
-inline until `install.py` vendors the sc-publish kit from `randlee/sc-publish`.
+**Phase-end release (after integrate → `main`):** when
+`.cursor/skills/cursor-publish/SKILL.md` is vendored, run `/cursor-publish` in
+a **foreground** session (never a background Task). Until then, use the release
+workflow in the phase plan and `docs/releases/`.
 
 ```bash
 gh pr checks <PR> --watch

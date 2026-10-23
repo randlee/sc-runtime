@@ -53,13 +53,20 @@ Every QA update, both ATM and PR, must include:
 - next required action plus owner
 - merge readiness (`ready | not ready`) plus reason
 
+**Cursor orchestration (optional):** when rendering via `sc-compose` for
+`cursor-quality-mgr`, also supply `reviewer_spawn_gate`,
+`reviewer_manifest_json`, `evidence_chain_json`, and on spawn failure
+`missing_reviewers_json` / `unparsed_reviewers_json`. Templates embed them in
+Machine Status JSON when `reviewer_spawn_gate` is non-empty. Codex/ATM callers
+may omit those keys.
+
 Use fenced JSON for machine-readable status payloads:
 
 ```json
 {
-  "sprint": "M.1",
-  "task": "mailbox-locking",
-  "branch": "feature/pM-s1-mailbox-locking",
+  "sprint": "a-2",
+  "task": "run-a-2",
+  "branch": "sprint/a-2-config",
   "commit": "abc1234",
   "pr": 123,
   "verdict": "FAIL",
@@ -85,9 +92,9 @@ A `PASS` report (`quality-report.md.j2`) emits this shape:
 
 ```json
 {
-  "sprint": "M.1",
-  "task": "mailbox-locking",
-  "branch": "feature/pM-s1-mailbox-locking",
+  "sprint": "a-2",
+  "task": "run-a-2",
+  "branch": "sprint/a-2-config",
   "commit": "abc1234",
   "pr": 123,
   "verdict": "PASS",

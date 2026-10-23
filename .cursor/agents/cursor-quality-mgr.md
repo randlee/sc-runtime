@@ -261,8 +261,10 @@ Every completed QA round must leave correlatable artifacts:
    `evidence_chain.pr_comment_url` (populate after successful `gh` post).
 4. **Parent proof:** final verdict to parent includes the **same** Machine Status
    JSON block as the PR post.
-5. **Triage proof (finding FAIL rounds):** parent runs `/triaging-findings`;
-   cite `.triage/.../*.ttl` paths in `evidence_chain.triage.ttl_paths`.
+5. **Triage proof (finding FAIL rounds):** parent records `.triage/.../*.ttl`
+   paths (via `/triaging-findings` when `.claude/skills/triaging-findings/`
+   exists, otherwise parent-authored minimal records); cite paths in
+   `evidence_chain.triage.ttl_paths`.
 6. **Persistence:** parent appends `qa_rounds[]` to orchestration state — you
    supply fields in the verdict for parent to persist.
 
@@ -311,7 +313,7 @@ or fill gaps yourself. On gap, FAIL with `next_action: parent_respawn_reviewers`
 _VARS=$(mktemp)
 cat > "$_VARS" <<'JSON'
 {
-  "reference_docs": ["docs/requirements.md", "docs/architecture.md", "docs/plans/project-plan.md"],
+  "reference_docs": ["docs/requirements.md", "docs/architecture.md", "docs/framework-charter.md", "docs/project-plan.md"],
   "sprint_doc": "docs/plans/<sprint>.md",
   "phase": "1",
   "sprint": "1a",

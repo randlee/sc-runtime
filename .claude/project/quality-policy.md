@@ -49,6 +49,24 @@ implementation phase must add its authoritative command here before phase-end
 QA can pass. Reviewer assignments may provide narrower commands for earlier
 rounds.
 
+## Repository layout (reviewer expectations)
+
+Reviewers must read this section before treating missing paths as defects.
+Early Phase A work may exist only as plans and bootstrap lint files.
+
+| Path | When required |
+| --- | --- |
+| `docs/requirements.md`, `docs/architecture.md` | Every review |
+| `docs/project-plan.md` | When present; not required before first phase plan lands |
+| `docs/plans/phase-<phase>/` | Plan and sprint reviews for that phase |
+| `docs/<crate>/requirements.md`, `docs/<crate>/architecture.md` | Sprint owns or references that crate |
+| `crates/<crate>/` | Sprint deliverable includes that crate |
+| `boundaries/<crate>/*.toml` | Sprint deliverable includes boundary manifests (see below) |
+| Root `Cargo.toml` workspace | Maintainer workspace sprints (Phase A a-5 onward) |
+
+Absent paths that this table marks as not yet required are **not** Blocking
+in `doc_review` or pre-implementation sprints.
+
 ## Boundary Enforcement
 
 **Product:** sc-lint **0.8.0** (`minimum_version` in root `sc-lint.toml`).

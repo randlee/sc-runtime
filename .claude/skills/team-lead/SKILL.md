@@ -128,7 +128,7 @@ the next sprints ready to run. Stay silent in ATM unless a teammate has to act.
 
 ## Documentation
 
-atm-core ships its own conceptual and command help — prefer it over
+The **atm** CLI ships its own conceptual and command help — prefer it over
 re-deriving procedural detail here:
 
 ```bash
@@ -138,9 +138,8 @@ atm help <subcommand>  # clap-generated command help, e.g. `atm help teams`
 atm <subcommand> --help
 ```
 
-Tier-1/Tier-2 topics as of 1.3.1: `config`, `errors`, `hooks`, `identity`,
-`skills`. Check `atm help --list` each session — the topic set and the
-installed-docs index it reports can change between releases.
+Check `atm help --list` each session — the topic set and installed-docs index
+change between **atm** releases (do not pin a version in this skill).
 
 ## Team-Lead Responsibilities
 
@@ -152,7 +151,7 @@ After initialization, use these repo-local skills to coordinate work:
 | `/codex-orchestration` | Run phases with roster developers and pipelined QA via quality-mgr |
 | `/plan-hardening` | Harden a phase plan and create any missing sprint docs before implementation starts or resumes |
 | `/todo-triage` | Run the repo TODO scan during sprint-end or integration review and route TODOs into QA findings/Turtle triage instead of silent deferral |
-| `/triaging-findings` | Correlate QA findings across branches before dispatching fixes |
+| `/triaging-findings` | Correlate QA findings when `.claude/skills/triaging-findings/` is installed; otherwise parent writes `.triage/` records |
 | `/quality-management-gh` | Multi-pass QA on GitHub PRs; CI monitoring; findings/final quality reports |
 
 Additional orchestration guides live in `.claude/skills/*/SKILL.md`.
@@ -206,9 +205,9 @@ work and nudges the agent. A plain send opens no task, so the agent cannot
 - No task start row means the work is not being done.
 - Codex agents only see new ATM messages when they check
   mail after their current task completes.
-- On atm 1.5.16, the assignee's `atm task close <task-id> completed` report
-  closes the assigner's mirror task too. Team-lead reads that report and does
-  not separately close the mirror with `--task-complete`.
+- When the installed **atm** version mirrors assigner tasks on assignee close,
+  read the assignee's close report and do not separately close the mirror with
+  `--task-complete`. Run `atm version` when behavior differs from expectation.
 - Use native `atm send` / `atm read` / `atm ack` for all teammate messaging.
   See `atm help identity` for how caller identity resolves for these
   commands.

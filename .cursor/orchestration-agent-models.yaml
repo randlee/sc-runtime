@@ -24,10 +24,6 @@ agents:
     model: composer-2.5-fast
     notes: QA enforcer only — verify spawn proof, aggregate fenced JSON, publish PR report; no Task spawns
 
-  publisher:
-    model: composer-2.5-fast
-    notes: sc-publish profile — inline channel steps only; never Task subagents (see .cursor/agents/publisher.md, cursor-runtime.md)
-
   req-qa:
     model: composer-2.5-fast
     notes: Structured deliverable checklist
@@ -56,6 +52,3 @@ agents:
     model: composer-2.5-fast
     notes: Narrow flaky-test contract
 
-  qa-triage:
-    model: inherit
-    notes: Use agent frontmatter default (haiku)

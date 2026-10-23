@@ -13,13 +13,6 @@ from typing import Iterable
 _ALLOWED_SUFFIXES = {
     ".rs",
 }
-_INCLUDED_TOP_LEVEL_DIRS = {
-    ".just",
-    "boundaries",
-    "crates",
-    "docs",
-    "scripts",
-}
 _IGNORED_DIRS = {
     ".git",
     ".jj",
@@ -66,10 +59,6 @@ def iter_candidate_files(root: Path) -> Iterable[Path]:
         if not path.is_file():
             continue
         if any(part in _IGNORED_DIRS for part in path.parts):
-            continue
-        rel_path = path.relative_to(root)
-        top_level = rel_path.parts[0] if rel_path.parts else ""
-        if len(rel_path.parts) > 1 and top_level not in _INCLUDED_TOP_LEVEL_DIRS:
             continue
         if path.suffix not in _ALLOWED_SUFFIXES:
             continue

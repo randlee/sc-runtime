@@ -18,8 +18,10 @@ This skill defines how the team-lead orchestrates a development phase consisting
 ## Prerequisites
 
 Before starting a phase:
-1. Phase plan document exists (e.g., `docs/phase-{N}-*.md`) with sprint specs
-2. Integration branch `integrate/phase-{N}` exists and is up to date with `develop`
+1. Phase plan exists under `docs/plans/phase-<phase>/` (see
+   `.claude/project/quality-policy.md` **Plan Naming**) with sprint specs
+2. Integration branch `integrate/phase-<phase>` exists and is up to date with
+   `develop`
 3. The team named by `$ATM_TEAM` exists — do NOT recreate between phases
 4. The persistent Codex reviewer is running and reachable via ATM CLI. Below it is called `<codex-reviewer>`; the repo's `docs/team-protocol.md` and developer roster name it.
 
@@ -63,14 +65,14 @@ Each sprint gets a **fresh** scrum-master — do NOT reuse scrum-masters across 
 ```
 You are the scrum-master for Phase {P}, Sprint {P}.{S}: {Title}.
 
-PHASE PLAN: Read docs/{plan-file} for full context.
-SPRINT SECTION: "Sprint {P}.{S}: {Title}" in the plan document.
-REQUIREMENTS: Read docs/{requirements-file} for FRs and acceptance criteria.
+PHASE PLAN: Read docs/plans/phase-{P}/phase-{P}-plan.md for full context.
+SPRINT DOC: docs/plans/phase-{P}/sprint-{P}-{n}-{slug}.md (authoritative).
+REQUIREMENTS: Read docs/requirements.md and crate docs as listed in the sprint.
 
 WORKTREE:
 - Create worktree via sc-git-worktree skill from integrate/phase-{P}
-- Work in: ../<repo>-worktrees/feature/{P}-{S}-{slug}
-- Branch: git checkout -b feature/{P}-{S}-{slug}
+- Work in: ../<repo>-worktrees/sprint/{P}-{n}-{slug}
+- Branch: sprint/{P}-{n}-{slug} (see quality-policy; do not use feature/)
 
 PR targets: integrate/phase-{P}
 
@@ -108,7 +110,7 @@ After each scrum-master reports completion:
 3. Run `<codex-reviewer>` review in parallel (use delay agent, nudge via tmux if no reply in 2 min)
 4. Track `<codex-reviewer>` findings:
    - **No issues**: Continue to next sprint
-   - **Issues found**: Create/update a **parallel `<codex-reviewer>` fix track** in a separate worktree (`feature/{P}-fixes-arch-review`) to address findings while later sprint waves continue
+   - **Issues found**: Create/update a **parallel `<codex-reviewer>` fix track** in a separate worktree (`fix/{P}-arch-review`) to address findings while later sprint waves continue
 5. `<codex-reviewer>` is authorized to implement fixes directly in the fix worktree for review findings
 6. Every `<codex-reviewer>` fix PR MUST be validated by QA agents (`rust-qa-agent` and `req-qa`) before merge
 7. Do NOT block ongoing sprint execution unless `<codex-reviewer>` marks findings as critical/blocking
