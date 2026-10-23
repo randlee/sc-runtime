@@ -83,10 +83,9 @@ sc-compose render \
      reviewers → re-run enforcer.
 8. On **PASS + green CI + evidence chain complete**: merge; start next sprint.
 
-**Phase-end release (after integrate → `main`):** when
-`.cursor/skills/cursor-publish/SKILL.md` is vendored, run `/cursor-publish` in
-a **foreground** session (never a background Task). Until then, use the release
-workflow in the phase plan and `docs/releases/`.
+**Phase-end release (after integrate → `main`):** run **`/cursor-publish`**
+(sc-publish) in a **foreground** session after kit install (a-7). See
+`docs/development/sc-publish.md`.
 
 ```bash
 gh pr checks <PR> --watch

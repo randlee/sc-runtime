@@ -395,10 +395,9 @@ Silent skips invalidate the evidence chain.
 ### Phase-end release handoff
 
 After the last sprint in a phase merges through `integrate/phase-N` → `develop`
-→ `main`, release publishing is **optional** until vendored: when
-`.cursor/skills/cursor-publish/SKILL.md` exists, run `/cursor-publish` in a
-foreground parent session (never a background Task). Until then, follow
-`docs/releases/` and `gh` release workflow in the phase plan.
+→ `main`, run **`/cursor-publish`** (sc-publish kit) in a foreground parent
+session after a-7 has run `install.py` (see `docs/development/sc-publish.md`).
+Never spawn publisher as a background Task.
 
 ## Parity with codex-orchestration
 

@@ -1,0 +1,9 @@
+# Pin for the org-qualified sc-publish kit revision. Install from a clone at
+# this SHA into .sc-publish-kit/ (gitignored), then run:
+#   python .sc-publish-kit/plugins/sc-publish/install.py \
+#     --input release/sc-publish-consumer-input.json .
+# See docs/development/sc-publish.md and README.sc-publish.md after install.
+
+[sc-publish]
+repository = "https://github.com/randlee/sc-publish"
+revision = "d96b4674b29660a661b2c8200b62d632ae91bc94"

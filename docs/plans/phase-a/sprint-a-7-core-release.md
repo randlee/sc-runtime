@@ -42,8 +42,11 @@ owned_paths:
   - "justfile"
   - "README.md"
   - "LICENSE"
-  - ".github/workflows/release.yml"
+  - "release/**"
+  - ".github/workflows/release*.yml"
+  - ".github/workflows/crates-publish.yml"
   - "docs/releases/v0.1.0.md"
+  - "docs/development/sc-publish.md"
 ---
 
 # Sprint a-7 — core release
@@ -65,7 +68,10 @@ waived or falsely closed. Confirm the generated consumer pin is sc-lint
 Confirm the template daemon's `sc-observability` requirement and the
 registry-backed fixture lockfile's `sc-observability` and
 `sc-observability-types` versions match the a-1 record. Repeat the a-5 CLI
-isolation check on that fixture.
+isolation check on that fixture. Vend **sc-publish** from
+`release/sc-publish-pin.toml` via `install.py` and
+`release/sc-publish-consumer-input.json` (GitHub Release + crates.io); see
+`docs/development/sc-publish.md`.
 
 ## Dependencies and parallel safety
 

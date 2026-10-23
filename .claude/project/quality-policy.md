@@ -42,6 +42,18 @@ their own prompts.
 - Every QA round, plan or sprint, requires an open PR; the rendered report
   is posted to it every round
 
+## Release and publishing
+
+- **Kit:** [sc-publish](https://github.com/randlee/sc-publish), vendored per
+  `release/sc-publish-pin.toml` and `docs/development/sc-publish.md`.
+- **Channels (Phase A):** GitHub Releases + **crates.io** for the four library
+  crates; no optional package-manager channels until declared in
+  `release/sc-publish-consumer-input.json`.
+- **Do not** maintain a hand-written root `release.yml` that diverges from the
+  kit; sync via `install.py` after input or pin changes.
+- **Cursor phase-end:** `/cursor-publish` after the last sprint merges to
+  `main` (see `.cursor/skills/cursor-orchestration/SKILL.md`).
+
 ## Validation Policy
 
 No repository-wide phase-end artifact command is configured yet. An
