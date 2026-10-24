@@ -29,7 +29,13 @@ async fn main() -> Result<(), sc_runtime::RuntimeError> {
 }
 ```
 
-`GET /health` returns status 200 and an `sc_command::Envelope` success body.
+`GET /health` is a liveness probe. It returns status 200 and an
+`sc_command::Envelope` success body (`{ "status": "ok" }`) while the process
+is serving HTTP. It does not check stores or other dependencies. A project
+that needs dependency-aware readiness registers its own route, such as
+`GET /ready`, on the project router. `sc-runtime` does not reserve that path
+and does not treat `/health` as readiness.
+
 `GET /openapi.json` returns the OpenAPI document from the project's router.
 An rmcp service passed to `mcp` is mounted at `/mcp`.
 
