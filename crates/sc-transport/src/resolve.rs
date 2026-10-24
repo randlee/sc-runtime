@@ -9,6 +9,7 @@ use crate::config::TransportConfig;
 use crate::endpoint::Endpoint;
 use crate::error::TransportError;
 
+#[cfg(unix)]
 const DAEMON_SOCKET_FILE: &str = "daemon.sock";
 
 /// Returns the default instance root for `app` and the current user.

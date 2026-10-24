@@ -347,7 +347,7 @@ impl TransportError {
         }
     }
 
-    #[cfg(feature = "server")]
+    #[cfg(all(feature = "server", unix))]
     pub(crate) fn endpoint_busy(endpoint: Endpoint, cause: impl Into<String>) -> Self {
         Self::EndpointBusy {
             code: CODE_ENDPOINT_BUSY,
@@ -356,7 +356,7 @@ impl TransportError {
         }
     }
 
-    #[cfg(feature = "server")]
+    #[cfg(all(feature = "server", unix))]
     pub(crate) fn not_a_socket(endpoint: Endpoint, cause: impl Into<String>) -> Self {
         Self::NotASocket {
             code: CODE_NOT_A_SOCKET,

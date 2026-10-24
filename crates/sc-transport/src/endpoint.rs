@@ -141,7 +141,7 @@ mod tests {
         use std::ffi::OsStr;
         use std::os::unix::ffi::OsStrExt;
 
-        let mut bytes = b"uds:/tmp/".to_vec();
+        let mut bytes = b"uds:/nonexistent/".to_vec();
         bytes.push(0xff);
         let text = OsStr::from_bytes(&bytes);
         let endpoint = Endpoint::parse_os(text).expect("unix path bytes are an endpoint");

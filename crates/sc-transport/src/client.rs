@@ -137,17 +137,20 @@ fn build(
     unix: Option<std::path::PathBuf>,
     base: String,
 ) -> Result<Client, TransportError> {
-    let mut builder = reqwest::Client::builder()
+    let builder = reqwest::Client::builder()
         .connect_timeout(CONNECT_TIMEOUT)
         .timeout(REQUEST_TIMEOUT);
     #[cfg(unix)]
-    if let Some(path) = unix {
-        builder = builder.unix_socket(path);
-    }
+    let builder = if let Some(path) = unix {
+        builder.unix_socket(path)
+    } else {
+        builder
+    };
     #[cfg(not(unix))]
-    {
+    let builder = {
         let _ = unix;
-    }
+        builder
+    };
     let http = builder
         .build()
         .map_err(|err| TransportError::request(endpoint.clone(), err.to_string()))?;
