@@ -9,17 +9,19 @@ Interactive and `--prefill` modes call `scripts/run_wizard.py`. That runner
 is the only place that looks for Wyvern. The layout paths for this milestone
 are `wizard/wizard.json`, `wizard/pages/`, and `scripts/run_wizard.py`.
 
-Stderr is exactly one line:
+`--var-file` stderr is one line:
 
 ```text
 <code> <cause> — <recovery>
 ```
 
-The dash in that line is U+2014. An agent selects the row by `code`.
-`GEN.STEP_FAILED` puts the failed pipeline step in the cause. Later steps do
-not run. Child output from a failed step is copied to stdout so the agent can
-read the compiler or lint diagnostic. Stderr stays the one inventory line.
-The recovery tells the agent to fix the step or remove the partial destination.
+The dash in that line is U+2014. An agent selects the row by `code`. Wizard
+modes may print `[run-wizard]` diagnostics first. The last line is still
+that inventory row. There is no uncoded `ERROR:` line. `GEN.STEP_FAILED`
+puts the failed pipeline step in the cause. Later steps do not run. Child
+output from a failed step is copied to stdout so the agent can read the
+compiler or lint diagnostic. The recovery tells the agent to fix the step
+or remove the partial destination.
 
 | Failure | Code | Cause | Recovery |
 |---|---|---|---|
@@ -27,6 +29,8 @@ The recovery tells the agent to fix the step or remove the partial destination.
 | reserved database | `GEN.DB_RESERVED` | db is postgres or both | set db to sqlite; the destination is not created |
 | invalid project name | `APP.INVALID_NAME` | name fails the project-name pattern in wizard/answers.schema.json | fix the name to that pattern; the destination is not created |
 | missing sc-compose | `GEN.TOOL_MISSING` | SC_COMPOSE unset and sc-compose not on PATH | set SC_COMPOSE or install sc-compose on PATH; cargo generate does not run |
+| missing wyvern | `GEN.TOOL_MISSING` | WYVERN_BIN unset and wyvern not on PATH | set WYVERN_BIN or install wyvern on PATH; cargo generate does not run |
+| wizard cancel or dismiss | `GEN.WIZARD_CANCELLED` | wizard cancelled or dismissed | finish the wizard; the destination is not created |
 | destination conflict | `GEN.DEST_CONFLICT` | the destination path exists | choose an absent path |
 | pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | fix it or remove the partial destination; later steps do not run |
 
@@ -59,12 +63,13 @@ prefill file.
 Wyvern is resolved from `WYVERN_BIN` when that variable is set, otherwise as
 `wyvern` on `PATH`. An override that does not resolve does not fall through
 to `PATH`. Neither script contains an install path. When the binary is
-missing, the runner exits non-zero, stderr names `wyvern`, `WYVERN_BIN`, and
-`PATH`, `cargo generate` is not called, and the destination is not created.
+missing, the runner exits non-zero. The last stderr line is
+`GEN.TOOL_MISSING` and names `wyvern`, `WYVERN_BIN`, and `PATH`. `cargo
+generate` is not called, and the destination is not created.
 
 Cancel and dismissed both mean the person did not finish. The runner writes
-no answers file and exits non-zero. The driver does not call `cargo generate`
-and does not create the destination.
+no answers file. The last stderr line is `GEN.WIZARD_CANCELLED`. The driver
+does not call `cargo generate` and does not create the destination.
 
 The pages collect each current schema property and no others. Defaults are
 the schema defaults; `wizard/pages/wizard-answers.js` mirrors only those.
@@ -76,15 +81,25 @@ does not create the destination.
 
 A finished wizard that makes the same choices as a file in `wizard/fixtures/`
 produces an equal JSON value. Key order and whitespace do not matter. Equal
-values call the same `generate()` path, so the project files match. The
-driver writes no timestamps. The checkout patch records this checkout's
-absolute crate paths and is the same on both runs. Ignore `target/` if you
-`diff -r` two generated trees; that directory is build output.
+values call the same `generate()` path, so the project files match. An
+automated test stubs Wyvern, runs that path once from the stub and once from
+`--var-file`, and compares the trees. The driver writes no timestamps into
+project source. Ignore these when you `diff -r` two generated trees:
+
+- `target/` is build output.
+- The `[patch.crates-io]` checkout patch records this checkout's absolute
+  crate paths.
+- `.sc-lint/venv/` is the local sc-lint install from `just setup`. Its files
+  embed the destination path.
+- `.sc-compose/logs/` is the generator log and contains timestamps.
 
 `--var-file` failures stay one inventory line on stderr. A wizard that
-cancels or cannot find Wyvern prints the runner's `ERROR:` line and does not
-add an inventory line. A schema-valid finish that the driver then rejects
-prints the runner log and then the one inventory line.
+cancels ends with `GEN.WIZARD_CANCELLED`. A missing Wyvern binary ends with
+`GEN.TOOL_MISSING`, and that line names `wyvern`, `WYVERN_BIN`, and `PATH`.
+A runner schema or project-name reject ends with `GEN.SCHEMA_INVALID` or
+`APP.INVALID_NAME`. `[run-wizard]` diagnostics may precede the inventory
+line. A schema-valid finish that the driver then rejects keeps those
+diagnostics and then the driver's one inventory line.
 
 ## Development and release
 

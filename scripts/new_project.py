@@ -434,6 +434,8 @@ def entry_answers(prefill: Path | None) -> Path:
     """Run the wizard runner and return the answers file it wrote.
 
     A non-zero status means the runner stopped. The destination is not created.
+    The runner's last stderr line is an inventory row. This function forwards
+    that stderr. An uncoded final line is replaced by ``GEN.SCHEMA_INVALID``.
     """
     handle = tempfile.NamedTemporaryFile(
         mode="w",
@@ -452,11 +454,39 @@ def entry_answers(prefill: Path | None) -> Path:
     ]
     if prefill is not None:
         command.extend(["--prefill", str(prefill.resolve())])
-    completed = subprocess.run(command, cwd=repo_root(), check=False)
-    if completed.returncode != 0:
-        path.unlink(missing_ok=True)
-        raise SystemExit(completed.returncode)
-    return path
+    completed = subprocess.run(
+        command,
+        cwd=repo_root(),
+        check=False,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    text = completed.stderr or ""
+    if completed.returncode == 0:
+        if text:
+            sys.stderr.write(text)
+        return path
+    path.unlink(missing_ok=True)
+    lines = [line for line in text.splitlines() if line.strip()]
+    code = lines[-1].split(" ", 1)[0] if lines else ""
+    known = {
+        "GEN.SCHEMA_INVALID",
+        "GEN.DB_RESERVED",
+        "APP.INVALID_NAME",
+        "GEN.TOOL_MISSING",
+        "GEN.DEST_CONFLICT",
+        "GEN.WIZARD_CANCELLED",
+        "GEN.STEP_FAILED",
+    }
+    if text and not text.endswith("\n"):
+        text += "\n"
+    if text:
+        sys.stderr.write(text)
+    if code not in known:
+        fail("GEN.SCHEMA_INVALID")
+    raise SystemExit(completed.returncode)
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:

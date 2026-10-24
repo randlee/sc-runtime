@@ -1,5 +1,6 @@
 """Wizard pages match the answers schema and the a-6 boundary holds."""
 
+import importlib.util
 import json
 import re
 import subprocess
@@ -12,6 +13,7 @@ PAGES = WIZARD / "pages"
 A6 = "a321ea2cde4d44d8723c44f4215922465a9dfa93"
 ENTRY_MODE_FUNCTIONS = {"parse_args", "main"}
 NEW_ENTRY_FUNCTION = "entry_answers"
+SUBPROCESS_TIMEOUT_SECONDS = 30
 
 
 def load_json(path: Path):
@@ -32,6 +34,29 @@ class WizardContractTests(unittest.TestCase):
     def schema(self):
         return load_json(WIZARD / "answers.schema.json")
 
+    def run_bounded(self, args, *, check_output=False):
+        try:
+            if check_output:
+                return subprocess.check_output(
+                    args,
+                    cwd=ROOT,
+                    text=True,
+                    timeout=SUBPROCESS_TIMEOUT_SECONDS,
+                )
+            return subprocess.run(
+                args,
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=SUBPROCESS_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired as exc:
+            self.fail(
+                f"{args[0]} timed out after {SUBPROCESS_TIMEOUT_SECONDS}s\n"
+                f"stdout={exc.stdout}\nstderr={exc.stderr}"
+            )
+
     def test_layout_files_exist(self):
         self.assertTrue((WIZARD / "wizard.json").is_file())
         self.assertTrue((PAGES / "wizard-answers.js").is_file())
@@ -48,11 +73,8 @@ class WizardContractTests(unittest.TestCase):
             referenced.update(re.findall(r'html:\s*"([^"]+)"', page.read_text(encoding="utf-8")))
         for relative in referenced:
             self.assertTrue((WIZARD / relative).is_file(), relative)
-        completed = subprocess.run(
-            ["grep", "-ri", "nuget", str(WIZARD / "wizard.json"), str(PAGES)],
-            capture_output=True,
-            text=True,
-            check=False,
+        completed = self.run_bounded(
+            ["grep", "-ri", "nuget", str(WIZARD / "wizard.json"), str(PAGES)]
         )
         self.assertEqual(completed.stdout, "")
         self.assertNotEqual(completed.returncode, 0)
@@ -151,8 +173,20 @@ class WizardContractTests(unittest.TestCase):
         text = (ROOT / "Justfile").read_text(encoding="utf-8")
         self.assertIn("scripts/new_project.py {{dest}} {{args}}", text)
 
+    def test_just_test_discovers_wizard_suites(self):
+        spec = importlib.util.spec_from_file_location(
+            "run_generation_tests_under_test",
+            ROOT / "scripts" / "run_generation_tests.py",
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.assertIn(("unit", "wizard"), module.SUITES)
+        self.assertIn(("integration", "wizard"), module.SUITES)
+        self.assertIn(("unit", "generation"), module.SUITES)
+        self.assertIn(("integration", "generation"), module.SUITES)
+
     def test_generation_suite_is_byte_identical_to_a6(self):
-        completed = subprocess.run(
+        completed = self.run_bounded(
             [
                 "git",
                 "diff",
@@ -161,20 +195,15 @@ class WizardContractTests(unittest.TestCase):
                 "--",
                 "tests/unit/generation",
                 "tests/integration/generation",
-            ],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
+            ]
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(completed.stdout, "")
 
     def test_driver_diff_is_entry_mode_only(self):
-        old = subprocess.check_output(
+        old = self.run_bounded(
             ["git", "show", f"{A6}:scripts/new_project.py"],
-            cwd=ROOT,
-            text=True,
+            check_output=True,
         )
         new = (ROOT / "scripts" / "new_project.py").read_text(encoding="utf-8")
         old_preamble, old_functions = split_functions(old)

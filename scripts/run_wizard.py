@@ -11,7 +11,11 @@ Wyvern's finished-wizard stdout is a ``WizardResult`` object,
 the full answers object, so ``data`` on a finish is that object.
 
 Cancellation (``button`` ``cancel`` or ``dismissed``) writes no answers file
-and returns 1. The driver then does not create a destination.
+and returns 1. The last stderr line is ``GEN.WIZARD_CANCELLED``. The driver
+then does not create a destination.
+
+Acquisition failures end on the driver inventory. ``[run-wizard]`` diagnostics
+may precede that line. The last line is the code an agent selects.
 """
 
 from __future__ import annotations
@@ -40,21 +44,68 @@ def _force_utf8_console() -> None:
             pass
 
 
-_force_utf8_console()
-
-
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 WIZARD_JSON = REPO_ROOT / "wizard" / "wizard.json"
 SCHEMA_PATH = REPO_ROOT / "wizard" / "answers.schema.json"
+DASH = "\u2014"
+
+INVENTORY = {
+    "GEN.SCHEMA_INVALID": (
+        "answers fail wizard/answers.schema.json",
+        "fix the file; cargo is not called; the destination is not created",
+    ),
+    "APP.INVALID_NAME": (
+        "name fails the project-name pattern in wizard/answers.schema.json",
+        "fix the name to that pattern; the destination is not created",
+    ),
+    "GEN.TOOL_MISSING": (
+        "WYVERN_BIN unset and wyvern not on PATH",
+        "set WYVERN_BIN or install wyvern on PATH; cargo generate does not run",
+    ),
+    "GEN.WIZARD_CANCELLED": (
+        "wizard cancelled or dismissed",
+        "finish the wizard; the destination is not created",
+    ),
+}
 
 
 class WizardError(RuntimeError):
-    pass
+    """A wizard acquisition failure with an inventory code."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = "GEN.SCHEMA_INVALID",
+        cause: str | None = None,
+        recovery: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.cause = cause
+        self.recovery = recovery
 
 
 def log(msg: str) -> None:
     print(f"[run-wizard] {msg}", file=sys.stderr)
+
+
+def inventory_line(code: str, cause: str | None = None, recovery: str | None = None) -> str:
+    """Return one ``<code> <cause> — <recovery>`` line."""
+    default_cause, default_recovery = INVENTORY[code]
+    return f"{code} {cause or default_cause} {DASH} {recovery or default_recovery}\n"
+
+
+def emit_wizard_failure(exc: WizardError) -> int:
+    """Write diagnostics, then the inventory line, and return the exit status."""
+    default_cause, _recovery = INVENTORY[exc.code]
+    shown = exc.cause or default_cause
+    detail = str(exc).strip()
+    if detail and detail != shown:
+        log(detail)
+    sys.stderr.write(inventory_line(exc.code, exc.cause, exc.recovery))
+    return 1
 
 
 def find_wyvern_bin() -> str:
@@ -67,7 +118,10 @@ def find_wyvern_bin() -> str:
     if candidate:
         return candidate
     raise WizardError(
-        "wyvern binary not found (set $WYVERN_BIN to its path or put wyvern on PATH)"
+        "wyvern binary not found (set $WYVERN_BIN to its path or put wyvern on PATH)",
+        code="GEN.TOOL_MISSING",
+        cause="WYVERN_BIN unset and wyvern not on PATH",
+        recovery="set WYVERN_BIN or install wyvern on PATH; cargo generate does not run",
     )
 
 
@@ -128,7 +182,12 @@ def run_wyvern(wizard_json: Path, ui_root: Path, cwd: Path) -> str:
         if proc.returncode != 0:
             stderr_text = proc.stderr.decode("utf-8", errors="replace") if proc.stderr else ""
             detail = stderr_text.strip() or "(no stderr)"
-            raise WizardError(f"wyvern exited with status {proc.returncode}: {detail}")
+            raise WizardError(
+                f"wyvern exited with status {proc.returncode}: {detail}",
+                code="GEN.TOOL_MISSING",
+                cause=f"wyvern exited with status {proc.returncode}",
+                recovery="set WYVERN_BIN or install wyvern on PATH; cargo generate does not run",
+            )
         return stdout_text
 
 
@@ -151,10 +210,14 @@ def normalize_answers(result: dict[str, Any]) -> dict[str, Any]:
     """Return the finished answers object, or raise on cancellation."""
     button = result.get("button")
     if button in {"cancel", "dismissed"}:
-        raise WizardError("wizard cancelled -- no destination created")
+        raise WizardError(
+            "wizard cancelled or dismissed",
+            code="GEN.WIZARD_CANCELLED",
+        )
     if button != "finish":
         raise WizardError(
-            f"wizard was not completed (button={button!r}); re-run and click Finish"
+            f"wizard was not completed (button={button!r}); re-run and click Finish",
+            code="GEN.WIZARD_CANCELLED",
         )
 
     data = result.get("data")
@@ -179,13 +242,41 @@ def load_schema() -> dict[str, Any]:
     return loaded
 
 
+def project_name_rejected(answers: dict[str, Any], schema: dict[str, Any]) -> bool:
+    """Return whether ``project_name`` fails the schema pattern.
+
+    The pattern stays in ``answers.schema.json``. This function does not copy it.
+    """
+    properties = schema.get("properties")
+    if not isinstance(properties, dict):
+        return False
+    field = properties.get("project_name")
+    if not isinstance(field, dict):
+        return False
+    pattern = field.get("pattern")
+    name = answers.get("project_name")
+    if not isinstance(pattern, str) or not isinstance(name, str):
+        return False
+    return re.fullmatch(pattern, name) is None
+
+
 def validate_answers(answers: dict[str, Any], schema: dict[str, Any]) -> None:
-    """Reject answers that fail the schema. The driver repeats this check."""
+    """Reject answers that fail the schema. The driver repeats this check.
+
+    ``jsonschema`` is the validator. The driver already requires that package,
+    so this runner does not keep a second checker.
+    """
+    if project_name_rejected(answers, schema):
+        raise WizardError(INVENTORY["APP.INVALID_NAME"][0], code="APP.INVALID_NAME")
     try:
         import jsonschema
-    except ImportError:
-        _validate_answers_manual(answers, schema)
-        return
+    except ImportError as exc:
+        raise WizardError(
+            "jsonschema is not installed",
+            code="GEN.TOOL_MISSING",
+            cause="jsonschema is not installed",
+            recovery="install the jsonschema package the driver requires; cargo generate does not run",
+        ) from exc
 
     validator_cls = jsonschema.validators.validator_for(schema)
     validator_cls.check_schema(schema)
@@ -195,60 +286,10 @@ def validate_answers(answers: dict[str, Any], schema: dict[str, Any]) -> None:
         messages = [
             f"{'/'.join(str(part) for part in err.path) or '<root>'}: {err.message}" for err in errors
         ]
-        raise WizardError("answers failed schema validation:\n  " + "\n  ".join(messages))
-
-
-def _validate_answers_manual(answers: dict[str, Any], schema: dict[str, Any]) -> None:
-    errors: list[str] = []
-    properties: dict[str, Any] = schema.get("properties", {})
-    required: list[str] = schema.get("required", [])
-
-    if not isinstance(answers, dict):
-        raise WizardError("answers must be a JSON object")
-
-    for field in required:
-        if field not in answers:
-            errors.append(f"missing required field '{field}'")
-
-    if schema.get("additionalProperties") is False:
-        for key in answers:
-            if key not in properties:
-                errors.append(f"unexpected field '{key}' (not in schema)")
-
-    for name, value in answers.items():
-        prop_schema = properties.get(name)
-        if isinstance(prop_schema, dict):
-            errors.extend(_validate_value(name, value, prop_schema))
-
-    if errors:
-        raise WizardError("answers failed schema validation:\n  " + "\n  ".join(errors))
-
-
-def _validate_value(name: str, value: Any, prop_schema: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    expected_type = prop_schema.get("type")
-    type_ok = {
-        "string": isinstance(value, str),
-        "boolean": isinstance(value, bool),
-        "array": isinstance(value, list),
-        "object": isinstance(value, dict),
-        "number": isinstance(value, (int, float)) and not isinstance(value, bool),
-    }
-    if expected_type in type_ok and not type_ok[expected_type]:
-        errors.append(f"'{name}' expected type {expected_type}, got {type(value).__name__}")
-        return errors
-
-    if expected_type == "string" and isinstance(value, str):
-        min_length = prop_schema.get("minLength")
-        if isinstance(min_length, int) and len(value) < min_length:
-            errors.append(f"'{name}' must have length >= {min_length}")
-        pattern = prop_schema.get("pattern")
-        if isinstance(pattern, str) and re.search(pattern, value) is None:
-            errors.append(f"'{name}' does not match pattern {pattern!r}: {value!r}")
-        enum = prop_schema.get("enum")
-        if isinstance(enum, list) and value not in enum:
-            errors.append(f"'{name}' must be one of {enum}, got {value!r}")
-    return errors
+        raise WizardError(
+            "answers failed schema validation:\n  " + "\n  ".join(messages),
+            code="GEN.SCHEMA_INVALID",
+        )
 
 
 def apply_defaults(answers: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
@@ -300,8 +341,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if not args.wizard_json.is_file():
-        print(f"ERROR: wizard.json not found: {args.wizard_json}", file=sys.stderr)
-        return 1
+        return emit_wizard_failure(WizardError(f"wizard.json not found: {args.wizard_json}"))
 
     merged_tmp_path: Path | None = None
     try:
@@ -330,8 +370,7 @@ def main(argv: list[str] | None = None) -> int:
         answers = apply_defaults(normalize_answers(result), schema)
         validate_answers(answers, schema)
     except WizardError as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
-        return 1
+        return emit_wizard_failure(exc)
     finally:
         if merged_tmp_path is not None:
             merged_tmp_path.unlink(missing_ok=True)
@@ -349,4 +388,5 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    _force_utf8_console()
     raise SystemExit(main())

@@ -1984,8 +1984,10 @@ The schema version field is `x-schema-version`, an integer at the root of
 `answers.schema.json`. Bump it when a breaking option change ships. The
 shipped value is `1`.
 
-Stderr from the driver is one line, `<code> <cause> — <recovery>`, using
-U+2014. `GEN.STEP_FAILED` puts the failed pipeline step in the cause. The
+Stderr from `--var-file` is one line, `<code> <cause> — <recovery>`, using
+U+2014. Wizard modes may print `[run-wizard]` diagnostics first; the last
+line is still that inventory row. There is no uncoded `ERROR:` line.
+`GEN.STEP_FAILED` puts the failed pipeline step in the cause. The
 inventory is:
 
 | Failure | Code | Cause | Recovery |
@@ -1994,8 +1996,17 @@ inventory is:
 | reserved database | `GEN.DB_RESERVED` | `db` is `postgres` or `both` | set `db` to `sqlite`; the destination is not created |
 | invalid project name | `APP.INVALID_NAME` | name fails the project-name `pattern` in `wizard/answers.schema.json` | fix the name to that pattern; the destination is not created |
 | missing sc-compose | `GEN.TOOL_MISSING` | `SC_COMPOSE` unset and `sc-compose` not on `PATH` | set `SC_COMPOSE` or install `sc-compose` on `PATH`; `cargo generate` does not run |
+| missing Wyvern | `GEN.TOOL_MISSING` | `WYVERN_BIN` unset and `wyvern` not on `PATH` | set `WYVERN_BIN` or install `wyvern` on `PATH`; `cargo generate` does not run |
+| wizard cancel or dismiss | `GEN.WIZARD_CANCELLED` | wizard cancelled or dismissed | finish the wizard; the destination is not created |
 | destination conflict | `GEN.DEST_CONFLICT` | the destination path exists | choose an absent path |
 | pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | fix it or remove the partial destination; later steps do not run |
+
+Wizard acquisition uses those rows. A runner-side schema reject is
+`GEN.SCHEMA_INVALID`. A runner-side project-name reject is
+`APP.INVALID_NAME`. `[run-wizard]` lines may precede the inventory line. The
+last line is the code an agent selects. `--var-file` prints no runner lines.
+A schema-valid finish that the driver then rejects keeps the runner
+diagnostics and ends with the driver's inventory line.
 
 ### Consequences
 

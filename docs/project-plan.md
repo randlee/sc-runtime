@@ -21,4 +21,4 @@ Status: complete. Branch `sprint/a-6-template-from-json`.
 
 Sprint a-8, Wyvern wizard, is
 [sprint-a-8-wizard](plans/phase-a/sprint-a-8-wizard.md).
-Status: complete. Branch `sprint/a-8-wizard`.
+Status: in progress. Branch `sprint/a-8-wizard`.

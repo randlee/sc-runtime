@@ -470,7 +470,7 @@ use that recorded pair.
 | 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, source-maintainer `sc-lint.toml` and `.sc-lint/bootstrap.py`, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, sc-runtime requirement/ADR sources, the edge-absent slices listed in the a-5 deliverables (architecture edge tables, REQ-RUN-0001/0004/0005 and REQ-RUN-0205 sections of `docs/requirements.md`), rewritten spike, core CI/just recipes |
 | 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, `wizard/answers.schema.json`, `wizard/fixtures/**`, driver, root `Justfile` generation entry, the `sc-lint.toml` line-counts glob for `template/**/*.rs` only, REQ-RUN-0202, REQ-RUN-0503, and REQ-RUN-0701 sections of `docs/requirements.md`, ADR-RUN-0401 and ADR-RUN-0201 point 6 in `docs/architecture.md`, generation tests and template CI |
 | 4 | release | a-7 core release | integration | release-distribution | authored `release/sc-publish-*`, `docs/development/sc-publish.md`, `docs/architecture.md` ADR-RUN-0002 publish-contract amendment, `install.py` outputs (`.github/workflows/release*.yml`, `scripts/release_*.py`), `.github/workflows/crates.yml` spike-reference cleanup, `.github/workflows/template.yml` release-mode selector only, publish-metadata fields on `crates/*/Cargo.toml`, `crates/*/README.md`, and per-crate `LICENSE` copies, root release metadata, spike removal |
-| 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, `scripts/run_wizard.py`, sequential `scripts/new_project.py` and `docs/generation.md` (entry-mode only), wizard tests |
+| 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, `scripts/run_wizard.py`, sequential `scripts/new_project.py` and `docs/generation.md` (entry-mode only), `scripts/run_generation_tests.py`, wizard tests, `docs/project-plan.md`, the REQ-RUN-0602 and REQ-RUN-0603 closures in `docs/requirements.md`, and the ADR-RUN-0401 wizard-stderr amendment in `docs/architecture.md` |
 
 `contract` on a-1 means the disposable compatibility-evidence record later
 sprints consume. QA uses a-1's validation section. It does not use a
@@ -541,7 +541,8 @@ owns the generation sequence in that workflow. **`wizard/` and driver files:** a
 `wizard/answers.schema.json` and `wizard/fixtures/**`. a-8 owns
 `wizard/wizard.json` and `wizard/pages/**`. `scripts/new_project.py` and
 `docs/generation.md` pass from a-6 to a-8; a-8's diff is entry-mode flags
-only, and the a-6 generation suite stays byte-identical. a-7 performs release
+only, and the a-6 generation suite stays byte-identical. a-8 also owns
+`scripts/run_generation_tests.py` so `just test` discovers the wizard suites. a-7 performs release
 cleanup and kit install. A discovered leaf-crate defect returns to a-2, a-3, or a-4
 rather than expanding a consumer sprint's ownership. a-6 must not replace
 the maintainer `Justfile` with the generated consumer file.

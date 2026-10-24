@@ -225,7 +225,9 @@ cat << 'EOF'
         dest = self.root / "cancelled"
         completed = self.invoke([str(dest)])
         self.assertNotEqual(completed.returncode, 0)
-        self.assertIn("no destination created", completed.stderr)
+        lines = [line for line in completed.stderr.splitlines() if line.strip()]
+        self.assertTrue(lines[-1].startswith("GEN.WIZARD_CANCELLED "), completed.stderr)
+        self.assertNotIn("ERROR:", completed.stderr)
         self.assertNotIn("cargo", self.log_text())
         self.assertFalse(dest.exists())
 
@@ -234,9 +236,12 @@ cat << 'EOF'
         dest = self.root / "missing"
         completed = self.invoke([str(dest)], include_wyvern=False)
         self.assertNotEqual(completed.returncode, 0)
+        lines = [line for line in completed.stderr.splitlines() if line.strip()]
+        self.assertTrue(lines[-1].startswith("GEN.TOOL_MISSING "), completed.stderr)
         self.assertIn("wyvern", completed.stderr)
         self.assertIn("WYVERN_BIN", completed.stderr)
         self.assertIn("PATH", completed.stderr)
+        self.assertNotIn("ERROR:", completed.stderr)
         self.assertNotIn("cargo", self.log_text())
         self.assertFalse(dest.exists())
         self.assertNotIn("Traceback", completed.stderr)
@@ -262,6 +267,28 @@ echo '{{"button":"finish","data":{{}},"stack":[]}}'
         self.assertNotIn("wyvern ", self.log_text())
         self.assertEqual(self.captured_answers(), self.fixture)
 
+    def test_runner_rejects_use_inventory_codes(self):
+        unknown = dict(self.fixture)
+        unknown["not_a_field"] = True
+        invalid = dict(self.fixture)
+        invalid["project_name"] = "has space"
+        cases = (
+            ("unknown", unknown, "GEN.SCHEMA_INVALID"),
+            ("name", invalid, "APP.INVALID_NAME"),
+        )
+        for label, answers, code in cases:
+            with self.subTest(label=label):
+                self.clear_captures()
+                self.stub_tools(self.finish(answers))
+                dest = self.root / label
+                completed = self.invoke([str(dest)])
+                self.assertNotEqual(completed.returncode, 0)
+                lines = [line for line in completed.stderr.splitlines() if line.strip()]
+                self.assertTrue(lines[-1].startswith(f"{code} "), completed.stderr)
+                self.assertNotIn("ERROR:", completed.stderr)
+                self.assertNotIn("cargo", self.log_text())
+                self.assertFalse(dest.exists())
+
     def test_reserved_database_from_the_wizard_stays_on_the_driver(self):
         answers = dict(self.fixture)
         answers["db"] = "postgres"
@@ -273,6 +300,9 @@ echo '{{"button":"finish","data":{{}},"stack":[]}}'
             f"GEN.DB_RESERVED db is postgres or both {DASH} set db to sqlite; the destination is not created",
             completed.stderr,
         )
+        lines = [line for line in completed.stderr.splitlines() if line.strip()]
+        self.assertTrue(lines[-1].startswith("GEN.DB_RESERVED "), completed.stderr)
+        self.assertNotIn("ERROR:", completed.stderr)
         self.assertNotIn("cargo", self.log_text())
         self.assertFalse(dest.exists())
 

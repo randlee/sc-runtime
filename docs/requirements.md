@@ -3018,12 +3018,20 @@ are the ones the wizard returns after the person finishes it.
 When the wizard ends without the person finishing it, the driver MUST NOT run
 `cargo generate`. This rule is decided in this document.
 
-**OPEN:** the behaviour when `--prefill` and `--var-file` are both given is
-not decided.  
-**OPEN:** the handling of a `--prefill` key that the schema does not define is
-not decided. The reference script `run_wizard.py` in `p3-nuget-template` drops
-such keys with a warning on stderr.  
-**OPEN:** the exit status when the person cancels the wizard is not decided.
+When `--prefill` and `--var-file` are both given, `--var-file` wins. The
+wizard does not start and the prefill file is not read.
+
+A `--prefill` key that the schema does not define is dropped, with a warning
+on stderr. The on-disk `wizard/wizard.json` is not modified. The reference
+script in `p3-nuget-template` drops such keys the same way.
+
+When the person cancels or dismisses the wizard, the process exits non-zero.
+The last stderr line is `GEN.WIZARD_CANCELLED`. The driver does not run
+`cargo generate` and does not create the destination. A missing Wyvern binary
+is `GEN.TOOL_MISSING`; the cause names `wyvern`, `WYVERN_BIN`, and `PATH`.
+A runner-side schema reject is `GEN.SCHEMA_INVALID`. A runner-side
+project-name reject is `APP.INVALID_NAME`. These are the same inventory rows
+as [ADR-RUN-0401](architecture.md).
 
 ### Rationale
 
@@ -3052,10 +3060,12 @@ was given and prints a canned finished-wizard result.
    fixture. (That the Wyvern stub is never called in this mode is asserted by
    the criteria of REQ-RUN-0502.)
 5. A driver test whose stub prints a cancelled-wizard result asserts that
-   `cargo generate` was not called.
+   `cargo generate` was not called and that the last stderr line is
+   `GEN.WIZARD_CANCELLED`.
 6. With `WYVERN_BIN` unset and no `wyvern` on `PATH`, interactive mode fails
-   before `cargo generate`, names `wyvern`, `WYVERN_BIN`, and `PATH` on
-   stderr, and creates no destination.
+   before `cargo generate`, the last stderr line is `GEN.TOOL_MISSING`, that
+   line names `wyvern`, `WYVERN_BIN`, and `PATH`, and no destination is
+   created.
 7. Inspection finds no absolute Wyvern path in either driver script.
 
 ---
@@ -3081,9 +3091,14 @@ omit a key that the schema requires.
 A project generated from the wizard's answers MUST be identical, file for
 file, to the project generated from the equal fixture with `--var-file`.
 
-**OPEN:** whether this comparison is an automated test or a recorded manual
-check is not decided. Wyvern is not installed in CI, so an automated test
-cannot drive the real wizard there.
+The generated-tree comparison is an automated test. The test stubs Wyvern, so
+CI does not need the real binary. It runs the driver once with that stub
+returning the answers in one fixture, and once with `--var-file` on the same
+fixture, then compares the two generated trees. The comparison excludes
+`target/`, the `[patch.crates-io]` checkout patch, `.sc-lint/venv/` (the
+local sc-lint install embeds the destination path), and `.sc-compose/logs/`
+(the generator log contains timestamps). Success criteria 1 to 3 remain the
+check that a machine with Wyvern emits that fixture.
 
 ### Rationale
 
@@ -3106,6 +3121,12 @@ the template, the driver or CI.
 4. Generate one project from `out.json` and one from the fixture, both with
    `--var-file`, into two directories. `diff -r` of the two directories,
    ignoring build output, reports no difference.
+5. An automated test stubs Wyvern, runs the driver once from that stub with
+   the answers in `wizard/fixtures/sqlite-mcp.json` and once with
+   `--var-file` on that fixture, and compares the generated trees. Paths
+   under `target/`, `.sc-lint/venv/`, and `.sc-compose/logs/` are ignored.
+   The `[patch.crates-io]` checkout patch is ignored. Every other file
+   matches.
 
 ---
 

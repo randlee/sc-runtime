@@ -69,19 +69,20 @@ class RunnerTests(unittest.TestCase):
             with self.subTest(name=name):
                 self.assert_run(body, status, writes)
 
-    def test_manual_validator_accepts_fixtures_and_rejects_unknown_keys(self):
+    def test_validator_accepts_fixtures_and_rejects_unknown_keys(self):
         for path in (ROOT / "wizard" / "fixtures").glob("*.json"):
             answers = json.loads(path.read_text(encoding="utf-8"))
             self.runner.validate_answers(answers, self.schema)
-            self.runner._validate_answers_manual(answers, self.schema)
         bad = dict(self.fixture)
         bad["not_a_field"] = True
-        with self.assertRaises(self.runner.WizardError):
+        with self.assertRaises(self.runner.WizardError) as unknown:
             self.runner.validate_answers(bad, self.schema)
+        self.assertEqual(unknown.exception.code, "GEN.SCHEMA_INVALID")
         named = dict(self.fixture)
         named["project_name"] = "has space"
-        with self.assertRaises(self.runner.WizardError):
+        with self.assertRaises(self.runner.WizardError) as invalid_name:
             self.runner.validate_answers(named, self.schema)
+        self.assertEqual(invalid_name.exception.code, "APP.INVALID_NAME")
 
     def test_missing_binary_names_wyvern_override_and_path(self):
         saved_path = os.environ.get("PATH")
@@ -149,7 +150,9 @@ cat << 'EOF'
             self.runner.validate_answers(json.loads(output.read_text(encoding="utf-8")), self.schema)
         else:
             self.assertFalse(output.exists())
-            self.assertIn("no destination created", completed.stderr)
+            lines = [line for line in completed.stderr.splitlines() if line.strip()]
+            self.assertTrue(lines[-1].startswith("GEN.WIZARD_CANCELLED "), completed.stderr)
+            self.assertNotIn("ERROR:", completed.stderr)
 
 
 if __name__ == "__main__":
