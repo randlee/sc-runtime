@@ -5,7 +5,7 @@ set -u
 src=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 dest=$(mktemp -d /tmp/boundary-run.XXXXXX)
 cp -R "$src"/. "$dest"/
-for case in no-workspace exit-ok prefix-match direct-forbidden transitive-only direct-only-transitive direct-only-direct external-prefix external-direct; do
+for case in no-workspace exit-ok prefix-match direct-forbidden transitive-only direct-only-transitive direct-only-direct external-prefix external-direct facade-mismatch; do
   echo "===== $case lint ====="
   sc-lint lint sc-boundary --root "$dest/$case"
   echo "lint_exit=$?"

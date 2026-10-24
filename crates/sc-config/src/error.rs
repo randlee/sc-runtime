@@ -139,8 +139,8 @@ impl fmt::Display for ConfigError {
                 formatter,
                 "{}: configuration does not match the requested type: {message}; files: {}; variables: {}; {}",
                 self.code(),
-                join_display(files),
-                join_strings(variables),
+                join_list(files.iter().map(|path| path.display())),
+                join_list(variables.iter()),
                 self.recovery()
             ),
             Self::InvalidName { name } => write!(
@@ -169,24 +169,13 @@ impl std::error::Error for ConfigError {
     }
 }
 
-fn join_display(paths: &[PathBuf]) -> String {
+fn join_list(items: impl IntoIterator<Item = impl fmt::Display>) -> String {
     let mut rendered = String::new();
-    for (index, path) in paths.iter().enumerate() {
+    for (index, item) in items.into_iter().enumerate() {
         if index > 0 {
             rendered.push_str(", ");
         }
-        rendered.push_str(&path.display().to_string());
-    }
-    rendered
-}
-
-fn join_strings(values: &[String]) -> String {
-    let mut rendered = String::new();
-    for (index, value) in values.iter().enumerate() {
-        if index > 0 {
-            rendered.push_str(", ");
-        }
-        rendered.push_str(value);
+        rendered.push_str(&item.to_string());
     }
     rendered
 }

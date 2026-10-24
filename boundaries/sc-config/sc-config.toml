@@ -4,8 +4,8 @@ owner_crate_path = "sc_config"
 name = "sc-config"
 
 [public]
-facade = "sc_config::load"
-notes = "AppName, load, Loader::new, Loader::load, ConfigError"
+facade = "sc_config::AppName, sc_config::ConfigError, sc_config::load, sc_config::Loader"
+notes = "AppName::new, AppName::env_prefix, load, Loader::new, Loader::load, ConfigError"
 
 [implementation]
 type = "marker"

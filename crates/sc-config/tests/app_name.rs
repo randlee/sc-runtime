@@ -26,6 +26,12 @@ fn constructor_uses_the_shared_vectors() {
         assert_eq!(from_try.as_str(), name);
     }
 
+    let dashed = AppName::new("my-app").unwrap();
+    let underscored = AppName::new("my_app").unwrap();
+    assert_eq!(dashed.env_prefix(), "MY_APP__");
+    assert_eq!(underscored.env_prefix(), dashed.env_prefix());
+    assert_eq!(AppName::new("My-App").unwrap().env_prefix(), "MY_APP__");
+
     for name in &vectors.reject {
         let error = AppName::new(name).unwrap_err();
         assert_eq!(error.code(), vectors.code);

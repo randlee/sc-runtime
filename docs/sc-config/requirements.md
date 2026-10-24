@@ -187,7 +187,9 @@ Variable name:
 
 1. The prefix MUST be the app name with every ASCII lower-case letter
    upper-cased and every `-` replaced by `_`, followed by `__` (two
-   underscores). App `my-app` gives prefix `MY_APP__`.
+   underscores). App `my-app` gives prefix `MY_APP__`. `_` is already that
+   character, so `my_app` yields the same prefix. `AppName::env_prefix` is
+   the function that implements this rule.
 2. A variable MUST be treated as an override if and only if its encoded name
    starts with that prefix. The comparison is exact and case-sensitive. Empty
    segments, application order, and non-Unicode names or values are decided

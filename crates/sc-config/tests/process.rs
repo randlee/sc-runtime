@@ -6,6 +6,19 @@ use std::process::Command;
 use serde_json::json;
 use support::{write_file, TempDir};
 
+#[test]
+fn load_helper_is_excluded_from_the_published_package() {
+    let manifest = include_str!("../Cargo.toml");
+    assert!(
+        manifest.contains("exclude = [\"src/bin/\"]"),
+        "the process helper must stay out of the published package"
+    );
+    assert!(
+        !manifest.contains("[[bin]]"),
+        "an explicit bin target is part of the published package"
+    );
+}
+
 fn helper(current_dir: &std::path::Path) -> Command {
     let mut command = Command::new(env!("CARGO_BIN_EXE_sc-config-load-helper"));
     command.env_clear().current_dir(current_dir);

@@ -23,4 +23,6 @@ fn main() -> Result<(), sc_config::ConfigError> {
 ```
 
 `Loader` takes an explicit directory and environment so tests do not change
-the process.
+the process. `AppName::env_prefix` builds the environment prefix: ASCII
+letters are upper-cased, and both `-` and `_` become `_`, then `__`.
+`my-app` and `my_app` both yield `MY_APP__`.

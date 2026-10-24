@@ -164,26 +164,12 @@ fn merge(base: Value, overlay: Value) -> Value {
     }
 }
 
-fn env_prefix(app: &AppName) -> String {
-    let mut prefix = String::with_capacity(app.as_str().len().saturating_add(2));
-    for byte in app.as_str().bytes() {
-        let mapped = if byte == b'-' {
-            b'_'
-        } else {
-            byte.to_ascii_uppercase()
-        };
-        prefix.push(char::from(mapped));
-    }
-    prefix.push_str("__");
-    prefix
-}
-
 fn apply_overrides(
     document: &mut Value,
     app: &AppName,
     environment: &[(OsString, OsString)],
 ) -> Result<Vec<String>, ConfigError> {
-    let prefix = env_prefix(app);
+    let prefix = app.env_prefix();
     let mut matched = Vec::new();
     for (name, value) in environment {
         if name.as_encoded_bytes().starts_with(prefix.as_bytes()) {
@@ -206,10 +192,13 @@ fn apply_overrides(
         };
         let path = key_path(name_str, &prefix)?;
         let parsed = parse_override_value(value_str);
-        if set_path(document, &path, parsed).is_err() {
-            return Err(ConfigError::Override {
-                variable: name_str.to_owned(),
-            });
+        match set_path(document, &path, parsed) {
+            Ok(()) => {}
+            Err(SetPathError::EmptyPath | SetPathError::NotAnObject) => {
+                return Err(ConfigError::Override {
+                    variable: name_str.to_owned(),
+                });
+            }
         }
         applied.push(name_str.to_owned());
     }
@@ -217,11 +206,9 @@ fn apply_overrides(
 }
 
 fn key_path(name: &str, prefix: &str) -> Result<Vec<String>, ConfigError> {
-    let Some(rest) = name.strip_prefix(prefix) else {
-        return Err(ConfigError::Override {
-            variable: name.to_owned(),
-        });
-    };
+    // Callers pass names that already start with this ASCII prefix, so the
+    // suffix is the key path. A shorter name yields an empty segment below.
+    let rest = name.get(prefix.len()..).unwrap_or("");
     let segments: Vec<String> = rest
         .split("__")
         .map(|segment| segment.to_ascii_lowercase())
@@ -247,12 +234,21 @@ struct Frame {
     existed: bool,
 }
 
-fn set_path(document: &mut Value, path: &[String], value: Value) -> Result<(), ()> {
+/// Failure from writing one override into the merged JSON document.
+#[derive(Debug)]
+enum SetPathError {
+    /// The key path has no leaf.
+    EmptyPath,
+    /// The root or an intermediate value is not a JSON object.
+    NotAnObject,
+}
+
+fn set_path(document: &mut Value, path: &[String], value: Value) -> Result<(), SetPathError> {
     let Some((leaf, parents)) = path.split_last() else {
-        return Err(());
+        return Err(SetPathError::EmptyPath);
     };
     if !matches!(document, Value::Object(_)) {
-        return Err(());
+        return Err(SetPathError::NotAnObject);
     }
 
     let mut stack = Vec::new();
@@ -262,7 +258,7 @@ fn set_path(document: &mut Value, path: &[String], value: Value) -> Result<(), (
             Value::Object(map) => map,
             other => {
                 reassemble(document, stack, other, false);
-                return Err(());
+                return Err(SetPathError::NotAnObject);
             }
         };
         let (child, existed) = match map.remove(key) {
@@ -284,7 +280,7 @@ fn set_path(document: &mut Value, path: &[String], value: Value) -> Result<(), (
         }
         other => {
             reassemble(document, stack, other, false);
-            return Err(());
+            return Err(SetPathError::NotAnObject);
         }
     };
     reassemble(document, stack, current, true);

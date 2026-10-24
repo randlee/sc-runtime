@@ -1,7 +1,8 @@
 //! Test helper for the process-environment entry point.
 //!
-//! The library tests start this binary with `Command`. It is not part of the
-//! supported library facade.
+//! Library tests start this binary with `Command`. `Cargo.toml` excludes
+//! `src/bin/` from the published package, so this is not an installed CLI
+//! and it is not part of the supported library facade.
 
 use std::path::PathBuf;
 use std::process::ExitCode;

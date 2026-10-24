@@ -25,7 +25,7 @@ observability, and nothing in this workspace is a dependency of it.
 
 | Item | Purpose |
 |---|---|
-| `AppName` | validated configuration identity; `new` / `TryFrom<&str>` rejects with `APP.INVALID_NAME` |
+| `AppName` | validated configuration identity; `new` / `TryFrom<&str>` rejects with `APP.INVALID_NAME`. `env_prefix` upper-cases ASCII letters and maps both `-` and `_` to `_`, then appends `__`, so `my-app` and `my_app` share `MY_APP__` |
 | `load::<T>(app: AppName) -> Result<T, ConfigError>` | convenience: `./config` and the process environment |
 | `Loader::new(app, config_dir, environment) -> Loader` | stores an `AppName`, a `PathBuf`, and `Vec<(OsString, OsString)>` |
 | `Loader::load::<T>() -> Result<T, ConfigError>` | same merge as `load`, using only those inputs |
@@ -35,8 +35,10 @@ observability, and nothing in this workspace is a dependency of it.
 
 1. Read `default.json` into a `serde_json::Value` (required).
 2. Read `local.json` if present and merge it over the first value.
-3. Keep environment entries whose encoded name starts with the app prefix.
-   Apply them in ascending encoded-byte order of the variable name. Split the
+3. Keep environment entries whose encoded name starts with
+   `AppName::env_prefix`. That prefix upper-cases ASCII letters and maps
+   both `-` and `_` to `_`. Apply matching entries in ascending encoded-byte
+   order of the variable name. Split the
    rest on `__` into a key path, parse the value as JSON or fall back to a
    string, and set it at that path. A longer name that extends a shorter one
    wins. An empty segment, or a path through a non-object, is
@@ -292,8 +294,18 @@ reload features as a note for later, possibly as a separate
    `sc-observability-types` and the other crates.io names in the
    [REQ-RUN-0005](../requirements.md) policy table are not members of this
    tree, so they are not manifest edges. `cargo tree -p sc-config -e normal --prefix none`
-   is what fails those names. a-5 extends the root workspace; this crate's
-   manifest stays the one this sprint writes.
+   is what fails those names. a-2 created the single-member root lint tree
+   (`members = ["crates/sc-config"]`). a-5 extends that workspace to four
+   members; this crate's manifest stays the one this sprint writes.
+   `[public] facade` lists every `lib.rs` export. sc-lint 0.8.0 parses that
+   comma-separated list and does not compare it to the crate. The
+   `facade-mismatch` fixture under `examples/spike/boundary-proof/` exports
+   `present` and `extra` while its facade names only
+   `facade_mismatch::present`; `sc-lint lint sc-boundary` on a copy of that
+   tree exits 0. `facade_lists_every_export` is the check that this
+   manifest stays aligned with `lib.rs`. The process-test helper
+   `sc-config-load-helper` is autodiscovered from `src/bin/` in this
+   checkout and excluded from the published package. It is not a facade item.
 
 ### Consequences
 
