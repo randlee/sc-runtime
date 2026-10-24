@@ -31,7 +31,7 @@ through untouched.
 
 | Item | Purpose |
 |---|---|
-| `Daemon::builder(app, &DaemonConfig)` | start assembly |
+| `Daemon::builder(&sc_transport::AppName, &DaemonConfig)` | start assembly |
 | `DaemonBuilder::stores / routes / mcp / run` | the project's three closures, then serve |
 | `DaemonConfig` | the daemon's own settings; implements `serde::Deserialize` so the project loads it as part of its config; carries the `--endpoint` value, the configured endpoint and an explicit instance root (REQ-RT-0008); its field names are undecided (see REQ-RT-0001) |
 | `RuntimeError` | typed error naming the failing step |
@@ -40,7 +40,8 @@ through untouched.
 Shape of use, from the design:
 
 ```rust
-let result = sc_runtime::Daemon::builder("my-app", &cfg.daemon)
+let app = sc_transport::AppName::new("my-app").expect("static name");
+let result = sc_runtime::Daemon::builder(&app, &cfg.daemon)
     .stores(|| async { Stores::open(&cfg.stores).await })
     .routes(|stores| routes::router(stores))   // utoipa_axum::OpenApiRouter
     .mcp(|stores| mcp::service(stores))        // optional; an rmcp service
@@ -81,7 +82,14 @@ which inputs could arrive.
 
 ### Decision
 
-`run()` on the builder returned by `Daemon::builder(app, &daemon_config)`
+`DaemonBuilder` uses consuming typestate. The markers are `NeedStores`,
+`NeedRoutes`, and `Ready`. `stores` consumes `NeedStores` and returns
+`NeedRoutes`. `routes` consumes `NeedRoutes` and returns `Ready`. `run`
+exists only on `Ready`. `mcp` is optional and is implemented only on
+`Ready`. The markers are `pub` so the builder can be named across crates.
+They are `#[doc(hidden)]` and are not facade items.
+
+`run()` on the builder returned by `Daemon::builder(&sc_transport::AppName, &daemon_config)`
 does exactly five things, always in this order:
 
 1. take the `DaemonConfig` the project already loaded;
@@ -403,3 +411,4 @@ application's stores closure. The other variants are filled by this crate.
 | `EndpointFailed` | endpoint resolution failed; no listener was bound | `RUNTIME.ENDPOINT_FAILED` | `String` from the resolver | use `uds:<path>` or `tcp:<socket-addr>`, or set `TransportConfig::tcp_port` when the platform default needs a port |
 | `BindFailed` | `sc-transport` could not bind the listener | `RUNTIME.BIND_FAILED` | `String` from the bind error | leave a live endpoint in place, or choose an address that is free |
 | `ServeFailed` | `axum::serve` returned an error | `RUNTIME.SERVE_FAILED` | `String` from the serve error | read the cause and start the daemon again |
+| `RouteConflict` | the project router already defines `GET /health`, `GET /openapi.json`, or `/mcp` | `RUNTIME.ROUTE_CONFLICT` | the reserved path that collided | remove the reserved path from the project router |

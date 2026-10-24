@@ -234,14 +234,37 @@ async fn bad_endpoint_does_not_bind() {
     let dir = tempfile::tempdir().expect("temp dir");
     let mut config = rooted_config(dir.path());
     config.endpoint_flag = Some("not-an-endpoint".to_owned());
+    let called = Arc::new(Mutex::new(false));
+    let flag = Arc::clone(&called);
     let err = Daemon::builder(&app(), &config)
-        .stores(|| async { Ok(()) })
+        .stores(move || {
+            let flag = Arc::clone(&flag);
+            async move {
+                *flag.lock().expect("flag") = true;
+                Ok(())
+            }
+        })
         .routes(|()| OpenApiRouter::new())
         .run()
         .await
         .expect_err("endpoint");
     assert!(matches!(err, RuntimeError::EndpointFailed { .. }));
     assert_eq!(err.code(), "RUNTIME.ENDPOINT_FAILED");
+    assert!(!*called.lock().expect("flag"));
+}
+
+#[tokio::test]
+async fn reserved_health_route_is_route_conflict() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let config = rooted_config(dir.path());
+    let err = Daemon::builder(&app(), &config)
+        .stores(|| async { Ok(()) })
+        .routes(|()| OpenApiRouter::new().route("/health", axum::routing::get(|| async { "nope" })))
+        .run()
+        .await
+        .expect_err("overlap");
+    assert!(matches!(err, RuntimeError::RouteConflict { .. }), "{err:?}");
+    assert_eq!(err.code(), "RUNTIME.ROUTE_CONFLICT");
 }
 
 #[tokio::test]

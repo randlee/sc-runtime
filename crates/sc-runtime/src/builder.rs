@@ -177,12 +177,17 @@ where
     /// [`routes`](DaemonBuilder::routes). [`mcp`](DaemonBuilder::mcp) is optional
     /// on that ready state.
     ///
+    /// Endpoint text is resolved before the lock so an invalid endpoint does
+    /// not open stores. Signal streams are registered before bind. The order
+    /// after a valid endpoint is lock, stores, routes, optional MCP, then bind.
+    ///
     /// # Errors
     ///
     /// Returns [`RuntimeError`] for lock contention, a stores failure, endpoint
-    /// resolution, bind, or serve. A failed step does not run later steps.
-    /// Shutdown on SIGINT or SIGTERM returns `Ok(())` after the listener is
-    /// released. This function does not call `process::exit`.
+    /// resolution, a reserved-route conflict, bind, or serve. A failed step
+    /// does not run later steps. Shutdown on SIGINT or SIGTERM returns `Ok(())`
+    /// after the listener is released. This function does not call
+    /// `process::exit`.
     ///
     /// ```compile_fail
     /// use sc_runtime::{Daemon, DaemonConfig};
@@ -204,12 +209,14 @@ where
             control,
             ..
         } = self;
+        let check_mcp = mount.is_some();
         drive(
             &app,
             &config,
             control,
             stores,
             routes,
+            check_mcp,
             |router, stores| match mount {
                 Some(mount) => mount(router, stores),
                 None => router,
@@ -225,6 +232,7 @@ async fn drive<S, FStores, Fut, FRoutes, Apply>(
     mut control: RunControl,
     stores_fn: FStores,
     routes_fn: FRoutes,
+    check_mcp: bool,
     apply_mcp: Apply,
 ) -> Result<(), RuntimeError>
 where
@@ -235,6 +243,8 @@ where
     Apply: FnOnce(axum::Router, S) -> axum::Router,
 {
     let root = resolve_root(app, config)?;
+    let endpoint = resolve_endpoint(app, config, &root)?;
+    let signals = shutdown::install(control.listen_for_signals)?;
     let lock = lock::acquire(&root)?;
     let stores = match stores_fn().await {
         Ok(stores) => stores,
@@ -244,15 +254,14 @@ where
         }
     };
     let openapi = routes_fn(stores.clone());
-    let router = apply_mcp(router::with_runtime_routes(openapi), stores);
-    let endpoint = match resolve_endpoint(app, config, &root) {
-        Ok(endpoint) => endpoint,
+    let router = match router::with_runtime_routes(openapi, check_mcp) {
+        Ok(router) => apply_mcp(router, stores),
         Err(err) => {
             drop(lock);
             return Err(err);
         }
     };
-    serve(router, &endpoint, &mut control, lock).await
+    serve(router, &endpoint, &mut control, lock, signals).await
 }
 
 async fn serve(
@@ -260,6 +269,7 @@ async fn serve(
     endpoint: &Endpoint,
     control: &mut RunControl,
     lock: InstanceLock,
+    signals: Option<shutdown::Signals>,
 ) -> Result<(), RuntimeError> {
     let listener = match sc_transport::bind(endpoint).await {
         Ok(listener) => listener,
@@ -279,14 +289,6 @@ async fn serve(
     if let Some(ready) = control.ready.take() {
         let _ = ready.send(bound);
     }
-    let signals = match shutdown::install(control.listen_for_signals) {
-        Ok(signals) => signals,
-        Err(err) => {
-            drop(listener);
-            drop(lock);
-            return Err(err);
-        }
-    };
     let cancel = control.shutdown.take();
     let result = axum::serve(listener, router.into_make_service())
         .with_graceful_shutdown(async move {

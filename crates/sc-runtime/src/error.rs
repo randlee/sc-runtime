@@ -17,6 +17,9 @@ pub(crate) const CODE_BIND_FAILED: &str = "RUNTIME.BIND_FAILED";
 /// Stable code when serving the router fails.
 pub(crate) const CODE_SERVE_FAILED: &str = "RUNTIME.SERVE_FAILED";
 
+/// Stable code when the project router already defines a reserved runtime path.
+pub(crate) const CODE_ROUTE_CONFLICT: &str = "RUNTIME.ROUTE_CONFLICT";
+
 /// Failure returned by [`crate::DaemonBuilder::run`].
 ///
 /// `StoresFailed` carries plain text the application's stores closure built.
@@ -112,6 +115,18 @@ pub enum RuntimeError {
         /// Serve text.
         cause: Option<String>,
     },
+    /// The project's router already defines a reserved runtime path.
+    #[non_exhaustive]
+    RouteConflict {
+        /// Stable code [`CODE_ROUTE_CONFLICT`](self::CODE_ROUTE_CONFLICT).
+        code: &'static str,
+        /// What happened.
+        message: String,
+        /// How to recover.
+        remediation: String,
+        /// The reserved path that collided.
+        cause: Option<String>,
+    },
 }
 
 impl RuntimeError {
@@ -184,6 +199,17 @@ impl RuntimeError {
         }
     }
 
+    pub(crate) fn route_conflict(path: impl Into<String>) -> Self {
+        let path = path.into();
+        Self::RouteConflict {
+            code: CODE_ROUTE_CONFLICT,
+            message: format!("the project router already defines reserved path {path}"),
+            remediation: "remove GET /health, GET /openapi.json, or /mcp from the project router"
+                .to_owned(),
+            cause: Some(path),
+        }
+    }
+
     /// Stable code for this failure.
     #[must_use]
     pub fn code(&self) -> &'static str {
@@ -193,7 +219,8 @@ impl RuntimeError {
             | Self::InstanceFailed { code, .. }
             | Self::EndpointFailed { code, .. }
             | Self::BindFailed { code, .. }
-            | Self::ServeFailed { code, .. } => code,
+            | Self::ServeFailed { code, .. }
+            | Self::RouteConflict { code, .. } => code,
         }
     }
 
@@ -206,7 +233,8 @@ impl RuntimeError {
             | Self::InstanceFailed { message, .. }
             | Self::EndpointFailed { message, .. }
             | Self::BindFailed { message, .. }
-            | Self::ServeFailed { message, .. } => message,
+            | Self::ServeFailed { message, .. }
+            | Self::RouteConflict { message, .. } => message,
         }
     }
 
@@ -219,7 +247,8 @@ impl RuntimeError {
             | Self::InstanceFailed { remediation, .. }
             | Self::EndpointFailed { remediation, .. }
             | Self::BindFailed { remediation, .. }
-            | Self::ServeFailed { remediation, .. } => remediation,
+            | Self::ServeFailed { remediation, .. }
+            | Self::RouteConflict { remediation, .. } => remediation,
         }
     }
 
@@ -232,7 +261,8 @@ impl RuntimeError {
             | Self::InstanceFailed { cause, .. }
             | Self::EndpointFailed { cause, .. }
             | Self::BindFailed { cause, .. }
-            | Self::ServeFailed { cause, .. } => cause.as_deref(),
+            | Self::ServeFailed { cause, .. }
+            | Self::RouteConflict { cause, .. } => cause.as_deref(),
         }
     }
 }

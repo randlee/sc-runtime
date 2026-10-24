@@ -111,6 +111,8 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)). How `run()`
 obtains the instance root and the bind endpoint is
 [REQ-RT-0008](requirements.md).
 
+Endpoint text is resolved before the lock so an invalid endpoint does not
+open stores or take the lock. Signal streams are registered before bind.
 `run()` MUST NOT call the stores closure before the lock is held.
 `run()` MUST NOT bind a listener before steps 1 to 4 have succeeded.
 If a step fails, `run()` MUST return an `Err(RuntimeError)` and MUST NOT
@@ -334,8 +336,14 @@ envelope produced by the server-feature Axum `IntoResponse` for
 `sc_command::Envelope::success`. The data is `{ "status": "ok" }`. That
 conversion is the `sc_command` item `crates/sc-runtime/src` uses.
 
-**OPEN:** the behaviour when the project's router already defines the health
-path, the OpenAPI document path or `/mcp` is not stated.
+Those three paths (`GET /health`, `GET /openapi.json`, and `/mcp` when
+`.mcp(...)` was called) are reserved. `run()` inspects the project's
+`OpenApiRouter` after the routes closure returns and before it mounts the
+reserved routes. Overlap returns `RuntimeError::RouteConflict` with code
+`RUNTIME.ROUTE_CONFLICT` and does not bind. Axum is not allowed to panic on
+the later `route` or `nest_service`. The stores closure has already run
+because lock-then-stores-then-routes is the binding start-up order; the
+check happens before reserved-route mount side effects and before bind.
 
 ### Rationale
 
@@ -570,6 +578,7 @@ payload, recovery text) is in [the crate architecture](architecture.md#runtime-e
 | `EndpointFailed` | endpoint resolution failed |
 | `BindFailed` | `sc-transport` could not bind the listener |
 | `ServeFailed` | serving the router ended with an error |
+| `RouteConflict` | the project's router already defines `GET /health`, `GET /openapi.json`, or `/mcp` |
 
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is

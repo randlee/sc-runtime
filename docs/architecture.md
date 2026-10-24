@@ -1257,7 +1257,9 @@ unverified facts held in [ADR-RUN-0203](architecture.md).
 
 The OpenAPI document route is `GET /openapi.json`. The health route is
 `GET /health`, status 200, body the `sc_command` success envelope with data
-`{ "status": "ok" }`.
+`{ "status": "ok" }`. Those paths are reserved: a project router that already
+defines them, or `/mcp` when `.mcp(...)` was called, makes `run()` return
+`RuntimeError` with code `RUNTIME.ROUTE_CONFLICT` instead of panicking in axum.
 
 ### Consequences
 

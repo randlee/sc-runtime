@@ -6,8 +6,10 @@
 //! `sc_runtime::AppName`.
 //!
 //! `run` exists only after `stores` and `routes`. `mcp` is optional on that
-//! ready state. The order inside `run` is lock, stores, routes and optional
-//! MCP, then bind.
+//! ready state. Endpoint text is resolved before the lock so an invalid
+//! endpoint does not open stores. Signal streams are registered before bind.
+//! The order after a valid endpoint is lock, stores, routes and optional MCP,
+//! then bind.
 //!
 //! # Examples
 //!
