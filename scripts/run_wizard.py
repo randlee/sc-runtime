@@ -114,7 +114,19 @@ def find_wyvern_bin() -> str:
     An override that does not resolve is an error. There is no install prefix.
     """
     override = os.environ.get("WYVERN_BIN")
-    candidate = shutil.which(override) if override else shutil.which("wyvern")
+    if override:
+        candidate = shutil.which(override) or (
+            override if os.path.isfile(override) and os.access(override, os.X_OK) else None
+        )
+        if candidate:
+            return candidate
+        raise WizardError(
+            f"WYVERN_BIN does not resolve to an executable: {override!r}",
+            code="GEN.TOOL_MISSING",
+            cause="WYVERN_BIN is set but does not resolve to an executable",
+            recovery="set WYVERN_BIN to the wyvern binary path; cargo generate does not run",
+        )
+    candidate = shutil.which("wyvern")
     if candidate:
         return candidate
     raise WizardError(
@@ -186,7 +198,7 @@ def run_wyvern(wizard_json: Path, ui_root: Path, cwd: Path) -> str:
                 f"wyvern exited with status {proc.returncode}: {detail}",
                 code="GEN.TOOL_MISSING",
                 cause=f"wyvern exited with status {proc.returncode}",
-                recovery="set WYVERN_BIN or install wyvern on PATH; cargo generate does not run",
+                recovery="fix Wyvern or the wizard UI; cargo generate does not run",
             )
         return stdout_text
 
