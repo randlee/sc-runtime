@@ -1,7 +1,7 @@
 ---
 id: a-5
 phase: a
-status: planned
+status: complete
 closure_type: integration
 target_boundary: runtime-composition
 vertical_rationale: "sc-runtime is the one intended assembly boundary; its greenfield implementation and rewritten-spike consumer form one cohesive vertical closure after the three real leaf APIs exist."
