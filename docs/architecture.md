@@ -1157,9 +1157,10 @@ happens to be up.
    code `DAEMON.NOT_RUNNING` and
    `suggested_action: "run <app> daemon start"` (a plain JSON string), and
    MUST exit non-zero (the non-zero exit is decided in this document).
-6. In Phase A the CLI is report-only and MUST NOT start the daemon. Deferred
-   [ADR-RUN-0204](architecture.md) preserves a possible optional auto-start
-   layer for later evaluation; it does not amend this point in Phase A.
+6. Report-only commands MUST NOT start the daemon. An explicit `daemon start`
+   subcommand that execs the daemon binary is allowed. That subcommand is
+   not auto-start. Deferred [ADR-RUN-0204](architecture.md) stays the optional
+   auto-start layer and is not a Phase A closure.
 
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
@@ -1925,8 +1926,11 @@ mechanics it uses are recorded in Active
    every generation option: names, types, defaults, enums and conditional
    requirements.
 2. The placeholder keys in `template/cargo-generate.toml` MUST equal the
-   schema's keys. A unit test under `tests/unit/` MUST assert the two key sets
-   are equal.
+   schema's property keys except for the project-name key. One named constant
+   exempts that key, because `cargo generate` takes the project name through
+   `--name` and not through a placeholder. A unit test under `tests/unit/`
+   MUST assert the two sets are equal aside from that one key, and it MUST
+   exempt nothing else.
 3. `cargo-generate` MUST render the Rust workspace from `template/`, from a
    values file that the driver writes from the validated answers, with no
    prompt.
@@ -1935,19 +1939,20 @@ mechanics it uses are recorded in Active
 5. `AGENTS.md.j2` and `CLAUDE.md.j2` MUST NOT be rendered by `cargo-generate`.
    The driver MUST render them with `sc-compose` from the same answers and
    remove the `.j2` sources from the generated project.
-6. The driver MUST be the Python script `scripts/new_project.py`, reusing
-   `run_wizard.py` from `p3-nuget-template` as `scripts/run_wizard.py`, and
-   exposed as `just new <dest>`. Its steps, in order: run the wizard unless
-   `--var-file` is given; validate the answers against the schema; write
-   `values.toml`; run `cargo generate`; run `sc-compose`; run `just lint` and
-   `just test` in the generated project.
+6. The driver MUST be the Python script `scripts/new_project.py`, exposed as
+   `just new <dest>`. Its steps, in order: run the wizard unless `--var-file`
+   is given; validate the answers against the schema; write `values.toml`;
+   run `cargo generate`; run `sc-compose`; run `just setup`, `just lint`,
+   `just test`, `just build-cli`, and `just build-daemon` in the generated
+   project. Sprint a-6 implements the `--var-file` path. The wizard UI is a
+   later sprint.
 7. The driver MUST support three entry modes that all produce the same answers
    JSON: the interactive wizard; `--prefill <json>` (agent-written guesses
    merged into the wizard for human review); `--var-file <answers.json>`
    (no wizard, no prompts).
-8. Template CI MUST run the driver with `--var-file` for each file in
-   `wizard/fixtures/*.json`, then `just lint` and `just test` in the result.
-   Wyvern MUST NOT be required in CI.
+8. Template CI MUST run `just new`, then `just setup`, then `just lint`, then
+   `just test`, then `just build-cli`, then `just build-daemon` for each file
+   in `wizard/fixtures/*.json`. Wyvern is not required.
 9. `wizard/` and `scripts/` MUST sit beside `template/` and MUST NOT be inside
    it, so nothing of them is copied into a generated project.
 10. The `cargo-generate` mechanics that realise points 3, 4 and 5 (the command
@@ -1956,14 +1961,22 @@ mechanics it uses are recorded in Active
     a-1 confirmed those facts, so this mechanism stands. Points 1 to 9 do
     not change with that confirmation.
 
-**OPEN:** the name and format of the version field in `answers.schema.json`
-are undecided.
+The schema version field is `x-schema-version`, an integer at the root of
+`answers.schema.json`. Bump it when a breaking option change ships. The
+shipped value is `1`.
 
-**OPEN:** whether the project-name key is exempt from the key-set equality of
-point 2 is undecided, because `cargo generate` takes the project name through
-`--name` and not through a placeholder
-([REQ-RUN-0402](requirements.md)). Once it is decided, point 2 reads either
-"equal" or "equal except for the project-name key".
+Stderr from the driver is one line, `<code> <cause> — <recovery>`, using
+U+2014. `GEN.STEP_FAILED` puts the failed pipeline step in the cause. The
+inventory is:
+
+| Failure | Code | Cause | Recovery |
+|---|---|---|---|
+| schema-invalid answers | `GEN.SCHEMA_INVALID` | answers fail `wizard/answers.schema.json` | fix the file; cargo is not called; the destination is not created |
+| reserved database | `GEN.DB_RESERVED` | `db` is `postgres` or `both` | set `db` to `sqlite`; the destination is not created |
+| invalid project name | `APP.INVALID_NAME` | name fails the project-name `pattern` in `wizard/answers.schema.json` | fix the name to that pattern; the destination is not created |
+| missing sc-compose | `GEN.TOOL_MISSING` | `SC_COMPOSE` unset and `sc-compose` not on `PATH` | set `SC_COMPOSE` or install `sc-compose` on `PATH`; `cargo generate` does not run |
+| destination conflict | `GEN.DEST_CONFLICT` | the destination path exists | choose an absent path |
+| pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | fix it or remove the partial destination; later steps do not run |
 
 ### Consequences
 

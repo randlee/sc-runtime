@@ -1,0 +1,19 @@
+[package]
+name = "api-types"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[features]
+default = []
+schema = ["dep:schemars", "dep:utoipa"]
+
+[dependencies]
+serde.workspace = true
+schemars = { workspace = true, optional = true }
+utoipa = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json.workspace = true

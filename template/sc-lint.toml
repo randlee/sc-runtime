@@ -1,0 +1,18 @@
+[tool.sc-lint]
+minimum_version = "0.8.0"
+
+[[tool.sc-lint.lint]]
+name = "fmt"
+command = ["cargo", "fmt", "--all", "--check"]
+
+[[tool.sc-lint.lint]]
+name = "clippy"
+command = ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
+
+[[tool.sc-lint.test]]
+name = "workspace"
+command = ["cargo", "test", "--workspace"]
+
+[tool.sc-lint.lint_profiles]
+full = ["fmt", "clippy"]
+default = ["fmt", "clippy"]

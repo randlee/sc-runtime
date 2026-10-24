@@ -1,0 +1,17 @@
+---
+required_variables:
+  - project_name
+  - db
+  - mcp
+  - licence
+defaults: {}
+metadata: {}
+---
+
+# {{ project_name }}
+
+Generated application notes for agents. Store: {{ db }}. MCP enabled: {{ mcp }}.
+Licence: {{ licence }}.
+
+Report-only commands do not start the daemon. `{{ project_name }} daemon start`
+execs the daemon binary. That command is not auto-start.

@@ -1,7 +1,7 @@
 ---
 id: a-6
 phase: a
-status: planned
+status: complete
 closure_type: integration
 target_boundary: template-from-json
 vertical_rationale: "The generator and editable example do not exist yet; one vertical sprint creates the single JSON-to-project artifact and proves it without introducing a reusable application framework. Splitting the driver from the template would only serialize the same artifact."
@@ -60,6 +60,7 @@ adrs:
   - ADR-RUN-0010
   - ADR-RUN-0201
   - ADR-RUN-0202
+  - ADR-RUN-0203
   - ADR-RUN-0301
   - ADR-RUN-0302
   - ADR-RUN-0303
@@ -289,7 +290,7 @@ its only meaningful proof.
     | invalid project name | `APP.INVALID_NAME` | name fails the project-name `pattern` in `wizard/answers.schema.json` | fix the name to that pattern; the destination is not created |
     | missing sc-compose | `GEN.TOOL_MISSING` | `SC_COMPOSE` unset and `sc-compose` not on `PATH` | set `SC_COMPOSE` or install `sc-compose` on `PATH`; `cargo generate` does not run |
     | destination conflict | `GEN.DEST_CONFLICT` | the destination path exists | choose an absent path |
-    | pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | stderr names that step; fix it; later steps do not run |
+    | pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | fix it or remove the partial destination; later steps do not run |
 
 16. **REQ-RUN-0001** — After generation, the tree contains no `wizard/`
     directory, no `scripts/new_project.py`, no `boundaries/` directory, and
@@ -471,8 +472,9 @@ its only meaningful proof.
     and no Wyvern discovery.
 21. `req:NFR-RUN-0008` — this criterion closes `template/**/*.rs` only. a-5
     closed `crates/*/src`. Root `just lint` runs the sc-lint line-counts
-    check over `template/**/*.rs` and exits 0. The only `sc-lint.toml` diff
-    in this sprint is that path glob.
+    check over `template/**/*.rs` and exits 0. The `sc-lint.toml` diff
+    in this sprint is that path glob plus the `generation` test entry, which
+    runs `scripts/run_generation_tests.py` outside the managed Justfile block.
 22. `req:REQ-RUN-0202` — one host-safe `--json` vector exists for every
     `TransportError` variant a-3 ships. Each vector checks kind, code,
     message, `suggested_action`, and the envelope. The mapping is generated

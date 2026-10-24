@@ -1,0 +1,2 @@
+[common]
+database-url-var = "SQLITE_DATABASE_URL"
