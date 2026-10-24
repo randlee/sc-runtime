@@ -1,0 +1,94 @@
+name: Phase A spike proofs
+
+on:
+  pull_request:
+  push:
+    branches:
+      - sprint/a-1-compatibility-spike
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase-a-spike-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  spike:
+    name: examples/spike proofs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/spike
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install host libraries
+        working-directory: ${{ github.workspace }}
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libsqlite3-dev
+
+      - name: Install Rust 1.99.0
+        uses: dtolnay/rust-toolchain@1.99.0
+        with:
+          components: rustfmt, clippy
+
+      - name: Install sc-lint 0.8.0
+        working-directory: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          archive="sc-lint_0.8.0_x86_64-unknown-linux-gnu.tar.gz"
+          url="https://github.com/randlee/sc-lint/releases/download/v0.8.0/${archive}"
+          curl -fsSL -o "/tmp/${archive}" "$url"
+          echo "c17e1e62764ac69c21674a9eda43c1f5f1336f7601455167ccb0ad3669a7c9ca  /tmp/${archive}" | sha256sum -c
+          mkdir -p /tmp/sc-lint "$HOME/.local/bin"
+          tar -xzf "/tmp/${archive}" -C /tmp/sc-lint
+          install -m 755 /tmp/sc-lint/bin/sc-lint "$HOME/.local/bin/sc-lint"
+          install -m 755 /tmp/sc-lint/bin/sc-lint-boundary "$HOME/.local/bin/sc-lint-boundary"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/sc-lint" --version
+          "$HOME/.local/bin/sc-lint-boundary" --version
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --all-features --locked
+
+      - name: Boundary proof
+        run: |
+          set -euo pipefail
+          command -v sc-lint
+          command -v sc-lint-boundary
+          proof=$(./boundary-proof/run.sh)
+          printf '%s\n' "$proof"
+          PROOF="$proof" python3 - <<'PY'
+          import os, re, sys
+          text = os.environ["PROOF"]
+          expected = [
+              ("no-workspace", "3"),
+              ("exit-ok", "0"),
+              ("prefix-match", "0"),
+              ("direct-forbidden", "10"),
+              ("transitive-only", "0"),
+              ("direct-only-transitive", "0"),
+              ("direct-only-direct", "10"),
+              ("external-prefix", "3"),
+              ("external-direct", "0"),
+          ]
+          found = dict(
+              re.findall(r"===== (\S+) lint =====[\s\S]*?\nlint_exit=(\d+)", text)
+          )
+          mismatches = [
+              f"{name}: expected {code}, got {found.get(name)}"
+              for name, code in expected
+              if found.get(name) != code
+          ]
+          if mismatches:
+              sys.exit("boundary lint exits diverged:\n" + "\n".join(mismatches))
+          PY

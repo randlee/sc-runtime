@@ -1340,7 +1340,7 @@ Both points are verified by sprint a-1. The evidence rows are defined in
 [REQ-RUN-0102](requirements.md). The right-hand column below is a non-normative
 summary of those rows:
 
-| # | Unverified fact | Evidence row in REQ-RUN-0102 |
+| # | Fact | Evidence row in REQ-RUN-0102 |
 |---|---|---|
 | 1 | `rmcp` 3.x, `utoipa-axum` 0.2 and `axum` 0.8 coexist on one `axum::Router` with no dependency version conflict | V1: `cargo tree -i axum` for the spike shows one `axum` version, and the spike serves a REST route and `/mcp` from one router |
 | 2 | rmcp `Parameters<T>` accepts a struct that also derives `utoipa::ToSchema`, with no clash between the two derives or their schemas | V2: the struct compiles and answers as a REST body and as `Parameters<T>`; MCP `tools/list` returns an input schema for the tool and `openapi.json` contains the struct as a component schema |
@@ -1913,8 +1913,8 @@ match the sc-ai-cli templates, and `cargo-generate`'s Liquid and Jinja both
 use `{{ }}`, so one engine cannot render both kinds of file.
 
 This ADR holds the pipeline shape, which is accepted. The `cargo-generate`
-mechanics it uses are unverified and are held in
-[ADR-RUN-0402](architecture.md).
+mechanics it uses are recorded in Active
+[ADR-RUN-0402](architecture.md). Sprint a-1 proved them.
 
 ### Decision
 
@@ -1949,9 +1949,9 @@ mechanics it uses are unverified and are held in
    it, so nothing of them is copied into a generated project.
 10. The `cargo-generate` mechanics that realise points 3, 4 and 5 (the command
     line, conditional `ignore` lists, the `exclude` list, placeholder syntax
-    and the version pin) are [ADR-RUN-0402](architecture.md). If a fact of
-    that ADR turns out false, the mechanism changes. Points 1 to 9 do not
-    change.
+    and the version pin) are Active [ADR-RUN-0402](architecture.md). Sprint
+    a-1 confirmed those facts, so this mechanism stands. Points 1 to 9 do
+    not change with that confirmation.
 
 **OPEN:** the name and format of the version field in `answers.schema.json`
 are undecided.
@@ -2007,7 +2007,7 @@ failing before `cargo generate` runs); the fixture matrix in
 - [REQ-RUN-0601](requirements.md) through [REQ-RUN-0603](requirements.md): the Wyvern wizard and its three entry
   modes.
 - [REQ-RUN-0701](requirements.md): fixture-matrix CI.
-- [ADR-RUN-0402](architecture.md): the unverified `cargo-generate` mechanics.
+- [ADR-RUN-0402](architecture.md): the `cargo-generate` mechanics. Sprint a-1 made that ADR Active.
 
 ---
 
@@ -2024,9 +2024,8 @@ failing before `cargo generate` runs); the fixture matrix in
 the Rust workspace from `template/` with no prompt, from a values file; options
 include or exclude whole files; `AGENTS.md.j2` and `CLAUDE.md.j2` reach the
 generated project unrendered so that `sc-compose` can render them. Each of
-these relies on a `cargo-generate` behaviour that nobody has yet verified on a
-fixed `cargo-generate` version. The version that counts is the
-`cargo-generate` version pinned by sprint a-1.
+these relies on a `cargo-generate` behaviour that sprint a-1 verified on
+cargo-generate 0.25.1. That is the pinned version.
 
 ### Decision
 
@@ -2048,7 +2047,7 @@ All five points are verified by sprint a-1. The evidence rows are defined in
 [REQ-RUN-0102](requirements.md). The right-hand column below is a non-normative
 summary of those rows:
 
-| # | Unverified fact | Evidence row in REQ-RUN-0102 |
+| # | Fact | Evidence row in REQ-RUN-0102 |
 |---|---|---|
 | 1 | On the `cargo-generate` version pinned by sprint a-1, `cargo-generate.toml` accepts `string`, `bool` and `array` placeholders, a conditional `ignore` list and an `exclude` list; the exact syntax of each is known | V3a: a scratch `cargo-generate.toml` using every one of these constructs, copied into the record, that the pinned version parses without error |
 | 2 | A conditional `ignore` list includes or excludes a whole file | V3b: two runs of the scratch template that differ only in one `bool` value; the conditionally ignored file is present in one output and absent in the other |
@@ -2126,7 +2125,7 @@ option excludes is absent from the rendered project) and of
 - [ADR-RUN-0401](architecture.md): the accepted pipeline shape these mechanics serve.
 - [REQ-RUN-0303](requirements.md) through [REQ-RUN-0306](requirements.md): options, the limit on in-file
   Liquid, `sc-compose` rendering and plain `cargo generate`; their mechanism
-  clauses are conditional on this ADR.
+  clauses follow this ADR, which sprint a-1 made Active.
 - [REQ-RUN-0501](requirements.md) and [REQ-RUN-0502](requirements.md): the driver's `cargo generate` step and
   its non-interactive mode.
 - [REQ-RUN-0701](requirements.md): fixture-matrix CI.
@@ -2137,16 +2136,42 @@ This section is the compatibility evidence for sprint a-1. The spike under
 `examples/spike` is disposable. a-7 deletes it. It is not a production crate
 and it does not start a test daemon.
 
-**Platform:** Darwin arm64, macOS 15.5 (build 24F74), `rustc 1.99.0 (b940084d7 2026-09-28)`.  
-**Tools:** `sc-lint 0.8.0`, `sc-lint-boundary 0.8.0`, `cargo generate-generate 0.25.1`.  
-**Ran:** 2026-10-24T02:43:47Z on a developer host.  
-**Evidence commit:** `3bc47b63b31ce8129267f6929646796a3f0db37d`.
+**Platform:** GitHub Actions ephemeral runner, `ubuntu-latest` (Linux). A
+developer host is not the acceptance environment.  
+**Workflow:** `.github/workflows/phase-a-spike.yml`.
+It runs on pull requests, on pushes to `sprint/a-1-compatibility-spike` and
+`main`, and on `workflow_dispatch`.  
+**Commands,** from `examples/spike`:
 
-The UDS proof started `examples/spike/target/debug/spike-server` on a temporary
-socket and SQLite file under `/tmp/spike-a1.542qFr`, then killed the process
-and removed the directory. There was no instance root and no `daemon.lock`.
-NFR-RUN-0010's isolation marker is still open, so this run is not an
-isolated-machine daemon-process proof. No cargo test starts the server.
+```text
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo test --workspace --all-features --locked
+./boundary-proof/run.sh
+```
+
+The workflow installs Rust 1.99.0 with rustfmt and clippy, `pkg-config`,
+`libsqlite3-dev`, and the sc-lint 0.8.0 Linux archive (`sc-lint` and
+`sc-lint-boundary` from
+`sc-lint_0.8.0_x86_64-unknown-linux-gnu.tar.gz`). The boundary step fails
+when a case's `lint_exit` differs from the table below. That script is the
+child-process boundary proof; acceptance is this runner, not a developer
+host.  
+**Tools:** `sc-lint 0.8.0`, `sc-lint-boundary 0.8.0`, `cargo generate-generate 0.25.1`.  
+**Rust:** `rustc 1.99.0`.  
+**Evidence:** a green run of that workflow on the sprint commit. Version rows
+below are the lockfile resolutions the job builds with `--locked`.
+
+The server feature binds a Unix domain socket.
+`examples/spike/stack/src/lib.rs` compiles that module only under `cfg(unix)`
+and emits `compile_error` on any other target. `examples/spike/cli` does the
+same for `reqwest`'s Unix socket client. The `put_note` async test stores its
+SQLite file in a `tempfile` directory so parallel tests do not share one path.
+No cargo test starts the server. The socket transcript below records the
+call sites that this workflow compiles and tests. It is not a developer-host
+acceptance run. There was no instance root and no `daemon.lock`.
+NFR-RUN-0010's isolation marker is still open, so this spike is not an
+isolated-machine daemon-process proof.
 
 ### Resolved versions
 
@@ -2181,7 +2206,7 @@ from `spike-stack` and from `utoipa-axum v0.2.0`.
   (`utoipa_axum` 0.2).
 - `StreamableHttpService::new(factory, Arc<LocalSessionManager>, StreamableHttpServerConfig::default().with_legacy_session_mode(false).with_json_response(true))`, then `Router::nest_service("/mcp", mcp)` (`rmcp` 3.7.0).
 - `SqlitePoolOptions::new().connect_with(SqliteConnectOptions::new().filename(database).create_if_missing(true))` (`sqlx` 0.9.0). Runtime queries, not `query!`.
-- `tokio::net::UnixListener::bind(socket)` passed to `axum::serve`.
+- `tokio::net::UnixListener::bind(socket)` passed to `axum::serve`. Unix-only, gated by `cfg(unix)` with `compile_error` on other targets.
 - `reqwest::Client::builder().unix_socket(&*path)` where `path` is a `PathBuf`, so the argument is `&Path` (`reqwest` 0.13.5).
 - `Note` derives `Serialize`, `Deserialize`, `schemars::JsonSchema`, and `utoipa::ToSchema`. REST takes `Json<Note>`. The MCP tool takes `Parameters<Note>`.
 - `sc_observability_types::ErrorCode::new_static("SPIKE.PIN")` and `sc_observability::constants::DEFAULT_LOG_FILE_SUFFIX`.

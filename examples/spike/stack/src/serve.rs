@@ -69,7 +69,10 @@ pub fn observability_pin() -> String {
     )
 }
 
-/// Serves the spike router on `socket`, storing notes in `database`.
+/// Serves the spike router on the Unix socket `socket`, storing notes in `database`.
+///
+/// The enclosing module compiles only on Unix. See the `compile_error` in
+/// the crate root when the `server` feature is built on another target.
 ///
 /// # Errors
 ///
@@ -181,13 +184,12 @@ mod tests {
 
     #[tokio::test]
     async fn put_note_is_stable_for_the_same_key() {
-        let dir = std::env::temp_dir().join(format!("spike-put-note-{}", std::process::id()));
-        std::fs::create_dir_all(&dir).expect("temp dir");
+        let dir = tempfile::tempdir().expect("temp dir");
         let pool = SqlitePoolOptions::new()
             .max_connections(1)
             .connect_with(
                 SqliteConnectOptions::new()
-                    .filename(dir.join("notes.db"))
+                    .filename(dir.path().join("notes.db"))
                     .create_if_missing(true),
             )
             .await
@@ -198,6 +200,6 @@ mod tests {
         };
         let saved = put_note(&pool, note.clone()).await.expect("put");
         assert_eq!(saved, note);
-        let _ = std::fs::remove_dir_all(&dir);
+        pool.close().await;
     }
 }

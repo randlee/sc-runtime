@@ -596,9 +596,10 @@ sprint, named sprint a-1 (the work in `examples/spike` plus a scratch
 `cargo-generate` template), MUST answer each one with recorded evidence, as
 true, or as false together with what was found instead.
 
-This table is the only definition of that evidence. The two Proposed ADRs
-named below refer to its rows by id. Any text beside a row id in those ADRs is
-a non-normative summary; the rows of this item govern.
+This table is the only definition of that evidence. ADR-RUN-0203 and
+ADR-RUN-0402, both Active after sprint a-1, refer to its rows by id. Any
+text beside a row id in those ADRs is a non-normative summary; the rows of
+this item govern.
 
 | Row | Fact to verify | Evidence required |
 |---|---|---|
@@ -669,8 +670,8 @@ them.
    `grep -n '^\*\*Status:\*\* Proposed' docs/architecture.md` prints
    nothing.
 5. For each row answered false, the Decision text of the ADR that rests on
-   it (see the table of the two Proposed ADRs) has been changed to match the
-   finding.
+   it (ADR-RUN-0203 or ADR-RUN-0402, in the table above) has been changed to
+   match the finding.
 6. The `**Status:**` lines of ADR-RUN-0001 and ADR-RUN-0201 in
    `docs/architecture.md` read `Active`.
 7. The evidence tables of ADR-RUN-0203 and ADR-RUN-0402 cite rows of this
@@ -2433,11 +2434,11 @@ in `template/cargo-generate.toml` (use the same key names), and sc-lint.
 The driver MUST NOT hold a list of option names or option defaults of its
 own; it MUST read both from the schema.
 
-The clause about placeholders in `template/cargo-generate.toml` is conditional
-on [ADR-RUN-0402](architecture.md), which is Proposed: how `cargo-generate`
-placeholders are declared and how values reach them is unverified until the
-spike has recorded the working syntax. The rest of this item does not depend
-on that ADR.
+Placeholders in `template/cargo-generate.toml` are `[placeholders.<name>]`
+tables whose `type` is `string`, `bool`, or `array`. Values reach them from
+a `[values]` file passed with `--template-values-file`. That syntax is
+recorded in Active [ADR-RUN-0402](architecture.md). Sprint a-1 proved it
+(rows V3a and V4a of [REQ-RUN-0102](requirements.md)).
 
 **OPEN:** the property key for the project-name option is not decided.
 Whether that key also appears as a placeholder in
@@ -2513,13 +2514,12 @@ This test is the single enforcement of the rule that a generation option is
 added to `wizard/answers.schema.json` and to `template/cargo-generate.toml`
 together.
 
-How placeholders are declared in `template/cargo-generate.toml` (the table
-the test reads, and the syntax of `string`, `bool` and `array` placeholders)
-is a `cargo-generate` mechanic that is unverified until the spike records it;
-it is held in [ADR-RUN-0402](architecture.md), which is Proposed. The part of
-this item that says where placeholder keys are read from is conditional on
-that ADR. The obligation that the two key sets are compared, in both
-directions, from the working tree, is not conditional.
+Placeholders are declared in `template/cargo-generate.toml` as
+`[placeholders.<name>]` tables. The key-set test reads those names. A
+placeholder's `type` is `string`, `bool`, or `array`. That syntax is
+recorded in Active [ADR-RUN-0402](architecture.md), which sprint a-1 proved
+(row V3a of [REQ-RUN-0102](requirements.md)). The test still compares the
+two key sets in both directions and reads both files from the working tree.
 
 **OPEN:** `cargo generate` receives the project name through its `--name`
 argument, not through a template-defined placeholder. Whether the schema's
@@ -2667,7 +2667,7 @@ these steps in this order:
 |---|---|---|
 | 1 | validate | Validates the answers object against `wizard/answers.schema.json`. |
 | 2 | values file | Writes the validated answers to a TOML file as one `[values]` table, one entry per answers key. `string`, `bool` and `array` values are supported. |
-| 3 | `cargo generate` | Runs `cargo generate --path template --template-values-file <values file> --name <project>` (plus `--silent` if the spike finds it is needed; see the OPEN below) with no terminal prompt. |
+| 3 | `cargo generate` | Runs `cargo generate --path template --template-values-file <values file> --name <project> --silent` with no terminal prompt. |
 | 4 | `sc-compose` | Runs `sc-compose` so that the new project holds `AGENTS.md` and `CLAUDE.md` and no `.j2` file. What is rendered, from which inputs, and the removal of the two `.j2` files are owned by [REQ-RUN-0305](requirements.md); this item owns only the position of the step in the order. |
 | 5 | `just lint` | Runs `just lint` in the new project. |
 | 6 | `just test` | Runs `just test` in the new project. |
@@ -2688,14 +2688,13 @@ The later wizard milestone extends answer acquisition under
 object through this same validation and six-step pipeline; it does not create
 a second driver or a second owner for these steps.
 
-The mechanism clauses of steps 2 and 3 are conditional on
-[ADR-RUN-0402](architecture.md), which is Proposed. Those clauses are: the
-`[values]` table form of the values file, the supported value types, the
-`--template-values-file` and `--silent` flags, and the claim that the command
-runs with no prompt. They are unverified until the spike has run them on the
-pinned `cargo-generate` version. If the spike finds a different mechanism,
-steps 2 and 3 change to it; the six steps, their order and the rule that the
-driver stops at the first failure do not.
+Steps 2 and 3 use the mechanism recorded in Active
+[ADR-RUN-0402](architecture.md): the values file is one `[values]` table,
+the supported types are `string`, `bool`, and `array`, and step 3 passes
+`--template-values-file` and `--silent` so the command runs with no prompt.
+Sprint a-1 proved that mechanism on cargo-generate 0.25.1 (rows V3a, V4a,
+and V4b of [REQ-RUN-0102](requirements.md)). The six steps, their order, and
+the rule that the driver stops at the first failure are unchanged.
 
 **OPEN:** how `<dest>` maps onto `cargo generate`'s `--name` and output
 directory arguments is not decided.  
@@ -2703,8 +2702,6 @@ directory arguments is not decided.
 `.j2` paths are passed) is not decided.  
 **OPEN:** where the values TOML file is written, and whether it is deleted
 afterwards, is not decided.  
-**OPEN:** whether step 3 also passes `--silent` depends on the spike result
-for non-interactive `cargo generate` runs.  
 **OPEN:** whether the project-name answer is also written into the `[values]`
 table, or is passed only through `--name`, is not decided
 ([REQ-RUN-0402](requirements.md) owns the question of whether the
@@ -2726,14 +2723,13 @@ naming the failed step tells a person or an agent where to look.
 2. A driver test runs the driver with `--var-file` on a valid fixture and
    stub executables for `cargo`, `sc-compose` and `just` that record their
    calls. It asserts the recorded order is `cargo generate`, `sc-compose`,
-   `just lint`, `just test`. Conditional on ADR-RUN-0402 being confirmed: it
-   also asserts that the `cargo generate` call contains `--path template`,
-   `--template-values-file` and `--name`.
-3. Conditional on ADR-RUN-0402 being confirmed: the same test reads the file
-   passed to `--template-values-file` and asserts it parses as TOML with a
-   single `[values]` table. Once the project-name question above is decided:
-   the table's keys equal the keys of the answers object, less the
-   project-name key if that key is passed only through `--name`.
+   `just lint`, `just test`, and that the `cargo generate` call contains
+   `--path template`, `--template-values-file`, `--name`, and `--silent`.
+3. The same test reads the file passed to `--template-values-file` and
+   asserts it parses as TOML with a single `[values]` table. Once the
+   project-name question above is decided, the table's keys equal the keys
+   of the answers object, less the project-name key if that key is passed
+   only through `--name`.
 4. For each of steps 3 to 6, a driver test makes that step's stub exit
    non-zero and asserts: the driver exits non-zero, stderr identifies that
    step, and no later stub was called.
@@ -2762,11 +2758,11 @@ the `wyvern` executable in this mode. Every tool it starts (`cargo generate`
 in particular) MUST be started so that it cannot prompt. This item is the
 single owner of the rule that `--var-file` never runs the wizard.
 
-How `cargo generate` is made unable to prompt (a values file given with
-`--template-values-file`, and possibly `--silent`) is a `cargo-generate`
-mechanic held in [ADR-RUN-0402](architecture.md), which is Proposed and
-unverified until the spike has run it with stdin closed. The obligation that
-nothing prompts is not conditional; the flags that achieve it are.
+`cargo generate` is kept from prompting by `--template-values-file` and
+`--silent`, as recorded in Active [ADR-RUN-0402](architecture.md). Sprint
+a-1 proved that pair with stdin closed on cargo-generate 0.25.1 (row V4a of
+[REQ-RUN-0102](requirements.md)). `--var-file` still never prompts and never
+starts the wizard.
 
 The base driver MUST locate `sc-compose` in this order:
 
@@ -2844,11 +2840,10 @@ are published to crates.io, a `[patch.crates-io]` entry or a git tag supplies
 them; that allowance, and the undecided question of who writes the
 `[patch.crates-io]` entry, are owned by [REQ-RUN-0003](requirements.md).
 
-`just new` renders the project with `cargo generate`. The `cargo-generate`
-mechanics it relies on (conditional `ignore`, `exclude`, a values file with
-no prompt) are held in [ADR-RUN-0402](architecture.md), which is Proposed
-until the spike has verified them. This item states the result that must
-hold whatever mechanism is confirmed, so none of its criteria is conditional.
+`just new` renders the project with `cargo generate`. Conditional `ignore`,
+`exclude`, and a values file that runs with no prompt are recorded in Active
+[ADR-RUN-0402](architecture.md). Sprint a-1 proved them (rows V3a, V3b, V4a,
+and V4b of [REQ-RUN-0102](requirements.md)).
 
 ### Rationale
 
@@ -3117,11 +3112,11 @@ value in v0.1 is `sqlite`, so no v0.1 fixture needs the container.
 The workflow MUST NOT use the `cargo-generate-action` GitHub Action as its
 matrix mechanism. The driver is what is tested.
 
-`just new` renders each project with `cargo generate`. The `cargo-generate`
-mechanics it relies on (conditional `ignore`, `exclude`, a values file with
-no prompt) are held in [ADR-RUN-0402](architecture.md), which is Proposed
-until the spike has verified them. This item names only `just` commands, so
-none of its clauses changes if the spike finds a different mechanism.
+`just new` renders each project with `cargo generate`. Conditional `ignore`,
+`exclude`, and a values file that runs with no prompt are recorded in Active
+[ADR-RUN-0402](architecture.md). Sprint a-1 proved them (rows V3a, V3b, V4a,
+and V4b of [REQ-RUN-0102](requirements.md)). This item's commands are the
+`just` recipes above.
 
 **OPEN:** the workflow file name is not decided.  
 **OPEN:** who writes the `[patch.crates-io]` entries into the generated
