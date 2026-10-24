@@ -122,7 +122,7 @@ This sprint is the sole owner of the NFR-RUN-0001 feature-level close.
 Fixture CI runs `cargo tree -p cli -e normal`, and the named server-only
 crates are absent. `cargo build -p cli` is the normative selection. A
 workspace-wide build is the documented exemption. This sprint does not split
-crates and does not wait for a-5 to close the workspace-unification OPEN.
+crates. Workspace-unification was closed in a-1; a-6 owns only the generated-project `cargo tree -p cli` check.
 Unknown route, Axum body rejection, and rmcp `Err(McpError)` stay deferred
 for v0.1. Do not extend ADR-CMD-0001 when the example widget operation is
 added.

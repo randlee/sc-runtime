@@ -91,9 +91,11 @@ rmcp signatures plus the recorded `sc-observability-types` version.
 5. **ADR-RUN-0003 / ADR-RUN-0004** — Amend `docs/architecture.md` before a-3
    and a-4 start. The amendment tasks point at those ADR ids. Do not paste
    replacement ADR text into this sprint doc. `TransportError::DaemonNotRunning`
-   carries `sc_observability_types::ErrorCode` on the code field and a plain
-   `String` suggested action (`run <app> daemon start` with the application
-   name). `OpError`
+   names `DaemonNotRunning` fully: code is
+   `sc_observability_types::ErrorCode` with value `DAEMON.NOT_RUNNING`;
+   suggested_action is `String` with value `run <app> daemon start` after
+   substituting the `AppName` passed to `Client::new`; sc-transport does not
+   use `Remediation`. `OpError`
    wire `suggested_action` follows the phase handoff: a JSON string or JSON
    `null` from the custom serializer, not a required plain-string field and
    not the tagged `Remediation` object. Close the workspace-unification OPEN as
@@ -126,18 +128,19 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    spike, and names that pair as the Phase A pin for a-4, a-6, and a-7.
 4. `ADR-RUN-0003` / `req:NFR-RUN-0001` — measurement records default and
    server selections with evidence, and the workspace-unification OPEN
-   paragraphs are **removed** and replaced with the v0.1 exemption decision
-   (no crate split). a-6 owns the generated-project `cargo tree -p cli`
-   check; a-5 does not run it.
+   paragraphs are **removed** and replaced with all three parts: `cargo build
+   -p cli` is normative, workspace-wide build is exempt, and client/server
+   crate split is rejected for v0.1. a-6 owns the generated-project
+   `cargo tree -p cli -e normal` check; a-5 does not run it.
 5. `ADR-RUN-0203` / `ADR-RUN-0402` — every evidence row is recorded with the
    exact version, type path, signature or template syntax, both ADRs are made
    Active (or amended to the proved result), and no dependent sprint starts
    while either remains Proposed.
 6. `boundary:compatibility-evidence` — `docs/architecture.md` is amended at
-   ADR-RUN-0003 and ADR-RUN-0004 so `DaemonNotRunning` names both field
-   types (ErrorCode + String suggested action) and `OpError` wire
-   `suggested_action` is a JSON string or `null` under the phase handoff.
-   Workspace-unification OPEN text is gone (see criterion 4).
+   ADR-RUN-0003 and ADR-RUN-0004 so `DaemonNotRunning` uses the full field
+   pair in deliverable 5 and `OpError` wire `suggested_action` is a JSON
+   string or `null` under the phase handoff. Workspace-unification OPEN
+   text is gone (see criterion 4).
 7. `boundary:compatibility-evidence` — REQ-RUN-0309 and ADR-RUN-0004 name the
    spike's recorded `sc-observability` and `sc-observability-types` versions
    as the Phase A pin. They allow `sc-observability-types` on `sc-command`

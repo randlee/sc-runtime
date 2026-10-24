@@ -1,6 +1,6 @@
 # Phase A — core runtime and minimal generator
 
-Status: plan-hardening pass 1 fixes applied (scope + critical reviewers).
+Status: plan-hardening pass 2 in progress (scope PASS at STEP2-R2).
 RBP sprint-doc pass on this branch assigns findings RBP-F001–F008 (plan
 review on develop `5240774`) to sprint deliverables and acceptance criteria;
 formal QA-1 has not run. The external-Dolt development graph and sprint
@@ -406,7 +406,7 @@ use that recorded pair.
 | 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**`, sc-command requirement/ADR sources |
 | 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, source-maintainer `sc-lint.toml` and `.sc-lint/bootstrap.py`, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, sc-runtime requirement/ADR sources, the `docs/architecture.md` edit that records the `sc-runtime` → `sc-config` edge as absent, rewritten spike, core CI/just recipes |
 | 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, schema/fixtures, driver, root `justfile` generation entry, generation tests and template CI |
-| 4 | release | a-7 core release | integration | release-distribution | authored `release/sc-publish-*` and `docs/development/sc-publish.md`, install.py workflow output, root release metadata, spike removal |
+| 4 | release | a-7 core release | integration | release-distribution | authored `release/sc-publish-*`, `docs/development/sc-publish.md`, `docs/architecture.md` release-section edit, install.py workflow output, root release metadata, spike removal |
 | 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, wizard runner/tests, narrow driver entry-mode change |
 
 `contract` on a-1 means the disposable compatibility-evidence record later
@@ -443,14 +443,14 @@ blocking the core release.
 
 Parent development is merged into a child before each development/fix round;
 parent PR merges before the child PR. Shared root files have one sequential
-owner. a-1 owns `docs/architecture.md` and `docs/requirements.md` for the
-amendment tasks in that sprint. a-5 is the next owner of `docs/architecture.md`,
-and only for the `sc-runtime` → `sc-config` edge recorded as absent. a-2, a-3,
-and a-4 amend crate-local ADRs only and do not edit `docs/architecture.md`.
-a-5 creates the core workspace/CI registries and the source-maintainer sc-lint
-install, a-6 owns the sequential root `justfile` edit that adds `just new`
-and automatic generation/wizard test discovery plus the template consumer
-install, and a-7 performs release-only cleanup. The sc-lint 0.8.0 pin, the
+owner. **`docs/architecture.md` sequential owners:** a-1 (compatibility and
+ADR amendments), a-5 (`sc-runtime` → `sc-config` edge absent only), a-7
+(release section: sc-publish kit sole workflow owner; GitHub Release includes
+`sc-runtime-{version}-source.tar.gz`). a-1 owns `docs/requirements.md` for its
+amendment tasks. a-2, a-3, and a-4 amend crate-local ADRs only. a-5 creates
+the core workspace/CI registries and the source-maintainer sc-lint install.
+a-6 owns the sequential root `justfile` edit that adds `just new` and the
+template consumer install. a-7 performs release cleanup and kit install. The sc-lint 0.8.0 pin, the
 a-6 CLI isolation command, and the a-1 observability versions are release
 evidence under REQ-RUN-0702, not second acceptance roots. A discovered
 leaf-crate defect returns to a-2, a-3, or a-4 rather than expanding a consumer

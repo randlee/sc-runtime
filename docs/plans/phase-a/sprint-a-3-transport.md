@@ -62,7 +62,9 @@ a-5 embeds that type on `DaemonConfig` and does not decide a second
 endpoint-config shape. Publish an **error inventory**
 (stable codes and recovery for every `TransportError` variant, including
 non-`DaemonNotRunning` failures the CLI must report). `DaemonNotRunning`
-carries `sc_observability_types::ErrorCode`, not plain strings (RBP-F002,
+carries `sc_observability_types::ErrorCode` (`DAEMON.NOT_RUNNING`) on the code
+field and a plain `String` suggested action (`run <app> daemon start` with the
+`AppName` passed to `Client::new`). No `Remediation` on transport (RBP-F002,
 RBP-F005). Record choices in the owned crate ADR before the facade freezes.
 Do not edit `docs/architecture.md`. Do not add auto-start APIs.
 
@@ -127,10 +129,10 @@ It does not edit `docs/architecture.md`.
    lists every `TransportError` variant, including non-`DaemonNotRunning`
    failures, with a stable code, cause payload, and recovery steps
    (RBP-F002).
-5. `req:REQ-TRN-0006` — `docs/sc-transport/requirements.md` point 2 and the
-   related success criteria match the handoff: `DaemonNotRunning` code is
-   `sc_observability_types::ErrorCode` (`DAEMON.NOT_RUNNING`); suggested
-   action is a plain `String` (`run <app> daemon start` with the `AppName`
+5. `req:REQ-TRN-0006` — amend point 2, success criteria 4 and 5, and the
+   rationale that both fields are plain strings so they match the handoff:
+   code is `sc_observability_types::ErrorCode` (`DAEMON.NOT_RUNNING`);
+   suggested_action is `String` (`run <app> daemon start` with the `AppName`
    passed to `Client::new`). No `Remediation` on transport.
 6. `boundary:sc-transport` — `DaemonNotRunning` exposes
    `sc_observability_types::ErrorCode`. `cargo tree -p sc-transport -e normal --prefix none`

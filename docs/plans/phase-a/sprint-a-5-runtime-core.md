@@ -152,8 +152,8 @@ removed rather than preserved for symmetry.
    explicit `RuntimeError` (RBP-F007). The in-run ordering test does not
    replace that caller-facing check. Lock precedes stores; bind is last.
    Ordinary routers/services; no command or store registry. Workspace
-   composition stays the four library crates. This deliverable does not close
-   the workspace-unification OPEN and does not run `cargo tree -p cli`.
+   composition stays the four library crates. Workspace-unification was closed
+   in a-1. This deliverable does not run `cargo tree -p cli`.
 2. **REQ-RT-0002** — A retained nonblocking singleton lock protects one daemon
    instance without PID/probe machinery.
 3. **REQ-RT-0004 / REQ-RT-0005** — One router/listener composition and graceful
@@ -190,8 +190,7 @@ removed rather than preserved for symmetry.
    as edge absent in `docs/architecture.md` (ADR-RUN-0003 only) and in
    `docs/sc-runtime/requirements.md` (NFR-RT-0003). `sc-runtime` does not
    depend on `sc-config` and consumes no type from it. This is the only
-   `docs/architecture.md` edit in this sprint. It does not close the
-   workspace-unification OPEN and it does not add `cargo tree -p cli`.
+   `docs/architecture.md` edit in this sprint. It does not add `cargo tree -p cli`.
 
 ## Acceptance criteria
 
@@ -247,17 +246,18 @@ removed rather than preserved for symmetry.
     is not the only proof of the caller-facing sequence (RBP-F007).
 12. `ADR-RUN-0003` — ADR-RUN-0003 and NFR-RT-0003 record the `sc-runtime` →
     `sc-config` edge as absent. The sprint diff to `docs/architecture.md` is
-    that decision only. The workspace-unification OPEN stays open. This sprint
-    adds no `cargo tree -p cli` command (RBP-F004).
+    that decision only. This sprint adds no `cargo tree -p cli` command
+    (RBP-F004).
 
 ## This sprint does not close
 
 Generated application structure, the consumer sc-lint install inside the
 template, JSON-driven generation, registry publication, CLI auto-start,
 generated-application process tests, attribute-generated tests, and the
-wizard remain open. `just new` is added by a-6. The workspace-unification
-OPEN and `cargo tree -p cli` / NFR-RUN-0001 stay with a-6. This sprint does
-not edit `docs/architecture.md` beyond the `sc-runtime` → `sc-config` edge.
+wizard remain open. `just new` is added by a-6. `cargo tree -p cli` /
+NFR-RUN-0001 on the generated project stays with a-6. This sprint edits
+`docs/architecture.md` only for the `sc-runtime` → `sc-config` edge absent
+(a-1 already closed workspace-unification).
 
 ## Paths to delete
 
