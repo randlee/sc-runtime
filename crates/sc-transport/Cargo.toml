@@ -1,0 +1,73 @@
+[package]
+name = "sc-transport"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Endpoint resolution and local HTTP for a daemon and its CLI."
+readme = "README.md"
+exclude = ["boundaries"]
+
+# Temporary single-crate workspace so this leaf can build and lint before a-5
+# registers it in the root workspace. a-5 must delete this table,
+# [workspace.package], and Cargo.lock. Cargo reports multiple workspace roots
+# if a package that still has [workspace] is added as a member. Do not copy
+# this layout into a generated consumer.
+[workspace]
+members = ["."]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Rand Lee"]
+edition = "2024"
+homepage = "https://github.com/randlee/sc-runtime"
+license = "MIT"
+repository = "https://github.com/randlee/sc-runtime"
+rust-version = "1.94.1"
+
+[features]
+default = []
+server = ["dep:axum"]
+
+[dependencies]
+axum = { version = "0.8.9", optional = true, features = ["http1", "json", "tokio"] }
+reqwest = { version = "0.13", default-features = false, features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["io-util", "macros", "net", "rt", "time"] }
+
+[dev-dependencies]
+reqwest = { version = "0.13", default-features = false, features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"
+tokio = { version = "1", features = ["io-util", "macros", "net", "rt-multi-thread", "time"] }
+
+[[test]]
+name = "app_name"
+path = "tests/app_name.rs"
+
+[[test]]
+name = "resolve"
+path = "tests/resolve.rs"
+
+[[test]]
+name = "client"
+path = "tests/client.rs"
+
+[[test]]
+name = "server"
+path = "tests/server.rs"
+required-features = ["server"]
+
+[[test]]
+name = "facade"
+path = "tests/facade.rs"
+
+[[test]]
+name = "dependencies"
+path = "tests/dependencies.rs"
