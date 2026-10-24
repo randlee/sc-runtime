@@ -1,4 +1,8 @@
-//! One Axum router: project routes, OpenAPI, health, and optional `/mcp`.
+//! One Axum router: project routes, OpenAPI, liveness, and optional `/mcp`.
+//!
+//! `GET /health` is liveness. The handler reports that this process is serving
+//! HTTP. Store and dependency readiness stay on a project route such as
+//! `GET /ready`. That path is left unreserved, and `/health` stays liveness.
 
 use std::sync::Arc;
 
@@ -16,20 +20,32 @@ const HEALTH: &str = "/health";
 const OPENAPI: &str = "/openapi.json";
 const MCP: &str = "/mcp";
 
-/// Body of `GET /health`. The HTTP response is [`Envelope`]'s server conversion.
+/// Body of the liveness probe `GET /health`.
+///
+/// `status` is `"ok"` while this process is serving. It does not describe
+/// store or dependency readiness. The HTTP response is [`Envelope`]'s server
+/// conversion.
 #[derive(Debug, Serialize)]
 struct HealthBody {
     status: &'static str,
 }
 
+/// Liveness handler for `GET /health`.
+///
+/// Succeeds whenever the process can run the handler. A project that needs
+/// dependency-aware readiness registers its own route, such as `GET /ready`,
+/// on the project router. This handler does not call stores.
 async fn health() -> Envelope<HealthBody> {
     Envelope::success(HealthBody { status: "ok" })
 }
 
-/// Merges the project router with the document route and the health route.
+/// Merges the project router with the document route and the liveness route.
 ///
 /// The OpenAPI document is the one `split_for_parts` returns. It is served at
-/// `GET /openapi.json`. `GET /health` returns status 200 and a success envelope.
+/// `GET /openapi.json`. `GET /health` returns status 200 and a success
+/// envelope while the process is serving. That route is liveness only.
+/// Dependency readiness is a project route (for example `GET /ready`); this
+/// function does not mount or reserve that path.
 ///
 /// # Errors
 ///
