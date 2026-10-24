@@ -9,6 +9,7 @@ that embeds a destination path or a timestamp: ``target/``, the
 
 import json
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -26,6 +27,59 @@ def write_script(directory: Path, name: str, body: str) -> None:
     path = directory / name
     path.write_text(body, encoding="utf-8")
     path.chmod(path.stat().st_mode | stat.S_IEXEC)
+
+
+def stub_pipeline_tools(root: Path) -> Path:
+    """Minimal cargo/sc-compose/just stubs when the real tools are not on PATH."""
+    bin_dir = root / "tool-bin"
+    bin_dir.mkdir()
+    log = root / "pipeline.log"
+    write_script(
+        bin_dir,
+        "cargo",
+        f"""#!/bin/sh
+echo "cargo $*" >> "{log}"
+if [ "$1" = "generate" ] && [ "$2" = "--version" ]; then
+  echo "cargo-generate 0.25.1"
+  exit 0
+fi
+dest=""
+prev=""
+for arg in "$@"; do
+  if [ "$prev" = "--destination" ]; then dest="$arg"; fi
+  prev="$arg"
+done
+if [ -n "$dest" ]; then
+  mkdir -p "$dest"
+  printf 'name = "app"\\n' > "$dest/Cargo.toml"
+  printf 'j2\\n' > "$dest/AGENTS.md.j2"
+  printf 'j2\\n' > "$dest/CLAUDE.md.j2"
+fi
+exit 0
+""",
+    )
+    write_script(
+        bin_dir,
+        "sc-compose",
+        f"""#!/bin/sh
+echo "sc-compose $*" >> "{log}"
+prev=""
+for arg in "$@"; do
+  if [ "$prev" = "--output" ]; then printf 'rendered\\n' > "$arg"; fi
+  prev="$arg"
+done
+exit 0
+""",
+    )
+    write_script(
+        bin_dir,
+        "just",
+        f"""#!/bin/sh
+echo "just $1" >> "{log}"
+exit 0
+""",
+    )
+    return bin_dir
 
 
 def without_checkout_patch(data: bytes) -> bytes:
@@ -70,9 +124,9 @@ class OutputEquivalenceTests(unittest.TestCase):
             write_script(root, "wyvern", f"#!/bin/sh\ncat << 'EOF'\n{payload}\nEOF\n")
             wizard_dest = root / "from-wizard"
             file_dest = root / "from-file"
-            wizard = self.generate([str(wizard_dest)], stub)
+            wizard = self.generate([str(wizard_dest)], stub, root)
             self.assertEqual(wizard.returncode, 0, wizard.stderr)
-            direct = self.generate([str(file_dest), "--var-file", str(FIXTURE)], stub)
+            direct = self.generate([str(file_dest), "--var-file", str(FIXTURE)], stub, root)
             self.assertEqual(direct.returncode, 0, direct.stderr)
             self.assertNotIn("wyvern", direct.stderr)
             from_wizard = snapshot(wizard_dest)
@@ -81,10 +135,14 @@ class OutputEquivalenceTests(unittest.TestCase):
             changed = [rel for rel, data in from_wizard.items() if data != from_file[rel]]
             self.assertEqual(changed, [])
 
-    def generate(self, args, wyvern: Path):
+    def generate(self, args, wyvern: Path, tmp_root: Path):
         env = os.environ.copy()
         env["WYVERN_BIN"] = str(wyvern)
         env.pop("SC_RUNTIME_RELEASE", None)
+        if shutil.which("sc-compose") is None:
+            stub_bin = stub_pipeline_tools(tmp_root)
+            env["PATH"] = f"{stub_bin}{os.pathsep}{env.get('PATH', '')}"
+            env["SC_COMPOSE"] = str(stub_bin / "sc-compose")
         try:
             return subprocess.run(
                 [sys.executable, str(DRIVER), *args],

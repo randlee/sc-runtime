@@ -16,6 +16,34 @@ NEW_ENTRY_FUNCTION = "entry_answers"
 SUBPROCESS_TIMEOUT_SECONDS = 30
 
 
+def a6_git_ref() -> str:
+    """Resolve sprint a-6 baseline; fetch it when CI uses a shallow clone."""
+    for ref in (A6, "origin/sprint/a-6-template-from-json"):
+        ok = subprocess.run(
+            ["git", "rev-parse", "--verify", f"{ref}^{{commit}}"],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+        )
+        if ok.returncode == 0:
+            return ref
+    subprocess.run(
+        ["git", "fetch", "origin", A6, "--depth=1"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    ok = subprocess.run(
+        ["git", "rev-parse", "--verify", f"{A6}^{{commit}}"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if ok.returncode != 0:
+        raise unittest.SkipTest(f"sprint a-6 baseline {A6} is not available in this clone")
+    return A6
+
+
 def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -186,12 +214,13 @@ class WizardContractTests(unittest.TestCase):
         self.assertIn(("integration", "generation"), module.SUITES)
 
     def test_generation_suite_is_byte_identical_to_a6(self):
+        baseline = a6_git_ref()
         completed = self.run_bounded(
             [
                 "git",
                 "diff",
                 "--name-only",
-                A6,
+                baseline,
                 "--",
                 "tests/unit/generation",
                 "tests/integration/generation",
@@ -201,8 +230,9 @@ class WizardContractTests(unittest.TestCase):
         self.assertEqual(completed.stdout, "")
 
     def test_driver_diff_is_entry_mode_only(self):
+        baseline = a6_git_ref()
         old = self.run_bounded(
-            ["git", "show", f"{A6}:scripts/new_project.py"],
+            ["git", "show", f"{baseline}:scripts/new_project.py"],
             check_output=True,
         )
         new = (ROOT / "scripts" / "new_project.py").read_text(encoding="utf-8")
