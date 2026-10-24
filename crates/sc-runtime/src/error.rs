@@ -2,6 +2,8 @@
 
 use std::fmt;
 
+use sc_transport::TransportError;
+
 /// Stable code when another daemon holds `<instance-root>/daemon.lock`.
 pub(crate) const CODE_LOCK_HELD: &str = "RUNTIME.LOCK_HELD";
 
@@ -19,6 +21,16 @@ pub(crate) const CODE_SERVE_FAILED: &str = "RUNTIME.SERVE_FAILED";
 
 /// Stable code when the project router already defines a reserved runtime path.
 pub(crate) const CODE_ROUTE_CONFLICT: &str = "RUNTIME.ROUTE_CONFLICT";
+
+/// Which assembly step produced a [`TransportError`].
+pub(crate) enum TransportStep {
+    /// Instance-root resolution.
+    Instance,
+    /// Endpoint resolution.
+    Endpoint,
+    /// Listener bind.
+    Bind,
+}
 
 /// Failure returned by [`crate::DaemonBuilder::run`].
 ///
@@ -78,6 +90,8 @@ pub enum RuntimeError {
         remediation: String,
         /// Resolver or I/O text.
         cause: Option<String>,
+        /// Structured transport failure when this step came from `sc-transport`.
+        transport: Option<Box<TransportError>>,
     },
     /// Endpoint resolution failed. No listener was bound.
     #[non_exhaustive]
@@ -90,6 +104,8 @@ pub enum RuntimeError {
         remediation: String,
         /// Resolver text.
         cause: Option<String>,
+        /// Structured transport failure when this step came from `sc-transport`.
+        transport: Option<Box<TransportError>>,
     },
     /// `sc-transport` could not bind the listener.
     #[non_exhaustive]
@@ -102,6 +118,8 @@ pub enum RuntimeError {
         remediation: String,
         /// Bind text.
         cause: Option<String>,
+        /// Structured transport failure when this step came from `sc-transport`.
+        transport: Option<Box<TransportError>>,
     },
     /// `axum::serve` returned an error.
     #[non_exhaustive]
@@ -168,25 +186,41 @@ impl RuntimeError {
                 "pass a directory the process can create as TransportConfig::instance_root"
                     .to_owned(),
             cause: Some(cause.into()),
+            transport: None,
         }
     }
 
-    pub(crate) fn endpoint_failed(cause: impl Into<String>) -> Self {
-        Self::EndpointFailed {
-            code: CODE_ENDPOINT_FAILED,
-            message: "the endpoint could not be resolved".to_owned(),
-            remediation: "use uds:<path> or tcp:<socket-addr>, or set TransportConfig::tcp_port when the platform default needs a port".to_owned(),
-            cause: Some(cause.into()),
-        }
-    }
-
-    pub(crate) fn bind_failed(cause: impl Into<String>) -> Self {
-        Self::BindFailed {
-            code: CODE_BIND_FAILED,
-            message: "the listener could not be bound".to_owned(),
-            remediation: "leave a live endpoint in place, or choose an address that is free"
-                .to_owned(),
-            cause: Some(cause.into()),
+    /// Maps a [`TransportError`] onto the assembly step that produced it.
+    ///
+    /// The runtime code stays the step code. `remediation` is
+    /// [`TransportError::recovery`]. `cause` records the transport code and
+    /// fields. The original error is kept for [`Self::transport`].
+    pub(crate) fn from_transport(step: TransportStep, err: TransportError) -> Self {
+        let remediation = err.recovery().to_owned();
+        let cause = Some(transport_facts(&err));
+        let transport = Some(Box::new(err));
+        match step {
+            TransportStep::Instance => Self::InstanceFailed {
+                code: CODE_INSTANCE_FAILED,
+                message: "the instance root could not be prepared".to_owned(),
+                remediation,
+                cause,
+                transport,
+            },
+            TransportStep::Endpoint => Self::EndpointFailed {
+                code: CODE_ENDPOINT_FAILED,
+                message: "the endpoint could not be resolved".to_owned(),
+                remediation,
+                cause,
+                transport,
+            },
+            TransportStep::Bind => Self::BindFailed {
+                code: CODE_BIND_FAILED,
+                message: "the listener could not be bound".to_owned(),
+                remediation,
+                cause,
+                transport,
+            },
         }
     }
 
@@ -265,6 +299,81 @@ impl RuntimeError {
             | Self::RouteConflict { cause, .. } => cause.as_deref(),
         }
     }
+
+    /// Structured transport failure when this step came from `sc-transport`.
+    ///
+    /// [`Self::code`] still names the assembly step. The returned error keeps
+    /// the transport code and fields. `None` when the cause is not a
+    /// transport error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sc_runtime::RuntimeError;
+    ///
+    /// fn reads_transport_code(err: &RuntimeError) -> Option<&'static str> {
+    ///     err.transport().map(sc_transport::TransportError::code)
+    /// }
+    ///
+    /// let err = RuntimeError::stores_failed("STORE.OPEN", "closed", "check the path", None);
+    /// assert!(reads_transport_code(&err).is_none());
+    /// ```
+    #[must_use]
+    pub fn transport(&self) -> Option<&TransportError> {
+        match self {
+            Self::InstanceFailed { transport, .. }
+            | Self::EndpointFailed { transport, .. }
+            | Self::BindFailed { transport, .. } => transport.as_deref(),
+            Self::LockHeld { .. }
+            | Self::StoresFailed { .. }
+            | Self::ServeFailed { .. }
+            | Self::RouteConflict { .. } => None,
+        }
+    }
+}
+
+/// Records the transport code and variant fields without using [`Display`](TransportError).
+fn transport_facts(err: &TransportError) -> String {
+    match err {
+        TransportError::InvalidName { name, detail, .. } => {
+            format!("{}: name={name}: {detail}", err.code())
+        }
+        TransportError::InvalidEndpoint { source, detail, .. } => {
+            format!("{}: source={source}: {detail}", err.code())
+        }
+        TransportError::MissingTcpPort { detail, .. } => {
+            format!("{}: {detail}", err.code())
+        }
+        TransportError::InstanceRootUnavailable { detail, .. } => {
+            format!("{}: {detail}", err.code())
+        }
+        TransportError::ResponseDecode {
+            status,
+            cause,
+            body_preview,
+            ..
+        } => format!("{}: status={status}: {cause}: {body_preview}", err.code()),
+        TransportError::DaemonNotRunning {
+            endpoint, cause, ..
+        }
+        | TransportError::TimedOut {
+            endpoint, cause, ..
+        }
+        | TransportError::Request {
+            endpoint, cause, ..
+        }
+        | TransportError::Bind {
+            endpoint, cause, ..
+        }
+        | TransportError::EndpointBusy {
+            endpoint, cause, ..
+        }
+        | TransportError::NotASocket {
+            endpoint, cause, ..
+        } => format!("{}: endpoint={endpoint}: {cause}", err.code()),
+        // `TransportError` is `non_exhaustive`. Keep the code if a new variant appears.
+        _ => format!("{}: {err}", err.code()),
+    }
 }
 
 impl fmt::Display for RuntimeError {
@@ -283,7 +392,12 @@ impl fmt::Display for RuntimeError {
     }
 }
 
-impl std::error::Error for RuntimeError {}
+impl std::error::Error for RuntimeError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.transport()
+            .map(|err| err as &(dyn std::error::Error + 'static))
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -317,5 +431,48 @@ mod tests {
         assert_eq!(_message, "the store did not open");
         assert_eq!(_remediation, "check the database path");
         assert_eq!(_cause.as_deref(), Some("disk full"));
+    }
+
+    #[test]
+    fn transport_mapping_keeps_code_and_fields() {
+        let missing = "not-an-endpoint"
+            .parse::<sc_transport::Endpoint>()
+            .expect_err("endpoint");
+        for step in [
+            TransportStep::Instance,
+            TransportStep::Endpoint,
+            TransportStep::Bind,
+        ] {
+            let err = RuntimeError::from_transport(step, missing.clone());
+            let transport = err.transport().expect("structured transport error");
+            assert_eq!(transport.code(), missing.code());
+            assert_eq!(err.remediation(), missing.recovery());
+            let cause = err.cause().expect("cause");
+            assert!(cause.contains(missing.code()), "{cause}");
+            assert!(cause.contains("source=not-an-endpoint"), "{cause}");
+            assert!(
+                cause.contains("endpoint must start with uds: or tcp:"),
+                "{cause}"
+            );
+            assert_ne!(cause, missing.to_string());
+            match transport {
+                TransportError::InvalidEndpoint { source, detail, .. } => {
+                    assert_eq!(source, "not-an-endpoint");
+                    assert_eq!(detail, "endpoint must start with uds: or tcp:");
+                }
+                other => panic!("expected InvalidEndpoint, got {other:?}"),
+            }
+            let source = std::error::Error::source(&err).expect("source");
+            let downcast = source
+                .downcast_ref::<TransportError>()
+                .expect("downcast to TransportError");
+            assert_eq!(downcast, &missing);
+        }
+        let RuntimeError::EndpointFailed { transport, .. } =
+            RuntimeError::from_transport(TransportStep::Endpoint, missing)
+        else {
+            panic!("endpoint step");
+        };
+        assert!(transport.is_some());
     }
 }
