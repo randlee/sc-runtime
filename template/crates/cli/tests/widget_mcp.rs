@@ -19,7 +19,7 @@ async fn exercise() {
     let app = AppName::new(APP_NAME).expect("app");
     let fixture = DaemonFixture::start_with_mcp(
         &app,
-        DaemonConfig::default(),
+        fixture_config(),
         open_temp,
         daemon::routes::router,
         daemon::mcp::service,
@@ -108,6 +108,21 @@ async fn exercise() {
     );
 
     fixture.shutdown().await.expect("shutdown");
+}
+
+fn fixture_config() -> DaemonConfig {
+    #[cfg(unix)]
+    {
+        DaemonConfig::default()
+    }
+    #[cfg(not(unix))]
+    {
+        let mut config = DaemonConfig::default();
+        // Port 0 binds an ephemeral port. The fixture reads the bound address
+        // from the listener after `sc-transport` accepts the socket.
+        config.endpoint_flag = Some("tcp:127.0.0.1:0".to_owned());
+        config
+    }
 }
 
 async fn open_temp() -> Result<service::Stores, sc_runtime::RuntimeError> {

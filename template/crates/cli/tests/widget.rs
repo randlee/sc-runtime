@@ -59,15 +59,29 @@ async fn create_and_get_match_across_rest_and_cli() {
     fixture.shutdown().await.expect("shutdown");
 }
 
+#[cfg(unix)]
 #[tokio::test]
 async fn report_only_does_not_create_daemon_artifacts() {
     let dir = tempfile::tempdir().expect("temp");
     let socket = dir.path().join("missing.sock");
     let endpoint = format!("uds:{}", socket.display());
+    assert_report_only(&endpoint).await;
+    assert!(!socket.exists());
+    assert!(!dir.path().join("daemon.lock").exists());
+    assert!(!dir.path().join("daemon.sock").exists());
+}
+
+#[cfg(not(unix))]
+#[tokio::test]
+async fn report_only_does_not_create_daemon_artifacts() {
+    assert_report_only("tcp:127.0.0.1:1").await;
+}
+
+async fn assert_report_only(endpoint: &str) {
     let args = [
         "--json".into(),
         "--endpoint".into(),
-        endpoint,
+        endpoint.to_owned(),
         "widget".into(),
         "get".into(),
         "--id".into(),
@@ -85,9 +99,6 @@ async fn report_only_does_not_create_daemon_artifacts() {
         body["error"]["suggested_action"],
         format!("run {APP_NAME} daemon start")
     );
-    assert!(!socket.exists());
-    assert!(!dir.path().join("daemon.lock").exists());
-    assert!(!dir.path().join("daemon.sock").exists());
     assert!(matches!(
         cli::parse(&["daemon".into(), "start".into()]).expect("start"),
         Command::DaemonStart
@@ -146,14 +157,24 @@ async fn cli_keeps_unknown_envelope_content() {
 
 async fn start() -> DaemonFixture {
     let app = AppName::new(APP_NAME).expect("app");
-    DaemonFixture::start(
-        &app,
-        DaemonConfig::default(),
-        open_temp,
-        daemon::routes::router,
-    )
-    .await
-    .expect("start")
+    DaemonFixture::start(&app, fixture_config(), open_temp, daemon::routes::router)
+        .await
+        .expect("start")
+}
+
+fn fixture_config() -> DaemonConfig {
+    #[cfg(unix)]
+    {
+        DaemonConfig::default()
+    }
+    #[cfg(not(unix))]
+    {
+        let mut config = DaemonConfig::default();
+        // Port 0 binds an ephemeral port. The fixture reads the bound address
+        // from the listener after `sc-transport` accepts the socket.
+        config.endpoint_flag = Some("tcp:127.0.0.1:0".to_owned());
+        config
+    }
 }
 
 async fn open_temp() -> Result<service::Stores, sc_runtime::RuntimeError> {
