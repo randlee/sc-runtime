@@ -1,4 +1,0 @@
-label={{project_label}}
-extra={{use_extra}}
-{% for tag in tags %}tag={{tag}}
-{% endfor %}

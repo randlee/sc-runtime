@@ -6,7 +6,6 @@ members = [
     "crates/sc-command",
     "crates/sc-runtime",
 ]
-exclude = ["examples/spike"]
 
 [workspace.package]
 version = "0.1.0"

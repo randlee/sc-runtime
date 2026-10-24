@@ -1,5 +1,7 @@
 # sc-runtime
 
+`sc-runtime` 0.1.0 is published on crates.io under the MIT license. The repository is <https://github.com/randlee/sc-runtime>. It is published after `sc-config`, `sc-transport`, and `sc-command`.
+
 `sc-runtime` assembles one daemon: the instance lock, the project's stores,
 one router, and one listener. The application loads configuration before
 `Daemon::builder`. This crate does not read a config file and does not depend

@@ -1,5 +1,7 @@
 # sc-command
 
+`sc-command` 0.1.0 is published on crates.io under the MIT license. The repository is <https://github.com/randlee/sc-runtime>.
+
 Lossless response envelope for a JSON-first CLI or API, plus the conversions
 that put that envelope on an Axum response or an rmcp tool result.
 

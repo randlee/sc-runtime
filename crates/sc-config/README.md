@@ -1,5 +1,7 @@
 # sc-config
 
+`sc-config` 0.1.0 is published on crates.io under the MIT license. The repository is <https://github.com/randlee/sc-runtime>.
+
 `sc-config` loads typed JSON configuration for one application. It reads
 `default.json`, merges an optional `local.json`, then applies environment
 variables prefixed by the application name. The loader is synchronous and
