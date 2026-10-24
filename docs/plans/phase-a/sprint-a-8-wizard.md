@@ -1,7 +1,7 @@
 ---
 id: a-8
 phase: a
-status: in_progress
+status: complete
 closure_type: integration
 target_boundary: wizard
 vertical_rationale: "The copied Wyvern UI and its narrow driver entry point form one small producer/consumer pair over an already-settled JSON contract."
