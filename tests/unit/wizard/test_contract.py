@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import unittest
@@ -16,29 +17,36 @@ NEW_ENTRY_FUNCTION = "entry_answers"
 SUBPROCESS_TIMEOUT_SECONDS = 30
 
 
+def _git_run(args: list[str]) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes"
+    try:
+        return subprocess.run(
+            args,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=SUBPROCESS_TIMEOUT_SECONDS,
+            stdin=subprocess.DEVNULL,
+            env=env,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise unittest.SkipTest(
+            f"git timed out after {SUBPROCESS_TIMEOUT_SECONDS}s: {' '.join(args)}\n"
+            f"stdout={exc.stdout}\nstderr={exc.stderr}"
+        ) from exc
+
+
 def a6_git_ref() -> str:
     """Resolve sprint a-6 baseline; fetch it when CI uses a shallow clone."""
     for ref in (A6, "origin/sprint/a-6-template-from-json"):
-        ok = subprocess.run(
-            ["git", "rev-parse", "--verify", f"{ref}^{{commit}}"],
-            cwd=ROOT,
-            capture_output=True,
-            check=False,
-        )
+        ok = _git_run(["git", "rev-parse", "--verify", f"{ref}^{{commit}}"])
         if ok.returncode == 0:
             return ref
-    subprocess.run(
-        ["git", "fetch", "origin", A6, "--depth=1"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
-    ok = subprocess.run(
-        ["git", "rev-parse", "--verify", f"{A6}^{{commit}}"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
+    _git_run(["git", "fetch", "origin", A6, "--depth=1"])
+    ok = _git_run(["git", "rev-parse", "--verify", f"{A6}^{{commit}}"])
     if ok.returncode != 0:
         raise unittest.SkipTest(f"sprint a-6 baseline {A6} is not available in this clone")
     return A6
