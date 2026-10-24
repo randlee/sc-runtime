@@ -26,7 +26,7 @@ use crate::Ready;
 use crate::builder::DaemonBuilder;
 use crate::config::DaemonConfig;
 use crate::error::{RuntimeError, TransportStep};
-use crate::shutdown::{DRAIN_TIMEOUT, RunControl};
+use crate::shutdown::RunControl;
 
 /// Upper bound for the caller's wait until the daemon thread reports serving.
 const STARTUP_BUDGET: Duration = Duration::from_secs(30);
@@ -382,12 +382,7 @@ where
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
 {
     let (bound_tx, bound_rx) = oneshot::channel();
-    let builder = builder.with_control(RunControl {
-        ready: Some(bound_tx),
-        shutdown: Some(shutdown_rx),
-        listen_for_signals: false,
-        drain: DRAIN_TIMEOUT,
-    });
+    let builder = builder.with_control(RunControl::detached(Some(bound_tx), Some(shutdown_rx)));
     let mut serve = tokio::spawn(builder.run());
     let endpoint = match bound_rx.await {
         Ok(endpoint) => endpoint,
