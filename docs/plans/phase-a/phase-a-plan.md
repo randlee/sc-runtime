@@ -109,7 +109,7 @@ it. The compatibility spike supplies the verified third-party signatures.
 
 | Boundary | Minimal contract | Dependencies / consumers |
 |---|---|---|
-| `sc-config` | typed JSON-file plus environment loading | `serde`, `serde_json`; consumed by applications and optionally runtime |
+| `sc-config` | typed JSON-file plus environment loading | `serde`, `serde_json`; consumed by generated applications only (`sc-runtime` does not depend on `sc-config`) |
 | `sc-transport` | endpoint resolution, listener binding, generic HTTP client, typed not-running error | Tokio/reqwest; Axum only under `server`; consumed by runtime and generated CLI |
 | `sc-command` | lossless envelope and standard REST/MCP conversions | serde and observability types; Axum/rmcp only under `server`; consumed by runtime and generated application |
 | `sc-runtime` | daemon assembly, singleton lock, graceful shutdown, in-process `DaemonFixture` | consumes the settled `sc-transport` and `sc-command` facades and ordinary Axum/rmcp types; no dependency on `sc-config`; owns no application registry |
@@ -201,8 +201,9 @@ impl Client {
 }
 // #[cfg(feature = "server")]
 pub async fn bind(endpoint: &Endpoint) -> Result<Listener, TransportError>;
-// TransportError::DaemonNotRunning carries sc_observability_types::ErrorCode
-// (types-only dependency; no edge to sc-command or sc-observability)
+// TransportError::DaemonNotRunning: code = sc_observability_types::ErrorCode
+// (DAEMON.NOT_RUNNING); suggested_action = String (`run <app> daemon start`
+// with the AppName passed to Client::new). No Remediation type on transport.
 
 // sc-command (default features)
 pub enum Envelope<T> { Success { version: String, data: T }, Failure { version: String, error: OpError } }
@@ -352,8 +353,8 @@ sealed `IntoMcp`, Axum/rmcp conversions) stay behind the `server` feature and
 
 | Sprint | Responsibility |
 |---|---|
-| a-1 | Measure default vs `server` graphs for the spike workspace; record facts and **policy options** in `docs/architecture.md` without choosing the product policy. Leave the workspace-unification OPEN open. |
-| a-5 | Workspace composition of the four libraries only. Does not close the workspace-unification OPEN, does not choose a crate split, and does not run `cargo tree -p cli`. The only ADR-RUN-0003 edit here is the `sc-runtime` → `sc-config` MAY, recorded as edge absent. |
+| a-1 | Measure default vs `server` graphs; **close** ADR-RUN-0003 workspace-unification OPEN and NFR-RUN-0001 first OPEN: `cargo build -p cli` is normative, workspace-wide build is exempt, **no** client/server crate split in v0.1. |
+| a-5 | Workspace composition only. Records `sc-runtime` → `sc-config` MAY as **edge absent** in `docs/architecture.md`. Does not run `cargo tree -p cli` (a-6 owns that). |
 | a-6 | Sole owner of the NFR-RUN-0001 feature-level close. Generated fixture CI runs `cargo tree -p cli -e normal`. `cargo build -p cli` is the normative selection. A workspace-wide build is the documented exemption. Named server-only crates are absent from that tree. |
 | a-7 | Release evidence under `req:REQ-RUN-0702` repeats the a-6 check on the registry-backed fixture. It is not a second `req:NFR-RUN-0001` root. |
 

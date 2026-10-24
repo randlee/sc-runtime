@@ -81,19 +81,24 @@ rmcp signatures plus the recorded `sc-observability-types` version.
 3. **NFR-RUN-0001 / ADR-RUN-0003** — Measure default vs `server` feature
    graphs for the spike workspace. Record whether Axum, rmcp, and sqlx stay
    out of the default **CLI** dependency graph, and document **policy options**
-   in `docs/architecture.md`. Leave the workspace-unification OPEN open. a-6
-   owns the NFR-RUN-0001 `cargo tree -p cli` close. a-5 does not close that
-   OPEN (RBP-F004).
+   in `docs/architecture.md`, then **close** the workspace-unification OPEN and
+   NFR-RUN-0001 first OPEN: normative selection is `cargo build -p cli`,
+   workspace-wide build is exempt, client/server crate split is rejected for
+   v0.1. a-6 still owns the generated-project `cargo tree -p cli -e normal`
+   proof; a-5 does not run that command.
 4. **REQ-RUN-0306** — Prove plain cargo-generate can consume the proposed
    template mechanics; do not build the product template here.
 5. **ADR-RUN-0003 / ADR-RUN-0004** — Amend `docs/architecture.md` before a-3
    and a-4 start. The amendment tasks point at those ADR ids. Do not paste
    replacement ADR text into this sprint doc. `TransportError::DaemonNotRunning`
-   carries `sc_observability_types::ErrorCode`, not plain strings. `OpError`
+   carries `sc_observability_types::ErrorCode` on the code field and a plain
+   `String` suggested action (`run <app> daemon start` with the application
+   name). `OpError`
    wire `suggested_action` follows the phase handoff: a JSON string or JSON
    `null` from the custom serializer, not a required plain-string field and
-   not the tagged `Remediation` object. Leave the workspace-unification OPEN
-   open. The `sc-runtime` → `sc-config` MAY stays for a-5.
+   not the tagged `Remediation` object. Close the workspace-unification OPEN as
+   in deliverable 3. The `sc-runtime` → `sc-config` MAY stays open until a-5
+   records it absent.
 6. **REQ-RUN-0309 / ADR-RUN-0004** — Amend `docs/requirements.md` and
    `docs/architecture.md` so the daemon dependency and the library
    observability rule use the version pair this spike records. Replace the
@@ -119,19 +124,20 @@ rmcp signatures plus the recorded `sc-observability-types` version.
 3. `boundary:compatibility-evidence` — `docs/architecture.md` records the exact
    `sc-observability` and `sc-observability-types` versions resolved by the
    spike, and names that pair as the Phase A pin for a-4, a-6, and a-7.
-4. `ADR-RUN-0003` — the dependency measurement records default and server
-   selections and lists policy options with evidence. a-1 leaves the
-   workspace-unification OPEN open. a-6 owns the NFR-RUN-0001 feature-level
-   close. a-5 does not close that OPEN.
+4. `ADR-RUN-0003` / `req:NFR-RUN-0001` — measurement records default and
+   server selections with evidence, and the workspace-unification OPEN
+   paragraphs are **removed** and replaced with the v0.1 exemption decision
+   (no crate split). a-6 owns the generated-project `cargo tree -p cli`
+   check; a-5 does not run it.
 5. `ADR-RUN-0203` / `ADR-RUN-0402` — every evidence row is recorded with the
    exact version, type path, signature or template syntax, both ADRs are made
    Active (or amended to the proved result), and no dependent sprint starts
    while either remains Proposed.
 6. `boundary:compatibility-evidence` — `docs/architecture.md` is amended at
-   ADR-RUN-0003 and ADR-RUN-0004 so `DaemonNotRunning` carries
-   `sc_observability_types::ErrorCode` and `OpError` wire `suggested_action`
-   is a JSON string or `null` under the phase handoff. The
-   workspace-unification OPEN is still open.
+   ADR-RUN-0003 and ADR-RUN-0004 so `DaemonNotRunning` names both field
+   types (ErrorCode + String suggested action) and `OpError` wire
+   `suggested_action` is a JSON string or `null` under the phase handoff.
+   Workspace-unification OPEN text is gone (see criterion 4).
 7. `boundary:compatibility-evidence` — REQ-RUN-0309 and ADR-RUN-0004 name the
    spike's recorded `sc-observability` and `sc-observability-types` versions
    as the Phase A pin. They allow `sc-observability-types` on `sc-command`
@@ -146,8 +152,7 @@ rmcp signatures plus the recorded `sc-observability-types` version.
 ## This sprint does not close
 
 No public SC crate API, daemon lifecycle, generated application, CLI policy,
-release artifact, or wizard is closed here. The workspace-unification OPEN
-stays open. This sprint does not produce contract tests, test doubles, or
+release artifact, or wizard is closed here. This sprint does not produce contract tests, test doubles, or
 boundary manifests.
 
 ## Paths to delete

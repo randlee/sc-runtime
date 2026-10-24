@@ -127,7 +127,12 @@ It does not edit `docs/architecture.md`.
    lists every `TransportError` variant, including non-`DaemonNotRunning`
    failures, with a stable code, cause payload, and recovery steps
    (RBP-F002).
-5. `boundary:sc-transport` — `DaemonNotRunning` exposes
+5. `req:REQ-TRN-0006` — `docs/sc-transport/requirements.md` point 2 and the
+   related success criteria match the handoff: `DaemonNotRunning` code is
+   `sc_observability_types::ErrorCode` (`DAEMON.NOT_RUNNING`); suggested
+   action is a plain `String` (`run <app> daemon start` with the `AppName`
+   passed to `Client::new`). No `Remediation` on transport.
+6. `boundary:sc-transport` — `DaemonNotRunning` exposes
    `sc_observability_types::ErrorCode`. `cargo tree -p sc-transport -e normal --prefix none`
    has a `sc-observability-types ` line at the a-1 recorded version and has no
    `sc-command ` line and no `sc-observability ` line (crate name, then a

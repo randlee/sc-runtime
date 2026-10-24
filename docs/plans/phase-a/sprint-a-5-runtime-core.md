@@ -88,9 +88,9 @@ without increasing width.
 Resolve builder inputs, router/service types, lock behavior, health/OpenAPI,
 shutdown, fixture cleanup, and typed errors. Record the `sc-runtime` →
 `sc-config` MAY in ADR-RUN-0003 and NFR-RT-0003 as edge absent. That is the
-only edit to `docs/architecture.md`. Do not close the workspace-unification
-OPEN, do not choose a crate split, and do not add `cargo tree -p cli`
-(RBP-F004). a-6 owns that NFR-RUN-0001 close.
+only edit to `docs/architecture.md` (edge absent). Workspace-unification was
+closed in a-1. Do not add `cargo tree -p cli` (a-6 owns the generated-project
+check).
 Choose **consuming typestate** for `DaemonBuilder` or explicit
 `RuntimeError` for missing required closures (RBP-F007).
 `RuntimeError::StoresFailed` is non-generic and runtime-owned: stable code,
