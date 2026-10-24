@@ -8,8 +8,11 @@ one router, and one listener. The application loads configuration before
 on `sc-config`.
 
 `run` is available only after `stores` and `routes`. `mcp` is optional.
-Inside `run` the order is lock, stores, routes and optional MCP, then bind.
-SIGINT and SIGTERM shut the listener down and return `Ok(())`.
+Inside `run` the order is signals, lock, stores, routes and optional MCP,
+then bind. On Windows, Ctrl-C is registered and polled before the lock.
+SIGINT, SIGTERM, and Windows Ctrl-C stop accepting connections, drain
+in-flight requests up to a bound, and return `Ok(())`. Each request has a
+handler timeout.
 
 ```rust,no_run
 use sc_runtime::{Daemon, DaemonConfig};
@@ -29,7 +32,13 @@ async fn main() -> Result<(), sc_runtime::RuntimeError> {
 }
 ```
 
-`GET /health` returns status 200 and an `sc_command::Envelope` success body.
+`GET /health` is a liveness probe. It returns status 200 and an
+`sc_command::Envelope` success body (`{ "status": "ok" }`) while the process
+is serving HTTP. It does not check stores or other dependencies. A project
+that needs dependency-aware readiness registers its own route, such as
+`GET /ready`, on the project router. `sc-runtime` does not reserve that path
+and does not treat `/health` as readiness.
+
 `GET /openapi.json` returns the OpenAPI document from the project's router.
 An rmcp service passed to `mcp` is mounted at `/mcp`.
 

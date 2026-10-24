@@ -1,0 +1,45 @@
+# Workspace supply-chain policy (NF-07).
+#
+# cargo-deny 0.19, the version crate CI installs, fails the advisory check on
+# any vulnerability. That is the Phase A `vulnerability = "deny"` rule; the
+# old key is not part of this cargo-deny config schema.
+# `multiple-versions = "warn"` is the Phase A duplicate rule. Phase E
+# escalates it to "deny" before publish.
+
+[graph]
+all-features = false
+no-default-features = false
+
+[advisories]
+# Keep separate from cargo-audit's default (~/.cargo/advisory-db). deny leaves a
+# non-git layout that audit refuses to reuse when both run in `just supply-chain`.
+db-path = "~/.cargo/advisory-db-deny"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+yanked = "warn"
+# paste is unmaintained (not a vulnerability) and is pulled in by utoipa-axum 0.2.
+# No patched upgrade is available. cargo audit reports this as a warning.
+ignore = [
+    { id = "RUSTSEC-2024-0436", reason = "utoipa-axum 0.2 depends on unmaintained paste; no patched release exists" },
+]
+
+[licenses]
+allow = [
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "Unicode-3.0",
+]
+confidence-threshold = 0.8
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"
+highlight = "all"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

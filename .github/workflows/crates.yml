@@ -60,9 +60,20 @@ jobs:
       - name: Install sc-compose
         run: cargo install sc-compose --version 1.7.0 --locked
 
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny@0.19.4
+
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit@0.22.2
+
       - name: Setup
         run: just setup
 
+      # `just lint` runs the supply-chain recipe (`cargo deny check`, `cargo audit`).
       - name: Lint
         run: just lint
 

@@ -4,6 +4,12 @@
 //! It does not spawn a daemon process and it does not send a process signal.
 //! Endpoint text stays with `sc-transport`. This module does not choose an
 //! address or a port.
+//!
+//! Startup is an explicit serving handshake: the daemon thread signals the
+//! caller only after `GET /health` succeeds on that same runtime. Drop and
+//! [`shutdown`](DaemonFixture::shutdown) join the daemon thread with a deadline
+//! and detach it if the deadline expires, so a stuck `run` fails the test
+//! instead of hanging it.
 
 use std::future::Future;
 use std::path::{Path, PathBuf};
@@ -19,13 +25,27 @@ use utoipa_axum::router::OpenApiRouter;
 use crate::Ready;
 use crate::builder::DaemonBuilder;
 use crate::config::DaemonConfig;
-use crate::error::RuntimeError;
-use crate::shutdown::RunControl;
+use crate::error::{RuntimeError, TransportStep};
+use crate::shutdown::{DRAIN_TIMEOUT, RunControl};
+
+/// Upper bound for the caller's wait until the daemon thread reports serving.
+const STARTUP_BUDGET: Duration = Duration::from_secs(30);
+
+/// Upper bound for the in-thread `GET /health` probe. Shorter than
+/// [`STARTUP_BUDGET`] so a probe that never succeeds is reported before the
+/// caller gives up.
+const SERVING_PROBE: Duration = Duration::from_secs(15);
+
+/// Upper bound for joining the daemon thread after shutdown is signaled.
+const SHUTDOWN_BUDGET: Duration = Duration::from_secs(10);
+
+type Serving = Result<Endpoint, RuntimeError>;
 
 /// A daemon started through the production builder on a private instance root.
 ///
-/// Drop stops the daemon and waits until `run` returns. [`shutdown`](Self::shutdown)
-/// does the same and returns the `run` result.
+/// Drop stops the daemon and waits until `run` returns, or until the shutdown
+/// deadline expires. [`shutdown`](Self::shutdown) does the same and returns the
+/// `run` result.
 pub struct DaemonFixture {
     client: Client,
     endpoint: Endpoint,
@@ -40,10 +60,14 @@ impl DaemonFixture {
     /// new temporary directory. Endpoint fields on `config` are left as the
     /// caller set them and are resolved by `sc-transport`.
     ///
+    /// The returned fixture has already served `GET /health` from inside the
+    /// daemon thread. The caller waits on that handshake, not on a sleep loop.
+    ///
     /// # Errors
     ///
     /// Returns the [`RuntimeError`] from `run` when the daemon fails before it
-    /// is accepting connections.
+    /// is accepting connections, or [`RuntimeError::ServeFailed`] when the
+    /// serving handshake misses its deadline.
     pub async fn start<S, FStores, Fut, FRoutes>(
         app: &AppName,
         config: DaemonConfig,
@@ -67,7 +91,8 @@ impl DaemonFixture {
     ///
     /// # Errors
     ///
-    /// Returns the [`RuntimeError`] from `run` when startup fails.
+    /// Returns the [`RuntimeError`] from `run` when startup fails, including a
+    /// missed serving deadline.
     pub async fn start_with_mcp<S, FStores, Fut, FRoutes, Svc, Mgr, FMcp>(
         app: &AppName,
         config: DaemonConfig,
@@ -120,10 +145,13 @@ impl DaemonFixture {
 
     /// Stops the daemon and waits until the listener has closed.
     ///
+    /// The wait is bounded. On timeout the daemon thread is detached and this
+    /// returns an error so the test fails instead of blocking.
+    ///
     /// # Errors
     ///
-    /// Returns the error from `run`, or an instance error when the daemon
-    /// thread panicked.
+    /// Returns the error from `run`, a serve failure when the daemon thread
+    /// panicked, or a serve failure when the thread misses the shutdown deadline.
     pub async fn shutdown(mut self) -> Result<(), RuntimeError> {
         self.signal_stop();
         self.join().await
@@ -139,11 +167,9 @@ impl DaemonFixture {
         let Some(thread) = self.thread.take() else {
             return Ok(());
         };
-        let joined = tokio::task::spawn_blocking(move || thread.join()).await;
-        match joined {
-            Ok(Ok(result)) => result,
-            Ok(Err(_)) => Err(RuntimeError::serve_failed("daemon thread panicked")),
-            Err(err) => Err(RuntimeError::serve_failed(err.to_string())),
+        match join_bounded_async(thread).await {
+            Ok(result) => result,
+            Err(fault) => Err(fault.into_error()),
         }
     }
 }
@@ -151,8 +177,17 @@ impl DaemonFixture {
 impl Drop for DaemonFixture {
     fn drop(&mut self) {
         self.signal_stop();
-        if let Some(thread) = self.thread.take() {
-            let _ = thread.join();
+        let Some(thread) = self.thread.take() else {
+            return;
+        };
+        let failed = matches!(
+            join_bounded(thread, SHUTDOWN_BUDGET),
+            Err(JoinFault::TimedOut | JoinFault::WaiterSpawn(_))
+        );
+        if failed && !std::thread::panicking() {
+            panic!(
+                "DaemonFixture did not exit within {SHUTDOWN_BUDGET:?} after shutdown; the daemon thread was detached so the test can fail"
+            );
         }
     }
 }
@@ -176,31 +211,35 @@ where
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
 {
     let root = temp.path().to_path_buf();
-    let (ready_tx, ready_rx) = oneshot::channel();
+    let (serving_tx, serving_rx) = oneshot::channel();
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
-    let builder = builder.with_control(RunControl {
-        ready: Some(ready_tx),
-        shutdown: Some(shutdown_rx),
-        listen_for_signals: false,
-    });
-    let thread = std::thread::spawn(move || drive_on_thread(builder));
-    let endpoint = match ready_rx.await {
-        Ok(endpoint) => endpoint,
-        Err(_) => return Err(join_startup(thread)),
+    let thread = std::thread::spawn(move || drive_on_thread(builder, shutdown_rx, serving_tx));
+    let endpoint = match tokio::time::timeout(STARTUP_BUDGET, serving_rx).await {
+        Ok(Ok(Ok(endpoint))) => endpoint,
+        Ok(Ok(Err(err))) => {
+            let _ = stop_and_join(shutdown_tx, thread).await;
+            return Err(err);
+        }
+        Ok(Err(_)) => {
+            return Err(match stop_and_join(shutdown_tx, thread).await {
+                Err(err) => err,
+                Ok(()) => RuntimeError::serve_failed("daemon exited before it was ready"),
+            });
+        }
+        Err(_) => {
+            let _ = stop_and_join(shutdown_tx, thread).await;
+            return Err(RuntimeError::serve_failed(format!(
+                "daemon did not become ready within {STARTUP_BUDGET:?}"
+            )));
+        }
     };
     let client = match Client::new(endpoint.clone()) {
         Ok(client) => client,
         Err(err) => {
-            drop(shutdown_tx);
-            let _ = join_startup(thread);
-            return Err(RuntimeError::bind_failed(err.to_string()));
+            let _ = stop_and_join(shutdown_tx, thread).await;
+            return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
-    if let Err(err) = wait_until_serving(&client).await {
-        drop(shutdown_tx);
-        let _ = join_startup(thread);
-        return Err(err);
-    }
     Ok(DaemonFixture {
         client,
         endpoint,
@@ -211,11 +250,86 @@ where
     })
 }
 
-fn join_startup(thread: JoinHandle<Result<(), RuntimeError>>) -> RuntimeError {
-    match thread.join() {
-        Ok(Err(err)) => err,
-        Ok(Ok(())) => RuntimeError::serve_failed("daemon exited before it was ready"),
-        Err(_) => RuntimeError::serve_failed("daemon thread panicked"),
+async fn stop_and_join(
+    shutdown_tx: oneshot::Sender<()>,
+    thread: JoinHandle<Result<(), RuntimeError>>,
+) -> Result<(), RuntimeError> {
+    drop(shutdown_tx);
+    match join_bounded_async(thread).await {
+        Ok(result) => result,
+        Err(fault) => Err(fault.into_error()),
+    }
+}
+
+enum JoinFault {
+    Panicked,
+    TimedOut,
+    Disconnected,
+    WaiterSpawn(std::io::Error),
+}
+
+impl JoinFault {
+    fn into_error(self) -> RuntimeError {
+        let cause = match self {
+            Self::Panicked => "daemon thread panicked".to_owned(),
+            Self::TimedOut => format!(
+                "daemon thread did not exit within {SHUTDOWN_BUDGET:?} after shutdown; detached so the test can fail"
+            ),
+            Self::Disconnected => "daemon join waiter disconnected".to_owned(),
+            Self::WaiterSpawn(err) => {
+                format!("daemon join waiter did not start: {err}; detached so the test can fail")
+            }
+        };
+        RuntimeError::serve_failed(cause)
+    }
+}
+
+/// Joins `thread` until `budget` elapses.
+///
+/// On timeout the waiter thread is detached while it is still blocked in
+/// `join`. That is the test-only escape hatch: a stuck daemon cannot be killed
+/// safely, and dropping the waiter keeps this call from waiting forever.
+fn join_bounded(
+    thread: JoinHandle<Result<(), RuntimeError>>,
+    budget: Duration,
+) -> Result<Result<(), RuntimeError>, JoinFault> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    let waiter = match std::thread::Builder::new()
+        .name("daemon-fixture-join".to_owned())
+        .spawn(move || {
+            let outcome = thread.join();
+            let _ = tx.send(outcome);
+        }) {
+        Ok(waiter) => waiter,
+        // Dropping the closure drops `thread` and detaches the daemon thread.
+        Err(err) => return Err(JoinFault::WaiterSpawn(err)),
+    };
+    match rx.recv_timeout(budget) {
+        Ok(Ok(result)) => {
+            let _ = waiter.join();
+            Ok(result)
+        }
+        Ok(Err(_)) => {
+            let _ = waiter.join();
+            Err(JoinFault::Panicked)
+        }
+        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+            drop(waiter);
+            Err(JoinFault::TimedOut)
+        }
+        Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
+            let _ = waiter.join();
+            Err(JoinFault::Disconnected)
+        }
+    }
+}
+
+async fn join_bounded_async(
+    thread: JoinHandle<Result<(), RuntimeError>>,
+) -> Result<Result<(), RuntimeError>, JoinFault> {
+    match tokio::task::spawn_blocking(move || join_bounded(thread, SHUTDOWN_BUDGET)).await {
+        Ok(result) => result,
+        Err(_) => Err(JoinFault::Panicked),
     }
 }
 
@@ -224,20 +338,17 @@ struct ReadyProbe {
     ok: bool,
 }
 
-async fn wait_until_serving(client: &Client) -> Result<(), RuntimeError> {
-    for _ in 0..50 {
-        if let Ok(body) = client.get::<ReadyProbe>("/health").await
-            && body.ok
-        {
-            return Ok(());
-        }
-        tokio::time::sleep(Duration::from_millis(10)).await;
-    }
-    Err(RuntimeError::serve_failed("daemon did not answer /health"))
+enum ProbeFailure {
+    /// The serve task is still running.
+    StillRunning(RuntimeError),
+    /// `serve` was polled to completion while waiting for `/health`.
+    ServeFinished(RuntimeError),
 }
 
 fn drive_on_thread<S, FStores, Fut, FRoutes>(
     builder: DaemonBuilder<Ready, S, FStores, FRoutes>,
+    shutdown_rx: oneshot::Receiver<()>,
+    serving_tx: oneshot::Sender<Serving>,
 ) -> Result<(), RuntimeError>
 where
     S: Clone + Send + Sync + 'static,
@@ -245,9 +356,119 @@ where
     Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
 {
-    let runtime = tokio::runtime::Builder::new_current_thread()
+    let runtime = match tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
-        .map_err(|err| RuntimeError::serve_failed(err.to_string()))?;
-    runtime.block_on(builder.run())
+    {
+        Ok(runtime) => runtime,
+        Err(err) => {
+            let err = RuntimeError::serve_failed(err.to_string());
+            let _ = serving_tx.send(Err(err.clone()));
+            return Err(err);
+        }
+    };
+    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx))
+}
+
+async fn run_until_stopped<S, FStores, Fut, FRoutes>(
+    builder: DaemonBuilder<Ready, S, FStores, FRoutes>,
+    shutdown_rx: oneshot::Receiver<()>,
+    serving_tx: oneshot::Sender<Serving>,
+) -> Result<(), RuntimeError>
+where
+    S: Clone + Send + Sync + 'static,
+    FStores: FnOnce() -> Fut + Send + 'static,
+    Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
+    FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+{
+    let (bound_tx, bound_rx) = oneshot::channel();
+    let builder = builder.with_control(RunControl {
+        ready: Some(bound_tx),
+        shutdown: Some(shutdown_rx),
+        listen_for_signals: false,
+        drain: DRAIN_TIMEOUT,
+    });
+    let mut serve = tokio::spawn(builder.run());
+    let endpoint = match bound_rx.await {
+        Ok(endpoint) => endpoint,
+        Err(_) => {
+            let err = exited_early(serve.await);
+            let _ = serving_tx.send(Err(err.clone()));
+            return Err(err);
+        }
+    };
+    let client = match Client::new(endpoint.clone()) {
+        Ok(client) => client,
+        Err(err) => {
+            let err = RuntimeError::from_transport(TransportStep::Bind, err);
+            let _ = serving_tx.send(Err(err.clone()));
+            let _ = serve.await;
+            return Err(err);
+        }
+    };
+    match confirm_serving(&client, &mut serve).await {
+        Ok(()) => {
+            let _ = serving_tx.send(Ok(endpoint));
+            task_result(serve.await)
+        }
+        Err(ProbeFailure::StillRunning(err)) => {
+            let _ = serving_tx.send(Err(err.clone()));
+            let _ = serve.await;
+            Err(err)
+        }
+        Err(ProbeFailure::ServeFinished(err)) => {
+            let _ = serving_tx.send(Err(err.clone()));
+            Err(err)
+        }
+    }
+}
+
+async fn confirm_serving(
+    client: &Client,
+    serve: &mut tokio::task::JoinHandle<Result<(), RuntimeError>>,
+) -> Result<(), ProbeFailure> {
+    let probe = async {
+        loop {
+            tokio::select! {
+                biased;
+                result = &mut *serve => {
+                    return Err(ProbeFailure::ServeFinished(exited_early(result)));
+                }
+                probe = client.get::<ReadyProbe>("/health") => {
+                    match probe {
+                        Ok(body) if body.ok => return Ok(()),
+                        Ok(_) => {
+                            return Err(ProbeFailure::StillRunning(RuntimeError::serve_failed(
+                                "daemon /health reported not ok",
+                            )));
+                        }
+                        Err(_) => tokio::task::yield_now().await,
+                    }
+                }
+            }
+        }
+    };
+    match tokio::time::timeout(SERVING_PROBE, probe).await {
+        Ok(result) => result,
+        Err(_) => Err(ProbeFailure::StillRunning(RuntimeError::serve_failed(
+            format!("daemon did not answer /health within {SERVING_PROBE:?}"),
+        ))),
+    }
+}
+
+fn task_result(
+    result: Result<Result<(), RuntimeError>, tokio::task::JoinError>,
+) -> Result<(), RuntimeError> {
+    match result {
+        Ok(result) => result,
+        Err(err) if err.is_panic() => Err(RuntimeError::serve_failed("daemon task panicked")),
+        Err(err) => Err(RuntimeError::serve_failed(err.to_string())),
+    }
+}
+
+fn exited_early(result: Result<Result<(), RuntimeError>, tokio::task::JoinError>) -> RuntimeError {
+    match task_result(result) {
+        Ok(()) => RuntimeError::serve_failed("daemon exited before it was ready"),
+        Err(err) => err,
+    }
 }

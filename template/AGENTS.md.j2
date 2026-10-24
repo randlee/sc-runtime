@@ -16,3 +16,7 @@ The licence is {{ licence }}.
 Routes, queries, and composition in this tree are project code. Shared runtime
 behaviour stays in the published sc-config, sc-transport, sc-command, and
 sc-runtime crates.
+
+Report-only commands accept `--json` and print one envelope
+`{version, ok, data, error}` on stdout. A failure has `ok` false, `data`
+null, and a stable `error.code`.
