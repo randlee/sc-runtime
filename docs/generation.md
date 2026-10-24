@@ -1,8 +1,13 @@
 # Generation driver
 
-`scripts/new_project.py` is the `--var-file` driver behind `just new`. It is
-not a JSON API. A wizard UI is a later sprint. This driver never reads stdin,
-never prompts, and never starts a wizard.
+`scripts/new_project.py` is the driver behind `just new`. It is not a JSON
+API. Three entry modes supply one answers object, and every mode then uses
+the same validation and pipeline.
+
+`--var-file` never reads stdin, never prompts, and never starts a wizard.
+Interactive and `--prefill` modes call `scripts/run_wizard.py`. That runner
+is the only place that looks for Wyvern. The layout paths for this milestone
+are `wizard/wizard.json`, `wizard/pages/`, and `scripts/run_wizard.py`.
 
 Stderr is exactly one line:
 
@@ -33,6 +38,53 @@ cargo-generate placeholder: `cargo generate` receives it as `--name`.
 them. v0.1 refuses them with `GEN.DB_RESERVED` before it creates the
 destination. The reserved values are an annotation on the schema, not a list
 in the driver.
+
+## Entry modes
+
+| Mode | Command | What is validated |
+|---|---|---|
+| interactive | `just new <dest>` | The person finishes the wizard at `wizard/wizard.json`. |
+| prefill | `just new <dest> --prefill <partial.json>` | `<partial.json>` is merged into the descriptor's `config.prefill` for review. The validated object is what the wizard returns after Finish. |
+| non-interactive | `just new <dest> --var-file <answers.json>` | The file is the answers object. The wizard does not start. |
+
+`--var-file` wins when it is combined with `--prefill`. The wizard does not
+start and the prefill file is not read. That preserves the non-interactive
+rule.
+
+A prefill key that the schema does not define is dropped with a stderr
+warning. The on-disk `wizard/wizard.json` is not modified. Prefill is a
+suggestion: the cargo values come from the finished wizard, not from the
+prefill file.
+
+Wyvern is resolved from `WYVERN_BIN` when that variable is set, otherwise as
+`wyvern` on `PATH`. An override that does not resolve does not fall through
+to `PATH`. Neither script contains an install path. When the binary is
+missing, the runner exits non-zero, stderr names `wyvern`, `WYVERN_BIN`, and
+`PATH`, `cargo generate` is not called, and the destination is not created.
+
+Cancel and dismissed both mean the person did not finish. The runner writes
+no answers file and exits non-zero. The driver does not call `cargo generate`
+and does not create the destination.
+
+The pages collect each current schema property and no others. Defaults are
+the schema defaults; `wizard/pages/wizard-answers.js` mirrors only those.
+The pages do not copy the project-name `pattern`. The runner checks the
+finished object against `wizard/answers.schema.json`, and the driver checks
+it again before the pipeline. `postgres` and `both` stay in the schema enum,
+so the wizard offers them. The driver still answers `GEN.DB_RESERVED` and
+does not create the destination.
+
+A finished wizard that makes the same choices as a file in `wizard/fixtures/`
+produces an equal JSON value. Key order and whitespace do not matter. Equal
+values call the same `generate()` path, so the project files match. The
+driver writes no timestamps. The checkout patch records this checkout's
+absolute crate paths and is the same on both runs. Ignore `target/` if you
+`diff -r` two generated trees; that directory is build output.
+
+`--var-file` failures stay one inventory line on stderr. A wizard that
+cancels or cannot find Wyvern prints the runner's `ERROR:` line and does not
+add an inventory line. A schema-valid finish that the driver then rejects
+prints the runner log and then the one inventory line.
 
 ## Development and release
 

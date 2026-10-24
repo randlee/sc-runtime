@@ -1,0 +1,29 @@
+/* Shared override for every wizard page (not a wyvern-provided file, unlike
+   /shared/embedded-chrome.css and /shared/wizard-chrome.css -- lives
+   alongside the pages and is loaded via a plain relative <link>, same
+   pattern as wizard-answers.js).
+
+   Bug (reported on page-5-review.html, live wizard run, small/short
+   monitor): embedded-chrome.css hard-codes `.dialog--frame { height: auto
+   !important; max-height: none !important; }` plus `body { overflow:
+   hidden; }`, on the assumption the host window always grows to fit the
+   dialog's intrinsic height. When the OS caps the window at the screen's
+   height (short monitor, or a page whose content is simply tall -- e.g.
+   review's multi-section summary), the frame is clipped with no scrollbar
+   anywhere, so the Back/Cancel/Apply buttons at the bottom become
+   unreachable.
+
+   Fix: re-declare the SAME selectors embedded-chrome.css uses (same
+   specificity), loaded after it in every page's <head> so the cascade's
+   "last one wins on equal specificity" rule lets this override take effect
+   without touching wyvern's own shared CSS file. Bounds the frame to the
+   viewport and makes it scroll internally instead of clipping. */
+
+html.wyvern-embedded body {
+  overflow-y: auto !important;
+}
+
+html.wyvern-embedded .dialog--frame {
+  max-height: 92vh !important;
+  overflow-y: auto !important;
+}

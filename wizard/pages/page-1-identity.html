@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project</title>
+  <link rel="stylesheet" href="/shared/embedded-chrome.css" />
+  <link rel="stylesheet" href="/shared/wizard-chrome.css" />
+  <link rel="stylesheet" href="wizard-page.css" />
+  <script src="/shared/wyvern-api.js"></script>
+  <script src="wizard-answers.js"></script>
+  <style>
+    .form { display: flex; flex-direction: column; gap: 0.9rem; }
+    .form .hint { margin: 0.25rem 0 0; font-size: 0.85rem; color: #64748b; }
+    .form input[type="text"] { max-width: 28rem; }
+  </style>
+</head>
+<body>
+  <main id="dialog" class="dialog dialog--frame" data-testid="page-1-identity">
+    <h1 data-testid="page-1-heading">Project</h1>
+    <p class="lead">
+      Name the project and choose the licence. The driver checks the project
+      name against the pattern in the answers schema after Finish.
+    </p>
+
+    <div class="form">
+      <div>
+        <label for="project-name">project_name</label>
+        <input id="project-name" type="text" data-testid="project-name"
+               data-answer="project_name" autocomplete="off" />
+        <p class="hint">Passed to cargo generate as <code>--name</code>.</p>
+      </div>
+
+      <div>
+        <label for="licence">licence</label>
+        <input id="licence" type="text" data-testid="licence"
+               data-answer="licence" value="MIT" autocomplete="off" />
+        <p class="hint">SPDX identifier written into the generated project. The schema default is MIT.</p>
+      </div>
+    </div>
+
+    <nav class="wizard-chrome" data-wizard-nav aria-label="Wizard navigation">
+      <button type="button" class="secondary" data-wizard-back data-testid="wizard-back">
+        Back
+      </button>
+      <button type="button" class="primary" data-wizard-next data-testid="wizard-next">
+        Next
+      </button>
+    </nav>
+    <p class="wizard-error" data-testid="wizard-error" hidden></p>
+  </main>
+
+  <script>
+    // Uniform-schema mode: this page's output is the full answers object
+    // with only project_name and licence overwritten. ANSWERS is reassigned
+    // once WizardAnswers.ready() resolves, because window.wyvern is filled
+    // by an async fetch that has not completed when this script runs.
+    var ANSWERS = window.WizardAnswers.DEFAULTS;
+
+    function val(id) {
+      var el = document.getElementById(id);
+      return el && typeof el.value === "string" ? el.value.trim() : "";
+    }
+
+    function setInput(id, v) {
+      var el = document.getElementById(id);
+      if (el) el.value = v === undefined || v === null ? "" : String(v);
+    }
+
+    window.WizardAnswers.ready().then(function (answers) {
+      ANSWERS = answers;
+      setInput("project-name", ANSWERS.project_name);
+      setInput("licence", ANSWERS.licence);
+    });
+
+    window.collectCurrentPageData = function () {
+      var out = Object.assign({}, ANSWERS);
+      out.project_name = val("project-name");
+      var licence = val("licence");
+      out.licence = licence === "" ? ANSWERS.licence : licence;
+      return out;
+    };
+
+    window.wizardNextDescriptor = {
+      id: "options",
+      title: "Generation options",
+      html: "pages/page-3-options.html",
+    };
+  </script>
+  <script src="/shared/wizard-nav.js" data-wizard-chrome></script>
+</body>
+</html>
