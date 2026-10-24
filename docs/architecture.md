@@ -106,15 +106,17 @@ workspace-internal edges and the forbidden edges of the four library crates.
 | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
-`sc-config` and `sc-transport` list it in `forbidden_edges` as its own string,
-distinct from `sc-observability` and `sc-observability-otlp`. `sc-runtime`
-does not list that crate in `forbidden_edges`. sc-lint 0.8.0 cannot fail a
-crates.io edge, so the `sc-runtime` rule is `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`
-printing no line beginning with `sc-observability-types `. A transitive line
-through `sc-command` is allowed. `allowed_dependents` is empty for
-`sc-config` and `sc-runtime`, and `sc-runtime` only for `sc-transport` and
-`sc-command`. The `sc-runtime` → `sc-config` MAY is not an
-`allowed_dependents` entry. The measurement is the sprint a-1 evidence record.
+The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
+list only targets that are workspace members in that crate's lint tree;
+crates.io names and other non-member targets are enforced by criterion 5 of
+[REQ-RUN-0005](requirements.md) (`cargo tree`). sc-lint 0.8.0 cannot fail a
+crates.io edge, so the `sc-runtime` direct-only rule is
+`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no line
+beginning with `sc-observability-types `. A transitive line through
+`sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
+`sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
+`sc-runtime` → `sc-config` MAY is not an `allowed_dependents` entry. The
+measurement is the sprint a-1 evidence record.
 
 **OPEN:** the sc-runtime design lists the edge `sc-runtime` -> `sc-config` but
 names nothing that `sc-runtime` uses from `sc-config`, and `sc-runtime` MUST
@@ -417,15 +419,16 @@ as its own selection.
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
-`sc-config` and `sc-transport` list it in `forbidden_edges` as its own string,
-distinct from `sc-observability` and `sc-observability-otlp`. `sc-runtime`
-does not list that crate in `forbidden_edges`. sc-lint 0.8.0 cannot fail a
-crates.io edge, so the `sc-runtime` rule is `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`
-printing no line beginning with `sc-observability-types `. A transitive line
-through `sc-command` is allowed. `allowed_dependents` is empty for
-`sc-config` and `sc-runtime`, and `sc-runtime` only for `sc-transport` and
-`sc-command`. The `sc-runtime` → `sc-config` MAY is not an
-`allowed_dependents` entry. The measurement is the sprint a-1 evidence record.
+The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
+list only workspace-member targets in that lint tree; crates.io names use
+criterion 5 `cargo tree` checks (see sprint a-1 evidence). sc-lint 0.8.0
+cannot fail a crates.io edge, so the `sc-runtime` direct-only rule is
+`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no
+line beginning with `sc-observability-types `. A transitive line through
+`sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
+`sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
+`sc-runtime` → `sc-config` MAY is not an `allowed_dependents` entry. The
+measurement is the sprint a-1 evidence record.
 
 2. `sc-config`, `sc-transport` and `sc-command` MUST NOT depend on one
    another, because each must be usable without the others. `sc-runtime` MUST
@@ -546,6 +549,7 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
+**Amends:** ADR-TRN-0003 (Phase A `DaemonNotRunning` field inventory)  
 **Source:** sc-runtime design, 2026-09-19: stated by the owner  
 
 ### Context
@@ -575,9 +579,12 @@ loaded.
 5. `TransportError::DaemonNotRunning` is owned by
    [ADR-TRN-0003](sc-transport/architecture.md). It carries
    `code: &'static str` (`DAEMON.NOT_RUNNING`) plus the endpoint and the
-   cause. It does not carry `sc_observability_types::ErrorCode`. a-6's
-   generated CLI maps that string to `ErrorCode` and sets
-   `suggested_action`. The `OpError` wire form stays owned by
+   cause. It does not carry `sc_observability_types::ErrorCode` or
+   `Remediation` on the transport error. Sprint a-4's `sc-command` publishes
+   a constructor from that code plus endpoint and cause into the `OpError`
+   wire form (including `ErrorCode` and `suggested_action`) without adding
+   a dependency from `sc-command` to `sc-transport`. a-6's generated CLI calls
+   that constructor. The `OpError` wire form stays owned by
    [ADR-CMD-0001](sc-command/architecture.md). This ADR does not restate the
    rest of those field types. a-3 consumes this decision and does not add
    `sc-observability-types` to `sc-transport`.
@@ -2206,7 +2213,7 @@ from `spike-stack` and from `utoipa-axum v0.2.0`.
 
 - `OpenApiRouter::new().routes(routes!(put_note_route)).split_for_parts()`
   (`utoipa_axum` 0.2).
-- `StreamableHttpService::new(factory, Arc<LocalSessionManager>, StreamableHttpServerConfig::default().with_legacy_session_mode(false).with_json_response(true))`, then `Router::nest_service("/mcp", mcp)` (`rmcp` 3.7.0).
+- `StreamableHttpService::new(factory, Arc<LocalSessionManager>, StreamableHttpServerConfig::default().with_legacy_session_mode(false).with_json_response(true))`, then `Router::nest_service("/mcp", mcp)` (`rmcp` 3.7.0). rmcp 3.7 requires a session-manager argument to this constructor; with `legacy_session_mode(false)` the spike uses stateless streamable HTTP only. `LocalSessionManager` here is rmcp transport plumbing, not an application MCP session store. [REQ-RUN-0302](requirements.md) forbids a project session manager in the product template; a-6 may pass the same type when rmcp requires it.
 - `SqlitePoolOptions::new().connect_with(SqliteConnectOptions::new().filename(database).create_if_missing(true))` (`sqlx` 0.9.0). Runtime queries, not `query!`.
 - `tokio::net::UnixListener::bind(socket)` passed to `axum::serve`. Unix-only, gated by `cfg(unix)` with `compile_error` on other targets.
 - `reqwest::Client::builder().unix_socket(&*path)` where `path` is a `PathBuf`, so the argument is `&Path` (`reqwest` 0.13.5).

@@ -34,9 +34,7 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
-    if spike_stack::client_marker().is_empty() {
-        anyhow::bail!("spike stack default marker was empty");
-    }
+    let _default_marker = spike_stack::client_marker();
     let builder = reqwest::Client::builder();
     #[cfg(unix)]
     let builder = builder.unix_socket(&*args.socket);

@@ -19,4 +19,4 @@ compile_error!(
 mod serve;
 
 #[cfg(all(feature = "server", unix))]
-pub use serve::{observability_pin, put_note, serve, Note};
+pub use serve::serve;

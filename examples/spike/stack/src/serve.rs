@@ -5,6 +5,8 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::Json;
 use rmcp::handler::server::router::tool::ToolRouter;
@@ -78,10 +80,7 @@ pub fn observability_pin() -> String {
 ///
 /// Returns an error when the database, socket, or HTTP server cannot start.
 pub async fn serve(socket: &Path, database: &Path) -> Result<()> {
-    let pin = observability_pin();
-    if pin.is_empty() {
-        anyhow::bail!("observability pin was empty");
-    }
+    let _pin = observability_pin();
 
     if let Some(parent) = database.parent() {
         std::fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
@@ -162,6 +161,18 @@ impl NoteServer {
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for NoteServer {}
 
+struct PutNoteError(String);
+
+impl IntoResponse for PutNoteError {
+    fn into_response(self) -> Response {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("store note: {}", self.0),
+        )
+            .into_response()
+    }
+}
+
 #[utoipa::path(
     post,
     path = "/notes",
@@ -171,11 +182,11 @@ impl ServerHandler for NoteServer {}
 async fn put_note_route(
     State(pool): State<SqlitePool>,
     Json(note): Json<Note>,
-) -> Result<Json<Note>, String> {
+) -> Result<Json<Note>, PutNoteError> {
     put_note(&pool, note)
         .await
         .map(Json)
-        .map_err(|error| error.to_string())
+        .map_err(|error| PutNoteError(error.to_string()))
 }
 
 #[cfg(test)]

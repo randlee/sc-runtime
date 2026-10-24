@@ -429,10 +429,10 @@ state it.
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
-`sc-config` and `sc-transport` list it in `forbidden_edges` as its own string,
-distinct from `sc-observability` and `sc-observability-otlp`. `sc-runtime`
-does not list that crate in `forbidden_edges`. sc-lint 0.8.0 cannot fail a
-crates.io edge, so the `sc-runtime` rule is `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`
+The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
+list only workspace-member targets in that lint tree; crates.io names use
+criterion 5 `cargo tree` checks. sc-lint 0.8.0 cannot fail a crates.io edge,
+so the `sc-runtime` direct-only rule is `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`
 printing no line beginning with `sc-observability-types `. A transitive line
 through `sc-command` is allowed. `allowed_dependents` is empty for
 `sc-config` and `sc-runtime`, and `sc-runtime` only for `sc-transport` and
@@ -487,13 +487,21 @@ built in parallel without touching each other.
 1. `boundaries/sc-config/`, `boundaries/sc-transport/`,
    `boundaries/sc-command/` and `boundaries/sc-runtime/` each exist and
    contain at least one `.toml` file.
-2. Each manifest's `forbidden_edges` holds one `"<crate> -> <name>"` string
-   for every name in the crate's "Forbidden edges" cell above, and no
-   manifest of `sc-config`, `sc-transport` or `sc-command` lists another
-   workspace crate under `allowed_dependencies`. `allowed_dependents` is
-   empty for `sc-config` and for `sc-runtime`, and is `sc-runtime` only for
-   `sc-transport` and `sc-command`. The open `sc-runtime` → `sc-config` MAY
-   is not copied into `allowed_dependents`.
+2. Each manifest's `forbidden_edges` lists `"<owner> -> <target>"` strings
+   only when `<target>` is a workspace member of that crate's lint tree at
+   the sprint that creates the manifest (the inter-crate forbidden edges
+   among the four library crates, added as each crate lands). Names that are
+   crates.io packages (`sc-observability`, `sc-observability-otlp`,
+   `sc-observability-types`, `tokio`, `sqlx`) and any obligation-3 target
+   that is not a workspace member in that tree are not listed in
+   `forbidden_edges` on sc-lint 0.8.0; criterion 5 enforces those names with
+   `cargo tree`. The obligation-3 table states the full policy. No manifest of
+   `sc-config`, `sc-transport` or `sc-command` lists another workspace crate
+   under `allowed_dependencies`. `allowed_dependents` is empty for `sc-config`
+   and for `sc-runtime`, and is `sc-runtime` only for `sc-transport` and
+   `sc-command`. The open `sc-runtime` → `sc-config` MAY is not copied into
+   `allowed_dependents`. Sprint a-1 recorded this split in
+   `docs/architecture.md`.
 3. `just lint` invokes `sc-lint-boundary` (inspect the recipe) and exits 0 on
    the default branch.
 4. Negative check: adding `sc-transport` as a dependency of `sc-command` in a
@@ -2033,7 +2041,8 @@ This applies to `crates/daemon` of a project rendered from `template/`.
    `sc-command` only. `DaemonNotRunning` carries `code: &'static str`
    (`DAEMON.NOT_RUNNING`) plus the endpoint and the cause, and does not
    carry `sc_observability_types::ErrorCode`
-   ([ADR-RUN-0004](architecture.md)).
+   ([ADR-RUN-0004](architecture.md)). a-4's `sc-command` publishes the
+   string-to-`OpError` constructor; a-6's generated CLI calls it.
 4. The template MUST NOT add OpenTelemetry export. A project that wants it
    adds `sc-observability-otlp` to its own `daemon` crate.
 5. The template MUST NOT contain a bridge from the `tracing` crate into
