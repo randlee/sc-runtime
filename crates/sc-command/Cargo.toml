@@ -1,0 +1,30 @@
+[package]
+name = "sc-command"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Lossless sc-ai-cli response envelope and REST/MCP conversions."
+readme = "README.md"
+exclude = ["lint-edge"]
+
+[features]
+default = []
+server = ["dep:axum", "dep:rmcp"]
+
+[dependencies]
+sc-observability-types = "=1.5.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+axum = { version = "0.8.9", optional = true }
+rmcp = { version = "~3.7", optional = true, default-features = false }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }
+
+[[test]]
+name = "server"
+required-features = ["server"]

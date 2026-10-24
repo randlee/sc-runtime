@@ -1,0 +1,172 @@
+//! HTTP and MCP conversions. Compiled only with feature `server`.
+
+#![cfg(feature = "server")]
+
+use axum::body::Body;
+use axum::http::{header, HeaderValue, StatusCode};
+use axum::response::{IntoResponse, Response};
+use rmcp::model::CallToolResult;
+use rmcp::ErrorData;
+use serde::Serialize;
+use serde_json::Value;
+
+use crate::{Envelope, ErrorKind, OpError, SERIALIZATION_CODE};
+
+/// rmcp tool error.
+///
+/// rmcp 3.7 names this type [`ErrorData`]. Tool handlers import that type as
+/// `McpError`. This alias is the name used by [`IntoMcp::into_mcp`].
+pub type McpError = ErrorData;
+
+mod seal {
+    pub trait Seal {}
+}
+
+/// Converts `Result<T, OpError>` into an rmcp tool result.
+///
+/// This trait is sealed by a private supertrait. The only implementation is
+/// `Result<T, OpError>`. Downstream crates can call
+/// [`into_mcp`](Self::into_mcp) and cannot implement the trait.
+///
+/// Dispatch is static. `into_mcp` takes `self` by value and the trait requires
+/// `Sized`, so `dyn IntoMcp` is not a supported API.
+///
+/// An [`OpError`] becomes `Ok(CallToolResult)` with `is_error` set. It does
+/// not become `Err(McpError)`. `Err` is reserved for a payload that fails to
+/// serialize; that error is rmcp's internal error and carries
+/// [`SERIALIZATION_CODE`].
+///
+/// # Examples
+///
+/// ```
+/// use sc_command::IntoMcp;
+///
+/// let result: Result<&str, sc_command::OpError> = Ok("ready");
+/// let tool = result.into_mcp()?;
+/// assert_ne!(tool.is_error, Some(true));
+/// # Ok::<(), sc_command::McpError>(())
+/// ```
+///
+/// ```compile_fail
+/// struct Rogue;
+/// impl sc_command::IntoMcp for Rogue {
+///     fn into_mcp(self) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
+///         Ok(rmcp::model::CallToolResult::default())
+///     }
+/// }
+/// ```
+///
+/// ```compile_fail
+/// fn refuses_dyn(_: &dyn sc_command::IntoMcp) {}
+/// ```
+#[allow(private_bounds)]
+pub trait IntoMcp: seal::Seal + Sized {
+    /// Converts this result into an rmcp tool result that carries the envelope.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`McpError`] when the envelope cannot be serialized. An
+    /// [`OpError`] is not an error of this function; it is a tool result with
+    /// `is_error` set.
+    fn into_mcp(self) -> Result<CallToolResult, McpError>;
+}
+
+impl<T> seal::Seal for Result<T, OpError> where T: Serialize {}
+
+impl<T> IntoMcp for Result<T, OpError>
+where
+    T: Serialize,
+{
+    fn into_mcp(self) -> Result<CallToolResult, McpError> {
+        let envelope = Envelope::from(self);
+        let failed = !envelope.is_ok();
+        let value = serde_json::to_value(&envelope).map_err(|error| {
+            McpError::internal_error(
+                "response envelope could not be serialized",
+                Some(serde_json::json!({
+                    "code": SERIALIZATION_CODE,
+                    "cause": error.to_string(),
+                })),
+            )
+        })?;
+        let result = if failed {
+            CallToolResult::structured_error(value)
+        } else {
+            CallToolResult::structured(value)
+        };
+        Ok(result)
+    }
+}
+
+impl<T> IntoResponse for Envelope<T>
+where
+    T: Serialize,
+{
+    fn into_response(self) -> Response {
+        let status = match &self {
+            Envelope::Success { .. } => StatusCode::OK,
+            Envelope::Failure { error, .. } => status_code(error.kind),
+        };
+        match serde_json::to_vec(&self) {
+            Ok(body) => json_response(status, body),
+            Err(error) => json_response(StatusCode::INTERNAL_SERVER_ERROR, failure_body(&error)),
+        }
+    }
+}
+
+fn status_code(kind: ErrorKind) -> StatusCode {
+    match kind {
+        ErrorKind::InvalidInput => StatusCode::BAD_REQUEST,
+        ErrorKind::NotFound => StatusCode::NOT_FOUND,
+        ErrorKind::Conflict => StatusCode::CONFLICT,
+        ErrorKind::Unavailable => StatusCode::SERVICE_UNAVAILABLE,
+        ErrorKind::Internal => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+}
+
+fn json_response(status: StatusCode, body: Vec<u8>) -> Response {
+    match Response::builder()
+        .status(status)
+        .header(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/json"),
+        )
+        .body(Body::from(body))
+    {
+        Ok(response) => response,
+        Err(_) => {
+            let mut response = Response::new(Body::from(static_failure_body()));
+            *response.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+            response.headers_mut().insert(
+                header::CONTENT_TYPE,
+                HeaderValue::from_static("application/json"),
+            );
+            response
+        }
+    }
+}
+
+fn failure_body(error: &serde_json::Error) -> Vec<u8> {
+    let value = failure_value(error.to_string());
+    serde_json::to_vec(&value).unwrap_or_else(|_| static_failure_body())
+}
+
+fn failure_value(cause: String) -> Value {
+    serde_json::json!({
+        "version": crate::ENVELOPE_VERSION,
+        "ok": false,
+        "data": null,
+        "error": {
+            "kind": "internal",
+            "code": SERIALIZATION_CODE,
+            "message": "response envelope could not be serialized",
+            "details": {"cause": cause},
+            "suggested_action": null
+        }
+    })
+}
+
+fn static_failure_body() -> Vec<u8> {
+    br#"{"version":"1","ok":false,"data":null,"error":{"kind":"internal","code":"ENVELOPE.SERIALIZATION","message":"response envelope could not be serialized","details":null,"suggested_action":null}}"#
+        .to_vec()
+}
