@@ -31,6 +31,7 @@ full = ["boundary", "line-counts", "fmt", "clippy"]
 # Non-test lines under crates/*/src. Key from sc-lint 0.8.0 line-counts.
 [line_counts]
 max_production_lines = 1000
+paths = ["crates/*/src/**/*.rs", "template/**/*.rs"]
 
 [[tool.sc-lint.test]]
 name = "workspace"

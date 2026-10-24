@@ -1,7 +1,7 @@
 ---
 id: a-6
 phase: a
-status: planned
+status: complete
 closure_type: integration
 target_boundary: template-from-json
 vertical_rationale: "The generator and editable example do not exist yet; one vertical sprint creates the single JSON-to-project artifact and proves it without introducing a reusable application framework. Splitting the driver from the template would only serialize the same artifact."

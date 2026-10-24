@@ -847,11 +847,14 @@ This applies to the `cli` crate of a project generated from `template/`.
    crate MUST NOT have `sqlx` or any generated `store-*` or `service` crate
    among its normal (non-dev) dependencies; the rule that a CLI links no
    daemon-side dependency is owned by [NFR-RUN-0001](requirements.md).
-2. In Phase A the CLI is report-only: it MUST NOT start the daemon. Obligations
-   3 to 6 describe what it reports when the daemon cannot be reached. A later
-   optional auto-start layer may amend this behavior under deferred
-   [REQ-RUN-0206](requirements.md), but the reusable transport client remains
-   report-only and MUST NOT spawn or retry for readiness.
+2. Report-only commands MUST NOT start the daemon. The generated CLI provides
+   an explicit `daemon start` subcommand that execs the daemon binary named
+   `{app}-daemon` beside the CLI binary. That subcommand is not auto-start.
+   Obligations 3 to 6 describe what a report-only command reports when the
+   daemon cannot be reached. A later optional auto-start layer may amend
+   launch behavior under deferred [REQ-RUN-0206](requirements.md). The
+   reusable transport client remains report-only and MUST NOT spawn or retry
+   for readiness. Transport does not carry the `suggested_action` string.
 3. When the daemon cannot be reached (the socket file does not exist, or the
    connection is refused), the `sc-transport` client returns the typed error
    `TransportError::DaemonNotRunning`
@@ -878,18 +881,34 @@ This applies to the `cli` crate of a project generated from `template/`.
    non-2xx response is OPEN in
    [REQ-TRN-0006](sc-transport/requirements.md).
 
-**OPEN:** the `code` and the envelope the CLI emits for a transport failure
-that is not `DAEMON.NOT_RUNNING` are not stated.
+Decided in this document: `--json` prints one envelope on stdout and exits 1.
+`DAEMON.NOT_RUNNING` uses kind `unavailable`, message `the daemon is not running`,
+and `suggested_action` `run <app> daemon start`. Every other `TransportError`
+uses kind `internal`, message `transport failure {code} at {endpoint}: {cause}`,
+and `suggested_action` null. The mapping lives in the generated CLI. The code
+is `sc_observability_types::ErrorCode` built from the transport `&'static str`.
+Transport does not depend on that type and does not carry `suggested_action`.
 
-**OPEN:** the values of the `OpError` fields `kind` and `message` for this
-error are not stated.
+| Variant | Kind | Code | Message | suggested_action |
+|---|---|---|---|---|
+| `InvalidName` | internal | `APP.INVALID_NAME` | `transport failure APP.INVALID_NAME at {endpoint}: {cause}` | null |
+| `InvalidEndpoint` | internal | `TRANSPORT.INVALID_ENDPOINT` | `transport failure TRANSPORT.INVALID_ENDPOINT at {endpoint}: {cause}` | null |
+| `MissingTcpPort` | internal | `TRANSPORT.MISSING_TCP_PORT` | `transport failure TRANSPORT.MISSING_TCP_PORT at {endpoint}: {cause}` | null |
+| `InstanceRootUnavailable` | internal | `TRANSPORT.INSTANCE_ROOT_UNAVAILABLE` | `transport failure TRANSPORT.INSTANCE_ROOT_UNAVAILABLE at {endpoint}: {cause}` | null |
+| `DaemonNotRunning` | unavailable | `DAEMON.NOT_RUNNING` | `the daemon is not running` | `run <app> daemon start` |
+| `ResponseDecode` | internal | `TRANSPORT.RESPONSE_DECODE` | `transport failure TRANSPORT.RESPONSE_DECODE at {endpoint}: {cause}` | null |
+| `TimedOut` | internal | `TRANSPORT.TIMED_OUT` | `transport failure TRANSPORT.TIMED_OUT at {endpoint}: {cause}` | null |
+| `Request` | internal | `TRANSPORT.REQUEST` | `transport failure TRANSPORT.REQUEST at {endpoint}: {cause}` | null |
+| `Bind` | internal | `TRANSPORT.BIND` | `transport failure TRANSPORT.BIND at {endpoint}: {cause}` | null |
+| `EndpointBusy` | internal | `TRANSPORT.ENDPOINT_BUSY` | `transport failure TRANSPORT.ENDPOINT_BUSY at {endpoint}: {cause}` | null |
+| `NotASocket` | internal | `TRANSPORT.NOT_A_SOCKET` | `transport failure TRANSPORT.NOT_A_SOCKET at {endpoint}: {cause}` | null |
 
-**OPEN:** the exact non-zero exit status, and the format and stream (stdout
-or stderr) of the message when `--json` is not given, are not stated.
+The envelope is `{version, ok, data, error}` with `ok` false and `data` null.
+`daemon start` exists and execs the daemon binary. Transport does not carry
+`run <app> daemon start`.
 
-**OPEN:** the suggested action names a command `<app> daemon start`; whether
-the generated CLI provides a `daemon start` subcommand is not stated. The
-string is fixed either way.
+**OPEN:** the format and stream of the message when `--json` is not given are
+not stated.
 
 
 ### Rationale
@@ -2847,9 +2866,12 @@ project at `<dest>`. `wizard/fixtures/sqlite-mcp.json` is the answers fixture
 with `db = sqlite` and `mcp = true`.
 
 In that project, with no file added, changed or deleted after generation,
-`just lint` MUST exit 0 and `just test` MUST exit 0. This sequence (`just new`
-with `--var-file`, then `just lint`, then `just test`, with nothing written
-to the project in between) is what "green with no edits" means.
+the next commands MUST exit 0 in this order: `just setup`, then `just lint`,
+then `just test`, then `just build-cli`, then `just build-daemon`. `just setup`
+installs the sc-lint 0.8.0 consumer and is not a source edit. This sequence
+(`just new` with `--var-file`, then `just setup`, then `just lint`, then
+`just test`, then `just build-cli`, then `just build-daemon`, with nothing
+written to the project in between) is what "green with no edits" means.
 
 `just test` in the generated project MUST include the template's example
 operation test, which calls `widget.create` and `widget.get` through REST,
@@ -2881,10 +2903,21 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
 
 1. A CI job runs `just new "$RUNNER_TEMP/app" --var-file
    wizard/fixtures/sqlite-mcp.json` and the command exits 0.
-2. The same job then runs `just lint` in `$RUNNER_TEMP/app` with no step in
+2. The same job then runs `just setup` immediately before `just lint` in
+   `$RUNNER_TEMP/app`. `just setup` installs the consumer tool and does not
+   edit source. It exits 0.
+3. The same job then runs `just lint` in `$RUNNER_TEMP/app` with no step in
    between that writes to that directory, and it exits 0.
-3. The same job then runs `just test` in `$RUNNER_TEMP/app`, and it exits 0.
-4. The `just test` output lists the example operation test as run and passed,
+4. The same job then runs `just test` in `$RUNNER_TEMP/app`, and it exits 0.
+   `just test` includes the observability grep: `crates/daemon` requires
+   `sc-observability` at 1.5.0, does not require `sc-observability-otlp`, and
+   the logging-crate token does not match `sc-observability-types`.
+5. The same job then runs `just build-cli` in `$RUNNER_TEMP/app`, and it
+   exits 0. That recipe includes `cargo tree -p cli -e normal --prefix none`.
+6. The same job then runs `just build-daemon` in `$RUNNER_TEMP/app`, and it
+   exits 0. That recipe includes `cargo tree -p daemon -e normal --prefix none`
+   and that output contains no `tempfile` or `tempdir` line.
+7. The `just test` output lists the example operation test as run and passed,
    not skipped or filtered out.
 
 ---
@@ -3090,9 +3123,19 @@ this order and MUST fail when any of them exits non-zero:
 
 1. `just new <dest> --var-file <fixture>` from the repository root, which
    runs the generation driver `scripts/new_project.py` without the wizard.
-2. `just lint` inside the generated project at `<dest>`.
-3. `just test` inside the generated project at `<dest>`.
-4. Once the selection question of [NFR-RUN-0010](requirements.md) is
+2. `just setup` inside the generated project at `<dest>`. It installs the
+   sc-lint 0.8.0 consumer and is not a source edit.
+3. `just lint` inside the generated project at `<dest>`.
+4. `just test` inside the generated project at `<dest>`. It includes the
+   observability grep: rendered `crates/daemon` requires `sc-observability`
+   at 1.5.0, does not require `sc-observability-otlp`, and the logging-crate
+   token does not match `sc-observability-types`.
+5. `just build-cli` inside the generated project at `<dest>`. It includes
+   `cargo tree -p cli -e normal --prefix none`.
+6. `just build-daemon` inside the generated project at `<dest>`. It includes
+   `cargo tree -p daemon -e normal --prefix none` and fails when that output
+   contains a `tempfile` or `tempdir` line.
+7. Once the selection question of [NFR-RUN-0010](requirements.md) is
    decided: the generated project's daemon-process tests (the tests that
    start the generated `daemon` binary),
    selected the way that decision says. The CI runner is the isolated machine
@@ -3161,8 +3204,14 @@ would be tested against the old crate code.
 ### Success Criteria
 
 1. A workflow file under `.github/workflows/` contains a job that runs
-   `just new` with `--var-file`, then `just lint`, then `just test` in the
-   generated directory.
+   `just new` with `--var-file`, then `just setup`, then `just lint`, then
+   `just test`, then `just build-cli`, then `just build-daemon` in the
+   generated directory. `just build-cli` includes
+   `cargo tree -p cli -e normal --prefix none`. `just test` includes the
+   observability grep from the command list above. `just build-daemon`
+   includes `cargo tree -p daemon -e normal --prefix none` and that output
+   contains no `tempfile` or `tempdir` line. Those checks run because the
+   job runs the recipes. They are not a separate manual step.
 2. A run of that workflow shows one matrix entry per file in
    `wizard/fixtures/*.json`, each labelled with its fixture name, all green.
 3. A pull request that adds a new valid fixture file and changes nothing else

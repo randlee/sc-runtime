@@ -1,0 +1,7 @@
+{
+  "database": "widgets.db",
+  "logging": {
+    "enableConsoleSink": true,
+    "enableFileSink": false
+  }
+}

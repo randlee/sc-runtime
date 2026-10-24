@@ -1,0 +1,30 @@
+set windows-shell := ["cmd.exe", "/c"]
+
+python := if os_family() == "windows" { "python" } else { "python3" }
+
+default: lint
+
+setup:
+    python3 .sc-lint/bootstrap.py setup --config sc-lint.toml
+
+lint *profile:
+    python3 .sc-lint/bootstrap.py lint --config sc-lint.toml {% raw %}{{profile}}{% endraw %}
+
+test *layer:
+    python3 .sc-lint/bootstrap.py test --config sc-lint.toml {% raw %}{{layer}}{% endraw %}
+    python3 scripts/consumer_checks.py observability
+
+upgrade:
+    python3 .sc-lint/bootstrap.py upgrade --config sc-lint.toml
+
+# Consumer-owned. A later `sc-lint init --just` must keep these recipes.
+db-prepare:
+    python3 scripts/consumer_checks.py db-prepare
+
+build-cli:
+    cargo build -p cli --release
+    python3 scripts/consumer_checks.py build-cli
+
+build-daemon:
+    cargo build -p daemon --release
+    python3 scripts/consumer_checks.py build-daemon
