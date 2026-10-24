@@ -430,10 +430,70 @@ def generate(dest: Path, var_file: Path, release: bool) -> None:
         composed.unlink(missing_ok=True)
 
 
+def entry_answers(prefill: Path | None) -> Path:
+    """Run the wizard runner and return the answers file it wrote.
+
+    A non-zero status means the runner stopped. The destination is not created.
+    The runner's last stderr line is an inventory row. This function forwards
+    that stderr. An uncoded final line is replaced by ``GEN.SCHEMA_INVALID``.
+    """
+    handle = tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        prefix="sc-runtime-wizard-answers-",
+        suffix=".json",
+        delete=False,
+    )
+    handle.close()
+    path = Path(handle.name)
+    command = [
+        sys.executable,
+        str(repo_root() / "scripts" / "run_wizard.py"),
+        "--output",
+        str(path),
+    ]
+    if prefill is not None:
+        command.extend(["--prefill", str(prefill.resolve())])
+    completed = subprocess.run(
+        command,
+        cwd=repo_root(),
+        check=False,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    text = completed.stderr or ""
+    if completed.returncode == 0:
+        if text:
+            sys.stderr.write(text)
+        return path
+    path.unlink(missing_ok=True)
+    lines = [line for line in text.splitlines() if line.strip()]
+    code = lines[-1].split(" ", 1)[0] if lines else ""
+    known = {
+        "GEN.SCHEMA_INVALID",
+        "GEN.DB_RESERVED",
+        "APP.INVALID_NAME",
+        "GEN.TOOL_MISSING",
+        "GEN.DEST_CONFLICT",
+        "GEN.WIZARD_CANCELLED",
+        "GEN.STEP_FAILED",
+    }
+    if text and not text.endswith("\n"):
+        text += "\n"
+    if text:
+        sys.stderr.write(text)
+    if code not in known:
+        fail("GEN.SCHEMA_INVALID")
+    raise SystemExit(completed.returncode)
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("dest", nargs="?", type=Path)
     parser.add_argument("--var-file", type=Path)
+    parser.add_argument("--prefill", type=Path)
     parser.add_argument("--release", action="store_true")
     parser.add_argument("--patch-checkout", type=Path)
     return parser.parse_args(argv)
@@ -444,9 +504,20 @@ def main(argv: list[str] | None = None) -> None:
     if args.patch_checkout is not None:
         apply_checkout_patch(args.patch_checkout, repo_root())
         return
-    if args.dest is None or args.var_file is None:
+    if args.dest is None:
         fail("GEN.SCHEMA_INVALID")
-    generate(args.dest, args.var_file, args.release)
+    acquired: Path | None = None
+    try:
+        var_file = args.var_file
+        if var_file is None:
+            if args.dest.exists():
+                fail("GEN.DEST_CONFLICT")
+            acquired = entry_answers(args.prefill)
+            var_file = acquired
+        generate(args.dest, var_file, args.release)
+    finally:
+        if acquired is not None:
+            acquired.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
