@@ -8,6 +8,7 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 description = "Endpoint resolution and local HTTP for a daemon and its CLI."
+readme = "README.md"
 exclude = ["boundaries"]
 
 [workspace]
