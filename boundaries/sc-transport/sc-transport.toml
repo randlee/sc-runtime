@@ -1,0 +1,44 @@
+boundary_id = "BOUNDARY-sc-transport"
+owner_package = "sc-transport"
+owner_crate_path = "sc_transport"
+name = "sc-transport"
+
+[public]
+facade = "AppName, Endpoint, TransportConfig, TransportError, Client, instance_root, instance_root_from_base, resolve_endpoint, resolve_endpoint_from_env, bind, Listener"
+notes = "server items bind and Listener exist only with the server feature. v0.1 allowed dependent is sc-runtime, named once that package is a workspace member."
+
+[implementation]
+type = "library"
+module = "sc_transport"
+visibility = "public"
+constructor = "public"
+
+[composition]
+roots = ["AppName", "Endpoint", "TransportConfig", "TransportError", "Client", "instance_root", "instance_root_from_base", "resolve_endpoint", "resolve_endpoint_from_env", "bind", "Listener"]
+
+[dependencies]
+# sc-runtime is the only allowed dependent. It is not a member of this
+# single-crate lint tree, so naming it makes sc-lint 0.8.0 exit 3.
+allowed_dependents = []
+allowed_dependencies = ["tokio", "reqwest", "serde"]
+# Crates.io names are not listed here. sc-lint 0.8.0 exits 3 when a
+# forbidden target is absent from the workspace and from the resolve.
+# sc-observability, sc-observability-types, and sc-observability-otlp are
+# enforced by cargo tree.
+forbidden_edges = []
+
+[references]
+scope = "outside_owner_crate"
+forbidden = []
+
+[testing]
+allowed_test_double_paths = []
+forbidden_test_bypasses = []
+
+[enforcement]
+lint_rules = []
+review_gates = []
+
+[status]
+state = "concrete_landed"
+notes = ["The only allowed dependent is sc-runtime once that crate joins the workspace."]
