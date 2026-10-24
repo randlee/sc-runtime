@@ -26,7 +26,7 @@ use crate::Ready;
 use crate::builder::DaemonBuilder;
 use crate::config::DaemonConfig;
 use crate::error::{RuntimeError, TransportStep};
-use crate::shutdown::RunControl;
+use crate::shutdown::{RunControl, DRAIN_TIMEOUT};
 
 /// Upper bound for the caller's wait until the daemon thread reports serving.
 const STARTUP_BUDGET: Duration = Duration::from_secs(30);
@@ -237,7 +237,7 @@ where
         Ok(client) => client,
         Err(err) => {
             let _ = stop_and_join(shutdown_tx, thread).await;
-            return Err(RuntimeError::bind_failed(err.to_string()));
+            return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
     Ok(DaemonFixture {
@@ -386,6 +386,7 @@ where
         ready: Some(bound_tx),
         shutdown: Some(shutdown_rx),
         listen_for_signals: false,
+        drain: DRAIN_TIMEOUT,
     });
     let mut serve = tokio::spawn(builder.run());
     let endpoint = match bound_rx.await {
@@ -399,7 +400,7 @@ where
     let client = match Client::new(endpoint.clone()) {
         Ok(client) => client,
         Err(err) => {
-            let err = RuntimeError::bind_failed(err.to_string());
+            let err = RuntimeError::from_transport(TransportStep::Bind, err);
             let _ = serving_tx.send(Err(err.clone()));
             let _ = serve.await;
             return Err(err);
