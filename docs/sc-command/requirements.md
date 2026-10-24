@@ -101,7 +101,13 @@ Deserialization rejects an object whose `ok` disagrees with its content
 (`ok: true` with a non-null `error`, `ok: false` with a non-null `data`, or
 `ok: false` with a null `error`), a missing key, an unknown key, or a value
 of the wrong JSON type. The serde error includes the stable code
-`ENVELOPE.DISCRIMINANT`.
+`ENVELOPE.DISCRIMINANT`. The `version` string does not select a different
+key set. A value other than `"1"` is kept, and an unknown key is still
+rejected. A new envelope key is a new contract. Unknown fields inside
+`data` stay lossless ([REQ-CMD-0006](requirements.md)).
+
+`Envelope::into_result` consumes the envelope and returns `Result<T, OpError>`.
+It drops `version`.
 
 ### Rationale
 
@@ -141,6 +147,8 @@ sides agree on the shape at compile time.
    `Envelope<Sample>`).
 8. `cargo test -p sc-command` (default features) runs the tests above and
    exits 0.
+9. A unit test calls `into_result` on a success envelope and on a failure
+   envelope and asserts `Ok(T)` and `Err(OpError)`.
 
 ---
 
@@ -175,13 +183,18 @@ wire; other items refer to "the keys defined by REQ-CMD-0002".
 
 `OpError` and `ErrorKind` MUST implement `serde::Serialize` and
 `serde::Deserialize`, because the CLI parses errors it receives from the
-daemon. `OpError` and `ErrorKind` MUST also implement `Debug`, `Clone` and
-`PartialEq`. (The three extra traits are decided in this document; the
-round-trip tests need them, and `sc_observability_types::ErrorCode` already
-implements all three.)
+daemon. `OpError` and `ErrorKind` MUST also implement `Debug`, `Clone`,
+`PartialEq`, and `Display`. `OpError` MUST implement `std::error::Error`.
+`Display` for `OpError` is `{code}: {message}`. `Display` for `ErrorKind`
+is its wire spelling. There is no `From<anyhow::Error>` and no constructor
+from `Box<dyn Error>`. (The comparison traits are decided in this document;
+the round-trip tests need them, and `sc_observability_types::ErrorCode`
+already implements them. `Display` and `std::error::Error` let a consumer
+use `?` without a local wrapper.)
 
 `code` MUST be the type `ErrorCode` from the published crate
-`sc-observability-types` 1.5.0, the pin sprint a-1 recorded. `sc-command` MUST NOT define its own
+`sc-observability-types` at caret `1.5.0`, the tested minimum sprint a-1
+recorded. `sc-command` MUST NOT define its own
 error-code type. `ErrorCode` is a newtype over a string and serialises as a
 JSON string, so `code` appears on the wire as, for example,
 `"DAEMON.NOT_RUNNING"`.
@@ -199,26 +212,42 @@ carries, or is built from, structured remediation, that structure MUST be
 
 Whatever type is chosen for `details` MUST be able to hold arbitrary JSON and
 return it unchanged when re-serialised
-([REQ-CMD-0006](requirements.md) depends on this).
+([REQ-CMD-0006](requirements.md) depends on this). Serialising
+`Remediation::NotRecoverable` is the one projection that inserts
+`justification` into the wire `details` value.
 
 `ErrorKind` variants and their wire spellings are `invalid_input`,
-`not_found`, `conflict`, `unavailable`, and `internal`. HTTP status is 400,
-404, 409, 503, and 500 in that order. `details` is
+`not_found`, `conflict`, `unavailable`, and `internal`. The enum is
+`#[non_exhaustive]`. An unrecognised `kind` string fails deserialization.
+HTTP status is 400, 404, 409, 503, and 500 in that order, and that mapping
+lives in `ErrorKind::http_status_code` only. `details` is
 `Option<serde_json::Value>` and is JSON `null` when absent. The Rust field
 behind wire `suggested_action` is
 `Option<sc_observability_types::Remediation>`. `None` serialises as JSON
-`null`. A present value serialises as a JSON string: the first recovery step,
-or the not-recoverable justification. The tagged `Remediation` object is not
-the wire form. `OpError` does not convert to or from
-`sc_observability_types::Diagnostic`. `ErrorKind` is defined in `sc-command`.
-`sc-observability-types` 1.5.0 has no `ErrorKind`, `OpError`, or
-`suggested_action`.
+`null`. `Remediation::Recoverable` serialises as a JSON string equal to the
+first recovery step when that step is non-empty. Later steps are not on the
+wire. An empty step list, an empty first step, and
+`Remediation::NotRecoverable` serialise `suggested_action` as JSON `null`,
+never as `""`. A not-recoverable justification is copied into wire `details`
+under `justification` and is not an instruction on `suggested_action`.
+Deserialising a non-empty string builds a one-step `Recoverable`.
+Deserialising `null` or `""` builds `None`. Multi-step lists and
+`NotRecoverable` do not round-trip as the same Rust value. The tagged
+`Remediation` object is not the wire form. `OpError` does not convert to or
+from `sc_observability_types::Diagnostic`. `ErrorKind` is defined in
+`sc-command`. `sc-observability-types` 1.5.0 has no `ErrorKind`, `OpError`,
+or `suggested_action`. The dependency requirement is the caret `1.5.0`
+(tested minimum).
 
 `OpError::from_transport_strings` maps the plain strings `code`, `endpoint`,
-and `cause` into this type without a dependency on `sc-transport`. The code
-`DAEMON.NOT_RUNNING` selects `ErrorKind::Unavailable` and the suggestion
-`run <app> daemon start`. Any other code selects `ErrorKind::Internal` and
-no suggestion.
+`cause`, and `suggested_action` into this type without a dependency on
+`sc-transport`. The code `DAEMON.NOT_RUNNING` selects
+`ErrorKind::Unavailable` and the message `the daemon is not running`. Any
+other code selects `ErrorKind::Internal` and the message
+`transport failure {code} at {endpoint}: {cause}`. `suggested_action` is the
+caller's already-rendered recovery text. `None`, or text that is empty after
+trimming, leaves remediation unset. The crate does not emit a placeholder
+application name. `endpoint` and `cause` are stored in `details`.
 
 ### Rationale
 
@@ -259,8 +288,8 @@ act on.
    present; every key of the object is one of the five names; `details` is
    JSON `null`; `suggested_action` is JSON `null`.
 8. A compile-time check in a test requires
-   `OpError: Debug + Clone + PartialEq` and
-   `ErrorKind: Debug + Clone + PartialEq`.
+   `OpError: Debug + Clone + PartialEq + Display + std::error::Error` and
+   `ErrorKind: Debug + Clone + PartialEq + Display`.
 
 ---
 
@@ -540,7 +569,10 @@ A CLI's `--json` flag prints the envelope it received from the daemon
 unchanged. If the round-trip through `Envelope` lost or rewrote anything, the
 CLI's output would differ from the API's for the same call, and an agent
 could not treat the two as interchangeable. The risk is greatest when the
-daemon is newer than the CLI and sends fields the CLI does not know.
+daemon is newer than the CLI and sends payload fields the CLI does not
+know. Those fields are inside `data` and `details`. An unknown key of the
+envelope object or of the error object is rejected by
+[REQ-CMD-0001](requirements.md). Adding such a key is a new contract.
 
 ### Success Criteria
 
@@ -579,10 +611,11 @@ list.
 With default features the crate MUST compile and MUST provide `Envelope<T>`,
 `OpError`, `ErrorKind` and `From<Result<T, OpError>> for Envelope<T>`. With
 default features the crate's direct non-dev dependencies MUST be `serde`,
-`serde_json`, and `sc-observability-types` 1.5.0. `serde_json` is required
-because `details` holds arbitrary JSON. With `--features server` the direct
-non-dev dependencies MUST be those plus `axum` 0.8.9 and `rmcp` `~3.7`, and
-nothing else.
+`serde_json`, and `sc-observability-types` at caret `1.5.0` (tested minimum).
+`serde_json` is required because `details` holds arbitrary JSON. With
+`--features server` the direct non-dev dependencies MUST be those plus
+`axum` 0.8.9 and `rmcp` `~3.7`, and nothing else. `axum` MUST be declared
+with `default-features = false`.
 
 This item is the owner of the list of third-party crates `sc-command` may
 depend on. The repository-level boundary table
@@ -643,7 +676,7 @@ daemon and the CLI share one crate.
 `sc-config`, `sc-transport` or `sc-runtime`.
 
 `sc-command` MUST depend on the published crate `sc-observability-types`
-1.5.0.
+at caret `1.5.0`, the tested minimum.
 
 `sc-command` MUST NOT depend, directly or transitively, on the crate
 `sc-observability` (the logging runtime) or on its OTel export crate

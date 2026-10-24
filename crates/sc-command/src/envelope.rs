@@ -3,9 +3,10 @@
 use serde::de::{self, DeserializeOwned};
 use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_json::{Map, Value};
+use serde_json::Value;
 
 use crate::error::OpError;
+use crate::exact::{require_exact_keys, required};
 use crate::{DISCRIMINANT_CODE, ENVELOPE_VERSION};
 
 /// sc-ai-cli response envelope.
@@ -82,6 +83,32 @@ impl<T> Envelope<T> {
         match self {
             Self::Failure { error, .. } => Some(error),
             Self::Success { .. } => None,
+        }
+    }
+
+    /// Consumes the envelope and returns the success payload or the operation error.
+    ///
+    /// `version` is not part of the result. A caller that still needs the
+    /// contract version reads [`version`](Self::version) before calling this
+    /// method.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err` when the envelope is the failure case. The error is the
+    /// [`OpError`] the envelope carried.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sc_command::Envelope;
+    ///
+    /// let envelope = Envelope::success("ready");
+    /// assert_eq!(envelope.into_result(), Ok("ready"));
+    /// ```
+    pub fn into_result(self) -> Result<T, OpError> {
+        match self {
+            Self::Success { data, .. } => Ok(data),
+            Self::Failure { error, .. } => Err(error),
         }
     }
 }
@@ -187,23 +214,4 @@ where
             OpError::deserialize(error).map_err(|error| format!("{DISCRIMINANT_CODE}: {error}"))?;
         Ok(Envelope::Failure { version, error })
     }
-}
-
-fn required<'a>(map: &'a Map<String, Value>, key: &str) -> Result<&'a Value, String> {
-    map.get(key)
-        .ok_or_else(|| format!("{DISCRIMINANT_CODE}: missing {key}"))
-}
-
-fn require_exact_keys(map: &Map<String, Value>, keys: &[&str]) -> Result<(), String> {
-    for key in map.keys() {
-        if !keys.contains(&key.as_str()) {
-            return Err(format!("{DISCRIMINANT_CODE}: unknown key {key}"));
-        }
-    }
-    for key in keys {
-        if !map.contains_key(*key) {
-            return Err(format!("{DISCRIMINANT_CODE}: missing {key}"));
-        }
-    }
-    Ok(())
 }

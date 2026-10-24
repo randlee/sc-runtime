@@ -7,8 +7,8 @@ use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use rmcp::model::CallToolResult;
 use rmcp::ErrorData;
+use sc_observability_types::ErrorCode;
 use serde::Serialize;
-use serde_json::Value;
 
 use crate::{Envelope, ErrorKind, OpError, SERIALIZATION_CODE};
 
@@ -114,13 +114,7 @@ where
 }
 
 fn status_code(kind: ErrorKind) -> StatusCode {
-    match kind {
-        ErrorKind::InvalidInput => StatusCode::BAD_REQUEST,
-        ErrorKind::NotFound => StatusCode::NOT_FOUND,
-        ErrorKind::Conflict => StatusCode::CONFLICT,
-        ErrorKind::Unavailable => StatusCode::SERVICE_UNAVAILABLE,
-        ErrorKind::Internal => StatusCode::INTERNAL_SERVER_ERROR,
-    }
+    StatusCode::from_u16(kind.http_status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
 }
 
 fn json_response(status: StatusCode, body: Vec<u8>) -> Response {
@@ -146,23 +140,17 @@ fn json_response(status: StatusCode, body: Vec<u8>) -> Response {
 }
 
 fn failure_body(error: &serde_json::Error) -> Vec<u8> {
-    let value = failure_value(error.to_string());
-    serde_json::to_vec(&value).unwrap_or_else(|_| static_failure_body())
+    let envelope = Envelope::<()>::failure(serialization_error(error));
+    serde_json::to_vec(&envelope).unwrap_or_else(|_| static_failure_body())
 }
 
-fn failure_value(cause: String) -> Value {
-    serde_json::json!({
-        "version": crate::ENVELOPE_VERSION,
-        "ok": false,
-        "data": null,
-        "error": {
-            "kind": "internal",
-            "code": SERIALIZATION_CODE,
-            "message": "response envelope could not be serialized",
-            "details": {"cause": cause},
-            "suggested_action": null
-        }
-    })
+fn serialization_error(error: &serde_json::Error) -> OpError {
+    OpError::new(
+        ErrorKind::Internal,
+        ErrorCode::new_static(SERIALIZATION_CODE),
+        "response envelope could not be serialized",
+    )
+    .with_details(serde_json::json!({ "cause": error.to_string() }))
 }
 
 fn static_failure_body() -> Vec<u8> {

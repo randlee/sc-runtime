@@ -122,6 +122,15 @@ fn envelope_and_error_implement_debug_clone_partial_eq() {
     assert_traits::<Envelope<Sample>>();
     assert_traits::<OpError>();
     assert_traits::<ErrorKind>();
+    fn assert_error<E: std::error::Error>() {}
+    fn assert_display<T: std::fmt::Display>() {}
+    assert_error::<OpError>();
+    assert_display::<OpError>();
+    assert_display::<ErrorKind>();
+    assert_eq!(
+        full_error().to_string(),
+        "DAEMON.NOT_RUNNING: the daemon is not running"
+    );
 }
 
 #[test]
@@ -177,10 +186,30 @@ fn tagged_remediation_object_is_not_the_wire_form() {
         ErrorCode::new_static("SAMPLE.FAILED"),
         "failed",
     )
+    .with_details(json!({"endpoint": "uds:app.sock"}))
     .with_remediation(Remediation::not_recoverable("manual repair"));
     let value = serde_json::to_value(&error).expect("serialize");
-    assert_eq!(value["suggested_action"], "manual repair");
-    assert!(value["suggested_action"].is_string());
+    assert!(value["suggested_action"].is_null());
+    assert_eq!(value["details"]["endpoint"], "uds:app.sock");
+    assert_eq!(value["details"]["justification"], "manual repair");
+    assert!(error.suggested_action().is_none());
+    let decoded: OpError = serde_json::from_value(value.clone()).expect("decode");
+    assert!(decoded.remediation.is_none());
+    assert_eq!(
+        decoded.details.as_ref().expect("details")["justification"],
+        "manual repair"
+    );
+    assert_eq!(serde_json::to_value(&decoded).expect("again"), value);
+
+    let bare = OpError::new(
+        ErrorKind::Internal,
+        ErrorCode::new_static("SAMPLE.FAILED"),
+        "failed",
+    )
+    .with_remediation(Remediation::not_recoverable("manual repair"));
+    let bare_value = serde_json::to_value(&bare).expect("serialize");
+    assert!(bare_value["suggested_action"].is_null());
+    assert_eq!(bare_value["details"]["justification"], "manual repair");
 
     let multi = OpError::new(
         ErrorKind::Conflict,
@@ -193,6 +222,17 @@ fn tagged_remediation_object_is_not_the_wire_form() {
     ));
     let multi_value = serde_json::to_value(&multi).expect("serialize");
     assert_eq!(multi_value["suggested_action"], "retry the write");
+    assert_eq!(multi.suggested_action(), Some("retry the write"));
+
+    let empty = OpError::new(
+        ErrorKind::Internal,
+        ErrorCode::new_static("SAMPLE.FAILED"),
+        "failed",
+    )
+    .with_remediation(Remediation::recoverable("", std::iter::empty::<String>()));
+    let empty_value = serde_json::to_value(&empty).expect("serialize");
+    assert!(empty_value["suggested_action"].is_null());
+    assert!(empty.suggested_action().is_none());
 }
 
 #[test]
@@ -220,6 +260,23 @@ fn result_conversion_preserves_payload_and_version() {
         serde_json::to_value(full_error()).expect("error")
     );
     assert_eq!(ok_json["version"], err_json["version"]);
+}
+
+#[test]
+fn into_result_returns_payload_or_error() {
+    let success = Envelope::success(sample());
+    assert_eq!(success.into_result(), Ok(sample()));
+    let failure = Envelope::<Sample>::failure(full_error());
+    assert_eq!(failure.into_result(), Err(full_error()));
+}
+
+#[test]
+fn version_does_not_admit_unknown_keys() {
+    let mut extra = fixture("success.json");
+    extra["version"] = json!("2");
+    extra["retry_after"] = json!(1);
+    let error = serde_json::from_value::<Envelope<Value>>(extra).expect_err("unknown key");
+    assert!(error.to_string().contains(DISCRIMINANT_CODE));
 }
 
 #[test]
@@ -301,7 +358,7 @@ fn error_kind_table_is_exhaustive() {
     for (kind, status, caller, wire) in expected {
         assert_eq!(kind.http_status_code(), status);
         assert_eq!(kind.is_caller_error(), caller);
-        assert!(!kind.mapping_code().is_empty());
+        assert_eq!(kind.to_string(), wire);
         assert_eq!(
             serde_json::to_value(kind).expect("kind"),
             Value::String(wire.to_owned())
@@ -312,20 +369,58 @@ fn error_kind_table_is_exhaustive() {
 }
 
 #[test]
-fn transport_strings_map_daemon_not_running_without_a_transport_type() {
-    let error =
-        OpError::from_transport_strings("DAEMON.NOT_RUNNING", "uds:app.sock", "connection refused");
+fn transport_strings_use_caller_suggestion_and_omit_placeholder() {
+    let error = OpError::from_transport_strings(
+        "DAEMON.NOT_RUNNING",
+        "uds:app.sock",
+        "connection refused",
+        Some("run my-app daemon start"),
+    );
     assert_eq!(error.kind, ErrorKind::Unavailable);
     assert_eq!(error.code.as_str(), "DAEMON.NOT_RUNNING");
-    assert_eq!(error.suggested_action(), Some("run <app> daemon start"));
+    assert_eq!(error.suggested_action(), Some("run my-app daemon start"));
     let value = serde_json::to_value(&error).expect("serialize");
-    assert_eq!(value["suggested_action"], "run <app> daemon start");
+    assert_eq!(value["suggested_action"], "run my-app daemon start");
     assert_eq!(value["details"]["endpoint"], "uds:app.sock");
     assert_eq!(value["details"]["cause"], "connection refused");
+    assert!(!serde_json::to_string(&error)
+        .expect("text")
+        .contains("<app>"));
 
-    let other = OpError::from_transport_strings("TRANSPORT.TIMEOUT", "tcp:daemon", "timed out");
+    let unset = OpError::from_transport_strings(
+        "DAEMON.NOT_RUNNING",
+        "uds:app.sock",
+        "connection refused",
+        None,
+    );
+    assert!(unset.suggested_action().is_none());
+    assert!(!serde_json::to_string(&unset)
+        .expect("text")
+        .contains("<app>"));
+
+    let other = OpError::from_transport_strings(
+        "TRANSPORT.TIMEOUT",
+        "tcp:daemon",
+        "timed out",
+        Some("retry the connection"),
+    );
     assert_eq!(other.kind, ErrorKind::Internal);
-    assert!(other.suggested_action().is_none());
+    assert_eq!(other.code.as_str(), "TRANSPORT.TIMEOUT");
+    assert_eq!(other.suggested_action(), Some("retry the connection"));
+    assert_eq!(
+        other.message,
+        "transport failure TRANSPORT.TIMEOUT at tcp:daemon: timed out"
+    );
     let other_json = serde_json::to_value(&other).expect("serialize");
-    assert!(other_json["suggested_action"].is_null());
+    assert_eq!(other_json["suggested_action"], "retry the connection");
+    assert_eq!(other_json["details"]["endpoint"], "tcp:daemon");
+    assert_eq!(other_json["details"]["cause"], "timed out");
+
+    let blank = OpError::from_transport_strings(
+        "TRANSPORT.TIMEOUT",
+        "tcp:daemon",
+        "timed out",
+        Some("   "),
+    );
+    assert!(blank.suggested_action().is_none());
 }

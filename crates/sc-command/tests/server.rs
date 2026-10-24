@@ -88,7 +88,7 @@ async fn success_response_is_200_json() {
 #[tokio::test]
 async fn every_kind_maps_to_its_status() {
     for kind in ErrorKind::all() {
-        let envelope = Envelope::<Sample>::failure(error_of(kind));
+        let envelope = Envelope::<Sample>::failure(error_of(*kind));
         let (status, body) = response_json(envelope.clone()).await;
         assert_eq!(status.as_u16(), kind.http_status_code());
         assert_eq!(body["ok"], false);
@@ -110,8 +110,21 @@ async fn serialization_failure_returns_500_without_panicking() {
     let envelope = Envelope::success(Boom);
     let (status, body) = response_json(envelope).await;
     assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(body["ok"], false);
-    assert_eq!(body["error"]["code"], SERIALIZATION_CODE);
+    let cause = body["error"]["details"]["cause"]
+        .as_str()
+        .expect("cause")
+        .to_owned();
+    assert!(cause.contains("boom"));
+    let expected = serde_json::to_value(Envelope::<()>::failure(
+        OpError::new(
+            ErrorKind::Internal,
+            ErrorCode::new_static(SERIALIZATION_CODE),
+            "response envelope could not be serialized",
+        )
+        .with_details(json!({ "cause": cause })),
+    ))
+    .expect("failure envelope");
+    assert_eq!(body, expected);
 }
 
 #[test]

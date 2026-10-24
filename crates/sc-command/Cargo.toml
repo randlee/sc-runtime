@@ -16,10 +16,10 @@ default = []
 server = ["dep:axum", "dep:rmcp"]
 
 [dependencies]
-sc-observability-types = "=1.5.0"
+sc-observability-types = "1.5.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-axum = { version = "0.8.9", optional = true }
+axum = { version = "0.8.9", optional = true, default-features = false }
 rmcp = { version = "~3.7", optional = true, default-features = false }
 
 [dev-dependencies]

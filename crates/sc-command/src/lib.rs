@@ -12,6 +12,7 @@
 
 mod envelope;
 mod error;
+mod exact;
 
 #[cfg(feature = "server")]
 mod server;
