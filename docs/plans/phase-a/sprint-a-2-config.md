@@ -1,7 +1,7 @@
 ---
 id: a-2
 phase: a
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-config
 track: core
@@ -109,9 +109,13 @@ signature contract.
 5. **REQ-RUN-0005** — The sc-config boundary manifest at
    `boundaries/sc-config/sc-config.toml`. `allowed_dependents` is empty.
    Do not copy the open `sc-runtime` → `sc-config` MAY into that key. a-5
-   does not own this manifest. `forbidden_edges` includes
-   `sc-observability-types` as well as the logging crates (ADR-RUN-0004),
-   direct and transitive. This deliverable and acceptance criterion 6 are
+   does not own this manifest. In this single-crate lint tree,
+   `forbidden_edges` lists only workspace-member targets (none besides
+   `sc-config` yet), per REQ-RUN-0005 criterion 2 and ADR-CFG-0003.
+   Crates.io names (`sc-observability-types`, logging crates, `tokio`) are
+   enforced with `cargo tree -p sc-config -e normal --prefix none`, not
+   manifest strings that make sc-lint 0.8.0 exit 3. This deliverable and
+   acceptance criterion 6 are
    done only after `triage:a-2-boundary-evidence`. Once
    `crates/sc-config/Cargo.toml` exists, run the single-crate
    `sc-lint lint sc-boundary` command a-1 recorded in
@@ -156,7 +160,8 @@ signature contract.
 6. `boundary:sc-config` — the single-crate `sc-lint lint sc-boundary`
    command a-1 recorded exits 0 on `boundaries/sc-config/sc-config.toml`
    after `crates/sc-config/Cargo.toml` exists. `allowed_dependents` is
-   empty. The manifest forbids `sc-observability-types`. The pull request
+   empty. `forbidden_edges` is empty in the lint tree; forbidden crates.io
+   names are checked with `cargo tree` per ADR-CFG-0003. The pull request
    does not retain analyzer output. This criterion is marked done only
    after `triage:a-2-boundary-evidence`. Leaf QA re-runs the command at
    the reviewed commit and records only the exit code. That re-run is the
