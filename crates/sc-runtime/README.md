@@ -1,5 +1,7 @@
 # sc-runtime
 
+`sc-runtime` 0.1.0 is published on crates.io under the MIT license. The repository is <https://github.com/randlee/sc-runtime>. It is published after `sc-config`, `sc-transport`, and `sc-command`.
+
 `sc-runtime` assembles one daemon: the instance lock, the project's stores,
 one router, and one listener. The application loads configuration before
 `Daemon::builder`. This crate does not read a config file and does not depend
@@ -15,8 +17,8 @@ use sc_transport::AppName;
 use utoipa_axum::router::OpenApiRouter;
 
 #[tokio::main(flavor = "current_thread")]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let app = AppName::new("my-app")?;
+async fn main() -> Result<(), sc_runtime::RuntimeError> {
+    let app = AppName::new("my-app").expect("app name");
     let config = DaemonConfig::default();
     Daemon::builder(&app, &config)
         .stores(|| async { Ok(()) })

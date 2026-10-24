@@ -1,13 +1,13 @@
 [package]
 name = "sc-command"
-version = "0.1.0"
+version.workspace = true
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Lossless sc-ai-cli response envelope and REST/MCP conversions."
+description = "Lossless JSON CLI/API response envelope and REST/MCP conversions."
 readme = "README.md"
 
 [features]

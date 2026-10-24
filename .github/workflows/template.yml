@@ -2,6 +2,9 @@ name: Template
 
 on:
   pull_request:
+  push:
+    tags:
+      - "v*"
 
 permissions:
   contents: read
@@ -71,7 +74,10 @@ jobs:
       - name: Install sc-compose
         run: cargo install sc-compose --version 1.7.0 --locked
 
+      # A tag selects the driver's release mode (no checkout path patch).
       - name: Generate
+        env:
+          SC_RUNTIME_RELEASE: ${{ github.ref_type == 'tag' && '1' || '' }}
         run: just new "$RUNNER_TEMP/app" --var-file "wizard/fixtures/${{ matrix.fixture }}"
 
       # ADR-RUN-0401 point 6 runs these recipes inside `just new`. Point 8
@@ -123,6 +129,7 @@ jobs:
           cargo generate --path template --template-values-file "$RUNNER_TEMP/values.toml" --name widget-app --destination "$RUNNER_TEMP/plain" --init --silent --force --no-workspace
 
       - name: Apply the checkout patch
+        if: ${{ github.ref_type != 'tag' }}
         run: python3 scripts/new_project.py --patch-checkout "$RUNNER_TEMP/plain"
 
       - name: Build

@@ -1,7 +1,7 @@
 ---
 id: a-7
 phase: a
-status: planned
+status: in_progress
 closure_type: integration
 target_boundary: release-distribution
 track: release

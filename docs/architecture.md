@@ -294,7 +294,8 @@ crate's exported items a visible manifest change for that review.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19: independent crates stated by the owner; one repository with crates.io versions is a design recommendation accepted for sprint planning. Replaces an earlier scaffold plan of path dependencies extracted later. The review check in point 6 is decided in this document  
+**Amended:** 2026-10-24 (sprint a-7), points 7–9, the publish and release contract  
+**Source:** sc-runtime design, 2026-09-19: independent crates stated by the owner; one repository with crates.io versions is a design recommendation accepted for sprint planning. Replaces an earlier scaffold plan of path dependencies extracted later. The review check in point 6 is decided in this document. Points 7–9 are decided in sprint a-7  
 
 ### Context
 
@@ -333,6 +334,20 @@ path: every fix would have to be re-applied by hand in every project.
    under `template/` other than the example operation, the wiring of routes,
    MCP tools, CLI commands and stores, or configuration MUST state in its
    sprint document why that code cannot live in a crate.
+7. `install.py` from the pinned sc-publish kit is the only owner of release
+   workflows. The authored release inputs are `release/sc-publish-pin.toml`,
+   `release/sc-publish-consumer-input.json`, and
+   `docs/development/sc-publish.md`. `install.py` writes
+   `.github/workflows/release*.yml` and the kit release scripts. Those
+   outputs are generated files and MUST NOT be hand-edited.
+8. Hand-authored publish workflows are forbidden, including a hand-authored
+   `.github/workflows/crates-publish.yml`. A workflow of that name is
+   allowed only as byte-for-byte `install.py` output.
+9. The GitHub Release for tag `v0.1.0` MUST include a workspace source
+   archive named `sc-runtime-{version}-source.tar.gz`. The kit produces that
+   archive from the linux `release_targets` row (`x86_64-unknown-linux-gnu`,
+   `ubuntu-latest`, `tar.gz`). `release_binaries` stays empty. Phase A ships
+   no release binaries.
 
 **OPEN:** point 3's same-commit testing needs a generated project to resolve
 the four crates from the checked-out `crates/` directory and not from
@@ -348,7 +363,9 @@ Generated projects pick up fixes with `cargo update`. The template stays
 small, which keeps the fixture matrix (one generated project per answers
 fixture) cheap to run. Publishing becomes part of every release, and each
 crate's public API is a semver contract from `v0.1.0`. Any crate can move to
-its own repository later without an API change.
+its own repository later without an API change. The `v0.1.0` GitHub Release
+carries the workspace source archive from point 9 and no release binaries.
+Release workflow files stay kit output.
 
 ### Alternatives Considered
 
@@ -370,7 +387,9 @@ own); `req-qa` on [REQ-RUN-0003](requirements.md) (points 4 and 5: rendered `Car
 files contain version requirements and no `path =` entry for these crates);
 the fixture matrix ([REQ-RUN-0701](requirements.md)), which generates and tests a project
 per fixture on every change; `arch-qa` review of the sprint document for
-point 6.
+point 6. Points 7–9 are the sprint a-7 amendment: `install.py` output under
+`.github/workflows/release*.yml`, an empty `release_binaries` array, and the
+linux `release_targets` row in `release/sc-publish-consumer-input.json`.
 
 ### Related Documents
 

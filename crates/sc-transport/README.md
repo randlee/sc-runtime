@@ -1,5 +1,7 @@
 # sc-transport
 
+`sc-transport` 0.1.0 is published on crates.io under the MIT license. The repository is <https://github.com/randlee/sc-runtime>.
+
 `sc-transport` resolves local daemon endpoints, sends JSON `GET` and `POST`
 requests with reqwest, and optionally binds UDS/TCP listeners when built with
 the `server` feature. Failures are `TransportError` values; the crate does not

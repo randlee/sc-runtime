@@ -1,0 +1,46 @@
+schema_version = 1
+
+[project]
+name = "sc-runtime"
+archive_prefix = "sc-runtime"
+description = "Scaffolding framework: config, transport, command envelope, and daemon assembly crates plus a cargo-generate template"
+homepage = "https://github.com/randlee/sc-runtime"
+license = "MIT"
+readme_dependency_crate = "sc-runtime"
+workspace_toml = "Cargo.toml"
+rust_toolchain = "1.94.1"
+
+
+[[release_targets]]
+target = "x86_64-unknown-linux-gnu"
+os = "ubuntu-latest"
+archive = "tar.gz"
+
+[[crates]]
+artifact = "sc-config"
+package = "sc-config"
+cargo_toml = "crates/sc-config/Cargo.toml"
+publish = true
+publish_order = 1
+wait_after_publish_seconds = 60
+[[crates]]
+artifact = "sc-transport"
+package = "sc-transport"
+cargo_toml = "crates/sc-transport/Cargo.toml"
+publish = true
+publish_order = 2
+wait_after_publish_seconds = 60
+[[crates]]
+artifact = "sc-command"
+package = "sc-command"
+cargo_toml = "crates/sc-command/Cargo.toml"
+publish = true
+publish_order = 3
+wait_after_publish_seconds = 60
+[[crates]]
+artifact = "sc-runtime"
+package = "sc-runtime"
+cargo_toml = "crates/sc-runtime/Cargo.toml"
+publish = true
+publish_order = 4
+wait_after_publish_seconds = 0
