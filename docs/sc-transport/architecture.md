@@ -263,8 +263,8 @@ not state where the mapping lives.
 
 There is no dependency edge among the standalone crates, and `sc-transport`
 is usable by a daemon and CLI pair that does not use the sc-ai-cli envelope
-at all. The cost is a few lines of mapping code in each generated CLI, which
-the project owns and can change. The strings `DAEMON.NOT_RUNNING` and the
+at all. The cost is one published `sc-command` constructor per Phase A
+decision, called from the generated CLI. The strings `DAEMON.NOT_RUNNING` and the
 `OpError` field layout are defined in two crates that cannot check each
 other at compile time.
 
