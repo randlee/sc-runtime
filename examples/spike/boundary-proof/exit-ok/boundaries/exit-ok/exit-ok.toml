@@ -1,0 +1,36 @@
+boundary_id = "BOUNDARY-exit-ok"
+owner_package = "exit-ok"
+owner_crate_path = "exit_ok"
+name = "exit-ok"
+
+[public]
+facade = "marker"
+
+[implementation]
+type = "marker"
+module = "exit_ok"
+visibility = "public"
+constructor = "none"
+
+[composition]
+roots = ["marker"]
+
+[dependencies]
+allowed_dependents = []
+allowed_dependencies = []
+forbidden_edges = []
+
+[references]
+scope = "outside_owner_crate"
+forbidden = []
+
+[testing]
+allowed_test_double_paths = []
+forbidden_test_bypasses = []
+
+[enforcement]
+lint_rules = []
+review_gates = []
+
+[status]
+state = "concrete_landed"

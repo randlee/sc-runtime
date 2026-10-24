@@ -16,8 +16,12 @@ Manifest format and forbidden edges are normative in `docs/requirements.md`
 (REQ-RUN-0005) and `docs/architecture.md`.
 
 a-1 records that `sc-lint lint sc-boundary` exits 0 on a disposable
-single-crate tree with no root `[workspace]`, and records the negative
-fixture runs (prefix match, transitive versus direct) in
+single-crate tree that is its own `[workspace]` root (`members = ["."]`,
+`[workspace.package].version`, inherited `[workspace.package]` fields on the
+member; fixture `exit-ok`). A tree with no root `[workspace]` exits 3
+(fixture `no-workspace`). Each tree needs `boundaries/planning.toml` with
+`current_sprint = "<phase>.<step>"` and each boundary manifest needs `name`.
+Negative fixture runs (prefix match, transitive versus direct) are in
 `docs/architecture.md`. a-2, a-3, and a-4 run that recorded command on their
 own crate `Cargo.toml` and manifest. They do not wait for the root
 workspace, and they do not keep analyzer output in a pull request. Leaf QA

@@ -222,6 +222,7 @@ anywhere.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
+**Amended:** 2026-10-24 by sprint a-1 ([ADR-RUN-0004](../architecture.md))  
 **Source:** decided in this document; applies repo [ADR-RUN-0003](../architecture.md)  
 
 ### Context
@@ -244,11 +245,14 @@ so each can be published and used alone
    type, for example `Envelope<Widget>`. `sc-transport` never names
    `Envelope` or `OpError`.
 2. `TransportError::DaemonNotRunning` is `sc-transport`'s own typed error
-   variant. It carries the code `DAEMON.NOT_RUNNING` and the suggested
-   action `run <app> daemon start` as plain strings.
-3. Converting `DaemonNotRunning` into an `OpError` is done in the project's
-   CLI crate (template code in the generated `cli` crate), which depends on
-   both `sc-transport` and `sc-command`.
+   variant. It carries `code: &'static str` (`DAEMON.NOT_RUNNING`), the
+   endpoint, and the cause as plain strings. It does not carry
+   `sc_observability_types::ErrorCode` or `Remediation`.
+3. Converting that code plus endpoint and cause into an `OpError` (including
+   `ErrorCode` and `suggested_action`) is owned by `sc-command` as a published
+   constructor that takes plain strings only, so `sc-command` still does not
+   depend on `sc-transport`. The generated `cli` crate (a-6) calls that
+   constructor; it does not embed a copy of the mapping in `main.rs`.
 4. `crates/sc-transport/Cargo.toml` does not list `sc-command`.
 
 The method and type names are illustrative until the contract sprint pins
@@ -259,8 +263,8 @@ not state where the mapping lives.
 
 There is no dependency edge among the standalone crates, and `sc-transport`
 is usable by a daemon and CLI pair that does not use the sc-ai-cli envelope
-at all. The cost is a few lines of mapping code in each generated CLI, which
-the project owns and can change. The strings `DAEMON.NOT_RUNNING` and the
+at all. The cost is one published `sc-command` constructor per Phase A
+decision, called from the generated CLI. The strings `DAEMON.NOT_RUNNING` and the
 `OpError` field layout are defined in two crates that cannot check each
 other at compile time.
 
