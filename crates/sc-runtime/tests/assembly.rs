@@ -1,14 +1,20 @@
 mod common;
 
+#[cfg(unix)]
 use std::ffi::OsStr;
+#[cfg(unix)]
 use std::process::{Child, Command, ExitStatus};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+#[cfg(unix)]
+use std::sync::Mutex;
 
 use rmcp::ServerHandler;
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
 use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService};
+use sc_runtime::DaemonConfig;
 use sc_runtime::testing::DaemonFixture;
-use sc_runtime::{Daemon, DaemonConfig, RuntimeError};
+#[cfg(unix)]
+use sc_runtime::{Daemon, RuntimeError};
 use serde::Deserialize;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;

@@ -12,7 +12,7 @@ pub fn config() -> DaemonConfig {
     {
         let mut config = DaemonConfig::default();
         config.endpoint_flag = Some(format!("tcp:{}", ephemeral_tcp()));
-        return config;
+        config
     }
     #[cfg(not(windows))]
     {
@@ -27,13 +27,18 @@ fn ephemeral_tcp() -> std::net::SocketAddr {
 
 #[allow(dead_code)]
 pub fn http(endpoint: &Endpoint) -> reqwest::Client {
-    let mut builder = reqwest::Client::builder();
+    let builder = reqwest::Client::builder();
     #[cfg(unix)]
-    if let Endpoint::Uds(path) = endpoint {
-        builder = builder.unix_socket(path.clone());
-    }
+    let builder = if let Endpoint::Uds(path) = endpoint {
+        builder.unix_socket(path.clone())
+    } else {
+        builder
+    };
     #[cfg(not(unix))]
-    let _ = endpoint;
+    let builder = {
+        let _ = endpoint;
+        builder
+    };
     builder.build().expect("client")
 }
 

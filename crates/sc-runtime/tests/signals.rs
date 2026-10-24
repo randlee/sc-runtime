@@ -18,15 +18,19 @@ use utoipa_axum::router::OpenApiRouter;
 #[cfg(unix)]
 use utoipa_axum::routes;
 
-const EPHEMERAL: &str = "SC_RUNTIME_EPHEMERAL_CI";
 const CHILD: &str = "SC_RUNTIME_SIGNAL_CHILD";
 
+#[cfg(unix)]
+const EPHEMERAL: &str = "SC_RUNTIME_EPHEMERAL_CI";
+
+#[cfg(unix)]
 fn refuse_without_isolation() -> bool {
     if std::env::var_os(EPHEMERAL).is_some() {
-        return false;
+        false
+    } else {
+        eprintln!("{EPHEMERAL} is unset; signal test not run");
+        true
     }
-    eprintln!("{EPHEMERAL} is unset; signal test not run");
-    true
 }
 
 #[cfg(unix)]
@@ -103,7 +107,7 @@ async fn sigint_drains_and_releases_the_lock() {
 async fn serve_child() -> bool {
     #[cfg(not(unix))]
     {
-        return false;
+        false
     }
     #[cfg(unix)]
     {
