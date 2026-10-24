@@ -1623,7 +1623,10 @@ def test_release_manifest_publishes_sc_sha_before_its_consumers() -> None:
         assert entry["package"]
         assert entry["cargo_toml"].endswith("Cargo.toml")
         assert entry["wait_after_publish_seconds"] >= 0
-    assert manifest["channels"]
+    # Crates-only consumers may omit [channels] or declare an empty table (Phase A).
+    channels = manifest.get("channels")
+    if channels is not None:
+        assert isinstance(channels, dict)
 
 
 def run_manifest_command(*args: str) -> subprocess.CompletedProcess[str]:

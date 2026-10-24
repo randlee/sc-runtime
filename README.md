@@ -11,7 +11,7 @@ Four MIT-licensed library crates and a `cargo-generate` template for a JSON CLI,
 | `sc-command` | Response envelope and REST/MCP conversions |
 | `sc-runtime` | Daemon assembly: instance lock, one router, graceful shutdown |
 
-Each crate is version 0.1.0 and is published on its own. Publish order is `sc-config`, `sc-transport`, `sc-command`, then `sc-runtime`. The workspace `rust-version` is 1.94.1.
+Each crate is version 0.1.0 and is intended for separate crates.io publication once release authorization completes. Publish order is `sc-config`, `sc-transport`, `sc-command`, then `sc-runtime`. The workspace `rust-version` is 1.94.1.
 
 ## Generate a project
 
