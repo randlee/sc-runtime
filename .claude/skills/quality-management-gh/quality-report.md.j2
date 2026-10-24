@@ -22,8 +22,14 @@ required_variables:
   - recommendation
 optional_variables:
   - blocking_ids_json
+  - reviewer_spawn_gate
+  - reviewer_manifest_json
+  - evidence_chain_json
 defaults:
   blocking_ids_json: "[]"
+  reviewer_spawn_gate: ""
+  reviewer_manifest_json: "[]"
+  evidence_chain_json: "{}"
 metadata:
   type: qa-quality-report
   tags:
@@ -66,7 +72,10 @@ Final Verdict: **{{ verdict }}**
   "merge_reason": {{ merge_reason | tojson }},
   "next_action": "none",
   "owner": "none",
-  "recommendation": {{ recommendation | tojson }}
+  "recommendation": {{ recommendation | tojson }}{% if reviewer_spawn_gate %},
+  "reviewer_spawn_gate": {{ reviewer_spawn_gate | tojson }},
+  "reviewer_manifest": {{ reviewer_manifest_json | safe }},
+  "evidence_chain": {{ evidence_chain_json | safe }}{% endif %}
 }
 ```
 

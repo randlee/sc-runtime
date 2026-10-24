@@ -10,5 +10,7 @@ cut, five-milestone map, ownership, decision prerequisites, and flexibility
 guardrails.
 
 Later phases are not scheduled here. Attribute-generated CLI tests, unresolved
-auto-start policy, Postgres/both, sc-lint installation, prototype handoff, and
-other post-core layers remain outside Phase A pending source reconciliation.
+auto-start policy, Postgres/both, prototype-repository handoff, and other
+post-core layers remain outside Phase A pending source reconciliation.
+sc-lint 0.8.0 is in Phase A: a-5 installs it for this repository, and a-6
+installs the consumer contract into generated projects.

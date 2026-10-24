@@ -1,12 +1,12 @@
 {
   "generated_at": "2026-09-25T05:00:00Z",
-  "task_id": "obs-d3",
-  "sprint": "D.3",
-  "branch": "feature/pD-s3-otlp-sync-exporter",
+  "task_id": "run-a-2",
+  "sprint": "a-2",
+  "branch": "sprint/a-2-config",
   "commit": "abc1234",
-  "pr_number": 215,
+  "pr_number": 28,
   "deliverables_complete": 4,
   "deliverables_total": 4,
-  "deliverables_md": "- D.3-1 sync exporter: done\n- D.3-2 retry policy: done\n- D.3-3 tests: done\n- D.3-4 docs: done",
-  "validation_md": "- `cargo fmt --check`: ok\n- `cargo clippy --workspace --all-targets -- -D warnings`: ok\n- `cargo test --workspace`: 212 passed, 0 failed"
+  "deliverables_md": "- sc-config facade: done\n- error inventory ADR: done\n- boundary manifest: done\n- tests: done",
+  "validation_md": "- `just lint gates`: ok (when workspace present)\n- `cargo test -p sc-config`: passed"
 }

@@ -1,0 +1,29 @@
+{
+  "phase": "a",
+  "plan_branch": "plan/phase-a",
+  "plan_pr": 28,
+  "integrate_branch": "integrate/phase-a",
+  "default_pr_target": "integrate/phase-a",
+  "plan_hardening": {
+    "scope_pass_commit": "330f24e",
+    "critical_pass_commit": "40c01fc"
+  },
+  "qa_rounds": [
+    {
+      "qa_pass": "qa-plan-a-1",
+      "commit": "40c01fc8efaa3976a1cf68fc7e9a252aba7d79c8",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/28#issuecomment-6377434687",
+      "coordinator_task_id": "4163cbaa-a8b0-4db7-9b88-c7185690fcbc",
+      "reviewer_spawn_gate": "pass",
+      "findings": {"blocking": 17, "important": 19, "minor": 14},
+      "next_action": "triage_and_fix"
+    }
+  ],
+  "next_sprint": {
+    "id": "a-1",
+    "branch": "sprint/a-1-compatibility-spike",
+    "sprint_doc": "docs/plans/phase-a/sprint-a-1-compatibility-spike.md",
+    "blocked_until": "plan PR #28 QA PASS and merge to develop"
+  }
+}

@@ -31,6 +31,11 @@ no sprint may depend on it, until it is made Active. ADR ids have the form
 
 ## System shape
 
+**Product framing:** sc-runtime is a **published scaffolding framework** for
+many independent consumer projects (agent-first JSON CLI, mandatory actionable
+errors, MCP on the same router, SQLite locally with a path to additional sqlx
+store backends). See [`framework-charter.md`](framework-charter.md).
+
 `sc-runtime` produces two kinds of thing: four library crates that are
 published and versioned, and a template that is rendered once into a project
 and then belongs to that project.

@@ -24,10 +24,6 @@ agents:
     model: composer-2.5-fast
     notes: QA enforcer only — verify spawn proof, aggregate fenced JSON, publish PR report; no Task spawns
 
-  publisher:
-    model: composer-2.5-fast
-    notes: sc-publish profile — inline channel steps only; never Task subagents (see .cursor/agents/publisher.md, cursor-runtime.md)
-
   req-qa:
     model: composer-2.5-fast
     notes: Structured deliverable checklist
@@ -35,6 +31,10 @@ agents:
   arch-qa:
     model: cursor-grok-4.6-high-fast
     notes: Precision / boundary gate; Grok (not Sonnet) per team preference
+
+  extensibility-qa:
+    model: cursor-grok-4.6-high-fast
+    notes: Adversarial multi-consumer review; QA-1 and plan review only — skip on round_limit
 
   rust-qa-agent:
     model: grok-4.5-fast-xhigh
@@ -52,6 +52,3 @@ agents:
     model: composer-2.5-fast
     notes: Narrow flaky-test contract
 
-  qa-triage:
-    model: inherit
-    notes: Use agent frontmatter default (haiku)

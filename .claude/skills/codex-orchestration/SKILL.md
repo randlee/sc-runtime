@@ -320,10 +320,10 @@ Install the repository templates on the daemon host after this change merges:
 mkdir -p ~/.atm/templates/codex-orchestration && cp .claude/skills/codex-orchestration/*.j2 ~/.atm/templates/codex-orchestration/
 ```
 
-On atm 1.5.16, closing an assignee task with its final report also closes the
-assigner's mirror task. The lead must not issue a second `--task-complete` for
-that mirror; it reads the assignee's close report and proceeds with QA or the
-next orchestration step.
+When the installed **atm** version mirrors assigner tasks on assignee close,
+the lead must not issue a second `--task-complete` for that mirror; it reads
+the assignee's close report and proceeds with QA or the next orchestration step.
+Run `atm version` when behavior differs.
 
 Use the templates in this skill directory:
 - `dev-template.xml.j2`

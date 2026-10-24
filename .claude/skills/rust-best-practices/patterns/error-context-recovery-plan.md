@@ -43,7 +43,7 @@ pub enum ErrorCode {
 /// RecoverableError::new(ErrorCode::MissingApiKey, "Semantic search unavailable")
 ///     .cause("OPENAI_API_KEY environment variable is not set")
 ///     .recovery("Set OPENAI_API_KEY environment variable")
-///     .recovery("Or run: cm config set openaiApiKey <key>")
+///     .recovery("Or configure the API key in your environment or config file")
 ///     .recovery("Or use --no-semantic flag for keyword-only search")
 ///     .docs("https://docs.example.com/semantic-search")
 /// ```
@@ -202,16 +202,11 @@ A Claude Code command that scans source files and flags violations:
            and recovery steps for the caller
 ```
 
-### sc-hooks Integration
+### Optional CI / pre-commit
 
-Register as a pre-commit hook in `sc-hooks`:
-
-```toml
-[hooks.error-audit]
-event = "pre-commit"
-binary = "error-audit"
-args = ["--severity", "error"]  # Only block on Error severity
-```
+When this repository adds an error-audit binary or lint step, wire it in CI or
+pre-commit per `.claude/project/quality-policy.md`. No `sc-hooks` or
+`/error-audit` tooling is required in sc-runtime until explicitly added.
 
 ---
 

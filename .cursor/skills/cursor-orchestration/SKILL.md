@@ -21,10 +21,10 @@ Does **not** modify `.claude/skills/codex-orchestration/` or
 
 | Role | Agent | Invocation |
 |------|-------|------------|
-| Orchestrator | this parent session | spawns `rust-developer`, reviewers, `cursor-quality-mgr`, `qa-triage` |
+| Orchestrator | this parent session | spawns `rust-developer`, reviewers, `cursor-quality-mgr` |
 | Developer | `rust-developer` | parent Task `subagent_type: rust-developer` |
 | Quality manager | **`cursor-quality-mgr` only** | parent Task — **spawn/evidence enforcer** (see **cursor-quality-mgr enforcer role**) |
-| Reviewers | shared `.claude` agents | **parent** Task spawns: `req-qa`, `arch-qa`, `rust-qa-agent`, `rust-best-practices-agent`, `rust-service-hardening-agent`, `flaky-test-qa` |
+| Reviewers | shared `.claude` agents | **parent** Task spawns: `req-qa`, `arch-qa`, `extensibility-qa` (QA-1 / plan only), `rust-qa-agent`, `rust-best-practices-agent`, `rust-service-hardening-agent`, `flaky-test-qa` |
 
 ### Quality-mgr binding (critical)
 
@@ -57,8 +57,8 @@ evidence enforcer** for each QA round:
 2. **Collect evidence** — parse fenced JSON from each reviewer response in
    `<parent-reviewer-handoff>` (no coordinator inference).
 3. **Analyze and correlate** — union reviewer findings with TODO-scan hits;
-   correlate prior triage `.ttl` records on follow-up rounds (parent owns
-   `/triaging-findings` after finding FAIL).
+   correlate prior triage `.ttl` records on follow-up rounds (parent owns triage
+   per **Finding triage** after finding FAIL).
 4. **Publish findings report** — render `findings-report.md.j2` or
    `quality-report.md.j2` and post to the PR on **every** QA round.
 5. **Reject incomplete rounds** — if the parent failed to spawn the proper
@@ -113,7 +113,7 @@ Task subagent — nested agents cannot spawn `rust-developer`, reviewers, or
 
 | Who spawns | Allowed |
 |------------|---------|
-| Top-level parent session | `rust-developer`, reviewers, `cursor-quality-mgr`, `qa-triage` |
+| Top-level parent session | `rust-developer`, reviewers, `cursor-quality-mgr` |
 | Nested Task subagent (orchestrator) | **Forbidden** — investigation/prep only |
 | `cursor-quality-mgr` | **Forbidden** — spawn/evidence enforcer only (no Task spawns) |
 
@@ -122,7 +122,7 @@ or draft assignments — then **return control** to the parent for all Task spaw
 
 ## Parent reviewer spawn (default — every QA round)
 
-Nested `cursor-quality-mgr` Tasks cannot spawn reviewer Tasks in Cursor (c.11).
+Nested `cursor-quality-mgr` Tasks cannot spawn reviewer Tasks in Cursor.
 **Parent orchestrator always spawns reviewers**; `cursor-quality-mgr` enforces
 spawn proof and publishes findings — it never spawns reviewers.
 
@@ -197,12 +197,13 @@ Other phase-end reviewers stay on their YAML defaults.
 ## Preconditions
 
 1. Sprint/phase target defined in `docs/requirements.md`,
-   `docs/architecture.md`, and `docs/plans/project-plan.md` (or linked phase plan).
+   `docs/architecture.md`, and `docs/project-plan.md` when present (or the linked
+   phase plan under `docs/plans/phase-*/`).
 2. Sprint worktree exists (create via `/sc-git-worktree` from `develop` if missing).
 3. These exist and are readable (repo-root-relative):
    - `.cursor/orchestration-agent-models.yaml`
    - `.cursor/agents/cursor-quality-mgr.md`
-   - `.claude/agents/{req-qa,arch-qa,flaky-test-qa,rust-qa-agent,rust-best-practices-agent,rust-service-hardening-agent,rust-developer}.md`
+   - `.claude/agents/{req-qa,arch-qa,extensibility-qa,flaky-test-qa,rust-qa-agent,rust-best-practices-agent,rust-service-hardening-agent,rust-developer}.md`
    - `.claude/skills/quality-management-gh/SKILL.md`
    - `.claude/assets/sc-rust/quality-mgr/quality-mgr.rust.md`
 4. `sc-compose` is on `PATH` and usable (see **Tool recipes**).
@@ -249,7 +250,7 @@ If two conflicting QA comments exist on the same PR (e.g. PASS then FAIL),
 
 Merge is blocked unless an auditable evidence chain exists for the **latest**
 `qa_pass` on that PR. Self-attested prose without correlatable artifacts is
-invalid (c.9-class failure).
+invalid (missing correlatable Task ids or PR Machine Status).
 
 ### Evidence layers
 
@@ -257,7 +258,7 @@ invalid (c.9-class failure).
 |-------|----------------|-------------------|
 | **Reviewer spawn** | Sub-agents actually ran | Parent-spawned `reviewer_manifest[].task_id` per required reviewer — ids from Cursor Task tool returns, not invented; `spawn_actor: parent-orchestrator` |
 | **Reviewer output** | Findings came from reviewers | Parseable fenced JSON per agent; aggregated counts match **reviewer JSON ∪ TODO scan** |
-| **Triage** | Findings were correlated before fix | `.triage/<phase_id>/findings/<finding_id>.ttl` paths; `qa-triage` Task ids when triage ran |
+| **Triage** | Findings were correlated before fix | `.triage/<phase_id>/findings/<finding_id>.ttl` paths (parent-authored or via triaging-findings skill when installed) |
 | **Fix** | Dev addressed triaged scope | Fix assignment lists every finding id + triage `.ttl` paths; push SHA after fix |
 | **PR publish** | Stakeholders can audit QA | `gh pr comment` or review URL for **each** QA round; `detailed_findings_md` lists **all** severities |
 | **Coordinator handoff** | Parent/ATM received same facts | Parent verdict + persisted orchestration state contain **identical** Machine Status JSON as PR post |
@@ -271,8 +272,8 @@ Before merge, the parent orchestrator must:
    subagent from this session (notification id or transcript correlation).
 3. If any required `task_id` is missing, empty, or uncorrelatable → **QA
    INCOMPLETE** — do not merge; re-run `cursor-quality-mgr`.
-4. On FAIL rounds, confirm `/triaging-findings` produced `.ttl` records before
-   fix dispatch; fix assignment must cite those paths.
+4. On FAIL rounds, confirm triage `.ttl` records exist before fix dispatch (see
+   **Finding triage** below); fix assignment must cite those paths.
 5. Append a `qa_rounds[]` entry to `.cursor/<phase>-orchestration.json` (or
    sprint-local orchestration state) with: `qa_pass`, `commit`, `verdict`,
    `pr_comment_url`, `reviewer_manifest`, `triage_ttl_paths`, `finding_ids`,
@@ -307,22 +308,30 @@ The sc-compose input var is `evidence_chain_json`; the rendered key is
 
 ```json
 {
-  "qa_pass": "qa-c10-1",
+  "qa_pass": "qa-a-2-1",
   "commit": "<sha>",
-  "pr_number": 39,
+  "pr_number": 28,
   "pr_comment_url": "<url from gh after post>",
   "coordinator_task_id": "<cursor-quality-mgr Task id>",
   "reviewer_tasks": [
     {"agent": "req-qa", "task_id": "<id>", "spawn_actor": "parent-orchestrator", "fenced_json_received": true, "verdict": "PASS"}
   ],
   "triage": {
-    "phase_id": "phase-C-web-server",
-    "ttl_paths": [".triage/phase-C-web-server/findings/REQ-QA-001.ttl"],
-    "qa_triage_task_ids": ["<id>"]
+    "phase_id": "phase-a",
+    "ttl_paths": [".triage/phase-a/findings/REQ-QA-001.ttl"]
   },
   "parent_correlation_required": true
 }
 ```
+
+### Finding triage (when `/triaging-findings` is absent)
+
+If `.claude/skills/triaging-findings/SKILL.md` is **not** in the repo, the
+**parent orchestrator** writes minimal `.triage/<phase>/findings/<id>.ttl`
+records from reviewer fenced JSON (id, severity, file:line, sprint) before
+dispatching fix work. When the skill **is** present, run `/triaging-findings`
+instead. Do not reference `/triaging-findings` or `/closing-triage` as
+mandatory when those skill directories are missing.
 
 ## Required message sequence
 
@@ -334,7 +343,7 @@ Every orchestration handoff follows codex ACK → Work → Completion → receiv
 | Pre-QA RBP (optional dev fix) | parent → `rust-best-practices-agent` **or** parent → `rust-developer` fix pass | parent spawns RBP reviewer before QA-1; dev fixes findings if any |
 | QA reviewers | parent → each reviewer | parallel background Tasks → fenced JSON per agent |
 | QA enforcer | parent → `cursor-quality-mgr` | complete handoff → ACK → spawn-gate verify → aggregate → PR report → verdict |
-| Triage | parent → `qa-triage` (per finding) | triage JSON → fenced JSON → `.ttl` path |
+| Triage | parent (or `/triaging-findings` when installed) | `.ttl` paths recorded before fix dispatch |
 | Fix | parent → `rust-developer` | fix XML with finding ids + `.ttl` paths → push+SHA |
 
 Parent must not spawn the next hop until the prior completion message exists.
@@ -366,8 +375,8 @@ Silent skips invalidate the evidence chain.
    verdict — **never** spawns reviewers.
 9. On **spawn-gate FAIL** (`next_action: parent_respawn_reviewers`): spawn missing
    reviewers, rebuild handoff, re-run `cursor-quality-mgr` — do not merge.
-10. On **finding FAIL** (any open finding or deliverable &lt; 100%): run
-   `/triaging-findings`, then fix **all** findings via
+10. On **finding FAIL** (any open finding or deliverable &lt; 100%): triage per
+   **Finding triage** above, then fix **all** findings via
    `.cursor/skills/cursor-orchestration/fix-assignment.xml.j2` →
    `rust-developer`, push, then parent re-spawns reviewers and re-runs
    `cursor-quality-mgr`. Repeat until QA PASS **and** CI green.
@@ -386,11 +395,9 @@ Silent skips invalidate the evidence chain.
 ### Phase-end release handoff
 
 After the last sprint in a phase merges through `integrate/phase-N` → `develop`
-→ `main`, **do not** spawn `publisher` as a background Task. Hand off to
-`/cursor-publish` (sc-publish profile): one foreground session following
-`.cursor/agents/publisher.md`. See `.cursor/skills/cursor-publish/SKILL.md`.
-When `randlee/sc-publish` ships, run `install.py` to replace interim publish
-assets.
+→ `main`, run **`/cursor-publish`** (sc-publish kit) in a foreground parent
+session after a-7 has run `install.py` (see `docs/development/sc-publish.md`).
+Never spawn publisher as a background Task.
 
 ## Parity with codex-orchestration
 
@@ -400,7 +407,7 @@ ATM). It must preserve codex gate semantics:
 | Codex | Cursor equivalent |
 |-------|-------------------|
 | `team-lead` | parent session |
-| `cwy` | `rust-developer` |
+| Codex developer role | `rust-developer` |
 | `quality-mgr` | **`cursor-quality-mgr` only** (never ATM `quality-mgr`) — spawn/evidence enforcer |
 | `codex-orchestration/*.j2` | `.cursor/skills/cursor-orchestration/*.j2` |
 | Shared reviewers | same `.claude/agents/*` Task types — **parent spawns** |
@@ -415,7 +422,7 @@ ATM). It must preserve codex gate semantics:
 - `reviewer_spawn_gate` + `reviewer_manifest` (rendered Machine Status keys) when
   Cursor QA runs (proves parent spawned reviewers and returned fenced JSON)
 - Parent merge blocked without manifest proof (prevents coordinator self-review)
-- Single QA coordinator per round (no duplicate `qa-c9-1` Tasks)
+- Single QA coordinator per round (no duplicate coordinator Tasks for the same `qa_pass`)
 
 **Do not edit** `.claude/skills/codex-orchestration/` or
 `.claude/agents/quality-mgr.md` from this skill. Shared report templates may
@@ -550,7 +557,7 @@ rm -f "$_VARS"
 _VARS=$(mktemp)
 cat > "$_VARS" <<'JSON'
 {
-  "reference_docs": ["docs/requirements.md", "docs/architecture.md", "docs/plans/project-plan.md"],
+  "reference_docs": ["docs/requirements.md", "docs/architecture.md", "docs/framework-charter.md", "docs/project-plan.md"],
   "sprint_doc": "docs/plans/<sprint>.md",
   "phase": "1",
   "sprint": "1a",
@@ -572,8 +579,9 @@ sc-compose render \
 rm -f "$_VARS"
 ```
 
-Render `arch-qa-assignment.json.j2` and `flaky-test-qa-assignment.json.j2` the
-same way (see each template's `required_variables`). Rust reviewer templates:
+Render `arch-qa-assignment.json.j2`, `extensibility-qa-assignment.json.j2`, and
+`flaky-test-qa-assignment.json.j2` the same way (see each template's
+`required_variables`). Rust reviewer templates:
 
 ```bash
 sc-compose render \

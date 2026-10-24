@@ -261,8 +261,10 @@ Every completed QA round must leave correlatable artifacts:
    `evidence_chain.pr_comment_url` (populate after successful `gh` post).
 4. **Parent proof:** final verdict to parent includes the **same** Machine Status
    JSON block as the PR post.
-5. **Triage proof (finding FAIL rounds):** parent runs `/triaging-findings`;
-   cite `.triage/.../*.ttl` paths in `evidence_chain.triage.ttl_paths`.
+5. **Triage proof (finding FAIL rounds):** parent records `.triage/.../*.ttl`
+   paths (via `/triaging-findings` when `.claude/skills/triaging-findings/`
+   exists, otherwise parent-authored minimal records); cite paths in
+   `evidence_chain.triage.ttl_paths`.
 6. **Persistence:** parent appends `qa_rounds[]` to orchestration state — you
    supply fields in the verdict for parent to persist.
 
@@ -311,7 +313,7 @@ or fill gaps yourself. On gap, FAIL with `next_action: parent_respawn_reviewers`
 _VARS=$(mktemp)
 cat > "$_VARS" <<'JSON'
 {
-  "reference_docs": ["docs/requirements.md", "docs/architecture.md", "docs/plans/project-plan.md"],
+  "reference_docs": ["docs/requirements.md", "docs/architecture.md", "docs/framework-charter.md", "docs/project-plan.md"],
   "sprint_doc": "docs/plans/<sprint>.md",
   "phase": "1",
   "sprint": "1a",
@@ -343,7 +345,7 @@ cat > "$_VARS" <<'JSON'
   "worktree_path": "<resolved-worktree-path>",
   "branch": "<branch>",
   "review_targets": ["<path>"],
-  "reference_docs": ["docs/architecture.md"],
+  "reference_docs": ["docs/framework-charter.md", "docs/sc-runtime-design.md", "docs/architecture.md"],
   "commit": "<sha>",
   "phase": "1",
   "sprint": "1a",
@@ -581,15 +583,17 @@ launching you. Your job is to **audit the handoff** against this list and
 
 Implementation QA-1:
 
-- always: `req-qa`, `arch-qa`, `rust-qa-agent`, `rust-best-practices-agent`,
-  `rust-service-hardening-agent`
+- always: `req-qa`, `arch-qa`, `extensibility-qa`, `rust-qa-agent`,
+  `rust-best-practices-agent`, `rust-service-hardening-agent`
 - conditional: `flaky-test-qa` when tests changed, CI flakes, or rust-qa
   surfaces instability
 
 QA-2 and later rechecks:
 
 - always: `req-qa`, `arch-qa`, `rust-qa-agent`
-- do **not** run `rust-best-practices-agent` or `rust-service-hardening-agent`
+- do **not** run `extensibility-qa`, `rust-best-practices-agent`, or
+  `rust-service-hardening-agent` (spawn with `round_limit: true` if a stub is
+  required; `extensibility-qa` returns SKIPPED)
 - conditional: `flaky-test-qa` as above
 
 Phase-ending QA: all six reviewers (flaky always on).
@@ -600,8 +604,12 @@ Phase-ending QA: all six reviewers (flaky always on).
 
 Docs-only plan review (`review_mode: plan`):
 
-- `req-qa`, `arch-qa`, `rust-best-practices-agent`, `rust-service-hardening-agent`
+- `req-qa`, `arch-qa`, `extensibility-qa`, `rust-best-practices-agent`,
+  `rust-service-hardening-agent`
 - do **not** run `rust-qa-agent`
+- `arch-qa` / `extensibility-qa` `reference_docs` must include
+  `docs/framework-charter.md`, `docs/sc-runtime-design.md`, and
+  `docs/architecture.md`
 
 Ownership:
 

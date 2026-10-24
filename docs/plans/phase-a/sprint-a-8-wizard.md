@@ -14,9 +14,12 @@ recommended_model: luna
 must_follow: [a-6]
 parallel_safe: [a-7]
 requirements:
+  - REQ-RUN-0001
   - REQ-RUN-0401
   - REQ-RUN-0402
   - REQ-RUN-0403
+  - REQ-RUN-0501
+  - REQ-RUN-0502
   - REQ-RUN-0601
   - REQ-RUN-0602
   - REQ-RUN-0603
@@ -55,8 +58,10 @@ Do not add application options or reopen the schema during UI work.
 - `must_follow a-6`: consumes the final schema, fixtures, and `--var-file`
   pipeline as its contract and oracle.
 - `parallel_safe a-7`: it modifies no crate, template, release workflow, or
-  publication metadata. Its narrow sequential ownership of driver/docs begins
-  only after a-6 merges.
+  publication metadata. `scripts/new_project.py` and `docs/generation.md` are
+  sequential after a-6. The diff is entry-mode flags only. a-6 owns
+  `wizard/answers.schema.json` and `wizard/fixtures/**`. This sprint owns
+  `wizard/wizard.json` and `wizard/pages/**`. It does not wait for a-7.
 
 ## Deliverables
 
@@ -65,12 +70,21 @@ Do not add application options or reopen the schema during UI work.
    framework.
 2. **REQ-RUN-0602** — Add interactive and prefill entry modes that finish with
    the same validated answers object used by `--var-file`; cancellation creates
-   no destination.
+   no destination. The wizard does not re-implement the project-name
+   predicate. Finished answers pass `wizard/answers.schema.json`, whose
+   project-name `pattern` is that predicate. The driver remains the
+   validator.
 3. **REQ-RUN-0603** — Demonstrate fixture-equivalent answers and generated
    output without changing the core crates or template contract.
-4. **Inherited constraint** — Preserve the a-6-owned REQ-RUN-0501/0502
-   pipeline and non-interactive guarantees unchanged while adding the two
-   wizard modes.
+4. **REQ-RUN-0501 / REQ-RUN-0502** — Preserve the a-6 pipeline and
+   non-interactive guarantees while adding the two wizard modes. The driver
+   diff is limited to entry-mode flags. The a-6 generation suite stays
+   byte-identical. No wizard asset is copied into generated projects, and no
+   reusable crate depends on Wyvern or UI code. a-6 deliverable 16 is that
+   check.
+5. **REQ-RUN-0001** — Create the three layout paths the core tag does not
+   require: `wizard/wizard.json`, `wizard/pages/`, and `scripts/run_wizard.py`.
+   a-7's `req:REQ-RUN-0001` criterion leaves these three to this sprint.
 
 ## Acceptance criteria
 
@@ -80,8 +94,15 @@ Do not add application options or reopen the schema during UI work.
    produce the documented driver outcomes.
 3. `req:REQ-RUN-0603` — equivalent wizard and fixture answers produce equivalent
    generated project files, excluding documented nondeterministic metadata.
-4. `ADR-RUN-0401` — no wizard asset is copied into generated projects and
-   no reusable crate depends on Wyvern or UI code.
+4. `req:REQ-RUN-0001` — `wizard/wizard.json`, `wizard/pages/`, and
+   `scripts/run_wizard.py` exist. This criterion does not re-check the
+   four-crate workspace or the paths a-7 already closed.
+5. `boundary:wizard` — a diff allowlist check fails this sprint when
+   `git diff --name-only <a-6>...HEAD` lists a path under
+   `tests/unit/generation/` or `tests/integration/generation/`. The a-6
+   generation suite stays byte-identical: that diff is empty. The
+   `scripts/new_project.py` diff is entry-mode flags only. Any other hunk
+   in that file fails the check.
 
 ## This sprint does not close
 
@@ -94,6 +115,7 @@ None.
 
 ## Required validation
 
-Run descriptor/page unit tests, prefill/cancel tests, one interactive smoke,
-fixture-equivalence generation, and the unchanged a-6 generation suite. Confirm
-the crate and template trees are unchanged from their a-6/a-7 artifacts.
+Run the acceptance criteria, including the diff allowlist in criterion 5
+and the unchanged a-6 generation suite.
+The crate and template trees stay at the a-6 merge. This sprint does not
+wait for a-7.

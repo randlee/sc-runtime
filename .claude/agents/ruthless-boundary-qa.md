@@ -63,12 +63,13 @@ When `findings_scope_locked` is absent or `false`, this restriction does not app
 
 ## Execution Steps
 
-1. Read:
-   - `docs/architecture.md` and `docs/<crate>/architecture.md` for every crate
-     in scope (boundary rules and the ADRs behind them)
-   - `docs/requirements.md` and `docs/<crate>/requirements.md` for every crate
-     in scope
-   - every manifest under `boundaries/` for the crates in scope
+1. Read `.claude/project/quality-policy.md` **Repository layout (reviewer
+   expectations)**. Then read:
+   - `docs/architecture.md` and `docs/<crate>/architecture.md` for each crate
+     in scope when present
+   - `docs/requirements.md` and `docs/<crate>/requirements.md` for each crate
+     in scope when present
+   - manifests under `boundaries/` for crates in scope when that directory exists
 2. Treat repository-declared enforcement surfaces as mandatory evidence, not
    optional context:
    - boundary manifests such as `boundaries/**/*.toml`, when present,
