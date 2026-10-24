@@ -112,8 +112,7 @@ It does not edit `docs/architecture.md`.
    `sc-observability-types` at the a-1 pin. `server` still adds only `axum`.
    `allowed_dependencies` includes `sc-observability-types`.
    `forbidden_edges` keeps `sc-observability` and does not list
-   `sc-observability-types`. A negative check shows a dependency on the types
-   crate still passes analyze. Once `crates/sc-transport/Cargo.toml` exists,
+   `sc-observability-types`. Once `crates/sc-transport/Cargo.toml` exists,
    run `just lint gates` or `sc-lint lint sc-boundary --root . --config sc-lint.toml`
    on this manifest. Do not wait for a-5. Do not own the permanent root
    workspace `Cargo.toml`.

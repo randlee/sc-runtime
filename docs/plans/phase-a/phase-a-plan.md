@@ -1,11 +1,10 @@
 # Phase A — core runtime and minimal generator
 
-Status: plan QA-1 fix pass 2. sc-lint 0.8.0 is in scope (a-5 maintainer, a-6
-consumer). a-1 records the observability pin (1.5.0 on crates.io as of this
-plan) and amends Active 1.2.x sentences before dependent sprints.
-Predecessors are the dependency table and `.sprints/a/structure.ttl`
-(`triage:follows`). Compatibility evidence and crate-local decisions remain
-before dependent implementation work.
+Status: sc-lint 0.8.0 is in scope (a-5 maintainer, a-6 consumer). a-1 records
+the observability pin (1.5.0 on crates.io as of this plan) and amends Active
+1.2.x sentences before dependent sprints. Parents are the dependency-edges
+table. Compatibility evidence and crate-local decisions remain before
+dependent implementation work.
 
 Phase id: `a`. Plan branch: `plan/phase-a`. Phase branch:
 `integrate/phase-a`. Beads epic: `run-phase-a`.
@@ -25,6 +24,9 @@ CLI, **mandatory actionable errors** (stable codes plus remediation on every
 cross-boundary failure), MCP on the shared daemon router, SQLite in the example
 store with Postgres as an add-on store crate, and **minimal scaffolding**
 without registries or application-framework opinions inside the libraries.
+a-6 publishes the generation-driver error inventory: a stable code, cause,
+and recovery for schema rejection, a reserved `db` value, a missing tool,
+and a failed pipeline step.
 
 Phase A follows the five milestones in `docs/sc-runtime-design.md`:
 
@@ -151,7 +153,8 @@ it already owns. a-1 records this family as new ADR-RUN-0010 in
 `docs/architecture.md` before a-2, a-3, or a-5 freezes a facade. ADR-RUN-0006
 stays the typed-error rule. a-2's constructor freeze waits on that Active
 ADR. That wait is not a `must_follow` edge and does not move a-2 off wave 0.
-a-6 runs these vectors from one fixture file against all three constructors.
+The generation driver refuses the reject vectors with `APP.INVALID_NAME`
+before it creates a destination.
 
 ```rust
 // Shape of each crate-local newtype. Not one shared type.
@@ -364,7 +367,9 @@ critical path at five sprints and the sprint count at eight.
 `sc-lint-boundary` enforces inter-crate edges and facade lists only; it has
 no cargo-feature key (ADR-RUN-0003). Server-only items (`bind`, `Listener`,
 sealed `IntoMcp`, Axum/rmcp conversions) stay behind the `server` feature and
-**off the default facade** checked by boundary lint.
+**off the default facade** checked by boundary lint. This table is the one
+statement of the `sc-runtime` → `sc-config` edge-absent decision and of the
+NFR-RUN-0001 `cargo tree -p cli` close. Sprint text points here.
 
 | Sprint | Responsibility |
 |---|---|
@@ -452,7 +457,7 @@ blocking the core release.
 | a-2 | — | `must_follow` is empty. `parallel_safe` with a-1, a-3, and a-4. The sc-config facade is `serde` / `serde_json` plus `sc_config::AppName`. It consumes no spike signature. The `sc_config::AppName` constructor freezes only after a-1 records ADR-RUN-0010. That wait is not a `must_follow` edge. |
 | a-3, a-4 | a-1 | `must_follow`: consume demonstrated reqwest/Axum/rmcp signatures and the recorded `sc-observability-types` version. |
 | a-5 | a-2, a-3, a-4 | `must_follow`: registers the `sc-config` crate and `boundaries/sc-config/sc-config.toml` from a-2; consumes endpoint and listener types from `sc-transport`; consumes the `sc-command` server conversions. Not `parallel_safe` with a-2. `sc-runtime` does not depend on `sc-config` and consumes no type from it. Leaf sprints already run `just lint gates` or `sc-lint lint sc-boundary` on their own manifests. |
-| a-6 | a-5 | `must_follow`: consumes the production runtime facade and rewritten-spike composition pattern. Sole owner of the NFR-RUN-0001 `cargo tree -p cli -e normal` close. |
+| a-6 | a-5 | `must_follow`: consumes the production runtime facade and rewritten-spike composition pattern. Sole owner of the NFR-RUN-0001 close in the feature-enforcement table. |
 | a-7 | a-6 | `must_follow`: consumes the template tree, the answers schema, and the `--var-file` driver. Publishes only after that generated project is green against the release candidates. |
 | a-8 | a-6 | `must_follow`: consumes the settled answers schema and `--var-file` pipeline. |
 | a-1 ↔ a-2 | — | `parallel_safe`: spike evidence and the sc-config crate do not share owned paths. |
@@ -484,31 +489,10 @@ cleanup and kit install. A discovered leaf-crate defect returns to a-2, a-3, or 
 rather than expanding a consumer sprint's ownership. a-6 must not replace
 the maintainer `Justfile` with the generated consumer file.
 
-## Reconciliation and dispatch record
+## Dispatch ids
 
-The first review fix (`3e0aace`) deferred `REQ-RUN-0206`, `ADR-RUN-0204`,
-`REQ-RUN-0311`, `REQ-RUN-0312`, and `ADR-RUN-0304`; retained the process
-safety constraints; and reconciled the active CLI behavior to report-only.
-Iteration 2 removes the remaining active reference to the deferred CLI helper
-shape and assigns every crate-local source decision to its implementing
-sprint. The REQ-RUN-0203 framework-response OPEN stays deferred in that table.
-
-Predecessor beads:
-
-| Sprint | Bead | Declared branch | Predecessor beads |
-|---|---|---|---|
-| a-1 | `run-a-1` | `sprint/a-1-compatibility-spike` | — |
-| a-2 | `run-a-2` | `sprint/a-2-config` | — |
-| a-3 | `run-a-3` | `sprint/a-3-transport` | `run-a-1` |
-| a-4 | `run-a-4` | `sprint/a-4-command` | `run-a-1` |
-| a-5 | `run-a-5` | `sprint/a-5-runtime-core` | `run-a-2`, `run-a-3`, `run-a-4` |
-| a-6 | `run-a-6` | `sprint/a-6-template-from-json` | `run-a-5` |
-| a-7 | `run-a-7` | `sprint/a-7-core-release` | `run-a-6` |
-| a-8 | `run-a-8` | `sprint/a-8-wizard` | `run-a-6` |
-
-Bead dependency edges match the predecessor column.
-`.sprints/a/structure.ttl` `triage:follows` edges match that column.
-`triage:order` stays the unique sequence number.
+Sprint beads are `run-a-1` through `run-a-8` on the `sprint/a-*` branches
+named in each sprint frontmatter. Parents are the dependency-edges table.
 
 ## QA consumption
 

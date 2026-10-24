@@ -115,10 +115,9 @@ boundary.
    `boundaries/sc-command/sc-command.toml`. Amend NFR-CMD-0001 so the default
    direct dependencies are `serde`, `serde_json`, and `sc-observability-types`
    at the a-1 pin, and delete the `serde_json` OPEN. `allowed_dependencies`
-   includes `sc-observability-types`. `forbidden_edges` keeps
+   includes `sc-observability-types`.    `forbidden_edges` keeps
    `sc-observability` and `sc-observability-otlp` and does not list
-   `sc-observability-types`. A negative check shows a dependency on the types
-   crate still passes analyze. Once `crates/sc-command/Cargo.toml` exists,
+   `sc-observability-types`. Once `crates/sc-command/Cargo.toml` exists,
    run `just lint gates` or `sc-lint lint sc-boundary --root . --config sc-lint.toml`
    on this manifest. Do not wait for a-5. Do not own the permanent root
    workspace `Cargo.toml`.

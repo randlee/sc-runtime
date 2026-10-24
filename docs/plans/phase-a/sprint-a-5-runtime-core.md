@@ -88,10 +88,8 @@ without increasing width.
 ## Decision prerequisites
 
 Resolve builder inputs, router/service types, lock behavior, health/OpenAPI,
-shutdown, fixture cleanup, and typed errors. Record `sc-runtime` → `sc-config`
-as edge absent in every copy listed in deliverable 9. Workspace-unification
-was closed in a-1. Do not add `cargo tree -p cli` (a-6 owns the
-generated-project check).
+shutdown, fixture cleanup, and typed errors. The `sc-runtime` → `sc-config`
+edge and the `cargo tree -p cli` exclusion are deliverable 9.
 Choose **consuming typestate** for `DaemonBuilder` or explicit
 `RuntimeError` for missing required closures (RBP-F007).
 `RuntimeError::StoresFailed` is non-generic. Its code is `&'static str` and
@@ -168,9 +166,7 @@ for symmetry.
    If ADR-RT-0001 rejects typestate, a missing required closure returns an
    explicit `RuntimeError` (RBP-F007). The in-run ordering test does not
    replace that caller-facing check. Lock precedes stores; bind is last.
-   Ordinary routers/services; no command or store registry. Workspace
-   composition stays the four library crates. Workspace-unification was closed
-   in a-1. This deliverable does not run `cargo tree -p cli`.
+   Ordinary routers/services; no command or store registry.
 2. **REQ-RT-0002** — A retained nonblocking singleton lock protects one daemon
    instance without PID/probe machinery.
 3. **REQ-RT-0004 / REQ-RT-0005** — One router/listener composition and graceful
@@ -219,7 +215,9 @@ for symmetry.
    - `boundaries/sc-runtime/sc-runtime.toml` `forbidden_edges`
    Keep a-1's rule that `sc-runtime` forbids `sc-observability-types`.
    `sc-runtime` does not depend on `sc-config` or on `sc-observability-types`.
-   This sprint does not add `cargo tree -p cli`.
+   This sprint does not add `cargo tree -p cli`; the phase
+   feature-enforcement table assigns that check to a-6.
+   Workspace-unification was closed in a-1.
 10. **REQ-RUN-0001 / REQ-RUN-0004 / REQ-RUN-0005** — Close these OPENs in
     `docs/requirements.md`:
     - REQ-RUN-0001: `examples/spike` is an excluded standalone package, not a
@@ -263,12 +261,8 @@ for symmetry.
 8. `ADR-RUN-0001` / `ADR-RUN-0008` — inspection finds no application command
    registry, generated CLI testing abstraction, service-manager launcher, or
    SQL schema in the reusable libraries. This criterion does not check
-   observability dependencies.
-9. `ADR-RUN-0004` — those libraries do not depend on `sc-observability` or
-   `sc-observability-otlp` and do not wrap logging. `sc-observability-types`
-   appears only on `sc-command` and, for `ErrorCode`, on `sc-transport`.
-   `sc-runtime` has no `sc-observability-types` dependency.
-10. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
+   observability dependencies. Leaf sprints and criterion 7 cover those edges.
+9. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
     shows `setup`, `lint`, `test`, and `upgrade`. The root file is `Justfile`.
     Its first line is still the sc-lint init header quoted under Decision prerequisites.
     Repo-specific recipes stay in the section that init does not regenerate.
@@ -277,7 +271,7 @@ for symmetry.
     `crates/*/src` at 1000 source lines, using the key the 0.8.0 package
     provides. This criterion checks that configuration. It does not add a
     synthetic oversize file. It does not close `template/**/*.rs`.
-11. `req:REQ-RT-0007` — the crate ADR error-inventory table gives every
+10. `req:REQ-RT-0007` — the crate ADR error-inventory table gives every
     `RuntimeError` variant a stable code, cause payload, and recovery text.
     A test matches `StoresFailed` and reads its code as `&'static str` and its
     message, remediation, and optional cause as `String`. The crate manifest
@@ -285,7 +279,7 @@ for symmetry.
     application store error into that variant. The test does not call
     `source()` and does not downcast. Public signatures contain no
     `Box<dyn Error>`, and `RuntimeError` is not generic (RBP-F002, RBP-F003).
-12. `req:REQ-RT-0001` — caller-facing builder sequence is closed in
+11. `req:REQ-RT-0001` — caller-facing builder sequence is closed in
     ADR-RT-0001: either consuming typestate makes `run` available only after
     `stores` and `routes`, with optional `mcp` on that ready state, or the
     ADR rejects typestate and a missing required closure returns an explicit
@@ -295,16 +289,11 @@ for symmetry.
     and does not implement `Deref`. The predicate is ADR-RUN-0010. The in-run
     ordering test remains, and it is not the only proof of the caller-facing
     sequence (RBP-F007).
-13. `ADR-RUN-0003` / `req:REQ-RUN-0005` — every slice in deliverable 9 records
+12. `ADR-RUN-0003` / `req:REQ-RUN-0005` — every slice in deliverable 9 records
     the `sc-runtime` → `sc-config` edge as absent, and
     `boundaries/sc-runtime/sc-runtime.toml` `forbidden_edges` includes
-    `sc-config`. `sc-runtime` does not depend on `sc-config`. This sprint adds
-    no `cargo tree -p cli` command.
-14. `req:REQ-RUN-0001` / `req:REQ-RUN-0004` / `req:REQ-RUN-0005` — the three
-    OPENs in deliverable 10 are deleted and replaced with the decisions named
-    there. The only other `docs/requirements.md` edits are the REQ-RUN-0005
-    edge row in deliverable 9 and the REQ-RUN-0205 OPEN in deliverable 11.
-15. `req:REQ-RUN-0205` — the dual-bind OPEN paragraphs named in deliverable 11
+    `sc-config`. `sc-runtime` does not depend on `sc-config`.
+13. `req:REQ-RUN-0205` — the dual-bind OPEN paragraphs named in deliverable 11
     match a-3: v0.1 single-bind, `additional_endpoints` reserved and unused.
 
 ## This sprint does not close
@@ -313,10 +302,8 @@ Generated application structure, the consumer sc-lint install inside the
 template, JSON-driven generation, registry publication, CLI auto-start,
 generated-application process tests, attribute-generated tests, and the
 wizard remain open. `just new` is added by a-6. The `template/**/*.rs`
-half of NFR-RUN-0008 stays with a-6. `cargo tree -p cli` /
-NFR-RUN-0001 on the generated project stays with a-6. Architecture edits are
-the edge-absent tables and the dual-bind OPEN paragraphs. a-1 already closed
-workspace-unification.
+half of NFR-RUN-0008 stays with a-6. Edge absence and the `cargo tree -p cli`
+exclusion are deliverable 9.
 
 ## Paths to delete
 
@@ -326,4 +313,4 @@ None. a-7 removes the rewritten spike after release evidence is preserved.
 
 Run the acceptance criteria. Host checks use in-process fixtures. Signal and
 process proofs run only on an ephemeral CI runner with an isolation guard.
-Do not run `cargo tree -p cli` here. CI output is the record.
+CI output is the record.

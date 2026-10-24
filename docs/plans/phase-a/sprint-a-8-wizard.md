@@ -75,7 +75,9 @@ Do not add application options or reopen the schema during UI work.
 4. **REQ-RUN-0501 / REQ-RUN-0502** — Preserve the a-6 pipeline and
    non-interactive guarantees while adding the two wizard modes. The driver
    diff is limited to entry-mode flags. The a-6 generation suite stays
-   byte-identical.
+   byte-identical. No wizard asset is copied into generated projects, and no
+   reusable crate depends on Wyvern or UI code. a-6 deliverable 16 is that
+   check.
 
 ## Acceptance criteria
 
@@ -85,11 +87,6 @@ Do not add application options or reopen the schema during UI work.
    produce the documented driver outcomes.
 3. `req:REQ-RUN-0603` — equivalent wizard and fixture answers produce equivalent
    generated project files, excluding documented nondeterministic metadata.
-4. `ADR-RUN-0401` / `req:REQ-RUN-0501` — no wizard asset is copied into
-   generated projects and no reusable crate depends on Wyvern or UI code.
-   The mechanical check is a-6 acceptance criterion 25. This criterion does
-   not add a second inspection. The REQ-RUN-0501/0502 non-interactive path
-   still passes.
 
 ## This sprint does not close
 
