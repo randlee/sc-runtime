@@ -23,7 +23,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 DRIVER = ROOT / "scripts" / "new_project.py"
 FIXTURE = ROOT / "wizard" / "fixtures" / "sqlite-mcp.json"
+OTHER_FIXTURE = ROOT / "wizard" / "fixtures" / "sqlite-no-mcp.json"
 GENERATE_TIMEOUT_SECONDS = 1200
+
+
+def _ci_requires_real_pipeline() -> bool:
+    return os.environ.get("CI") == "true" or os.environ.get("SC_RUNTIME_EPHEMERAL_CI") == "1"
 
 
 def write_script(directory: Path, name: str, body: str) -> None:
@@ -128,6 +133,11 @@ class OutputEquivalenceTests(unittest.TestCase):
             wizard_dest = root / "from-wizard"
             file_dest = root / "from-file"
             if shutil.which("sc-compose") is None:
+                if _ci_requires_real_pipeline():
+                    self.fail(
+                        "sc-compose and cargo-generate must be installed in CI "
+                        "for REQ-RUN-0603 tree equivalence"
+                    )
                 if os.name != "posix":
                     self.skipTest("pipeline stubs require a POSIX shell; install sc-compose")
                 pipeline_stub = stub_pipeline_tools(root)
@@ -150,6 +160,28 @@ class OutputEquivalenceTests(unittest.TestCase):
             self.assertEqual(sorted(from_wizard), sorted(from_file))
             changed = [rel for rel, data in from_wizard.items() if data != from_file[rel]]
             self.assertEqual(changed, [])
+
+    def test_different_var_files_produce_different_trees(self):
+        """Negative control: unequal fixtures must not compare equal (real pipeline only)."""
+        if shutil.which("sc-compose") is None:
+            self.skipTest("requires sc-compose and cargo-generate on PATH")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            stub = root / "wyvern"
+            write_script(root, "wyvern", "#!/bin/sh\nexit 1\n")
+            dest_a = root / "a"
+            dest_b = root / "b"
+            run_a = self.generate(
+                [str(dest_a), "--var-file", str(FIXTURE)], stub, root, pipeline_stub=None
+            )
+            run_b = self.generate(
+                [str(dest_b), "--var-file", str(OTHER_FIXTURE)], stub, root, pipeline_stub=None
+            )
+            self.assertEqual(run_a.returncode, 0, run_a.stderr)
+            self.assertEqual(run_b.returncode, 0, run_b.stderr)
+            snap_a = snapshot(dest_a)
+            snap_b = snapshot(dest_b)
+            self.assertNotEqual(snap_a, snap_b)
 
     def generate(
         self,

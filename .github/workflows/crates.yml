@@ -41,6 +41,25 @@ jobs:
       - name: Install generation test dependency
         run: python3 -m pip install -r requirements-generation.txt
 
+      - name: Install cargo-generate
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin"
+          arch="$(uname -m)"
+          case "$arch" in
+            x86_64) target="x86_64-unknown-linux-gnu" ;;
+            aarch64) target="aarch64-unknown-linux-gnu" ;;
+            *) echo "unsupported runner arch: $arch" >&2; exit 1 ;;
+          esac
+          url="https://github.com/cargo-generate/cargo-generate/releases/download/v0.25.1/cargo-generate-v0.25.1-${target}.tar.gz"
+          curl -fsSL "$url" | tar xz -C "$HOME/.local/bin" cargo-generate
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/bin:$PATH"
+          cargo generate --version | grep -F '0.25.1'
+
+      - name: Install sc-compose
+        run: cargo install sc-compose --version 1.7.0 --locked
+
       - name: Setup
         run: just setup
 

@@ -33,7 +33,7 @@ def _git_run(args: list[str]) -> subprocess.CompletedProcess[str]:
             env=env,
         )
     except subprocess.TimeoutExpired as exc:
-        raise unittest.SkipTest(
+        raise AssertionError(
             f"git timed out after {SUBPROCESS_TIMEOUT_SECONDS}s: {' '.join(args)}\n"
             f"stdout={exc.stdout}\nstderr={exc.stderr}"
         ) from exc
