@@ -3,7 +3,6 @@ mod common;
 use std::ffi::OsStr;
 use std::process::{Child, Command, ExitStatus};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 use rmcp::ServerHandler;
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
@@ -301,22 +300,35 @@ fn child_honours_sc_endpoint() {
     if std::env::var_os(SC8_CHILD).is_none() {
         return;
     }
-    let runtime = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .expect("child runtime");
-    let ok = runtime.block_on(async {
-        let mut config = DaemonConfig::default();
-        let root = std::path::PathBuf::from(std::env::var("SC_RUNTIME_SC8_DIR").expect("dir"));
-        config.transport.instance_root = Some(root);
-        sc_runtime::Daemon::builder(&common::app(), &config)
-            .stores(|| async { Ok(()) })
-            .routes(project_router)
-            .run()
-            .await
-            .is_ok()
-    });
-    std::process::exit(if ok { 0 } else { 1 });
+    #[cfg(not(unix))]
+    {
+        panic!("SC_ENDPOINT child handshake is unix-only");
+    }
+    #[cfg(unix)]
+    {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("child runtime");
+        let ok = runtime.block_on(async {
+            let root = std::path::PathBuf::from(std::env::var("SC_RUNTIME_SC8_DIR").expect("dir"));
+            let endpoint = std::env::var("SC_ENDPOINT").expect("endpoint");
+            let sync_sock =
+                std::path::PathBuf::from(std::env::var(common::SYNC_SOCK_ENV).expect("sync sock"));
+            let serve = tokio::spawn(async move {
+                let mut config = DaemonConfig::default();
+                config.transport.instance_root = Some(root);
+                sc_runtime::Daemon::builder(&common::app(), &config)
+                    .stores(|| async { Ok(()) })
+                    .routes(project_router)
+                    .run()
+                    .await
+            });
+            common::announce_serving(&endpoint, &sync_sock).await;
+            matches!(serve.await, Ok(Ok(())))
+        });
+        std::process::exit(if ok { 0 } else { 1 });
+    }
 }
 
 #[cfg(unix)]
@@ -326,7 +338,7 @@ struct ChildGuard {
 
 #[cfg(unix)]
 impl ChildGuard {
-    fn spawn(dir: &std::path::Path, endpoint: &str) -> Self {
+    fn spawn(dir: &std::path::Path, endpoint: &str, sync_sock: &std::path::Path) -> Self {
         let mut command = Command::new(std::env::current_exe().expect("exe"));
         command
             .arg("child_honours_sc_endpoint")
@@ -335,7 +347,8 @@ impl ChildGuard {
             .env(EPHEMERAL, "1")
             .env(SC8_CHILD, "1")
             .env("SC_RUNTIME_SC8_DIR", dir)
-            .env("SC_ENDPOINT", endpoint);
+            .env("SC_ENDPOINT", endpoint)
+            .env(common::SYNC_SOCK_ENV, sync_sock);
         Self {
             child: Some(command.spawn().expect("spawn")),
         }
@@ -379,7 +392,8 @@ async fn child_daemon_uses_sc_endpoint() {
     let sock_dir = tempfile::tempdir().expect("socket dir");
     let sock = sock_dir.path().join("override.sock");
     let endpoint = format!("uds:{}", sock.display());
-    let mut child = ChildGuard::spawn(root.path(), &endpoint);
+    let mut sync = common::ChildSync::bind(root.path());
+    let mut child = ChildGuard::spawn(root.path(), &endpoint, sync.path());
     let mut transport = sc_transport::TransportConfig::default();
     transport.instance_root = Some(root.path().to_path_buf());
     let resolved = sc_transport::resolve_endpoint(
@@ -390,21 +404,20 @@ async fn child_daemon_uses_sc_endpoint() {
     )
     .expect("resolve");
     let client = sc_transport::Client::new(resolved).expect("client");
-    let mut reached = None;
-    for _ in 0..100 {
-        if child.try_wait().is_some() {
-            panic!("daemon exited before it became reachable at {endpoint}");
+    if let Err(err) = sync.expect_line("ready", common::CHILD_SYNC_BUDGET).await {
+        if let Some(status) = child.try_wait() {
+            panic!("daemon exited before it became reachable at {endpoint}: {status} ({err})");
         }
-        if let Ok(body) = client.get::<String>("/project").await {
-            reached = Some(body);
-            break;
-        }
-        tokio::time::sleep(Duration::from_millis(50)).await;
-    }
-    let body = reached.unwrap_or_else(|| {
         child.kill_and_reap();
-        panic!("child daemon did not answer /project");
-    });
+        panic!("child daemon did not answer /project ({err})");
+    }
+    let body = client
+        .get::<String>("/project")
+        .await
+        .unwrap_or_else(|err| {
+            child.kill_and_reap();
+            panic!("child daemon did not answer /project: {err}");
+        });
     assert_eq!(body, "project");
     assert!(
         root.path().join("daemon.lock").is_file(),
