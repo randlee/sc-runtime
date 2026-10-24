@@ -26,6 +26,7 @@ requirements:
   - NFR-RUN-0004
   - NFR-RUN-0005
 adrs:
+  - ADR-RUN-0002
   - ADR-CFG-0001
   - ADR-CFG-0002
   - ADR-CFG-0003
@@ -54,7 +55,10 @@ Resolve environment ordering, **invalid `AppName` rejection at construction**
 and `ConfigError` variants. Publish an **error inventory** table (failure
 mode, stable code, cause, recovery) in the crate ADR before the facade
 freezes (RBP-F002, RBP-F005). Record only decisions necessary to make the
-crate coherent.
+crate coherent. Do not freeze the `sc_config::AppName` constructor until
+a-1 has made ADR-RUN-0010 Active in `docs/architecture.md`. This sprint
+does not write that ADR. The wait is the facade-freeze gate only. It does
+not add a-1 to `must_follow` and it does not move this sprint off wave 0.
 
 ## Public contract produced
 
@@ -91,7 +95,7 @@ signature contract.
    `boundaries/sc-config/*.toml`, describing only its facade and actual
    dependency restrictions. The manifest must be valid for
    `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
-   exists; this sprint does not install sc-lint or own the root `justfile`.
+   exists; this sprint does not install sc-lint or own the root `Justfile`.
 6. **REQ-CFG-0004 / ADR-CFG-0001** — Before the facade freezes, the crate ADR
    contains an error-inventory table with one row per `ConfigError` failure:
    failure mode, stable code, cause payload, and recovery steps. Typed path

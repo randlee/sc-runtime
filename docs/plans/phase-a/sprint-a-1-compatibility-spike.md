@@ -28,6 +28,8 @@ adrs:
   - ADR-RUN-0003
   - ADR-RUN-0004
   - ADR-RUN-0005
+  - ADR-RUN-0009
+  - ADR-RUN-0010
   - ADR-RUN-0202
   - ADR-RUN-0203
   - ADR-RUN-0302
@@ -116,6 +118,17 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    init. `sc-lint.toml` is the consumer pin, not a hand-written
    clippy/rustfmt/deny or `boundaries/` policy. Remove the placeholder
    Justfile and the prototype-handoff order from the Active text.
+8. **ADR-RUN-0010** — Before a-2, a-3, or a-5 freezes a facade, record the
+   AppName newtype family in `docs/architecture.md` as new ADR-RUN-0010 and
+   add its index row. Leave ADR-RUN-0006 as the typed-error rule; do not
+   hang this decision on it. ADR-RUN-0010 states three crate-local types,
+   `sc_config::AppName`, `sc_transport::AppName`, and `sc_runtime::AppName`;
+   no shared `AppName` type and no fifth crate; the handoff predicate
+   (ASCII `A-Z`, `a-z`, `0-9`, `-`, `_`; length 1 through 64 bytes);
+   rejection code `APP.INVALID_NAME` on that crate's own error; display
+   through `as_str` or `AsRef<str>`; no `Deref`. Do not paste the ADR body
+   into this sprint doc. Leaf sprints consume the Active ADR. They do not
+   invent a second predicate.
 
 ## Acceptance criteria
 
@@ -151,6 +164,10 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    NFR-RUN-0006 are the sc-lint 0.8.0 consumer install named in deliverable 7,
    including the retired placeholder Justfile and prototype-handoff order.
    a-6 remains the feature-level close of the generated consumer install.
+9. `ADR-RUN-0010` — `docs/architecture.md` contains Active ADR-RUN-0010 and
+   its index row, matching deliverable 8. The sprint diff adds that ADR. It
+   does not rewrite ADR-RUN-0006 into the AppName decision. a-2 does not
+   freeze `sc_config::AppName` until this ADR is Active.
 
 ## This sprint does not close
 
@@ -169,6 +186,6 @@ runner; refuse any child-process proof on an unmarked developer host. Save
 commands, platform, commit, concrete type/signature evidence, and results in
 `docs/architecture.md`, including the resolved `sc-observability` and
 `sc-observability-types` versions, and confirm the ADR-RUN-0003,
-ADR-RUN-0004, ADR-RUN-0005, REQ-RUN-0309, REQ-RUN-0307, and NFR-RUN-0006
-amendments landed in the owned files. If a Verify item fails, stop dependent
+ADR-RUN-0004, ADR-RUN-0005, ADR-RUN-0010, REQ-RUN-0309, REQ-RUN-0307, and
+NFR-RUN-0006 amendments landed in the owned files. If a Verify item fails, stop dependent
 planning rather than adding an adapter automatically.

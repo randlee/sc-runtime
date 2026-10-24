@@ -11,8 +11,8 @@ branch: sprint/a-5-runtime-core
 worktree: sprint/a-5-runtime-core
 recommended_agent: solar
 recommended_model: sol
-must_follow: [a-3, a-4]
-parallel_safe: [a-2]
+must_follow: [a-2, a-3, a-4]
+parallel_safe: []
 requirements:
   - REQ-RT-0001
   - REQ-RT-0002
@@ -41,6 +41,8 @@ requirements:
   - NFR-RUN-0009
   - NFR-RUN-0010
 adrs:
+  - ADR-RUN-0005
+  - ADR-TRN-0002
   - ADR-RT-0001
   - ADR-RT-0002
   - ADR-RT-0003
@@ -57,7 +59,7 @@ adrs:
 owned_paths:
   - "Cargo.toml"
   - "Cargo.lock"
-  - "justfile"
+  - "Justfile"
   - "sc-lint.toml"
   - ".sc-lint/bootstrap.py"
   - "crates/sc-runtime/**"
@@ -102,17 +104,27 @@ test architecture here. Record builder and lifecycle choices in the owned
 crate ADR before the facade freezes.
 
 Install sc-lint 0.8.0 as the source-maintainer model from the sc-lint docs.
-This repository's root `justfile` stays maintained here. `sc-lint init --just`
-is the consumer generator and is not how this file is produced. Public
-recipes are `setup`, `lint`, `test`, and `upgrade`. Each calls
-`.sc-lint/bootstrap.py` with `sc-lint.toml`. This checkout does not build
-sc-lint, so `setup` installs the verified 0.8.0 release rather than a
-`target/debug` binary or a source-checkout `--dry-run`. `just lint` runs
-`sc-lint-boundary analyze` on every `boundaries/<crate>/*.toml` manifest and
-the sc-lint line-counts check at 1000 source lines (NFR-RUN-0008). The
-line-counts configuration key is the one the 0.8.0 package provides; record
-that key when the install lands.
-`just new` is not added here.
+Verify and extend the existing root `Justfile` (capital J). Keep its first
+line unchanged:
+
+```
+# Managed by sc-lint; regenerate with `sc-lint init --just`.
+```
+
+Do not replace that file with a hand-written recipe file, and do not delete or
+contradict the header. Public recipes `setup`, `lint`, `test`, and `upgrade`
+stay in the sc-lint-managed block. Each calls `.sc-lint/bootstrap.py` with
+`sc-lint.toml`. Repo-specific recipes stay in the section that
+`sc-lint init --just` does not regenerate; the existing `new` stub stays for
+a-6. This checkout does not build sc-lint, so `setup` installs the verified
+0.8.0 release rather than a `target/debug` binary or a source-checkout
+`--dry-run`. `just lint` runs `sc-lint-boundary analyze` on every
+`boundaries/<crate>/*.toml` manifest and the sc-lint line-counts check at
+1000 source lines for non-test files under `crates/*/src` only
+(NFR-RUN-0008). `template/**/*.rs` is not in this sprint; a-6 adds that half
+after the generation tree exists. The line-counts configuration key is the
+one the 0.8.0 package provides; record that key when the install lands.
+`just new` is not implemented here.
 
 ## Public contracts consumed
 
@@ -121,8 +133,9 @@ This sprint consumes the `sc-transport` and `sc-command` facades from the
 after a-3 and a-4 have recorded their decisions in their owned source
 documents. It consumes endpoint and listener types, and the `sc-command`
 server conversions. It does not consume an `sc-config` type. It produces
-`sc_runtime::AppName` under the handoff predicate and the runtime builder
-contract already rooted in REQ-RT-0001. `DaemonConfig` embeds the
+`sc_runtime::AppName` under the handoff predicate a-1 records as
+ADR-RUN-0010 and the runtime builder contract already rooted in
+REQ-RT-0001. This sprint does not write that ADR. `DaemonConfig` embeds the
 `TransportConfig` type a-3 froze. It does not decide a second
 endpoint-config shape. The sc-runtime requirement and ADR sources remain
 authoritative for the builder. The only `docs/architecture.md` edit is the
@@ -180,12 +193,14 @@ removed rather than preserved for symmetry.
    registration only and adds no `sc-runtime` dependency. a-2 is not a
    dispatch predecessor. Root `just lint` is the first run of
    `sc-lint-boundary analyze` across the manifests on the branch.
-8. **REQ-RUN-0004 / NFR-RUN-0008** — Source-maintainer sc-lint 0.8.0 install:
-   `sc-lint.toml` pins `minimum_version` to `0.8.0`, `.sc-lint/bootstrap.py`
-   is the 0.8.0 helper, and `just lint` includes `sc-lint-boundary analyze`
-   plus the 1000-line line-counts check. Crate CI calls `just setup` before
-   `just lint` and `just test`. Do not copy boundary manifests into the
-   template.
+8. **REQ-RUN-0004 / NFR-RUN-0008** — Verify and extend the existing root
+   `Justfile`. Do not contradict its sc-lint init header. Source-maintainer
+   sc-lint 0.8.0 install: `sc-lint.toml` pins `minimum_version` to `0.8.0`,
+   `.sc-lint/bootstrap.py` is the 0.8.0 helper, and `just lint` includes
+   `sc-lint-boundary analyze` plus the 1000-line line-counts check for
+   `crates/*/src` only. Crate CI calls `just setup` before `just lint` and
+   `just test`. Do not copy boundary manifests into the template. Do not
+   close the `template/**/*.rs` half of NFR-RUN-0008.
 9. **ADR-RUN-0003 / NFR-RT-0003** — Record the `sc-runtime` → `sc-config` MAY
    as edge absent in `docs/architecture.md` (ADR-RUN-0003 only) and in
    `docs/sc-runtime/requirements.md` (NFR-RT-0003). `sc-runtime` does not
@@ -216,45 +231,49 @@ removed rather than preserved for symmetry.
    failed startup cannot remove its socket.
 7. `boundary:sc-runtime` — crate tests, README example, default/server feature
    checks, workspace build, and all four boundary manifests are green.
-8. `ADR-RUN-0004` — inspection finds no application command registry, generated
-   CLI testing abstraction, service-manager launcher, or SQL schema in the
-   reusable libraries. Those libraries do not depend on `sc-observability` or
+8. `ADR-RUN-0001` / `ADR-RUN-0008` — inspection finds no application command
+   registry, generated CLI testing abstraction, service-manager launcher, or
+   SQL schema in the reusable libraries.
+9. `ADR-RUN-0004` — those libraries do not depend on `sc-observability` or
    `sc-observability-otlp` and do not wrap logging. `sc-observability-types`
    appears only on `sc-command` and, for `ErrorCode`, on `sc-transport`.
-   `sc-runtime` does not depend on `sc-config`.
-9. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
-   shows `setup`, `lint`, `test`, and `upgrade`. `just lint` invokes
-   `sc-lint-boundary analyze` and exits 0 on the four manifests. The same
-   recipe runs the sc-lint line-counts check and fails, naming the file, when
-   a non-test source file exceeds 1000 source lines. The root `justfile` is
-   not the output of `sc-lint init --just`.
-10. `req:REQ-RT-0007` — the crate ADR error-inventory table gives every
+10. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
+    shows `setup`, `lint`, `test`, and `upgrade`. The root file is `Justfile`.
+    Its first line is still the sc-lint init header quoted under Decision prerequisites.
+    Repo-specific recipes stay in the section that init does not regenerate.
+    `just lint` invokes `sc-lint-boundary analyze` and exits 0 on the four
+    manifests. The same recipe runs the sc-lint line-counts check and fails,
+    naming the file, when a non-test source file under `crates/*/src` exceeds
+    1000 source lines. This criterion does not close `template/**/*.rs`.
+11. `req:REQ-RT-0007` — the crate ADR error-inventory table gives every
     `RuntimeError` variant a stable code, cause payload, and recovery text.
     A test matches `StoresFailed` and reads its runtime-owned code, message,
     remediation, and optional cause text. The stores closure is what maps an
     application store error into that variant. The test does not call
     `source()` and does not downcast. Public signatures contain no
     `Box<dyn Error>`, and `RuntimeError` is not generic (RBP-F002, RBP-F003).
-11. `req:REQ-RT-0001` — caller-facing builder sequence is closed in
+12. `req:REQ-RT-0001` — caller-facing builder sequence is closed in
     ADR-RT-0001: either consuming typestate makes `run` available only after
     `stores` and `routes`, with optional `mcp` on that ready state, or the
     ADR rejects typestate and a missing required closure returns an explicit
     `RuntimeError`. `Daemon::builder` takes `sc_runtime::AppName`. Construction
     tests use the handoff accept and reject vectors and expect
     `APP.INVALID_NAME` on rejection. The type exposes `as_str` or `AsRef<str>`
-    and does not implement `Deref`. The in-run ordering test remains, and it
-    is not the only proof of the caller-facing sequence (RBP-F007).
-12. `ADR-RUN-0003` — ADR-RUN-0003 and NFR-RT-0003 record the `sc-runtime` →
+    and does not implement `Deref`. The predicate is ADR-RUN-0010. The in-run
+    ordering test remains, and it is not the only proof of the caller-facing
+    sequence (RBP-F007).
+13. `ADR-RUN-0003` — ADR-RUN-0003 and NFR-RT-0003 record the `sc-runtime` →
     `sc-config` edge as absent. The sprint diff to `docs/architecture.md` is
     that decision only. This sprint adds no `cargo tree -p cli` command
-    (RBP-F004).
+    (RBP-F004). `sc-runtime` does not depend on `sc-config`.
 
 ## This sprint does not close
 
 Generated application structure, the consumer sc-lint install inside the
 template, JSON-driven generation, registry publication, CLI auto-start,
 generated-application process tests, attribute-generated tests, and the
-wizard remain open. `just new` is added by a-6. `cargo tree -p cli` /
+wizard remain open. `just new` is added by a-6. The `template/**/*.rs`
+half of NFR-RUN-0008 stays with a-6. `cargo tree -p cli` /
 NFR-RUN-0001 on the generated project stays with a-6. This sprint edits
 `docs/architecture.md` only for the `sc-runtime` → `sc-config` edge absent
 (a-1 already closed workspace-unification).
@@ -267,7 +286,7 @@ None. a-7 removes the rewritten spike after release evidence is preserved.
 
 Run `just setup`, then root `just lint` and `just test`, workspace build, all
 default/server package selections, doctests, `sc-lint-boundary analyze` over
-the four manifests, the line-counts check, feature-specific dependency-tree
+the four manifests, the `crates/*/src` line-counts check, feature-specific dependency-tree
 checks, the runtime error-inventory table, the `StoresFailed` field match,
 the caller-facing builder check, the `sc_runtime::AppName` vectors, the
 edge-absent ADR-RUN-0003 diff, and the rewritten spike proofs. Do not run

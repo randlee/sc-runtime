@@ -3,7 +3,9 @@
 Status: plan-hardening pass 3 complete (scope PASS STEP2-R2; critical PASS STEP4-R4 @ b1ae85d).
 RBP sprint-doc pass on this branch assigns findings RBP-F001–F008 (plan
 review on develop `5240774`) to sprint deliverables and acceptance criteria;
-formal QA-1 has not run. The external-Dolt development graph and sprint
+plan QA-1 fix pass 1 (partial) assigns the open blocking findings to sprint
+deliverables and acceptance criteria. That note does not claim QA-1 passed.
+The external-Dolt development graph and sprint
 declarations are recorded. sc-lint 0.8.0 is in scope (a-5 maintainer, a-6
 consumer). a-1 amends the observability pin and the sc-lint consumer model
 in `docs/architecture.md` and `docs/requirements.md` to the versions the
@@ -149,7 +151,10 @@ Accept vectors: `my-app`, `A`, `app_1`, and 64 `a` characters. Reject
 vectors: the empty string, `my app`, `my.app`, `my/app`, 65 `a` characters,
 and `café`. a-2, a-3, and a-5 tests use these vectors. Each of those sprints
 amends the `&str` application-name parameters in the crate requirement file
-it already owns.
+it already owns. a-1 records this family as new ADR-RUN-0010 in
+`docs/architecture.md` before a-2, a-3, or a-5 freezes a facade. ADR-RUN-0006
+stays the typed-error rule. a-2's constructor freeze waits on that Active
+ADR. That wait is not a `must_follow` edge and does not move a-2 off wave 0.
 
 ```rust
 // Shape of each crate-local newtype. Not one shared type.
@@ -315,16 +320,20 @@ repository's boundary manifests.
 sc-lint 0.8.0 is the lint and `just` system for this phase. Two roles stay
 distinct, matching the sc-lint source-maintainer and consumer docs.
 
-This repository is the source maintainer. a-5 owns that install. The root
-`justfile` is maintained here and is not produced by `sc-lint init --just`.
-Its public recipes include `setup`, `lint`, `test`, and `upgrade`, and they
-call `.sc-lint/bootstrap.py` with `sc-lint.toml`. `just lint` includes
+This repository is the source maintainer. a-5 owns that install. a-5 verifies
+and extends the existing root `Justfile` (capital J). Its first line stays
+the sc-lint init header already on that file. a-5 does not
+replace that file or contradict the header. Public recipes `setup`, `lint`,
+`test`, and `upgrade` stay in the sc-lint-managed block and call
+`.sc-lint/bootstrap.py` with `sc-lint.toml`. Repo-specific recipes stay in
+the section init does not regenerate. `just lint` includes
 `sc-lint-boundary analyze` over `boundaries/<crate>/*.toml` for the four
 library crates (REQ-RUN-0005) and the sc-lint line-counts check at 1000
 source lines, blank and comment-only lines excluded (REQ-RUN-0004,
-NFR-RUN-0008).
+NFR-RUN-0008). a-5 closes that check for `crates/*/src` only. a-6 adds
+`template/**/*.rs` after the generation tree exists.
 This checkout does not build sc-lint, so `setup` installs the verified 0.8.0
-release. Maintainer profiles stay in this `justfile`; they are not inferred
+release. Maintainer profiles stay in this `Justfile`; they are not inferred
 from a directory name.
 
 Generated applications are consumers. a-6 installs that contract into the
@@ -340,7 +349,7 @@ remains sc-lint 0.8.0.
 
 No sprint a-0 is added. The install is not its own boundary, and it creates
 no parallel work. a-1 is disposable evidence and must not become the permanent
-lint install. The root `justfile` already has one sequential owner. Putting
+lint install. The root `Justfile` already has one sequential owner. Putting
 the maintainer install in a-5 and the consumer install in a-6 keeps the
 critical path at five sprints and the sprint count at eight.
 
@@ -405,8 +414,8 @@ use that recorded pair.
 | 1 | core | a-3 transport | boundary | sc-transport | `crates/sc-transport/**`, `boundaries/sc-transport/**`, sc-transport requirement/ADR sources |
 | 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**`, sc-command requirement/ADR sources |
 | 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, source-maintainer `sc-lint.toml` and `.sc-lint/bootstrap.py`, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, sc-runtime requirement/ADR sources, the `docs/architecture.md` edit that records the `sc-runtime` → `sc-config` edge as absent, rewritten spike, core CI/just recipes |
-| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, schema/fixtures, driver, root `justfile` generation entry, generation tests and template CI |
-| 4 | release | a-7 core release | integration | release-distribution | authored `release/sc-publish-*`, `docs/development/sc-publish.md`, `docs/architecture.md` release-section edit, install.py workflow output, root release metadata, spike removal |
+| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, schema/fixtures, driver, root `Justfile` generation entry, REQ-RUN-0503 and REQ-RUN-0701 sections of `docs/requirements.md`, generation tests and template CI |
+| 4 | release | a-7 core release | integration | release-distribution | authored `release/sc-publish-*`, `docs/development/sc-publish.md`, `docs/architecture.md` ADR-RUN-0002 publish-contract amendment, install.py workflow output, root release metadata, spike removal |
 | 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, wizard runner/tests, narrow driver entry-mode change |
 
 `contract` on a-1 means the disposable compatibility-evidence record later
@@ -432,7 +441,7 @@ blocking the core release.
 
 | Child | Parent(s) | Relation and named artifact |
 |---|---|---|
-| a-2 | — | `must_follow` is empty. `parallel_safe` with a-1, a-3, and a-4. The sc-config facade is `serde` / `serde_json` plus `sc_config::AppName`. It consumes no spike signature. |
+| a-2 | — | `must_follow` is empty. `parallel_safe` with a-1, a-3, and a-4. The sc-config facade is `serde` / `serde_json` plus `sc_config::AppName`. It consumes no spike signature. The `sc_config::AppName` constructor freezes only after a-1 records ADR-RUN-0010. That wait is not a `must_follow` edge. |
 | a-3, a-4 | a-1 | `must_follow`: consume demonstrated reqwest/Axum/rmcp signatures and the recorded `sc-observability-types` version. |
 | a-5 | a-3, a-4 | `must_follow`: consumes endpoint and listener types from `sc-transport`, and the `sc-command` server conversions. `parallel_safe` with a-2. `sc-runtime` does not depend on `sc-config` and consumes no type from it. Root `just lint` is the first `sc-lint-boundary analyze` of the manifests on the branch. |
 | a-6 | a-5 | `must_follow`: consumes the production runtime facade and rewritten-spike composition pattern. Sole owner of the NFR-RUN-0001 `cargo tree -p cli -e normal` close. |
@@ -444,18 +453,22 @@ blocking the core release.
 Parent development is merged into a child before each development/fix round;
 parent PR merges before the child PR. Shared root files have one sequential
 owner. **`docs/architecture.md` sequential owners:** a-1 (compatibility and
-ADR amendments), a-5 (`sc-runtime` → `sc-config` edge absent only), a-7
-(release section: sc-publish kit sole workflow owner; GitHub Release includes
-`sc-runtime-{version}-source.tar.gz`). a-1 owns `docs/requirements.md` for its
-amendment tasks. a-2, a-3, and a-4 amend crate-local ADRs only. a-5 creates
-the core workspace/CI registries and the source-maintainer sc-lint install.
-a-6 owns the sequential root `justfile` edit that adds `just new` and the
-template consumer install. a-7 performs release cleanup and kit install. The sc-lint 0.8.0 pin, the
-a-6 CLI isolation command, and the a-1 observability versions are release
-evidence under REQ-RUN-0702, not second acceptance roots. A discovered
-leaf-crate defect returns to a-2, a-3, or a-4 rather than expanding a consumer
-sprint's ownership. a-6 must not replace the maintainer `justfile` with the
-generated consumer file.
+ADR amendments, including new ADR-RUN-0010), a-5 (`sc-runtime` → `sc-config`
+edge absent only), a-7 (ADR-RUN-0002 publish contract: sc-publish kit sole
+workflow owner; GitHub Release includes
+`sc-runtime-{version}-source.tar.gz`). a-7 does not add a release section to
+ADR-RUN-0001. a-1 owns `docs/requirements.md` for its amendment tasks. a-6
+later owns only the REQ-RUN-0503 and REQ-RUN-0701 sections of that file, to
+put `just setup` before `just lint`. a-2, a-3, and a-4 amend crate-local
+ADRs only. a-5 creates the core workspace/CI registries and verifies and
+extends the existing root `Justfile` without contradicting its sc-lint init
+header. a-6 owns the sequential root `Justfile` edit that adds `just new`
+and the template consumer install. a-7 performs release cleanup and kit
+install. The sc-lint 0.8.0 pin, the a-6 CLI isolation command, and the a-1
+observability versions are release evidence under REQ-RUN-0702, not second
+acceptance roots. A discovered leaf-crate defect returns to a-2, a-3, or a-4
+rather than expanding a consumer sprint's ownership. a-6 must not replace
+the maintainer `Justfile` with the generated consumer file.
 
 ## Reconciliation and dispatch record
 

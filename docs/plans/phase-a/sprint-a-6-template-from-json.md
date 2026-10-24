@@ -69,7 +69,8 @@ owned_paths:
   - "wizard/fixtures/**"
   - "tests/fixtures/refused/**"
   - "scripts/new_project.py"
-  - "justfile"
+  - "Justfile"
+  - "docs/requirements.md"
   - "tests/unit/generation/**"
   - "tests/integration/generation/**"
   - ".github/workflows/template.yml"
@@ -105,9 +106,13 @@ reviewed so `db-prepare` stays. The template still carries no lint policy of
 its own: no `boundaries/`, no clippy/rustfmt/deny config, and no `just` import
 (NFR-RUN-0006). The plain cargo-generate job still only builds. Fixture CI
 that runs `just setup` needs Python 3.11, which the bootstrap requires. Do
-not rewrite the a-5 source-maintainer root `justfile` into the consumer file.
-The only root `justfile` edit here is `just new` and generation-test
-discovery.
+not rewrite the a-5 source-maintainer root `Justfile` into the consumer
+file, and do not replace or contradict that file's sc-lint init header.
+The only root `Justfile` edit here is `just new` and generation-test
+discovery, in the section `sc-lint init --just` does not regenerate.
+This sprint amends only the REQ-RUN-0503 and REQ-RUN-0701 sections of
+`docs/requirements.md`, so the Active green sequence is `just setup` before
+`just lint`. No other section of that file changes.
 
 Pin generated `crates/daemon` to the `sc-observability` version a-1 recorded
 (the latest release at spike time; 1.5.0 as of this plan) after a-1 has
@@ -164,20 +169,32 @@ its only meaningful proof.
    `just setup`.
 7. **REQ-RUN-0306** — Plain cargo-generate remains usable for the template tree
    with documented limitations around separately rendered Jinja documents.
-8. **REQ-RUN-0307 / NFR-RUN-0006 / NFR-RUN-0008** — The generated project is an
+8. **REQ-RUN-0307 / NFR-RUN-0006** — The generated project is an
    sc-lint 0.8.0 consumer. `sc-lint init --just` supplies `sc-lint.toml`,
    `.sc-lint/bootstrap.py`, and public recipes `setup`, `lint`, `test`, and
    `upgrade`. `db-prepare` remains on that `Justfile` and must survive a later
    `sc-lint init --just`. Fixture CI, in each generated project,
-   runs `just setup && just lint` before `just test` and build, with no edits
-   between generation and those commands. Boundary manifests stay in this
-   repository.
+   runs `just setup && just lint` before `just test` and build. `just setup`
+   installs the consumer tool and is not a source edit. Boundary manifests
+   stay in this repository.
 9. **REQ-RUN-0309 / ADR-RUN-0004** — Generated `crates/daemon` depends on
    `sc-observability` at the exact version a-1 recorded. Rendered `main`
    loads config with `sc-config`, initialises `sc-observability`, then calls
    `Daemon::builder`. The template does not depend on
    `sc-observability-otlp`. The four library crates still do not depend on
    the logging runtime.
+10. **REQ-RUN-0503 / REQ-RUN-0701** — Amend only those two sections of
+    `docs/requirements.md`. The green sequence becomes `just new`, then
+    `just setup`, then `just lint`, then `just test`. `just setup` installs
+    the sc-lint 0.8.0 consumer and is not a source edit: no generated source
+    file is added, changed, or deleted between generation and the end of
+    `just test`. REQ-RUN-0503 success criterion 2, and REQ-RUN-0701's command
+    list and success criterion 1, name `just setup` immediately before
+    `just lint`. Do not amend any other requirement in that file.
+11. **NFR-RUN-0008** — After `template/**/*.rs` exists, root `just lint`'s
+    sc-lint line-counts check covers those files. a-5 closed only
+    `crates/*/src`. This sprint does not add a line-counting script. Files
+    under a `tests/` directory stay exempt.
 
 ## Acceptance criteria
 
@@ -237,6 +254,81 @@ its only meaningful proof.
     `cargo tree` of `sc-config`, `sc-transport`, `sc-command`, and
     `sc-runtime` in the generated project has no `sc-observability ` or
     `sc-observability-otlp ` line (crate name, then a space).
+14. `req:REQ-RUN-0401` — `wizard/answers.schema.json` is the only options
+    definition. A unit test loads it as a valid schema under its own
+    `$schema`, asserts top-level type `object`, asserts the `db` enum is
+    exactly `sqlite`, `postgres`, and `both`, asserts `mcp` is boolean,
+    asserts a project-name string property and a licence string property
+    whose default is `MIT`, asserts `properties` has exactly those four keys
+    (plus the schema-version key only if version is a property), and asserts
+    the schema version is present and non-empty. `scripts/new_project.py`
+    holds no list of option names or defaults. This sprint settles the
+    property keys, defaults, `$schema` draft, and version carrier before
+    generation, and records the `postgres` / `both` rejection so a driver
+    check, if chosen, is the single named exception in that test.
+15. `req:REQ-RUN-0402` — `just test` runs a key-set test that reads schema
+    property keys and `template/cargo-generate.toml` placeholder keys from
+    the working tree and fails when either set has a name the other lacks.
+    The test source has no literal list of option names. The project-name
+    key is either exempted by one named constant or declared as a
+    placeholder. The test matches that decision and exempts nothing else.
+16. `req:REQ-RUN-0403` — `wizard/fixtures/sqlite-mcp.json` has `db` `sqlite`
+    and `mcp` true. Another fixture has `db` `sqlite` and `mcp` false. One
+    fixture states a licence other than `MIT`, and every fixture states its
+    licence. Unit tests accept every `wizard/fixtures/*.json` file and reject
+    schema-invalid files for a missing required key, a wrong JSON type, a
+    `db` value outside the enum, and an unknown key. A driver test with
+    `--var-file` on a schema-invalid file exits non-zero, does not call
+    `cargo`, and does not create the destination. Refused files, including
+    one `postgres` answers file and one `both` answers file, live outside
+    `wizard/fixtures/*.json`.
+17. `req:REQ-RUN-0304` — a test counts Liquid conditional lines in
+    `template/**/*.rs` and fails when the total is ten or more. Every `{%`
+    match in those files encloses only `Stores` fields, `mod mcp;`, or the
+    `.mcp(...)` builder line. A file present in one variant and absent in
+    another is named in a conditional `ignore` list in
+    `template/cargo-generate.toml`. No conditional tag varies a function,
+    handler, query, or test body.
+18. `req:REQ-RUN-0305` — `template/cargo-generate.toml` lists `AGENTS.md.j2`
+    and `CLAUDE.md.j2` under `exclude`. After
+    `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json`, `<dest>`
+    contains non-empty `AGENTS.md` and `CLAUDE.md`, contains no `.j2` file,
+    and those two documents contain no `{{` or `{%`. A stub `sc-compose`
+    that exits 1 makes the driver exit non-zero and name `sc-compose`.
+19. `req:REQ-RUN-0308` — generated `store-sqlite` depends on `sqlx` 0.9 with
+    the `sqlite` feature and is the only generated crate with a direct `sqlx`
+    dependency, and only `service` depends on `store-sqlite`. With
+    `SQLITE_DATABASE_URL` unset, `SQLX_OFFLINE=true cargo build -p store-sqlite`
+    exits 0. A concurrency test inserts through the write pool without a busy
+    or locked error. Opening a store on an empty database runs migrations and
+    `PRAGMA journal_mode` returns `wal`. `sqlx.toml` names
+    `SQLITE_DATABASE_URL`. Checked-in `template/crates/store-sqlite/.sqlx`
+    renders into the project. The write-pool maximum is 1 and every mutating
+    query uses it. The crate has no write actor or queue. Read-pool size and
+    the `open` config type are recorded as example choices in the sprint
+    validation note.
+20. `req:REQ-RUN-0502` — `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json`
+    with stdin closed exits 0 on a runner that has no `wyvern`. Driver tests
+    show `--var-file` does not call a Wyvern stub, prefers `SC_COMPOSE` over
+    a `PATH` `sc-compose`, and, when both are absent, exits non-zero before
+    `cargo generate` with stderr that names `sc-compose`, `SC_COMPOSE`, and
+    `PATH`. `scripts/new_project.py` contains no absolute `sc-compose` path
+    and no Wyvern discovery.
+21. `req:NFR-RUN-0008` — this criterion closes `template/**/*.rs` only. a-5
+    closed `crates/*/src`. After the template tree exists, root `just lint`
+    runs the sc-lint source-length check over `template/**/*.rs` and exits 0
+    on the unmodified tree. A non-test `.rs` file under `template/` with 1001
+    source lines makes that check fail and name the file. A file under a
+    `tests/` directory is exempt. The repository has no line-counting script
+    of its own.
+22. `req:REQ-RUN-0503` / `req:REQ-RUN-0701` — the only edit this sprint makes
+    to `docs/requirements.md` amends these two requirements. The Active green
+    sequence is `just new`, then `just setup`, then `just lint`, then
+    `just test`. `just setup` installs the sc-lint 0.8.0 consumer and is not
+    a source edit. REQ-RUN-0503 success criterion 2, and REQ-RUN-0701's
+    command list and success criterion 1, name `just setup` immediately
+    before `just lint`. No other requirement section changes. Criterion 9 is
+    the fixture run of that amended sequence.
 
 ## This sprint does not close
 
@@ -247,7 +339,9 @@ file/crate organization is mandatory for generated applications. It does not
 replace the source-maintainer sc-lint install owned by a-5, and it does not
 hand a prototype repository to the sc-lint team. It does not map unknown
 routes, Axum body rejections, or rmcp `Err(McpError)` into the envelope. It
-does not add widget operation codes to ADR-CMD-0001.
+does not add widget operation codes to ADR-CMD-0001. It does not amend
+`docs/requirements.md` outside REQ-RUN-0503 and REQ-RUN-0701. It does not
+re-close the `crates/*/src` half of NFR-RUN-0008.
 
 ## Paths to delete
 
@@ -259,8 +353,10 @@ tests. No repository source path is deleted.
 Run root lint/test, all fixture generations, and in each generated project
 `just setup && just lint` followed by `just test` and the workspace build.
 Also run the plain cargo-generate smoke, schema/refused-input tests,
-`cargo tree -p cli -e normal` in a generated project, and static checks for
-unrendered Jinja/Liquid. No daemon child process runs on
+`cargo tree -p cli -e normal` in a generated project, static checks for
+unrendered Jinja/Liquid, the root line-counts check over `template/**/*.rs`,
+and a diff check that `docs/requirements.md` changes only REQ-RUN-0503 and
+REQ-RUN-0701. No daemon child process runs on
 the host. Record the supported variants, the sc-lint 0.8.0 pin, the
 `sc-observability` pin copied from a-1, and results in
 `docs/validation/phase-a-generation.md`.

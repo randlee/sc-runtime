@@ -29,6 +29,9 @@ requirements:
   - NFR-RUN-0004
   - NFR-RUN-0005
 adrs:
+  - ADR-RUN-0002
+  - ADR-RUN-0004
+  - ADR-RUN-0007
   - ADR-TRN-0001
   - ADR-TRN-0002
   - ADR-TRN-0003
@@ -67,6 +70,8 @@ field and a plain `String` suggested action (`run <app> daemon start` with the
 `AppName` passed to `Client::new`). No `Remediation` on transport (RBP-F002,
 RBP-F005). Record choices in the owned crate ADR before the facade freezes.
 Do not edit `docs/architecture.md`. Do not add auto-start APIs.
+`sc_transport::AppName` uses the predicate a-1 records in ADR-RUN-0010.
+This sprint does not invent a second predicate and does not write that ADR.
 
 ## Public contract produced
 
@@ -100,7 +105,7 @@ It does not edit `docs/architecture.md`.
 5. **REQ-RUN-0005** — Boundary manifest at `boundaries/sc-transport/*.toml`
    for the actual facade and edges. The manifest must be valid for
    `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
-   exists; this sprint does not install sc-lint or own the root `justfile`.
+   exists; this sprint does not install sc-lint or own the root `Justfile`.
 6. **REQ-TRN-0006 / NFR-TRN-0004** — Before the facade freezes, the crate ADR
    contains an error-inventory table for every `TransportError` variant,
    including failures other than `DaemonNotRunning`: failure mode, stable

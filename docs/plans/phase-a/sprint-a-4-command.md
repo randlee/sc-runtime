@@ -27,6 +27,8 @@ requirements:
   - NFR-RUN-0003
   - NFR-RUN-0004
 adrs:
+  - ADR-RUN-0002
+  - ADR-RUN-0004
   - ADR-CMD-0001
   - ADR-CMD-0002
   - ADR-CMD-0003
@@ -112,7 +114,7 @@ boundary.
 5. **REQ-RUN-0005** — Boundary manifest at `boundaries/sc-command/*.toml` for
    the actual facade and edges. The manifest must be valid for
    `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
-   exists; this sprint does not install sc-lint or own the root `justfile`.
+   exists; this sprint does not install sc-lint or own the root `Justfile`.
 
 ## Acceptance criteria
 

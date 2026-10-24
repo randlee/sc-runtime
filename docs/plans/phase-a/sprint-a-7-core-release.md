@@ -27,7 +27,6 @@ requirements:
   - NFR-RUN-0007
   - NFR-RUN-0009
 adrs:
-  - ADR-RUN-0001
   - ADR-RUN-0002
   - ADR-RUN-0005
   - ADR-RUN-0008
@@ -36,7 +35,7 @@ owned_paths:
   - "examples/spike/**"
   - "Cargo.toml"
   - "Cargo.lock"
-  - "justfile"
+  - "Justfile"
   - "README.md"
   - "LICENSE"
   - "release/**"
@@ -100,12 +99,14 @@ and not hand-edited. The only authored release inputs are
    versions with no path/git/patch substitute for the four libraries.
 5. **REQ-RUN-0503** — Release README and evidence explain the supported core
    generation path and name deferred layers without promising them.
-6. **ADR-RUN-0001 / release policy** — Amend the release section of
-   `docs/architecture.md`: sc-publish `install.py` is the only release-workflow
-   owner; hand-authored publish workflows (including `crates-publish.yml`) are
-   forbidden. The GitHub Release for tag `v0.1.0` includes a workspace
-   **source archive** `sc-runtime-{version}-source.tar.gz` produced by the kit
-   `release_targets` linux row (no release binaries in Phase A).
+6. **ADR-RUN-0002** — Amend ADR-RUN-0002 in `docs/architecture.md`, the
+   publish and release contract. Do not add a release section to
+   ADR-RUN-0001. The amendment states that sc-publish `install.py` is the
+   only release-workflow owner, that hand-authored publish workflows
+   (including `crates-publish.yml`) are forbidden, and that the GitHub
+   Release for tag `v0.1.0` includes a workspace source archive
+   `sc-runtime-{version}-source.tar.gz` produced by the kit `release_targets`
+   linux row. Phase A ships no release binaries.
 7. **REQ-RUN-0702** — Release evidence, not a second acceptance root. The
    oracle for the sc-lint 0.8.0 pin is the a-6 consumer install and the a-5
    maintainer pin: `template/sc-lint.toml` pins `minimum_version` to `0.8.0`,
@@ -142,9 +143,10 @@ and not hand-edited. The only authored release inputs are
    workflow, recipe, or README reference.
 4. `req:REQ-RUN-0503` — release notes distinguish the shipped core/template path
    from deferred auto-start, attribute-generated CLI tests, and wizard work.
-5. `ADR-RUN-0001` — the release section of `docs/architecture.md` names
-   sc-publish as the sole workflow owner and forbids hand-authored publish
-   workflows. The GitHub Release for the tag includes
+5. `ADR-RUN-0002` — the sprint diff amends ADR-RUN-0002 and does not add a
+   release section to ADR-RUN-0001. The amended decision names sc-publish as
+   the sole workflow owner and forbids hand-authored publish workflows. The
+   GitHub Release for the tag includes
    `sc-runtime-{version}-source.tar.gz` from the kit (linux `release_targets`
    row; `release_binaries` remains empty).
 
