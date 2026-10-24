@@ -25,7 +25,7 @@ use utoipa_axum::router::OpenApiRouter;
 use crate::Ready;
 use crate::builder::DaemonBuilder;
 use crate::config::DaemonConfig;
-use crate::error::RuntimeError;
+use crate::error::{RuntimeError, TransportStep};
 use crate::shutdown::RunControl;
 
 /// Upper bound for the caller's wait until the daemon thread reports serving.
