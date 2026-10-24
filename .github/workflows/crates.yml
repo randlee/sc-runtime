@@ -19,7 +19,7 @@ jobs:
     name: just lint and just test
     runs-on: ubuntu-latest
     env:
-      SC_RUNTIME_ISOLATED_CI: "1"
+      SC_RUNTIME_EPHEMERAL_CI: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
