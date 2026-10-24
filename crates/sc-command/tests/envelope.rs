@@ -1,10 +1,10 @@
 //! Default-feature envelope, error, and conversion tests.
 
-use sc_command::{Envelope, ErrorKind, OpError, DISCRIMINANT_CODE, ENVELOPE_VERSION};
+use sc_command::{DISCRIMINANT_CODE, ENVELOPE_VERSION, Envelope, ErrorKind, OpError};
 use sc_observability_types::{ErrorCode, Remediation};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 struct Sample {
@@ -383,9 +383,11 @@ fn transport_strings_use_caller_suggestion_and_omit_placeholder() {
     assert_eq!(value["suggested_action"], "run my-app daemon start");
     assert_eq!(value["details"]["endpoint"], "uds:app.sock");
     assert_eq!(value["details"]["cause"], "connection refused");
-    assert!(!serde_json::to_string(&error)
-        .expect("text")
-        .contains("<app>"));
+    assert!(
+        !serde_json::to_string(&error)
+            .expect("text")
+            .contains("<app>")
+    );
 
     let unset = OpError::from_transport_strings(
         "DAEMON.NOT_RUNNING",
@@ -394,9 +396,11 @@ fn transport_strings_use_caller_suggestion_and_omit_placeholder() {
         None,
     );
     assert!(unset.suggested_action().is_none());
-    assert!(!serde_json::to_string(&unset)
-        .expect("text")
-        .contains("<app>"));
+    assert!(
+        !serde_json::to_string(&unset)
+            .expect("text")
+            .contains("<app>")
+    );
 
     let other = OpError::from_transport_strings(
         "TRANSPORT.TIMEOUT",

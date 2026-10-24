@@ -2,17 +2,19 @@
 resolver = "2"
 members = [
     "crates/sc-config",
+    "crates/sc-transport",
     "crates/sc-command",
     "crates/sc-command/lint-edge/sc-observability",
     "crates/sc-command/lint-edge/sc-observability-otlp",
-    "crates/sc-command/lint-edge/sc-runtime",
+    "crates/sc-runtime",
 ]
+exclude = ["examples/spike"]
 
 [workspace.package]
 version = "0.1.0"
 authors = ["Rand Lee"]
-edition = "2021"
+edition = "2024"
 homepage = "https://github.com/randlee/sc-runtime"
 license = "MIT"
 repository = "https://github.com/randlee/sc-runtime"
-rust-version = "1.88"
+rust-version = "1.94.1"

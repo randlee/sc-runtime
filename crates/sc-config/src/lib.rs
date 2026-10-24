@@ -9,4 +9,4 @@ pub use app_name::AppName;
 #[doc(inline)]
 pub use error::ConfigError;
 #[doc(inline)]
-pub use load::{load, Loader};
+pub use load::{Loader, load};

@@ -1,19 +1,15 @@
 //! Server feature: one Axum router, stateless rmcp, and one SQLite function.
 
-use std::path::Path;
 use std::sync::Arc;
 
-use anyhow::{Context, Result};
 use axum::extract::State;
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
-use axum::routing::get;
 use axum::Json;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
 use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService};
 use rmcp::{tool, tool_handler, tool_router, ServerHandler};
+use sc_command::Envelope;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
@@ -71,28 +67,37 @@ pub fn observability_pin() -> String {
     )
 }
 
-/// Serves the spike router on the Unix socket `socket`, storing notes in `database`.
-///
-/// The enclosing module compiles only on Unix. See the `compile_error` in
-/// the crate root when the `server` feature is built on another target.
+/// Configuration loaded by `sc-config` before `Daemon::builder`.
+#[derive(Debug, serde::Deserialize)]
+pub struct SpikeConfig {
+    /// Database file opened inside the stores closure.
+    pub database: std::path::PathBuf,
+    /// Daemon lock directory and endpoint settings.
+    #[serde(flatten)]
+    pub daemon: sc_runtime::DaemonConfig,
+}
+
+/// Opens the spike database. The application maps sqlx errors into `RuntimeError`.
 ///
 /// # Errors
 ///
-/// Returns an error when the database, socket, or HTTP server cannot start.
-pub async fn serve(socket: &Path, database: &Path) -> Result<()> {
+/// Returns [`sc_runtime::RuntimeError::StoresFailed`] when the file cannot be
+/// created or the pool cannot open.
+pub async fn stores(database: std::path::PathBuf) -> Result<SqlitePool, sc_runtime::RuntimeError> {
     let _pin = observability_pin();
-
     if let Some(parent) = database.parent() {
-        std::fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
+        if !parent.as_os_str().is_empty() {
+            std::fs::create_dir_all(parent).map_err(|err| {
+                sc_runtime::RuntimeError::stores_failed(
+                    "SPIKE.STORE",
+                    "the note database could not be created",
+                    "check the database path",
+                    Some(err.to_string()),
+                )
+            })?;
+        }
     }
-    if let Some(parent) = socket.parent() {
-        std::fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
-    }
-    if socket.exists() {
-        std::fs::remove_file(socket).with_context(|| format!("remove {}", socket.display()))?;
-    }
-
-    let pool = SqlitePoolOptions::new()
+    SqlitePoolOptions::new()
         .max_connections(1)
         .connect_with(
             SqliteConnectOptions::new()
@@ -100,39 +105,36 @@ pub async fn serve(socket: &Path, database: &Path) -> Result<()> {
                 .create_if_missing(true),
         )
         .await
-        .context("open sqlite")?;
+        .map_err(|err| {
+            sc_runtime::RuntimeError::stores_failed(
+                "SPIKE.STORE",
+                "the note database did not open",
+                "check the database path",
+                Some(err.to_string()),
+            )
+        })
+}
 
-    let pool_for_mcp = pool.clone();
-    let mcp = StreamableHttpService::new(
-        move || Ok(NoteServer::new(pool_for_mcp.clone())),
+/// Project router. OpenAPI, health, and `/mcp` are mounted by `sc-runtime`.
+pub fn routes(pool: SqlitePool) -> OpenApiRouter {
+    OpenApiRouter::new()
+        .routes(routes!(put_note_route))
+        .with_state(pool)
+}
+
+/// rmcp service mounted at `/mcp` as given.
+pub fn mcp(pool: SqlitePool) -> StreamableHttpService<NoteServer, LocalSessionManager> {
+    StreamableHttpService::new(
+        move || Ok(NoteServer::new(pool.clone())),
         Arc::new(LocalSessionManager::default()),
         StreamableHttpServerConfig::default()
             .with_legacy_session_mode(false)
             .with_json_response(true),
-    );
-
-    let (router, api) = OpenApiRouter::new()
-        .routes(routes!(put_note_route))
-        .split_for_parts();
-    let app = router
-        .route(
-            "/openapi.json",
-            get(move || {
-                let api = api.clone();
-                async move { Json(api) }
-            }),
-        )
-        .nest_service("/mcp", mcp)
-        .with_state(pool);
-
-    let listener = tokio::net::UnixListener::bind(socket)
-        .with_context(|| format!("bind {}", socket.display()))?;
-    axum::serve(listener, app).await.context("axum serve")?;
-    Ok(())
+    )
 }
 
 #[derive(Clone)]
-struct NoteServer {
+pub struct NoteServer {
     pool: SqlitePool,
     tool_router: ToolRouter<Self>,
 }
@@ -161,32 +163,21 @@ impl NoteServer {
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for NoteServer {}
 
-struct PutNoteError(String);
-
-impl IntoResponse for PutNoteError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("store note: {}", self.0),
-        )
-            .into_response()
-    }
-}
-
 #[utoipa::path(
     post,
     path = "/notes",
     request_body = Note,
     responses((status = 200, description = "Stored note", body = Note))
 )]
-async fn put_note_route(
-    State(pool): State<SqlitePool>,
-    Json(note): Json<Note>,
-) -> Result<Json<Note>, PutNoteError> {
-    put_note(&pool, note)
-        .await
-        .map(Json)
-        .map_err(|error| PutNoteError(error.to_string()))
+async fn put_note_route(State(pool): State<SqlitePool>, Json(note): Json<Note>) -> Envelope<Note> {
+    match put_note(&pool, note).await {
+        Ok(saved) => Envelope::success(saved),
+        Err(error) => Envelope::failure(sc_command::OpError::new(
+            sc_command::ErrorKind::Internal,
+            sc_observability_types::ErrorCode::new_static("SPIKE.STORE"),
+            error.to_string(),
+        )),
+    }
 }
 
 #[cfg(test)]

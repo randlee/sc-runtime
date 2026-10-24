@@ -109,22 +109,21 @@ step. A failure in any step returns a `RuntimeError` and no later step runs.
 The builder has no hook, callback, plugin registry or option that inserts
 work between steps or changes their order (decided in this document; the
 design lists the five steps and calls the crate a bootstrap, not a framework
-layer). API names are illustrative until
-the contract sprint pins them; the five steps and their order are the
-decision.
+layer). The caller-facing sequence is consuming typestate. `Daemon::builder` takes
+`&sc_transport::AppName` and `&DaemonConfig` and returns a builder on which
+`run` is not implemented. `stores` then `routes` consume the builder. `mcp`
+and `run` exist only after `routes`. `mcp` is optional and returns the same
+ready builder. This crate does not define `sc_runtime::AppName`.
 
-**OPEN:** whether `Daemon::builder()` supports two listeners in v0.1. A
-daemon MAY bind a Unix domain socket listener and a TCP listener at once, and
-`sc-transport` provides that capability
-([REQ-TRN-0003](../sc-transport/requirements.md)). Whether `DaemonConfig` can
-request both, so that step 5 binds two listeners, or v0.1 binds exactly one,
-is not decided. The resolver returns one endpoint, so supporting two also
-needs a decision on where the second comes from.
+v0.1 binds exactly one listener. `TransportConfig` is `#[non_exhaustive]` and
+has no `additional_endpoints` field. `sc-transport` can bind either kind of
+listener ([REQ-TRN-0003](../sc-transport/requirements.md)). The resolver
+returns one endpoint, and step 5 binds that endpoint.
 
-**OPEN:** the `DaemonConfig` field names that carry the three inputs, and how
-the `SC_ENDPOINT` value reaches the resolver (a convenience form of the
-resolver that reads it, or `run()` passing it explicitly), are not decided
-([REQ-RT-0008](requirements.md)).
+`DaemonConfig.transport` is `sc_transport::TransportConfig`.
+`DaemonConfig.endpoint_flag` is `Option<String>`. `run` calls
+`sc_transport::resolve_endpoint_from_env`, which reads `SC_ENDPOINT`. The
+name does not appear in this crate ([REQ-RT-0008](requirements.md)).
 
 ### Consequences
 
@@ -349,9 +348,10 @@ this document:
 5. dropping the fixture stops the daemon, and drop (or an explicit async
    shutdown) returns only after the listener is closed.
 
-**OPEN:** the endpoint a fixture uses on Windows, where the default transport
-is TCP on `127.0.0.1` and a tempdir alone does not make the endpoint unique,
-is not decided.
+On Windows the fixture does not invent an endpoint. The caller sets
+`endpoint_flag`, `transport.endpoint`, or `transport.tcp_port` before
+`start`. A fresh temporary instance root still isolates the lock file. The
+fixture module is behind the non-default `test-util` feature.
 
 ### Consequences
 
@@ -359,8 +359,8 @@ Every test exercises lock, bind, transport and shutdown. On platforms whose
 default endpoint is a Unix domain socket (macOS and Linux), each fixture has
 its own instance root and so shares no socket, lock or database file with any
 other, and fixtures run in parallel in one test binary. On Windows the lock
-and database files are isolated the same way, but endpoint isolation depends
-on the OPEN above. Each fixture costs a tempdir and a
+and database files are isolated the same way. Endpoint isolation on Windows
+is the caller's endpoint value. Each fixture costs a tempdir and a
 socket, which is cheap enough for that. A bug in start-up or shutdown shows
 up as a failure in many tests at once, which is the intended signal.
 
@@ -386,3 +386,20 @@ serve path.
 - [REQ-RT-0006](requirements.md)
 - [REQ-RT-0005](requirements.md)
 - [NFR-RUN-0005](../requirements.md)
+
+## Runtime error inventory
+
+`RuntimeError` is not generic. Public signatures contain no `Box<dyn Error>`.
+There is no `AppName` variant and no `APP.INVALID_NAME` row. `run` does not
+construct `sc_transport::AppName`. Each variant's cause payload is plain text.
+Callers do not use `source()` or a downcast. `StoresFailed` is filled by the
+application's stores closure. The other variants are filled by this crate.
+
+| Variant | Failure mode | Stable code | Cause payload | Recovery text |
+|---|---|---|---|---|
+| `LockHeld` | another daemon holds `<instance-root>/daemon.lock`; stores did not run | `RUNTIME.LOCK_HELD` | optional `String` from the lock call | stop the other daemon for this instance root, or choose a different instance root |
+| `StoresFailed` | the stores closure returned this value; routes and bind did not run | caller `&'static str` | `message`, `remediation`, and optional `cause`, each `String` the caller built | the `remediation` string the caller supplied |
+| `InstanceFailed` | the instance root could not be prepared or `daemon.lock` could not be opened, and this is not lock contention | `RUNTIME.INSTANCE_FAILED` | `String` from the resolver or the I/O error | pass a directory the process can create as `TransportConfig::instance_root` |
+| `EndpointFailed` | endpoint resolution failed; no listener was bound | `RUNTIME.ENDPOINT_FAILED` | `String` from the resolver | use `uds:<path>` or `tcp:<socket-addr>`, or set `TransportConfig::tcp_port` when the platform default needs a port |
+| `BindFailed` | `sc-transport` could not bind the listener | `RUNTIME.BIND_FAILED` | `String` from the bind error | leave a live endpoint in place, or choose an address that is free |
+| `ServeFailed` | `axum::serve` returned an error | `RUNTIME.SERVE_FAILED` | `String` from the serve error | read the cause and start the daemon again |

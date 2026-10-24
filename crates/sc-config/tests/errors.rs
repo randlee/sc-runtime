@@ -5,7 +5,7 @@ use std::path::Path;
 
 use sc_config::ConfigError;
 use serde::Deserialize;
-use support::{load_value, write_file, TempDir};
+use support::{TempDir, load_value, write_file};
 
 fn assert_error<E: std::error::Error>() {}
 
@@ -134,9 +134,11 @@ fn type_mismatch_lists_files_and_variables() {
             assert!(variables.iter().any(|name| name == "MY_APP__NAME"));
             let text = error.to_string();
             assert!(text.contains("MY_APP__NAME"));
-            assert!(files
-                .iter()
-                .all(|path| text.contains(&path.display().to_string())));
+            assert!(
+                files
+                    .iter()
+                    .all(|path| text.contains(&path.display().to_string()))
+            );
         }
         other => panic!("unexpected {other}"),
     }

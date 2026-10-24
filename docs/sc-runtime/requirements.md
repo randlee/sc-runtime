@@ -39,12 +39,13 @@ of the CLI.
 ### Requirement Statement
 
 The crate `sc-runtime` (`crates/sc-runtime`) MUST expose a builder that
-assembles and runs a daemon. The names below are illustrative until the
-contract sprint pins them; the shape and the order are binding.
+assembles and runs a daemon. The names below are pinned. The shape and the
+order are binding. `run` exists only after `stores` and `routes` (consuming
+typestate, [ADR-RT-0001](architecture.md)).
 
 | Call | Argument | Required |
 |---|---|---|
-| `Daemon::builder(app, &daemon_config)` | `app`: the application name as `&str` (for example `"my-app"`); `daemon_config`: a `&DaemonConfig` the project has already loaded | yes |
+| `Daemon::builder(app, &daemon_config)` | `app`: `&sc_transport::AppName`; `daemon_config`: a `&DaemonConfig` the project has already loaded. This crate does not define `sc_runtime::AppName` | yes |
 | `.stores(closure)` | an async closure taking no arguments that opens the project's stores and returns the project's own `Stores` value or an error | yes |
 | `.routes(closure)` | a closure that receives the `Stores` value and returns a `utoipa_axum::OpenApiRouter` | yes |
 | `.mcp(closure)` | a closure that receives the `Stores` value and returns an rmcp Streamable HTTP service | no |
@@ -63,7 +64,11 @@ async fn main() -> ExitCode {
     // observability is initialised by the project, not by sc-runtime
     let _obs = sc_observability::init(cfg.logging.clone());
 
-    let result = sc_runtime::Daemon::builder("my-app", &cfg.daemon)
+    let app = match sc_transport::AppName::new("my-app") {
+        Ok(app) => app,
+        Err(e) => return report(e),
+    };
+    let result = sc_runtime::Daemon::builder(&app, &cfg.daemon)
         .stores(|| async { Stores::open(&cfg.stores).await })   // project-defined struct
         .routes(|stores| routes::router(stores))                // utoipa_axum::OpenApiRouter
         .mcp(|stores| mcp::service(stores))                     // optional; an rmcp service
@@ -96,8 +101,9 @@ which deserialises with serde.
 5. Bind through `sc-transport` (built with its `server` feature) and serve
    the merged router until SIGINT or SIGTERM. For a UDS endpoint, `bind`
    acquires and retains the endpoint-scoped lock required by REQ-TRN-0004
-   before it inspects or replaces the socket. It is one `axum::Router`,
-   served unchanged on every listener `run()` binds.
+   before it inspects or replaces the socket. v0.1 binds exactly one listener.
+   `TransportConfig` is `#[non_exhaustive]` and has no `additional_endpoints`
+   field. It is one `axum::Router`, served on that listener.
 
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
@@ -114,32 +120,28 @@ between steps or reorder them (decided in this document and recorded in
 [ADR-RT-0001](architecture.md); the design lists the five steps and says the
 crate is a bootstrap, not a framework layer).
 
-**OPEN:** whether `Daemon::builder()` supports two listeners in v0.1. A
-daemon MAY bind a Unix domain socket listener and a TCP listener at once, and
-`sc-transport` provides that capability
-([REQ-TRN-0003](../sc-transport/requirements.md)). Whether `DaemonConfig` can
-request both, so that step 5 binds two listeners, or v0.1 of `sc-runtime`
-binds exactly one, is not decided. Once it is decided that two are supported:
-a test MUST show one daemon answering the same route on its UDS listener and
-on its TCP listener.
+v0.1 binds exactly one listener. `sc-transport` can bind either a Unix domain
+socket or a TCP address ([REQ-TRN-0003](../sc-transport/requirements.md)).
+`DaemonConfig` does not request a second listener.
 
-**OPEN:** the exact Rust signatures of `builder`, `stores`, `routes`, `mcp` and
-`run` (how `Stores` is passed to the two closures, the error type the stores
-closure returns, the router state type, the concrete rmcp service type) are
-not stated by the design and are pinned by the contract sprint.
+`Daemon::builder(&sc_transport::AppName, &DaemonConfig)` returns a builder on
+which `run` is not implemented. `.stores` takes `FnOnce() -> Fut` where `Fut`
+is a future of `Result<S, RuntimeError>` and `S: Clone + Send + Sync + 'static`.
+`.routes` takes `FnOnce(S) -> utoipa_axum::router::OpenApiRouter` after the
+project has applied Axum state, so the router parameter is `()`. `.mcp` is
+available only on that ready state, returns the same builder, and takes
+`FnOnce(S) -> rmcp::transport::streamable_http_server::StreamableHttpService<Svc, Mgr>`.
+The service is mounted as given. `.run().await` returns `Result<(), RuntimeError>`
+only after `stores` and `routes`. `NeedStores`, `NeedRoutes`, and `Ready` are
+`#[doc(hidden)]` typestate markers. They are not facade items.
 
-**OPEN:** the fields of `DaemonConfig` are not stated by the design. The design
-states only that it is the `daemon` section of the project's config
-(`&cfg.daemon`) and is loaded by the project before `builder` is called. Two
-constraints bind whatever is chosen. First, `DaemonConfig` MUST carry the
-`--endpoint` flag value, the configured endpoint and an explicit instance
-root ([REQ-RT-0008](requirements.md)). Second, a project's CLI cannot name
-`DaemonConfig`, because the CLI does not depend on `sc-runtime`; so the
-endpoint and instance-root portion of configuration MUST be a
-`serde::Deserialize` type exported by `sc-transport` with default features,
-which `DaemonConfig` embeds and the CLI's config uses directly. The shape of
-that type is the configuration-value OPEN of
-[REQ-TRN-0001](../sc-transport/requirements.md).
+`DaemonConfig` is `#[non_exhaustive]`. Field `transport` is
+`sc_transport::TransportConfig`, flattened by serde, and carries `endpoint`,
+`instance_root`, and `tcp_port`. Field `endpoint_flag` is `Option<String>`,
+the `--endpoint` text the project's `main` already parsed. `SC_ENDPOINT` is
+not a field. A project's CLI cannot name `DaemonConfig`, because the CLI does
+not depend on `sc-runtime`. It uses `TransportConfig` from `sc-transport`
+with default features. `DaemonConfig` embeds that type.
 
 ### Rationale
 
@@ -207,14 +209,14 @@ tempdir as the explicit path.
 
 A failure to open or lock `daemon.lock` that is not lock contention (for
 example permission denied, or the instance root is not a directory) MUST make
-`run()` return `Err(RuntimeError)` without calling the stores closure. Which
-variant reports it is an OPEN of [REQ-RT-0007](requirements.md), which also
-holds the test for it.
+`run()` return `Err(RuntimeError::InstanceFailed)` without calling the stores
+closure. That variant is not `LockHeld` ([REQ-RT-0007](requirements.md)).
 
-**OPEN:** whether `run()` creates the instance root directory when it does not
-exist, or returns an error, is not stated by the design. The same question is
-open for the `sc-transport` instance-root function
-([REQ-TRN-0002](../sc-transport/requirements.md)).
+`run()` creates the instance root when the path is absent. It rejects an
+existing file as `InstanceFailed` and then calls `create_dir_all` before it
+opens `daemon.lock`. Whether `sc_transport::instance_root` itself creates a
+directory stays with [REQ-TRN-0002](../sc-transport/requirements.md). This
+crate creates the directory it is about to lock.
 
 ### Rationale
 
@@ -322,14 +324,15 @@ unchanged on every listener `run()` binds.
 - MCP MUST NOT get a listener, port or process of its own; it is reachable
   only as `/mcp` on the one router.
 
-Whether `run()` binds one listener or two in v0.1 is an OPEN of
-[REQ-RT-0001](requirements.md).
+v0.1 binds one listener ([REQ-RT-0001](requirements.md)).
 
-**OPEN:** the path of the OpenAPI document route is not stated by the design
-(it says only that the daemon serves `openapi.json`).
+The OpenAPI document route is `GET /openapi.json`. The body is the JSON
+document from `OpenApiRouter::split_for_parts`.
 
-**OPEN:** the path, HTTP method, status code and response body of the health
-route are not stated by the design.
+`GET /health` returns status 200. The body is the `sc_command` success
+envelope produced by the server-feature Axum `IntoResponse` for
+`sc_command::Envelope::success`. The data is `{ "status": "ok" }`. That
+conversion is the `sc_command` item `crates/sc-runtime/src` uses.
 
 **OPEN:** the behaviour when the project's router already defines the health
 path, the OpenAPI document path or `/mcp` is not stated.
@@ -350,24 +353,19 @@ versions change and this shape does not.
 
 ### Success Criteria
 
-1. Once the path of the OpenAPI document route is decided (first OPEN above):
-   a `DaemonFixture` test registers one project route, fetches the document
-   from that path, parses the body as JSON, and asserts the `paths` object
-   contains that route's path.
-2. Once the path, method, status code and body of the health route are decided
-   (second OPEN above): a `DaemonFixture` test sends that method to that path
-   and asserts that status code and that body. Until then, inspection of
-   `crates/sc-runtime/src` confirms that `run()` merges a health route
-   supplied by `sc-runtime` itself into the router.
+1. A `DaemonFixture` test registers one project route, fetches `GET /openapi.json`,
+   parses the body as JSON, and asserts the `paths` object contains that
+   route's path.
+2. A `DaemonFixture` test sends `GET /health` and asserts status 200 and the
+   `sc_command` success envelope whose data is `{ "status": "ok" }`.
 3. A `DaemonFixture` test built with an MCP closure sends an MCP `initialize`
    request over HTTP to `/mcp` on the endpoint the fixture exposes
    ([REQ-RT-0006](requirements.md)) and asserts a successful MCP response.
 4. A `DaemonFixture` test built without an MCP closure requests `/mcp` and
    asserts HTTP 404.
-5. One test calls a project route and performs criterion 3 (and criteria 1
-   and 2 once their OPENs are decided) against the single endpoint of one
-   fixture, showing that all of them are served by one router on one
-   listener.
+5. One test calls a project route and performs criteria 1, 2, and 3 against
+   the single endpoint of one fixture, showing that all of them are served by
+   one router on one listener.
 6. Inspection of `crates/sc-runtime/src` finds no MCP session manager, session
    store or session identifier handling.
 
@@ -489,30 +487,26 @@ until the contract sprint pins it.
 - On platforms whose default endpoint is a Unix domain socket (macOS and
   Linux), any number of fixtures MUST be able to run at the same time inside
   one test binary under the default parallel test runner, with no shared
-  socket, port, lock file or database file. On Windows the same property
-  depends on the OPEN below.
+  socket, port, lock file or database file. On Windows the caller supplies a
+  distinct endpoint for each fixture. The fixture does not choose one.
 - The fixture MUST NOT use a fixed path such as `/tmp/...` or a path under the
   user's home directory.
 
-The crate that supplies the temporary directory, and whether the `testing`
-module sits behind a cargo feature, are OPENs of
-[NFR-RT-0003](requirements.md).
+`testing::DaemonFixture` sits behind the non-default cargo feature `test-util`
+([NFR-RT-0003](requirements.md)). The temporary directory is `tempfile`, an
+optional dependency of that feature only.
 
-**OPEN:** the fixture's constructor signature (how a test supplies the stores,
-routes and MCP closures and any `DaemonConfig` overrides) and the names of the
-endpoint and instance-root accessors are not stated by the design.
-
-**OPEN:** the endpoint a fixture uses on Windows, where the default transport
-is TCP on `127.0.0.1` and a tempdir alone does not make the endpoint unique,
-is not stated.
-
-**OPEN:** how many concurrent fixtures the parallelism test must run is not
-stated.
-
-**OPEN:** the string syntax of an endpoint value is not decided
-([REQ-TRN-0001](../sc-transport/requirements.md)); the fixture's string form
-MUST be whatever that syntax turns out to be, produced by `sc-transport` and
-not formatted by `sc-runtime`.
+`DaemonFixture::start(app, config, stores, routes)` and
+`DaemonFixture::start_with_mcp(app, config, stores, routes, mcp)` call
+production `Daemon::builder`. The fixture always replaces
+`config.transport.instance_root` with a fresh temporary directory. Accessors
+are `client()`, `endpoint()`, `endpoint_str()`, `instance_root()`, and
+`shutdown()`. `endpoint_str()` is `Endpoint`'s `Display` (`uds:<path>` or
+`tcp:<socket-addr>`), which `sc-transport` owns
+([REQ-TRN-0001](../sc-transport/requirements.md)). The fixture does not format
+that string and does not invent an endpoint. On Windows the caller supplies
+`endpoint_flag`, `transport.endpoint`, or `transport.tcp_port` before
+`start`. The parallelism test runs two fixtures.
 
 ### Rationale
 
@@ -564,13 +558,16 @@ spawns a test helper, never the generated CLI binary
 ### Requirement Statement
 
 `run()` MUST return `Result<(), RuntimeError>`. `RuntimeError` is a public
-enum in `sc-runtime`. The four variants below are the minimum; the variant
-names are illustrative until the contract sprint pins them.
+non-generic enum in `sc-runtime`. Public signatures contain no `Box<dyn Error>`.
+The variants are pinned. The inventory (failure mode, stable code, cause
+payload, recovery text) is in [the crate architecture](architecture.md#runtime-error-inventory).
 
-| Variant (illustrative name) | Returned when |
+| Variant | Returned when |
 |---|---|
 | `LockHeld` | another process holds the lock on `<instance-root>/daemon.lock` |
-| `StoresFailed` | the project's stores closure returned an error |
+| `StoresFailed` | the project's stores closure returned this value |
+| `InstanceFailed` | the instance root or `daemon.lock` could not be prepared, and the lock is not held |
+| `EndpointFailed` | endpoint resolution failed |
 | `BindFailed` | `sc-transport` could not bind the listener |
 | `ServeFailed` | serving the router ended with an error |
 
@@ -586,23 +583,18 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
 - `run()` MUST NOT call `std::process::exit`; mapping the result to an exit
   code is done by the project's `main`. That `run()` does not panic is
   [NFR-RT-0004](requirements.md).
-- Every failure of `run()`, including the two cases in the OPEN below, MUST be
-  returned as an `Err(RuntimeError)`. A failure in resolving the instance root
-  or in opening `daemon.lock` MUST NOT be reported as `LockHeld`, because the
-  caller would tell the user a daemon is already running.
-
-**OPEN:** which variant reports each of the following, and whether new
-variants are added for them, is not decided: (a) a failure to resolve the
-instance root (the `sc-transport` instance-root function returns a
-`TransportError`), a missing or uncreatable instance root, or an I/O error
-opening `daemon.lock` that is not lock contention (carried error:
-`std::io::Error` or `TransportError`); (b) a failure of endpoint resolution,
-for example an `--endpoint` or `SC_ENDPOINT` value that cannot be parsed
-(carried error: `TransportError`). Options: two new variants; one new variant
-for both; or (b) folded into `BindFailed`.
-
-**OPEN:** how the project's stores error is carried inside `StoresFailed`
-(a generic parameter or a boxed `dyn Error`) is not stated.
+- Every failure of `run()` MUST be returned as an `Err(RuntimeError)`. A
+  failure in resolving the instance root or in opening `daemon.lock` is
+  `InstanceFailed`, not `LockHeld`. A failure to parse or resolve the endpoint
+  is `EndpointFailed`, not `BindFailed`.
+- `StoresFailed` is non-generic. Its `code` is `&'static str`. Its `message`,
+  `remediation`, and optional `cause` are `String`. The application maps its
+  store error into those fields inside the stores closure. `sc-runtime` does
+  not name the foreign error type, does not implement `source()` for a
+  downcast, and does not declare a direct dependency on
+  `sc-observability-types`. There is no `AppName` variant and no
+  `APP.INVALID_NAME` row. `run` does not construct `sc_transport::AppName`
+  and does not use `unreachable!`.
 
 ### Rationale
 
@@ -616,21 +608,20 @@ caller needs a variant to branch on and not a string to parse.
 1. A test holds the lock, calls `run()`, and matches the result against the
    `LockHeld` variant.
 2. A test whose stores closure returns an error matches the result against
-   `StoresFailed` and asserts the underlying error's message is reachable
-   through `source()` or the variant's payload.
+   `StoresFailed` and reads `code` as `&'static str` and `message`,
+   `remediation`, and `cause` as `String`. The test does not call `source()`
+   and does not downcast.
 3. A test that makes the bind fail (TCP port already in use) matches the
    result against `BindFailed`.
 4. A test covers `ServeFailed`, or, if no deterministic trigger exists, an
    inspection confirms the error from `axum::serve` is mapped to `ServeFailed`
    and to no other variant.
 5. A test passes an explicit instance root that is a regular file, not a
-   directory, calls `run()`, and asserts it returns `Err`, that the error is
-   not `LockHeld`, and that the stores closure was never called. Once OPEN
-   (a) is decided, the test also matches the decided variant.
+   directory, calls `run()`, and asserts `InstanceFailed`, that the error is
+   not `LockHeld`, and that the stores closure was never called.
 6. A test supplies an endpoint override that cannot be parsed as an endpoint,
-   calls `run()`, and asserts it returns `Err` and that no listener was
-   bound. Once OPEN (b) is decided, the test also matches the decided
-   variant.
+   calls `run()`, and asserts `EndpointFailed` and that no listener was
+   bound.
 7. A compile-time assertion in the tests checks
    `RuntimeError: std::error::Error + Send + Sync + 'static`.
 
@@ -671,8 +662,9 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
   or apply a precedence between sources.
 - The `--endpoint` flag value, the configured endpoint and the explicit
   instance root MUST reach `run()` inside the `DaemonConfig` passed to
-  `Daemon::builder`. The builder MUST NOT gain a method for them. The field
-  names are OPEN.
+  `Daemon::builder`. The builder MUST NOT gain a method for them.
+  `endpoint_flag` carries the flag. `transport` embeds `TransportConfig`,
+  whose `endpoint` and `instance_root` carry the other two.
 - `sc-runtime` MUST NOT parse the command line. The project's `main` parses
   `--endpoint` and places the value in `DaemonConfig` before calling
   `Daemon::builder` (decided in this document; it follows from the builder
@@ -686,9 +678,9 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
   `serde::Deserialize` type exported by `sc-transport` with default features.
   `DaemonConfig` embeds it, and a project's CLI, which cannot name
   `DaemonConfig` because it does not depend on `sc-runtime`, uses it
-  directly. The same constraint is recorded in the OPENs of
-  [REQ-RT-0001](requirements.md) and
-  [REQ-TRN-0001](../sc-transport/requirements.md).
+  directly. The field split is recorded in [REQ-RT-0001](requirements.md).
+  The `TransportConfig` field list is the one [REQ-TRN-0001](../sc-transport/requirements.md)
+  froze.
 
 Consequence, not a separate obligation: with an explicit instance root `R`
 and no endpoint override, on macOS and Linux the lock file is
@@ -700,18 +692,12 @@ daemon binds "through sc-transport" and that `sc-transport` owns endpoint
 resolution (instance root, `--endpoint`, `SC_ENDPOINT`); it does not name the
 caller or the carrier.
 
-**OPEN:** the names and types of the `DaemonConfig` fields that carry the
-`--endpoint` value, the configured endpoint and the explicit instance root,
-and the name and shape of the `sc-transport` type that `DaemonConfig` embeds.
-
-**OPEN:** how the `SC_ENDPOINT` value reaches the resolver in the daemon. The
-resolver accepts the value as an explicit input, and `sc-transport` may also
-offer a convenience form that reads `std::env::var_os("SC_ENDPOINT")` itself
-([REQ-TRN-0001](../sc-transport/requirements.md)). Options: `run()` calls the
-convenience form, so the name `SC_ENDPOINT` never appears in `sc-runtime`; or
-`run()` reads the variable and passes it as the explicit input. In-process
-parallel tests cannot rely on the process environment, so
-`testing::DaemonFixture` needs the explicit form either way.
+`DaemonConfig.transport` is `sc_transport::TransportConfig` (`endpoint`,
+`instance_root`, `tcp_port`). `DaemonConfig.endpoint_flag` is `Option<String>`.
+`run` calls `sc_transport::resolve_endpoint_from_env` and passes the flag.
+That function reads `SC_ENDPOINT`. The name `SC_ENDPOINT` does not appear in
+`sc-runtime`. In-process parallel tests do not set the process environment.
+A child process may set `SC_ENDPOINT` when it exercises the resolver.
 
 ### Rationale
 
@@ -752,8 +738,8 @@ machine, never on a developer's host
    configured endpoint; a client resolving with the same `SC_ENDPOINT` value
    reaches it, and `daemon.lock` exists inside that tempdir.
 5. `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
-   line outside `#[cfg(test)]` code. Once the second OPEN above is decided in
-   favour of the convenience form, the same holds for `SC_ENDPOINT`.
+   line outside `#[cfg(test)]` code. The same holds for `SC_ENDPOINT`, because
+   `run` calls `resolve_endpoint_from_env` and does not read the variable.
 6. Inspection of `crates/sc-runtime/src`: outside `#[cfg(test)]` code, the
    only source of an instance-root path is the `sc-transport` instance-root
    function, the only source of an endpoint value is the `sc-transport`
@@ -776,17 +762,19 @@ machine, never on a developer's host
   `sqlx` type. The project passes in an ordinary `utoipa_axum::OpenApiRouter`
   and an ordinary rmcp service, and they are mounted as given.
 - The public surface MUST be limited to the following kinds of item. The
-  names in the right-hand column are illustrative until the contract sprint
-  pins them; the limit on which kinds of item exist, and how many of each, is
-  binding.
+  names are pinned. `Daemon::builder` takes `&sc_transport::AppName`. This
+  crate does not define or re-export `sc_runtime::AppName`. The `testing`
+  module and `DaemonFixture` sit behind the non-default `test-util` feature.
+  `#[doc(hidden)]` typestate markers `NeedStores`, `NeedRoutes`, and `Ready`
+  appear in the builder signature and are not facade items.
 
-| Kind of public item | How many | Illustrative name |
+| Kind of public item | How many | Name |
 |---|---|---|
 | Entry type whose only public function is the constructor that returns the builder | one | `Daemon` (`Daemon::builder`) |
 | Builder type with exactly four public methods: three that each take one project closure (stores, routes, optional MCP service) and one that runs the daemon | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `run`) |
 | Configuration struct implementing `serde::Deserialize` | one | `DaemonConfig` |
 | Error enum | one | `RuntimeError` |
-| Public module for tests, containing one fixture type | one | `testing::DaemonFixture` |
+| Public module for tests, containing one fixture type, behind `test-util` | one | `testing` (`testing::DaemonFixture`) |
 
 - The crate MUST NOT have any other public item: no public trait, no public
   free function, no public macro, and no `pub use` of an item from another
@@ -812,16 +800,17 @@ libraries, and would be code every project has to learn.
 
 1. `crates/sc-runtime/Cargo.toml` has no `proc-macro = true` and the crate
    source contains no `macro_rules!` exported with `#[macro_export]`.
-2. The `[public] facade` list of the boundary manifest under
-   `boundaries/sc-runtime/` is checked by kind, not by name: it contains
-   exactly one entry type, one builder type, one configuration struct, one
-   error enum and one test module holding one fixture type, and nothing else;
-   in particular no trait, free function, macro or re-exported item. `just
-   lint` (which runs `sc-lint-boundary`, the tool that checks the facade list
-   against the crate) is clean.
+2. The `[public] facade` list of `boundaries/sc-runtime/sc-runtime.toml` is
+   `Daemon, DaemonBuilder, DaemonConfig, RuntimeError, testing`. It does not
+   list `AppName`. It contains exactly one entry type, one builder type, one
+   configuration struct, one error enum and one test module, and nothing else.
+   `just lint` (which runs `sc-lint lint sc-boundary`) is clean. A default
+   build does not expose `testing`.
 3. Inspection of the crate's rustdoc index (`cargo doc -p sc-runtime
-   --no-deps`): the builder type has exactly four public methods, and the
-   entry type has exactly one public function.
+   --no-deps`, and again with `--features test-util`): the builder type has
+   exactly four public methods (`stores`, `routes`, `mcp`, `run`), the entry
+   type has exactly one public function (`builder`), and the index does not
+   list `sc_runtime::AppName`. `testing` appears only when `test-util` is on.
 4. The `arch-qa` architecture review confirms no public type has a field or
    newtype payload of an `axum`, `rmcp` or `sqlx` type, and no registry
    structure exists.
@@ -848,14 +837,18 @@ libraries, and would be code every project has to learn.
   read.
 
 The only observability-related crate permitted in its dependency tree is
-`sc-observability-types`, which arrives through `sc-command`.
+`sc-observability-types`, and only transitively through `sc-command`. A direct
+dependency on `sc-observability-types` is forbidden. sc-lint 0.8.0 cannot
+express that direct-only rule: a `forbidden_edges` entry would also fail the
+allowed transitive crate. The check is
+`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no line
+beginning with `sc-observability-types `.
 
-The boundary manifest under `boundaries/sc-runtime/` MUST list the edges
-`sc-runtime -> sqlx`, `sc-runtime -> sc-observability` and
-`sc-runtime -> sc-observability-otlp` under `forbidden_edges`. The
-repo-level owner of the forbidden edges of all four crates is
-[REQ-RUN-0005](../requirements.md); this item states the three that apply to
-`sc-runtime`.
+`sqlx` is not a workspace member. sc-lint 0.8.0 rejects a forbidden edge whose
+target is absent, so `sc-runtime -> sqlx` is not a `forbidden_edges` entry.
+`cargo tree` enforces it. The workspace-member anchors `sc-observability` and
+`sc-observability-otlp` are `forbidden_edges`. The repo-level owner of the
+forbidden edges of all four crates is [REQ-RUN-0005](../requirements.md).
 
 ### Rationale
 
@@ -874,13 +867,15 @@ lets the project report a config error before anything else starts.
    with `sc-observability-otlp `. A line beginning with
    `sc-observability-types ` is allowed.
 2. The boundary manifest under `boundaries/sc-runtime/` lists
-   `sc-runtime -> sqlx`, `sc-runtime -> sc-observability` and
+   `sc-runtime -> sc-observability` and
    `sc-runtime -> sc-observability-otlp` under `[dependencies]
-   forbidden_edges`, and `just lint` (which runs `sc-lint-boundary`) is clean.
+   forbidden_edges`. It does not list `sqlx` or `sc-observability-types`.
+   `just lint` (which runs `sc-lint lint sc-boundary`) is clean. Criterion 1
+   is the `sqlx` and direct-only `sc-observability-types` check.
 3. A search of `crates/sc-runtime/src` (excluding `#[cfg(test)]` code) finds
-   no call to `sc_config::load`, no read of a config file, and no read of an
-   environment variable other than `SC_ENDPOINT`; `SC_ENDPOINT` is read, if
-   at all, only to pass its value to the `sc-transport` endpoint resolver.
+   no call to `sc_config::load`, no read of a config file, and no read of
+   `SC_ENDPOINT`. `run` calls `sc_transport::resolve_endpoint_from_env`, which
+   reads that variable.
 
 ---
 
@@ -898,43 +893,36 @@ forbidden edges of all four crates are owned by
 that may depend on the others, and `sc-config`, `sc-transport` and
 `sc-command` MUST NOT depend on `sc-runtime` or on each other.
 
-The normal (non-dev) dependencies of `sc-runtime` MUST be exactly the
-following, plus whatever the OPENs below add once decided.
+The normal (non-dev, non-optional) dependencies of `sc-runtime` MUST be exactly
+the following.
 
 | Dependency | Why it is needed |
 |---|---|
 | `sc-transport` with `features = ["server"]` | listener binding, the endpoint resolver and the instance-root function |
-| `sc-command` with `features = ["server"]` | the axum response and rmcp tool-result conversions of the response envelope |
+| `sc-command` with `features = ["server"]` | the axum response and rmcp tool-result conversions of the response envelope, including `GET /health` |
 | `axum` | the merged `axum::Router` and serving |
 | `tokio` | the async runtime and signal handling |
 | `fd-lock` | the exclusive lock on `daemon.lock` |
-| `utoipa-axum` and `utoipa` | the routes closure returns `utoipa_axum::OpenApiRouter`, and the OpenAPI document is a `utoipa` type (follows from the builder signature; the design's own list omits them) |
-| `serde` | `DaemonConfig` MUST implement `Deserialize`, because the project loads it as `cfg.daemon` through `sc-config` (follows from that usage; the design's own list omits it) |
+| `utoipa-axum` and `utoipa` | the routes closure returns `utoipa_axum::OpenApiRouter`, and the OpenAPI document is a `utoipa` type |
+| `serde` | `DaemonConfig` MUST implement `Deserialize`, because the project loads it as `cfg.daemon` through `sc-config` |
+| `rmcp` | `.mcp(...)` accepts the concrete `StreamableHttpService` and mounts it as given. This crate does not wrap that type and does not re-export it |
 
-- `sc-runtime` MAY depend on `sc-config`. `sc-config` has no `server`
-  feature.
+- The edge `sc-runtime -> sc-config` is absent. `sc-runtime` MUST NOT depend
+  on `sc-config` and MUST NOT load configuration
+  ([NFR-RT-0002](requirements.md)).
+- `rmcp` is a direct dependency. `.mcp(...)` accepts the concrete rmcp
+  service type and mounts it as given. `sc-runtime` does not wrap that type
+  and does not re-export it ([ADR-RUN-0001](../architecture.md) point 4).
+- `testing::DaemonFixture` sits behind the non-default cargo feature
+  `test-util`. A production daemon build does not enable it and does not link
+  the fixture. The temporary-directory crate is `tempfile`, an optional
+  dependency of `test-util` only. It is not a normal dependency.
 - `sc-runtime` MUST NOT depend on `sqlx`, `sc-observability` or
   `sc-observability-otlp` ([NFR-RT-0002](requirements.md)).
 - `sc-runtime` is a dependency of a project's daemon binary and tests. That a
   project's CLI does not depend on it, and the `cargo tree -p cli` check for
-  that, are owned by [NFR-RUN-0001](../requirements.md).
-
-**OPEN:** the edge `sc-runtime -> sc-config`. The design lists `sc-config`
-among this crate's dependencies but names no use for it, and `sc-runtime`
-MUST NOT load configuration ([NFR-RT-0002](requirements.md)), which is all
-that `sc-config`'s public surface does. Options: drop the edge; or name the
-item `sc-runtime` takes from `sc-config`. Until decided the edge is allowed,
-not required, and an unused dependency MUST NOT be declared.
-
-**OPEN:** whether `rmcp` is a direct dependency (the `.mcp(...)` closure
-returns the concrete rmcp `StreamableHttpService` type) or the MCP service is
-accepted as a generic Tower service and `rmcp` is not named.
-
-**OPEN:** which crate supplies the temporary directory used by
-`testing::DaemonFixture` ([REQ-RT-0006](requirements.md)), which is a normal
-dependency because `testing` is a public, non-test module; and whether the
-`testing` module sits behind a cargo feature so that a production daemon does
-not link it.
+  that, are owned by [NFR-RUN-0001](../requirements.md). Sprint a-6 runs that
+  command.
 
 ### Rationale
 
@@ -955,11 +943,14 @@ would reject one.
    `features = ["server"]` and `sc-command` with `features = ["server"]`.
 2. Every entry under `[dependencies]` in `crates/sc-runtime/Cargo.toml` is
    one of: `sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`,
-   `utoipa-axum`, `utoipa`, `serde`, or an entry admitted by a decided OPEN
-   above (`sc-config`, `rmcp`, the tempdir crate).
-3. If `sc-config` is declared, a search of `crates/sc-runtime/src` finds at
-   least one use of an `sc_config` item, and none of them is `load` or
-   `Loader`.
+   `utoipa-axum`, `utoipa`, `serde`, `rmcp`, or optional `tempfile` enabled
+   only by `test-util`. A search of `crates/sc-runtime/src` finds at least one
+   `sc_command` use. The criterion fails when that use is absent.
+   `cargo tree -p sc-runtime -e normal --prefix none` prints no `tempfile` or
+   `tempdir` line. `cargo tree -p sc-runtime -e features --prefix none` shows
+   `tempfile` only when `--features test-util` is set.
+3. `sc-config` is not declared. A search of `crates/sc-runtime/src` finds no
+   `sc_config` item.
 4. The boundary manifest under `boundaries/sc-runtime/` records the same
    allowed dependencies under `[dependencies] allowed_dependencies`, and
    `just lint` (which runs `sc-lint-boundary`) is clean.

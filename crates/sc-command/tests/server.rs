@@ -3,13 +3,13 @@
 use axum::body::to_bytes;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use rmcp::model::CallToolResult;
 use rmcp::ErrorData as McpError;
+use rmcp::model::CallToolResult;
 use sc_command::{Envelope, ErrorKind, IntoMcp, OpError, SERIALIZATION_CODE};
 use sc_observability_types::ErrorCode;
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 struct Sample {

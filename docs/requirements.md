@@ -116,7 +116,7 @@ which is a workspace member:
 | `examples/spike/` | the throwaway spike; present only until the `v0.1.0` tag ([REQ-RUN-0103](requirements.md)) |
 | `docs/` | requirements and architecture files; the ADRs are sections of the architecture files (see below) |
 | `boundaries/` | one directory per library crate holding its `sc-lint-boundary` manifest ([REQ-RUN-0005](requirements.md)) |
-| `justfile` | the `just` recipes, including `just new <dest>` |
+| `Justfile` | the `just` recipes, including `just new <dest>` |
 | `.github/workflows/` | crate CI and the template fixture-matrix CI |
 
 `template/` MUST NOT be a workspace member and MUST NOT be matched by a
@@ -132,9 +132,15 @@ Decided in this document: ADRs live in the architecture files
 design's `docs/adr/` directory is not used, and the repository MUST NOT
 contain it.
 
-**OPEN:** whether `examples/spike` is a fifth workspace member, an excluded
-standalone package, or a Cargo example while it exists is not decided. The
-"exactly four" rule above applies in full once it is deleted.
+`examples/spike` is an excluded standalone package while it exists. It is not
+a fifth workspace member and it is not a Cargo example. Root `Cargo.toml`
+`exclude` names `examples/spike`. The workspace member list stays the four
+library crates above. Two `publish = false` packages under
+`crates/sc-command/lint-edge/` (`sc-observability` and
+`sc-observability-otlp`) are also members so `sc-lint` 0.8.0 can name those
+forbidden-edge targets. They are name anchors, not a fifth library crate.
+Sprint a-5 deleted `crates/sc-command/lint-edge/sc-runtime` when
+`crates/sc-runtime` landed.
 
 ### Rationale
 
@@ -321,8 +327,9 @@ every project. Everyone who owns a generated project is affected.
 
 ### Requirement Statement
 
-The file `justfile` at the root of the `randlee/sc-runtime` repository MUST
-define these three recipes:
+The file `Justfile` (capital J) at the root of the `randlee/sc-runtime`
+repository MUST define these three recipes. That is the name `sc-lint init
+--just` writes. The first line stays the sc-lint init header.
 
 | Recipe | Behaviour |
 |---|---|
@@ -358,9 +365,14 @@ that plain `cargo generate` works without the driver, and therefore runs
 A workflow file under `.github/workflows/` (the crate CI workflow) MUST run
 `just lint` and `just test` at the repository root on every pull request.
 
-**OPEN:** the full list of tools `just lint` runs in this repository (for
-example formatting and clippy settings) is not stated; the standard SC `just`
-system owned by the sc-lint repository is the source of truth for it.
+`just lint` with no profile runs the sc-lint 0.8.0 full profile through
+`.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the
+`boundary` lint), line-counts, `cargo fmt --all -- --check`, and
+`cargo clippy --workspace --all-targets -- -D warnings`. `just lint gates`
+is the early profile of boundary plus line-counts. The line-counts key is
+`[line_counts] max_production_lines` and its value is `1000` for non-test
+files under `crates/*/src`. `template/**/*.rs` is not configured in this
+sprint.
 
 ### Rationale
 
@@ -426,7 +438,7 @@ state it.
    | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
    | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
@@ -436,8 +448,10 @@ so the `sc-runtime` direct-only rule is `cargo tree -p sc-runtime -e normal --de
 printing no line beginning with `sc-observability-types `. A transitive line
 through `sc-command` is allowed. `allowed_dependents` is empty for
 `sc-config` and `sc-runtime`, and `sc-runtime` only for `sc-transport` and
-`sc-command`. The `sc-runtime` → `sc-config` MAY is not an
-`allowed_dependents` entry. The measurement is the sprint a-1 evidence record.
+`sc-command`. The edge `sc-runtime` -> `sc-config` is absent, so it is not an
+`allowed_dependents` entry and it is a `forbidden_edges` entry
+`sc-runtime -> sc-config`. The measurement is the sprint a-1 evidence record
+for the other edges, and sprint a-5 for this absent edge.
 
 4. This item does not list the third-party crates each crate may depend on.
    Each list is owned by that crate's own requirement, and the manifest's
@@ -456,18 +470,15 @@ through `sc-command` is allowed. `allowed_dependents` is empty for
    | dependencies allowed only behind the `server` cargo feature (`axum` in `sc-transport`; `axum` and `rmcp` in `sc-command`) | the `cargo tree` criteria of [NFR-TRN-0001](sc-transport/requirements.md), [NFR-CMD-0001](sc-command/requirements.md) and [NFR-RUN-0001](requirements.md) |
    | `sc-runtime` wraps no `axum` or `rmcp` type ([NFR-RT-0001](sc-runtime/requirements.md)) | architecture review of the pull request |
 
-6. The `just lint` recipe in the root `justfile` MUST run `sc-lint-boundary`
+6. The `just lint` recipe in the root `Justfile` MUST run `sc-lint lint sc-boundary`
    against these manifests, and `just lint` MUST fail when a manifest is
    violated.
 
-**OPEN:** the manifest file name(s) inside `boundaries/<crate>/` are not
-stated here; `sc-lint-boundary` defines them.
+The manifest file name is `boundaries/<crate>/<crate>.toml`.
 
-**OPEN:** the sc-runtime design lists `sc-config` as a dependency of
-`sc-runtime` but names no use for it, and `sc-runtime` MUST NOT load
-configuration (the project loads it and passes `&cfg.daemon` in). Whether
-the edge `sc-runtime -> sc-config` exists in v0.1 is therefore not decided;
-the manifest allows it and does not require it.
+The edge `sc-runtime -> sc-config` is absent. `sc-runtime` does not depend on
+`sc-config` and does not load configuration. `boundaries/sc-runtime/sc-runtime.toml`
+lists `sc-runtime -> sc-config` under `forbidden_edges`.
 
 ### Rationale
 
@@ -1032,8 +1043,9 @@ and `sqlx`, then rewritten on the four library crates `sc-config`,
    function MAY live in other files of the spike; they are project wiring,
    not assembly.
 
-**OPEN:** the path of that `main.rs` inside `examples/spike` depends on how
-the spike lays out its server and client binaries, which is not stated.
+The spike server `main.rs` is `examples/spike/server/src/main.rs`. The client
+binary is `examples/spike/cli`. `examples/spike` is its own Cargo package,
+excluded from the root workspace.
 
 ### Rationale
 
@@ -1078,19 +1090,16 @@ mounts to achieve it is [REQ-RT-0004](sc-runtime/requirements.md).
 1. MCP MUST NOT run in a separate process, binary or port.
 2. When the project gives no `.mcp(...)` closure, `/mcp` MUST NOT be served,
    and the other three MUST still be served.
-3. A daemon MAY serve a Unix socket and a TCP listener at the same time (a
-   browser frontend needs TCP while the CLI stays on the socket);
-   `sc-transport` provides the listener binding for both
-   ([REQ-TRN-0003](sc-transport/requirements.md)).
+3. v0.1 binds exactly one listener. `TransportConfig` is `#[non_exhaustive]`
+   and has no `additional_endpoints` field. `sc-transport` can bind either a
+   Unix domain socket or a TCP address ([REQ-TRN-0003](sc-transport/requirements.md));
+   `Daemon::builder()` serves the one endpoint that resolver returns. A later
+   release may add a second listener without changing that v0.1 field list.
 
-**OPEN:** whether `Daemon::builder()` can bind a Unix socket and a TCP
-listener at once in v0.1 is not decided. Once it is decided that it can: a
-test asserts one daemon answers the same route on both listeners.
-
-**OPEN:** the URL path at which `openapi.json` is served is not stated.
-
-**OPEN:** the URL path of the health route, and its response status and
-body, are not stated.
+The OpenAPI document is `GET /openapi.json`. The health route is `GET /health`,
+status 200, and the body is the `sc_command` success envelope from
+`sc_command::Envelope`'s server-feature Axum `IntoResponse`, with data
+`{ "status": "ok" }`.
 
 ### Rationale
 
@@ -3373,7 +3382,18 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
    serves an accepted connection or from a `sc_transport::Client` request
    method.
 5. Every public request method of `sc_transport::Client` is declared
-   `async fn`.
+   `async fn`. Sprint a-5 reviewed criteria 4 and 5. `Client::get` and
+   `Client::post` are `async fn`. Outside `#[cfg(test)]`, `std::fs` in
+   `crates/sc-runtime/src/lock.rs` runs while preparing the instance root and
+   taking `daemon.lock` at start-up. `block_on` in
+   `crates/sc-runtime/src/testing.rs` drives `run` on the fixture's own thread
+   and is not called from a connection handler. `std::fs` and `std::net` in
+   `crates/sc-transport/src` resolve an endpoint or bind, replace, or remove a
+   socket and its bind lock. `std::fs::metadata` in
+   `crates/sc-transport/src/client.rs` runs only after a refused UDS connect,
+   to tell a directory or regular file from a socket with nothing listening.
+   Linux reports both as connection refused. It does not run when the request
+   succeeds. `Client::get` and `Client::post` stay `async fn`.
 
 ---
 
@@ -3671,10 +3691,9 @@ exceeds the limit. This repository MUST NOT carry a line-counting script or
 program of its own for this rule
 ([NFR-RUN-0004](requirements.md), [ADR-RUN-0008](architecture.md)).
 
-**OPEN:** the name of the `sc-lint` rule or configuration key that sets the
-limit, and how this repository's `sc-lint` configuration enables it, are not
-stated here; they are taken from the `sc-lint` package when the standard
-`sc-lint` setup is installed in this repository.  
+The sc-lint 0.8.0 key is `[line_counts] max_production_lines = 1000` in
+`sc-lint.toml`. `just lint` runs `sc-lint lint line-counts --config sc-lint.toml`.
+The `template/**/*.rs` half of this limit stays with a later sprint.  
 **OPEN:** whether the limit also applies to non-Rust source (for example
 `scripts/new_project.py` and the wizard's HTML and JavaScript) is not
 decided; it follows what the `sc-lint` rule covers.  

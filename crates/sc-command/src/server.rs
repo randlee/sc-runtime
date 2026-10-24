@@ -3,10 +3,10 @@
 #![cfg(feature = "server")]
 
 use axum::body::Body;
-use axum::http::{header, HeaderValue, StatusCode};
+use axum::http::{HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
-use rmcp::model::CallToolResult;
 use rmcp::ErrorData;
+use rmcp::model::CallToolResult;
 use sc_observability_types::ErrorCode;
 use serde::Serialize;
 

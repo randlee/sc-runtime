@@ -207,23 +207,49 @@ fn classify(endpoint: &Endpoint, err: reqwest::Error) -> TransportError {
     if err.is_timeout() {
         return TransportError::timed_out(endpoint.clone(), err.to_string());
     }
-    if is_daemon_down(&err) {
+    if is_daemon_down(endpoint, &err) {
         return TransportError::daemon_not_running(endpoint.clone(), err.to_string());
     }
     TransportError::request(endpoint.clone(), err.to_string())
 }
 
-fn is_daemon_down(err: &reqwest::Error) -> bool {
+fn is_daemon_down(endpoint: &Endpoint, err: &reqwest::Error) -> bool {
     match io_kind(err) {
-        Some(std::io::ErrorKind::NotFound | std::io::ErrorKind::ConnectionRefused) => true,
+        Some(std::io::ErrorKind::NotFound) => true,
+        Some(std::io::ErrorKind::ConnectionRefused) => refused_means_down(endpoint),
         Some(_) => false,
         None if err.is_connect() => {
             let text = err.to_string().to_ascii_lowercase();
-            text.contains("connection refused")
+            let named = text.contains("connection refused")
                 || text.contains("no such file")
-                || text.contains("not found")
+                || text.contains("not found");
+            named && refused_means_down(endpoint)
         }
         None => false,
+    }
+}
+
+/// Linux `connect` on a directory or a regular file returns `ECONNREFUSED`,
+/// the same code as a socket with nothing listening. A path that exists and
+/// is not a socket is [`TransportError::Request`], not a down daemon.
+fn refused_means_down(endpoint: &Endpoint) -> bool {
+    match endpoint {
+        Endpoint::Tcp(_) => true,
+        Endpoint::Uds(path) => uds_path_is_socket(path),
+    }
+}
+
+fn uds_path_is_socket(path: &std::path::Path) -> bool {
+    #[cfg(unix)]
+    {
+        std::fs::metadata(path)
+            .map(|meta| std::os::unix::fs::FileTypeExt::is_socket(&meta.file_type()))
+            .unwrap_or(true)
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = path;
+        true
     }
 }
 

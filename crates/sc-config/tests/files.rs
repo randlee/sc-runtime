@@ -2,7 +2,7 @@
 mod support;
 
 use serde_json::json;
-use support::{load_value, snapshot, write_file, TempDir};
+use support::{TempDir, load_value, snapshot, write_file};
 
 const DEFAULT_WORKED: &str = r#"{
   "daemon": { "host": "127.0.0.1", "port": 7400 },

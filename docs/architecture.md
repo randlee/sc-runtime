@@ -89,8 +89,9 @@ SIGTERM. The project's `main.rs` loads config with `sc-config` and initialises
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)). There is one
-`axum::Router`, served unchanged on every listener `run()` binds; whether the
-builder can bind a UDS and a TCP listener at once in v0.1 is undecided
+`axum::Router`, served unchanged on the one listener `run()` binds. v0.1 binds
+exactly one listener. `TransportConfig` is `#[non_exhaustive]` and has no
+`additional_endpoints` field
 ([REQ-RT-0001](sc-runtime/requirements.md)).
 
 ## Crate graph
@@ -103,7 +104,7 @@ workspace-internal edges and the forbidden edges of the four library crates.
 | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
 | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
 | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
@@ -115,14 +116,10 @@ crates.io edge, so the `sc-runtime` direct-only rule is
 beginning with `sc-observability-types `. A transitive line through
 `sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
 `sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
-`sc-runtime` → `sc-config` MAY is not an `allowed_dependents` entry. The
-measurement is the sprint a-1 evidence record.
-
-**OPEN:** the sc-runtime design lists the edge `sc-runtime` -> `sc-config` but
-names nothing that `sc-runtime` uses from `sc-config`, and `sc-runtime` MUST
-NOT load configuration ([NFR-RT-0002](sc-runtime/requirements.md)). The edge is
-therefore recorded as MAY. Whether it exists in v0.1, and for what, is
-undecided.
+edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
+entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
+`sc-runtime` does not depend on `sc-config` and does not load configuration
+([NFR-RT-0002](sc-runtime/requirements.md)).
 
 The allowed third-party dependencies of each crate are owned by that crate's
 NFR and are not restated here:
@@ -238,13 +235,11 @@ command is. A project could then do only what the wrappers expose.
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
 
-The builder method names `stores`, `routes`, `mcp` and `run` are illustrative
-and not yet pinned; the shape in points 3, 5 and 6 is what binds.
-
-**OPEN:** whether the builder can bind two listeners (a UDS and a TCP listener
-at once) in v0.1 is undecided ([REQ-RT-0001](sc-runtime/requirements.md)). In
-either case there is one `axum::Router`, served unchanged on every listener
-`run()` binds.
+The builder method names are `stores`, `routes`, `mcp`, and `run`.
+`Daemon::builder` takes `&sc_transport::AppName`. v0.1 binds exactly one
+listener. `TransportConfig` is `#[non_exhaustive]` and has no
+`additional_endpoints` field ([REQ-RT-0001](sc-runtime/requirements.md)).
+There is one `axum::Router`, served on that listener.
 
 ### Consequences
 
@@ -416,7 +411,7 @@ as its own selection.
    | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
    | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
@@ -427,8 +422,8 @@ cannot fail a crates.io edge, so the `sc-runtime` direct-only rule is
 line beginning with `sc-observability-types `. A transitive line through
 `sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
 `sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
-`sc-runtime` → `sc-config` MAY is not an `allowed_dependents` entry. The
-measurement is the sprint a-1 evidence record.
+edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
+entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
 
 2. `sc-config`, `sc-transport` and `sc-command` MUST NOT depend on one
    another, because each must be usable without the others. `sc-runtime` MUST
@@ -461,11 +456,9 @@ measurement is the sprint a-1 evidence record.
    built as its own selection, `cargo build -p cli`
    ([NFR-RUN-0001](requirements.md), which owns the property and its criterion).
 
-**OPEN:** the sc-runtime design lists the edge `sc-runtime` -> `sc-config` but
-names nothing that `sc-runtime` uses from `sc-config`, and `sc-runtime` MUST
-NOT load configuration ([NFR-RT-0002](sc-runtime/requirements.md)). The edge is
-therefore recorded as MAY. Whether it exists in v0.1, and for what, is
-undecided.
+The edge `sc-runtime` -> `sc-config` is absent. `sc-runtime` does not depend
+on `sc-config` and does not load configuration
+([NFR-RT-0002](sc-runtime/requirements.md)).
 
 Sprint a-1 measured both selections on `examples/spike` and closed this
 question. `cargo build -p cli` is the normative selection. A workspace-wide
@@ -1172,11 +1165,11 @@ happens to be up.
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
 
-**OPEN:** a daemon MAY bind a UDS and a TCP listener at once, and
-`sc-transport` provides both kinds of listener
-([REQ-TRN-0003](sc-transport/requirements.md)). Whether
-`sc_runtime::Daemon::builder()` supports two listeners in v0.1 is undecided
-([REQ-RT-0001](sc-runtime/requirements.md)).
+v0.1 of `sc_runtime::Daemon::builder()` binds exactly one listener.
+`TransportConfig` is `#[non_exhaustive]` and has no `additional_endpoints`
+field. `sc-transport` can bind either a UDS or a TCP listener
+([REQ-TRN-0003](sc-transport/requirements.md),
+[REQ-RT-0001](sc-runtime/requirements.md)).
 
 ### Consequences
 
@@ -1262,8 +1255,9 @@ unverified facts held in [ADR-RUN-0203](architecture.md).
    library versions change, or the way the input struct is declared changes.
    Points 1 to 6 do not change.
 
-**OPEN:** the URL path of the OpenAPI document route (the document is named
-`openapi.json`) and the URL path of the health route are undecided.
+The OpenAPI document route is `GET /openapi.json`. The health route is
+`GET /health`, status 200, body the `sc_command` success envelope with data
+`{ "status": "ok" }`.
 
 ### Consequences
 

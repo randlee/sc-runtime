@@ -78,8 +78,12 @@ impl ConfigError {
             Self::MissingDefault { .. } => {
                 "Create default.json in the config directory and load again."
             }
-            Self::Read { .. } => "Make the file readable, or replace a directory at that path with a file.",
-            Self::Parse { .. } => "Fix the JSON at the reported line and column. The file must be UTF-8.",
+            Self::Read { .. } => {
+                "Make the file readable, or replace a directory at that path with a file."
+            }
+            Self::Parse { .. } => {
+                "Fix the JSON at the reported line and column. The file must be UTF-8."
+            }
             Self::Override { .. } => {
                 "Remove the empty path segment, or change the variable so its path does not walk through a non-object value."
             }
