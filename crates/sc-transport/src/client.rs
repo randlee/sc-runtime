@@ -89,8 +89,9 @@ impl Client {
     /// Returns [`TransportError::DaemonNotRunning`] when the UDS path is
     /// missing or the connection is refused, [`TransportError::TimedOut`] when
     /// the request times out, [`TransportError::ResponseDecode`] when the body
-    /// is not `T` (with a bounded `body_preview`), and [`TransportError::Request`]
-    /// for any other client failure.
+    /// bytes are not `T` (with a bounded `body_preview`), and
+    /// [`TransportError::Request`] for any other client failure, including a
+    /// failure to read the body after headers arrived.
     pub async fn get<T: DeserializeOwned>(&self, path: &str) -> Result<T, TransportError> {
         let response = self
             .http
@@ -172,16 +173,9 @@ async fn read_json<T: DeserializeOwned>(
     let status = response.status().as_u16();
     let bytes = match response.bytes().await {
         Ok(bytes) => bytes,
-        Err(err) if err.is_timeout() => {
-            return Err(TransportError::timed_out(endpoint.clone(), err.to_string()));
-        }
-        Err(err) => {
-            return Err(TransportError::response_decode(
-                status,
-                err.to_string(),
-                String::new(),
-            ));
-        }
+        // A failure while reading the body is a transfer failure, classified
+        // the same way as `send`: timeout, down daemon, or request.
+        Err(err) => return Err(classify(endpoint, err)),
     };
     match serde_json::from_slice::<T>(&bytes) {
         Ok(value) => Ok(value),
@@ -215,7 +209,7 @@ fn classify(endpoint: &Endpoint, err: reqwest::Error) -> TransportError {
 
 fn is_daemon_down(err: &reqwest::Error) -> bool {
     match io_kind(err) {
-        Some(std::io::ErrorKind::NotFound | std::io::ErrorKind::ConnectionRefused) => true,
+        Some(std::io::ErrorKind::NotFound) | Some(std::io::ErrorKind::ConnectionRefused) => true,
         Some(_) => false,
         None if err.is_connect() => {
             let text = err.to_string().to_ascii_lowercase();

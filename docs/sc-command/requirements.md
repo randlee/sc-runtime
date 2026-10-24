@@ -686,16 +686,13 @@ These rules apply to every feature combination, including `server`.
 
 `cargo tree` enforces the logging crates and the sibling crates.
 `sc-observability-types` is an allowed dependency and is not a forbidden
-edge. The boundary manifest's `forbidden_edges` names the workspace-member
-anchors `sc-observability` and `sc-observability-otlp` only. sc-lint 0.8.0
-rejects a forbidden edge whose target is not a workspace member, so those
-two names are `publish = false` packages under
-`crates/sc-command/lint-edge/`. `sc-command` does not depend on them.
-`sc-config` and `sc-transport` are not workspace members in this sprint, so
-they are not `forbidden_edges` entries; Cargo.toml inspection and
-`cargo tree` enforce them. `allowed_dependents` is `sc-runtime` only. The
-`lint-edge/sc-runtime` package exists so that dependent is not stale, and
-sprint a-5 deletes it when `crates/sc-runtime` lands. The third-party crates
+edge. sc-lint 0.8.0 rejects a forbidden edge whose target is not a workspace
+member, so `forbidden_edges` does not name `sc-observability` or
+`sc-observability-otlp`. `sc-config` and `sc-transport` are workspace members.
+Cargo.toml inspection and `cargo tree` still enforce those sibling edges;
+they are not `forbidden_edges` entries. `allowed_dependents` is `sc-runtime`
+only. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
+landed. The third-party crates
 `sc-command` may depend on are listed in [NFR-CMD-0001](requirements.md).
 `sc-lint lint sc-boundary` checks inter-crate edges and the public facade
 list only; it has no cargo-feature key, so the feature-conditional

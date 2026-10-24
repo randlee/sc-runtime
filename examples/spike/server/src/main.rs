@@ -1,26 +1,25 @@
-//! Spike server binary. Composition lives in `spike_stack::serve`.
-
-use std::path::PathBuf;
-
-use anyhow::Result;
-use clap::Parser;
-
-#[derive(Debug, Parser)]
-#[command(
-    name = "spike-server",
-    about = "Serve the spike router on a Unix socket."
-)]
-struct Args {
-    /// Unix socket to bind.
-    #[arg(long)]
-    socket: PathBuf,
-    /// SQLite database file.
-    #[arg(long)]
-    database: PathBuf,
-}
+use std::process::ExitCode;
 
 #[tokio::main]
-async fn main() -> Result<()> {
-    let args = Args::parse();
-    spike_stack::serve(&args.socket, &args.database).await
+async fn main() -> ExitCode {
+    let Ok(name) = sc_config::AppName::new("spike") else {
+        return ExitCode::from(1);
+    };
+    let Ok(cfg) = sc_config::load::<spike_stack::SpikeConfig>(name) else {
+        return ExitCode::from(1);
+    };
+    let Ok(app) = sc_transport::AppName::new("spike") else {
+        return ExitCode::from(1);
+    };
+    let database = cfg.database.clone();
+    match sc_runtime::Daemon::builder(&app, &cfg.daemon)
+        .stores(move || spike_stack::stores(database))
+        .routes(spike_stack::routes)
+        .mcp(spike_stack::mcp)
+        .run()
+        .await
+    {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(_) => ExitCode::from(1),
+    }
 }

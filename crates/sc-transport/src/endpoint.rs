@@ -41,7 +41,7 @@ impl Endpoint {
     /// Returns [`TransportError::InvalidEndpoint`] when `text` is empty, is not
     /// valid Unicode on Windows, or is not `uds:<path>` or `tcp:<socket-addr>`.
     pub fn parse_os(text: &OsStr) -> Result<Self, TransportError> {
-        parse_bytes(&os_bytes(text), text)
+        parse_bytes(&os_bytes(text)?, text)
     }
 }
 
@@ -76,7 +76,7 @@ fn parse_bytes(bytes: &[u8], original: &OsStr) -> Result<Endpoint, TransportErro
                 "uds path is empty",
             ));
         }
-        return Ok(Endpoint::Uds(path_from_bytes(rest)));
+        return Ok(Endpoint::Uds(path_from_bytes(rest, original)?));
     }
     if let Some(rest) = bytes.strip_prefix(b"tcp:") {
         let text = std::str::from_utf8(rest).map_err(|_| {
@@ -98,29 +98,76 @@ fn display_os(text: &OsStr) -> String {
 }
 
 #[cfg(unix)]
-fn os_bytes(text: &OsStr) -> std::borrow::Cow<'_, [u8]> {
+fn os_bytes(text: &OsStr) -> Result<std::borrow::Cow<'_, [u8]>, TransportError> {
     use std::os::unix::ffi::OsStrExt;
-    std::borrow::Cow::Borrowed(text.as_bytes())
+    Ok(std::borrow::Cow::Borrowed(text.as_bytes()))
 }
 
 #[cfg(not(unix))]
-fn os_bytes(text: &OsStr) -> std::borrow::Cow<'_, [u8]> {
+fn os_bytes(text: &OsStr) -> Result<std::borrow::Cow<'_, [u8]>, TransportError> {
     match text.to_str() {
-        Some(text) => std::borrow::Cow::Owned(text.as_bytes().to_vec()),
-        None => std::borrow::Cow::Owned(Vec::new()),
+        Some(text) => Ok(std::borrow::Cow::Owned(text.as_bytes().to_vec())),
+        None => Err(TransportError::invalid_endpoint(
+            display_os(text),
+            "endpoint text is not valid Unicode",
+        )),
     }
 }
 
 #[cfg(unix)]
-fn path_from_bytes(bytes: &[u8]) -> PathBuf {
+fn path_from_bytes(bytes: &[u8], _original: &OsStr) -> Result<PathBuf, TransportError> {
     use std::os::unix::ffi::OsStrExt;
-    PathBuf::from(OsStr::from_bytes(bytes))
+    Ok(PathBuf::from(OsStr::from_bytes(bytes)))
 }
 
 #[cfg(not(unix))]
-fn path_from_bytes(bytes: &[u8]) -> PathBuf {
+fn path_from_bytes(bytes: &[u8], original: &OsStr) -> Result<PathBuf, TransportError> {
     match std::str::from_utf8(bytes) {
-        Ok(text) => PathBuf::from(text),
-        Err(_) => PathBuf::new(),
+        Ok(text) => Ok(PathBuf::from(text)),
+        Err(_) => Err(TransportError::invalid_endpoint(
+            display_os(original),
+            "endpoint text is not valid Unicode",
+        )),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Endpoint;
+
+    #[cfg(unix)]
+    #[test]
+    fn non_unicode_uds_path_is_preserved() {
+        use std::ffi::OsStr;
+        use std::os::unix::ffi::OsStrExt;
+
+        let mut bytes = b"uds:/tmp/".to_vec();
+        bytes.push(0xff);
+        let text = OsStr::from_bytes(&bytes);
+        let endpoint = Endpoint::parse_os(text).expect("unix path bytes are an endpoint");
+        let Endpoint::Uds(path) = endpoint else {
+            panic!("expected a uds endpoint");
+        };
+        assert!(path.as_os_str().as_bytes().ends_with(&[0xff]));
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn non_unicode_endpoint_is_invalid() {
+        use std::ffi::OsString;
+        use std::os::windows::ffi::OsStringExt;
+
+        use crate::TransportError;
+
+        let mut units: Vec<u16> = "tcp:".encode_utf16().collect();
+        units.push(0xD800);
+        let text = OsString::from_wide(&units);
+        let err = Endpoint::parse_os(&text).expect_err("non-unicode");
+        match err {
+            TransportError::InvalidEndpoint { ref detail, .. } => {
+                assert!(detail.contains("Unicode"), "{detail}");
+            }
+            other => panic!("expected InvalidEndpoint, got {other:?}"),
+        }
     }
 }

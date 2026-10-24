@@ -3,7 +3,7 @@
 **ID Range:** ADR-RT-0001 through ADR-RT-0004  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-10-23  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -19,28 +19,30 @@ and binding; an ADR changes only through a later ADR that names it.
 
 The single assembly point. It is the only one of the four library crates that
 may depend on the others, and it is a dependency of the daemon only. It
-depends on `sc-transport` and `sc-command`, each with the `server` feature;
-the edge to `sc-config` is allowed but has no named use and is recorded as an
-OPEN in [NFR-RT-0003](requirements.md), which owns this crate's full
-allowed-dependency list (`axum`, `tokio`, `fd-lock`, `utoipa-axum`, `utoipa`,
-`serde`, with `rmcp` and the tempdir facility still open). Everything it
-receives from the project (config, stores, router, MCP service) it passes
-through untouched.
+depends on `sc-transport` and `sc-command`, each with the `server` feature.
+The edge `sc-runtime` → `sc-config` is absent
+([ADR-RUN-0003](../architecture.md), [NFR-RT-0003](requirements.md)).
+[NFR-RT-0003](requirements.md) owns this crate's allowed-dependency list:
+`sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`, `utoipa-axum`,
+`utoipa`, `serde`, `rmcp`, and optional `tempfile` behind `test-util`.
+Everything it receives from the project (config, stores, router, MCP service)
+it passes through untouched.
 
 ## Public surface
 
 | Item | Purpose |
 |---|---|
-| `Daemon::builder(app, &DaemonConfig)` | start assembly |
+| `Daemon::builder(&sc_transport::AppName, &DaemonConfig)` | start assembly |
 | `DaemonBuilder::stores / routes / mcp / run` | the project's three closures, then serve |
-| `DaemonConfig` | the daemon's own settings; implements `serde::Deserialize` so the project loads it as part of its config; carries the `--endpoint` value, the configured endpoint and an explicit instance root (REQ-RT-0008); its field names are undecided (see REQ-RT-0001) |
+| `DaemonConfig` | `#[non_exhaustive]` settings the project loads; `transport` is flattened `sc_transport::TransportConfig` (`endpoint`, `instance_root`, `tcp_port`); `endpoint_flag` is `Option<String>` for `--endpoint` ([ADR-RT-0001](#adr-rt-0001-daemonbuilder-run-is-assembly-only-in-a-fixed-order), [REQ-RT-0001](requirements.md), [REQ-RT-0008](requirements.md)) |
 | `RuntimeError` | typed error naming the failing step |
 | `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
 
 Shape of use, from the design:
 
 ```rust
-let result = sc_runtime::Daemon::builder("my-app", &cfg.daemon)
+let app = sc_transport::AppName::new("my-app").expect("static name");
+let result = sc_runtime::Daemon::builder(&app, &cfg.daemon)
     .stores(|| async { Stores::open(&cfg.stores).await })
     .routes(|stores| routes::router(stores))   // utoipa_axum::OpenApiRouter
     .mcp(|stores| mcp::service(stores))        // optional; an rmcp service
@@ -81,18 +83,27 @@ which inputs could arrive.
 
 ### Decision
 
-`run()` on the builder returned by `Daemon::builder(app, &daemon_config)`
+`DaemonBuilder` uses consuming typestate. The markers are `NeedStores`,
+`NeedRoutes`, and `Ready`. `stores` consumes `NeedStores` and returns
+`NeedRoutes`. `routes` consumes `NeedRoutes` and returns `Ready`. `run`
+exists only on `Ready`. `mcp` is optional and is implemented only on
+`Ready`. The markers are `pub` so the builder can be named across crates.
+They are `#[doc(hidden)]` and are not facade items.
+
+`run()` on the builder returned by `Daemon::builder(&sc_transport::AppName, &daemon_config)`
 does exactly five things, always in this order:
 
 1. take the `DaemonConfig` the project already loaded;
 2. resolve the instance root by calling the `sc-transport` instance-root
-   function, and take the exclusive lock on `<instance-root>/daemon.lock`;
-3. call the project's stores closure;
-4. merge the project's `utoipa_axum::OpenApiRouter`, the OpenAPI document
-   route, a health route, and the rmcp service at `/mcp` if one was given;
-5. resolve the bind endpoint by calling the `sc-transport` endpoint resolver,
-   bind through `sc-transport`, and serve until SIGINT or SIGTERM. It is one
-   `axum::Router`, served unchanged on every listener `run()` binds.
+   function, then resolve the bind endpoint by calling the `sc-transport`
+   endpoint resolver (endpoint resolution completes before the lock);
+3. register SIGINT and SIGTERM streams, then take the exclusive lock on
+   `<instance-root>/daemon.lock`;
+4. call the project's stores closure, then merge the project's
+   `utoipa_axum::OpenApiRouter`, the OpenAPI document route, a health route,
+   and the rmcp service at `/mcp` if one was given;
+5. bind through `sc-transport` last, and serve until SIGINT or SIGTERM. It is
+   one `axum::Router`, served unchanged on every listener `run()` binds.
 
 In the daemon, the component that calls the `sc-transport` instance-root
 function and endpoint resolver is `run()`; the generated `main.rs` does not,
@@ -104,27 +115,29 @@ loading configuration. This paragraph is decided in this document
 ([REQ-RT-0008](requirements.md)); the design says only that the daemon binds
 "through sc-transport".
 
-The lock is taken before the stores closure is called. Binding is the last
-step. A failure in any step returns a `RuntimeError` and no later step runs.
+Endpoint resolution completes before the lock is taken, so an invalid
+endpoint does not take the lock or open stores. Signal streams are registered
+before bind. The lock is taken before the stores closure is called. Binding is
+the last step. A failure in any step returns a `RuntimeError` and no later
+step runs.
 The builder has no hook, callback, plugin registry or option that inserts
 work between steps or changes their order (decided in this document; the
 design lists the five steps and calls the crate a bootstrap, not a framework
-layer). API names are illustrative until
-the contract sprint pins them; the five steps and their order are the
-decision.
+layer). The caller-facing sequence is consuming typestate. `Daemon::builder` takes
+`&sc_transport::AppName` and `&DaemonConfig` and returns a builder on which
+`run` is not implemented. `stores` then `routes` consume the builder. `mcp`
+and `run` exist only after `routes`. `mcp` is optional and returns the same
+ready builder. This crate does not define `sc_runtime::AppName`.
 
-**OPEN:** whether `Daemon::builder()` supports two listeners in v0.1. A
-daemon MAY bind a Unix domain socket listener and a TCP listener at once, and
-`sc-transport` provides that capability
-([REQ-TRN-0003](../sc-transport/requirements.md)). Whether `DaemonConfig` can
-request both, so that step 5 binds two listeners, or v0.1 binds exactly one,
-is not decided. The resolver returns one endpoint, so supporting two also
-needs a decision on where the second comes from.
+v0.1 binds exactly one listener. `TransportConfig` is `#[non_exhaustive]` and
+has no `additional_endpoints` field. `sc-transport` can bind either kind of
+listener ([REQ-TRN-0003](../sc-transport/requirements.md)). The resolver
+returns one endpoint, and step 5 binds that endpoint.
 
-**OPEN:** the `DaemonConfig` field names that carry the three inputs, and how
-the `SC_ENDPOINT` value reaches the resolver (a convenience form of the
-resolver that reads it, or `run()` passing it explicitly), are not decided
-([REQ-RT-0008](requirements.md)).
+`DaemonConfig.transport` is `sc_transport::TransportConfig`.
+`DaemonConfig.endpoint_flag` is `Option<String>`. `run` calls
+`sc_transport::resolve_endpoint_from_env`, which reads `SC_ENDPOINT`. The
+name does not appear in this crate ([REQ-RT-0008](requirements.md)).
 
 ### Consequences
 
@@ -349,9 +362,10 @@ this document:
 5. dropping the fixture stops the daemon, and drop (or an explicit async
    shutdown) returns only after the listener is closed.
 
-**OPEN:** the endpoint a fixture uses on Windows, where the default transport
-is TCP on `127.0.0.1` and a tempdir alone does not make the endpoint unique,
-is not decided.
+On Windows the fixture does not invent an endpoint. The caller sets
+`endpoint_flag`, `transport.endpoint`, or `transport.tcp_port` before
+`start`. A fresh temporary instance root still isolates the lock file. The
+fixture module is behind the non-default `test-util` feature.
 
 ### Consequences
 
@@ -359,8 +373,8 @@ Every test exercises lock, bind, transport and shutdown. On platforms whose
 default endpoint is a Unix domain socket (macOS and Linux), each fixture has
 its own instance root and so shares no socket, lock or database file with any
 other, and fixtures run in parallel in one test binary. On Windows the lock
-and database files are isolated the same way, but endpoint isolation depends
-on the OPEN above. Each fixture costs a tempdir and a
+and database files are isolated the same way. Endpoint isolation on Windows
+is the caller's endpoint value. Each fixture costs a tempdir and a
 socket, which is cheap enough for that. A bug in start-up or shutdown shows
 up as a failure in many tests at once, which is the intended signal.
 
@@ -386,3 +400,21 @@ serve path.
 - [REQ-RT-0006](requirements.md)
 - [REQ-RT-0005](requirements.md)
 - [NFR-RUN-0005](../requirements.md)
+
+## Runtime error inventory
+
+`RuntimeError` is not generic. Public signatures contain no `Box<dyn Error>`.
+There is no `AppName` variant and no `APP.INVALID_NAME` row. `run` does not
+construct `sc_transport::AppName`. Each variant's cause payload is plain text.
+Callers do not use `source()` or a downcast. `StoresFailed` is filled by the
+application's stores closure. The other variants are filled by this crate.
+
+| Variant | Failure mode | Stable code | Cause payload | Recovery text |
+|---|---|---|---|---|
+| `LockHeld` | another daemon holds `<instance-root>/daemon.lock`; stores did not run | `RUNTIME.LOCK_HELD` | optional `String` from the lock call | stop the other daemon for this instance root, or choose a different instance root |
+| `StoresFailed` | the stores closure returned this value; routes and bind did not run | caller `&'static str` | `message`, `remediation`, and optional `cause`, each `String` the caller built | the `remediation` string the caller supplied |
+| `InstanceFailed` | the instance root could not be prepared or `daemon.lock` could not be opened, and this is not lock contention | `RUNTIME.INSTANCE_FAILED` | `String` from the resolver or the I/O error | pass a directory the process can create as `TransportConfig::instance_root` |
+| `EndpointFailed` | endpoint resolution failed; no listener was bound | `RUNTIME.ENDPOINT_FAILED` | `String` from the resolver | use `uds:<path>` or `tcp:<socket-addr>`, or set `TransportConfig::tcp_port` when the platform default needs a port |
+| `BindFailed` | `sc-transport` could not bind the listener | `RUNTIME.BIND_FAILED` | `String` from the bind error | leave a live endpoint in place, or choose an address that is free |
+| `ServeFailed` | `axum::serve` returned an error | `RUNTIME.SERVE_FAILED` | `String` from the serve error | read the cause and start the daemon again |
+| `RouteConflict` | the project router already defines `GET /health`, `GET /openapi.json`, or `/mcp` | `RUNTIME.ROUTE_CONFLICT` | the reserved path that collided | remove the reserved path from the project router |

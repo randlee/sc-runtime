@@ -3,7 +3,7 @@ mod support;
 
 use serde::Deserialize;
 use serde_json::json;
-use support::{load_value, write_file, TempDir};
+use support::{TempDir, load_value, write_file};
 
 const MERGED: &str = r#"{
   "daemon": { "host": "127.0.0.1", "port": 9000 },

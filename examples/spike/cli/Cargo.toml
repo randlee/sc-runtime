@@ -11,9 +11,9 @@ name = "spike-cli"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1"
 clap = { version = "4", features = ["derive"] }
-reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
+sc-transport = { path = "../../../crates/sc-transport" }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 spike-stack = { path = "../stack" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

@@ -4,7 +4,7 @@ mod support;
 use std::process::Command;
 
 use serde_json::json;
-use support::{write_file, TempDir};
+use support::{TempDir, write_file};
 
 #[test]
 fn load_helper_is_excluded_from_the_published_package() {

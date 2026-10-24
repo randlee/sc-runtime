@@ -8,8 +8,8 @@ use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value;
 
-use crate::exact::{require_exact_keys, required};
 use crate::DISCRIMINANT_CODE;
+use crate::exact::{require_exact_keys, required};
 
 /// Detail key that carries a not-recoverable justification on the wire.
 const JUSTIFICATION_KEY: &str = "justification";
@@ -293,11 +293,7 @@ fn wire_suggestion(remediation: &Remediation) -> Option<&str> {
     match remediation {
         Remediation::Recoverable { steps } => {
             let step = steps.first_step()?;
-            if step.is_empty() {
-                None
-            } else {
-                Some(step)
-            }
+            if step.is_empty() { None } else { Some(step) }
         }
         Remediation::NotRecoverable { .. } => None,
     }

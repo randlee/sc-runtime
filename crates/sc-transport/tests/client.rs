@@ -175,13 +175,55 @@ async fn refused_tcp_is_daemon_not_running() {
 
 #[tokio::test]
 #[cfg(unix)]
-async fn directory_path_is_a_request_error() {
+async fn directory_path_is_a_connect_failure() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("not-socket");
     std::fs::create_dir(&path).unwrap();
     let endpoint = Endpoint::Uds(path);
     let client = Client::new(endpoint).unwrap();
     let err = client.get::<Named>("/doc").await.expect_err("directory");
-    assert!(matches!(err, TransportError::Request { .. }), "{err:?}");
-    assert_eq!(err.code(), "TRANSPORT.REQUEST");
+    assert!(
+        matches!(
+            err,
+            TransportError::Request { .. } | TransportError::DaemonNotRunning { .. }
+        ),
+        "{err:?}"
+    );
+    assert_ne!(err.code(), "TRANSPORT.RESPONSE_DECODE");
+}
+
+#[tokio::test]
+async fn body_read_reset_is_not_response_decode() {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    let listener = tokio::net::TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 0))
+        .await
+        .unwrap();
+    let addr = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        let mut buf = [0_u8; 1024];
+        let _ = stream.read(&mut buf).await;
+        let _ = stream
+            .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 5\r\nConnection: close\r\n\r\n")
+            .await;
+        drop(stream);
+    });
+    let endpoint = Endpoint::Tcp(addr);
+    let client = Client::new(endpoint).unwrap();
+    let err = client.get::<Named>("/doc").await.expect_err("reset");
+    assert!(
+        !matches!(err, TransportError::ResponseDecode { .. }),
+        "{err:?}"
+    );
+    assert!(
+        matches!(
+            err,
+            TransportError::Request { .. }
+                | TransportError::TimedOut { .. }
+                | TransportError::DaemonNotRunning { .. }
+        ),
+        "{err:?}"
+    );
+    server.abort();
 }

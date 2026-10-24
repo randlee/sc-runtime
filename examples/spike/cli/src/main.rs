@@ -1,28 +1,20 @@
-//! Clap client that calls the spike REST route over a Unix socket.
-//!
-//! The binary compiles only on Unix. Other targets fail with `compile_error`
-//! because `reqwest`'s Unix socket client is the spike's only transport.
+//! Clap client that calls the spike REST route through `sc-transport`.
 
-#[cfg(not(unix))]
-compile_error!(
-    "spike-cli sends requests through reqwest's Unix socket client and only builds on Unix targets"
-);
+use std::process::ExitCode;
 
-use std::path::PathBuf;
-
-use anyhow::{Context, Result};
 use clap::Parser;
-use serde_json::json;
+use sc_transport::{Client, Endpoint};
+use serde::Deserialize;
 
 #[derive(Debug, Parser)]
 #[command(
     name = "spike-cli",
-    about = "Call the spike note route over a Unix socket."
+    about = "Call the spike note route through sc-transport."
 )]
 struct Args {
-    /// Unix socket the spike server is listening on.
-    #[arg(long)]
-    socket: PathBuf,
+    /// Endpoint text (`uds:<path>` or `tcp:<socket-addr>`).
+    #[arg(long, default_value = "uds:instance/daemon.sock")]
+    endpoint: String,
     /// Note key.
     #[arg(long)]
     key: String,
@@ -31,25 +23,55 @@ struct Args {
     body: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct Note {
+    key: String,
+    body: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct Reply {
+    ok: bool,
+    data: Option<Note>,
+    #[allow(dead_code)]
+    error: Option<serde_json::Value>,
+}
+
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> ExitCode {
     let args = Args::parse();
     let _default_marker = spike_stack::client_marker();
-    let builder = reqwest::Client::builder();
-    #[cfg(unix)]
-    let builder = builder.unix_socket(&*args.socket);
-    let client = builder.build().context("build reqwest client")?;
-    let response = client
-        .post("http://localhost/notes")
-        .json(&json!({ "key": args.key, "body": args.body }))
-        .send()
-        .await
-        .context("POST /notes")?;
-    let status = response.status();
-    let text = response.text().await.context("read body")?;
-    if !status.is_success() {
-        anyhow::bail!("HTTP {status}: {text}");
+    let Ok(endpoint) = args.endpoint.parse::<Endpoint>() else {
+        eprintln!("invalid endpoint");
+        return ExitCode::from(1);
+    };
+    let Ok(client) = Client::new(endpoint) else {
+        eprintln!("the transport client could not be built");
+        return ExitCode::from(1);
+    };
+    let reply = client
+        .post::<Reply, _>(
+            "/notes",
+            &serde_json::json!({ "key": args.key, "body": args.body }),
+        )
+        .await;
+    let Ok(reply) = reply else {
+        eprintln!("the note request failed");
+        return ExitCode::from(1);
+    };
+    if !reply.ok {
+        eprintln!("the note request was rejected");
+        return ExitCode::from(1);
     }
-    println!("{text}");
-    Ok(())
+    let Some(note) = reply.data else {
+        eprintln!("the note response had no data");
+        return ExitCode::from(1);
+    };
+    match serde_json::to_string(&serde_json::json!({ "key": note.key, "body": note.body })) {
+        Ok(text) => {
+            println!("{text}");
+            ExitCode::SUCCESS
+        }
+        Err(_) => ExitCode::from(1),
+    }
 }
