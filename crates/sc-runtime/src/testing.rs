@@ -19,7 +19,7 @@ use utoipa_axum::router::OpenApiRouter;
 use crate::Ready;
 use crate::builder::DaemonBuilder;
 use crate::config::DaemonConfig;
-use crate::error::RuntimeError;
+use crate::error::{RuntimeError, TransportStep};
 use crate::shutdown::RunControl;
 
 /// A daemon started through the production builder on a private instance root.
@@ -178,11 +178,7 @@ where
     let root = temp.path().to_path_buf();
     let (ready_tx, ready_rx) = oneshot::channel();
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
-    let builder = builder.with_control(RunControl {
-        ready: Some(ready_tx),
-        shutdown: Some(shutdown_rx),
-        listen_for_signals: false,
-    });
+    let builder = builder.with_control(RunControl::detached(Some(ready_tx), Some(shutdown_rx)));
     let thread = std::thread::spawn(move || drive_on_thread(builder));
     let endpoint = match ready_rx.await {
         Ok(endpoint) => endpoint,
@@ -193,7 +189,7 @@ where
         Err(err) => {
             drop(shutdown_tx);
             let _ = join_startup(thread);
-            return Err(RuntimeError::bind_failed(err.to_string()));
+            return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
     if let Err(err) = wait_until_serving(&client).await {
