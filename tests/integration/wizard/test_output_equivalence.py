@@ -1,8 +1,10 @@
 """Wizard answers and --var-file generate the same project tree.
 
 The Wyvern binary is a stub that returns one fixture. Both runs use the real
-driver with stubbed cargo/sc-compose/just so output does not depend on the
-host toolchain. The comparison skips build and tool output
+driver and real cargo-generate / sc-compose / just when those tools are on
+PATH; only Wyvern is stubbed, per REQ-RUN-0603. When sc-compose is absent,
+minimal pipeline stubs stand in so the test can still exercise the driver
+without hanging on network installs. The comparison skips build and tool output
 that embeds a destination path or a timestamp: ``target/``, the
 ``[patch.crates-io]`` checkout patch, ``.sc-lint/venv/``, and
 ``.sc-compose/logs/``.
@@ -10,6 +12,7 @@ that embeds a destination path or a timestamp: ``target/``, the
 
 import json
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -30,7 +33,7 @@ def write_script(directory: Path, name: str, body: str) -> None:
 
 
 def stub_pipeline_tools(root: Path) -> Path:
-    """Minimal cargo/sc-compose/just stubs so the equivalence check stays hermetic."""
+    """Minimal cargo/sc-compose/just stubs when the real tools are not on PATH."""
     bin_dir = root / "tool-bin"
     bin_dir.mkdir(exist_ok=True)
     log = root / "pipeline.log"
@@ -124,11 +127,18 @@ class OutputEquivalenceTests(unittest.TestCase):
             write_script(root, "wyvern", f"#!/bin/sh\ncat << 'EOF'\n{payload}\nEOF\n")
             wizard_dest = root / "from-wizard"
             file_dest = root / "from-file"
-            stub_bin = stub_pipeline_tools(root)
-            wizard = self.generate([str(wizard_dest)], stub, root, stub_bin=stub_bin)
+            pipeline_stub = (
+                stub_pipeline_tools(root) if shutil.which("sc-compose") is None else None
+            )
+            wizard = self.generate(
+                [str(wizard_dest)], stub, root, pipeline_stub=pipeline_stub
+            )
             self.assertEqual(wizard.returncode, 0, wizard.stderr)
             direct = self.generate(
-                [str(file_dest), "--var-file", str(FIXTURE)], stub, root, stub_bin=stub_bin
+                [str(file_dest), "--var-file", str(FIXTURE)],
+                stub,
+                root,
+                pipeline_stub=pipeline_stub,
             )
             self.assertEqual(direct.returncode, 0, direct.stderr)
             self.assertNotIn("wyvern", direct.stderr)
@@ -138,14 +148,26 @@ class OutputEquivalenceTests(unittest.TestCase):
             changed = [rel for rel, data in from_wizard.items() if data != from_file[rel]]
             self.assertEqual(changed, [])
 
-    def generate(self, args, wyvern: Path, tmp_root: Path, *, stub_bin: Path):
-        env = {
-            "PATH": f"{stub_bin}{os.pathsep}/usr/bin:/bin:/usr/local/bin",
-            "SC_COMPOSE": str(stub_bin / "sc-compose"),
-            "WYVERN_BIN": str(wyvern),
-            "HOME": str(tmp_root),
-            "LANG": "C.UTF-8",
-        }
+    def generate(
+        self,
+        args,
+        wyvern: Path,
+        tmp_root: Path,
+        *,
+        pipeline_stub: Path | None,
+    ):
+        if pipeline_stub is not None:
+            env = {
+                "PATH": f"{pipeline_stub}{os.pathsep}/usr/bin:/bin:/usr/local/bin",
+                "SC_COMPOSE": str(pipeline_stub / "sc-compose"),
+                "WYVERN_BIN": str(wyvern),
+                "HOME": str(tmp_root),
+                "LANG": "C.UTF-8",
+            }
+        else:
+            env = os.environ.copy()
+            env["WYVERN_BIN"] = str(wyvern)
+            env.pop("SC_RUNTIME_RELEASE", None)
         try:
             return subprocess.run(
                 [sys.executable, str(DRIVER), *args],
