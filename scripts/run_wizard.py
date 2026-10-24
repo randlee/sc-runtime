@@ -194,10 +194,11 @@ def run_wyvern(wizard_json: Path, ui_root: Path, cwd: Path) -> str:
         if proc.returncode != 0:
             stderr_text = proc.stderr.decode("utf-8", errors="replace") if proc.stderr else ""
             detail = stderr_text.strip() or "(no stderr)"
+            log(f"wyvern exited with status {proc.returncode}: {detail}")
             raise WizardError(
                 f"wyvern exited with status {proc.returncode}: {detail}",
                 code="GEN.TOOL_MISSING",
-                cause=f"wyvern exited with status {proc.returncode}",
+                cause="wyvern exited with a non-zero status",
                 recovery="fix Wyvern or the wizard UI; cargo generate does not run",
             )
         return stdout_text
