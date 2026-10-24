@@ -49,7 +49,9 @@ cargo-generate placeholder: `cargo generate` receives it as `--name`.
 `postgres` and `both` stay in the schema enum so a later release can accept
 them. v0.1 refuses them with `GEN.DB_RESERVED` before it creates the
 destination. The reserved values are an annotation on the schema, not a list
-in the driver.
+in the driver. Plain `cargo generate` uses the same SQLite-only render:
+`template/cargo-generate.toml` lists `sqlite` as the only `db` choice, so a
+values file or prompt cannot select `postgres` or `both`.
 
 ## Entry modes
 
@@ -159,10 +161,14 @@ the independent proof. It is not a second owner of the pipeline.
 
 `cargo generate --path template` still builds a workspace without this driver
 and without a wizard. Placeholders supply `db`, `mcp`, and `licence`. The
-project name is `--name`.
+project name is `--name`. `db` accepts only `sqlite`.
 
 Limitations, stated honestly:
 
+- `postgres` and `both` stay in `wizard/answers.schema.json` for a later
+  store. The driver refuses them with `GEN.DB_RESERVED` before
+  `cargo generate`. Plain `cargo generate` rejects them because they are
+  not `db` choices. v0.1 does not render a Postgres store.
 - `AGENTS.md.j2` and `CLAUDE.md.j2` are excluded from Liquid and are copied
   byte-for-byte. They still contain Jinja delimiters and frontmatter until
   `sc-compose` renders them. The driver does that render and deletes the

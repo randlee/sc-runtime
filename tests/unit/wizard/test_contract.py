@@ -5,6 +5,7 @@ import json
 import os
 import re
 import subprocess
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -207,6 +208,14 @@ class WizardContractTests(unittest.TestCase):
         }
         hits = [path for path in (ROOT / "template").rglob("*") if path.name in banned]
         self.assertEqual(hits, [])
+
+    def test_cargo_generate_db_choices_are_sqlite_only(self):
+        schema = json.loads((WIZARD / "answers.schema.json").read_text(encoding="utf-8"))
+        cargo = tomllib.loads((ROOT / "template" / "cargo-generate.toml").read_text(encoding="utf-8"))
+        self.assertEqual(cargo["placeholders"]["db"]["choices"], ["sqlite"])
+        self.assertEqual(cargo["placeholders"]["db"]["default"], schema["properties"]["db"]["default"])
+        self.assertEqual(schema["properties"]["db"]["enum"], ["sqlite", "postgres", "both"])
+        self.assertEqual(schema["properties"]["db"]["x-v01-reserved"], ["postgres", "both"])
 
     def test_just_new_forwards_arguments(self):
         text = (ROOT / "Justfile").read_text(encoding="utf-8")

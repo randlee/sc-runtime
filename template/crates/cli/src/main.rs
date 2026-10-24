@@ -6,7 +6,16 @@ use std::process::ExitCode;
 async fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match cli::parse(&args) {
-        Ok(cli::Command::DaemonStart) => cli::exec_daemon(),
+        Ok(cli::Command::DaemonStart { json }) => {
+            let report = cli::exec_daemon(json);
+            if !report.stderr.is_empty() {
+                eprintln!("{}", report.stderr);
+            }
+            if !report.stdout.is_empty() {
+                println!("{}", report.stdout);
+            }
+            report.code
+        }
         Ok(command) => {
             let (code, text) = cli::execute(command).await;
             if !text.is_empty() {

@@ -14,4 +14,7 @@ Generated application notes for agents. Store: {{ db }}. MCP enabled: {{ mcp }}.
 Licence: {{ licence }}.
 
 Report-only commands do not start the daemon. `{{ project_name }} daemon start`
-execs the daemon binary. That command is not auto-start.
+execs the daemon binary. That command is not auto-start. When that exec fails,
+stderr is a coded `DAEMON.EXEC_FAILED` line. `--json` prints one envelope
+`{version, ok, data, error}` on stdout. A failure has `ok` false, `data`
+null, and a stable `error.code`.

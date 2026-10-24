@@ -6,7 +6,7 @@ exclude = ["AGENTS.md.j2", "CLAUDE.md.j2"]
 type = "string"
 prompt = "Database?"
 default = "sqlite"
-choices = ["sqlite", "postgres", "both"]
+choices = ["sqlite"]
 
 [placeholders.mcp]
 type = "bool"

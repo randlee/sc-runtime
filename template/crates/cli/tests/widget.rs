@@ -88,7 +88,7 @@ async fn assert_report_only(endpoint: &str) {
         "absent".into(),
     ];
     let command = cli::parse(&args).expect("parse");
-    assert!(!matches!(command, Command::DaemonStart));
+    assert!(!matches!(command, Command::DaemonStart { .. }));
     let (code, text) = cli::execute(command).await;
     assert_eq!(code, std::process::ExitCode::from(1));
     let body: Value = serde_json::from_str(&text).expect("json");
@@ -101,7 +101,7 @@ async fn assert_report_only(endpoint: &str) {
     );
     assert!(matches!(
         cli::parse(&["daemon".into(), "start".into()]).expect("start"),
-        Command::DaemonStart
+        Command::DaemonStart { json: false }
     ));
     let binary = cli::daemon_binary().expect("binary");
     assert!(

@@ -2,7 +2,7 @@
 
 use std::ffi::OsStr;
 use std::fmt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use api_types::{CreateWidget, GetWidget, WidgetId, WidgetName};
@@ -18,11 +18,23 @@ pub const APP_NAME: &str = "{{project-name}}";
 /// Stable code for argv that does not match a command.
 pub const CODE_USAGE: &str = "CLI.USAGE";
 
+/// Stable code when `daemon start` cannot exec the sibling daemon binary.
+pub const CODE_DAEMON_EXEC: &str = "DAEMON.EXEC_FAILED";
+
+/// Recovery line for [`CODE_DAEMON_EXEC`].
+const DAEMON_EXEC_RECOVERY: &str = "build the sibling daemon binary and run daemon start again";
+
+/// Envelope message for [`CODE_DAEMON_EXEC`].
+const DAEMON_EXEC_MESSAGE: &str = "the daemon binary could not be started";
+
 /// Parsed argv, excluding the program name.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Command {
     /// Exec the daemon binary. Report-only commands never produce this.
-    DaemonStart,
+    DaemonStart {
+        /// `--json` was present.
+        json: bool,
+    },
     /// `widget create`.
     WidgetCreate {
         /// Widget name.
@@ -177,7 +189,7 @@ pub fn parse(args: &[String]) -> Result<Command, ParseError> {
     let command = match parsed.command {
         CliCommand::Daemon {
             action: DaemonAction::Start,
-        } => Command::DaemonStart,
+        } => Command::DaemonStart { json },
         CliCommand::Widget {
             action: WidgetAction::Create { name },
         } => Command::WidgetCreate {
@@ -218,7 +230,7 @@ pub fn map_transport(error: &TransportError) -> OpError {
 /// JSON envelope when `--json` is set.
 pub async fn execute(command: Command) -> (ExitCode, String) {
     let (endpoint_flag, json, path, body) = match command {
-        Command::DaemonStart => {
+        Command::DaemonStart { .. } => {
             return (
                 ExitCode::from(1),
                 String::from("daemon start is not a report-only command"),
@@ -288,25 +300,157 @@ pub fn daemon_binary() -> Option<PathBuf> {
     Some(parent.join(format!("{APP_NAME}-daemon")))
 }
 
+/// Text a failed `daemon start` writes. Stdout is empty unless `--json` is set.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DaemonStartReport {
+    /// Process status. Failed exec is 1. A Windows wait that exits 0 is 0.
+    pub code: ExitCode,
+    /// Coded stderr line, without a trailing newline.
+    pub stderr: String,
+    /// JSON envelope when `--json` is set. Empty otherwise.
+    pub stdout: String,
+}
+
 /// Replaces this process with the daemon binary.
-pub fn exec_daemon() -> ExitCode {
-    let Some(path) = daemon_binary() else {
-        return ExitCode::from(1);
+///
+/// A missing sibling binary, or any exec that returns, sets
+/// [`DaemonStartReport::stderr`] to a [`CODE_DAEMON_EXEC`] line. `json` also
+/// fills [`DaemonStartReport::stdout`] with the failure envelope
+/// `{version, ok, data, error}`. The caller writes those strings.
+pub fn exec_daemon(json: bool) -> DaemonStartReport {
+    let path = match prepare_daemon_path() {
+        Ok(path) => path,
+        Err(error) => return error.report(json),
     };
-    let mut command = std::process::Command::new(path);
+    let mut command = std::process::Command::new(&path);
     #[cfg(unix)]
     {
         use std::os::unix::process::CommandExt;
-        let _ = command.exec();
-        ExitCode::from(1)
+        let io_error = command.exec();
+        DaemonExecError::io(&path, &io_error).report(json)
     }
     #[cfg(not(unix))]
     {
         match command.status() {
-            Ok(status) if status.success() => ExitCode::SUCCESS,
-            _ => ExitCode::from(1),
+            Ok(status) if status.success() => DaemonStartReport {
+                code: ExitCode::SUCCESS,
+                stderr: String::new(),
+                stdout: String::new(),
+            },
+            Ok(status) => DaemonExecError::status(&path, &status).report(json),
+            Err(error) => DaemonExecError::io(&path, &error).report(json),
         }
     }
+}
+
+/// Coded failure when `daemon start` does not replace this process.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct DaemonExecError {
+    code: &'static str,
+    cause: String,
+    recovery: &'static str,
+    path: String,
+}
+
+impl fmt::Display for DaemonExecError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "{} {} — {}",
+            self.code, self.cause, self.recovery
+        )
+    }
+}
+
+impl DaemonExecError {
+    fn unresolved() -> Self {
+        Self {
+            code: CODE_DAEMON_EXEC,
+            cause: "could not locate this executable or its directory".to_owned(),
+            recovery: DAEMON_EXEC_RECOVERY,
+            path: String::new(),
+        }
+    }
+
+    fn missing(path: &Path) -> Self {
+        Self {
+            code: CODE_DAEMON_EXEC,
+            cause: format!("daemon binary {} is missing", path.display()),
+            recovery: DAEMON_EXEC_RECOVERY,
+            path: path.display().to_string(),
+        }
+    }
+
+    fn io(path: &Path, error: &std::io::Error) -> Self {
+        Self {
+            code: CODE_DAEMON_EXEC,
+            cause: format!("could not exec {}: {error}", path.display()),
+            recovery: DAEMON_EXEC_RECOVERY,
+            path: path.display().to_string(),
+        }
+    }
+
+    #[cfg(not(unix))]
+    fn status(path: &Path, status: &std::process::ExitStatus) -> Self {
+        Self {
+            code: CODE_DAEMON_EXEC,
+            cause: format!("daemon binary {} exited {status}", path.display()),
+            recovery: DAEMON_EXEC_RECOVERY,
+            path: path.display().to_string(),
+        }
+    }
+
+    fn report(&self, json: bool) -> DaemonStartReport {
+        let stderr = self.to_string();
+        let stdout = if json {
+            self.envelope_json()
+        } else {
+            String::new()
+        };
+        DaemonStartReport {
+            code: ExitCode::from(1),
+            stderr,
+            stdout,
+        }
+    }
+
+    fn envelope_json(&self) -> String {
+        let operation = exec_operation(self);
+        let envelope: Envelope<Value> = Envelope::failure(operation);
+        serde_json::to_string(&envelope).unwrap_or_else(|_| "{}".to_owned())
+    }
+}
+
+fn prepare_daemon_path() -> Result<PathBuf, DaemonExecError> {
+    let Some(path) = daemon_binary() else {
+        return Err(DaemonExecError::unresolved());
+    };
+    if path.is_file() {
+        Ok(path)
+    } else {
+        Err(DaemonExecError::missing(&path))
+    }
+}
+
+fn exec_operation(error: &DaemonExecError) -> OpError {
+    let path = if error.path.is_empty() {
+        None
+    } else {
+        Some(error.path.as_str())
+    };
+    let value = serde_json::json!({
+        "kind": "unavailable",
+        "code": error.code,
+        "message": DAEMON_EXEC_MESSAGE,
+        "details": {
+            "path": path,
+            "cause": error.cause,
+        },
+        "suggested_action": error.recovery,
+    });
+    serde_json::from_value(value).unwrap_or_else(|_| {
+        OpError::from_transport_strings(error.code, &error.path, &error.cause, Some(error.recovery))
+    })
 }
 
 enum WidgetBody {
@@ -402,5 +546,63 @@ mod tests {
         let text = err.to_string();
         assert!(text.starts_with("CLI.USAGE "));
         assert!(text.contains('—'));
+    }
+
+    #[test]
+    fn daemon_start_records_json() {
+        let plain = parse(&["daemon".into(), "start".into()]).expect("parse");
+        assert_eq!(plain, Command::DaemonStart { json: false });
+        let json = parse(&["--json".into(), "daemon".into(), "start".into()]).expect("json");
+        assert_eq!(json, Command::DaemonStart { json: true });
+    }
+
+    #[test]
+    fn missing_sibling_daemon_is_coded() {
+        let path = PathBuf::from(format!("{APP_NAME}-daemon"));
+        let error = DaemonExecError::missing(&path);
+        let report = error.report(true);
+        assert_eq!(report.code, ExitCode::from(1));
+        assert!(report.stderr.starts_with(&format!("{CODE_DAEMON_EXEC} ")));
+        assert!(report.stderr.contains('—'));
+        assert!(report.stderr.contains(DAEMON_EXEC_RECOVERY));
+        assert!(report.stderr.contains(&path.display().to_string()));
+        let body: Value = serde_json::from_str(&report.stdout).expect("envelope");
+        assert_eq!(body["ok"], false);
+        assert!(body["data"].is_null());
+        assert_eq!(body["version"], "1");
+        assert_eq!(body["error"]["code"], CODE_DAEMON_EXEC);
+        assert_eq!(body["error"]["kind"], "unavailable");
+        assert_eq!(body["error"]["message"], DAEMON_EXEC_MESSAGE);
+        assert_eq!(body["error"]["suggested_action"], DAEMON_EXEC_RECOVERY);
+        assert_eq!(body["error"]["details"]["path"], path.display().to_string());
+        let plain = DaemonExecError::missing(&path).report(false);
+        assert!(plain.stdout.is_empty());
+        assert_eq!(plain.stderr, report.stderr);
+    }
+
+    #[test]
+    fn unresolved_daemon_path_has_null_path() {
+        let report = DaemonExecError::unresolved().report(true);
+        let body: Value = serde_json::from_str(&report.stdout).expect("envelope");
+        assert!(body["error"]["details"]["path"].is_null());
+        assert!(report.stderr.contains("could not locate this executable"));
+    }
+
+    #[test]
+    fn this_process_has_no_sibling_daemon() {
+        let error = prepare_daemon_path().expect_err("sibling daemon");
+        assert_eq!(error.code, CODE_DAEMON_EXEC);
+        assert!(error.cause.contains("is missing"));
+    }
+
+    #[test]
+    fn exec_io_error_names_the_path() {
+        let path = PathBuf::from("missing-daemon");
+        let io_error =
+            std::io::Error::new(std::io::ErrorKind::PermissionDenied, "permission denied");
+        let report = DaemonExecError::io(&path, &io_error).report(false);
+        assert!(report.stderr.contains("permission denied"));
+        assert!(report.stderr.contains("missing-daemon"));
+        assert!(report.stdout.is_empty());
     }
 }
