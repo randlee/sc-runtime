@@ -21,6 +21,9 @@ from pathlib import Path
 PROJECT_NAME_KEY = "project_name"
 CARGO_GENERATE_VERSION = "0.25.1"
 JSONSCHEMA_VERSION = "4.26.0"
+JSONSCHEMA_RECOVERY = (
+    "install jsonschema per requirements-generation.txt; cargo generate does not run"
+)
 
 SCHEMA_NAME = "wizard/answers.schema.json"
 RECIPES = ("setup", "lint", "test", "build-cli", "build-daemon")
@@ -134,7 +137,7 @@ def schema_accepts(schema: dict, answers: object) -> bool:
         fail(
             "GEN.TOOL_MISSING",
             "jsonschema is not installed",
-            f"pip install jsonschema=={JSONSCHEMA_VERSION}; cargo generate does not run",
+            JSONSCHEMA_RECOVERY,
         )
     try:
         jsonschema.Draft202012Validator(schema).validate(answers)

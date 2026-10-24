@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -83,6 +84,23 @@ class RunnerTests(unittest.TestCase):
         with self.assertRaises(self.runner.WizardError) as invalid_name:
             self.runner.validate_answers(named, self.schema)
         self.assertEqual(invalid_name.exception.code, "APP.INVALID_NAME")
+
+    def test_missing_jsonschema_recovery_matches_inventory(self):
+        real_import = __import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "jsonschema":
+                raise ImportError("no jsonschema")
+            return real_import(name, *args, **kwargs)
+
+        with mock.patch("builtins.__import__", side_effect=fake_import):
+            with self.assertRaises(self.runner.WizardError) as raised:
+                self.runner.validate_answers(self.fixture, self.schema)
+        self.assertEqual(raised.exception.code, "GEN.TOOL_MISSING")
+        self.assertEqual(
+            raised.exception.recovery,
+            "install jsonschema per requirements-generation.txt; cargo generate does not run",
+        )
 
     def test_missing_binary_names_wyvern_override_and_path(self):
         saved_path = os.environ.get("PATH")

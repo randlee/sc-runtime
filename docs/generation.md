@@ -29,6 +29,11 @@ or remove the partial destination.
 | reserved database | `GEN.DB_RESERVED` | db is postgres or both | set db to sqlite; the destination is not created |
 | invalid project name | `APP.INVALID_NAME` | name fails the project-name pattern in wizard/answers.schema.json | fix the name to that pattern; the destination is not created |
 | missing sc-compose | `GEN.TOOL_MISSING` | SC_COMPOSE unset and sc-compose not on PATH | set SC_COMPOSE or install sc-compose on PATH; cargo generate does not run |
+| bad SC_COMPOSE override | `GEN.TOOL_MISSING` | SC_COMPOSE does not point at an executable file | set SC_COMPOSE to the sc-compose binary; cargo generate does not run |
+| cargo missing | `GEN.TOOL_MISSING` | cargo is not on PATH | install cargo on PATH; later steps do not run |
+| wrong cargo-generate version | `GEN.TOOL_MISSING` | cargo-generate is not 0.25.1 | install cargo-generate 0.25.1; cargo generate does not run |
+| cargo-generate won't start | `GEN.TOOL_MISSING` | cargo generate could not start | install cargo-generate 0.25.1; cargo generate does not run |
+| tool missing on PATH | `GEN.TOOL_MISSING` | the tool name is not on PATH | install that tool on PATH; later steps do not run |
 | missing wyvern | `GEN.TOOL_MISSING` | WYVERN_BIN unset and wyvern not on PATH | set WYVERN_BIN or install wyvern on PATH; cargo generate does not run |
 | unresolved WYVERN_BIN | `GEN.TOOL_MISSING` | WYVERN_BIN is set but does not resolve to an executable | set WYVERN_BIN to the wyvern binary path; cargo generate does not run |
 | Wyvern runtime failure | `GEN.TOOL_MISSING` | wyvern exited with a non-zero status | fix Wyvern or the wizard UI; cargo generate does not run |
