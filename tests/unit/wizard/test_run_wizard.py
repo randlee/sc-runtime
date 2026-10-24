@@ -99,7 +99,7 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, "GEN.TOOL_MISSING")
         self.assertEqual(
             raised.exception.recovery,
-            "install jsonschema per requirements-generation.txt; cargo generate does not run",
+            "pip install jsonschema==4.26.0; cargo generate does not run",
         )
 
     def test_missing_binary_names_wyvern_override_and_path(self):

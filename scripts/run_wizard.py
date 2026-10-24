@@ -287,10 +287,7 @@ def validate_answers(answers: dict[str, Any], schema: dict[str, Any]) -> None:
             "jsonschema is not installed",
             code="GEN.TOOL_MISSING",
             cause="jsonschema is not installed",
-            recovery=(
-                "install jsonschema per requirements-generation.txt; "
-                "cargo generate does not run"
-            ),
+            recovery="pip install jsonschema==4.26.0; cargo generate does not run",
         ) from exc
 
     validator_cls = jsonschema.validators.validator_for(schema)
