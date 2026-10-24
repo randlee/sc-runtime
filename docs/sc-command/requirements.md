@@ -3,7 +3,7 @@
 **ID Range:** REQ-CMD-0001 through REQ-CMD-0006; NFR-CMD-0001 through NFR-CMD-0003  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-10-23  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -87,23 +87,27 @@ the original, in both the success case and the failure case. This includes
 the round-trip tests below need `PartialEq` and `Debug`. The same traits are
 required of `OpError` by [REQ-CMD-0002](requirements.md).)
 
-**OPEN:** The Rust type and the literal value of `version` are not decided
-(for example a string such as `"1"` or `"v1"`, or an integer). The design
-lists the key and nothing more. Until decided, tests assert only that the key
-is present and that the same value appears in the success and failure cases.
+The contract version is the JSON string `"1"`. Constructors stamp that
+value. Deserialization keeps the `version` string from the input, including
+a value other than `"1"`.
 
-**OPEN:** The Rust-side representation of `Envelope<T>` is not decided: a
-struct with public fields `data: Option<T>` and `error: Option<OpError>`, or
-an enum with a custom serde implementation, and which accessors a CLI uses to
-reach `data`. Only the JSON shape and the behaviour above are binding.
-Whichever representation is chosen MUST satisfy the discriminate-on-`ok`
-rule: a struct with `data: Option<T>` and a derived `Deserialize` does not,
-because it reads a success `data: null` as "no data".
+`Envelope<T>` is an enum `Success { version: String, data: T }` or
+`Failure { version: String, error: OpError }`, with a custom serde
+implementation. Accessors are `version`, `is_ok`, `data`, and `error`. A
+derived `Deserialize` on a struct of `Option` fields is not the
+representation, because it would read a success `data: null` as "no data".
 
-**OPEN:** Behaviour when deserialising an object whose `ok` disagrees with
-its content (`ok: true` with a non-null `error`, `ok: false` with a non-null
-`data`, or a missing key) is not decided: reject with a serde error, or
-accept and ignore the other key.
+Deserialization rejects an object whose `ok` disagrees with its content
+(`ok: true` with a non-null `error`, `ok: false` with a non-null `data`, or
+`ok: false` with a null `error`), a missing key, an unknown key, or a value
+of the wrong JSON type. The serde error includes the stable code
+`ENVELOPE.DISCRIMINANT`. The `version` string does not select a different
+key set. A value other than `"1"` is kept, and an unknown key is still
+rejected. A new envelope key is a new contract. Unknown fields inside
+`data` stay lossless ([REQ-CMD-0006](requirements.md)).
+
+`Envelope::into_result` consumes the envelope and returns `Result<T, OpError>`.
+It drops `version`.
 
 ### Rationale
 
@@ -143,6 +147,8 @@ sides agree on the shape at compile time.
    `Envelope<Sample>`).
 8. `cargo test -p sc-command` (default features) runs the tests above and
    exits 0.
+9. A unit test calls `into_result` on a success envelope and on a failure
+   envelope and asserts `Ok(T)` and `Err(OpError)`.
 
 ---
 
@@ -160,31 +166,35 @@ project's `service` crate therefore uses `sc-command` with default features;
 the generated workspace's crate graph, including how `service` and `daemon`
 obtain `sc-command`, is owned by [REQ-RUN-0301](../requirements.md).
 
-`OpError` MUST carry exactly these five fields. It MUST serialise to a JSON
+`OpError` MUST carry exactly these five wire keys. It MUST serialise to a JSON
 object whose keys are drawn from exactly these five names and no others. The
-keys `kind`, `code` and `message` MUST always be present. The keys `details`
-and `suggested_action` MUST be present whenever the field holds a value;
-whether they are present when the field is empty is an OPEN below. This item
-is the owner of which `OpError` keys are present on the wire; other items
-refer to "the keys defined by REQ-CMD-0002".
+keys `kind`, `code`, `message`, `details`, and `suggested_action` are always
+present. `details` and `suggested_action` are JSON `null` when the Rust field
+is empty. This item is the owner of which `OpError` keys are present on the
+wire; other items refer to "the keys defined by REQ-CMD-0002".
 
 | Field | Meaning | Type |
 |---|---|---|
 | `kind` | coarse error category; the HTTP status is derived from it | `sc_command::ErrorKind`, a public enum exported from the crate root (the type name `ErrorKind` is decided in this document) |
 | `code` | stable machine-readable code that automation branches on, for example `DAEMON.NOT_RUNNING` | `sc_observability_types::ErrorCode` |
 | `message` | human-readable summary | `String` |
-| `details` | structured machine-readable context | see OPEN below |
-| `suggested_action` | what the caller can do to recover, for example `run <app> daemon start` | Rust type: see OPEN below; on the wire a JSON string |
+| `details` | structured machine-readable context | `Option<serde_json::Value>`; JSON `null` when absent |
+| `suggested_action` | wire name for remediation | Rust field `remediation: Option<sc_observability_types::Remediation>`; on the wire a JSON string, or JSON `null` when absent |
 
 `OpError` and `ErrorKind` MUST implement `serde::Serialize` and
 `serde::Deserialize`, because the CLI parses errors it receives from the
-daemon. `OpError` and `ErrorKind` MUST also implement `Debug`, `Clone` and
-`PartialEq`. (The three extra traits are decided in this document; the
-round-trip tests need them, and `sc_observability_types::ErrorCode` already
-implements all three.)
+daemon. `OpError` and `ErrorKind` MUST also implement `Debug`, `Clone`,
+`PartialEq`, and `Display`. `OpError` MUST implement `std::error::Error`.
+`Display` for `OpError` is `{code}: {message}`. `Display` for `ErrorKind`
+is its wire spelling. There is no `From<anyhow::Error>` and no constructor
+from `Box<dyn Error>`. (The comparison traits are decided in this document;
+the round-trip tests need them, and `sc_observability_types::ErrorCode`
+already implements them. `Display` and `std::error::Error` let a consumer
+use `?` without a local wrapper.)
 
 `code` MUST be the type `ErrorCode` from the published crate
-`sc-observability-types` (1.2 series). `sc-command` MUST NOT define its own
+`sc-observability-types` at caret `1.5.0`, the tested minimum sprint a-1
+recorded. `sc-command` MUST NOT define its own
 error-code type. `ErrorCode` is a newtype over a string and serialises as a
 JSON string, so `code` appears on the wire as, for example,
 `"DAEMON.NOT_RUNNING"`.
@@ -202,38 +212,42 @@ carries, or is built from, structured remediation, that structure MUST be
 
 Whatever type is chosen for `details` MUST be able to hold arbitrary JSON and
 return it unchanged when re-serialised
-([REQ-CMD-0006](requirements.md) depends on this).
+([REQ-CMD-0006](requirements.md) depends on this). Serialising
+`Remediation::NotRecoverable` is the one projection that inserts
+`justification` into the wire `details` value.
 
-**OPEN:** The set of `ErrorKind` variants and their serialised spellings is
-not decided. The design names the field `kind` and gives no values.
+`ErrorKind` variants and their wire spellings are `invalid_input`,
+`not_found`, `conflict`, `unavailable`, and `internal`. The enum is
+`#[non_exhaustive]`. An unrecognised `kind` string fails deserialization.
+HTTP status is 400, 404, 409, 503, and 500 in that order, and that mapping
+lives in `ErrorKind::http_status_code` only. `details` is
+`Option<serde_json::Value>` and is JSON `null` when absent. The Rust field
+behind wire `suggested_action` is
+`Option<sc_observability_types::Remediation>`. `None` serialises as JSON
+`null`. `Remediation::Recoverable` serialises as a JSON string equal to the
+first recovery step when that step is non-empty. Later steps are not on the
+wire. An empty step list, an empty first step, and
+`Remediation::NotRecoverable` serialise `suggested_action` as JSON `null`,
+never as `""`. A not-recoverable justification is copied into wire `details`
+under `justification` and is not an instruction on `suggested_action`.
+Deserialising a non-empty string builds a one-step `Recoverable`.
+Deserialising `null` or `""` builds `None`. Multi-step lists and
+`NotRecoverable` do not round-trip as the same Rust value. The tagged
+`Remediation` object is not the wire form. `OpError` does not convert to or
+from `sc_observability_types::Diagnostic`. `ErrorKind` is defined in
+`sc-command`. `sc-observability-types` 1.5.0 has no `ErrorKind`, `OpError`,
+or `suggested_action`. The dependency requirement is the caret `1.5.0`
+(tested minimum).
 
-**OPEN:** The type of `details` is not decided (for example
-`serde_json::Map<String, serde_json::Value>`, `serde_json::Value`, or an
-`Option` of either), nor whether an empty `details` serialises as `{}`,
-`null`, or is omitted.
-
-**OPEN:** The Rust type of `suggested_action` is not decided. It is
-constrained to a type that serialises as a JSON string (see above).
-`sc-observability-types` 1.2.0 has no type or field named
-`suggested_action`; its remediation types are the enum `Remediation`
-(variants `Recoverable { steps: RecoverableSteps }` and
-`NotRecoverable { justification: String }`) and the struct
-`RecoverableSteps`. `Remediation` serialises as a JSON object tagged with
-`kind`, so it cannot itself be the field's serialised form. The options are
-a `String`, an `Option<String>`, or a type of `sc-command` holding a
-`Remediation` whose `Serialize` writes a string (for example the text of
-`RecoverableSteps::first_step()`); which one is undecided.
-
-**OPEN:** What `suggested_action` serialises to when there is no suggestion
-is not decided: the key present with value `null`, or the key omitted. The
-same question for an empty `details` is in the OPEN above. Until both are
-decided no test may assert either form.
-
-**OPEN:** Which further `sc-observability-types` types `OpError` uses beyond
-`ErrorCode` is not decided: in particular whether `OpError` converts to or
-from `sc_observability_types::Diagnostic` (fields `timestamp`, `code`,
-`message`, `cause`, `remediation`, `docs`, `details`).
-`sc-observability-types` 1.2.0 contains no `ErrorKind` and no `OpError`.
+`OpError::from_transport_strings` maps the plain strings `code`, `endpoint`,
+`cause`, and `suggested_action` into this type without a dependency on
+`sc-transport`. The code `DAEMON.NOT_RUNNING` selects
+`ErrorKind::Unavailable` and the message `the daemon is not running`. Any
+other code selects `ErrorKind::Internal` and the message
+`transport failure {code} at {endpoint}: {cause}`. `suggested_action` is the
+caller's already-rendered recovery text. `None`, or text that is empty after
+trimming, leaves remediation unset. The crate does not emit a placeholder
+application name. `endpoint` and `cause` are stored in `details`.
 
 ### Rationale
 
@@ -271,12 +285,11 @@ act on.
    `ErrorCode`, `Remediation` or `RecoverableSteps`.
 7. A unit test constructs an `OpError` with no details and no suggestion,
    serialises it, and asserts: the keys `kind`, `code` and `message` are
-   present; every key of the object is one of the five names. Once the two
-   OPEN items on the empty forms are decided: the same test also asserts
-   the decided form of `details` and of `suggested_action`.
+   present; every key of the object is one of the five names; `details` is
+   JSON `null`; `suggested_action` is JSON `null`.
 8. A compile-time check in a test requires
-   `OpError: Debug + Clone + PartialEq` and
-   `ErrorKind: Debug + Clone + PartialEq`.
+   `OpError: Debug + Clone + PartialEq + Display + std::error::Error` and
+   `ErrorKind: Debug + Clone + PartialEq + Display`.
 
 ---
 
@@ -365,25 +378,24 @@ specify the mapping.
 | Envelope | HTTP status |
 |---|---|
 | success case (`ok` is `true`) | `200 OK` |
-| failure case, `error.kind` is a caller-error kind | a `4xx` status |
-| failure case, `error.kind` is an internal-error kind | a `5xx` status |
+| failure, `ErrorKind::InvalidInput` | `400 Bad Request` (caller error) |
+| failure, `ErrorKind::NotFound` | `404 Not Found` (caller error) |
+| failure, `ErrorKind::Conflict` | `409 Conflict` (caller error) |
+| failure, `ErrorKind::Unavailable` | `503 Service Unavailable` (internal error) |
+| failure, `ErrorKind::Internal` | `500 Internal Server Error` (internal error) |
 
 `error.kind` is the `ErrorKind` field of `OpError`
 ([REQ-CMD-0002](requirements.md)). The status MUST be a pure function of
 `kind`: two errors with the same `kind` get the same status whatever their
-`code`.
+`code`. The first three kinds are caller errors. `Unavailable` and
+`Internal` are internal errors.
+
+When serialising `T` fails, `into_response` MUST return HTTP 500 with a JSON
+envelope whose `error.code` is `ENVELOPE.SERIALIZATION`. It MUST NOT panic
+([NFR-CMD-0003](requirements.md)).
 
 When the `server` feature is disabled this implementation MUST NOT exist and
 the crate MUST NOT reference axum.
-
-**OPEN:** The per-kind table (each `ErrorKind` variant to one exact status
-code, and which variants count as caller errors and which as internal
-errors) is not decided. It cannot be written until the `ErrorKind` variants
-are decided (open item in [REQ-CMD-0002](requirements.md)).
-
-**OPEN:** The response produced when serialising `T` fails is not decided.
-The binding part is that `into_response` returns a response and does not
-panic ([NFR-CMD-0003](requirements.md)).
 
 ### Rationale
 
@@ -429,11 +441,18 @@ pub trait IntoMcp {
 }
 ```
 
-`CallToolResult` is rmcp's tool-result type and `McpError` is the error type
-an rmcp `#[tool]` function returns, so that a tool declared
-`-> Result<CallToolResult, McpError>` can return `into_mcp()` directly. The
-trait name `IntoMcp` is decided in this document; the design fixes only the
-method name `into_mcp()` and its use on a `Result<T, OpError>`.
+`CallToolResult` is `rmcp::model::CallToolResult` from rmcp 3.7. `McpError`
+is `rmcp::ErrorData`, which tool handlers import under that name and which
+`sc-command` re-exports as `sc_command::McpError`. The error flag is
+`is_error`. A tool declared `-> Result<CallToolResult, McpError>` can return
+`into_mcp()` directly. The trait name `IntoMcp` is decided in this document;
+the design fixes only the method name `into_mcp()` and its use on a
+`Result<T, OpError>`.
+
+`IntoMcp` is sealed by a private supertrait and also requires `Sized`. The
+only implementation is `Result<T, OpError>`. `into_mcp` takes `self` by
+value. Dispatch is static. `dyn IntoMcp` is not a supported API. A downstream
+crate can call the method and cannot implement the trait.
 
 The error type of this signature is rmcp's, not an error enum of
 `sc-command`, because rmcp dictates the signature of a `#[tool]` function.
@@ -441,12 +460,6 @@ This is the recorded exception to the repository rule that a fallible public
 function returns the crate's own typed error enum
 ([NFR-RUN-0009](../requirements.md), restated for this crate in
 [NFR-CMD-0003](requirements.md)).
-
-**OPEN:** The exact rmcp paths of the two types (in recent rmcp releases
-`rmcp::model::CallToolResult` and `rmcp::ErrorData`, the latter
-conventionally imported as `McpError`) and the name of the error flag on
-`CallToolResult` (written `is_error` below) MUST be confirmed against the
-rmcp 3.x minor version the workspace pins; the design does not state them.
 
 `into_mcp()` MUST first form the same envelope that
 `Envelope::<T>::from(result)` produces (JSON keys `version`, `ok`, `data`,
@@ -468,17 +481,18 @@ The envelope JSON delivered through MCP MUST equal, as a JSON value, the
 body the axum conversion produces for the same `Result<T, OpError>`
 ([REQ-CMD-0004](requirements.md)).
 
+The envelope is carried as both one text content item holding the JSON
+string and as `structured_content`. Success uses `CallToolResult::structured`,
+so `is_error` is `Some(false)`. Failure uses
+`CallToolResult::structured_error`, so `is_error` is `Some(true)`.
+
+`into_mcp()` returns `Err(McpError)` only when serialising the envelope
+fails. That error is `ErrorData::internal_error`, and its data carries the
+code `ENVELOPE.SERIALIZATION`. An `OpError` is not this `Err`. The function
+MUST NOT panic ([NFR-CMD-0003](requirements.md)).
+
 When the `server` feature is disabled the trait MUST NOT exist and the crate
 MUST NOT reference rmcp.
-
-**OPEN:** How the envelope is carried inside `CallToolResult` is not
-decided: as one text content item holding the JSON string, as
-`structured_content`, or both.
-
-**OPEN:** The condition under which `into_mcp()` returns
-`Err(McpError)` is not decided (the only candidate is failure to
-serialise `T`), nor which rmcp error code it would use. The binding part is
-that it does not panic ([NFR-CMD-0003](requirements.md)).
 
 ### Rationale
 
@@ -492,9 +506,8 @@ client sees, which the product requires of every surface
 ### Success Criteria
 
 In criteria 1 to 3, "the envelope JSON extracted from the `CallToolResult`"
-means the envelope read from wherever the OPEN above on how the envelope is
-carried places it; until that OPEN is decided the tests read it through one
-helper function so that only the helper changes.
+means the JSON value in `structured_content`. The text content item holds
+the same JSON as a string.
 
 1. A test compiled with `--features server` calls
    `Ok::<Sample, OpError>(sample).into_mcp()` and asserts: the result is
@@ -556,7 +569,10 @@ A CLI's `--json` flag prints the envelope it received from the daemon
 unchanged. If the round-trip through `Envelope` lost or rewrote anything, the
 CLI's output would differ from the API's for the same call, and an agent
 could not treat the two as interchangeable. The risk is greatest when the
-daemon is newer than the CLI and sends fields the CLI does not know.
+daemon is newer than the CLI and sends payload fields the CLI does not
+know. Those fields are inside `data` and `details`. An unknown key of the
+envelope object or of the error object is rejected by
+[REQ-CMD-0001](requirements.md). Adding such a key is a new contract.
 
 ### Success Criteria
 
@@ -594,10 +610,12 @@ list.
 
 With default features the crate MUST compile and MUST provide `Envelope<T>`,
 `OpError`, `ErrorKind` and `From<Result<T, OpError>> for Envelope<T>`. With
-default features the crate's direct non-dev dependencies MUST be `serde` and
-`sc-observability-types`, plus `serde_json` only if the OPEN below is
-resolved that way. With `--features server` the direct non-dev dependencies
-MUST be those plus `axum` and `rmcp`, and nothing else.
+default features the crate's direct non-dev dependencies MUST be `serde`,
+`serde_json`, and `sc-observability-types` at caret `1.5.0` (tested minimum).
+`serde_json` is required because `details` holds arbitrary JSON. With
+`--features server` the direct non-dev dependencies MUST be those plus
+`axum` 0.8.9 and `rmcp` `~3.7`, and nothing else. `axum` MUST be declared
+with `default-features = false`.
 
 This item is the owner of the list of third-party crates `sc-command` may
 depend on. The repository-level boundary table
@@ -613,14 +631,6 @@ gated by `#[cfg(feature = "server")]`.
 
 Dev-dependencies are outside this rule: tests of the `server` feature may
 use axum and rmcp.
-
-**OPEN:** Whether `serde_json` may also be a direct default dependency is
-not decided. The design lists only `serde` and `sc-observability-types`, but
-a `details` field holding arbitrary JSON (open item in
-[REQ-CMD-0002](requirements.md)) would need it. `sc-observability-types`
-1.2.0 itself depends on `serde_json`, so it is in the dependency tree either
-way. The same applies under `server`: `into_response` and `into_mcp` both
-produce JSON.
 
 ### Rationale
 
@@ -647,10 +657,9 @@ daemon and the CLI share one crate.
    call cargo directly.
 7. `cargo tree -p sc-command -e normal --depth 1 --prefix none` (default
    features) prints, below the `sc-command` root line, exactly one line
-   beginning with `serde ` and one beginning with `sc-observability-types `,
-   and no other line. Once the `serde_json` OPEN is decided in favour of a
-   direct dependency: one further line beginning with `serde_json ` is
-   allowed.
+   beginning with `serde `, one beginning with `serde_json `, and one
+   beginning with `sc-observability-types `, and no other line. The
+   `sc-observability-types ` line is version 1.5.0.
 8. The same command with `--features server` prints the lines of criterion
    7 plus exactly one line beginning with `axum ` and one beginning with
    `rmcp `, and no other line.
@@ -666,7 +675,8 @@ daemon and the CLI share one crate.
 `sc-command` MUST NOT depend on any other crate of this workspace:
 `sc-config`, `sc-transport` or `sc-runtime`.
 
-`sc-command` MUST depend on the published crate `sc-observability-types`.
+`sc-command` MUST depend on the published crate `sc-observability-types`
+at caret `1.5.0`, the tested minimum.
 
 `sc-command` MUST NOT depend, directly or transitively, on the crate
 `sc-observability` (the logging runtime) or on its OTel export crate
@@ -674,17 +684,22 @@ daemon and the CLI share one crate.
 
 These rules apply to every feature combination, including `server`.
 
-The five forbidden crates are therefore `sc-config`, `sc-transport`,
-`sc-runtime`, `sc-observability` and `sc-observability-otlp`. The boundary
-manifest under `boundaries/sc-command/` that encodes them as
-`forbidden_edges` entries of the form `"sc-command -> <crate>"`, and the
-`sc-lint-boundary` check run by `just lint`, are owned by
-[REQ-RUN-0005](../requirements.md), whose table lists the same five crates
-for `sc-command`. `sc-lint-boundary` checks inter-crate edges and the public
-facade list only; it has no cargo-feature key, so the feature-conditional
-dependencies on axum and rmcp are checked with `cargo tree`
-([NFR-CMD-0001](requirements.md)). The third-party crates `sc-command` may
-depend on are listed in [NFR-CMD-0001](requirements.md).
+`cargo tree` enforces the logging crates and the sibling crates.
+`sc-observability-types` is an allowed dependency and is not a forbidden
+edge. The boundary manifest's `forbidden_edges` names the workspace-member
+anchors `sc-observability` and `sc-observability-otlp` only. sc-lint 0.8.0
+rejects a forbidden edge whose target is not a workspace member, so those
+two names are `publish = false` packages under
+`crates/sc-command/lint-edge/`. `sc-command` does not depend on them.
+`sc-config` and `sc-transport` are not workspace members in this sprint, so
+they are not `forbidden_edges` entries; Cargo.toml inspection and
+`cargo tree` enforce them. `allowed_dependents` is `sc-runtime` only. The
+`lint-edge/sc-runtime` package exists so that dependent is not stale, and
+sprint a-5 deletes it when `crates/sc-runtime` lands. The third-party crates
+`sc-command` may depend on are listed in [NFR-CMD-0001](requirements.md).
+`sc-lint lint sc-boundary` checks inter-crate edges and the public facade
+list only; it has no cargo-feature key, so the feature-conditional
+dependencies on axum and rmcp are checked with `cargo tree`.
 
 ### Rationale
 
@@ -714,8 +729,9 @@ error code and remediation types are defined there
    `sc-observability-types `.
 3. `cargo tree -p sc-command -e normal --prefix none --features server`
    gives the same result as criterion 2.
-4. The manifest and `just lint` criteria for this crate are those of
-   [REQ-RUN-0005](../requirements.md); this item adds none.
+4. This sprint's boundary check is `sc-lint lint sc-boundary --root .` on
+   `boundaries/sc-command/sc-command.toml`. Root `just lint` across all four
+   manifests stays with sprint a-5.
 
 ---
 
@@ -740,10 +756,9 @@ allowance for a commented exception. Test code (`#[cfg(test)]` modules and
 `sc-command`-specific points below.
 
 A failure inside a conversion, in particular a `T` whose `Serialize`
-implementation returns an error, MUST surface as a returned value: an HTTP
-response from `into_response`, and a returned `Result` from `into_mcp`.
-(Which response and which result are open items recorded in
-[REQ-CMD-0004](requirements.md) and [REQ-CMD-0005](requirements.md).)
+implementation returns an error, MUST surface as a returned value: HTTP 500
+with code `ENVELOPE.SERIALIZATION` from `into_response`, and
+`Err(McpError)` from `into_mcp`.
 
 The same repository rule requires a fallible public function to return
 `Result<T, E>` where `E` is a typed error enum owned by the crate
@@ -752,16 +767,13 @@ crates). It applies to errors a crate itself originates, and it is decided
 in this document for `sc-command` (the design states it for `sc-config`
 only). Two `sc-command` signatures are the recorded exception, because a
 third-party crate dictates them: `sc_command::IntoMcp::into_mcp` returns
-`Result<CallToolResult, McpError>` with rmcp's `McpError`, which is what an
-rmcp `#[tool]` function must return; and axum's
-`IntoResponse::into_response` is infallible. `into_mcp` is the only fallible
-public function this document requires of `sc-command`.
-
-**OPEN:** Whether `sc-command` needs a typed error enum of its own is not
-decided. No function required by [REQ-CMD-0001](requirements.md) through
-[REQ-CMD-0006](requirements.md) originates an error other than through
-serde or rmcp. If a later public function does, it MUST return an enum owned
-by `sc-command`, whose name is undecided.
+`Result<CallToolResult, McpError>` with rmcp's `ErrorData` (imported as
+`McpError`), which is what an rmcp `#[tool]` function must return; and
+axum's `IntoResponse::into_response` is infallible. `into_mcp` is the only
+fallible public function this document requires of `sc-command`. v0.1 does
+not add an `sc-command` error enum. No function required by
+[REQ-CMD-0001](requirements.md) through [REQ-CMD-0006](requirements.md)
+originates an error other than through serde or rmcp.
 
 ### Rationale
 

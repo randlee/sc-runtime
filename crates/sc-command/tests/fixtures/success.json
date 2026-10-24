@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "ok": true,
+  "data": {
+    "name": "sample",
+    "meta": { "nested": true },
+    "tags": ["a", "b"]
+  },
+  "error": null
+}

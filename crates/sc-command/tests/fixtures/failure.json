@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "ok": false,
+  "data": null,
+  "error": {
+    "kind": "not_found",
+    "code": "SAMPLE.MISSING",
+    "message": "sample is missing",
+    "details": {
+      "path": { "id": "s1" },
+      "attempts": [1, 2]
+    },
+    "suggested_action": "check the id"
+  }
+}
