@@ -35,7 +35,11 @@
     "dev_task_id": "dev-a-1-1",
     "pr_number": 30,
     "pr_url": "https://github.com/randlee/sc-runtime/pull/30",
-    "status": "dev_in_progress"
+    "status": "dev_complete",
+    "dev_commit": "00d1a99930b29f99d72e585419c343cb92fad52d",
+    "evidence_commit": "3bc47b63b31ce8129267f6929646796a3f0db37d",
+    "qa_pass": "qa-a-1-1",
+    "status_qa": "qa_in_progress"
   },
   "sprint_queue": ["a-2", "a-3", "a-4", "a-5", "a-6", "a-7", "a-8"]
 }
