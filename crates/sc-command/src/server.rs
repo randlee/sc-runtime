@@ -59,7 +59,6 @@ mod seal {
 /// ```compile_fail
 /// fn refuses_dyn(_: &dyn sc_command::IntoMcp) {}
 /// ```
-#[allow(private_bounds)]
 pub trait IntoMcp: seal::Seal + Sized {
     /// Converts this result into an rmcp tool result that carries the envelope.
     ///
