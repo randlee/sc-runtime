@@ -20,10 +20,20 @@
       "next_action": "triage_and_fix"
     }
   ],
-  "next_sprint": {
+  "goal": {
+    "objective": "complete phase-a sprints a-1..a-8 via cursor-orchestration",
+    "developer_model": "grok-4.7-high-fast",
+    "qa_model_rotation": ["cursor-grok-4.6-high-fast", "composer-2.5-fast", "claude-sonnet-5-5-high", "gpt-5.6-terra-medium", "kimi-k3-max"]
+  },
+  "current_sprint": {
     "id": "a-1",
     "branch": "sprint/a-1-compatibility-spike",
     "sprint_doc": "docs/plans/phase-a/sprint-a-1-compatibility-spike.md",
-    "blocked_until": "plan PR #28 QA PASS and merge to develop"
-  }
+    "worktree_path": "sc-runtime-worktrees/sprint/a-1-compatibility-spike",
+    "pr_target": "integrate/phase-a",
+    "bead": "run-a-1",
+    "dev_task_id": "dev-a-1-1",
+    "status": "dev_in_progress"
+  },
+  "sprint_queue": ["a-2", "a-3", "a-4", "a-5", "a-6", "a-7", "a-8"]
 }
