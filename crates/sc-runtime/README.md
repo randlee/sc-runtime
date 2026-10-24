@@ -8,8 +8,11 @@ one router, and one listener. The application loads configuration before
 on `sc-config`.
 
 `run` is available only after `stores` and `routes`. `mcp` is optional.
-Inside `run` the order is lock, stores, routes and optional MCP, then bind.
-SIGINT and SIGTERM shut the listener down and return `Ok(())`.
+Inside `run` the order is signals, lock, stores, routes and optional MCP,
+then bind. On Windows, Ctrl-C is registered and polled before the lock.
+SIGINT, SIGTERM, and Windows Ctrl-C stop accepting connections, drain
+in-flight requests up to a bound, and return `Ok(())`. Each request has a
+handler timeout.
 
 ```rust,no_run
 use sc_runtime::{Daemon, DaemonConfig};
