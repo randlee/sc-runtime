@@ -423,10 +423,21 @@ state it.
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `tokio` |
-   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
+
+`sc-observability-types` is an allowed dependency of `sc-command` only.
+`sc-config` and `sc-transport` list it in `forbidden_edges` as its own string,
+distinct from `sc-observability` and `sc-observability-otlp`. `sc-runtime`
+does not list that crate in `forbidden_edges`. sc-lint 0.8.0 cannot fail a
+crates.io edge, so the `sc-runtime` rule is `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`
+printing no line beginning with `sc-observability-types `. A transitive line
+through `sc-command` is allowed. `allowed_dependents` is empty for
+`sc-config` and `sc-runtime`, and `sc-runtime` only for `sc-transport` and
+`sc-command`. The `sc-runtime` → `sc-config` MAY is not an
+`allowed_dependents` entry. The measurement is the sprint a-1 evidence record.
 
 4. This item does not list the third-party crates each crate may depend on.
    Each list is owned by that crate's own requirement, and the manifest's
@@ -479,7 +490,10 @@ built in parallel without touching each other.
 2. Each manifest's `forbidden_edges` holds one `"<crate> -> <name>"` string
    for every name in the crate's "Forbidden edges" cell above, and no
    manifest of `sc-config`, `sc-transport` or `sc-command` lists another
-   workspace crate under `allowed_dependencies`.
+   workspace crate under `allowed_dependencies`. `allowed_dependents` is
+   empty for `sc-config` and for `sc-runtime`, and is `sc-runtime` only for
+   `sc-transport` and `sc-command`. The open `sc-runtime` → `sc-config` MAY
+   is not copied into `allowed_dependents`.
 3. `just lint` invokes `sc-lint-boundary` (inspect the recipe) and exits 0 on
    the default branch.
 4. Negative check: adding `sc-transport` as a dependency of `sc-command` in a
@@ -489,7 +503,15 @@ built in parallel without touching each other.
    `cargo tree -p <crate> -e normal --prefix none` prints no line beginning
    with `<name> ` (the name followed by a space) for any `<name>` in that
    crate's "Forbidden edges" cell. For `sc-transport` and `sc-command` the
-   same holds with `--features server` added.
+   same holds with `--features server` added. For `sc-runtime`,
+   `sc-observability-types` is not in that cell. `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`
+   prints no line beginning with `sc-observability-types `. The same command
+   without `--depth 1` may print that line when the crate arrives through
+   `sc-command`. A direct `sc-runtime` dependency on
+   `sc-observability-types` fails the depth-1 command. Sprint a-1 moved this
+   rule off the manifest because sc-lint 0.8.0 does not report a crates.io
+   forbidden edge. The measurement is the sprint a-1 evidence record in
+   `docs/architecture.md`.
 6. The table in obligation 3, the crate dependency table of
    [ADR-RUN-0003](architecture.md) and the crate graph section of
    `docs/architecture.md` name the same workspace edges and the same
@@ -596,16 +618,18 @@ The spike sprint MUST also record the exact version used for each of `axum`,
 
 All evidence and version pins MUST be written into `docs/architecture.md`.
 
-Only two ADRs are `Proposed`, and each holds nothing but unverified facts:
+ADR-RUN-0203 and ADR-RUN-0402 were the two `Proposed` ADRs, and each held
+nothing but unverified facts. Sprint a-1 made both `Active`:
 
 | ADR | Holds | Rests on rows |
 |---|---|---|
 | [ADR-RUN-0203](architecture.md) | that the pinned `rmcp`, `utoipa-axum` and `axum` versions coexist, and that one struct is both the `Parameters<T>` input and a `ToSchema` type; the version pins | V1, V2 |
 | [ADR-RUN-0402](architecture.md) | the `cargo-generate` mechanics: conditional `ignore`, `exclude`, the non-interactive values file, the `cargo-generate.toml` syntax and the `cargo-generate` version pin | V3a, V3b, V4a, V4b |
 
-Both MUST be moved from `Proposed` to `Active` when the spike sprint closes.
-Where the spike finds a fact false, that ADR MUST be amended to what was
-found before it is made `Active`.
+Sprint a-1 moved both from `Proposed` to `Active`. Every row was true, so the
+Decision text did not have to be replaced by a different mechanism. The
+working cargo-generate syntax, including the array-`default` constraint, is
+recorded in ADR-RUN-0402.
 
 The shape decisions do not wait for the spike and are already `Active`:
 [ADR-RUN-0202](architecture.md) (REST, OpenAPI and MCP on one `axum` router
@@ -746,9 +770,8 @@ the template's example operation `widget.create`.
    Which derives the struct carries, and that the same struct is the rmcp
    `Parameters<T>` input, is conditional on
    [ADR-RUN-0203](architecture.md) (spike row V2 of
-   [REQ-RUN-0102](requirements.md)), which stays Proposed until the spike
-   proves it. If V2 is false, these clauses are amended in the same change to
-   what the spike found. The rule that every surface calls one service
+   [REQ-RUN-0102](requirements.md)). Sprint a-1 made that ADR Active and
+   proved V2, so these clauses stand. The rule that every surface calls one service
    function does not depend on it.
 
 3. REST handlers, MCP tools and CLI commands MUST NOT contain SQL, MUST NOT
@@ -1476,9 +1499,8 @@ wired through all three surfaces:
 Which derives the struct carries, and that the same struct is the rmcp
 `Parameters<T>` input, is conditional on
 [ADR-RUN-0203](architecture.md) (spike row V2 of
-[REQ-RUN-0102](requirements.md)), which stays Proposed until the spike
-proves it. If V2 is false, these clauses are amended in the same change to
-what the spike found. The rule that every surface calls one service
+[REQ-RUN-0102](requirements.md)). Sprint a-1 made that ADR Active and
+proved V2, so these clauses stand. The rule that every surface calls one service
 function does not depend on it.
 
 1. Every handler, tool and command MUST call the service function and
@@ -1572,8 +1594,8 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
 3. An option MUST include or exclude whole files through a conditional
    `ignore` list in `template/cargo-generate.toml`. With `mcp` equal to
    `false`, `crates/daemon/src/mcp.rs` is ignored. The `ignore` mechanism
-   and its syntax are conditional on [ADR-RUN-0402](architecture.md), which
-   stays Proposed until the spike has verified them.
+   and its syntax are recorded in [ADR-RUN-0402](architecture.md), which
+   sprint a-1 made Active.
 4. Differences inside a file MUST stay within the limit set by
    [REQ-RUN-0304](requirements.md): fewer than ten conditional lines across
    all template `.rs` files.
@@ -1671,8 +1693,7 @@ language. Liquid control tags are written `{% ... %}` (for example
    including or excluding a whole file through a conditional `ignore` list
    in `template/cargo-generate.toml` (for example
    `crates/daemon/src/mcp.rs`). The `ignore` mechanism is conditional on
-   [ADR-RUN-0402](architecture.md), which stays Proposed until the spike has
-   verified it.
+   [ADR-RUN-0402](architecture.md), which sprint a-1 made Active.
 4. Liquid control tags MUST NOT be used to vary the body of a function, a
    handler, a query or a test in a `.rs` file.
 5. Value substitutions `{{ ... }}`, such as the project name, are not
@@ -1713,8 +1734,8 @@ the set of fixtures CI already generates and tests.
 2. Both files MUST be listed under `exclude` in
    `template/cargo-generate.toml`. `exclude` makes `cargo-generate` copy a
    file into the generated project byte-for-byte without Liquid rendering.
-   That behaviour is conditional on [ADR-RUN-0402](architecture.md), which
-   stays Proposed until the spike has verified it.
+   That behaviour is recorded in [ADR-RUN-0402](architecture.md), which
+   sprint a-1 made Active.
 3. After `cargo generate` finishes, the generation driver
    `scripts/new_project.py` MUST run `sc-compose` on the two copied `.j2`
    files, giving it the same answers JSON that drove `cargo generate`, to
@@ -1794,10 +1815,11 @@ keeps `AGENTS.md.j2` and `CLAUDE.md.j2` unrendered and has no `AGENTS.md` or
 **OPEN:** the default values of the options are not decided, so which variant
 "every default" produces is not decided.
 
-**OPEN:** how a CI job accepts every default with no prompt (for example
-`--silent`, with or without a values file) depends on rows V4a and V3a of
-the spike evidence ([REQ-RUN-0102](requirements.md)) and is conditional on
-[ADR-RUN-0402](architecture.md), which stays Proposed until then.
+A CI job accepts every default with no prompt by running
+`cargo generate --path template --template-values-file <file> --name <project> --silent`
+with stdin closed. Sprint a-1 proved that command, including an array value,
+on cargo-generate 0.25.1. The syntax and pin are in Active
+[ADR-RUN-0402](architecture.md). The destination directory must already exist.
 
 ### Rationale
 
@@ -1828,77 +1850,65 @@ use and the path CI tests cannot drift apart.
 
 ---
 
-## REQ-RUN-0307: Generated placeholder `Justfile`: `lint`, `test`, `db-prepare`
+## REQ-RUN-0307: sc-lint 0.8.0 consumer install
 
 **Status:** Active  
 
 ### Requirement Statement
 
-Every SC repository exposes the same base `just` commands. The full `just`
-and lint infrastructure for a generated project will be installed by a
-command of the sc-lint project, of the form
-`sc-lint create --vars <answers.json>`, which does not exist yet. Until it
-does, the template supplies a stand-in.
+Every SC repository exposes the same base `just` commands. sc-lint 0.8.0
+installs them. The placeholder `Justfile` and the prototype-handoff order are
+retired.
 
-1. `template/` MUST render a file named `Justfile` at the root of the
-   generated project.
-2. That `Justfile` MUST define exactly these recipes:
-
-   | Recipe | Behaviour |
-   |---|---|
-   | `just lint` | runs the project's static checks; exits non-zero on any finding |
-   | `just test` | runs the generated workspace's tests, including the `DaemonFixture` example test; exits non-zero on any failure |
-   | `just db-prepare` | regenerates the checked-in `sqlx` offline query data in `crates/store-sqlite/.sqlx/` |
-
-   Tests that start the daemon as a separate process never execute on a
+1. The install command is `sc-lint init --just`.
+2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.0
+   and `template/.sc-lint/bootstrap.py`. `sc-lint.toml` is the consumer pin.
+   It is not a hand-written clippy, rustfmt, deny, or `boundaries/` policy.
+3. The public recipes are `setup`, `lint`, `test`, and `upgrade`.
+4. The consumer-owned recipe `db-prepare` regenerates the checked-in `sqlx`
+   offline query data in `crates/store-sqlite/.sqlx/`. It MUST survive a
+   later `sc-lint init`.
+5. The recipe names `lint` and `test` are the standard SC base command names
+   and MUST NOT be changed. `setup` and `upgrade` are part of the same
+   public set.
+6. Rendered `.github/workflows/ci.yml` MUST run lint and tests only through
+   `just lint` and `just test`. `AGENTS.md` and `CLAUDE.md` refer to those
+   commands by name only.
+7. Tests that start the daemon as a separate process never execute on a
    developer's host ([NFR-RUN-0010](requirements.md)). Whether `just test`
-   also runs them, by executing them inside an isolated machine, or a
-   separate recipe does, is the standard-wording question recorded there; if
-   it adds a recipe, this list gains it in the same change.
-3. The recipe names `lint` and `test` are the standard SC base command names
-   and MUST NOT be changed.
-4. The `Justfile` MUST be minimal: no `just` modules, no imports, no lint
-   configuration and no crate-boundary rules.
-5. Nothing else rendered from `template/` may depend on the contents of the
-   `Justfile`; other files may use only the recipe names. In particular the
-   rendered `.github/workflows/ci.yml` MUST contain at least one step that
-   runs `just lint` and at least one step that runs `just test`, MUST run
-   lint and tests only through those two commands, and `AGENTS.md` and
-   `CLAUDE.md` MUST refer to those commands by name only.
-6. As a result, when `sc-lint create` later replaces the `Justfile`, no
-   workflow and no document in the generated project needs to change.
-7. This item owns the contents of the placeholder `Justfile`; the rule that
-   the template carries no lint knowledge refers to it.
-
-**OPEN:** the commands inside the `lint` and `test` recipes (for example
-which `cargo` invocations and flags) and the exact `db-prepare` command are
-not stated.
+   also runs them inside an isolated machine is the question recorded there.
+8. a-6 owns the generated consumer install. This item owns the recipe names
+   and the files the template commits. The rule that the template carries no
+   hand-written lint knowledge is [NFR-RUN-0006](requirements.md).
 
 ### Rationale
 
-The standard `just` and lint infrastructure is owned and installed by
-sc-lint, so that when its rules change generated projects pick the change up
-from sc-lint and this template does not change. But sc-lint builds its
-install packages from prototype projects this template generates, so those
-prototypes, and template CI, need stable `just lint` and `just test` gates
-before sc-lint's command exists. A placeholder with the final command names
-gives that without putting lint knowledge in the template.
+sc-lint owns the `just` and lint install, so a generated project picks up
+rule changes from sc-lint. The template commits the consumer pin and the
+bootstrap file that `sc-lint init --just` expects, and it does not freeze a
+hand-written lint policy. `db-prepare` is the project's own recipe and has to
+remain after a later init.
 
 ### Success Criteria
 
-1. In a project generated from `wizard/fixtures/sqlite-mcp.json`,
-   `just --list` shows exactly `lint`, `test` and `db-prepare`.
-2. In that project `just lint` and `just test` exit 0 with no edits.
-3. In that project, copy `crates/store-sqlite/.sqlx/` to a directory outside
+1. `template/sc-lint.toml` sets `minimum_version` to `0.8.0`, and
+   `template/.sc-lint/bootstrap.py` exists. `template/` contains no
+   placeholder `Justfile` that stands in for this install.
+2. In a project generated from `wizard/fixtures/sqlite-mcp.json`,
+   `just --list` shows `setup`, `lint`, `test`, `upgrade`, and `db-prepare`.
+3. In that project `just lint` and `just test` exit 0 with no edits.
+4. In that project, copy `crates/store-sqlite/.sqlx/` to a directory outside
    the project, delete the original, and run `just db-prepare`: it recreates
    the directory, and `diff -r` of the copy and the recreated directory
-   prints nothing.
-4. The rendered `.github/workflows/ci.yml` has at least one `run:` step that
+   prints nothing. Running `sc-lint init --just` again leaves `db-prepare`
+   in place.
+5. The rendered `.github/workflows/ci.yml` has at least one `run:` step that
    is `just lint` and at least one that is `just test`; every `run:` step
    that lints or tests is one of those two; the file contains no direct
    `cargo test`, `cargo clippy` or `cargo fmt` invocation.
-5. The rendered `Justfile` contains no `mod` or `import` statement, and
-   `template/` contains no lint configuration file.
+6. `template/` contains no hand-written `clippy.toml`, `rustfmt.toml`,
+   `deny.toml`, or `boundaries/` policy. The consumer pin is
+   `template/sc-lint.toml`.
 
 ---
 
@@ -1985,8 +1995,9 @@ and on a fresh clone without a database.
 This applies to `crates/daemon` of a project rendered from `template/`.
 `sc-observability` is the SC logging crate.
 
-1. `crates/daemon/Cargo.toml` MUST depend on `sc-observability` with a
-   version requirement that admits only 1.2.x releases.
+1. `crates/daemon/Cargo.toml` MUST depend on `sc-observability` 1.5.0, the
+   Phase A pin recorded by sprint a-1. The matching
+   `sc-observability-types` pin is 1.5.0. a-4, a-6, and a-7 copy that pair.
 2. `crates/daemon/src/main.rs` MUST perform these three steps, in this order:
    1. load the project's configuration with `sc-config` into the project's
       own config struct; on error, report it and return a failure exit code
@@ -2015,8 +2026,13 @@ This applies to `crates/daemon` of a project rendered from `template/`.
    `sc-observability` or its OpenTelemetry export crate
    `sc-observability-otlp`; the forbidden edges are owned by
    [REQ-RUN-0005](requirements.md). The only observability dependency
-   inside the four library crates is `sc-observability-types`, used by
-   `sc-command` for error code and remediation types.
+   inside the four library crates is `sc-observability-types` 1.5.0 on
+   `sc-command`. It is not allowed on `sc-transport`. The logging runtime
+   stays forbidden on all four libraries. `Remediation` stays on
+   `sc-command` only. `DaemonNotRunning` carries `code: &'static str`
+   (`DAEMON.NOT_RUNNING`) plus the endpoint and the cause, and does not
+   carry `sc_observability_types::ErrorCode`
+   ([ADR-RUN-0004](architecture.md)).
 4. The template MUST NOT add OpenTelemetry export. A project that wants it
    adds `sc-observability-otlp` to its own `daemon` crate.
 5. The template MUST NOT contain a bridge from the `tracing` crate into
@@ -2042,8 +2058,8 @@ is logged.
 
 ### Success Criteria
 
-1. Rendered `crates/daemon/Cargo.toml` lists `sc-observability` with a
-   requirement matching only 1.2.x, and lists no OpenTelemetry crate.
+1. Rendered `crates/daemon/Cargo.toml` lists `sc-observability` 1.5.0, the
+   Phase A pin, and lists no OpenTelemetry crate.
 2. In rendered `crates/daemon/src/main.rs`, the `sc-config` load call comes
    before the `sc_observability` initialisation call, which comes before
    `Daemon::builder`. Once it is confirmed that the initialisation call
@@ -2053,7 +2069,10 @@ is logged.
    crates, `cargo tree -p <crate> -e normal --prefix none` prints no line
    beginning with `sc-observability ` or `sc-observability-otlp ` (the name
    followed by a space). A line beginning with `sc-observability-types ` is
-   expected under `sc-command` and does not match.
+   expected under `sc-command` and does not match those two names. The
+   same command on `sc-transport` prints no line beginning with
+   `sc-observability-types `. `sc-runtime` follows the depth-1 rule in
+   [REQ-RUN-0005](requirements.md) criterion 5.
 4. `grep -rn 'tracing' template/crates/daemon` finds no bridge or subscriber
    set-up code.
 5. Rendered `main.rs` contains no `unwrap`, `expect` or `panic!` on the
@@ -3239,20 +3258,17 @@ To make that possible:
   `sc-runtime` crate, the `service` crate, the `daemon` crate or any
   `store-*` crate.
 
-**OPEN:** cargo unifies features across all packages selected for one build.
-Under `cargo build --workspace` (or `cargo test --workspace`) in a generated
-project, `daemon` enables `server` on `sc-transport` and `sc-command` through
-`sc-runtime`, those two crates are compiled once with `server` on, and the
-`cli` binary of that build is linked against them. Whether workspace-wide
-builds are exempt from this rule, or the rule must hold for them too and
-`sc-transport` and `sc-command` must therefore be split into client and
-server crates in place of the feature, is not decided. The spike MUST measure
-it: build a two-package workspace both ways and record whether the `cli`
-binary of the workspace-wide build links `axum`. The same OPEN is recorded in
-[ADR-RUN-0003](architecture.md).  
+Sprint a-1 measured both selections and closed this question. `cargo build -p cli`
+is the normative selection. A workspace-wide build is exempt: under
+`cargo build --workspace` the CLI graph may contain `axum`, `rmcp`, and
+`sqlx` because cargo unifies the `server` feature. Splitting `sc-transport`
+and `sc-command` into client and server crates is rejected for v0.1. a-6 owns
+`cargo tree -p cli -e normal` on the generated project. a-5 does not run that
+command. The measurement is the sprint a-1 evidence record in
+`docs/architecture.md`.  
 **OPEN:** the recipe or command by which a generated project builds and
-releases its `cli` binary (so that it is built with `-p`) is not decided; the
-generated `Justfile` of v0.1 has no build recipe.
+releases its `cli` binary (so that it is built with `-p`) is not decided. The
+public recipes of the sc-lint 0.8.0 install do not include a build recipe.
 
 ### Rationale
 
@@ -3282,10 +3298,9 @@ the only process that opens the local database.
 4. The default-feature trees of `sc-transport` and `sc-command` in this
    repository are checked by the criteria of NFR-TRN-0001 and NFR-CMD-0001,
    in the same `cargo tree` form as criterion 1; they are not repeated here.
-5. Once the workspace-wide-build question above is decided: if such builds
-   are not exempt, a criterion is added that inspects the `cli` binary
-   produced by `cargo build --workspace`; if they are exempt, the exemption
-   is stated in the Requirement Statement.
+5. Workspace-wide builds are exempt, as stated in the Requirement Statement.
+   No criterion inspects the `cli` binary produced by `cargo build --workspace`.
+   a-6 owns `cargo tree -p <cli package> -e normal`. a-5 does not run it.
 
 ---
 
@@ -3540,15 +3555,18 @@ The `cargo-generate` template under `template/` MUST NOT contain:
   as snapshots of `openapi.json`, of the MCP `tools/list` result or of the
   clap command model.
 
-The one `just` file the template MAY contain is the minimal placeholder
-`Justfile` with the recipes `lint`, `test` and `db-prepare`. Its contents and
-the criteria on its recipes are owned by [REQ-RUN-0307](requirements.md);
-this item only forbids it from carrying `just` modules or imports.
+The template commits the sc-lint 0.8.0 consumer install:
+`template/sc-lint.toml` (`minimum_version` 0.8.0) and
+`template/.sc-lint/bootstrap.py`, installed with `sc-lint init --just`.
+Public recipes are `setup`, `lint`, `test`, and `upgrade`. The
+consumer-owned recipe `db-prepare` survives a later init. Those files and
+recipes are owned by [REQ-RUN-0307](requirements.md). The template does not
+ship a placeholder `Justfile` and does not hand the install to a later
+prototype-handoff.
 
-All of the excluded infrastructure is owned by the sc-lint project. sc-lint
-installs it into a generated project from the same answers JSON the project
-was generated from, and its installer later replaces the placeholder
-`Justfile` without changing the recipe names.
+All of the excluded infrastructure is owned by the sc-lint project. The
+consumer pin is `sc-lint.toml`, not a hand-written clippy, rustfmt, deny,
+or `boundaries/` policy.
 
 This requirement restricts `template/` only. It does not restrict how the
 sc-runtime repository lints itself, which includes boundary manifests under
@@ -3570,8 +3588,9 @@ rule changes from sc-lint and nothing in this repository changes.
    `rustfmt.toml`, `.rustfmt.toml`, `deny.toml`, a `boundaries` directory,
    any `*.just` file.
 2. `grep -rn "^\[lints\|^\[workspace.lints" template` prints nothing.
-3. `template/Justfile` contains no `mod` or `import` statement. (Which
-   recipes it defines is checked by the criteria of REQ-RUN-0307.)
+3. `template/sc-lint.toml` sets `minimum_version` to `0.8.0`, and
+   `template/.sc-lint/bootstrap.py` exists. `template/` contains no
+   placeholder `Justfile`. Recipe names are checked by REQ-RUN-0307.
 4. `template/` contains no snapshot file of `openapi.json`, of MCP
    `tools/list` or of the clap command model, and no test that compares
    against one.
@@ -3591,19 +3610,18 @@ generated projects, and the manifest of the throwaway spike under
 `examples/spike` for as long as that directory exists.
 
 Pinned to one minor version series means the version requirement admits
-patch releases of a single `MAJOR.MINOR` only. `~3.4` and
-`>=3.4.0, <3.5.0` are pinned in this sense. `"3"`, `"3.4"` (which Cargo reads
-as `^3.4` and which admits 3.5) and `"*"` are not.
+patch releases of a single `MAJOR.MINOR` only. `~3.7` and
+`>=3.7.0, <3.8.0` are pinned in this sense. `"3"`, `"3.7"` (which Cargo reads
+as `^3.7` and which admits 3.8) and `"*"` are not.
 
-All manifests MUST pin the same minor version series.
+All manifests MUST pin the same minor version series. Sprint a-1 recorded
+that series as 3.7. The only spike manifest that names `rmcp` uses `~3.7`
+and resolves `rmcp` 3.7.0. a-6 and a-7 verify later manifests against 3.7.
+They do not choose a second series.
 
 Moving to a new `rmcp` minor version MUST be a deliberate change to those
 manifests, validated by the template CI fixture matrix, which generates a
 project per answers fixture and runs `just lint` and `just test` in it.
-
-**OPEN:** which `rmcp` minor version is pinned is not decided; the throwaway
-spike under `examples/spike` records the exact version pins. Only the major
-version is fixed so far: `rmcp` 3.x, with 3.4.0 current on 2026-09-18.
 
 ### Rationale
 

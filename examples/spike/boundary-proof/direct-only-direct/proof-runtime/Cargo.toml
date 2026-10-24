@@ -1,0 +1,14 @@
+[package]
+name = "proof-runtime"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+
+
+[dependencies]
+sc-observability-types = { version = "0.0.0", path = "../sc-observability-types" }

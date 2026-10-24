@@ -1,7 +1,7 @@
 ---
 id: a-1
 phase: a
-status: planned
+status: complete
 closure_type: contract
 target_boundary: compatibility-evidence
 vertical_rationale: "The production boundaries do not exist; one disposable composition proves the external interfaces they will use."

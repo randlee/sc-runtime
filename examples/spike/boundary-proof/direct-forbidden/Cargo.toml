@@ -1,0 +1,12 @@
+[workspace]
+members = ["app", "sc-observability"]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.0"
+authors = ["Spike <spike@example.com>"]
+edition = "2021"
+homepage = "https://example.com"
+license = "MIT OR Apache-2.0"
+repository = "https://example.com/spike"
+rust-version = "1.88"
