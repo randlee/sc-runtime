@@ -2140,7 +2140,7 @@ and it does not start a test daemon.
 **Platform:** Darwin arm64, macOS 15.5 (build 24F74), `rustc 1.99.0 (b940084d7 2026-09-28)`.  
 **Tools:** `sc-lint 0.8.0`, `sc-lint-boundary 0.8.0`, `cargo generate-generate 0.25.1`.  
 **Ran:** 2026-10-24T02:43:47Z on a developer host.  
-**Evidence commit:** `EVIDENCE_COMMIT_SHA`.
+**Evidence commit:** `3bc47b63b31ce8129267f6929646796a3f0db37d`.
 
 The UDS proof started `examples/spike/target/debug/spike-server` on a temporary
 socket and SQLite file under `/tmp/spike-a1.542qFr`, then killed the process
