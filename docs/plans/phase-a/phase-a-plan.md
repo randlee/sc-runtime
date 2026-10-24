@@ -1,6 +1,6 @@
 # Phase A — core runtime and minimal generator
 
-Status: plan-hardening pass 2 in progress (scope PASS at STEP2-R2).
+Status: plan-hardening pass 3 complete (scope PASS STEP2-R2; critical PASS STEP4-R4 @ b1ae85d).
 RBP sprint-doc pass on this branch assigns findings RBP-F001–F008 (plan
 review on develop `5240774`) to sprint deliverables and acceptance criteria;
 formal QA-1 has not run. The external-Dolt development graph and sprint
