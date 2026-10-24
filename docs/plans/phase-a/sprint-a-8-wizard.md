@@ -17,6 +17,8 @@ requirements:
   - REQ-RUN-0401
   - REQ-RUN-0402
   - REQ-RUN-0403
+  - REQ-RUN-0501
+  - REQ-RUN-0502
   - REQ-RUN-0601
   - REQ-RUN-0602
   - REQ-RUN-0603
@@ -55,9 +57,10 @@ Do not add application options or reopen the schema during UI work.
 - `must_follow a-6`: consumes the final schema, fixtures, and `--var-file`
   pipeline as its contract and oracle.
 - `parallel_safe a-7`: it modifies no crate, template, release workflow, or
-  publication metadata. Its narrow sequential ownership of driver/docs begins
-  only after a-6 merges. It does not wait for a-7 and does not diff against
-  a-7.
+  publication metadata. `scripts/new_project.py` and `docs/generation.md` are
+  sequential after a-6. The diff is entry-mode flags only. a-6 owns
+  `wizard/answers.schema.json` and `wizard/fixtures/**`. This sprint owns
+  `wizard/wizard.json` and `wizard/pages/**`. It does not wait for a-7.
 
 ## Deliverables
 
@@ -69,9 +72,10 @@ Do not add application options or reopen the schema during UI work.
    no destination.
 3. **REQ-RUN-0603** — Demonstrate fixture-equivalent answers and generated
    output without changing the core crates or template contract.
-4. **Inherited constraint** — Preserve the a-6-owned REQ-RUN-0501/0502
-   pipeline and non-interactive guarantees unchanged while adding the two
-   wizard modes.
+4. **REQ-RUN-0501 / REQ-RUN-0502** — Preserve the a-6 pipeline and
+   non-interactive guarantees while adding the two wizard modes. The driver
+   diff is limited to entry-mode flags. The a-6 generation suite stays
+   byte-identical.
 
 ## Acceptance criteria
 
@@ -81,8 +85,11 @@ Do not add application options or reopen the schema during UI work.
    produce the documented driver outcomes.
 3. `req:REQ-RUN-0603` — equivalent wizard and fixture answers produce equivalent
    generated project files, excluding documented nondeterministic metadata.
-4. `ADR-RUN-0401` — no wizard asset is copied into generated projects and
-   no reusable crate depends on Wyvern or UI code.
+4. `ADR-RUN-0401` / `req:REQ-RUN-0501` — no wizard asset is copied into
+   generated projects and no reusable crate depends on Wyvern or UI code.
+   The mechanical check is a-6 acceptance criterion 25. This criterion does
+   not add a second inspection. The REQ-RUN-0501/0502 non-interactive path
+   still passes.
 
 ## This sprint does not close
 
@@ -95,7 +102,6 @@ None.
 
 ## Required validation
 
-Run descriptor/page unit tests, prefill/cancel tests, one interactive smoke,
-fixture-equivalence generation, and the unchanged a-6 generation suite. The
-crate and template trees stay at the a-6 merge. This sprint does not wait for
-a-7 and does not diff against a-7.
+Run the acceptance criteria, including the unchanged a-6 generation suite.
+The crate and template trees stay at the a-6 merge. This sprint does not
+wait for a-7.

@@ -92,10 +92,14 @@ signature contract.
 4. **NFR-CFG-0002 / NFR-CFG-0003** — Minimal dependencies, no async/reload
    layer, focused tests, and a compiling standalone README example.
 5. **REQ-RUN-0005** — The sc-config boundary manifest at
-   `boundaries/sc-config/*.toml`, describing only its facade and actual
-   dependency restrictions. The manifest must be valid for
-   `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
-   exists; this sprint does not install sc-lint or own the root `Justfile`.
+   `boundaries/sc-config/sc-config.toml`. `forbidden_edges` includes
+   `sc-observability-types` as well as the logging crates. Once
+   `crates/sc-config/Cargo.toml` exists, run `just lint gates` or
+   `sc-lint lint sc-boundary --root . --config sc-lint.toml` against this
+   manifest and keep the command output in the PR. If the analyzer needs a
+   package manifest, this sprint's crate `Cargo.toml` is enough. Do not wait
+   for a-5. Do not install sc-lint or own the permanent root workspace
+   `Cargo.toml` (a-5 still creates the four-member workspace).
 6. **REQ-CFG-0004 / ADR-CFG-0001** — Before the facade freezes, the crate ADR
    contains an error-inventory table with one row per `ConfigError` failure:
    failure mode, stable code, cause payload, and recovery steps. Typed path
@@ -124,12 +128,17 @@ signature contract.
    stable code `APP.INVALID_NAME`. `load` and `Loader::new` take
    `sc_config::AppName`. The type exposes `as_str` or `AsRef<str>` and does
    not implement `Deref` (RBP-F005).
+6. `boundary:sc-config` — `just lint gates` or
+   `sc-lint lint sc-boundary --root . --config sc-lint.toml` exits 0 on
+   `boundaries/sc-config/sc-config.toml` after `crates/sc-config/Cargo.toml`
+   exists. The manifest forbids `sc-observability-types`.
 
 ## This sprint does not close
 
 Daemon assembly, template configuration layout, application defaults, and
-generated-project behavior close in a-5 or a-6. Root `just lint` and
-`sc-lint-boundary analyze` close in a-5. This sprint does not edit
+generated-project behavior close in a-5 or a-6. This sprint runs the
+boundary analyzer on its own manifest. Root `just lint` across all four
+manifests stays with a-5. This sprint does not edit
 `docs/architecture.md` or `docs/requirements.md`.
 
 ## Paths to delete
@@ -141,5 +150,5 @@ None.
 Run crate tests, doctests, formatting/linting, and workspace build once
 registered. Check the default dependency tree. Review the manifest against
 REQ-RUN-0005. Confirm the ADR-CFG-0001 error-inventory table and the
-`AppName` construction tests. `sc-lint-boundary analyze` is the a-5
-root-lint gate, not a command this sprint adds.
+`AppName` construction tests. Run `just lint gates` or
+`sc-lint lint sc-boundary` on this crate's manifest.

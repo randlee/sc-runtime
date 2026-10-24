@@ -22,6 +22,7 @@ requirements:
   - REQ-RUN-0306
   - REQ-RUN-0307
   - REQ-RUN-0309
+  - REQ-RUN-0005
   - NFR-RUN-0006
 adrs:
   - ADR-RUN-0001
@@ -90,19 +91,14 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    proof; a-5 does not run that command.
 4. **REQ-RUN-0306** — Prove plain cargo-generate can consume the proposed
    template mechanics; do not build the product template here.
-5. **ADR-RUN-0003 / ADR-RUN-0004** — Amend `docs/architecture.md` before a-3
-   and a-4 start. The amendment tasks point at those ADR ids. Do not paste
-   replacement ADR text into this sprint doc. `TransportError::DaemonNotRunning`
-   names `DaemonNotRunning` fully: code is
-   `sc_observability_types::ErrorCode` with value `DAEMON.NOT_RUNNING`;
-   suggested_action is `String` with value `run <app> daemon start` after
-   substituting the `AppName` passed to `Client::new`; sc-transport does not
-   use `Remediation`. `OpError`
-   wire `suggested_action` follows the phase handoff: a JSON string or JSON
-   `null` from the custom serializer, not a required plain-string field and
-   not the tagged `Remediation` object. Close the workspace-unification OPEN as
-   in deliverable 3. The `sc-runtime` → `sc-config` MAY stays open until a-5
-   records it absent.
+5. **ADR-RUN-0003 / ADR-RUN-0004** — Amend the root ADRs so they point at the
+   crate documents that own the signatures: `docs/sc-transport/architecture.md`
+   for `DaemonNotRunning`, and `docs/sc-command/architecture.md` for the
+   `OpError` wire form. Do not copy field-level types into
+   `docs/architecture.md`. The phase handoff is planning input and is
+   superseded by those crate ADRs on merge. Close the workspace-unification
+   OPEN as in deliverable 3. The `sc-runtime` → `sc-config` MAY stays open
+   until a-5 records it absent.
 6. **REQ-RUN-0309 / ADR-RUN-0004** — Amend `docs/requirements.md` and
    `docs/architecture.md` so the daemon dependency and the library
    observability rule use the version pair this spike records. Replace the
@@ -129,6 +125,14 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    through `as_str` or `AsRef<str>`; no `Deref`. Do not paste the ADR body
    into this sprint doc. Leaf sprints consume the Active ADR. They do not
    invent a second predicate.
+9. **REQ-RUN-0005** — Amend only the observability-types edges in that
+   requirement's table. `sc-observability-types` is an allowed dependency of
+   `sc-transport` and `sc-command` only. Their `forbidden_edges` keep
+   `sc-observability` and `sc-observability-otlp` and do not list
+   `sc-observability-types` (the logging-crate token must not match the types
+   crate). `sc-config` and `sc-runtime` forbid `sc-observability-types`.
+   Do not edit the `sc-runtime` → `sc-config` MAY in this sprint. a-3 and a-4
+   amend NFR-TRN-0001 and NFR-CMD-0001 to the same dependency lists.
 
 ## Acceptance criteria
 
@@ -149,11 +153,10 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    exact version, type path, signature or template syntax, both ADRs are made
    Active (or amended to the proved result), and no dependent sprint starts
    while either remains Proposed.
-6. `boundary:compatibility-evidence` — `docs/architecture.md` is amended at
-   ADR-RUN-0003 and ADR-RUN-0004 so `DaemonNotRunning` uses the full field
-   pair in deliverable 5 and `OpError` wire `suggested_action` is a JSON
-   string or `null` under the phase handoff. Workspace-unification OPEN
-   text is gone (see criterion 4).
+6. `boundary:compatibility-evidence` — ADR-RUN-0003 and ADR-RUN-0004 point at
+   the transport and command crate ADRs for `DaemonNotRunning` and the
+   `OpError` wire form. The root ADR text does not restate those field types.
+   Workspace-unification OPEN text is gone (see criterion 4).
 7. `boundary:compatibility-evidence` — REQ-RUN-0309 and ADR-RUN-0004 name the
    spike's recorded `sc-observability` and `sc-observability-types` versions
    as the Phase A pin. They allow `sc-observability-types` on `sc-command`
@@ -168,6 +171,10 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    its index row, matching deliverable 8. The sprint diff adds that ADR. It
    does not rewrite ADR-RUN-0006 into the AppName decision. a-2 does not
    freeze `sc_config::AppName` until this ADR is Active.
+10. `req:REQ-RUN-0005` — the amended table allows `sc-observability-types` on
+    `sc-transport` and `sc-command` only, and forbids it on `sc-config` and
+    `sc-runtime`. The forbidden token `sc-observability` is not the types
+    crate. The `sc-runtime` → `sc-config` MAY is unchanged in this sprint.
 
 ## This sprint does not close
 
@@ -186,6 +193,6 @@ runner; refuse any child-process proof on an unmarked developer host. Save
 commands, platform, commit, concrete type/signature evidence, and results in
 `docs/architecture.md`, including the resolved `sc-observability` and
 `sc-observability-types` versions, and confirm the ADR-RUN-0003,
-ADR-RUN-0004, ADR-RUN-0005, ADR-RUN-0010, REQ-RUN-0309, REQ-RUN-0307, and
-NFR-RUN-0006 amendments landed in the owned files. If a Verify item fails, stop dependent
+ADR-RUN-0004, ADR-RUN-0005, ADR-RUN-0010, REQ-RUN-0309, REQ-RUN-0307,
+REQ-RUN-0005, and NFR-RUN-0006 amendments landed in the owned files. If a Verify item fails, stop dependent
 planning rather than adding an adapter automatically.

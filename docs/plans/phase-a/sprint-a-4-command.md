@@ -111,10 +111,17 @@ boundary.
    API (RBP-F008). Serialization failure returns an error and does not panic.
 4. **NFR-CMD-0001 / NFR-CMD-0002** — Minimal default/server feature graphs,
    focused tests, and a compiling standalone README example.
-5. **REQ-RUN-0005** — Boundary manifest at `boundaries/sc-command/*.toml` for
-   the actual facade and edges. The manifest must be valid for
-   `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
-   exists; this sprint does not install sc-lint or own the root `Justfile`.
+5. **REQ-RUN-0005 / NFR-CMD-0001** — Boundary manifest at
+   `boundaries/sc-command/sc-command.toml`. Amend NFR-CMD-0001 so the default
+   direct dependencies are `serde`, `serde_json`, and `sc-observability-types`
+   at the a-1 pin, and delete the `serde_json` OPEN. `allowed_dependencies`
+   includes `sc-observability-types`. `forbidden_edges` keeps
+   `sc-observability` and `sc-observability-otlp` and does not list
+   `sc-observability-types`. A negative check shows a dependency on the types
+   crate still passes analyze. Once `crates/sc-command/Cargo.toml` exists,
+   run `just lint gates` or `sc-lint lint sc-boundary --root . --config sc-lint.toml`
+   on this manifest. Do not wait for a-5. Do not own the permanent root
+   workspace `Cargo.toml`.
 
 ## Acceptance criteria
 
@@ -141,15 +148,22 @@ boundary.
    has a `sc-observability-types ` line at the a-1 recorded version and has no
    `sc-observability ` or `sc-observability-otlp ` line (crate name, then a
    space) (RBP-F001).
+6. `req:NFR-CMD-0001` — the amended default dependency list is `serde`,
+   `serde_json`, and `sc-observability-types`. Analyze accepts the types
+   crate while `forbidden_edges` still contains `sc-observability`.
+   `just lint gates` or `sc-lint lint sc-boundary` exits 0 on
+   `boundaries/sc-command/sc-command.toml`. The `serde_json` OPEN is gone.
 
 ## This sprint does not close
 
 Application command declarations, CLI rendering policy, attribute generation,
 and end-to-end surface parity close outside Phase A or in the minimal template
 proof only. Widget and other application operation codes stay in the generated
-service. a-6 does not extend ADR-CMD-0001 for them. Root `just lint` and
-`sc-lint-boundary analyze` close in a-5. This sprint does not edit
-`docs/architecture.md` or `docs/requirements.md`.
+service. a-6 documents the example operation inventory on the generated
+service and does not extend ADR-CMD-0001. This sprint runs the boundary
+analyzer on its own manifest. Root `just lint` across all four manifests
+stays with a-5. This sprint does not edit `docs/architecture.md` or
+`docs/requirements.md`.
 
 ## Paths to delete
 
@@ -162,5 +176,4 @@ build once registered. Review the manifest against REQ-RUN-0005. Confirm
 the ADR-CMD-0001 wire-failure inventory, the `suggested_action` string-or-null
 serializer, the sealed `IntoMcp` impl, and the absence of `sc-observability`
 from the normal tree.
-`sc-lint-boundary analyze` is the a-5 root-lint gate, not a command this
-sprint adds.
+Run `just lint gates` or `sc-lint lint sc-boundary` on this crate's manifest.

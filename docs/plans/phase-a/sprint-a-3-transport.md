@@ -59,16 +59,20 @@ It discovers and reports; it does not own application launch policy.
 
 Resolve endpoint syntax and precedence, OS defaults, directory ownership,
 listener representation, UDS permissions/stale-file behavior, timeout/status
-classification, and the public error surface. Freeze `TransportConfig`'s
-field list in `docs/sc-transport/architecture.md` before the facade freezes.
-a-5 embeds that type on `DaemonConfig` and does not decide a second
-endpoint-config shape. Publish an **error inventory**
+classification, and the public error surface. Before `TransportConfig`
+freezes, close the dual-bind OPEN in `docs/sc-transport/architecture.md` and
+`docs/sc-transport/requirements.md`: v0.1 binds exactly one listener, and
+`TransportConfig` reserves additive `additional_endpoints` (default empty,
+unused in v0.1) so a later dual-bind does not fork the facade. a-5 embeds
+that type and does not decide a second shape. Publish an **error inventory**
 (stable codes and recovery for every `TransportError` variant, including
 non-`DaemonNotRunning` failures the CLI must report). `DaemonNotRunning`
 carries `sc_observability_types::ErrorCode` (`DAEMON.NOT_RUNNING`) on the code
 field and a plain `String` suggested action (`run <app> daemon start` with the
 `AppName` passed to `Client::new`). No `Remediation` on transport (RBP-F002,
-RBP-F005). Record choices in the owned crate ADR before the facade freezes.
+RBP-F005). The string names the `daemon start` subcommand a-6 ships (exec
+the daemon binary). It is not a caller-supplied launch hint and it is not
+auto-start. Record that in the crate ADR before the facade freezes.
 Do not edit `docs/architecture.md`. Do not add auto-start APIs.
 `sc_transport::AppName` uses the predicate a-1 records in ADR-RUN-0010.
 This sprint does not invent a second predicate and does not write that ADR.
@@ -102,10 +106,17 @@ It does not edit `docs/architecture.md`.
    spawning, retrying for readiness, or knowing application envelopes.
 4. **NFR-TRN-0001 / NFR-TRN-0002** — Default/server builds use standard
    Tokio, reqwest, and Axum facilities with no custom connector or raw HTTP.
-5. **REQ-RUN-0005** — Boundary manifest at `boundaries/sc-transport/*.toml`
-   for the actual facade and edges. The manifest must be valid for
-   `sc-lint-boundary analyze`. That command runs once a-5's root `just lint`
-   exists; this sprint does not install sc-lint or own the root `Justfile`.
+5. **REQ-RUN-0005 / NFR-TRN-0001** — Boundary manifest at
+   `boundaries/sc-transport/sc-transport.toml`. Amend NFR-TRN-0001 so the
+   default direct dependencies are `tokio`, `reqwest`, `serde`, and
+   `sc-observability-types` at the a-1 pin. `server` still adds only `axum`.
+   `allowed_dependencies` includes `sc-observability-types`.
+   `forbidden_edges` keeps `sc-observability` and does not list
+   `sc-observability-types`. A negative check shows a dependency on the types
+   crate still passes analyze. Once `crates/sc-transport/Cargo.toml` exists,
+   run `just lint gates` or `sc-lint lint sc-boundary --root . --config sc-lint.toml`
+   on this manifest. Do not wait for a-5. Do not own the permanent root
+   workspace `Cargo.toml`.
 6. **REQ-TRN-0006 / NFR-TRN-0004** — Before the facade freezes, the crate ADR
    contains an error-inventory table for every `TransportError` variant,
    including failures other than `DaemonNotRunning`: failure mode, stable
@@ -149,13 +160,24 @@ It does not edit `docs/architecture.md`.
    `APP.INVALID_NAME`. Public constructors take `sc_transport::AppName`. The
    type exposes `as_str` or `AsRef<str>` and does not implement `Deref`
    (RBP-F005).
+7. `req:NFR-TRN-0001` — the amended dependency list names
+   `sc-observability-types` on the default build. Analyze accepts that
+   dependency while `forbidden_edges` still contains `sc-observability`.
+   `just lint gates` or `sc-lint lint sc-boundary` exits 0 on
+   `boundaries/sc-transport/sc-transport.toml`.
+8. `ADR-TRN-0002` — `TransportConfig` is frozen as v0.1 single-bind with
+   additive `additional_endpoints` defaulting empty and unused. The transport
+   dual-bind OPEN is deleted. The suggested action is the a-6 `daemon start`
+   subcommand, not a caller launch hint.
 
 ## This sprint does not close
 
 Daemon lifecycle, CLI auto-start, application retries, service-manager
-integration, and generated CLI tests are outside this boundary. Root
-`just lint` and `sc-lint-boundary analyze` close in a-5. This sprint does
-not edit `docs/architecture.md` or `docs/requirements.md`.
+integration, and generated CLI tests are outside this boundary. This sprint
+runs the boundary analyzer on its own manifest. Root `just lint` across all
+four manifests stays with a-5. This sprint does not edit
+`docs/architecture.md` or `docs/requirements.md`. a-5 copies the dual-bind
+decision into those root OPENs.
 
 ## Paths to delete
 
@@ -167,5 +189,4 @@ Run default and server crate tests/doctests, feature-specific dependency-tree
 checks, and workspace build once registered. Review the manifest against
 REQ-RUN-0005. Confirm the crate ADR error-inventory table, the
 `DaemonNotRunning` code type, and the `AppName` construction tests.
-`sc-lint-boundary analyze` is the a-5 root-lint gate, not a command this
-sprint adds.
+Run `just lint gates` or `sc-lint lint sc-boundary` on this crate's manifest.

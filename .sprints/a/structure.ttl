@@ -1,5 +1,9 @@
 @prefix triage: <urn:atm:triage:> .
 
+# triage:order is the unique sprint sequence number.
+# triage:follows is the must_follow predecessor (order edge). It matches the
+# dependency table in docs/plans/phase-a/phase-a-plan.md.
+
 triage:PhaseA a triage:Phase .
 
 triage:a-1 a triage:Sprint ;
@@ -18,34 +22,40 @@ triage:a-3 a triage:Sprint ;
   triage:inPhase triage:PhaseA ;
   triage:order 3 ;
   triage:branch "sprint/a-3-transport" ;
-  triage:criteria "docs/plans/phase-a/sprint-a-3-transport.md" .
+  triage:criteria "docs/plans/phase-a/sprint-a-3-transport.md" ;
+  triage:follows triage:a-1 .
 
 triage:a-4 a triage:Sprint ;
   triage:inPhase triage:PhaseA ;
   triage:order 4 ;
   triage:branch "sprint/a-4-command" ;
-  triage:criteria "docs/plans/phase-a/sprint-a-4-command.md" .
+  triage:criteria "docs/plans/phase-a/sprint-a-4-command.md" ;
+  triage:follows triage:a-1 .
 
 triage:a-5 a triage:Sprint ;
   triage:inPhase triage:PhaseA ;
   triage:order 5 ;
   triage:branch "sprint/a-5-runtime-core" ;
-  triage:criteria "docs/plans/phase-a/sprint-a-5-runtime-core.md" .
+  triage:criteria "docs/plans/phase-a/sprint-a-5-runtime-core.md" ;
+  triage:follows triage:a-2, triage:a-3, triage:a-4 .
 
 triage:a-6 a triage:Sprint ;
   triage:inPhase triage:PhaseA ;
   triage:order 6 ;
   triage:branch "sprint/a-6-template-from-json" ;
-  triage:criteria "docs/plans/phase-a/sprint-a-6-template-from-json.md" .
+  triage:criteria "docs/plans/phase-a/sprint-a-6-template-from-json.md" ;
+  triage:follows triage:a-5 .
 
 triage:a-7 a triage:Sprint ;
   triage:inPhase triage:PhaseA ;
   triage:order 7 ;
   triage:branch "sprint/a-7-core-release" ;
-  triage:criteria "docs/plans/phase-a/sprint-a-7-core-release.md" .
+  triage:criteria "docs/plans/phase-a/sprint-a-7-core-release.md" ;
+  triage:follows triage:a-6 .
 
 triage:a-8 a triage:Sprint ;
   triage:inPhase triage:PhaseA ;
   triage:order 8 ;
   triage:branch "sprint/a-8-wizard" ;
-  triage:criteria "docs/plans/phase-a/sprint-a-8-wizard.md" .
+  triage:criteria "docs/plans/phase-a/sprint-a-8-wizard.md" ;
+  triage:follows triage:a-6 .
