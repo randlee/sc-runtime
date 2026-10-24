@@ -1,6 +1,6 @@
 //! Consuming builder. `run` is implemented only after `stores` and `routes`.
 
-use std::future::Future;
+use std::future::{Future, IntoFuture};
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 
@@ -9,7 +9,7 @@ use sc_transport::{AppName, Endpoint};
 use utoipa_axum::router::OpenApiRouter;
 
 use crate::config::DaemonConfig;
-use crate::error::RuntimeError;
+use crate::error::{RuntimeError, TransportStep};
 use crate::lock::{self, InstanceLock};
 use crate::router;
 use crate::shutdown::{self, RunControl};
@@ -178,8 +178,11 @@ where
     /// on that ready state.
     ///
     /// Endpoint text is resolved before the lock so an invalid endpoint does
-    /// not open stores. Signal streams are registered before bind. The order
-    /// after a valid endpoint is lock, stores, routes, optional MCP, then bind.
+    /// not open stores. Signal listeners are registered, and on Windows Ctrl-C
+    /// is polled, before the lock and before bind. The order after a valid
+    /// endpoint is signals, lock, stores, routes, optional MCP, then bind.
+    /// Shutdown stops accepting, waits up to the drain bound for in-flight
+    /// requests, then releases the listener and the instance lock.
     ///
     /// # Errors
     ///
@@ -244,7 +247,7 @@ where
 {
     let root = resolve_root(app, config)?;
     let endpoint = resolve_endpoint(app, config, &root)?;
-    let signals = shutdown::install(control.listen_for_signals)?;
+    let signals = shutdown::install(control.listen_for_signals).await?;
     let lock = lock::acquire(&root)?;
     let stores = match stores_fn().await {
         Ok(stores) => stores,
@@ -275,7 +278,7 @@ async fn serve(
         Ok(listener) => listener,
         Err(err) => {
             drop(lock);
-            return Err(RuntimeError::bind_failed(err.to_string()));
+            return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
     let bound = match listener.local_endpoint() {
@@ -283,28 +286,59 @@ async fn serve(
         Err(err) => {
             drop(listener);
             drop(lock);
-            return Err(RuntimeError::bind_failed(err.to_string()));
+            return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
     if let Some(ready) = control.ready.take() {
         let _ = ready.send(bound);
     }
+    let drain = control.drain;
     let cancel = control.shutdown.take();
-    let result = axum::serve(listener, router.into_make_service())
-        .with_graceful_shutdown(async move {
-            shutdown::wait(signals, cancel).await;
-        })
-        .await
-        .map_err(|err| RuntimeError::serve_failed(err.to_string()));
+    let (drain_tx, drain_rx) = tokio::sync::watch::channel(false);
+    let router = router::with_request_timeout(router, router::REQUEST_TIMEOUT, drain_rx, drain);
+    let (gate_tx, gate_rx) = tokio::sync::oneshot::channel::<()>();
+    let served =
+        axum::serve(listener, router.into_make_service()).with_graceful_shutdown(async move {
+            let _ = gate_rx.await;
+        });
+    let mut served = Box::pin(served.into_future());
+
+    let early = tokio::select! {
+        result = &mut served => Some(result),
+        () = shutdown::wait(signals, cancel) => None,
+    };
+    if let Some(result) = early {
+        return finish_serve(served, lock, result);
+    }
+
+    let _ = drain_tx.send(true);
+    let _ = gate_tx.send(());
+    let waited =
+        tokio::time::timeout(drain.saturating_add(shutdown::DRAIN_BACKSTOP), &mut served).await;
+    let result = match waited {
+        Ok(result) => result,
+        Err(_elapsed) => Ok(()),
+    };
+    finish_serve(served, lock, result)
+}
+
+/// Drops the server (and its listener) before the instance lock.
+fn finish_serve<F>(
+    served: std::pin::Pin<Box<F>>,
+    lock: InstanceLock,
+    result: Result<(), std::io::Error>,
+) -> Result<(), RuntimeError> {
+    drop(served);
     drop(lock);
-    result
+    result.map_err(|err| RuntimeError::serve_failed(err.to_string()))
 }
 
 fn resolve_root(app: &AppName, config: &DaemonConfig) -> Result<PathBuf, RuntimeError> {
     if let Some(root) = &config.transport.instance_root {
         return Ok(root.clone());
     }
-    sc_transport::instance_root(app).map_err(|err| RuntimeError::instance_failed(err.to_string()))
+    sc_transport::instance_root(app)
+        .map_err(|err| RuntimeError::from_transport(TransportStep::Instance, err))
 }
 
 fn resolve_endpoint(
@@ -316,5 +350,5 @@ fn resolve_endpoint(
     transport.instance_root = Some(root.to_path_buf());
     let flag = config.flag_os();
     sc_transport::resolve_endpoint_from_env(app, flag.as_deref(), &transport)
-        .map_err(|err| RuntimeError::endpoint_failed(err.to_string()))
+        .map_err(|err| RuntimeError::from_transport(TransportStep::Endpoint, err))
 }
