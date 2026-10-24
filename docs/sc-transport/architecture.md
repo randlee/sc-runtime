@@ -3,7 +3,7 @@
 **ID Range:** ADR-TRN-0001 through ADR-TRN-0006  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-10-23
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -246,7 +246,7 @@ anywhere.
 **Decision Date:** 2026-09-19  
 **Amended:** 2026-10-23 by sprint a-3. `DaemonNotRunning` carries `code`,
 the endpoint, and the cause. Sprint a-1 (2026-10-24,
-[ADR-RUN-0004](../architecture.md)) kept the code a `&'static str`.  
+[ADR-RUN-0004](../architecture.md)) kept the code a `&'static str`.
 **Source:** decided in this document; applies repo [ADR-RUN-0003](../architecture.md)  
 
 ### Context

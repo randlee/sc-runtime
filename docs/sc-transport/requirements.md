@@ -3,7 +3,7 @@
 **ID Range:** REQ-TRN-0001 through REQ-TRN-0006; NFR-TRN-0001 through NFR-TRN-0004  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-10-23
 **Owner:** sc-runtime maintainers  
 
 ---
