@@ -218,14 +218,12 @@ no SC logging still compiles `sc-observability-types`, which is small.
 checked by `sc-lint lint sc-boundary --root .` on the workspace.
 `allowed_dependents` is `sc-runtime` only. `allowed_dependencies` includes
 `sc-observability-types` and does not treat it as a forbidden edge.
-`forbidden_edges` contains `sc-command -> sc-observability` and
-`sc-command -> sc-observability-otlp` and does not contain
-`sc-observability-types`. sc-lint 0.8.0 names those edges only when the
-targets are workspace members, so `crates/sc-command/lint-edge/` holds
-`publish = false` package-name anchors. `sc-command` does not depend on the
-observability anchors. Sprint a-5 deleted `lint-edge/sc-runtime` and added
-`crates/sc-runtime`, which depends on `sc-command`. The two observability
-anchors remain workspace members. `boundaries/planning.toml` exists because `sc-lint` requires
+`forbidden_edges` does not name `sc-observability` or `sc-observability-otlp`,
+because those crates are not workspace members, and it does not contain
+`sc-observability-types`. sc-lint 0.8.0 rejects a forbidden edge whose target
+is absent, so `cargo tree` enforces the logging crates. Sprint a-5 deleted
+`crates/sc-command/lint-edge/` and added `crates/sc-runtime`, which depends on
+`sc-command`. `boundaries/planning.toml` exists because `sc-lint` requires
 planning metadata next to the workspace.
 `cargo tree -p sc-command -e normal --prefix none`, with default features and
 with `--features server`, prints a `sc-observability-types ` line at 1.5.0

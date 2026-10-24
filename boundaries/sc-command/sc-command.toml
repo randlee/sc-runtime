@@ -18,15 +18,11 @@ roots = ["Envelope"]
 [dependencies]
 allowed_dependents = ["sc-runtime"]
 allowed_dependencies = ["serde", "serde_json", "sc-observability-types"]
-# `sc-observability` and `sc-observability-otlp` are workspace-member name
-# anchors under `crates/sc-command/lint-edge/` so this list can name them.
-# `sc-command` does not depend on those anchors. `sc-observability-types` is
-# not a forbidden edge. `axum` and `rmcp` stay out of this table; cargo tree
-# checks the `server` feature.
-forbidden_edges = [
-  "sc-command -> sc-observability",
-  "sc-command -> sc-observability-otlp",
-]
+# `sc-observability` and `sc-observability-otlp` are not workspace members.
+# sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree
+# enforces those edges. `sc-observability-types` is not a forbidden edge.
+# `axum` and `rmcp` stay out of this table; cargo tree checks the `server` feature.
+forbidden_edges = []
 
 [references]
 scope = "outside_owner_crate"

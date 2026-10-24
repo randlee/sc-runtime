@@ -9,10 +9,7 @@ fn facade_matches_crate_root_exports() {
     let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
     let source = fs::read_to_string(manifest_dir.join("src/lib.rs")).unwrap();
     let exports = visible_exports(&source);
-    let manifests = [
-        manifest_dir.join("../../boundaries/sc-transport/sc-transport.toml"),
-        manifest_dir.join("boundaries/sc-transport/sc-transport.toml"),
-    ];
+    let manifests = [manifest_dir.join("../../boundaries/sc-transport/sc-transport.toml")];
     for path in manifests {
         let text =
             fs::read_to_string(&path).unwrap_or_else(|err| panic!("{}: {err}", path.display()));

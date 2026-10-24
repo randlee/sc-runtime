@@ -9,7 +9,6 @@ repository.workspace = true
 rust-version.workspace = true
 description = "Lossless sc-ai-cli response envelope and REST/MCP conversions."
 readme = "README.md"
-exclude = ["lint-edge"]
 
 [features]
 default = []

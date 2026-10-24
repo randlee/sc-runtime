@@ -844,11 +844,11 @@ allowed transitive crate. The check is
 `cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no line
 beginning with `sc-observability-types `.
 
-`sqlx` is not a workspace member. sc-lint 0.8.0 rejects a forbidden edge whose
-target is absent, so `sc-runtime -> sqlx` is not a `forbidden_edges` entry.
-`cargo tree` enforces it. The workspace-member anchors `sc-observability` and
-`sc-observability-otlp` are `forbidden_edges`. The repo-level owner of the
-forbidden edges of all four crates is [REQ-RUN-0005](../requirements.md).
+`sqlx`, `sc-observability`, and `sc-observability-otlp` are not workspace
+members. sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so
+those names are not `forbidden_edges` entries. `cargo tree` enforces them.
+The repo-level owner of the forbidden edges of all four crates is
+[REQ-RUN-0005](../requirements.md).
 
 ### Rationale
 
@@ -867,11 +867,12 @@ lets the project report a config error before anything else starts.
    with `sc-observability-otlp `. A line beginning with
    `sc-observability-types ` is allowed.
 2. The boundary manifest under `boundaries/sc-runtime/` lists
-   `sc-runtime -> sc-observability` and
-   `sc-runtime -> sc-observability-otlp` under `[dependencies]
-   forbidden_edges`. It does not list `sqlx` or `sc-observability-types`.
-   `just lint` (which runs `sc-lint lint sc-boundary`) is clean. Criterion 1
-   is the `sqlx` and direct-only `sc-observability-types` check.
+   `sc-runtime -> sc-config` under `[dependencies] forbidden_edges`. It does
+   not list `sqlx`, `sc-observability`, `sc-observability-otlp`, or
+   `sc-observability-types`, because sc-lint 0.8.0 rejects a forbidden edge
+   whose target is not a workspace member. `just lint` (which runs
+   `sc-lint lint sc-boundary`) is clean. Criterion 1 is the `cargo tree` check
+   for `sqlx`, the logging crates, and direct-only `sc-observability-types`.
 3. A search of `crates/sc-runtime/src` (excluding `#[cfg(test)]` code) finds
    no call to `sc_config::load`, no read of a config file, and no read of
    `SC_ENDPOINT`. `run` calls `sc_transport::resolve_endpoint_from_env`, which

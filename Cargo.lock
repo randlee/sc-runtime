@@ -912,14 +912,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sc-observability"
-version = "0.1.0"
-
-[[package]]
-name = "sc-observability-otlp"
-version = "0.1.0"
-
-[[package]]
 name = "sc-observability-types"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

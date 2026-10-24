@@ -134,13 +134,11 @@ contain it.
 
 `examples/spike` is an excluded standalone package while it exists. It is not
 a fifth workspace member and it is not a Cargo example. Root `Cargo.toml`
-`exclude` names `examples/spike`. The workspace member list stays the four
-library crates above. Two `publish = false` packages under
-`crates/sc-command/lint-edge/` (`sc-observability` and
-`sc-observability-otlp`) are also members so `sc-lint` 0.8.0 can name those
-forbidden-edge targets. They are name anchors, not a fifth library crate.
-Sprint a-5 deleted `crates/sc-command/lint-edge/sc-runtime` when
-`crates/sc-runtime` landed.
+`exclude` names `examples/spike`. The workspace member list is exactly the
+four library crates above. Sprint a-5 deleted `crates/sc-command/lint-edge/`
+when `crates/sc-runtime` landed. `sc-observability` and `sc-observability-otlp`
+are not workspace members. `cargo tree` enforces those edges, because sc-lint
+0.8.0 rejects a forbidden edge whose target is absent.
 
 ### Rationale
 

@@ -29,16 +29,12 @@ allowed_dependencies = [
   "serde",
   "rmcp",
 ]
-# sqlx is not a workspace member. sc-lint 0.8.0 rejects a forbidden edge whose
-# target is absent, so sqlx stays on `cargo tree`. sc-observability-types is
-# direct-only: a transitive line through sc-command is allowed, and a direct
-# dependency is rejected by cargo tree rather than a forbidden edge that would
-# also fail that transitive crate.
-forbidden_edges = [
-  "sc-runtime -> sc-config",
-  "sc-runtime -> sc-observability",
-  "sc-runtime -> sc-observability-otlp",
-]
+# sqlx, sc-observability, and sc-observability-otlp are not workspace members.
+# sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree
+# enforces those edges. sc-observability-types is direct-only: a transitive
+# line through sc-command is allowed, and a direct dependency is rejected by
+# cargo tree rather than a forbidden edge that would also fail that crate.
+forbidden_edges = ["sc-runtime -> sc-config"]
 
 [references]
 scope = "outside_owner_crate"
