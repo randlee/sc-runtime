@@ -26,7 +26,7 @@ use crate::Ready;
 use crate::builder::DaemonBuilder;
 use crate::config::DaemonConfig;
 use crate::error::{RuntimeError, TransportStep};
-use crate::shutdown::{RunControl, DRAIN_TIMEOUT};
+use crate::shutdown::{DRAIN_TIMEOUT, RunControl};
 
 /// Upper bound for the caller's wait until the daemon thread reports serving.
 const STARTUP_BUDGET: Duration = Duration::from_secs(30);
