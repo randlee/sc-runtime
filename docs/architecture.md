@@ -2159,10 +2159,10 @@ child-process boundary proof; acceptance is this runner, not a developer
 host.  
 **Tools:** `sc-lint 0.8.0`, `sc-lint-boundary 0.8.0`, `cargo generate-generate 0.25.1`.  
 **Rust:** `rustc 1.99.0`.  
-**Evidence commit:** `e157fa512b88bebd11a943aef03c1c5ac97f9f60`, which adds
-the workflow. Acceptance is a green run of that workflow on this commit.
-Version rows below are the lockfile resolutions the job builds with
-`--locked`.
+**Evidence:** acceptance is a green run of
+`.github/workflows/phase-a-spike.yml` on `ubuntu-latest` for the commit that
+contains this workflow. Version rows below are the lockfile resolutions the
+job builds with `--locked`.
 
 The server feature binds a Unix domain socket.
 `examples/spike/stack/src/lib.rs` compiles that module only under `cfg(unix)`

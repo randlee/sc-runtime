@@ -44,7 +44,7 @@ jobs:
           curl -fsSL -o "/tmp/${archive}" "$url"
           echo "c17e1e62764ac69c21674a9eda43c1f5f1336f7601455167ccb0ad3669a7c9ca  /tmp/${archive}" | sha256sum -c
           mkdir -p /tmp/sc-lint "$HOME/.local/bin"
-          tar -xzf "/tmp/${archive}" -C /tmp/sc-lint
+          tar -xzf "/tmp/${archive}" -C /tmp/sc-lint --strip-components=1
           install -m 755 /tmp/sc-lint/bin/sc-lint "$HOME/.local/bin/sc-lint"
           install -m 755 /tmp/sc-lint/bin/sc-lint-boundary "$HOME/.local/bin/sc-lint-boundary"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
