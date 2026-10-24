@@ -34,6 +34,14 @@ fn vectors_accept_and_reject_at_construction() {
             Err(err) => err,
         };
         assert_eq!(err.code(), vectors.code);
+        assert_eq!(err.code(), sc_transport::CODE_INVALID_NAME);
+        let rendered = err.to_string();
+        assert!(
+            rendered.contains("empty")
+                || rendered.contains("maximum")
+                || rendered.contains("contains"),
+            "{rendered}"
+        );
         match err {
             TransportError::InvalidName {
                 code,

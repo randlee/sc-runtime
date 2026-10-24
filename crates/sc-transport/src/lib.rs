@@ -48,12 +48,17 @@ pub use config::TransportConfig;
 #[doc(inline)]
 pub use endpoint::Endpoint;
 #[doc(inline)]
-pub use error::TransportError;
-#[doc(inline)]
-pub use resolve::{
-    instance_root, instance_root_from_base, resolve_endpoint, resolve_endpoint_from_env,
+pub use error::{
+    CODE_BIND, CODE_DAEMON_NOT_RUNNING, CODE_ENDPOINT_BUSY, CODE_INSTANCE_ROOT,
+    CODE_INVALID_ENDPOINT, CODE_INVALID_NAME, CODE_MISSING_TCP_PORT, CODE_NOT_A_SOCKET,
+    CODE_REQUEST, CODE_RESPONSE_DECODE, CODE_TIMED_OUT, TransportCause, TransportError,
 };
+#[doc(inline)]
+pub use resolve::{instance_root, resolve_endpoint, resolve_endpoint_from_env};
 
 #[cfg(feature = "server")]
 #[doc(inline)]
-pub use server::{Listener, ListenerAddr, ListenerIo, bind};
+pub use server::{Listener, bind};
+#[cfg(feature = "server")]
+#[doc(hidden)]
+pub use server::{ListenerAddr, ListenerIo};

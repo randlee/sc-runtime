@@ -133,7 +133,8 @@ Pinned by sprint a-3:
   [REQ-RT-0001](../sc-runtime/requirements.md); that type embeds
   `TransportConfig`.
 - On Windows, a missing `tcp_port` with no override is
-  `TransportError::MissingTcpPort` (`TRANSPORT.MISSING_TCP_PORT`). This
+  `TransportError::MissingTcpPort` (`TRANSPORT.MISSING_TCP_PORT`). `detail`
+  says to set `TransportConfig.tcp_port` or pass a `tcp:` override. This
   crate has no default TCP port.
 - An override or `TransportConfig.endpoint` that names `uds:<path>` is a
   UDS endpoint on every platform, including Windows. The resolver returns
@@ -217,8 +218,8 @@ The crate `sc-transport` MUST expose a public function that takes an
 application name (an [`AppName`](architecture.md), such as `"my-app"`) and
 returns the default instance root path for that application and the current
 user. The function is `instance_root(&AppName) -> Result<PathBuf, TransportError>`.
-`instance_root_from_base(&AppName, Option<&Path>)` is the path builder that
-receives the per-user base.
+The crate-private function `instance_root_from_base(&AppName, Option<&Path>)`
+is the path builder that receives the per-user base. It is not a facade item.
 
 The default instance root MUST be a per-user location: two different
 operating-system users MUST get different paths for the same application
@@ -256,9 +257,10 @@ The default base is decided by sprint a-3:
 
 `AppName::new` accepts ASCII `A-Z`, `a-z`, `0-9`, `-`, and `_`, length
 1 through 64 bytes. Rejection is `TransportError::InvalidName`
-(`APP.INVALID_NAME`). The type exposes `as_str` and `AsRef<str>`. It does
-not implement `Deref`. Tests load `tests/fixtures/app-name-vectors.json`
-and do not embed a second list.
+(`APP.INVALID_NAME`). `detail` says whether the name was empty, longer than
+64 bytes, or which character was outside that set. The type exposes `as_str`
+and `AsRef<str>`. It does not implement `Deref`. Tests load
+`tests/fixtures/app-name-vectors.json` and do not embed a second list.
 
 ### Rationale
 
@@ -501,7 +503,10 @@ The constructor signature is
 It stores the endpoint and builds the reqwest client. It does not contact
 the daemon. An unreachable daemon is first reported by `get` or `post`.
 Connect timeout and request timeout are each two seconds. The caller cannot
-set them in v0.1. On a non-Unix target, `Client::new` with a UDS endpoint
+set them in v0.1. [ADR-TRN-0001](architecture.md) reserves a future
+`#[non_exhaustive] ClientOptions` and `Client::with_options` for timeouts
+and default headers. v0.1 does not define that type. `Client::new` stays the
+handoff constructor. On a non-Unix target, `Client::new` with a UDS endpoint
 returns `TransportError::Request`. The resolver may still return that UDS
 endpoint.
 
@@ -561,10 +566,12 @@ variant `DaemonNotRunning`.
    optional auto-start layer outside this transport boundary.
 4. A response body that cannot be deserialised into the requested type MUST
    produce `TransportError::ResponseDecode` (`TRANSPORT.RESPONSE_DECODE`),
-   which carries the HTTP status and the cause. A body that deserialises as
-   `T` is `Ok(T)` for every HTTP status.
+   which carries the HTTP status, the cause, and `body_preview` (a lossy
+   UTF-8 prefix of at most 512 bytes of the body). A body that deserialises
+   as `T` is `Ok(T)` for every HTTP status.
 5. Connect timeout and request timeout are each two seconds and are not
-   caller-configurable. A timeout is `TransportError::TimedOut`
+   caller-configurable in v0.1. The extension point is `ClientOptions` in
+   [ADR-TRN-0001](architecture.md). A timeout is `TransportError::TimedOut`
    (`TRANSPORT.TIMED_OUT`).
 6. A client failure that is neither a missing socket, nor connection
    refused, nor a timeout, nor a decode failure is `TransportError::Request`
@@ -605,8 +612,8 @@ live. a-6 maps the string and chooses `suggested_action`, including any
    `code`, `endpoint`, and `cause`. The error carries no application name.
    `Client::new` takes an `Endpoint` only.
 6. A test asserts that an undecodable response body gives
-   `ResponseDecode`, and that a non-2xx body that deserialises as `T` is
-   `Ok(T)`.
+   `ResponseDecode` whose `body_preview` contains that body, and that a
+   non-2xx body that deserialises as `T` is `Ok(T)`.
 7. Inspection of `crates/sc-transport/src` finds no use of
    `std::process::Command` or `tokio::process`.
 8. A test calls the client against a route that never responds and asserts
@@ -627,16 +634,17 @@ In `crates/sc-transport/Cargo.toml`:
 3. `axum` MUST be declared `optional = true` and MUST be enabled only by the
    `server` feature.
 4. With default features the direct non-dev dependencies MUST be exactly
-   `tokio`, `reqwest` and `serde`. `tokio` and `reqwest` are stated by the
-   sc-runtime design. `serde` follows from the crate's own API: the client
-   methods are bounded by `serde::Serialize` and
+   `tokio`, `reqwest`, `serde`, and `serde_json`. `tokio` and `reqwest` are
+   stated by the sc-runtime design. `serde` follows from the crate's own API:
+   the client methods are bounded by `serde::Serialize` and
    `serde::de::DeserializeOwned` ([REQ-TRN-0005](requirements.md)) and the
    configuration type implements `serde::Deserialize`
-   ([REQ-TRN-0001](requirements.md)). The list does not name
+   ([REQ-TRN-0001](requirements.md)). `serde_json` decodes a buffered body so
+   `ResponseDecode` can keep `body_preview`. The list does not name
    `sc-observability-types`. `allowed_dependencies` does not include it.
    `server` still adds only `axum`.
 5. With the `server` feature the direct non-dev dependencies MUST be exactly
-   those three plus `axum`.
+   those four plus `axum`.
 6. The default build MUST NOT have `axum` anywhere in its normal dependency
    tree.
 7. All listener-binding code MUST be compiled only under
@@ -676,11 +684,11 @@ therefore all run with `-p sc-transport`.
 5. `Cargo.toml` inspection: `default` does not list `server`; `axum` has
    `optional = true`.
 6. `cargo tree -p sc-transport -e normal --depth 1 --prefix none` prints,
-   after the first line (the crate itself), exactly three lines, beginning
-   with `reqwest `, `serde ` and `tokio `.
+   after the first line (the crate itself), exactly four lines, beginning
+   with `reqwest `, `serde `, `serde_json `, and `tokio `.
 7. The same command with `--features server` prints, after the first line,
-   exactly four lines, beginning with `axum `, `reqwest `, `serde ` and
-   `tokio `.
+   exactly five lines, beginning with `axum `, `reqwest `, `serde `,
+   `serde_json `, and `tokio `.
 
 ---
 
@@ -759,8 +767,8 @@ by `cargo tree`: no line begins with `sc-config `, `sc-command `,
 is a workspace member makes sc-lint 0.8.0 exit 3. a-5 adds that name when
 the four-crate workspace exists.
 
-`allowed_dependencies` for the default build is `tokio`, `reqwest`, and
-`serde`. `axum` is absent from that list because the manifest has no
+`allowed_dependencies` for the default build is `tokio`, `reqwest`, `serde`,
+and `serde_json`. `axum` is absent from that list because the manifest has no
 feature key; [NFR-TRN-0001](requirements.md) checks it with `cargo tree`.
 `sc-lint-boundary` checks inter-crate edges and the public facade list only.
 
@@ -788,7 +796,7 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
    `[build-dependencies]`, or a `[target.*]` dependency table.
 3. A TOML manifest file exists under `boundaries/sc-transport/`. Its
    `forbidden_edges` list is empty. Its `allowed_dependents` list is empty.
-   Its `allowed_dependencies` are `tokio`, `reqwest`, and `serde`.
+   Its `allowed_dependencies` are `tokio`, `reqwest`, `serde`, and `serde_json`.
 4. `sc-lint lint sc-boundary --root crates/sc-transport` exits 0. Root
    `just lint` across all four manifests stays with a-5.
 5. `cargo test -p sc-transport` passes from a clean checkout.
@@ -803,7 +811,9 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
 
 Every public function and method of the crate `sc-transport` that can fail
 MUST return `Result<T, TransportError>`, where `TransportError` is one public
-`enum` defined in this crate. It is the crate's only public error type.
+`enum` defined in this crate. Public functions return that enum only.
+`TransportCause` is the `cause` payload and the `Error::source` value. It
+is not a function's `Err` type.
 
 The rule is owned by [NFR-RUN-0009](../requirements.md), which applies to
 every library crate of the workspace; this item applies it to

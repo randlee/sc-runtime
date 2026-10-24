@@ -91,7 +91,17 @@ async fn undecodable_body_is_not_daemon_not_running() {
     let server = common::spawn_tcp(listener);
     let client = Client::new(Endpoint::Tcp(addr)).unwrap();
     let err = client.get::<Named>("/bad").await.expect_err("not json");
-    assert!(matches!(err, TransportError::ResponseDecode { .. }));
+    match err {
+        TransportError::ResponseDecode {
+            status,
+            ref body_preview,
+            ..
+        } => {
+            assert_eq!(status, 200);
+            assert!(body_preview.contains("not json"), "{body_preview}");
+        }
+        other => panic!("expected ResponseDecode, got {other:?}"),
+    }
     assert!(!matches!(err, TransportError::DaemonNotRunning { .. }));
     assert_eq!(err.code(), "TRANSPORT.RESPONSE_DECODE");
     server.abort();

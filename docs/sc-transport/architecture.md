@@ -26,13 +26,13 @@ operations or stores.
 
 | Item | Feature | Purpose |
 |---|---|---|
-| `Endpoint` (`Uds(PathBuf)` or `Tcp(SocketAddr)`) | default | a resolved address; text form `uds:<path>` or `tcp:<socket-addr>` |
+| `Endpoint` (`Uds(PathBuf)` or `Tcp(SocketAddr)`) | default | `#[non_exhaustive]` resolved address; text form `uds:<path>` or `tcp:<socket-addr>`. `Endpoint::parse_os` accepts `OsStr` flag and environment values, including a non-UTF-8 UDS path on Unix |
 | `AppName` | default | client wire identity for `resolve_endpoint` and `instance_root` |
-| `resolve_endpoint`, `resolve_endpoint_from_env`, `instance_root`, `instance_root_from_base` | default | the one resolver both sides call |
+| `resolve_endpoint`, `resolve_endpoint_from_env`, `instance_root` | default | the one resolver both sides call. `resolve_endpoint_from_env` is the ADR-TRN-0002 point 5 convenience and reads only `SC_ENDPOINT`. `instance_root_from_base` is crate-private so tests can pass a base without a second public resolver |
 | `TransportConfig` | default | `#[non_exhaustive]` `serde::Deserialize` value a CLI config uses directly and `sc_runtime::DaemonConfig` embeds. Fields: `endpoint`, `instance_root`, `tcp_port` |
-| `Client`, `Client::new(Endpoint)`, `get`, `post` | default | typed HTTP client over reqwest |
-| `TransportError` | default | typed errors, including `DaemonNotRunning` |
-| `bind(&Endpoint)`, `Listener` | `server` | one listener type `axum::serve` accepts |
+| `Client`, `Client::new(Endpoint)`, `get`, `post` | default | typed HTTP client over reqwest. v0.1 timeouts are fixed at two seconds. The extension point is a future `#[non_exhaustive] ClientOptions` and `Client::with_options`; v0.1 does not define that type |
+| `TransportError`, `TransportCause`, `CODE_*` | default | typed errors. `CODE_*` are the stable codes. `TransportCause` is the `Error::source` chain, not a second `Result` error |
+| `bind(&Endpoint)`, `Listener` | `server` | one listener type `axum::serve` accepts. The associated stream and address types are opaque, `#[doc(hidden)]`, and not facade items. Callers use `Listener::local_endpoint` and `axum::serve` |
 
 ---
 
@@ -63,21 +63,37 @@ normally and requests go to the base URL `http://<ip>:<port>`.
 contains no type that implements a hyper or tower connector trait and no
 code that writes or parses HTTP on a raw stream.
 
+The client speaks plaintext `http://` only. `reqwest` is built without a TLS
+feature, so `rustls` is not in the graph. Adding TLS later is a new feature,
+not a default cost.
+
+`Client::new(Endpoint)` stays the handoff constructor. v0.1 connect and
+request timeouts are each two seconds, and the client has no header map.
+That limit is not the permanent contract. The extension point is a future
+`#[non_exhaustive] ClientOptions` and `Client::with_options(endpoint, options)`.
+`Client::new` remains and uses the default options. Timeouts and default
+headers are added on `ClientOptions`. v0.1 does not define that type.
+A caller with a longer operation waits for that type; it does not fork the
+client to set a timeout.
+
 ### Error inventory
 
 Every `TransportError` variant is a `Result` value. `code()` returns the
-stable code. a-6 maps the code to `ErrorCode` and owns `suggested_action`.
-This crate carries neither.
+stable code and is the source of truth; the `code` field is informational
+and `code()` does not read it. Each struct variant is `#[non_exhaustive]`.
+Variants that carry `cause` return that `TransportCause` from `Error::source`.
+`TransportCause` is not a second `Result` error. a-6 maps the code to
+`ErrorCode` and owns `suggested_action`. This crate carries neither.
 
 | Variant | Failure | Stable code | Payload | Recovery |
 |---|---|---|---|---|
-| `InvalidName` | `AppName::new` rejected the string | `APP.INVALID_NAME` | `name` | Use 1..=64 bytes of ASCII `A-Z`, `a-z`, `0-9`, `-`, `_` |
+| `InvalidName` | `AppName::new` rejected the string | `APP.INVALID_NAME` | `name`, `detail` | `detail` says empty, longer than 64 bytes, or which character was outside ASCII `A-Z`, `a-z`, `0-9`, `-`, `_` |
 | `InvalidEndpoint` | Endpoint text did not parse | `TRANSPORT.INVALID_ENDPOINT` | `source`, `detail` | Use `uds:<path>` or `tcp:<socket-addr>`. An empty string is invalid |
-| `MissingTcpPort` | Windows default has no `tcp_port` | `TRANSPORT.MISSING_TCP_PORT` | `code` | Set `TransportConfig.tcp_port` or pass a `tcp:` override. This crate has no default port |
+| `MissingTcpPort` | Windows default has no `tcp_port` | `TRANSPORT.MISSING_TCP_PORT` | `code`, `detail` | `detail` says to set `TransportConfig.tcp_port` or pass a `tcp:` override. This crate has no default port |
 | `InstanceRootUnavailable` | Per-user base directory is missing | `TRANSPORT.INSTANCE_ROOT_UNAVAILABLE` | `detail` | Set `XDG_RUNTIME_DIR` or `HOME` on Unix, or `LOCALAPPDATA` on Windows, or pass `TransportConfig.instance_root` |
-| `DaemonNotRunning` | UDS path missing, or the connection was refused | `DAEMON.NOT_RUNNING` | `code`, `endpoint`, `cause` | Report the code, endpoint, and cause. The variant has no `suggested_action`, no `AppName`, and no `ErrorCode`. This crate does not name `daemon start` |
-| `ResponseDecode` | The body is not `T` | `TRANSPORT.RESPONSE_DECODE` | `status`, `cause` | Read `status` and `cause`. A body that is `T` is `Ok(T)` at every HTTP status |
-| `TimedOut` | The 2s connect or request timeout elapsed | `TRANSPORT.TIMED_OUT` | `endpoint`, `cause` | Timeouts are fixed. This is neither `DaemonNotRunning` nor `ResponseDecode` |
+| `DaemonNotRunning` | UDS path missing, or the connection was refused | `DAEMON.NOT_RUNNING` | `code`, `endpoint`, `cause` | Report the code, endpoint, and cause. `Error::source` is the cause. The variant has no `suggested_action`, no `AppName`, and no `ErrorCode`. This crate does not name `daemon start` |
+| `ResponseDecode` | The body is not `T` | `TRANSPORT.RESPONSE_DECODE` | `status`, `cause`, `body_preview` | `body_preview` is a lossy UTF-8 prefix of at most 512 bytes. Read `status`, `cause`, and that preview. A body that is `T` is `Ok(T)` at every HTTP status |
+| `TimedOut` | The 2s connect or request timeout elapsed | `TRANSPORT.TIMED_OUT` | `endpoint`, `cause` | v0.1 timeouts are fixed. The extension point is `ClientOptions` above. This is neither `DaemonNotRunning` nor `ResponseDecode` |
 | `Request` | Other client failure, including a directory path and a UDS endpoint on non-Unix | `TRANSPORT.REQUEST` | `endpoint`, `cause` | Correct the endpoint. This is not a down-daemon signal |
 | `Bind` | The listener could not bind, or UDS was requested on non-Unix | `TRANSPORT.BIND` | `endpoint`, `cause` | Free the address or create the parent directory. This crate does not create it |
 | `EndpointBusy` | Another listener holds the endpoint lock | `TRANSPORT.ENDPOINT_BUSY` | `endpoint`, `cause` | Leave the live socket in place |
@@ -102,10 +118,12 @@ no UDS client on Windows; that is why the Windows default endpoint is TCP on
 ### Implementation
 
 **Enforced by:** inspection of `crates/sc-transport/Cargo.toml` (no
-`hyperlocal`; `reqwest` at `0.13`); `cargo tree -p sc-transport -e normal
---prefix none`, with and without `--features server`, printing no line
-beginning with `hyperlocal ` (the name followed by a space); the `arch-qa`
-review agent checks the source for a custom connector or hand-written HTTP.
+`hyperlocal`; `reqwest` at `0.13` with `json` and without `rustls`);
+`cargo tree -p sc-transport -e normal --prefix none`, with and without
+`--features server`, printing no line beginning with `hyperlocal ` or
+`rustls ` (the name followed by a space). The same check is the
+`dependencies` integration test. The `arch-qa` review agent checks the
+source for a custom connector or hand-written HTTP.
 
 ### Related Documents
 
@@ -310,11 +328,17 @@ other at compile time.
 and without `--features server`, printing no line beginning with
 `sc-config `, `sc-command `, `sc-runtime `, `sc-observability `,
 `sc-observability-types `, or `sc-observability-otlp `
-([NFR-TRN-0003](requirements.md)). The boundary manifest's
-`forbidden_edges` is empty because this lint tree's only workspace member
-is `sc-transport`. `sc-lint lint sc-boundary --root crates/sc-transport`
-exits 0. That the source never names `Envelope` or `OpError` is checked by
-the inspection criterion of [REQ-TRN-0005](requirements.md).
+([NFR-TRN-0003](requirements.md)). The `dependencies` integration test runs
+that check. The boundary manifest's `forbidden_edges` and
+`allowed_dependents` are empty because this lint tree's only workspace
+member is `sc-transport`. sc-lint 0.8.0 exits 3 when a forbidden target is
+absent from the workspace, so those lists stay empty here. That is a
+temporary deviation, not a dropped rule: the cargo-tree test is the gate
+until a-5 has a multi-crate workspace. `axum` is allowed only with the
+`server` feature. The manifest omits it because sc-lint 0.8.0 has no
+feature key. `sc-lint lint sc-boundary --root crates/sc-transport` exits 0.
+That the source never names `Envelope` or `OpError` is checked by the
+inspection criterion of [REQ-TRN-0005](requirements.md).
 
 ### Related Documents
 
@@ -351,7 +375,18 @@ and `TransportError` are in the default build. Within this workspace only
 the crate `sc-runtime` enables `sc-transport/server`; a generated `cli` crate
 depends on `sc-transport` with default features. `Listener` is one type.
 `local_endpoint` reports the bound address, including a TCP port assigned
-for port `0`.
+for port `0`. The `axum::serve::Listener` associated stream and address are
+opaque structs with private inners. They are `#[doc(hidden)]` and are not
+facade items, because route code must not branch on the transport. Callers
+use `Listener::local_endpoint` and `axum::serve`.
+
+`crates/sc-transport/Cargo.toml` is a temporary single-crate workspace
+(`[workspace] members = ["."]` plus `[workspace.package]`, with
+`Cargo.lock` beside it) so this leaf can build and run
+`sc-lint lint sc-boundary --root crates/sc-transport` before a-5 registers
+the crate. a-5 deletes that `[workspace]` table, `[workspace.package]`, and
+`Cargo.lock` when it adds the member. A package cannot belong to two
+workspaces. Do not copy the leaf workspace into a generated consumer.
 
 ### Consequences
 
@@ -537,9 +572,12 @@ endpoint itself and must also protect standalone users of `sc-transport`.
 A daemon restarts cleanly after a crash with no manual step, and endpoint
 overrides cannot let a second instance unlink a live listener. The server
 feature gains one small locking dependency and `Listener` retains one guard.
-The lock, unlink, and permission change are blocking file operations done
-once at bind time, outside the request path, so they do not conflict with the
-async-end-to-end rule ([NFR-RUN-0002](../requirements.md)).
+The lock, unlink of a stale socket, and permission change run inside
+`tokio::task::spawn_blocking` during `bind`, so the async caller does not
+stall a runtime worker. Drop of the listener still unlinks the socket
+synchronously: `Drop` cannot await, and the unlink must happen while this
+listener still holds the lock. A non-transient accept error closes the
+inner socket and stops `accept` instead of retrying forever.
 
 ### Alternatives Considered
 

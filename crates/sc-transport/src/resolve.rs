@@ -24,12 +24,12 @@ const DAEMON_SOCKET_FILE: &str = "daemon.sock";
 ///
 /// # Examples
 ///
-/// ```
-/// use sc_transport::{instance_root_from_base, AppName};
+/// ```no_run
+/// use sc_transport::{instance_root, AppName};
 ///
 /// let app = AppName::new("my-app")?;
-/// let root = instance_root_from_base(&app, Some(std::path::Path::new("base")))?;
-/// assert_eq!(root, std::path::PathBuf::from("base").join("my-app"));
+/// let root = instance_root(&app)?;
+/// # let _ = root;
 /// # Ok::<(), sc_transport::TransportError>(())
 /// ```
 pub fn instance_root(app: &AppName) -> Result<PathBuf, TransportError> {
@@ -40,12 +40,13 @@ pub fn instance_root(app: &AppName) -> Result<PathBuf, TransportError> {
 /// Builds `<base>/<app>`, or fails when `base` is absent.
 ///
 /// `instance_root` obtains `base` from the operating system and calls this
-/// function. The directory is not created.
+/// function. The directory is not created. The function stays crate-private
+/// so tests can supply a base without publishing a second resolver.
 ///
 /// # Errors
 ///
 /// Returns [`TransportError::InstanceRootUnavailable`] when `base` is `None`.
-pub fn instance_root_from_base(
+pub(crate) fn instance_root_from_base(
     app: &AppName,
     base: Option<&Path>,
 ) -> Result<PathBuf, TransportError> {
@@ -191,9 +192,33 @@ mod tests {
     fn missing_windows_port_is_an_error() {
         let err = windows_default_endpoint(None).unwrap_err();
         assert!(matches!(
-            err,
-            TransportError::MissingTcpPort { code } if code == "TRANSPORT.MISSING_TCP_PORT"
+            &err,
+            TransportError::MissingTcpPort { code, detail }
+                if *code == "TRANSPORT.MISSING_TCP_PORT" && detail.contains("tcp_port")
         ));
+        assert!(err.to_string().contains("tcp_port"), "{err}");
+    }
+
+    #[test]
+    fn path_builder_uses_the_supplied_base() {
+        let one = tempfile::tempdir().unwrap();
+        let two = tempfile::tempdir().unwrap();
+        let name = AppName::new("app-a").unwrap();
+        let first = instance_root_from_base(&name, Some(one.path())).unwrap();
+        let second = instance_root_from_base(&name, Some(two.path())).unwrap();
+        assert_ne!(first, second);
+        assert!(first.starts_with(one.path()));
+        assert!(second.starts_with(two.path()));
+    }
+
+    #[test]
+    fn absent_base_is_an_error() {
+        let err = instance_root_from_base(&AppName::new("app-a").unwrap(), None).unwrap_err();
+        assert!(matches!(
+            err,
+            TransportError::InstanceRootUnavailable { .. }
+        ));
+        assert_eq!(err.code(), "TRANSPORT.INSTANCE_ROOT_UNAVAILABLE");
     }
 
     #[test]

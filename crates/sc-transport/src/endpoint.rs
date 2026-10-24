@@ -25,6 +25,7 @@ use crate::error::TransportError;
 /// # Ok::<(), sc_transport::TransportError>(())
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Endpoint {
     /// Unix domain socket at `path`.
     Uds(PathBuf),

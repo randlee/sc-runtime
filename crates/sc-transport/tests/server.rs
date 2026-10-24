@@ -29,10 +29,12 @@ async fn assert_health(endpoint: &Endpoint) {
             .unwrap(),
         #[cfg(not(unix))]
         Endpoint::Uds(_) => panic!("uds"),
+        _ => panic!("unsupported endpoint"),
     };
     let url = match endpoint {
         Endpoint::Tcp(addr) => format!("http://{addr}/health"),
         Endpoint::Uds(_) => "http://localhost/health".to_owned(),
+        _ => panic!("unsupported endpoint"),
     };
     let response = raw.get(url).send().await.unwrap();
     assert_eq!(response.status(), 200);

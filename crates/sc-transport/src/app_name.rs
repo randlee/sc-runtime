@@ -33,7 +33,7 @@ impl AppName {
     pub fn new(name: impl AsRef<str>) -> Result<Self, TransportError> {
         let name = name.as_ref();
         if !is_valid(name) {
-            return Err(TransportError::invalid_name(name));
+            return Err(TransportError::invalid_name(name, rejection_detail(name)));
         }
         Ok(Self(name.to_owned()))
     }
@@ -78,4 +78,42 @@ fn is_valid(name: &str) -> bool {
         && bytes
             .iter()
             .all(|byte| byte.is_ascii_alphanumeric() || *byte == b'-' || *byte == b'_')
+}
+
+fn rejection_detail(name: &str) -> String {
+    if name.is_empty() {
+        return "name is empty; use 1..=64 bytes of ASCII letters, digits, '-' or '_'".to_owned();
+    }
+    if name.len() > 64 {
+        return format!(
+            "name is {} bytes; the maximum is 64 ASCII letters, digits, '-' or '_'",
+            name.len()
+        );
+    }
+    match name
+        .chars()
+        .find(|ch| !ch.is_ascii_alphanumeric() && *ch != '-' && *ch != '_')
+    {
+        Some(ch) => format!("name contains {ch:?}; use ASCII letters, digits, '-' or '_'"),
+        None => "name is not 1..=64 bytes of ASCII letters, digits, '-' or '_'".to_owned(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::AppName;
+
+    #[test]
+    fn rejection_detail_names_the_failure() {
+        let empty = AppName::new("").unwrap_err();
+        assert!(empty.to_string().contains("empty"), "{empty}");
+        assert!(std::error::Error::source(&empty).is_none());
+
+        let long = "a".repeat(65);
+        let too_long = AppName::new(&long).unwrap_err();
+        assert!(too_long.to_string().contains("maximum"), "{too_long}");
+
+        let spaced = AppName::new("my app").unwrap_err();
+        assert!(spaced.to_string().contains("contains"), "{spaced}");
+    }
 }

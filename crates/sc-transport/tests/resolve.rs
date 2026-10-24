@@ -4,8 +4,7 @@ use std::ffi::OsStr;
 use std::net::Ipv4Addr;
 
 use sc_transport::{
-    AppName, Endpoint, TransportConfig, TransportError, instance_root, instance_root_from_base,
-    resolve_endpoint,
+    AppName, Endpoint, TransportConfig, TransportError, instance_root, resolve_endpoint,
 };
 
 fn app(name: &str) -> AppName {
@@ -133,28 +132,6 @@ fn default_instance_root_is_stable_and_app_specific() {
     let other = instance_root(&app("app-b")).unwrap_or_else(|err| panic!("{err}"));
     assert_eq!(first, second);
     assert_ne!(first, other);
-}
-
-#[test]
-fn path_builder_uses_the_supplied_base() {
-    let one = tempfile::tempdir().unwrap();
-    let two = tempfile::tempdir().unwrap();
-    let name = app("app-a");
-    let first = instance_root_from_base(&name, Some(one.path())).unwrap();
-    let second = instance_root_from_base(&name, Some(two.path())).unwrap();
-    assert_ne!(first, second);
-    assert!(first.starts_with(one.path()));
-    assert!(second.starts_with(two.path()));
-}
-
-#[test]
-fn absent_base_is_an_error() {
-    let err = instance_root_from_base(&app("app-a"), None).expect_err("absent base");
-    assert!(matches!(
-        err,
-        TransportError::InstanceRootUnavailable { .. }
-    ));
-    assert_eq!(err.code(), "TRANSPORT.INSTANCE_ROOT_UNAVAILABLE");
 }
 
 #[test]

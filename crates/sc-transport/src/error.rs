@@ -37,24 +37,75 @@ pub const CODE_ENDPOINT_BUSY: &str = "TRANSPORT.ENDPOINT_BUSY";
 /// Stable code when a UDS path exists and is not a socket.
 pub const CODE_NOT_A_SOCKET: &str = "TRANSPORT.NOT_A_SOCKET";
 
+const MISSING_TCP_PORT_DETAIL: &str = "set TransportConfig::tcp_port or pass a tcp: endpoint override; this crate has no default port";
+
+/// Cause text chained from [`TransportError::source`].
+///
+/// Public functions return [`TransportError`]. This type is the `cause`
+/// payload on those variants, not a second `Result` error.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct TransportCause {
+    message: String,
+}
+
+impl TransportCause {
+    pub(crate) fn new(message: impl Into<String>) -> Self {
+        Self {
+            message: message.into(),
+        }
+    }
+
+    /// Returns the cause text.
+    pub fn as_str(&self) -> &str {
+        &self.message
+    }
+
+    /// Returns whether the cause text is empty.
+    pub fn is_empty(&self) -> bool {
+        self.message.is_empty()
+    }
+}
+
+impl fmt::Display for TransportCause {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
+impl std::error::Error for TransportCause {}
+
+impl AsRef<str> for TransportCause {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
 /// Failure returned by every fallible public function in this crate.
 ///
 /// `DaemonNotRunning` carries `code`, the endpoint, and the cause. It has no
 /// suggested action, no application name, and no observability error type.
 /// A later CLI maps `DAEMON.NOT_RUNNING` and chooses the action text.
+///
+/// Each struct variant is [`non_exhaustive`]. The `code` field is
+/// informational. [`TransportError::code`] is the source of truth.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum TransportError {
     /// `name` failed the application-name predicate.
+    #[non_exhaustive]
     InvalidName {
-        /// Always [`CODE_INVALID_NAME`].
+        /// Informational copy of [`CODE_INVALID_NAME`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// The rejected name.
         name: String,
+        /// Why the name was rejected, including the allowed set.
+        detail: String,
     },
     /// `source` is not valid endpoint text.
+    #[non_exhaustive]
     InvalidEndpoint {
-        /// Always [`CODE_INVALID_ENDPOINT`].
+        /// Informational copy of [`CODE_INVALID_ENDPOINT`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// The text that failed to parse.
         source: String,
@@ -62,84 +113,100 @@ pub enum TransportError {
         detail: String,
     },
     /// The Windows default needs `TransportConfig::tcp_port` or a `tcp:` override.
+    #[non_exhaustive]
     MissingTcpPort {
-        /// Always [`CODE_MISSING_TCP_PORT`].
+        /// Informational copy of [`CODE_MISSING_TCP_PORT`]. Prefer [`TransportError::code`].
         code: &'static str,
+        /// How to supply the missing port.
+        detail: &'static str,
     },
     /// No per-user base directory was available.
+    #[non_exhaustive]
     InstanceRootUnavailable {
-        /// Always [`CODE_INSTANCE_ROOT`].
+        /// Informational copy of [`CODE_INSTANCE_ROOT`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// Which location was missing.
         detail: String,
     },
     /// The endpoint refused the connection or the UDS path was missing.
+    #[non_exhaustive]
     DaemonNotRunning {
-        /// Always [`CODE_DAEMON_NOT_RUNNING`].
+        /// Informational copy of [`CODE_DAEMON_NOT_RUNNING`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// The endpoint the client tried to open.
         endpoint: Endpoint,
         /// The I/O failure from the connection attempt.
-        cause: String,
+        cause: TransportCause,
     },
     /// The response body could not be deserialized as `T`.
+    #[non_exhaustive]
     ResponseDecode {
-        /// Always [`CODE_RESPONSE_DECODE`].
+        /// Informational copy of [`CODE_RESPONSE_DECODE`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// HTTP status of the response that failed to decode.
         status: u16,
         /// The decode failure.
-        cause: String,
+        cause: TransportCause,
+        /// Bounded, lossy UTF-8 prefix of the body that failed to decode.
+        body_preview: String,
     },
     /// The connect or request timeout elapsed.
+    #[non_exhaustive]
     TimedOut {
-        /// Always [`CODE_TIMED_OUT`].
+        /// Informational copy of [`CODE_TIMED_OUT`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// The endpoint the client was calling.
         endpoint: Endpoint,
         /// The timeout failure.
-        cause: String,
+        cause: TransportCause,
     },
     /// A client failure other than a down daemon, a timeout, or a decode.
+    #[non_exhaustive]
     Request {
-        /// Always [`CODE_REQUEST`].
+        /// Informational copy of [`CODE_REQUEST`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// The endpoint the client was calling.
         endpoint: Endpoint,
         /// The underlying failure.
-        cause: String,
+        cause: TransportCause,
     },
     /// Binding the listener failed.
+    #[non_exhaustive]
     Bind {
-        /// Always [`CODE_BIND`].
+        /// Informational copy of [`CODE_BIND`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// The endpoint that could not be bound.
         endpoint: Endpoint,
         /// The underlying failure.
-        cause: String,
+        cause: TransportCause,
     },
     /// The UDS endpoint lock is already held.
+    #[non_exhaustive]
     EndpointBusy {
-        /// Always [`CODE_ENDPOINT_BUSY`].
+        /// Informational copy of [`CODE_ENDPOINT_BUSY`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// The endpoint whose lock is held.
         endpoint: Endpoint,
         /// Why the lock was not acquired.
-        cause: String,
+        cause: TransportCause,
     },
     /// The UDS path exists and is not a socket file.
+    #[non_exhaustive]
     NotASocket {
-        /// Always [`CODE_NOT_A_SOCKET`].
+        /// Informational copy of [`CODE_NOT_A_SOCKET`]. Prefer [`TransportError::code`].
         code: &'static str,
         /// The path that was left unchanged.
         endpoint: Endpoint,
         /// Why the path was rejected.
-        cause: String,
+        cause: TransportCause,
     },
 }
 
 impl TransportError {
     /// Stable code for this failure.
+    ///
+    /// This is the source of truth. The `code` field on each variant is
+    /// informational and is not read here.
     pub fn code(&self) -> &'static str {
         match self {
             Self::InvalidName { .. } => CODE_INVALID_NAME,
@@ -156,10 +223,11 @@ impl TransportError {
         }
     }
 
-    pub(crate) fn invalid_name(name: impl Into<String>) -> Self {
+    pub(crate) fn invalid_name(name: impl Into<String>, detail: impl Into<String>) -> Self {
         Self::InvalidName {
             code: CODE_INVALID_NAME,
             name: name.into(),
+            detail: detail.into(),
         }
     }
 
@@ -175,6 +243,7 @@ impl TransportError {
     pub(crate) fn missing_tcp_port() -> Self {
         Self::MissingTcpPort {
             code: CODE_MISSING_TCP_PORT,
+            detail: MISSING_TCP_PORT_DETAIL,
         }
     }
 
@@ -189,15 +258,20 @@ impl TransportError {
         Self::DaemonNotRunning {
             code: CODE_DAEMON_NOT_RUNNING,
             endpoint,
-            cause: cause.into(),
+            cause: TransportCause::new(cause),
         }
     }
 
-    pub(crate) fn response_decode(status: u16, cause: impl Into<String>) -> Self {
+    pub(crate) fn response_decode(
+        status: u16,
+        cause: impl Into<String>,
+        body_preview: impl Into<String>,
+    ) -> Self {
         Self::ResponseDecode {
             code: CODE_RESPONSE_DECODE,
             status,
-            cause: cause.into(),
+            cause: TransportCause::new(cause),
+            body_preview: body_preview.into(),
         }
     }
 
@@ -205,7 +279,7 @@ impl TransportError {
         Self::TimedOut {
             code: CODE_TIMED_OUT,
             endpoint,
-            cause: cause.into(),
+            cause: TransportCause::new(cause),
         }
     }
 
@@ -213,7 +287,7 @@ impl TransportError {
         Self::Request {
             code: CODE_REQUEST,
             endpoint,
-            cause: cause.into(),
+            cause: TransportCause::new(cause),
         }
     }
 
@@ -222,7 +296,7 @@ impl TransportError {
         Self::Bind {
             code: CODE_BIND,
             endpoint,
-            cause: cause.into(),
+            cause: TransportCause::new(cause),
         }
     }
 
@@ -231,7 +305,7 @@ impl TransportError {
         Self::EndpointBusy {
             code: CODE_ENDPOINT_BUSY,
             endpoint,
-            cause: cause.into(),
+            cause: TransportCause::new(cause),
         }
     }
 
@@ -240,7 +314,23 @@ impl TransportError {
         Self::NotASocket {
             code: CODE_NOT_A_SOCKET,
             endpoint,
-            cause: cause.into(),
+            cause: TransportCause::new(cause),
+        }
+    }
+
+    fn chained_cause(&self) -> Option<&TransportCause> {
+        match self {
+            Self::DaemonNotRunning { cause, .. }
+            | Self::ResponseDecode { cause, .. }
+            | Self::TimedOut { cause, .. }
+            | Self::Request { cause, .. }
+            | Self::Bind { cause, .. }
+            | Self::EndpointBusy { cause, .. }
+            | Self::NotASocket { cause, .. } => Some(cause),
+            Self::InvalidName { .. }
+            | Self::InvalidEndpoint { .. }
+            | Self::MissingTcpPort { .. }
+            | Self::InstanceRootUnavailable { .. } => None,
         }
     }
 }
@@ -248,7 +338,7 @@ impl TransportError {
 impl fmt::Display for TransportError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidName { code, name } => write!(f, "{code}: {name}"),
+            Self::InvalidName { code, name, detail } => write!(f, "{code}: {name}: {detail}"),
             Self::InvalidEndpoint {
                 code,
                 source,
@@ -256,7 +346,7 @@ impl fmt::Display for TransportError {
             } => {
                 write!(f, "{code}: {source}: {detail}")
             }
-            Self::MissingTcpPort { code } => write!(f, "{code}"),
+            Self::MissingTcpPort { code, detail } => write!(f, "{code}: {detail}"),
             Self::InstanceRootUnavailable { code, detail } => write!(f, "{code}: {detail}"),
             Self::DaemonNotRunning {
                 code,
@@ -294,17 +384,28 @@ impl fmt::Display for TransportError {
                 code,
                 status,
                 cause,
+                body_preview,
             } => {
-                write!(f, "{code}: http {status}: {cause}")
+                if body_preview.is_empty() {
+                    write!(f, "{code}: http {status}: {cause}")
+                } else {
+                    write!(f, "{code}: http {status}: {cause}: {body_preview}")
+                }
             }
         }
     }
 }
 
-impl std::error::Error for TransportError {}
+impl std::error::Error for TransportError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.chained_cause()
+            .map(|cause| cause as &(dyn std::error::Error + 'static))
+    }
+}
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error;
     use std::path::PathBuf;
 
     use super::*;
@@ -313,17 +414,31 @@ mod tests {
     fn daemon_not_running_has_code_endpoint_and_cause_only() {
         let endpoint = Endpoint::Uds(PathBuf::from("daemon.sock"));
         let err = TransportError::daemon_not_running(endpoint.clone(), "connection refused");
-        match err {
+        match &err {
             TransportError::DaemonNotRunning {
                 code,
                 endpoint: got,
                 cause,
             } => {
-                assert_eq!(code, CODE_DAEMON_NOT_RUNNING);
-                assert_eq!(got, endpoint);
-                assert_eq!(cause, "connection refused");
+                assert_eq!(*code, CODE_DAEMON_NOT_RUNNING);
+                assert_eq!(got, &endpoint);
+                assert_eq!(cause.as_str(), "connection refused");
             }
             other => panic!("unexpected {other:?}"),
         }
+        let rendered = format!("{err:?}");
+        assert!(!rendered.contains("suggested_action"));
+        assert_eq!(
+            Error::source(&err).map(ToString::to_string).as_deref(),
+            Some("connection refused")
+        );
+    }
+
+    #[test]
+    fn missing_tcp_port_explains_recovery() {
+        let err = TransportError::missing_tcp_port();
+        assert_eq!(err.code(), CODE_MISSING_TCP_PORT);
+        assert!(err.to_string().contains("tcp_port"), "{err}");
+        assert!(Error::source(&err).is_none());
     }
 }

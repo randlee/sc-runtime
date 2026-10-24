@@ -19,7 +19,8 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 /// `new` does not contact the daemon. `get` and `post` report an unreachable
 /// daemon as [`TransportError::DaemonNotRunning`] and do not spawn a process
 /// or retry. Response bodies are deserialized as the caller-chosen `T` for
-/// every HTTP status. A body that is not `T` is [`TransportError::ResponseDecode`].
+/// every HTTP status. A body that is not `T` is [`TransportError::ResponseDecode`]
+/// and keeps a bounded preview of that body.
 ///
 /// # Examples
 ///
@@ -50,6 +51,8 @@ impl Client {
     /// A UDS endpoint uses `reqwest::ClientBuilder::unix_socket`. A TCP
     /// endpoint uses `http://<socket-addr>`. The call does not connect.
     /// Connect and request timeouts are fixed at two seconds in v0.1.
+    /// A future `ClientOptions` is the extension point for timeouts and
+    /// default headers; this constructor stays and uses the defaults.
     ///
     /// # Errors
     ///
@@ -86,7 +89,8 @@ impl Client {
     /// Returns [`TransportError::DaemonNotRunning`] when the UDS path is
     /// missing or the connection is refused, [`TransportError::TimedOut`] when
     /// the request times out, [`TransportError::ResponseDecode`] when the body
-    /// is not `T`, and [`TransportError::Request`] for any other client failure.
+    /// is not `T` (with a bounded `body_preview`), and [`TransportError::Request`]
+    /// for any other client failure.
     pub async fn get<T: DeserializeOwned>(&self, path: &str) -> Result<T, TransportError> {
         let response = self
             .http
@@ -159,18 +163,44 @@ fn request_url(base: &str, path: &str) -> String {
     format!("{base}/{path}")
 }
 
+const BODY_PREVIEW_LIMIT: usize = 512;
+
 async fn read_json<T: DeserializeOwned>(
     endpoint: &Endpoint,
     response: reqwest::Response,
 ) -> Result<T, TransportError> {
     let status = response.status().as_u16();
-    match response.json::<T>().await {
-        Ok(value) => Ok(value),
+    let bytes = match response.bytes().await {
+        Ok(bytes) => bytes,
         Err(err) if err.is_timeout() => {
-            Err(TransportError::timed_out(endpoint.clone(), err.to_string()))
+            return Err(TransportError::timed_out(endpoint.clone(), err.to_string()));
         }
-        Err(err) => Err(TransportError::response_decode(status, err.to_string())),
+        Err(err) => {
+            return Err(TransportError::response_decode(
+                status,
+                err.to_string(),
+                String::new(),
+            ));
+        }
+    };
+    match serde_json::from_slice::<T>(&bytes) {
+        Ok(value) => Ok(value),
+        Err(err) => Err(TransportError::response_decode(
+            status,
+            err.to_string(),
+            body_preview(&bytes),
+        )),
     }
+}
+
+fn body_preview(bytes: &[u8]) -> String {
+    let truncated = bytes.len() > BODY_PREVIEW_LIMIT;
+    let shown = &bytes[..bytes.len().min(BODY_PREVIEW_LIMIT)];
+    let mut preview = String::from_utf8_lossy(shown).into_owned();
+    if truncated {
+        preview.push_str("...");
+    }
+    preview
 }
 
 fn classify(endpoint: &Endpoint, err: reqwest::Error) -> TransportError {
@@ -206,4 +236,17 @@ fn io_kind(err: &reqwest::Error) -> Option<std::io::ErrorKind> {
         current = item.source();
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::body_preview;
+
+    #[test]
+    fn preview_keeps_a_bounded_lossy_prefix() {
+        let long = vec![b'a'; 600];
+        let preview = body_preview(&long);
+        assert_eq!(preview, format!("{}...", "a".repeat(512)));
+        assert_eq!(body_preview(&[0xff]), "\u{FFFD}");
+    }
 }
