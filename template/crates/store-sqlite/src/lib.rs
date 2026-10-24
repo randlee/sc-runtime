@@ -17,6 +17,9 @@ use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqlitePo
 /// Example choice: how many read connections the pool opens.
 const READ_POOL_SIZE: u32 = 4;
 
+/// How long a handler waits for a pooled connection before failing.
+const ACQUIRE_TIMEOUT: Duration = Duration::from_secs(5);
+
 /// Failure from the SQLite store. Callers do not need a direct sqlx dependency.
 #[derive(Debug)]
 pub struct StoreError {
@@ -35,6 +38,15 @@ fn store_error(err: impl std::fmt::Display) -> StoreError {
     StoreError {
         message: err.to_string(),
     }
+}
+
+fn pool_error(err: sqlx::Error) -> StoreError {
+    if matches!(err, sqlx::Error::PoolTimedOut) {
+        return StoreError {
+            message: "sqlite pool acquire timed out".to_owned(),
+        };
+    }
+    store_error(err)
 }
 
 /// One widget row.
@@ -69,9 +81,10 @@ pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
     if let Some(parent) = config.path.parent()
         && !parent.as_os_str().is_empty()
     {
-        std::fs::create_dir_all(parent)
+        tokio::fs::create_dir_all(parent)
+            .await
             .map_err(sqlx::Error::Io)
-            .map_err(store_error)?;
+            .map_err(pool_error)?;
     }
     let options = SqliteConnectOptions::new()
         .filename(&config.path)
@@ -80,14 +93,16 @@ pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
         .busy_timeout(Duration::from_secs(5));
     let write = SqlitePoolOptions::new()
         .max_connections(1)
+        .acquire_timeout(ACQUIRE_TIMEOUT)
         .connect_with(options.clone())
         .await
-        .map_err(store_error)?;
+        .map_err(pool_error)?;
     let read = SqlitePoolOptions::new()
         .max_connections(READ_POOL_SIZE)
+        .acquire_timeout(ACQUIRE_TIMEOUT)
         .connect_with(options)
         .await
-        .map_err(store_error)?;
+        .map_err(pool_error)?;
     sqlx::migrate!("./migrations")
         .run(&write)
         .await
@@ -130,7 +145,8 @@ pub async fn get_widget(store: &Store, id: &str) -> Result<Option<WidgetRow>, St
 /// # Errors
 ///
 /// Returns the sqlx error when the query fails.
-pub async fn count_widgets(store: &Store) -> Result<i64, StoreError> {
+#[cfg(test)]
+async fn count_widgets(store: &Store) -> Result<i64, StoreError> {
     let count = sqlx::query_scalar!(r#"SELECT COUNT(*) as "count!: i64" FROM widgets"#)
         .fetch_one(&store.read)
         .await
@@ -143,7 +159,8 @@ pub async fn count_widgets(store: &Store) -> Result<i64, StoreError> {
 /// # Errors
 ///
 /// Returns the sqlx error when the pragma fails.
-pub async fn journal_mode(store: &Store) -> Result<String, StoreError> {
+#[cfg(test)]
+async fn journal_mode(store: &Store) -> Result<String, StoreError> {
     sqlx::query_scalar::<_, String>("PRAGMA journal_mode")
         .fetch_one(&store.write)
         .await

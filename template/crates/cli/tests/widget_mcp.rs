@@ -1,5 +1,7 @@
 //! REST, MCP, and CLI against one fixture. This file is omitted when mcp is off.
 
+use std::time::Duration;
+
 use cli::APP_NAME;
 use sc_runtime::DaemonConfig;
 use sc_runtime::testing::DaemonFixture;
@@ -8,6 +10,12 @@ use serde_json::{Value, json};
 
 #[tokio::test]
 async fn create_and_get_match_across_rest_mcp_and_cli() {
+    tokio::time::timeout(Duration::from_secs(30), exercise())
+        .await
+        .expect("mcp fixture deadline");
+}
+
+async fn exercise() {
     let app = AppName::new(APP_NAME).expect("app");
     let fixture = DaemonFixture::start_with_mcp(
         &app,
@@ -104,7 +112,9 @@ async fn create_and_get_match_across_rest_mcp_and_cli() {
 
 async fn open_temp() -> Result<service::Stores, sc_runtime::RuntimeError> {
     let dir = tempfile::tempdir().expect("db dir");
-    let stores = service::open_stores(dir.path().join("widgets.db")).await?;
+    let stores = service::Stores::open(dir.path().join("widgets.db"))
+        .await
+        .map_err(daemon::map_store_open)?;
     std::mem::forget(dir);
     Ok(stores)
 }
@@ -137,7 +147,11 @@ async fn mcp_call(fixture: &DaemonFixture, name: &str, arguments: Value) -> Valu
         }
         _ => "http://localhost/mcp".to_owned(),
     };
-    let http = builder.build().expect("client");
+    let http = builder
+        .connect_timeout(Duration::from_secs(2))
+        .timeout(Duration::from_secs(2))
+        .build()
+        .expect("client");
     let response = http
         .post(url)
         .header("accept", "application/json, text/event-stream")

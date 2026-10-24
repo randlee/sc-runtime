@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Consumer-owned checks invoked by the generated Justfile."""
+"""Consumer-owned checks invoked by the generated Justfile.
+
+The sc-observability pin lives in the workspace manifest. Consumers may bump
+that version; this script reads it instead of embedding a version literal.
+The durable check is the absence of sc-observability-otlp.
+"""
 
 import re
 import subprocess
@@ -11,9 +16,14 @@ SERVER_ONLY = (
     "rmcp",
     "sqlx",
     "sc-runtime",
+    "sc-observability",
     "service",
     "store-sqlite",
     "daemon",
+    "utoipa",
+    "utoipa-axum",
+    "schemars",
+    "fd-lock",
 )
 
 
@@ -44,12 +54,38 @@ def package_names(tree: str) -> list[str]:
     return names
 
 
+def workspace_dep_version(text: str, name: str) -> str | None:
+    in_section = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_section = stripped == "[workspace.dependencies]"
+            continue
+        if not in_section or stripped.split("=", 1)[0].strip() != name:
+            continue
+        matched = re.search(r'version\s*=\s*"([^"]+)"', stripped) or re.search(
+            r'=\s*"([^"]+)"', stripped
+        )
+        if matched:
+            return matched.group(1)
+    return None
+
+
 def observability() -> None:
-    text = Path("crates/daemon/Cargo.toml").read_text(encoding="utf-8")
-    if "sc-observability-otlp" in text:
-        fail("sc-observability-otlp is present in crates/daemon/Cargo.toml")
-    if re.search(r'(?m)^sc-observability\s*=\s*"1\.5\.0"', text) is None:
-        fail("crates/daemon must require sc-observability 1.5.0")
+    root = Path("Cargo.toml").read_text(encoding="utf-8")
+    daemon = Path("crates/daemon/Cargo.toml").read_text(encoding="utf-8")
+    service = Path("crates/service/Cargo.toml").read_text(encoding="utf-8")
+    combined = root + daemon + service
+    if "sc-observability-otlp" in combined:
+        fail("sc-observability-otlp is present")
+    if not workspace_dep_version(root, "sc-observability"):
+        fail("workspace.dependencies must declare sc-observability")
+    if not workspace_dep_version(root, "sc-observability-types"):
+        fail("workspace.dependencies must declare sc-observability-types")
+    if re.search(r"(?m)^sc-observability(?:\.workspace)?\s*=", daemon) is None:
+        fail("crates/daemon must require sc-observability")
+    if re.search(r"(?m)^sc-observability-types(?:\.workspace)?\s*=", service) is None:
+        fail("crates/service must require sc-observability-types")
 
 
 def build_cli() -> None:

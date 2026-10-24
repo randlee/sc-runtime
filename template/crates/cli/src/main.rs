@@ -14,9 +14,13 @@ async fn main() -> ExitCode {
             }
             code
         }
-        Err(message) => {
-            eprintln!("{message}");
-            ExitCode::from(2)
+        Err(error) => {
+            if let Some(help) = &error.help {
+                print!("{help}");
+            } else {
+                eprintln!("{error}");
+            }
+            ExitCode::from(error.exit_code)
         }
     }
 }

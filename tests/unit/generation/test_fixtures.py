@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import jsonschema
 import unittest
 from pathlib import Path
 
@@ -46,6 +47,19 @@ class FixtureTests(unittest.TestCase):
         for name in ("missing-key.json", "wrong-type.json", "db-outside-enum.json", "unknown-key.json"):
             answers = json.loads((refused / name).read_text(encoding="utf-8"))
             self.assertFalse(self.driver.schema_accepts(self.schema, answers), name)
+
+    def test_driver_matches_jsonschema_on_every_fixture(self):
+        validator = jsonschema.Draft202012Validator(self.schema)
+        paths = sorted((ROOT / "wizard" / "fixtures").glob("*.json"))
+        paths += sorted((ROOT / "tests" / "fixtures" / "refused").glob("*.json"))
+        self.assertGreaterEqual(len(paths), 7)
+        for path in paths:
+            answers = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                self.driver.schema_accepts(self.schema, answers),
+                validator.is_valid(answers),
+                path.name,
+            )
 
 
 if __name__ == "__main__":

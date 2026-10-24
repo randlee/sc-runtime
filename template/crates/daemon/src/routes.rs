@@ -1,18 +1,28 @@
 //! REST adapters. Each handler calls the service and returns its envelope.
+//!
+//! sc-runtime mounts `/health`. That route reports process liveness only. It
+//! does not check the widget database. This template has no store-backed
+//! readiness route.
+
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use api_types::{CreateWidget, GetWidget, Widget};
 use axum::Json;
-use axum::extract::State;
+use axum::extract::{Request, State};
+use axum::middleware::{self, Next};
+use axum::response::Response;
 use sc_command::Envelope;
 use service::Stores;
+use tracing::Instrument;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-/// Project router. OpenAPI, health, and `/mcp` are mounted by sc-runtime.
+/// Project router. OpenAPI and `/health` are mounted by sc-runtime.
 pub fn router(stores: Stores) -> OpenApiRouter {
     OpenApiRouter::new()
         .routes(routes!(create_widget_route))
         .routes(routes!(get_widget_route))
+        .route_layer(middleware::from_fn(request_id))
         .with_state(stores)
 }
 
@@ -26,7 +36,7 @@ async fn create_widget_route(
     State(stores): State<Stores>,
     Json(body): Json<CreateWidget>,
 ) -> Envelope<Widget> {
-    Envelope::from(service::create_widget(&stores, &body.name).await)
+    Envelope::from(service::create_widget(&stores, body).await)
 }
 
 #[utoipa::path(
@@ -39,5 +49,55 @@ async fn get_widget_route(
     State(stores): State<Stores>,
     Json(body): Json<GetWidget>,
 ) -> Envelope<Widget> {
-    Envelope::from(service::get_widget(&stores, &body.id).await)
+    Envelope::from(service::get_widget(&stores, body).await)
+}
+
+async fn request_id(request: Request, next: Next) -> Response {
+    let request_id = request_id_value(request.headers());
+    let span = tracing::info_span!("request", request_id = %request_id);
+    let mut response = next.run(request).instrument(span).await;
+    if let Ok(value) = axum::http::HeaderValue::from_str(&request_id) {
+        response.headers_mut().insert("x-request-id", value);
+    }
+    response
+}
+
+fn request_id_value(headers: &axum::http::HeaderMap) -> String {
+    if let Some(value) = headers
+        .get("x-request-id")
+        .and_then(|value| value.to_str().ok())
+        && (1..=128).contains(&value.len())
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_')
+    {
+        return value.to_owned();
+    }
+    static NEXT: AtomicU64 = AtomicU64::new(1);
+    let tick = NEXT.fetch_add(1, Ordering::Relaxed);
+    format!("req-{tick}")
+}
+
+#[cfg(test)]
+mod tests {
+    use api_types::{WIDGET_CREATE_PATH, WIDGET_GET_PATH};
+
+    use super::*;
+
+    #[test]
+    fn openapi_paths_match_api_types() {
+        let router = OpenApiRouter::new()
+            .routes(routes!(create_widget_route))
+            .routes(routes!(get_widget_route));
+        let spec = router.get_openapi();
+        let paths: Vec<&str> = spec.paths.paths.keys().map(String::as_str).collect();
+        assert!(
+            paths.contains(&WIDGET_CREATE_PATH),
+            "create path missing from {paths:?}"
+        );
+        assert!(
+            paths.contains(&WIDGET_GET_PATH),
+            "get path missing from {paths:?}"
+        );
+    }
 }

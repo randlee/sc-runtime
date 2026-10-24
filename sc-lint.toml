@@ -64,3 +64,7 @@ command = ["cargo", "test", "-p", "sc-command", "--features", "server"]
 [[tool.sc-lint.test]]
 name = "sc-runtime-test-util"
 command = ["cargo", "test", "-p", "sc-runtime", "--features", "test-util"]
+
+[[tool.sc-lint.test]]
+name = "generation"
+command = ["python3", "scripts/run_generation_tests.py"]

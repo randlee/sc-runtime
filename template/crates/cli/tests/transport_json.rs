@@ -54,12 +54,22 @@ fn instance_root_unavailable_vector() {
     assert!(status.success());
 }
 
+#[cfg(unix)]
 #[tokio::test]
 async fn daemon_not_running_vector() {
-    let listener = std::net::TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 0)).expect("bind");
-    let address = listener.local_addr().expect("addr");
-    drop(listener);
-    let endpoint = Endpoint::Tcp(address);
+    let dir = tempfile::tempdir().expect("temp");
+    let endpoint = Endpoint::Uds(dir.path().join("missing.sock"));
+    assert_not_running(endpoint).await;
+}
+
+#[cfg(not(unix))]
+#[tokio::test]
+async fn daemon_not_running_vector() {
+    let endpoint = "tcp:127.0.0.1:1".parse().expect("port 1");
+    assert_not_running(endpoint).await;
+}
+
+async fn assert_not_running(endpoint: Endpoint) {
     let client = Client::new(endpoint).expect("client");
     let error = client.get::<Value>("/health").await.expect_err("down");
     assert_mapped(&error);

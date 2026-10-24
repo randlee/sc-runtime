@@ -10,6 +10,7 @@ permissions:
 jobs:
   project:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin"
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin" --tag 1.58.0
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Setup
@@ -34,3 +35,9 @@ jobs:
 
       - name: Test
         run: just test
+
+      - name: Audit
+        run: |
+          set -euo pipefail
+          cargo install cargo-audit --version 0.21.2 --locked
+          cargo audit

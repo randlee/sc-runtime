@@ -51,9 +51,7 @@ impl WidgetServer {
         &self,
         Parameters(body): Parameters<api_types::CreateWidget>,
     ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
-        service::create_widget(&self.stores, &body.name)
-            .await
-            .into_mcp()
+        service::create_widget(&self.stores, body).await.into_mcp()
     }
 
     /// Gets one widget by id.
@@ -62,7 +60,7 @@ impl WidgetServer {
         &self,
         Parameters(body): Parameters<api_types::GetWidget>,
     ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
-        service::get_widget(&self.stores, &body.id).await.into_mcp()
+        service::get_widget(&self.stores, body).await.into_mcp()
     }
 }
 

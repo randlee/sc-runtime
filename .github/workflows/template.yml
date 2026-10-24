@@ -10,6 +10,7 @@ jobs:
   fixtures:
     name: list fixtures
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       names: ${{ steps.list.outputs.names }}
     steps:
@@ -27,6 +28,7 @@ jobs:
     name: ${{ matrix.fixture }}
     needs: fixtures
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -44,8 +46,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin"
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin" --tag 1.58.0
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install jsonschema
+        run: python3 -m pip install -r requirements-generation.txt
 
       - name: Install cargo-generate
         run: cargo install cargo-generate --version 0.25.1 --locked
@@ -56,6 +61,8 @@ jobs:
       - name: Generate
         run: just new "$RUNNER_TEMP/app" --var-file "wizard/fixtures/${{ matrix.fixture }}"
 
+      # ADR-RUN-0401 point 6 runs these recipes inside `just new`. Point 8
+      # requires this job to run them again as an independent proof.
       - name: Consumer recipes
         working-directory: ${{ runner.temp }}/app
         run: |
@@ -69,6 +76,7 @@ jobs:
   plain-cargo-generate:
     name: plain cargo generate
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4

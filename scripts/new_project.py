@@ -19,19 +19,12 @@ from pathlib import Path
 
 # cargo generate takes this key through --name, not a placeholder.
 PROJECT_NAME_KEY = "project_name"
+CARGO_GENERATE_VERSION = "0.25.1"
+JSONSCHEMA_VERSION = "4.26.0"
 
 SCHEMA_NAME = "wizard/answers.schema.json"
-PATCH_CRATES = ("sc-config", "sc-transport", "sc-command", "sc-runtime")
-PIPELINE = (
-    "values",
-    "cargo-generate",
-    "sc-compose",
-    "setup",
-    "lint",
-    "test",
-    "build-cli",
-    "build-daemon",
-)
+RECIPES = ("setup", "lint", "test", "build-cli", "build-daemon")
+STEP_RECOVERY = "fix it or remove the partial destination; later steps do not run"
 COMPOSE_DOCS = ("AGENTS.md.j2", "CLAUDE.md.j2")
 
 INVENTORY = {
@@ -70,11 +63,7 @@ def fail(code: str, cause: str | None = None, recovery: str | None = None) -> No
 
 
 def fail_step(step: str) -> None:
-    fail(
-        "GEN.STEP_FAILED",
-        f"step is {step}",
-        "stderr names that step; fix it; later steps do not run",
-    )
+    fail("GEN.STEP_FAILED", f"step is {step}", STEP_RECOVERY)
 
 
 def load_json(path: Path) -> object:
@@ -138,52 +127,21 @@ def apply_defaults(schema: dict, answers: dict) -> dict:
     return filled
 
 
-def json_type_ok(expected: object, value: object) -> bool:
-    if expected == "string":
-        return isinstance(value, str)
-    if expected == "boolean":
-        return isinstance(value, bool)
-    if expected == "array":
-        return isinstance(value, list)
-    if expected == "object":
-        return isinstance(value, dict)
-    if expected == "integer":
-        return isinstance(value, int) and not isinstance(value, bool)
-    if expected == "number":
-        return isinstance(value, (int, float)) and not isinstance(value, bool)
-    return False
-
-
-def schema_accepts(schema: dict, answers: dict) -> bool:
-    if schema.get("type") not in (None, "object"):
+def schema_accepts(schema: dict, answers: object) -> bool:
+    try:
+        import jsonschema
+    except ImportError:
+        fail(
+            "GEN.TOOL_MISSING",
+            "jsonschema is not installed",
+            f"pip install jsonschema=={JSONSCHEMA_VERSION}; cargo generate does not run",
+        )
+    try:
+        jsonschema.Draft202012Validator(schema).validate(answers)
+    except jsonschema.ValidationError:
         return False
-    properties = schema.get("properties")
-    if not isinstance(properties, dict):
+    except jsonschema.SchemaError:
         return False
-    required = schema.get("required", [])
-    if not isinstance(required, list) or any(key not in answers for key in required):
-        return False
-    if schema.get("additionalProperties") is False and any(
-        key not in properties for key in answers
-    ):
-        return False
-    for key, value in answers.items():
-        spec = properties.get(key)
-        if not isinstance(spec, dict):
-            return False
-        expected = spec.get("type")
-        if isinstance(expected, str) and not json_type_ok(expected, value):
-            return False
-        enum = spec.get("enum")
-        if isinstance(enum, list) and value not in enum:
-            return False
-        pattern = spec.get("pattern")
-        if isinstance(pattern, str) and isinstance(value, str):
-            if re.compile(pattern).fullmatch(value) is None:
-                return False
-        minimum = spec.get("minLength")
-        if isinstance(minimum, int) and isinstance(value, str) and len(value) < minimum:
-            return False
     return True
 
 
@@ -203,8 +161,50 @@ def validate(schema: dict, answers: object) -> dict:
 def locate_sc_compose() -> str | None:
     override = os.environ.get("SC_COMPOSE")
     if override:
-        return override
+        if Path(override).is_file() and os.access(override, os.X_OK):
+            return override
+        fail(
+            "GEN.TOOL_MISSING",
+            "SC_COMPOSE does not point at an executable file",
+            "set SC_COMPOSE to the sc-compose binary; cargo generate does not run",
+        )
     return shutil.which("sc-compose")
+
+
+def require_on_path(name: str) -> None:
+    if shutil.which(name) is None:
+        fail(
+            "GEN.TOOL_MISSING",
+            f"{name} is not on PATH",
+            f"install {name} on PATH; later steps do not run",
+        )
+
+
+def require_cargo_generate(root: Path) -> None:
+    require_on_path("cargo")
+    try:
+        completed = subprocess.run(
+            ["cargo", "generate", "--version"],
+            cwd=root,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+    except OSError as err:
+        fail(
+            "GEN.TOOL_MISSING",
+            f"cargo generate could not start: {err.strerror or err}",
+            f"install cargo-generate {CARGO_GENERATE_VERSION}; cargo generate does not run",
+        )
+    text = f"{completed.stdout}\n{completed.stderr}"
+    if completed.returncode != 0 or CARGO_GENERATE_VERSION not in text.split():
+        fail(
+            "GEN.TOOL_MISSING",
+            f"cargo-generate is not {CARGO_GENERATE_VERSION}",
+            f"install cargo-generate {CARGO_GENERATE_VERSION}; cargo generate does not run",
+        )
 
 
 def toml_scalar(value: object) -> str:
@@ -242,24 +242,46 @@ def write_values(answers: dict) -> Path:
         fail_step("values")
 
 
-def run_command(argv: list[str], cwd: Path) -> int:
-    completed = subprocess.run(
-        argv,
-        cwd=cwd,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=False,
-    )
-    return completed.returncode
+def emit_child_output(completed: subprocess.CompletedProcess[str]) -> None:
+    for stream in (completed.stdout, completed.stderr):
+        if not stream:
+            continue
+        sys.stdout.write(stream)
+        if not stream.endswith("\n"):
+            sys.stdout.write("\n")
+
+
+def run_command(argv: list[str], cwd: Path, step: str) -> None:
+    try:
+        completed = subprocess.run(
+            argv,
+            cwd=cwd,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        fail(
+            "GEN.TOOL_MISSING",
+            f"{argv[0]} is not on PATH",
+            f"install {argv[0]} on PATH; later steps do not run",
+        )
+    except OSError:
+        fail_step(step)
+    if completed.returncode != 0:
+        emit_child_output(completed)
+        fail_step(step)
 
 
 def cargo_generate(root: Path, dest: Path, name: str, values: Path) -> None:
+    require_cargo_generate(root)
     try:
         dest.mkdir()
     except OSError:
         fail_step("cargo-generate")
-    code = run_command(
+    run_command(
         [
             "cargo",
             "generate",
@@ -277,13 +299,30 @@ def cargo_generate(root: Path, dest: Path, name: str, values: Path) -> None:
             "--no-workspace",
         ],
         root,
+        "cargo-generate",
     )
-    if code != 0:
-        fail_step("cargo-generate")
     # Liquid tag lines leave a blank line. Format before the recipes so
     # `just lint` sees a rustfmt-clean tree for both mcp values.
-    if run_command(["cargo", "fmt", "--all"], dest) != 0:
+    run_command(["cargo", "fmt", "--all"], dest, "cargo-generate")
+
+
+def patch_crate_names(root: Path) -> list[str]:
+    text = (root / "template" / "Cargo.toml").read_text(encoding="utf-8")
+    in_section = False
+    names: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_section = stripped == "[workspace.dependencies]"
+            continue
+        if not in_section or not stripped or stripped.startswith("#"):
+            continue
+        name = stripped.split("=", 1)[0].strip()
+        if name.startswith("sc-") and (root / "crates" / name / "Cargo.toml").is_file():
+            names.append(name)
+    if not names:
         fail_step("cargo-generate")
+    return names
 
 
 def release_mode(explicit: bool) -> bool:
@@ -301,7 +340,7 @@ def apply_checkout_patch(dest: Path, root: Path) -> None:
     if "[patch.crates-io]" in text:
         return
     lines = ["", "[patch.crates-io]"]
-    for name in PATCH_CRATES:
+    for name in patch_crate_names(root):
         crate = (root / "crates" / name).resolve()
         if not (crate / "Cargo.toml").is_file():
             fail_step("cargo-generate")
@@ -316,7 +355,7 @@ def render_documents(dest: Path, compose: str, answers_path: Path) -> None:
     for name in COMPOSE_DOCS:
         source = dest / name
         output = dest / name.removesuffix(".j2")
-        code = run_command(
+        run_command(
             [
                 compose,
                 "render",
@@ -334,9 +373,8 @@ def render_documents(dest: Path, compose: str, answers_path: Path) -> None:
                 "ignore",
             ],
             dest,
+            "sc-compose",
         )
-        if code != 0:
-            fail_step("sc-compose")
         try:
             source.unlink()
         except OSError:
@@ -344,9 +382,9 @@ def render_documents(dest: Path, compose: str, answers_path: Path) -> None:
 
 
 def run_recipes(dest: Path) -> None:
-    for step in ("setup", "lint", "test", "build-cli", "build-daemon"):
-        if run_command(["just", step], dest) != 0:
-            fail_step(step)
+    require_on_path("just")
+    for step in RECIPES:
+        run_command(["just", step], dest, step)
 
 
 def write_answers_for_compose(answers: dict) -> Path:
@@ -375,6 +413,7 @@ def generate(dest: Path, var_file: Path, release: bool) -> None:
     compose = locate_sc_compose()
     if compose is None:
         fail("GEN.TOOL_MISSING")
+    require_on_path("just")
     name = answers[PROJECT_NAME_KEY]
     if not isinstance(name, str):
         fail("GEN.SCHEMA_INVALID")

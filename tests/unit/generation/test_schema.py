@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import jsonschema
 import unittest
 from pathlib import Path
 
@@ -23,14 +24,7 @@ class SchemaTests(unittest.TestCase):
     def test_schema_matches_its_meta_schema(self):
         schema = load_json(ROOT / "wizard" / "answers.schema.json")
         self.assertEqual(schema["$schema"], "https://json-schema.org/draft/2020-12/schema")
-        try:
-            import jsonschema
-        except ImportError:
-            import subprocess
-            import sys
-
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "jsonschema==4.26.0"])
-            import jsonschema
+        self.assertEqual(schema["x-schema-version"], 1)
         jsonschema.Draft202012Validator.check_schema(schema)
 
     def test_driver_has_no_option_list(self):

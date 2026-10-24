@@ -1961,8 +1961,9 @@ mechanics it uses are recorded in Active
     a-1 confirmed those facts, so this mechanism stands. Points 1 to 9 do
     not change with that confirmation.
 
-**OPEN:** the name and format of the version field in `answers.schema.json`
-are undecided.
+The schema version field is `x-schema-version`, an integer at the root of
+`answers.schema.json`. Bump it when a breaking option change ships. The
+shipped value is `1`.
 
 Stderr from the driver is one line, `<code> <cause> — <recovery>`, using
 U+2014. `GEN.STEP_FAILED` puts the failed pipeline step in the cause. The
@@ -1975,7 +1976,7 @@ inventory is:
 | invalid project name | `APP.INVALID_NAME` | name fails the project-name `pattern` in `wizard/answers.schema.json` | fix the name to that pattern; the destination is not created |
 | missing sc-compose | `GEN.TOOL_MISSING` | `SC_COMPOSE` unset and `sc-compose` not on `PATH` | set `SC_COMPOSE` or install `sc-compose` on `PATH`; `cargo generate` does not run |
 | destination conflict | `GEN.DEST_CONFLICT` | the destination path exists | choose an absent path |
-| pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | stderr names that step; fix it; later steps do not run |
+| pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | fix it or remove the partial destination; later steps do not run |
 
 ### Consequences
 

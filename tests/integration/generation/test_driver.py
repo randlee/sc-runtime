@@ -72,6 +72,10 @@ class DriverTests(unittest.TestCase):
             "cargo",
             f"""#!/bin/sh
 echo "cargo $*" >> "{log}"
+if [ "$1" = "generate" ] && [ "$2" = "--version" ]; then
+  echo "cargo-generate 0.25.1"
+  exit 0
+fi
 dest=""
 prev=""
 for arg in "$@"; do
@@ -107,6 +111,7 @@ exit 0
             "just",
             f"""#!/bin/sh
 echo "just $1" >> "{log}"
+echo "step-output $1"
 exit 0
 """,
         )
@@ -123,26 +128,44 @@ exit 0
             answers = self.base
         self.dest = self.root / dest_name
         self.save(answers)
-        env = os.environ.copy()
-        original_path = env.get("PATH", "")
-        if path is None:
-            env["PATH"] = str(self.bin) + os.pathsep + original_path
-        else:
-            env["PATH"] = path
-        env.pop("SC_COMPOSE", None)
-        env.pop("SC_RUNTIME_RELEASE", None)
+        env = {
+            key: os.environ[key]
+            for key in (
+                "HOME",
+                "USER",
+                "LANG",
+                "LC_ALL",
+                "LC_CTYPE",
+                "SYSTEMROOT",
+                "SystemRoot",
+                "COMSPEC",
+                "USERPROFILE",
+                "WINDIR",
+                "TMP",
+                "TEMP",
+            )
+            if key in os.environ
+        }
+        env["PATH"] = str(self.bin) if path is None else path
+        env["TMPDIR"] = str(self.root)
         env["STUB_LOG"] = str(self.log)
         if extra_env:
             env.update(extra_env)
-        return subprocess.run(
-            [sys.executable, str(DRIVER), str(self.dest), "--var-file", str(self.answers)],
-            cwd=ROOT,
-            env=env,
-            stdin=subprocess.DEVNULL,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
+        try:
+            return subprocess.run(
+                [sys.executable, str(DRIVER), str(self.dest), "--var-file", str(self.answers)],
+                cwd=ROOT,
+                env=env,
+                stdin=subprocess.DEVNULL,
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=10,
+            )
+        except subprocess.TimeoutExpired as exc:
+            stdout = exc.stdout or ""
+            stderr = exc.stderr or ""
+            self.fail(f"driver timed out\nstdout={stdout}\nstderr={stderr}")
 
     def assert_line(self, completed, code, cause, recovery):
         self.assertNotEqual(completed.returncode, 0, completed.stderr)
@@ -194,7 +217,12 @@ exit 0
                 self.assert_absent_cargo(completed)
 
     def test_tool_missing_names_sc_compose(self):
-        self.stub("cargo", f'#!/bin/sh\necho "cargo $*" >> "{self.log}"\nexit 0\n')
+        self.stub(
+            "cargo",
+            f'#!/bin/sh\necho "cargo $*" >> "{self.log}"\n'
+            'if [ "$1" = "generate" ] && [ "$2" = "--version" ]; then echo "cargo-generate 0.25.1"; exit 0; fi\n'
+            "exit 0\n",
+        )
         self.stub("just", "#!/bin/sh\nexit 0\n")
         completed = self.invoke(path=str(self.bin))
         self.assert_line(completed, "GEN.TOOL_MISSING", *INVENTORY["GEN.TOOL_MISSING"])
@@ -268,7 +296,7 @@ exit 0
             completed,
             "GEN.STEP_FAILED",
             "step is values",
-            "stderr names that step; fix it; later steps do not run",
+            "fix it or remove the partial destination; later steps do not run",
         )
         self.assert_absent_cargo(completed)
 
@@ -292,7 +320,7 @@ exit 0
                     completed,
                     "GEN.STEP_FAILED",
                     f"step is {step}",
-                    "stderr names that step; fix it; later steps do not run",
+                    "fix it or remove the partial destination; later steps do not run",
                 )
                 text = self.log.read_text(encoding="utf-8") if self.log.exists() else ""
                 for name in earlier:
@@ -315,6 +343,10 @@ exit 0
                     self.assertNotIn(f"just {name}", text)
                 if step == "cargo-generate":
                     self.assertNotIn("sc-compose", text)
+                if tool == "just":
+                    self.assertIn(f"step-output {step}", completed.stdout)
+                self.assertNotIn("Traceback", completed.stderr)
+                self.assertNotIn("Traceback", completed.stdout)
 
     def install_failing(self, step: str):
         log = self.log
@@ -324,6 +356,10 @@ exit 0
             "cargo",
             f"""#!/bin/sh
 echo "cargo $*" >> "{log}"
+if [ "$1" = "generate" ] && [ "$2" = "--version" ]; then
+  echo "cargo-generate 0.25.1"
+  exit 0
+fi
 dest=""
 prev=""
 for arg in "$@"; do
@@ -336,6 +372,7 @@ if [ -n "$dest" ]; then
   printf 'j2\\n' > "$dest/AGENTS.md.j2"
   printf 'j2\\n' > "$dest/CLAUDE.md.j2"
 fi
+echo "step-output cargo"
 exit {cargo_status}
 """,
         )
@@ -356,12 +393,61 @@ exit {compose_status}
             "just",
             f"""#!/bin/sh
 echo "just $1" >> "{log}"
+echo "step-output $1"
 if [ "$1" = "{fail_recipe}" ]; then
   exit 1
 fi
 exit 0
 """,
         )
+
+
+    def test_missing_cargo_has_no_traceback(self):
+        self.install_success_stubs()
+        (self.bin / "cargo").unlink()
+        completed = self.invoke()
+        self.assert_line(
+            completed,
+            "GEN.TOOL_MISSING",
+            "cargo is not on PATH",
+            "install cargo on PATH; later steps do not run",
+        )
+        self.assertNotIn("Traceback", completed.stderr)
+        self.assertNotIn("Traceback", completed.stdout)
+        self.assertFalse(self.dest.exists())
+
+    def test_wrong_cargo_generate_version_is_one_line(self):
+        self.install_success_stubs()
+        self.stub(
+            "cargo",
+            "#!/bin/sh\n"
+            'if [ "$1" = "generate" ] && [ "$2" = "--version" ]; then\n'
+            '  echo "cargo-generate 0.0.0"\n'
+            "  exit 0\n"
+            "fi\n"
+            "exit 0\n",
+        )
+        completed = self.invoke()
+        self.assert_line(
+            completed,
+            "GEN.TOOL_MISSING",
+            "cargo-generate is not 0.25.1",
+            "install cargo-generate 0.25.1; cargo generate does not run",
+        )
+        self.assertNotIn("Traceback", completed.stderr)
+        self.assertFalse(self.dest.exists())
+
+    def test_sc_compose_override_missing_file(self):
+        self.install_success_stubs()
+        completed = self.invoke(extra_env={"SC_COMPOSE": str(self.root / "missing-compose")})
+        self.assert_line(
+            completed,
+            "GEN.TOOL_MISSING",
+            "SC_COMPOSE does not point at an executable file",
+            "set SC_COMPOSE to the sc-compose binary; cargo generate does not run",
+        )
+        self.assertNotIn("Traceback", completed.stderr)
+        self.assertFalse(self.dest.exists())
 
 
 if __name__ == "__main__":

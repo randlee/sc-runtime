@@ -12,7 +12,9 @@ Stderr is exactly one line:
 
 The dash in that line is U+2014. An agent selects the row by `code`.
 `GEN.STEP_FAILED` puts the failed pipeline step in the cause. Later steps do
-not run.
+not run. Child output from a failed step is copied to stdout so the agent can
+read the compiler or lint diagnostic. Stderr stays the one inventory line.
+The recovery tells the agent to fix the step or remove the partial destination.
 
 | Failure | Code | Cause | Recovery |
 |---|---|---|---|
@@ -21,7 +23,7 @@ not run.
 | invalid project name | `APP.INVALID_NAME` | name fails the project-name pattern in wizard/answers.schema.json | fix the name to that pattern; the destination is not created |
 | missing sc-compose | `GEN.TOOL_MISSING` | SC_COMPOSE unset and sc-compose not on PATH | set SC_COMPOSE or install sc-compose on PATH; cargo generate does not run |
 | destination conflict | `GEN.DEST_CONFLICT` | the destination path exists | choose an absent path |
-| pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | stderr names that step; fix it; later steps do not run |
+| pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | fix it or remove the partial destination; later steps do not run |
 
 The project-name `pattern` on `wizard/answers.schema.json` is the only
 character class. The driver reads it from that schema. `project_name` is not a
@@ -51,12 +53,18 @@ duplicated. That flag does not run the rest of the pipeline.
 
 1. Validate the answers file.
 2. Refuse a destination that already exists.
-3. Resolve `sc-compose` from `SC_COMPOSE`, then from `PATH`.
+3. Resolve `sc-compose` from `SC_COMPOSE`, then from `PATH`. A missing `just`
+   or `cargo` binary is `GEN.TOOL_MISSING` and does not create the destination.
 4. Write `values.toml` (no `project_name` key; schema defaults applied).
-5. Create the absent destination and run `cargo generate --init` into it.
+   Validation uses the `jsonschema` package (`requirements-generation.txt`,
+   pinned at 4.26.0) against Draft 2020-12.
+5. Require `cargo-generate` 0.25.1 (`cargo generate --version`), then create
+   the absent destination and run `cargo generate --init` into it.
    Then run `cargo fmt --all` so a removed Liquid line does not leave a
    blank that `cargo fmt --check` would reject.
-6. Write the checkout patch unless release mode is on.
+6. Write the checkout patch unless release mode is on. The patched crates are
+   the `sc-*` keys in `template/Cargo.toml` `[workspace.dependencies]` that
+   exist under `crates/`.
 7. Render `AGENTS.md.j2` and `CLAUDE.md.j2` with `sc-compose` and delete the
    `.j2` files.
 8. Run `just setup`, `just lint`, `just test`, `just build-cli`, and
@@ -64,6 +72,13 @@ duplicated. That flag does not run the rest of the pipeline.
 
 `SC_COMPOSE` wins over a `sc-compose` binary on `PATH`. When both are absent
 the driver exits with `GEN.TOOL_MISSING` and does not run `cargo generate`.
+The same code covers a missing `just` or `cargo`, a `cargo-generate` version
+other than 0.25.1, and an `SC_COMPOSE` path that is not an executable file.
+The cause names the tool.
+
+ADR-RUN-0401 point 6 is this driver pipeline. Point 8 requires template CI to
+run `just new` and then the same consumer recipes again. That second pass is
+the independent proof. It is not a second owner of the pipeline.
 
 ## Plain cargo-generate
 

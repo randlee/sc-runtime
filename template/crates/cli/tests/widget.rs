@@ -116,8 +116,7 @@ async fn cli_keeps_unknown_envelope_content() {
     let encoded = serde_json::to_vec(&body).expect("encode");
     let server = tokio::spawn(async move {
         let (mut stream, _) = listener.accept().await.expect("accept");
-        let mut buf = [0_u8; 2048];
-        let _ = tokio::io::AsyncReadExt::read(&mut stream, &mut buf).await;
+        read_http_request(&mut stream).await;
         let header = format!(
             "HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n",
             encoded.len()
@@ -128,6 +127,7 @@ async fn cli_keeps_unknown_envelope_content() {
         tokio::io::AsyncWriteExt::write_all(&mut stream, &encoded)
             .await
             .expect("body");
+        let _ = tokio::io::AsyncWriteExt::shutdown(&mut stream).await;
     });
     let endpoint = format!("tcp:{address}");
     let printed = cli_json(
@@ -158,7 +158,9 @@ async fn start() -> DaemonFixture {
 
 async fn open_temp() -> Result<service::Stores, sc_runtime::RuntimeError> {
     let dir = tempfile::tempdir().expect("db dir");
-    let stores = service::open_stores(dir.path().join("widgets.db")).await?;
+    let stores = service::Stores::open(dir.path().join("widgets.db"))
+        .await
+        .map_err(daemon::map_store_open)?;
     std::mem::forget(dir);
     Ok(stores)
 }
@@ -173,6 +175,40 @@ async fn cli_json(endpoint: &str, tail: &[String]) -> Value {
     let command = cli::parse(&args).expect("parse");
     let (_code, text) = cli::execute(command).await;
     serde_json::from_str(&text).expect("cli json")
+}
+
+async fn read_http_request(stream: &mut tokio::net::TcpStream) {
+    use tokio::io::AsyncReadExt;
+    let mut buf = Vec::new();
+    let mut tmp = [0_u8; 1024];
+    loop {
+        let read = stream.read(&mut tmp).await.expect("read");
+        if read == 0 {
+            break;
+        }
+        buf.extend_from_slice(&tmp[..read]);
+        let Some(split) = buf.windows(4).position(|window| window == b"\r\n\r\n") else {
+            if buf.len() > 65_536 {
+                break;
+            }
+            continue;
+        };
+        let headers = String::from_utf8_lossy(&buf[..split]);
+        let length = headers.lines().find_map(|line| {
+            let (name, value) = line.split_once(':')?;
+            if name.eq_ignore_ascii_case("content-length") {
+                value.trim().parse::<usize>().ok()
+            } else {
+                None
+            }
+        });
+        let Some(length) = length else {
+            break;
+        };
+        if buf.len() >= split + 4 + length {
+            break;
+        }
+    }
 }
 
 fn assert_widget_error(body: &Value, code: &str, kind: &str) {
