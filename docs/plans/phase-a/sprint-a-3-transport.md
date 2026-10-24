@@ -64,32 +64,31 @@ Resolve endpoint syntax and precedence, OS defaults, directory ownership,
 listener representation, UDS permissions/stale-file behavior, timeout/status
 classification, and the public error surface. Before `TransportConfig`
 freezes, close the dual-bind OPEN in `docs/sc-transport/architecture.md` and
-`docs/sc-transport/requirements.md`: v0.1 binds exactly one listener, and
-`TransportConfig` reserves additive `additional_endpoints` (default empty,
-reserved and ignored in v0.1) so a later dual-bind does not fork the facade.
-The ADR amendment states that the field is ignored in v0.1. a-5 embeds
-that type and does not decide a second shape. Publish an **error inventory**
+`docs/sc-transport/requirements.md`: v0.1 binds exactly one listener.
+`TransportConfig` is `#[non_exhaustive]`. It has no `additional_endpoints`
+field. A later dual-bind adds a field on this type. The ADR states that.
+v0.1 does not ignore a reserved value. a-5 embeds that type and does not
+decide a second shape. Publish an **error inventory**
 (stable codes and recovery for every `TransportError` variant, including
 non-`DaemonNotRunning` failures the CLI must report). `DaemonNotRunning`
-carries `sc_observability_types::ErrorCode` (`DAEMON.NOT_RUNNING`) on the code
-field. Its other fields are the endpoint and the cause only. It carries no
-`suggested_action` string and no `AppName`. No `Remediation` on transport
-(RBP-F002, RBP-F005). The `ErrorCode`-only `sc-observability-types`
-dependency is the a-1 recorded lead decision that amends ADR-RUN-0004 and
-REQ-RUN-0309 and cites
-`docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md`.
-This sprint consumes that amendment. It does not reopen it and it does not
-edit those root documents. a-6 owns `suggested_action` for every
-`TransportError`, including `run <app> daemon start` on
-`DaemonNotRunning`. Transport does not know that subcommand. Record the
-endpoint-and-cause payload in the crate ADR before the facade freezes.
+carries `code: &'static str`, exactly `DAEMON.NOT_RUNNING`, plus the
+endpoint and the cause. It does not carry `sc_observability_types::ErrorCode`.
+It carries no `suggested_action` string and no `AppName`. No `Remediation`
+on transport (RBP-F002, RBP-F005). This crate does not depend on
+`sc-observability-types`. a-1 keeps ADR-RUN-0004 point 3 command-only and
+does not write a lead-ruling artifact. This sprint consumes that decision.
+It does not reopen it and it does not edit those root documents. a-6 owns
+`suggested_action` for every `TransportError`, including
+`run <app> daemon start` on `DaemonNotRunning`, and maps the `&'static str`
+code to `ErrorCode`. Transport does not know that subcommand. Record the
+code, endpoint, and cause in the crate ADR before the facade freezes.
 Do not edit `docs/architecture.md`. Do not add auto-start APIs.
 `sc_transport::AppName` is the client wire identity for `resolve_endpoint`
-and `instance_root`. `Client::new` takes an `Endpoint` only. It uses the
-predicate a-1 records in ADR-RUN-0010. Tests load
-`tests/fixtures/app-name-vectors.json`. This sprint does not copy that file,
-does not invent a second predicate, and does not write that ADR. It is not
-`sc_runtime::AppName`.
+and `instance_root`, and the name `Daemon::builder` borrows. `Client::new`
+takes an `Endpoint` only. It uses the predicate a-1 records in ADR-RUN-0010.
+Tests load `tests/fixtures/app-name-vectors.json`. This sprint does not copy
+that file, does not invent a second predicate, and does not write that ADR.
+There is no `sc_runtime::AppName`.
 
 ## Public contract produced
 
@@ -123,33 +122,32 @@ It does not edit `docs/architecture.md`.
 4. **NFR-TRN-0001 / NFR-TRN-0002** — Default/server builds use standard
    Tokio, reqwest, and Axum facilities with no custom connector or raw HTTP.
 5. **REQ-RUN-0005 / NFR-TRN-0001** — Boundary manifest at
-   `boundaries/sc-transport/sc-transport.toml`. Amend NFR-TRN-0001 so the
-   default direct dependencies are `tokio`, `reqwest`, `serde`, and
-   `sc-observability-types` at the a-1 pin. `server` still adds only `axum`.
-   `allowed_dependencies` includes `sc-observability-types`.
-   `forbidden_edges` keeps `sc-observability` and does not list
-   `sc-observability-types`. Once `crates/sc-transport/Cargo.toml` exists,
-   run the single-crate `sc-lint lint sc-boundary` command a-1 recorded.
-   Exit 0 is the gate. Do not paste analyzer output into the pull request.
-   Do not wait for a-5. Do not own the permanent root workspace `Cargo.toml`.
+   `boundaries/sc-transport/sc-transport.toml`. `allowed_dependents` is
+   `sc-runtime` only. Amend NFR-TRN-0001 so the default direct dependencies
+   are `tokio`, `reqwest`, and `serde`. Do not add
+   `sc-observability-types`. `server` still adds only `axum`.
+   `allowed_dependencies` does not include `sc-observability-types`.
+   `forbidden_edges` lists `sc-observability` and `sc-observability-types`
+   as distinct strings, direct and transitive, plus `sc-observability-otlp`.
+   Once `crates/sc-transport/Cargo.toml` exists, run the single-crate
+   `sc-lint lint sc-boundary` command a-1 recorded.
+   Do not paste analyzer output into the pull request. The binding evidence
+   is the QA re-run in Required validation. Do not wait for a-5. Do not own
+   the permanent root workspace `Cargo.toml`.
 6. **REQ-TRN-0006 / NFR-TRN-0004** — Before the facade freezes, the crate ADR
    contains an error-inventory table for every `TransportError` variant,
    including failures other than `DaemonNotRunning`: failure mode, stable
-   code, cause payload, and recovery steps (RBP-F002). `DaemonNotRunning`
-   carries `sc_observability_types::ErrorCode` from a direct
-   `sc-observability-types` dependency at the version a-1 recorded. That
-   dependency is types-only: the crate does not depend on `sc-command` or on
-   `sc-observability` (RBP-F005). That dependency is the a-1 recorded lead
-   decision amending ADR-RUN-0004 and REQ-RUN-0309, cited from
-   `docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md`.
-   `DaemonNotRunning` carries that code plus the endpoint and the cause. It
-   does not carry `suggested_action` or an `AppName`. a-6 sets
-   `suggested_action`. `sc_transport::AppName` uses the handoff predicate.
-   Tests load `tests/fixtures/app-name-vectors.json`. This sprint does not
-   copy that file. It is not `sc_config::AppName` and it is not
-   `sc_runtime::AppName`. Invalid names fail
-   at construction with `APP.INVALID_NAME`. Display is `as_str` or
-   `AsRef<str>`, and the type does not implement `Deref`.
+   code, cause payload, and recovery steps    (RBP-F002). `DaemonNotRunning` carries `code: &'static str`, exactly
+   `DAEMON.NOT_RUNNING`, plus the endpoint and the cause. The crate does
+   not depend on `sc-observability-types`, on `sc-command`, or on
+   `sc-observability` (RBP-F005). a-6 maps the string to `ErrorCode` and
+   sets `suggested_action`. `DaemonNotRunning` does not carry
+   `suggested_action` or an `AppName`. `sc_transport::AppName` uses the
+   handoff predicate. Tests load `tests/fixtures/app-name-vectors.json`.
+   This sprint does not copy that file. It is not `sc_config::AppName`.
+   There is no `sc_runtime::AppName`. Invalid names fail at construction
+   with `APP.INVALID_NAME`. Display is `as_str` or `AsRef<str>`, and the
+   type does not implement `Deref`.
 
 ## Acceptance criteria
 
@@ -169,17 +167,17 @@ It does not edit `docs/architecture.md`.
    failures, with a stable code, cause payload, and recovery steps
    (RBP-F002).
 5. `req:REQ-TRN-0006` — amend point 2, success criteria 4 and 5, and the
-   rationale that both fields are plain strings so they match the handoff:
-   code is `sc_observability_types::ErrorCode` (`DAEMON.NOT_RUNNING`); the
-   other fields are the endpoint and the cause. `suggested_action` is absent.
-   `Client::new` takes an `Endpoint` only. No `Remediation` on transport.
-   a-6 owns `suggested_action` for every `TransportError`.
-6. `boundary:sc-transport` — `DaemonNotRunning` exposes
-   `sc_observability_types::ErrorCode`, the endpoint, and the cause, and it
-   does not expose `suggested_action` or `AppName`. `cargo tree -p sc-transport -e normal --prefix none`
-   has a `sc-observability-types ` line at the a-1 recorded version and has no
-   `sc-command ` line and no `sc-observability ` line (crate name, then a
-   space, so the types crate does not match the logging crate).
+   rationale so they match the handoff: code is `&'static str`, exactly
+   `DAEMON.NOT_RUNNING`; the other fields are the endpoint and the cause.
+   `suggested_action` is absent. The code is not
+   `sc_observability_types::ErrorCode`. `Client::new` takes an `Endpoint`
+   only. No `Remediation` on transport. a-6 maps the string to `ErrorCode`
+   and owns `suggested_action` for every `TransportError`.
+6. `boundary:sc-transport` — `DaemonNotRunning` exposes `&'static str` code,
+   the endpoint, and the cause, and it does not expose `ErrorCode`,
+   `suggested_action`, or `AppName`. `cargo tree -p sc-transport -e normal --prefix none`
+   has no `sc-observability-types ` line, no `sc-command ` line, and no
+   `sc-observability ` line (crate name, then a space).
    Tests load `tests/fixtures/app-name-vectors.json`.
    `sc_transport::AppName` accepts every accept string in that file and
    rejects every reject string at construction. The test source does not
@@ -188,12 +186,14 @@ It does not edit `docs/architecture.md`.
    `sc_transport::AppName`. `Client::new` takes an `Endpoint` only. The
    type exposes `as_str` or `AsRef<str>` and does not implement `Deref`
    (RBP-F005).
-7. `req:NFR-TRN-0001` — the amended dependency list names
-   `sc-observability-types` on the default build. Analyze accepts that
-   dependency while `forbidden_edges` still contains `sc-observability`.
-   The single-crate `sc-lint lint sc-boundary` command a-1 recorded exits 0
-   on `boundaries/sc-transport/sc-transport.toml`. Analyzer output is not
-   pasted into the pull request.
+7. `req:NFR-TRN-0001` — the amended dependency list does not name
+   `sc-observability-types`. `allowed_dependents` is `sc-runtime` only.
+   `forbidden_edges` contains `sc-observability` and
+   `sc-observability-types` as distinct strings. The single-crate
+   `sc-lint lint sc-boundary` command a-1 recorded exits 0 on
+   `boundaries/sc-transport/sc-transport.toml`. Analyzer output is not
+   pasted into the pull request. Leaf QA re-runs that command at the
+   reviewed commit.
 8. `boundary:sc-transport` — NFR-TRN-0004 is this crate's strictness on
    NFR-RUN-0009. Every `TransportError` variant, including an unreachable
    endpoint, is a `Result` value. `unwrap`, `expect`, `panic!`,
@@ -202,12 +202,11 @@ It does not edit `docs/architecture.md`.
    `Box<dyn Error>`. The repo-wide grep and the parallel `just test` runs
    stay with a-5.
 9. `ADR-TRN-0002` — the crate ADR amendment states that v0.1 binds exactly
-   one listener and that `additional_endpoints` is reserved and ignored in
-   v0.1. The field is present, defaults empty, and the implementation does
-   not read it. The ADR says so, so the ignore is not an undocumented
-   failure. A later release may use the field without forking the facade.
-   The transport dual-bind OPEN is deleted. `DaemonNotRunning` does not
-   name the a-6 `daemon start` subcommand.
+   one listener and that `TransportConfig` is `#[non_exhaustive]`. The type
+   has no `additional_endpoints` field. A later dual-bind adds a field on
+   this type. v0.1 does not ignore a reserved value. The transport dual-bind
+   OPEN is deleted. `DaemonNotRunning` does not name the a-6 `daemon start`
+   subcommand.
 
 ## This sprint does not close
 
@@ -229,5 +228,7 @@ checks, and workspace build once registered. Review the manifest against
 REQ-RUN-0005. Confirm the crate ADR error-inventory table, the
 `DaemonNotRunning` code, endpoint, and cause, and the `AppName`
 construction tests, which load `tests/fixtures/app-name-vectors.json`.
-Run the single-crate `sc-lint lint sc-boundary` command a-1 recorded on
-this crate's manifest.
+Leaf QA re-runs the single-crate `sc-lint lint sc-boundary` command a-1
+recorded on this crate's manifest at the reviewed commit and records only
+the exit code in the QA report. That re-run is the binding evidence. A
+statement in the pull request is not.

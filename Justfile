@@ -3,7 +3,9 @@ set windows-shell := ["cmd.exe", "/c"]
 
 python := if os_family() == "windows" { "python" } else { "python3" }
 
-# Default to boundary-only until the a-5 workspace exists; use `just lint full` then.
+# The `gates` profile runs `sc-lint lint sc-boundary` (see sc-lint.toml `boundary`)
+# plus line-counts. Default to that profile until the a-5 workspace exists;
+# use `just lint full` then.
 default:
     {{python}} .sc-lint/bootstrap.py lint gates --config sc-lint.toml
 

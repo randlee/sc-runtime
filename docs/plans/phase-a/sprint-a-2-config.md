@@ -64,7 +64,12 @@ a-1 has made ADR-RUN-0010 Active in `docs/architecture.md`. This sprint
 does not write that ADR. The wait is the gate bead
 `triage:a-2-appname-freeze` in `.sprints/a/structure.ttl`. That bead
 follows a-1. It does not add a-1 to this sprint's `must_follow` and it
-does not move this sprint off wave 0.
+does not move this sprint off wave 0. Do not write
+`boundaries/sc-config/sc-config.toml` or mark the leaf lint gate done until
+gate bead `triage:a-2-boundary-evidence` is open. That bead also follows
+a-1. Its criterion is the recorded `sc-lint lint sc-boundary` command,
+including the negative fixture outcomes, and the REQ-RUN-0005 slice this
+manifest consumes. That manifest work is not parallel-safe.
 
 ## Public contract produced
 
@@ -74,7 +79,7 @@ This sprint owns the sc-config types and methods in the canonical
 `ConfigError`. The newtype uses the handoff validation predicate.
 Construction tests load `tests/fixtures/app-name-vectors.json`. This sprint
 does not copy that file. It is not
-`sc_transport::AppName` or `sc_runtime::AppName`. The
+`sc_transport::AppName`. There is no `sc_runtime::AppName`. The
 crate-local requirement and ADR sources record any remaining signature
 decisions, including the `&str` application-name parameters those sources
 still show. This sprint amends `docs/sc-config/architecture.md` and
@@ -86,8 +91,10 @@ signature contract.
 
 - `must_follow` is empty. `sc-config` consumes no spike signature. Its
   dependencies are `serde` and `serde_json`.
-- `parallel_safe` with `a-1`, `a-3`, and `a-4`: owned paths and public
-  boundaries are disjoint. Wave 0 places this sprint beside a-1.
+- `parallel_safe` with `a-1`, `a-3`, and `a-4` for work that does not
+  consume a-1 evidence. Owned paths and public boundaries are disjoint.
+  Wave 0 places this sprint beside a-1. The constructor freeze and the
+  boundary manifest are gated on a-1 and are not parallel-safe.
 
 ## Deliverables
 
@@ -100,12 +107,18 @@ signature contract.
 4. **NFR-CFG-0002 / NFR-CFG-0003** — Minimal dependencies, no async/reload
    layer, focused tests, and a compiling standalone README example.
 5. **REQ-RUN-0005** — The sc-config boundary manifest at
-   `boundaries/sc-config/sc-config.toml`. `forbidden_edges` includes
-   `sc-observability-types` as well as the logging crates (ADR-RUN-0004).
-   Once `crates/sc-config/Cargo.toml` exists, run the single-crate
+   `boundaries/sc-config/sc-config.toml`. `allowed_dependents` is empty.
+   Do not copy the open `sc-runtime` → `sc-config` MAY into that key. a-5
+   does not own this manifest. `forbidden_edges` includes
+   `sc-observability-types` as well as the logging crates (ADR-RUN-0004),
+   direct and transitive. This deliverable and acceptance criterion 6 are
+   done only after `triage:a-2-boundary-evidence`. Once
+   `crates/sc-config/Cargo.toml` exists, run the single-crate
    `sc-lint lint sc-boundary` command a-1 recorded in
-   `docs/architecture.md` against this manifest. Exit 0 is the gate. Do not
-   paste analyzer output into the pull request. Do not wait for a-5. Do not
+   `docs/architecture.md` against this manifest. Do not
+   paste analyzer output into the pull request. The binding evidence is the
+   QA re-run in Required validation, not this developer run and not a
+   pull-request statement. Do not wait for a-5. Do not
    install sc-lint or own the permanent root workspace `Cargo.toml` (a-5
    still creates the four-member workspace). The command does not need that
    workspace.
@@ -142,9 +155,12 @@ signature contract.
    does not embed a second vector list.
 6. `boundary:sc-config` — the single-crate `sc-lint lint sc-boundary`
    command a-1 recorded exits 0 on `boundaries/sc-config/sc-config.toml`
-   after `crates/sc-config/Cargo.toml` exists. The manifest forbids
-   `sc-observability-types`. The pull request does not retain analyzer
-   output. Exit 0 is the evidence.
+   after `crates/sc-config/Cargo.toml` exists. `allowed_dependents` is
+   empty. The manifest forbids `sc-observability-types`. The pull request
+   does not retain analyzer output. This criterion is marked done only
+   after `triage:a-2-boundary-evidence`. Leaf QA re-runs the command at
+   the reviewed commit and records only the exit code. That re-run is the
+   evidence.
 7. `boundary:sc-config` — NFR-CFG-0001 is this crate's strictness on
    NFR-RUN-0009. Public loaders return `Result<_, ConfigError>`. Tests pass
    a missing file and malformed JSON and assert the `ConfigError` variant.
@@ -171,5 +187,7 @@ Run crate tests, doctests, formatting/linting, and workspace build once
 registered. Check the default dependency tree. Review the manifest against
 REQ-RUN-0005. Confirm the ADR-CFG-0001 error-inventory table and the
 `AppName` construction tests, which load
-`tests/fixtures/app-name-vectors.json`. Run the single-crate
-`sc-lint lint sc-boundary` command a-1 recorded on this crate's manifest.
+`tests/fixtures/app-name-vectors.json`. Leaf QA re-runs the single-crate
+`sc-lint lint sc-boundary` command a-1 recorded on this crate's manifest
+at the reviewed commit and records only the exit code in the QA report.
+That re-run is the binding evidence. A statement in the pull request is not.

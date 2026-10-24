@@ -99,8 +99,9 @@ its remediation, message, and optional cause are `String`. No
 `sc-observability-types` type appears on this crate. The application maps
 its store error into that variant inside the stores closure. Reject
 `Box<dyn Error>` and generic `RuntimeError<E>` (RBP-F003). Publish runtime
-**error inventory** (RBP-F002). Embed a-3's frozen `TransportConfig` (v0.1
-single-bind, `additional_endpoints` reserved and unused). Do not resolve CLI
+**error inventory** (RBP-F002). Embed a-3's frozen `TransportConfig`
+(`#[non_exhaustive]`, v0.1 single-bind, no `additional_endpoints` field).
+Do not resolve CLI
 auto-start or application test architecture here. Record builder and
 lifecycle choices in the owned crate ADR before the facade freezes.
 
@@ -119,8 +120,9 @@ stay in the sc-lint-managed block. Each calls `.sc-lint/bootstrap.py` with
 `sc-lint init --just` does not regenerate; the existing `new` stub stays for
 a-6. This checkout does not build sc-lint, so `setup` installs the verified
 0.8.0 release rather than a `target/debug` binary or a source-checkout
-`--dry-run`. `just lint` runs `sc-lint-boundary analyze` on every
-`boundaries/<crate>/*.toml` manifest and the sc-lint line-counts check at
+`--dry-run`. `just lint` runs `sc-lint lint sc-boundary` on every
+`boundaries/<crate>/*.toml` manifest, the command already named in
+`sc-lint.toml`, and the sc-lint line-counts check at
 1000 source lines for non-test files under `crates/*/src` only
 (NFR-RUN-0008). `template/**/*.rs` is not in this sprint; a-6 adds that half
 after the generation tree exists. The line-counts configuration key is the
@@ -134,16 +136,13 @@ This sprint consumes the `sc-transport` and `sc-command` facades from the
 after a-3 and a-4 have recorded their decisions in their owned source
 documents. It consumes endpoint and listener types, and the `sc-command`
 server conversions. It registers a-2's crate and manifest and does not
-consume an `sc-config` type. It produces `sc_runtime::AppName` under the
-handoff predicate a-1 records as ADR-RUN-0010. That type is the daemon and
-application identity for builder paths. `Daemon::builder` does not take or
-re-export `sc_transport::AppName`. See the
-[handoff](phase-a-plan.md#minimal-public-contract-handoff) for the predicate.
-Construction tests load `tests/fixtures/app-name-vectors.json`. This sprint
-does not copy that file. Inside `run`, `as_str()` into
-`sc_transport::AppName` that returns `Err` becomes the `RuntimeError`
-variant in deliverable 5. That path does not use `unreachable!`.
-This sprint does not write that ADR. `DaemonConfig` embeds the
+consume an `sc-config` type. It does not produce `sc_runtime::AppName`.
+`Daemon::builder` takes `&sc_transport::AppName`. `run` calls
+`instance_root` with that reference. It does not convert with `as_str()`
+and it does not map a constructor `Err` to `RuntimeError`. See the
+[handoff](phase-a-plan.md#minimal-public-contract-handoff). This sprint
+does not write ADR-RUN-0010 and does not load the AppName vector file.
+`DaemonConfig` embeds the
 `TransportConfig` type a-3 froze. The sc-runtime requirement and ADR sources
 remain authoritative for the builder. `docs/architecture.md` edits are the
 slices in deliverables 9 and 11.
@@ -169,7 +168,7 @@ for symmetry.
 ## Deliverables
 
 1. **REQ-RT-0001 / REQ-RT-0003 / REQ-RT-0008** — Application loads config
-   before `Daemon::builder(sc_runtime::AppName, &DaemonConfig)`. `DaemonConfig`
+   before `Daemon::builder(&sc_transport::AppName, &DaemonConfig)`. `DaemonConfig`
    embeds a-3's `TransportConfig`. Builder uses consuming typestate so `run`
    exists only after `stores` and `routes`, with optional `mcp` on that ready
    state. The call chain remains `stores` → `routes` → optional `mcp` → `run`.
@@ -196,12 +195,9 @@ for symmetry.
    does not declare a direct dependency on `sc-observability-types`.
    Transitive `sc-observability-types` through `sc-command` is the a-1
    exemption in REQ-RUN-0005 criterion 5. `Box<dyn Error>` and generic
-   `RuntimeError<E>` are rejected. The inventory includes one variant for
-   the `as_str()` conversion into `sc_transport::AppName` inside `run`
-   when that constructor returns `Err`. The stable code is
-   `APP.INVALID_NAME`. The cause is the rejected name. Recovery is the
-   ADR-RUN-0010 predicate. `run` maps that `Err` to the variant. It does
-   not use `unreachable!`. Delete any
+   `RuntimeError<E>` are rejected. The inventory has no variant for an
+   `AppName` conversion. `run` does not construct `sc_transport::AppName`
+   and does not use `unreachable!` for a name. Delete any
    `source()`-without-downcast or named-foreign-payload requirement from the
    crate ADR and from REQ-RT-0007 (RBP-F003). `run` never calls `process::exit`.
 6. **REQ-RUN-0103 / REQ-RUN-0204 / REQ-RUN-0205** — Rewrite the spike against
@@ -210,20 +206,25 @@ for symmetry.
 7. **REQ-RUN-0001 / REQ-RUN-0004 / REQ-RUN-0005** — Create the four-member
    workspace, root core recipes/CI, and runtime boundary manifest without
    registering template packages as workspace members. `examples/spike` is an
-   excluded standalone package, not a fifth member. `boundaries/sc-runtime/sc-runtime.toml`
-   joins the leaf manifests. The `sc-config` workspace member is path
+   excluded standalone package, not a fifth member.    `boundaries/sc-runtime/sc-runtime.toml`
+   joins the leaf manifests. `allowed_dependents` is empty: no workspace
+   crate depends on `sc-runtime`. Generated applications are outside this
+   workspace and are not listed. The `sc-config` workspace member is path
    registration only and adds no `sc-runtime` dependency. `.github/workflows/crates.yml`
    calls `just setup`, `just lint`, and `just test` only. It names no spike
    job, so deleting `examples/spike/**` in a-7 cannot leave a stale spike step.
    Leaf sprints already analyzed their own manifests.
 8. **REQ-RUN-0004 / NFR-RUN-0008** — Verify and extend the existing root
-   `Justfile`. Do not contradict its sc-lint init header. Source-maintainer
-   sc-lint 0.8.0 install: `sc-lint.toml` pins `minimum_version` to `0.8.0`,
-   `.sc-lint/bootstrap.py` is the 0.8.0 helper, and `just lint` includes
-   `sc-lint-boundary analyze` plus the 1000-line line-counts check for
-   `crates/*/src` only. Crate CI calls `just setup` before `just lint` and
-   `just test`. Do not copy boundary manifests into the template. Do not
-   close the `template/**/*.rs` half of NFR-RUN-0008.
+   `Justfile`, `sc-lint.toml`, and `.sc-lint/bootstrap.py`. Do not contradict
+   the sc-lint init header. Those files already pin `minimum_version` to
+   `0.8.0` and already run `sc-lint lint sc-boundary` (the `boundary` lint
+   in `sc-lint.toml`) plus line-counts. Do not restate that pin, the
+   bootstrap helper, or the `gates` and `full` profiles as new work. Extend
+   the line-counts check so it covers non-test files under `crates/*/src`
+   at 1000 source lines when the committed config does not already say so.
+   Crate CI calls `just setup` before `just lint` and `just test`. Do not
+   copy boundary manifests into the template. Do not close the
+   `template/**/*.rs` half of NFR-RUN-0008.
 9. **ADR-RUN-0003 / NFR-RT-0003 / REQ-RUN-0005** — Record `sc-runtime` →
    `sc-config` as edge absent in every copy, and put `sc-config` on
    `sc-runtime` `forbidden_edges`:
@@ -237,7 +238,10 @@ for symmetry.
    Keep a-1's rule that the `sc-runtime` forbidden edge for
    `sc-observability-types` is direct-only. Amend NFR-RT-0002 so a direct
    dependency is forbidden and the transitive crate through `sc-command`
-   stays allowed, matching REQ-RUN-0005 success criterion 5.
+   stays allowed, matching REQ-RUN-0005 success criterion 5. If a-1 recorded
+   that the analyzer cannot express direct-only, enforce that rule with
+   `cargo tree -p sc-runtime -e normal --prefix none` and do not put a
+   forbidden edge that also fails the transitive crate.
    `sc-runtime` does not depend on `sc-config` and does not declare a direct
    dependency on `sc-observability-types`.
    This sprint does not add `cargo tree -p cli`; the phase
@@ -248,9 +252,11 @@ for symmetry.
     - REQ-RUN-0001: `examples/spike` is an excluded standalone package, not a
       workspace member and not a Cargo example. The member list stays the
       four library crates.
-    - REQ-RUN-0004: `just lint` runs the sc-lint 0.8.0 full profile (boundary
-      analyze, line-counts, fmt, clippy) through `.sc-lint/bootstrap.py`.
-      `just lint gates` is the early boundary plus line-counts profile.
+    - REQ-RUN-0004: `just lint` runs the sc-lint 0.8.0 full profile
+      (`sc-lint lint sc-boundary`, line-counts, fmt, clippy) through
+      `.sc-lint/bootstrap.py`. `just lint gates` is the early boundary plus
+      line-counts profile. The boundary command is the one already in
+      `sc-lint.toml`.
     - REQ-RUN-0005: the manifest file name is `boundaries/<crate>/<crate>.toml`.
     - REQ-RUN-0001 layout table: the root recipe path is `Justfile`
       (capital J), the name sc-lint init and this repository use. Delete the
@@ -261,8 +267,9 @@ for symmetry.
 11. **REQ-RT-0001 / REQ-RUN-0205** — Copy a-3's dual-bind decision. Amend the
     runtime requirement and ADR OPENs, the REQ-RUN-0205 OPEN, and the
     dual-bind OPEN paragraphs in `docs/architecture.md`: v0.1 binds one
-    listener; `additional_endpoints` is reserved and ignored in v0.1. Do not change
-    the field list a-3 froze. The ignore is the one a-3's ADR amendment states.
+    listener; `TransportConfig` is `#[non_exhaustive]` and has no
+    `additional_endpoints` field. Do not change the field list a-3 froze.
+    The ADR statement is the one a-3 recorded.
 12. **NFR-RT-0003** — Before the facade freezes, close the three NFR-RT-0003
     OPENs that deliverable 9 does not close. Delete those OPEN paragraphs in
     `docs/sc-runtime/requirements.md` and replace them with this decision:
@@ -275,11 +282,13 @@ for symmetry.
       service type and mounts it as given. `sc-runtime` does not wrap that
       type and does not re-export it (ADR-RUN-0001 point 4).
     The `sc-config` OPEN stays the edge-absent close in deliverable 9.
-    `Daemon::builder` still takes `sc_runtime::AppName`. It does not take or
-    re-export `sc_transport::AppName`. Construction tests load
-    `tests/fixtures/app-name-vectors.json` and do not embed a second list.
-    `cargo tree -p sc-runtime -e normal --prefix none` prints no line for
-    `test-util`, `tempfile`, or `tempdir`.
+    `Daemon::builder` takes `&sc_transport::AppName`. This crate does not
+    define or re-export `sc_runtime::AppName`.
+    `cargo tree -p sc-runtime -e normal --prefix none` prints no `tempfile`
+    or `tempdir` line. `test-util` is a feature name, not a crate line, so
+    that command is not the feature check. `cargo tree -p sc-runtime -e features --prefix none`
+    with `--features test-util` shows the temporary-directory crate, and the
+    same command without that feature does not.
 13. **REQ-RT-0004 / NFR-RT-0003** — Close the health-route body OPEN in
     `docs/sc-runtime/requirements.md`: the path, HTTP method, status code,
     and response body. `GET /health` returns status 200. The body is the
@@ -291,12 +300,14 @@ for symmetry.
     `sc_config` use check. The `sc-runtime -> sc-command/server` edge stays.
     Delete that body OPEN. Do not leave the body undecided.
 14. **NFR-RT-0001** — Amend the facade table and success criteria 2 and 3
-    in `docs/sc-runtime/requirements.md`. Admit exactly one validated
-    newtype, `sc_runtime::AppName`. The public `testing` module and
-    `DaemonFixture` sit behind the non-default `test-util` feature. Record
-    both in `[public] facade` of `boundaries/sc-runtime/sc-runtime.toml`.
-    Success criterion 2 counts that newtype and that feature-gated test
-    module and nothing else. No other public item is added.
+    in `docs/sc-runtime/requirements.md`. Do not add a validated newtype.
+    `Daemon::builder` takes `&sc_transport::AppName`. The public items stay
+    the kinds already in that table: entry type, builder, configuration
+    struct, error enum, and the `testing` module. The public `testing`
+    module and `DaemonFixture` sit behind the non-default `test-util`
+    feature. `[public] facade` of `boundaries/sc-runtime/sc-runtime.toml`
+    lists those items and does not list `sc_runtime::AppName`. Success
+    criteria 2 and 3 match that table. No other public item is added.
 15. **NFR-RUN-0002** — Close library success criteria 4 and 5. Review
     `grep -rn "std::fs\|std::net\|block_on\|thread::sleep" crates/sc-transport/src crates/sc-runtime/src`.
     Every match outside `#[cfg(test)]` is in a function that runs only at
@@ -337,7 +348,8 @@ for symmetry.
     shows `setup`, `lint`, `test`, and `upgrade`. The root file is `Justfile`.
     Its first line is still the sc-lint init header quoted under Decision prerequisites.
     Repo-specific recipes stay in the section that init does not regenerate.
-    `just lint` invokes `sc-lint-boundary analyze` and exits 0 on the four
+    `just lint` invokes `sc-lint lint sc-boundary`, the command in the
+    committed `sc-lint.toml` `boundary` lint, and exits 0 on the four
     manifests. The line-counts check is configured for non-test files under
     `crates/*/src` at 1000 source lines, using the key the 0.8.0 package
     provides. This criterion checks that configuration. It does not add a
@@ -347,24 +359,21 @@ for symmetry.
     A test matches `StoresFailed` and reads its code as `&'static str` and its
     message, remediation, and optional cause as `String`. The crate manifest
     does not declare a direct dependency on `sc-observability-types`.
-    The inventory row for the `as_str()` conversion into
-    `sc_transport::AppName` is present. A test maps that constructor `Err`
-    to the variant and reads code `APP.INVALID_NAME`. The production path
-    does not use `unreachable!`. The stores closure is what maps an
-    application store error into that variant. The test does not call
+    The inventory has no `AppName` conversion variant and no
+    `APP.INVALID_NAME` row. The production path does not construct
+    `sc_transport::AppName` inside `run` and does not use `unreachable!`
+    for a name. The stores closure is what maps an
+    application store error into `StoresFailed`. The test does not call
     `source()` and does not downcast. Public signatures contain no
     `Box<dyn Error>`, and `RuntimeError` is not generic (RBP-F002, RBP-F003).
 11. `req:REQ-RT-0001` — caller-facing builder sequence is closed in
     ADR-RT-0001: either consuming typestate makes `run` available only after
     `stores` and `routes`, with optional `mcp` on that ready state, or the
     ADR rejects typestate and a missing required closure returns an explicit
-    `RuntimeError`. `Daemon::builder` takes `sc_runtime::AppName`, the daemon
-    and application identity for builder paths. It does not take or re-export
-    `sc_transport::AppName`. Construction
-    tests load `tests/fixtures/app-name-vectors.json` and expect
-    `APP.INVALID_NAME` on every reject string. The test source does not
-    embed a second list. The type exposes `as_str` or `AsRef<str>`
-    and does not implement `Deref`. The predicate is ADR-RUN-0010. The in-run
+    `RuntimeError`. `Daemon::builder` takes `&sc_transport::AppName`. This
+    crate does not define `sc_runtime::AppName`, does not re-export the
+    transport type under another name, and does not test `APP.INVALID_NAME`.
+    Name construction stays with a-3. The in-run
     ordering test remains, and it is not the only proof of the caller-facing
     sequence (RBP-F007).
 12. `ADR-RUN-0003` / `req:REQ-RUN-0005` — every slice in deliverable 9 records
@@ -373,17 +382,20 @@ for symmetry.
     `sc-config`. `sc-runtime` does not depend on `sc-config`. NFR-RT-0002
     states the direct-only `sc-observability-types` rule from deliverable 9:
     a transitive line through `sc-command` is allowed, and a direct
-    dependency is forbidden.
+    dependency is forbidden. When a-1 moved that rule to `cargo tree`, this
+    criterion checks that command and the manifest does not forbid the
+    transitive crate.
 13. `req:REQ-RUN-0205` — the dual-bind OPEN paragraphs named in deliverable 11
-    match a-3: v0.1 single-bind, `additional_endpoints` reserved and ignored
-    in v0.1.
+    match a-3: v0.1 single-bind, `TransportConfig` is `#[non_exhaustive]`,
+    and there is no `additional_endpoints` field.
 14. `req:NFR-RT-0003` — the three OPEN paragraphs named in deliverable 12 are
     gone. `testing::DaemonFixture` is behind non-default `test-util`. The
     temp-dir crate is optional on that feature only and is absent from normal
     dependencies. `rmcp` is a direct dependency, and the crate does not wrap
     or re-export the rmcp service type. A default build does not link
     `DaemonFixture`. `cargo tree -p sc-runtime -e normal --prefix none`
-    prints no line for `test-util`, `tempfile`, or `tempdir`. The facade is
+    prints no `tempfile` or `tempdir` line. `cargo tree -p sc-runtime -e features --prefix none`
+    shows that crate only when `--features test-util` is set. The facade is
     not frozen while any of those three OPENs remains.
 15. `req:REQ-RUN-0001` — this sprint closes the workspace half of the
     success criteria. Root `Cargo.toml` `[workspace] members` resolves to
@@ -412,11 +424,13 @@ for symmetry.
     envelope through `sc_command::Envelope`'s server-feature `IntoResponse`.
     A search of `crates/sc-runtime/src` finds at least one `sc_command` use.
     The criterion fails when that use is absent.
-18. `req:NFR-RT-0001` — the amended facade table admits exactly
-    `sc_runtime::AppName` and the `test-util`-gated `testing` module.
-    `[public] facade` in `boundaries/sc-runtime/sc-runtime.toml` lists those
-    items. Success criteria 2 and 3 match that table. No other public item
-    is added.
+18. `req:NFR-RT-0001` — the amended facade table does not admit
+    `sc_runtime::AppName`. It admits the entry type, the builder, the
+    configuration struct, the error enum, and the `test-util`-gated
+    `testing` module. `[public] facade` in
+    `boundaries/sc-runtime/sc-runtime.toml` lists those items.
+    `allowed_dependents` is empty. Success criteria 2 and 3 match that
+    table. No other public item is added.
 19. `req:NFR-RUN-0002` — library criteria 4 and 5.
     `grep -rn "std::fs\|std::net\|block_on\|thread::sleep" crates/sc-transport/src crates/sc-runtime/src`
     is reviewed. Every match outside `#[cfg(test)]` is in a function that
@@ -443,4 +457,7 @@ None. a-7 removes the rewritten spike after release evidence is preserved.
 
 Run the acceptance criteria. Host checks use in-process fixtures. Signal and
 process proofs run only on an ephemeral CI runner with an isolation guard.
-CI output is the record.
+CI output is the record. Leaf QA re-runs `sc-lint lint sc-boundary` on
+`boundaries/sc-runtime/sc-runtime.toml` at the reviewed commit and records
+only the exit code in the QA report. That re-run is the binding evidence
+for this manifest. A statement in the pull request is not.

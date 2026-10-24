@@ -106,8 +106,8 @@ Install the sc-lint 0.8.0 consumer contract into the template with
 for; do not keep a hand-written lint stand-in. Commit `template/sc-lint.toml`
 with `minimum_version = "0.8.0"`, `template/.sc-lint/bootstrap.py`, and a
 generated `Justfile` whose public recipes are `setup`, `lint`, `test`, and
-`upgrade`. Keep consumer-owned `db-prepare` and `build-cli` beside those
-four. Adding those recipes edits the generated `Justfile`; a later
+`upgrade`. Keep consumer-owned `db-prepare`, `build-cli`, and `build-daemon`
+beside those four. Adding those recipes edits the generated `Justfile`; a later
 `sc-lint init --just` must be reviewed so both stay. The template still carries no lint policy of
 its own: no `boundaries/`, no clippy/rustfmt/deny config, and no `just` import
 (NFR-RUN-0006). The plain cargo-generate job still only builds. Fixture CI
@@ -122,14 +122,15 @@ Pin generated `crates/daemon` to the `sc-observability` version a-1 recorded
 (the latest release at spike time; 1.5.0 as of this plan) after a-1 has
 amended REQ-RUN-0309 and ADR-RUN-0004 to that pair. `main` loads config,
 initialises `sc-observability` with plain values from that config, then calls
-`Daemon::builder`. At that application boundary, convert with `as_str()` into
-`sc_config::AppName`, `sc_transport::AppName`, and `sc_runtime::AppName`.
+`Daemon::builder`. At that application boundary, build two names:
+`sc_config::AppName` for load, and `sc_transport::AppName` passed by
+reference to `Daemon::builder`. There is no `sc_runtime::AppName`.
 Leave `sc-observability-otlp` out of the template. OpenTelemetry export stays
 optional for a later project change.
 
 This sprint is the sole owner of the NFR-RUN-0001 close in the phase
 [feature-enforcement table](phase-a-plan.md#cliserver-feature-enforcement).
-Deliverable 14 adds `just build-cli`. This sprint does not split crates.
+Deliverable 14 adds `just build-cli` and `just build-daemon`. This sprint does not split crates.
 
 Unknown route, Axum body rejection, and rmcp `Err(McpError)` stay deferred
 for v0.1. Do not extend ADR-CMD-0001 when the example widget operation is
@@ -160,10 +161,13 @@ its only meaningful proof.
    small valid/refused fixture set; invalid or unsupported input fails before
    destination creation. Refused inputs are the reject strings in
    `tests/fixtures/app-name-vectors.json`. Tests and the driver load that
-   file. This sprint does not copy it. The driver reports stable
-   code `APP.INVALID_NAME` and does not create the
-   destination. ADR-RUN-0010 is the predicate. That code is a row in
-   deliverable 15.
+   file. This sprint does not copy it. The project-name `pattern` on
+   `wizard/answers.schema.json` is the generation predicate. It matches
+   ADR-RUN-0010 (ASCII `A-Z`, `a-z`, `0-9`, `-`, `_`; length 1 through 64).
+   The driver and the wizard validate through that schema. They do not embed
+   a second character class. The driver reports stable code `APP.INVALID_NAME`
+   when the pattern rejects the name and does not create the destination.
+   That code is a row in deliverable 15.
 2. **REQ-RUN-0501 / REQ-RUN-0502** — A small `--var-file` driver sequences
    validation, cargo-generate, sc-compose, then the generated project's
    recipes in deliverable 6. It does not include wizard logic yet. Driver
@@ -183,15 +187,18 @@ its only meaningful proof.
    example service through REST, optional MCP, and the CLI's transport path.
 6. **REQ-RUN-0701** — Fixture CI discovers supported answers files and runs
    this sequence and nothing else: `just new`, then `just setup`, then
-   `just lint`, then `just test`, then `just build-cli`. Those are `just`
-   recipes. They are not manual commands. `just build-cli` includes
+   `just lint`, then `just test`, then `just build-cli`, then
+   `just build-daemon`. Those are `just` recipes. They are not manual
+   commands. `just build-cli` includes
    `cargo tree -p cli -e normal --prefix none` and fails when a server-only
    crate is present. `just test` includes the observability grep: rendered
    `crates/daemon` requires `sc-observability` at the a-1 pin, does not
    require `sc-observability-otlp`, and the logging-crate token does not
-   match `sc-observability-types`. `just test` also runs
-   `cargo tree -p daemon -e normal --prefix none` and fails when that output
-   contains `test-util`, `tempfile`, or `tempdir`. No source file changes between generation
+   match `sc-observability-types`. `just build-daemon` runs
+   `cargo build -p daemon --release` and
+   `cargo tree -p daemon -e normal --prefix none`, and fails when that output
+   contains a `tempfile` or `tempdir` line. `test-util` is a feature name
+   and is not a crate line in that check. No source file changes between generation
    and the end of that sequence. A workspace-wide build is not a matrix step.
 7. **REQ-RUN-0306** — Plain cargo-generate remains usable for the template tree
    with documented limitations around separately rendered Jinja documents.
@@ -212,11 +219,12 @@ its only meaningful proof.
 10. **REQ-RUN-0202 / REQ-RUN-0503 / REQ-RUN-0701** — Amend only those three
     sections of `docs/requirements.md`. REQ-RUN-0701's command list and
     success criterion 1 become `just new`, then `just setup`, then `just lint`,
-    then `just test`, then `just build-cli`. That criterion states that
-    `just build-cli` includes `cargo tree -p cli -e normal --prefix none` and
-    that `just test` includes the observability grep from deliverable 6 and
-    `cargo tree -p daemon -e normal --prefix none` with no `test-util`,
-    `tempfile`, or `tempdir` line.
+    then `just test`, then `just build-cli`, then `just build-daemon`. That
+    criterion states that `just build-cli` includes
+    `cargo tree -p cli -e normal --prefix none`, that `just test` includes
+    the observability grep from deliverable 6, and that `just build-daemon`
+    includes `cargo tree -p daemon -e normal --prefix none` with no
+    `tempfile` or `tempdir` line.
     Those checks run because fixture CI runs the recipes. They are not a
     separate manual step. `just setup` installs the
     sc-lint 0.8.0 consumer and is not a source edit. REQ-RUN-0503 success
@@ -243,7 +251,9 @@ its only meaningful proof.
     message, `suggested_action`, and the envelope. This mapping is the only
     owner of `suggested_action` for every `TransportError`. Transport carries
     endpoint and cause on `DaemonNotRunning` and does not carry the string.
-    The `DaemonNotRunning` row sets `suggested_action` to
+    The mapping reads that variant's `&'static str` code and converts it to
+    `sc_observability_types::ErrorCode`. Transport does not depend on that
+    type. The `DaemonNotRunning` row sets `suggested_action` to
     `run <app> daemon start` from the generated application's own name.
     The mapping lives in the generated CLI. It does not add an
     `sc-command` → `sc-transport` edge. One host-safe vector per variant.
@@ -254,16 +264,18 @@ its only meaningful proof.
     forbids an `sc-transport` → `sc-command` edge, so the mapping cannot live
     in either crate. `daemon start` adds no launch API to a published crate
     and does not reopen the ADR-RUN-0204 launch-policy deferral.
-14. **NFR-RUN-0001** — Add consumer-owned `just build-cli` as specified in
-    the phase feature-enforcement table. The recipe runs
-    `cargo build -p cli --release` and `cargo tree -p cli -e normal --prefix none`,
-    and it warns that `cargo build --workspace` is the exemption. Fixture CI
-    runs the recipe. It does not run that tree as a manual command. The
-    generated example's in-process test enables `sc-runtime` feature
-    `test-util` only as a dev-dependency. The daemon's normal dependencies
-    do not enable it. `just test` runs
-    `cargo tree -p daemon -e normal --prefix none` and fails when the output
-    contains `test-util`, `tempfile`, or `tempdir`.
+14. **NFR-RUN-0001** — Add consumer-owned `just build-cli` and
+    `just build-daemon` as specified in the phase feature-enforcement table.
+    `just build-cli` runs `cargo build -p cli --release` and
+    `cargo tree -p cli -e normal --prefix none`, and it warns that
+    `cargo build --workspace` is the exemption. `just build-daemon` runs
+    `cargo build -p daemon --release` and
+    `cargo tree -p daemon -e normal --prefix none`, and fails when that
+    output contains a `tempfile` or `tempdir` line. Fixture CI runs both
+    recipes. It does not run those trees as manual commands. The generated
+    example's in-process test enables `sc-runtime` feature `test-util` only
+    as a dev-dependency. The daemon's normal dependencies do not enable it.
+    The daemon tree check does not look for a `test-util` crate line.
 15. **REQ-RUN-0501 / REQ-RUN-0502** — `docs/generation.md` holds the
     generation-driver error inventory before the driver freezes. The driver
     is not a JSON API. Stderr is one line: `<code> <cause> — <recovery>`.
@@ -274,10 +286,10 @@ its only meaningful proof.
     |---|---|---|---|
     | schema-invalid answers | `GEN.SCHEMA_INVALID` | answers fail `wizard/answers.schema.json` | fix the file; cargo is not called; the destination is not created |
     | reserved database | `GEN.DB_RESERVED` | `db` is `postgres` or `both` | set `db` to `sqlite`; the destination is not created |
-    | invalid project name | `APP.INVALID_NAME` | name fails ADR-RUN-0010 | use that predicate; the destination is not created |
+    | invalid project name | `APP.INVALID_NAME` | name fails the project-name `pattern` in `wizard/answers.schema.json` | fix the name to that pattern; the destination is not created |
     | missing sc-compose | `GEN.TOOL_MISSING` | `SC_COMPOSE` unset and `sc-compose` not on `PATH` | set `SC_COMPOSE` or install `sc-compose` on `PATH`; `cargo generate` does not run |
     | destination conflict | `GEN.DEST_CONFLICT` | the destination path exists | choose an absent path |
-    | pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, or `build-cli` | stderr names that step; fix it; later steps do not run |
+    | pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | stderr names that step; fix it; later steps do not run |
 
 16. **REQ-RUN-0001** — After generation, the tree contains no `wizard/`
     directory, no `scripts/new_project.py`, no `boundaries/` directory, and
@@ -301,9 +313,11 @@ its only meaningful proof.
     Point 6's driver steps, in order, become: run the wizard unless
     `--var-file` is given; validate the answers against the schema; write
     `values.toml`; run `cargo generate`; run `sc-compose`; run `just setup`,
-    `just lint`, `just test`, and `just build-cli` in the generated project.
+    `just lint`, `just test`, `just build-cli`, and `just build-daemon` in
+    the generated project.
     Point 8's fixture CI becomes `just new`, then `just setup`, then
-    `just lint`, then `just test`, then `just build-cli` for each file in
+    `just lint`, then `just test`, then `just build-cli`, then
+    `just build-daemon` for each file in
     `wizard/fixtures/*.json`. Wyvern is not required. Point 2 records the
     project-name decision: the key sets are equal except for the
     project-name key, which one named constant exempts, because
@@ -362,18 +376,20 @@ its only meaningful proof.
 9. `req:REQ-RUN-0701` — fixture CI runs deliverable 6 and nothing else in
    the matrix, with no edit between generation and the end of that sequence.
    `just build-cli` includes `cargo tree -p cli -e normal --prefix none`.
-   `just test` includes the observability grep and
+   `just test` includes the observability grep. `just build-daemon` includes
    `cargo tree -p daemon -e normal --prefix none`. That daemon tree prints
-   no line for `test-util`, `tempfile`, or `tempdir`. Those checks are not
+   no `tempfile` or `tempdir` line. Those checks are not
    manual commands outside those recipes. The amended REQ-RUN-0701 text from
    deliverable 10 says the same. PR-mode lockfiles resolve all four
    libraries to the checkout paths; release lockfiles resolve all four to
    the crates.io registry.
-10. `req:NFR-RUN-0001` — fixture CI runs `just build-cli`, and that recipe
-    includes `cargo tree -p cli -e normal --prefix none`. The named
-    server-only crates are absent. `just test` runs
-    `cargo tree -p daemon -e normal --prefix none` and that output contains
-    no `test-util`, `tempfile`, or `tempdir` line. This criterion does not split crates,
+10. `req:NFR-RUN-0001` — fixture CI runs `just build-cli` and
+    `just build-daemon`. `just build-cli` includes
+    `cargo tree -p cli -e normal --prefix none`. The named
+    server-only crates are absent. `just build-daemon` runs
+    `cargo build -p daemon --release` and
+    `cargo tree -p daemon -e normal --prefix none`, and that output contains
+    no `tempfile` or `tempdir` line. This criterion does not split crates,
     does not depend on a-5 closing ADR-RUN-0003, and does not add a manual
     tree command.
 11. `ADR-RUN-0303` — inspection confirms that reusable runtime behavior remains
@@ -381,7 +397,7 @@ its only meaningful proof.
    composition remain editable template code.
 12. `req:REQ-RUN-0307` / `req:NFR-RUN-0006` — a project generated from
     `wizard/fixtures/sqlite-mcp.json` lists `setup`, `lint`, `test`,
-    `upgrade`, `db-prepare`, and `build-cli`. Deliverable 6 exits 0 with no
+    `upgrade`, `db-prepare`, `build-cli`, and `build-daemon`. Deliverable 6 exits 0 with no
     edits. `template/` contains `sc-lint.toml` and `.sc-lint/bootstrap.py`
     from sc-lint 0.8.0, and it contains no `boundaries/` directory, no
     clippy/rustfmt/deny config, and no `mod` or `import` in the `Justfile`.
@@ -462,7 +478,9 @@ its only meaningful proof.
     message, `suggested_action`, and the envelope. The mapping is generated
     CLI code and is the only owner of `suggested_action` for those variants.
     The `DaemonNotRunning` vector's `suggested_action` is
-    `run <app> daemon start`. Deliverable 13 states the ADR-RUN-0002 point 6
+    `run <app> daemon start`. That vector's code is
+    `sc_observability_types::ErrorCode` mapped from the transport
+    `&'static str`. Deliverable 13 states the ADR-RUN-0002 point 6
     reason that this mapping stays in the template.
 23. `req:REQ-RUN-0501` / `req:REQ-RUN-0502` — driver tests match deliverable
     15. Schema-invalid answers emit `GEN.SCHEMA_INVALID`. A `postgres` file
@@ -494,7 +512,7 @@ its only meaningful proof.
 27. `ADR-RUN-0401` — the sprint diff amends points 2, 6, and 8 as
     deliverable 18 states. The project-name OPEN is gone. Point 2 exempts
     that key by one named constant. Points 6 and 8 name `just setup`,
-    `just lint`, `just test`, and `just build-cli`. No other ADR section
+    `just lint`, `just test`, `just build-cli`, and `just build-daemon`. No other ADR section
     in `docs/architecture.md` changes in this sprint except deliverable 19.
     The ADR-RUN-0401 amendment also records the deliverable 15 error
     inventory and the one-line stderr contract

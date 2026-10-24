@@ -5,6 +5,7 @@ minimum_version = "0.8.0"
 
 # Source-maintainer checks (this repository). Generated applications use the
 # consumer template from sprint a-6 with the same minimum_version floor.
+# Boundary lint command: `sc-lint lint sc-boundary`.
 [[tool.sc-lint.lint]]
 name = "boundary"
 command = ["sc-lint", "lint", "sc-boundary", "--root", ".", "--config", "sc-lint.toml"]

@@ -99,8 +99,8 @@ boundary.
    the `sc-observability-types` version a-1 recorded and does not depend on
    `sc-observability` or `sc-observability-otlp`. Amend the ADR-CMD-0001
    sentence that called this the only library observability dependency so it
-   matches a-1: `sc-transport` may depend on `sc-observability-types` for
-   `ErrorCode` only. Before the facade freezes, ADR-CMD-0001 holds a library
+   matches a-1: `sc-command` remains the only library that depends on
+   `sc-observability-types`. `sc-transport` does not. Before the facade freezes, ADR-CMD-0001 holds a library
    wire-failure inventory. The rows are an invalid or contradictory envelope
    discriminant, serialization failure, and the five `ErrorKind` mappings.
    Each row has a stable code, cause, recovery steps, and a docs link where
@@ -115,15 +115,18 @@ boundary.
 4. **NFR-CMD-0001 / NFR-CMD-0002** — Minimal default/server feature graphs,
    focused tests, and a compiling standalone README example.
 5. **REQ-RUN-0005 / NFR-CMD-0001** — Boundary manifest at
-   `boundaries/sc-command/sc-command.toml`. Amend NFR-CMD-0001 so the default
+   `boundaries/sc-command/sc-command.toml`. `allowed_dependents` is
+   `sc-runtime` only. Amend NFR-CMD-0001 so the default
    direct dependencies are `serde`, `serde_json`, and `sc-observability-types`
    at the a-1 pin, and delete the `serde_json` OPEN. `allowed_dependencies`
-   includes `sc-observability-types`.    `forbidden_edges` keeps
+   includes `sc-observability-types`. `forbidden_edges` keeps
    `sc-observability` and `sc-observability-otlp` and does not list
-   `sc-observability-types`. Once `crates/sc-command/Cargo.toml` exists,
+   `sc-observability-types`. The logging token and the types crate stay
+   distinct, as a-1's prefix fixture recorded. Once `crates/sc-command/Cargo.toml` exists,
    run the single-crate `sc-lint lint sc-boundary` command a-1 recorded.
-   Exit 0 is the gate. Do not paste analyzer output into the pull request.
-   Do not wait for a-5. Do not own the permanent root workspace `Cargo.toml`.
+   Do not paste analyzer output into the pull request. The binding evidence
+   is the QA re-run in Required validation. Do not wait for a-5. Do not own
+   the permanent root workspace `Cargo.toml`.
 
 ## Acceptance criteria
 
@@ -151,11 +154,13 @@ boundary.
    `sc-observability ` or `sc-observability-otlp ` line (crate name, then a
    space) (RBP-F001).
 6. `req:NFR-CMD-0001` — the amended default dependency list is `serde`,
-   `serde_json`, and `sc-observability-types`. Analyze accepts the types
-   crate while `forbidden_edges` still contains `sc-observability`.
-   The single-crate `sc-lint lint sc-boundary` command a-1 recorded exits 0
-   on `boundaries/sc-command/sc-command.toml`. Analyzer output is not pasted
-   into the pull request. The `serde_json` OPEN is gone.
+   `serde_json`, and `sc-observability-types`. `allowed_dependents` is
+   `sc-runtime` only. Analyze accepts the types crate while
+   `forbidden_edges` still contains `sc-observability` and does not contain
+   `sc-observability-types`. The single-crate `sc-lint lint sc-boundary`
+   command a-1 recorded exits 0 on `boundaries/sc-command/sc-command.toml`.
+   Analyzer output is not pasted into the pull request. Leaf QA re-runs
+   that command at the reviewed commit. The `serde_json` OPEN is gone.
 7. `boundary:sc-command` — NFR-RUN-0009 for this crate: serialization
    failure returns an error and does not panic; `unwrap`, `expect`,
    `panic!`, `unreachable!`, `todo!`, and `unimplemented!` are not reachable
@@ -190,5 +195,7 @@ build once registered. Review the manifest against REQ-RUN-0005. Confirm
 the ADR-CMD-0001 wire-failure inventory, the `suggested_action` string-or-null
 serializer, the sealed `IntoMcp` impl, and the absence of `sc-observability`
 from the normal tree.
-Run the single-crate `sc-lint lint sc-boundary` command a-1 recorded on
-this crate's manifest.
+Leaf QA re-runs the single-crate `sc-lint lint sc-boundary` command a-1
+recorded on this crate's manifest at the reviewed commit and records only
+the exit code in the QA report. That re-run is the binding evidence. A
+statement in the pull request is not.

@@ -70,7 +70,10 @@ Do not add application options or reopen the schema during UI work.
    framework.
 2. **REQ-RUN-0602** — Add interactive and prefill entry modes that finish with
    the same validated answers object used by `--var-file`; cancellation creates
-   no destination.
+   no destination. The wizard does not re-implement the project-name
+   predicate. Finished answers pass `wizard/answers.schema.json`, whose
+   project-name `pattern` is that predicate. The driver remains the
+   validator.
 3. **REQ-RUN-0603** — Demonstrate fixture-equivalent answers and generated
    output without changing the core crates or template contract.
 4. **REQ-RUN-0501 / REQ-RUN-0502** — Preserve the a-6 pipeline and
