@@ -11,7 +11,9 @@ all-features = false
 no-default-features = false
 
 [advisories]
-db-path = "~/.cargo/advisory-db"
+# Keep separate from cargo-audit's default (~/.cargo/advisory-db). deny leaves a
+# non-git layout that audit refuses to reuse when both run in `just supply-chain`.
+db-path = "~/.cargo/advisory-db-deny"
 db-urls = ["https://github.com/rustsec/advisory-db"]
 yanked = "warn"
 # paste is unmaintained (not a vulnerability) and is pulled in by utoipa-axum 0.2.
