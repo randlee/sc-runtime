@@ -7,7 +7,7 @@ homepage.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
-description = "Lossless sc-ai-cli response envelope and REST/MCP conversions."
+description = "Lossless JSON CLI/API response envelope and REST/MCP conversions."
 readme = "README.md"
 
 [features]

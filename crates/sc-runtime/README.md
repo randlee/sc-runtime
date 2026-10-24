@@ -17,8 +17,8 @@ use sc_transport::AppName;
 use utoipa_axum::router::OpenApiRouter;
 
 #[tokio::main(flavor = "current_thread")]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let app = AppName::new("my-app")?;
+async fn main() -> Result<(), sc_runtime::RuntimeError> {
+    let app = AppName::new("my-app").expect("app name");
     let config = DaemonConfig::default();
     Daemon::builder(&app, &config)
         .stores(|| async { Ok(()) })
