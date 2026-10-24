@@ -35,19 +35,11 @@ async fn main() -> ExitCode {
     };
     let config_name = match sc_config::AppName::new(daemon::APP_NAME) {
         Ok(name) => name,
-        Err(err) => {
-            return startup_exit(
-                "APP.INVALID_NAME",
-                err,
-                "fix the generated application name",
-            );
-        }
+        Err(err) => return config_exit(&err),
     };
     let mut config = match sc_config::load::<daemon::AppConfig>(config_name) {
         Ok(config) => config,
-        Err(err) => {
-            return startup_exit("DAEMON.CONFIG", err, "fix the configuration file and retry");
-        }
+        Err(err) => return config_exit(&err),
     };
     if args.endpoint.is_some() {
         config.daemon.endpoint_flag = args.endpoint;
@@ -147,6 +139,23 @@ fn startup_exit(code: &str, cause: impl std::fmt::Display, recovery: &str) -> Ex
     ExitCode::from(1)
 }
 
+// `ConfigError`'s `Display` already includes `code()` and `recovery()`.
+// Pass those to `startup_exit` once so the stderr line does not repeat them.
+fn config_exit(err: &sc_config::ConfigError) -> ExitCode {
+    startup_exit(err.code(), config_cause(err), err.recovery())
+}
+
+fn config_cause(err: &sc_config::ConfigError) -> String {
+    let rendered = err.to_string();
+    let prefix = format!("{}: ", err.code());
+    let suffix = format!("; {}", err.recovery());
+    rendered
+        .strip_prefix(&prefix)
+        .and_then(|body| body.strip_suffix(&suffix))
+        .unwrap_or(&rendered)
+        .to_owned()
+}
+
 fn usage(err: clap::Error) -> ExitCode {
     if matches!(
         err.kind(),
@@ -162,4 +171,70 @@ fn usage(err: clap::Error) -> ExitCode {
         .unwrap_or("invalid arguments");
     eprintln!("CLI.USAGE {cause} — run with --help");
     ExitCode::from(2)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::ffi::OsString;
+    use std::path::Path;
+
+    use sc_config::ConfigError;
+
+    use super::config_cause;
+
+    fn startup_line(err: &ConfigError) -> String {
+        format!("{} {} — {}", err.code(), config_cause(err), err.recovery())
+    }
+
+    fn assert_library_line(err: &ConfigError) {
+        let line = startup_line(err);
+        let code = err.code();
+        let recovery = err.recovery();
+        assert!(line.starts_with(&format!("{code} ")), "{line}");
+        let (head, tail) = line
+            .split_once(" — ")
+            .unwrap_or_else(|| panic!("missing recovery separator: {line}"));
+        assert_eq!(tail, recovery, "{line}");
+        assert!(head.starts_with(code), "{line}");
+        assert!(!head[code.len()..].contains(code), "{line}");
+        assert!(!head.contains(recovery), "{line}");
+        assert!(!line.contains("DAEMON.CONFIG"), "{line}");
+        assert!(!config_cause(err).is_empty(), "{line}");
+    }
+
+    #[test]
+    fn config_startup_uses_each_library_code_once() {
+        let errors = [
+            ConfigError::MissingDefault {
+                path: Path::new("config/default.json").to_path_buf(),
+            },
+            ConfigError::Read {
+                path: Path::new("config/default.json").to_path_buf(),
+                source: std::io::Error::other("denied"),
+            },
+            ConfigError::Parse {
+                path: Path::new("config/default.json").to_path_buf(),
+                line: 2,
+                column: 4,
+                message: "unexpected ; token".to_owned(),
+            },
+            ConfigError::Override {
+                variable: "MY_APP__A__B".to_owned(),
+            },
+            ConfigError::Deserialize {
+                message: "type".to_owned(),
+                files: vec![Path::new("config/default.json").to_path_buf()],
+                variables: vec!["MY_APP__A".to_owned()],
+            },
+            ConfigError::InvalidName {
+                name: "my app".to_owned(),
+            },
+            ConfigError::NonUnicode {
+                variable: OsString::from("MY_APP__NAME"),
+            },
+        ];
+        for err in &errors {
+            assert_library_line(err);
+        }
+    }
 }

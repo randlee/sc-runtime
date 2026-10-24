@@ -2,13 +2,20 @@
 
 mod common;
 
+#[cfg(unix)]
 use std::path::PathBuf;
+#[cfg(unix)]
 use std::process::{Child, Command, ExitStatus};
+#[cfg(unix)]
 use std::time::Duration;
 
+#[cfg(unix)]
 use sc_runtime::DaemonConfig;
+#[cfg(unix)]
 use sc_runtime::testing::DaemonFixture;
+#[cfg(unix)]
 use utoipa_axum::router::OpenApiRouter;
+#[cfg(unix)]
 use utoipa_axum::routes;
 
 const EPHEMERAL: &str = "SC_RUNTIME_EPHEMERAL_CI";
@@ -22,21 +29,47 @@ fn refuse_without_isolation() -> bool {
     true
 }
 
+#[cfg(unix)]
 #[utoipa::path(get, path = "/slow", responses((status = 200, description = "slow")))]
 async fn slow() -> &'static str {
-    let root = std::env::var("SC_RUNTIME_SIGNAL_DIR").expect("signal dir");
-    let dir = PathBuf::from(root);
-    std::fs::write(dir.join("inflight"), b"1").expect("inflight");
-    let release = dir.join("release");
-    for _ in 0..100 {
-        if release.exists() {
-            return "done";
-        }
-        tokio::time::sleep(Duration::from_millis(50)).await;
+    #[cfg(unix)]
+    {
+        hold_until_release().await;
     }
     "done"
 }
 
+/// Tells the parent the request is in flight, then waits for `release`.
+///
+/// The wait is one read on the sync socket, so the handler stays inside the
+/// request until the parent has delivered the signal.
+#[cfg(unix)]
+async fn hold_until_release() {
+    let path = std::env::var(common::SYNC_SOCK_ENV).expect("sync sock");
+    let mut stream = tokio::net::UnixStream::connect(&path)
+        .await
+        .expect("inflight connect");
+    tokio::io::AsyncWriteExt::write_all(&mut stream, b"inflight\n")
+        .await
+        .expect("inflight");
+    tokio::io::AsyncWriteExt::flush(&mut stream)
+        .await
+        .expect("flush inflight");
+    let mut reader = tokio::io::BufReader::new(stream);
+    let mut line = String::new();
+    let read = tokio::time::timeout(
+        Duration::from_secs(10),
+        tokio::io::AsyncBufReadExt::read_line(&mut reader, &mut line),
+    )
+    .await;
+    let n = read.expect("release deadline").expect("read release");
+    assert!(
+        n > 0 && line.starts_with("release"),
+        "release line {line:?}"
+    );
+}
+
+#[cfg(unix)]
 fn slow_router(_stores: ()) -> OpenApiRouter {
     OpenApiRouter::new().routes(routes!(slow))
 }
@@ -68,25 +101,39 @@ async fn sigint_drains_and_releases_the_lock() {
 }
 
 async fn serve_child() -> bool {
-    let mut config = DaemonConfig::default();
-    let root = PathBuf::from(std::env::var("SC_RUNTIME_SIGNAL_DIR").expect("dir"));
-    config.transport.instance_root = Some(root);
-    let endpoint = std::env::var("SC_RUNTIME_SIGNAL_ENDPOINT").expect("endpoint");
-    config.endpoint_flag = Some(endpoint);
-    sc_runtime::Daemon::builder(&common::app(), &config)
-        .stores(|| async { Ok(()) })
-        .routes(slow_router)
-        .run()
-        .await
-        .is_ok()
+    #[cfg(not(unix))]
+    {
+        return false;
+    }
+    #[cfg(unix)]
+    {
+        let root = PathBuf::from(std::env::var("SC_RUNTIME_SIGNAL_DIR").expect("dir"));
+        let endpoint = std::env::var("SC_RUNTIME_SIGNAL_ENDPOINT").expect("endpoint");
+        let sync_sock = PathBuf::from(std::env::var(common::SYNC_SOCK_ENV).expect("sync sock"));
+        let endpoint_for_run = endpoint.clone();
+        let serve = tokio::spawn(async move {
+            let mut config = DaemonConfig::default();
+            config.transport.instance_root = Some(root);
+            config.endpoint_flag = Some(endpoint_for_run);
+            sc_runtime::Daemon::builder(&common::app(), &config)
+                .stores(|| async { Ok(()) })
+                .routes(slow_router)
+                .run()
+                .await
+        });
+        common::announce_serving(&endpoint, &sync_sock).await;
+        matches!(serve.await, Ok(Ok(())))
+    }
 }
 
+#[cfg(unix)]
 struct ChildGuard {
     child: Option<Child>,
 }
 
+#[cfg(unix)]
 impl ChildGuard {
-    fn spawn(dir: &std::path::Path, endpoint: &str) -> Self {
+    fn spawn(dir: &std::path::Path, endpoint: &str, sync_sock: &std::path::Path) -> Self {
         let mut command = Command::new(std::env::current_exe().expect("exe"));
         command
             .arg("--exact")
@@ -95,7 +142,8 @@ impl ChildGuard {
             .env(EPHEMERAL, "1")
             .env(CHILD, "1")
             .env("SC_RUNTIME_SIGNAL_DIR", dir)
-            .env("SC_RUNTIME_SIGNAL_ENDPOINT", endpoint);
+            .env("SC_RUNTIME_SIGNAL_ENDPOINT", endpoint)
+            .env(common::SYNC_SOCK_ENV, sync_sock);
         Self {
             child: Some(command.spawn().expect("spawn")),
         }
@@ -111,16 +159,36 @@ impl ChildGuard {
     }
 
     async fn wait_or_kill(&mut self, timeout: Duration) -> ExitStatus {
-        let deadline = tokio::time::Instant::now() + timeout;
-        loop {
-            if let Some(status) = self.try_wait() {
-                return status;
+        let mut child = self.child.take().expect("child still owned");
+        let pid = child.id();
+        let (tx, rx) = std::sync::mpsc::channel();
+        let waiter = std::thread::spawn(move || {
+            let waited = child.wait();
+            let _ = tx.send(waited);
+        });
+        match rx.recv_timeout(timeout) {
+            Ok(Ok(status)) => {
+                let _ = waiter.join();
+                status
             }
-            if tokio::time::Instant::now() >= deadline {
-                self.kill_and_reap();
-                panic!("child did not exit within {timeout:?}");
+            Ok(Err(err)) => panic!("wait for child: {err}"),
+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
+                panic!("child wait disconnected");
             }
-            tokio::time::sleep(Duration::from_millis(50)).await;
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                let _ = Command::new("kill")
+                    .args(["-KILL", &pid.to_string()])
+                    .status();
+                match rx.recv_timeout(Duration::from_secs(2)) {
+                    Ok(Ok(status)) => {
+                        let _ = waiter.join();
+                        panic!("child {pid} did not exit within {timeout:?}; killed ({status})");
+                    }
+                    other => panic!(
+                        "child {pid} did not exit within {timeout:?}; kill follow-up {other:?}"
+                    ),
+                }
+            }
         }
     }
 
@@ -144,12 +212,14 @@ impl ChildGuard {
     }
 }
 
+#[cfg(unix)]
 impl Drop for ChildGuard {
     fn drop(&mut self) {
         self.kill_and_reap();
     }
 }
 
+#[cfg(unix)]
 async fn drive_signal(signal: &str) {
     if refuse_without_isolation() {
         return;
@@ -157,9 +227,17 @@ async fn drive_signal(signal: &str) {
     let dir = tempfile::tempdir().expect("dir");
     let sock = dir.path().join("daemon.sock");
     let endpoint = format!("uds:{}", sock.display());
-    let mut child = ChildGuard::spawn(dir.path(), &endpoint);
-    let inflight = dir.path().join("inflight");
-    let client = wait_for_listener(&endpoint, &mut child).await;
+    let mut sync = common::ChildSync::bind(dir.path());
+    let mut child = ChildGuard::spawn(dir.path(), &endpoint, sync.path());
+    expect_sync(
+        &mut sync,
+        &mut child,
+        "ready",
+        &endpoint,
+        "child daemon did not answer /health",
+    )
+    .await;
+    let client = http_client(&endpoint);
     let request = tokio::spawn({
         let endpoint = endpoint.clone();
         async move {
@@ -173,15 +251,21 @@ async fn drive_signal(signal: &str) {
                 .expect("body")
         }
     });
-    for _ in 0..100 {
-        if inflight.exists() {
-            break;
-        }
-        tokio::time::sleep(Duration::from_millis(50)).await;
-    }
-    assert!(inflight.exists(), "request never reached the handler");
+    let mut inflight = expect_sync(
+        &mut sync,
+        &mut child,
+        "inflight",
+        &endpoint,
+        "request never reached the handler",
+    )
+    .await;
     child.signal(signal);
-    std::fs::write(dir.path().join("release"), b"1").expect("release");
+    tokio::io::AsyncWriteExt::write_all(&mut inflight, b"release\n")
+        .await
+        .expect("release");
+    tokio::io::AsyncWriteExt::flush(&mut inflight)
+        .await
+        .expect("flush release");
     let body = request.await.expect("request task");
     assert_eq!(body, "done");
     let finished = child.wait_or_kill(Duration::from_secs(10)).await;
@@ -201,23 +285,33 @@ async fn drive_signal(signal: &str) {
     fixture.shutdown().await.expect("restart shutdown");
 }
 
-async fn wait_for_listener(endpoint: &str, child: &mut ChildGuard) -> reqwest::Client {
+#[cfg(unix)]
+fn http_client(endpoint: &str) -> reqwest::Client {
     let parsed: sc_transport::Endpoint = endpoint.parse().expect("endpoint");
-    let client = common::http(&parsed);
-    let health = common::url(&parsed, "/health");
-    for _ in 0..100 {
-        if child.try_wait().is_some() {
-            panic!("daemon exited before it became healthy at {endpoint}");
-        }
-        if client.get(&health).send().await.is_ok() {
-            return client;
-        }
-        tokio::time::sleep(Duration::from_millis(50)).await;
-    }
-    child.kill_and_reap();
-    panic!("child daemon did not answer /health");
+    common::http(&parsed)
 }
 
+#[cfg(unix)]
+async fn expect_sync(
+    sync: &mut common::ChildSync,
+    child: &mut ChildGuard,
+    expected: &str,
+    endpoint: &str,
+    failure: &str,
+) -> tokio::net::UnixStream {
+    match sync.expect_line(expected, common::CHILD_SYNC_BUDGET).await {
+        Ok(stream) => stream,
+        Err(err) => {
+            if let Some(status) = child.try_wait() {
+                panic!("{failure} at {endpoint}: child exited {status} ({err})");
+            }
+            child.kill_and_reap();
+            panic!("{failure} at {endpoint} ({err})");
+        }
+    }
+}
+
+#[cfg(unix)]
 fn request_url(endpoint: &str) -> String {
     let parsed: sc_transport::Endpoint = endpoint.parse().expect("endpoint");
     common::url(&parsed, "/slow")
