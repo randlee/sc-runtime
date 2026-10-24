@@ -1,0 +1,39 @@
+boundary_id = "BOUNDARY-sc-config"
+owner_package = "sc-config"
+owner_crate_path = "sc_config"
+name = "sc-config"
+
+[public]
+facade = "sc_config::load"
+notes = "AppName, load, Loader::new, Loader::load, ConfigError"
+
+[implementation]
+type = "marker"
+module = "sc_config"
+visibility = "public"
+constructor = "none"
+
+[composition]
+roots = ["AppName", "load", "Loader", "ConfigError"]
+
+[dependencies]
+allowed_dependents = []
+allowed_dependencies = ["serde", "serde_json"]
+# This lint tree's only workspace member is sc-config, so there is no
+# workspace-member edge to forbid. crates.io names stay on the cargo tree check.
+forbidden_edges = []
+
+[references]
+scope = "outside_owner_crate"
+forbidden = []
+
+[testing]
+allowed_test_double_paths = []
+forbidden_test_bypasses = []
+
+[enforcement]
+lint_rules = []
+review_gates = []
+
+[status]
+state = "concrete_landed"

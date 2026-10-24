@@ -3,7 +3,7 @@
 **ID Range:** ADR-CFG-0001 through ADR-CFG-0003  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-10-23  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -25,17 +25,22 @@ observability, and nothing in this workspace is a dependency of it.
 
 | Item | Purpose |
 |---|---|
-| `load::<T>(app) -> Result<T, ConfigError>` | convenience: `./config` and the process environment |
-| `Loader` | explicit config directory and environment source; `Loader::load::<T>()` |
-| `ConfigError` | typed error enum, one variant per failure in [REQ-CFG-0004](requirements.md) |
+| `AppName` | validated configuration identity; `new` / `TryFrom<&str>` rejects with `APP.INVALID_NAME` |
+| `load::<T>(app: AppName) -> Result<T, ConfigError>` | convenience: `./config` and the process environment |
+| `Loader::new(app, config_dir, environment) -> Loader` | stores an `AppName`, a `PathBuf`, and `Vec<(OsString, OsString)>` |
+| `Loader::load::<T>() -> Result<T, ConfigError>` | same merge as `load`, using only those inputs |
+| `ConfigError` | typed error enum; inventory below and [REQ-CFG-0004](requirements.md) |
 
 ## How loading works
 
 1. Read `default.json` into a `serde_json::Value` (required).
 2. Read `local.json` if present and merge it over the first value.
-3. For each environment entry with the app's prefix, split the rest on `__`
-   into a key path, parse the value as JSON or fall back to a string, and set
-   it at that path.
+3. Keep environment entries whose encoded name starts with the app prefix.
+   Apply them in ascending encoded-byte order of the variable name. Split the
+   rest on `__` into a key path, parse the value as JSON or fall back to a
+   string, and set it at that path. A longer name that extends a shorter one
+   wins. An empty segment, or a path through a non-object, is
+   `CFG.OVERRIDE`. A prefix match that is not Unicode is `CFG.NON_UNICODE`.
 4. Deserialise the merged value into `T` once.
 
 ---
@@ -85,18 +90,33 @@ dependencies to `serde` and `serde_json`, which rules out error-helper crates.
    `std::env::vars_os`, not `std::env::vars`, which panics on a variable that
    is not valid Unicode.
 7. `thiserror` and `anyhow` are not dependencies of `sc-config`.
+8. `Loader::new` only stores a validated `AppName`, a directory, and the
+   caller's environment pairs, so it returns `Loader`. `AppName::new` can
+   fail and returns `Result<AppName, ConfigError>`. Only operations that can
+   fail return `Result` ([NFR-CFG-0001](requirements.md)).
+9. `sc_config::AppName` uses the shared predicate: ASCII `A-Z`, `a-z`, `0-9`,
+   `-`, and `_`, length 1 through 64 bytes. Display is `as_str` or
+   `AsRef<str>`. The type does not implement `Deref`. Invalid names are
+   `APP.INVALID_NAME`.
 
-**OPEN:** Whether a public `Loader` constructor or builder method that cannot
-fail MUST also return `Result<T, ConfigError>` is undecided
-([NFR-CFG-0001](requirements.md)). The design says every public method
-returns a discriminated union and names no exception. The options are: every
-public function and method returns `Result` without exception, or only those
-that can fail.
+Error inventory. One row per `ConfigError` variant. The cause payload is the
+variant's typed fields. Path, line, and column stay on the variants that
+carry a source location.
+
+| Failure mode | Stable code | Cause payload | Recovery steps |
+|---|---|---|---|
+| Application name rejected at construction | `APP.INVALID_NAME` | `InvalidName.name`, the rejected string | Use 1 to 64 bytes of ASCII letters, digits, `-`, and `_`. |
+| `default.json` is absent | `CFG.MISSING_DEFAULT` | `MissingDefault.path`, the full path looked up | Create that file and load again. |
+| A present file cannot be read | `CFG.READ` | `Read.path` and `Read.source` (`std::io::Error`) | Make the file readable, or replace a directory at that path with a file. |
+| File content is not valid JSON, including non-UTF-8 | `CFG.PARSE` | `Parse.path`, `Parse.line`, `Parse.column`, and `Parse.message` | Fix the JSON at that line and column. The file must be UTF-8. |
+| Override path is empty or walks through a non-object | `CFG.OVERRIDE` | `Override.variable`, the full variable name | Drop the empty segment, or change the name so the path does not descend through a scalar, array, or null. |
+| Merged document does not match `T` | `CFG.DESERIALIZE` | `Deserialize.message`, `Deserialize.files`, and `Deserialize.variables` | Align the merged JSON with `T`. The listed files and variables are the inputs that were applied. |
+| Prefix-matching environment entry is not Unicode | `CFG.NON_UNICODE` | `NonUnicode.variable`, the name as `OsString` | Use a Unicode name and value. Names that do not start with the prefix are ignored. |
 
 ### Consequences
 
 - The `main.rs` of a generated project matches on the result of
-  `sc_config::load("my-app")`, prints the error, and returns an exit code. It
+  `sc_config::load(AppName::new("my-app")?)`, prints the error, and returns an exit code. It
   needs no panic handler.
 - Callers can branch on the variant, for example to treat a missing
   `default.json` differently from a malformed one.
@@ -265,6 +285,15 @@ reload features as a note for later, possibly as a separate
    into a separate crate, possibly named `sc-config-tokio`, that depends on
    `sc-config`. `sc-config` never depends on that crate, and these features
    are not added to `sc-config` behind a Cargo feature.
+6. `boundaries/sc-config/sc-config.toml` has an empty `allowed_dependents`
+   list. `allowed_dependencies` is `serde` and `serde_json`.
+   `forbidden_edges` lists workspace-member targets only. This lint tree's
+   only workspace member is `sc-config`, so that list is empty.
+   `sc-observability-types` and the other crates.io names in the
+   [REQ-RUN-0005](../requirements.md) policy table are not members of this
+   tree, so they are not manifest edges. `cargo tree -p sc-config -e normal --prefix none`
+   is what fails those names. a-5 extends the root workspace; this crate's
+   manifest stays the one this sprint writes.
 
 ### Consequences
 
@@ -297,15 +326,15 @@ reload features as a note for later, possibly as a separate
 
 ### Implementation
 
-**Enforced by:** the `forbidden_edges` entries (`sc-observability`,
-`sc-observability-otlp`, `tokio`, `sc-transport`, `sc-command`, `sc-runtime`)
-in the boundary manifest under `boundaries/sc-config/`, checked by
-`sc-lint-boundary`, which `just lint` runs
-([REQ-RUN-0005](../requirements.md) owns those entries); the `Cargo.toml`
-inspection in [NFR-CFG-0002](requirements.md) and its check that
-`cargo tree -p sc-config -e normal --prefix none` prints no line beginning
-with a forbidden crate name followed by a space; the `async fn` and `.await`
-grep in [NFR-CFG-0003](requirements.md).
+**Enforced by:** `boundaries/sc-config/sc-config.toml`, checked by
+`sc-lint lint sc-boundary`. That manifest's `forbidden_edges` lists
+workspace-member targets only; this tree has none, so the list is empty.
+[REQ-RUN-0005](../requirements.md) still owns the full forbidden-name policy.
+The `Cargo.toml` inspection in [NFR-CFG-0002](requirements.md) and
+`cargo tree -p sc-config -e normal --prefix none` fail a line beginning with
+a forbidden crate name followed by a space, including
+`sc-observability-types`. The `async fn` and `.await` grep in
+[NFR-CFG-0003](requirements.md) covers the synchronous rule.
 
 ### Related Documents
 
