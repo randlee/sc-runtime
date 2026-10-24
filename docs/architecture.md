@@ -2247,8 +2247,9 @@ show that crate on `spike-cli`, because the workspace build unifies the
 Closed decision, all three parts: `cargo build -p cli` is the normative
 selection; a workspace-wide build is exempt; a client/server crate split is
 rejected for v0.1. a-6 owns `cargo tree -p cli -e normal` on the generated
-project. a-5 does not run that command. The `sc-runtime` → `sc-config` MAY
-stays open.
+project. a-5 does not run that command. The edge `sc-runtime` → `sc-config`
+is absent ([ADR-RUN-0003](architecture.md),
+[NFR-RT-0003](sc-runtime/requirements.md)).
 
 ### V3a, V3b, V4a, V4b
 

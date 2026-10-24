@@ -175,15 +175,21 @@ async fn refused_tcp_is_daemon_not_running() {
 
 #[tokio::test]
 #[cfg(unix)]
-async fn directory_path_is_a_request_error() {
+async fn directory_path_is_a_connect_failure() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("not-socket");
     std::fs::create_dir(&path).unwrap();
     let endpoint = Endpoint::Uds(path);
     let client = Client::new(endpoint).unwrap();
     let err = client.get::<Named>("/doc").await.expect_err("directory");
-    assert!(matches!(err, TransportError::Request { .. }), "{err:?}");
-    assert_eq!(err.code(), "TRANSPORT.REQUEST");
+    assert!(
+        matches!(
+            err,
+            TransportError::Request { .. } | TransportError::DaemonNotRunning { .. }
+        ),
+        "{err:?}"
+    );
+    assert_ne!(err.code(), "TRANSPORT.RESPONSE_DECODE");
 }
 
 #[tokio::test]

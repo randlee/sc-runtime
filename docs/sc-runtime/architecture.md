@@ -3,7 +3,7 @@
 **ID Range:** ADR-RT-0001 through ADR-RT-0004  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-10-23  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -19,13 +19,14 @@ and binding; an ADR changes only through a later ADR that names it.
 
 The single assembly point. It is the only one of the four library crates that
 may depend on the others, and it is a dependency of the daemon only. It
-depends on `sc-transport` and `sc-command`, each with the `server` feature;
-the edge to `sc-config` is allowed but has no named use and is recorded as an
-OPEN in [NFR-RT-0003](requirements.md), which owns this crate's full
-allowed-dependency list (`axum`, `tokio`, `fd-lock`, `utoipa-axum`, `utoipa`,
-`serde`, with `rmcp` and the tempdir facility still open). Everything it
-receives from the project (config, stores, router, MCP service) it passes
-through untouched.
+depends on `sc-transport` and `sc-command`, each with the `server` feature.
+The edge `sc-runtime` → `sc-config` is absent
+([ADR-RUN-0003](../architecture.md), [NFR-RT-0003](requirements.md)).
+[NFR-RT-0003](requirements.md) owns this crate's allowed-dependency list:
+`sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`, `utoipa-axum`,
+`utoipa`, `serde`, `rmcp`, and optional `tempfile` behind `test-util`.
+Everything it receives from the project (config, stores, router, MCP service)
+it passes through untouched.
 
 ## Public surface
 
@@ -33,7 +34,7 @@ through untouched.
 |---|---|
 | `Daemon::builder(&sc_transport::AppName, &DaemonConfig)` | start assembly |
 | `DaemonBuilder::stores / routes / mcp / run` | the project's three closures, then serve |
-| `DaemonConfig` | the daemon's own settings; implements `serde::Deserialize` so the project loads it as part of its config; carries the `--endpoint` value, the configured endpoint and an explicit instance root (REQ-RT-0008); its field names are undecided (see REQ-RT-0001) |
+| `DaemonConfig` | `#[non_exhaustive]` settings the project loads; `transport` is flattened `sc_transport::TransportConfig` (`endpoint`, `instance_root`, `tcp_port`); `endpoint_flag` is `Option<String>` for `--endpoint` ([ADR-RT-0001](#adr-rt-0001-daemonbuilder-run-is-assembly-only-in-a-fixed-order), [REQ-RT-0001](requirements.md), [REQ-RT-0008](requirements.md)) |
 | `RuntimeError` | typed error naming the failing step |
 | `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
 
@@ -94,13 +95,15 @@ does exactly five things, always in this order:
 
 1. take the `DaemonConfig` the project already loaded;
 2. resolve the instance root by calling the `sc-transport` instance-root
-   function, and take the exclusive lock on `<instance-root>/daemon.lock`;
-3. call the project's stores closure;
-4. merge the project's `utoipa_axum::OpenApiRouter`, the OpenAPI document
-   route, a health route, and the rmcp service at `/mcp` if one was given;
-5. resolve the bind endpoint by calling the `sc-transport` endpoint resolver,
-   bind through `sc-transport`, and serve until SIGINT or SIGTERM. It is one
-   `axum::Router`, served unchanged on every listener `run()` binds.
+   function, then resolve the bind endpoint by calling the `sc-transport`
+   endpoint resolver (endpoint resolution completes before the lock);
+3. register SIGINT and SIGTERM streams, then take the exclusive lock on
+   `<instance-root>/daemon.lock`;
+4. call the project's stores closure, then merge the project's
+   `utoipa_axum::OpenApiRouter`, the OpenAPI document route, a health route,
+   and the rmcp service at `/mcp` if one was given;
+5. bind through `sc-transport` last, and serve until SIGINT or SIGTERM. It is
+   one `axum::Router`, served unchanged on every listener `run()` binds.
 
 In the daemon, the component that calls the `sc-transport` instance-root
 function and endpoint resolver is `run()`; the generated `main.rs` does not,
@@ -112,8 +115,11 @@ loading configuration. This paragraph is decided in this document
 ([REQ-RT-0008](requirements.md)); the design says only that the daemon binds
 "through sc-transport".
 
-The lock is taken before the stores closure is called. Binding is the last
-step. A failure in any step returns a `RuntimeError` and no later step runs.
+Endpoint resolution completes before the lock is taken, so an invalid
+endpoint does not take the lock or open stores. Signal streams are registered
+before bind. The lock is taken before the stores closure is called. Binding is
+the last step. A failure in any step returns a `RuntimeError` and no later
+step runs.
 The builder has no hook, callback, plugin registry or option that inserts
 work between steps or changes their order (decided in this document; the
 design lists the five steps and calls the crate a bootstrap, not a framework

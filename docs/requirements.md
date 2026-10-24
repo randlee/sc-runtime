@@ -2148,13 +2148,19 @@ This requirement is decided in this document. The sc-runtime design names the
 override ("`--endpoint` flag or `SC_ENDPOINT`") and shows `cfg.endpoint` in
 its CLI sketch, but does not oblige the template to implement them.
 
-**OPEN:** the names of the `DaemonConfig` fields that carry the `--endpoint`
-value, the configured endpoint and the explicit instance root are not
-decided ([REQ-RT-0001](sc-runtime/requirements.md)).
+The `DaemonConfig` fields that carry these values are decided.
+`transport` is flattened `sc_transport::TransportConfig` and holds the
+configured `endpoint`, `instance_root`, and `tcp_port`. `endpoint_flag` is
+`Option<String>` for the `--endpoint` text the project's `main` already
+parsed ([REQ-RT-0001](sc-runtime/requirements.md),
+[ADR-RT-0001](sc-runtime/architecture.md)).
 
-**OPEN:** the name of the `sc-transport` configuration type of obligation 6,
-the resolver's name and parameter list, and the string syntax of an endpoint
-value are not decided ([REQ-TRN-0001](sc-transport/requirements.md)).
+The `sc-transport` configuration type of obligation 6 is `TransportConfig`.
+The resolver is
+`resolve_endpoint(&AppName, flag: Option<&OsStr>, environment: Option<&OsStr>, &TransportConfig)`
+and `resolve_endpoint_from_env`, which reads only
+`std::env::var_os("SC_ENDPOINT")`. Endpoint text is `uds:<path>` and
+`tcp:<socket-addr>` ([REQ-TRN-0001](sc-transport/requirements.md)).
 
 **OPEN:** whether the binaries also accept an option for an explicit instance
 root is not decided.
@@ -3387,11 +3393,10 @@ the symptom (latency spikes under load) is hard to trace back to its cause.
    `crates/sc-runtime/src/testing.rs` drives `run` on the fixture's own thread
    and is not called from a connection handler. `std::fs` and `std::net` in
    `crates/sc-transport/src` resolve an endpoint or bind, replace, or remove a
-   socket and its bind lock. `std::fs::metadata` in
-   `crates/sc-transport/src/client.rs` runs only after a refused UDS connect,
-   to tell a directory or regular file from a socket with nothing listening.
-   Linux reports both as connection refused. It does not run when the request
-   succeeds. `Client::get` and `Client::post` stay `async fn`.
+   socket and its bind lock. `crates/sc-transport/src/client.rs` classifies a
+   failed connect from the I/O error kind and the error text. It does not
+   call `std::fs` on `Client` request methods. `Client::get` and
+   `Client::post` stay `async fn`.
 
 ---
 

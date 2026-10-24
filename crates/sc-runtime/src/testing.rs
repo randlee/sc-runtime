@@ -226,10 +226,10 @@ struct ReadyProbe {
 
 async fn wait_until_serving(client: &Client) -> Result<(), RuntimeError> {
     for _ in 0..50 {
-        if let Ok(body) = client.get::<ReadyProbe>("/health").await {
-            if body.ok {
-                return Ok(());
-            }
+        if let Ok(body) = client.get::<ReadyProbe>("/health").await
+            && body.ok
+        {
+            return Ok(());
         }
         tokio::time::sleep(Duration::from_millis(10)).await;
     }

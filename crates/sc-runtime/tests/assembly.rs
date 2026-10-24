@@ -1,6 +1,9 @@
 mod common;
 
+use std::ffi::OsStr;
+use std::process::{Child, Command, ExitStatus};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use rmcp::ServerHandler;
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
@@ -227,6 +230,188 @@ async fn second_root_cannot_replace_a_live_socket() {
     assert_eq!(body, "project");
     let _ = called;
     fixture.shutdown().await.expect("shutdown");
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn explicit_root_defaults_to_daemon_sock() {
+    let fixture = DaemonFixture::start(
+        &common::app(),
+        common::config(),
+        || async { Ok(()) },
+        project_router,
+    )
+    .await
+    .expect("start");
+    let lock = fixture.instance_root().join("daemon.lock");
+    let sock = fixture.instance_root().join("daemon.sock");
+    assert!(lock.is_file(), "{}", lock.display());
+    assert!(sock.exists(), "{}", sock.display());
+    let body: String = fixture.client().get("/project").await.expect("project");
+    assert_eq!(body, "project");
+    let mut second = DaemonConfig::default();
+    second.transport.instance_root = Some(fixture.instance_root().to_path_buf());
+    let err = Daemon::builder(&common::app(), &second)
+        .stores(|| async { Ok(()) })
+        .routes(project_router)
+        .run()
+        .await
+        .expect_err("lock");
+    assert!(matches!(err, RuntimeError::LockHeld { .. }));
+    fixture.shutdown().await.expect("shutdown");
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn endpoint_override_skips_the_default_socket() {
+    let sock_dir = tempfile::tempdir().expect("socket dir");
+    let sock = sock_dir.path().join("override.sock");
+    let mut config = DaemonConfig::default();
+    config.endpoint_flag = Some(format!("uds:{}", sock.display()));
+    let fixture = DaemonFixture::start(&common::app(), config, || async { Ok(()) }, project_router)
+        .await
+        .expect("start");
+    let default_sock = fixture.instance_root().join("daemon.sock");
+    assert!(
+        !default_sock.exists(),
+        "default socket appeared at {}",
+        default_sock.display()
+    );
+    let mut transport = sc_transport::TransportConfig::default();
+    transport.instance_root = Some(fixture.instance_root().to_path_buf());
+    let flag = format!("uds:{}", sock.display());
+    let endpoint =
+        sc_transport::resolve_endpoint(&common::app(), Some(OsStr::new(&flag)), None, &transport)
+            .expect("resolve");
+    let client = sc_transport::Client::new(endpoint).expect("client");
+    let body: String = client.get("/project").await.expect("project");
+    assert_eq!(body, "project");
+    fixture.shutdown().await.expect("shutdown");
+}
+
+#[cfg(unix)]
+const EPHEMERAL: &str = "SC_RUNTIME_EPHEMERAL_CI";
+#[cfg(unix)]
+const SC8_CHILD: &str = "SC_RUNTIME_SC8_CHILD";
+
+/// Non-async child entry. Re-exec must not nest a Tokio runtime inside `#[tokio::test]`.
+#[cfg(unix)]
+#[test]
+fn child_honours_sc_endpoint() {
+    if std::env::var_os(SC8_CHILD).is_none() {
+        return;
+    }
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("child runtime");
+    let ok = runtime.block_on(async {
+        let mut config = DaemonConfig::default();
+        let root = std::path::PathBuf::from(std::env::var("SC_RUNTIME_SC8_DIR").expect("dir"));
+        config.transport.instance_root = Some(root);
+        sc_runtime::Daemon::builder(&common::app(), &config)
+            .stores(|| async { Ok(()) })
+            .routes(project_router)
+            .run()
+            .await
+            .is_ok()
+    });
+    std::process::exit(if ok { 0 } else { 1 });
+}
+
+#[cfg(unix)]
+struct ChildGuard {
+    child: Option<Child>,
+}
+
+#[cfg(unix)]
+impl ChildGuard {
+    fn spawn(dir: &std::path::Path, endpoint: &str) -> Self {
+        let mut command = Command::new(std::env::current_exe().expect("exe"));
+        command
+            .arg("child_honours_sc_endpoint")
+            .arg("--exact")
+            .arg("--nocapture")
+            .env(EPHEMERAL, "1")
+            .env(SC8_CHILD, "1")
+            .env("SC_RUNTIME_SC8_DIR", dir)
+            .env("SC_ENDPOINT", endpoint);
+        Self {
+            child: Some(command.spawn().expect("spawn")),
+        }
+    }
+
+    fn try_wait(&mut self) -> Option<ExitStatus> {
+        let child = self.child.as_mut()?;
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                self.child.take();
+                Some(status)
+            }
+            Ok(None) => None,
+            Err(err) => panic!("wait for child: {err}"),
+        }
+    }
+
+    fn kill_and_reap(&mut self) {
+        if let Some(mut child) = self.child.take() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+    }
+}
+
+#[cfg(unix)]
+impl Drop for ChildGuard {
+    fn drop(&mut self) {
+        self.kill_and_reap();
+    }
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn child_daemon_uses_sc_endpoint() {
+    if std::env::var_os(EPHEMERAL).is_none() {
+        eprintln!("{EPHEMERAL} is unset; REQ-RT-0008 SC4 not run");
+        return;
+    }
+    let root = tempfile::tempdir().expect("root");
+    let sock_dir = tempfile::tempdir().expect("socket dir");
+    let sock = sock_dir.path().join("override.sock");
+    let endpoint = format!("uds:{}", sock.display());
+    let mut child = ChildGuard::spawn(root.path(), &endpoint);
+    let mut transport = sc_transport::TransportConfig::default();
+    transport.instance_root = Some(root.path().to_path_buf());
+    let resolved = sc_transport::resolve_endpoint(
+        &common::app(),
+        None,
+        Some(OsStr::new(&endpoint)),
+        &transport,
+    )
+    .expect("resolve");
+    let client = sc_transport::Client::new(resolved).expect("client");
+    let mut reached = None;
+    for _ in 0..100 {
+        if child.try_wait().is_some() {
+            panic!("daemon exited before it became reachable at {endpoint}");
+        }
+        if let Ok(body) = client.get::<String>("/project").await {
+            reached = Some(body);
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    }
+    let body = reached.unwrap_or_else(|| {
+        child.kill_and_reap();
+        panic!("child daemon did not answer /project");
+    });
+    assert_eq!(body, "project");
+    assert!(
+        root.path().join("daemon.lock").is_file(),
+        "daemon.lock missing under {}",
+        root.path().display()
+    );
+    child.kill_and_reap();
 }
 
 #[tokio::test]
