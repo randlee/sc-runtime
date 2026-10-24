@@ -127,9 +127,12 @@ class OutputEquivalenceTests(unittest.TestCase):
             write_script(root, "wyvern", f"#!/bin/sh\ncat << 'EOF'\n{payload}\nEOF\n")
             wizard_dest = root / "from-wizard"
             file_dest = root / "from-file"
-            pipeline_stub = (
-                stub_pipeline_tools(root) if shutil.which("sc-compose") is None else None
-            )
+            if shutil.which("sc-compose") is None:
+                if os.name != "posix":
+                    self.skipTest("pipeline stubs require a POSIX shell; install sc-compose")
+                pipeline_stub = stub_pipeline_tools(root)
+            else:
+                pipeline_stub = None
             wizard = self.generate(
                 [str(wizard_dest)], stub, root, pipeline_stub=pipeline_stub
             )
@@ -158,10 +161,9 @@ class OutputEquivalenceTests(unittest.TestCase):
     ):
         if pipeline_stub is not None:
             env = {
-                "PATH": f"{pipeline_stub}{os.pathsep}/usr/bin:/bin:/usr/local/bin",
+                "PATH": os.pathsep.join([str(pipeline_stub), os.defpath]),
                 "SC_COMPOSE": str(pipeline_stub / "sc-compose"),
                 "WYVERN_BIN": str(wyvern),
-                "HOME": str(tmp_root),
                 "LANG": "C.UTF-8",
             }
         else:

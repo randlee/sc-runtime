@@ -48,7 +48,10 @@ def a6_git_ref() -> str:
     _git_run(["git", "fetch", "origin", A6, "--depth=1"])
     ok = _git_run(["git", "rev-parse", "--verify", f"{A6}^{{commit}}"])
     if ok.returncode != 0:
-        raise unittest.SkipTest(f"sprint a-6 baseline {A6} is not available in this clone")
+        raise AssertionError(
+            f"sprint a-6 baseline {A6} is not available in this clone "
+            f"(rev-parse after fetch failed; stderr={ok.stderr!r})"
+        )
     return A6
 
 
