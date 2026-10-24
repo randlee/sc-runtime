@@ -54,6 +54,7 @@ adrs:
   - ADR-RUN-0006
   - ADR-RUN-0007
   - ADR-RUN-0009
+  - ADR-RUN-0010
   - ADR-RUN-0201
   - ADR-RUN-0202
 owned_paths:
@@ -133,8 +134,11 @@ after a-3 and a-4 have recorded their decisions in their owned source
 documents. It consumes endpoint and listener types, and the `sc-command`
 server conversions. It registers a-2's crate and manifest and does not
 consume an `sc-config` type. It produces `sc_runtime::AppName` under the
-handoff predicate a-1 records as ADR-RUN-0010. See the
-[handoff](phase-a-plan.md#minimal-public-contract-handoff) for the predicate.
+handoff predicate a-1 records as ADR-RUN-0010. That type is the daemon and
+application identity for builder paths. `Daemon::builder` does not take or
+re-export `sc_transport::AppName`. See the
+[handoff](phase-a-plan.md#minimal-public-contract-handoff) for the predicate
+and the only vector list. This sprint does not copy that list.
 This sprint does not write that ADR. `DaemonConfig` embeds the
 `TransportConfig` type a-3 froze. The sc-runtime requirement and ADR sources
 remain authoritative for the builder. `docs/architecture.md` edits are the
@@ -173,6 +177,9 @@ for symmetry.
    shutdown use standard Axum/Tokio/rmcp facilities.
 4. **REQ-RT-0006** — An in-process `DaemonFixture` uses the production assembly
    path and a fresh temporary instance root; it never launches a daemon process.
+   The fixture and its temp-dir dependency sit behind the `test-util` feature
+   closed in deliverable 12. A production daemon build does not enable that
+   feature.
 5. **REQ-RT-0007 / ADR-RT-0004** — Before the facade freezes, the crate ADR
    holds a runtime error inventory: every `RuntimeError` variant has a failure
    mode, stable code, cause payload, and recovery text (RBP-F002).
@@ -211,7 +218,8 @@ for symmetry.
    - `docs/architecture.md` ADR-RUN-0003 table and its OPEN
    - `docs/requirements.md` REQ-RUN-0005 table, the "exactly this table"
      clause, and that OPEN
-   - `docs/sc-runtime/requirements.md` NFR-RT-0003, including its OPEN
+   - `docs/sc-runtime/requirements.md` NFR-RT-0003, the `sc-config` OPEN only.
+     Deliverable 12 closes the fixture, temp-dir, and `rmcp` OPENs.
    - `boundaries/sc-runtime/sc-runtime.toml` `forbidden_edges`
    Keep a-1's rule that `sc-runtime` forbids `sc-observability-types`.
    `sc-runtime` does not depend on `sc-config` or on `sc-observability-types`.
@@ -231,8 +239,23 @@ for symmetry.
 11. **REQ-RT-0001 / REQ-RUN-0205** — Copy a-3's dual-bind decision. Amend the
     runtime requirement and ADR OPENs, the REQ-RUN-0205 OPEN, and the
     dual-bind OPEN paragraphs in `docs/architecture.md`: v0.1 binds one
-    listener; `additional_endpoints` is reserved and unused. Do not change
-    the field list a-3 froze.
+    listener; `additional_endpoints` is reserved and ignored in v0.1. Do not change
+    the field list a-3 froze. The ignore is the one a-3's ADR amendment states.
+12. **NFR-RT-0003** — Before the facade freezes, close the three NFR-RT-0003
+    OPENs that deliverable 9 does not close. Delete those OPEN paragraphs in
+    `docs/sc-runtime/requirements.md` and replace them with this decision:
+    - `testing::DaemonFixture` sits behind the non-default cargo feature
+      `test-util`. A production daemon build does not enable it and does not
+      link the fixture.
+    - The temporary-directory crate is an optional dependency of `test-util`
+      only. It is not a normal dependency.
+    - `rmcp` is a direct dependency. `.mcp(...)` accepts the concrete rmcp
+      service type and mounts it as given. `sc-runtime` does not wrap that
+      type and does not re-export it (ADR-RUN-0001 point 4).
+    The `sc-config` OPEN stays the edge-absent close in deliverable 9.
+    `Daemon::builder` still takes `sc_runtime::AppName`. It does not take or
+    re-export `sc_transport::AppName`. Construction tests reference the
+    handoff vector list and do not copy it.
 
 ## Acceptance criteria
 
@@ -283,9 +306,12 @@ for symmetry.
     ADR-RT-0001: either consuming typestate makes `run` available only after
     `stores` and `routes`, with optional `mcp` on that ready state, or the
     ADR rejects typestate and a missing required closure returns an explicit
-    `RuntimeError`. `Daemon::builder` takes `sc_runtime::AppName`. Construction
+    `RuntimeError`. `Daemon::builder` takes `sc_runtime::AppName`, the daemon
+    and application identity for builder paths. It does not take or re-export
+    `sc_transport::AppName`. Construction
     tests use the handoff accept and reject vectors and expect
-    `APP.INVALID_NAME` on rejection. The type exposes `as_str` or `AsRef<str>`
+    `APP.INVALID_NAME` on rejection. The vectors are the handoff list. This
+    sprint does not copy that list. The type exposes `as_str` or `AsRef<str>`
     and does not implement `Deref`. The predicate is ADR-RUN-0010. The in-run
     ordering test remains, and it is not the only proof of the caller-facing
     sequence (RBP-F007).
@@ -294,7 +320,15 @@ for symmetry.
     `boundaries/sc-runtime/sc-runtime.toml` `forbidden_edges` includes
     `sc-config`. `sc-runtime` does not depend on `sc-config`.
 13. `req:REQ-RUN-0205` — the dual-bind OPEN paragraphs named in deliverable 11
-    match a-3: v0.1 single-bind, `additional_endpoints` reserved and unused.
+    match a-3: v0.1 single-bind, `additional_endpoints` reserved and ignored
+    in v0.1.
+14. `req:NFR-RT-0003` — the three OPEN paragraphs named in deliverable 12 are
+    gone. `testing::DaemonFixture` is behind non-default `test-util`. The
+    temp-dir crate is optional on that feature only and is absent from normal
+    dependencies. `rmcp` is a direct dependency, and the crate does not wrap
+    or re-export the rmcp service type. A default build does not link
+    `DaemonFixture`. The facade is not frozen while any of those three OPENs
+    remains.
 
 ## This sprint does not close
 

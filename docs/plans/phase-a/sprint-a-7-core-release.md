@@ -42,6 +42,10 @@ owned_paths:
   - ".github/workflows/release*.yml"
   - ".github/workflows/crates.yml"
   - "scripts/release_*.py"
+  - "crates/*/Cargo.toml"
+  - "crates/*/README.md"
+  - "crates/*/LICENSE"
+  - ".github/workflows/template.yml"
   - "docs/releases/v0.1.0.md"
   - "docs/development/sc-publish.md"
   - "docs/architecture.md"
@@ -72,6 +76,19 @@ release inputs are `release/sc-publish-pin.toml`,
 `.github/workflows/crates.yml` only to remove a leftover spike reference.
 a-5 already keeps that workflow free of a spike-named job.
 
+Publish metadata is a narrow exception, in the same way the prior pass
+added `scripts/release_*.py` and the `crates.yml` cleanup. This sprint may
+edit version, license, description, repository, and readme fields on
+`crates/*/Cargo.toml`, `crates/*/README.md`, and per-crate `LICENSE` copies.
+A behavior defect in a leaf crate returns to that leaf sprint. This sprint
+does not change public APIs there.
+
+The tag run's release mode is selected in `.github/workflows/template.yml`.
+This sprint may edit that file only to select the driver's release mode (no
+path patch) for the tag. a-6 still owns the generation sequence in that
+workflow. Kit-generated `.github/workflows/release*.yml` and
+`scripts/release_*.py` stay `install.py` output.
+
 ## Dependencies and parallel safety
 
 - `must_follow a-6`: consumes the template tree, the answers schema, and the
@@ -86,13 +103,17 @@ a-5 already keeps that workflow free of a spike-named job.
    and all active root references before tagging.
 2. **REQ-RUN-0001 / REQ-RUN-0002 / REQ-RUN-0005** — Final four-member library
    workspace, metadata, licences, doctests, boundary validation, and the
-   sc-publish kit. `install.py` writes the release workflows. `cargo publish
+   sc-publish kit. Publish-metadata edits are the narrow `crates/*/Cargo.toml`,
+   `crates/*/README.md`, and per-crate `LICENSE` exception in Decision
+   prerequisites. `install.py` writes the release workflows. `cargo publish
    --dry-run -p` passes for each leaf. The workspace dry-run for `sc-runtime`
    passes until the leaves exist on the registry. The kit
    `release-preflight.yml` dry-run passes. Publish order is the three leaves,
    then `sc-runtime`.
 3. **REQ-RUN-0702** — Publish leaf crates before sc-runtime, then run the
-   fixture matrix against registry versions at the intended tag commit.
+   fixture matrix against registry versions at the intended tag commit. The
+   release-mode selector is the narrow `.github/workflows/template.yml` edit
+   in Decision prerequisites. a-6 still owns the generation sequence.
 4. **REQ-RUN-0003** — Generated Cargo metadata and lockfiles use registry
    versions with no path/git/patch substitute for the four libraries.
 5. **REQ-RUN-0503** — Release README and evidence explain the supported core

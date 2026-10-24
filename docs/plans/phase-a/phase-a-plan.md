@@ -131,9 +131,25 @@ recovery steps) in its crate-local ADR **before** the public facade is frozen
 (RBP-F002). Third-party type paths are finalized from a-1 evidence.
 
 `AppName` is a crate-local validated newtype. There is no shared `AppName`
-type and no fifth crate in Phase A. The three types are `sc_config::AppName`,
-`sc_transport::AppName`, and `sc_runtime::AppName`. No leaf depends on another
-to obtain its newtype, and `sc-runtime` does not depend on `sc-config` for it.
+type and no fifth crate in Phase A. The three types are not redundant copies
+of one identity:
+
+- `sc_config::AppName` is the configuration identity. Loaders take it.
+  `sc-config` does not depend on `sc-transport` or `sc-runtime` to obtain it.
+- `sc_transport::AppName` is the client wire identity. `Client::new`,
+  `resolve_endpoint`, and `instance_root` take it. Suggested-action text uses
+  that value. It is not a daemon builder argument.
+- `sc_runtime::AppName` is the daemon and application identity for builder
+  paths (instance root and lock). `Daemon::builder` takes this type.
+  `sc-runtime` must not re-export `sc_transport::AppName` and must not put
+  that transport type on the builder surface. Inside `run`, `sc-runtime`
+  converts with `as_str()` into `sc_transport::AppName` and calls
+  `instance_root`. The shared predicate makes a name that constructed the
+  runtime type a valid transport name. That conversion is not a second
+  predicate and is not a public re-export.
+
+No leaf depends on another to obtain its newtype, and `sc-runtime` does not
+depend on `sc-config` for it.
 Construction is the only validation site. Display uses `as_str` or
 `AsRef<str>`. The type does not implement `Deref` (RBP-F005). a-6 converts
 only at the application boundary: `as_str()` into each crate's constructor.
@@ -147,9 +163,13 @@ One validation predicate applies to all three constructors:
 
 Accept vectors: `my-app`, `A`, `app_1`, and 64 `a` characters. Reject
 vectors: the empty string, `my app`, `my.app`, `my/app`, 65 `a` characters,
-and `café`. a-2, a-3, and a-5 tests use these vectors. Each of those sprints
-amends the `&str` application-name parameters in the crate requirement file
-it already owns. a-1 records this family as new ADR-RUN-0010 in
+and `café`. This handoff list is the only enumeration of those vectors.
+a-2, a-3, and a-5 tests reference this list. They do not copy it into their
+sprint docs or into a second fixture file. Wizard fixtures and the generation
+driver use this list. They do not keep another vector file. Each of those
+leaf sprints amends the `&str` application-name parameters in the crate
+requirement file it already owns. a-1 records this family, including the
+three identities and the no-re-export rule above, as new ADR-RUN-0010 in
 `docs/architecture.md` before a-2, a-3, or a-5 freezes a facade. ADR-RUN-0006
 stays the typed-error rule. a-2's constructor freeze waits on that Active
 ADR. That wait is not a `must_follow` edge and does not move a-2 off wave 0.
@@ -186,6 +206,7 @@ pub enum Endpoint { Uds(std::path::PathBuf), Tcp(std::net::SocketAddr) }
 // before the facade freezes. a-5 DaemonConfig embeds that sc-transport type.
 // It does not decide a second endpoint-config shape.
 pub struct TransportConfig { /* fields frozen in the crate ADR */ }
+pub fn instance_root(app: AppName) -> std::path::PathBuf;
 pub fn resolve_endpoint(
     app: AppName,
     flag: Option<&std::ffi::OsStr>,
@@ -229,9 +250,9 @@ a-6 ships a generated `daemon start` subcommand that execs the daemon binary
 and matches `run <app> daemon start`. That subcommand is not auto-start.
 a-3 records the string in the transport ADR. a-6 closes the REQ-RUN-0202 OPEN.
 a-3 freezes `TransportConfig` as v0.1 single-bind and reserves additive
-`additional_endpoints` (default empty, unused in v0.1) before the facade
-freezes. a-5 embeds that type and closes the runtime and REQ-RUN-0205 OPENs
-to that decision.
+`additional_endpoints` (default empty, reserved and ignored in v0.1) before
+the facade freezes. The a-3 ADR amendment states that ignore. a-5 embeds
+that type and closes the runtime and REQ-RUN-0205 OPENs to that decision.
 
 `OpError` has one shape that satisfies the wire rule. The Rust field may be
 absent (`Option<sc_observability_types::Remediation>`, or a documented empty
@@ -375,7 +396,7 @@ NFR-RUN-0001 `cargo tree -p cli` close. Sprint text points here.
 |---|---|
 | a-1 | Measure default vs `server` graphs; **close** ADR-RUN-0003 workspace-unification OPEN and NFR-RUN-0001 first OPEN: `cargo build -p cli` is normative, workspace-wide build is exempt, **no** client/server crate split in v0.1. |
 | a-5 | Workspace composition only. Records `sc-runtime` → `sc-config` as **edge absent** in every architecture edge table, the REQ-RUN-0005 slice, and `sc-runtime` `forbidden_edges`. Does not run `cargo tree -p cli` (a-6 owns that). |
-| a-6 | Sole owner of the NFR-RUN-0001 feature-level close. Generated fixture CI runs `cargo tree -p cli -e normal` and `just build-cli` (`cargo build -p cli --release`). A workspace-wide build is the documented exemption and is not the shipped agent binary. |
+| a-6 | Sole owner of the NFR-RUN-0001 feature-level close. Fixture CI runs `just` recipes, not a manual check: `just build-cli` includes `cargo tree -p cli -e normal`, and `just test` includes the observability grep. A workspace-wide build is the documented exemption and is not the shipped agent binary. |
 | a-7 | REQ-RUN-0702 is the registry-backed fixture running a-6's fixture CI in release mode. It is not a second pin, tree, or observability gate. |
 
 a-6 does not wait for a-5 to close ADR-RUN-0003. a-7 does not add a second
@@ -397,8 +418,10 @@ OpenTelemetry export stays an optional project addition and is deferred.
 `sc-observability` or `sc-observability-otlp`, and they do not initialise or
 wrap logging. `sc-command` depends on `sc-observability-types` for `OpError`.
 `sc-transport` depends on `sc-observability-types` for `ErrorCode` on
-`DaemonNotRunning`. That edge is types-only: it is not an edge to
-`sc-command` and it is not a dependency on the logging runtime. `sc-config`
+`DaemonNotRunning`. That `ErrorCode`-only dependency on `sc-transport` and
+`sc-command` is the a-1 recorded lead decision that amends ADR-RUN-0004 and
+REQ-RUN-0309. The edge is types-only: it is not an edge to `sc-command` from
+`sc-transport`, and it is not a dependency on the logging runtime. `sc-config`
 stays on `serde` and `serde_json` and forbids `sc-observability-types`.
 `sc-runtime` does not depend on `sc-observability-types`. `StoresFailed`
 uses the plain types in the handoff.
@@ -412,9 +435,9 @@ use that recorded pair.
 
 | Sprint | Responsibility |
 |---|---|
-| a-1 | Depend on both crates in the spike, record the exact resolved versions in `docs/architecture.md`, and amend ADR-RUN-0004 and REQ-RUN-0309 to that pair. |
+| a-1 | Depend on both crates in the spike, record the exact resolved versions in `docs/architecture.md`, and amend ADR-RUN-0004 and REQ-RUN-0309 to that pair. The same amendment is the recorded lead decision that allows `sc-observability-types` on `sc-command` and, for `ErrorCode` only, on `sc-transport`. |
 | a-4 | `sc-command` depends on the recorded `sc-observability-types` version and not on `sc-observability`. |
-| a-6 | Generated daemon depends on the recorded `sc-observability` version; init order is config, then observability, then `Daemon::builder`; no OTLP crate in the template. |
+| a-6 | Generated daemon depends on the recorded `sc-observability` version; init order is config, then observability, then `Daemon::builder`; no OTLP crate in the template. Fixture CI's `just test` runs the observability grep. |
 | a-7 | The registry-backed fixture is a-6's fixture CI in release mode. That run is the release evidence. |
 
 ## Wave table
@@ -426,8 +449,8 @@ use that recorded pair.
 | 1 | core | a-3 transport | boundary | sc-transport | `crates/sc-transport/**`, `boundaries/sc-transport/**`, sc-transport requirement/ADR sources |
 | 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**`, sc-command requirement/ADR sources |
 | 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, source-maintainer `sc-lint.toml` and `.sc-lint/bootstrap.py`, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, sc-runtime requirement/ADR sources, the edge-absent slices listed in the a-5 deliverables (architecture edge tables, REQ-RUN-0001/0004/0005 and REQ-RUN-0205 sections of `docs/requirements.md`), rewritten spike, core CI/just recipes |
-| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, `wizard/answers.schema.json`, `wizard/fixtures/**`, driver, root `Justfile` generation entry, REQ-RUN-0202, REQ-RUN-0503, and REQ-RUN-0701 sections of `docs/requirements.md`, generation tests and template CI |
-| 4 | release | a-7 core release | integration | release-distribution | authored `release/sc-publish-*`, `docs/development/sc-publish.md`, `docs/architecture.md` ADR-RUN-0002 publish-contract amendment, `install.py` outputs (`.github/workflows/release*.yml`, `scripts/release_*.py`), `.github/workflows/crates.yml` spike-reference cleanup, root release metadata, spike removal |
+| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, `wizard/answers.schema.json`, `wizard/fixtures/**`, driver, root `Justfile` generation entry, the `sc-lint.toml` line-counts glob for `template/**/*.rs` only, REQ-RUN-0202, REQ-RUN-0503, and REQ-RUN-0701 sections of `docs/requirements.md`, generation tests and template CI |
+| 4 | release | a-7 core release | integration | release-distribution | authored `release/sc-publish-*`, `docs/development/sc-publish.md`, `docs/architecture.md` ADR-RUN-0002 publish-contract amendment, `install.py` outputs (`.github/workflows/release*.yml`, `scripts/release_*.py`), `.github/workflows/crates.yml` spike-reference cleanup, `.github/workflows/template.yml` release-mode selector only, publish-metadata fields on `crates/*/Cargo.toml`, `crates/*/README.md`, and per-crate `LICENSE` copies, root release metadata, spike removal |
 | 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, `scripts/run_wizard.py`, sequential `scripts/new_project.py` and `docs/generation.md` (entry-mode only), wizard tests |
 
 `contract` on a-1 means the disposable compatibility-evidence record later
@@ -480,7 +503,13 @@ REQ-RUN-0503, REQ-RUN-0701 only). a-2, a-3, and a-4 amend crate-local
 ADRs and requirements. a-5 creates the core workspace/CI registries and verifies and
 extends the existing root `Justfile` without contradicting its sc-lint init
 header. a-6 owns the sequential root `Justfile` edit that adds `just new`
-and the template consumer install. **`wizard/` and driver files:** a-6 owns
+and the template consumer install. a-6's only `sc-lint.toml` edit is the
+line-counts path glob that adds `template/**/*.rs` after a-5. **Release
+slices after a-6:** a-7 may edit publish-metadata fields on
+`crates/*/Cargo.toml`, `crates/*/README.md`, and per-crate `LICENSE` copies,
+and may edit `.github/workflows/template.yml` only to select the driver's
+release mode. Leaf behavior defects return to the leaf sprint. a-6 still
+owns the generation sequence in that workflow. **`wizard/` and driver files:** a-6 owns
 `wizard/answers.schema.json` and `wizard/fixtures/**`. a-8 owns
 `wizard/wizard.json` and `wizard/pages/**`. `scripts/new_project.py` and
 `docs/generation.md` pass from a-6 to a-8; a-8's diff is entry-mode flags

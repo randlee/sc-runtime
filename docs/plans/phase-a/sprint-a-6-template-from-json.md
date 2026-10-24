@@ -14,6 +14,7 @@ recommended_model: sol
 must_follow: [a-5]
 parallel_safe: []
 requirements:
+  - REQ-RUN-0001
   - REQ-RUN-0003
   - REQ-RUN-0004
   - REQ-RUN-0201
@@ -56,13 +57,16 @@ adrs:
   - ADR-RUN-0007
   - ADR-RUN-0008
   - ADR-RUN-0009
+  - ADR-RUN-0010
   - ADR-RUN-0201
   - ADR-RUN-0202
+  - ADR-RUN-0204
   - ADR-RUN-0301
   - ADR-RUN-0302
   - ADR-RUN-0303
   - ADR-RUN-0401
   - ADR-RUN-0402
+  - ADR-TRN-0003
 owned_paths:
   - "template/**"
   - "wizard/answers.schema.json"
@@ -75,6 +79,7 @@ owned_paths:
   - "tests/integration/generation/**"
   - ".github/workflows/template.yml"
   - "docs/generation.md"
+  - "sc-lint.toml"
 ---
 
 # Sprint a-6 — template from JSON
@@ -144,8 +149,8 @@ its only meaningful proof.
 1. **REQ-RUN-0401 / REQ-RUN-0402 / REQ-RUN-0403** — One versioned schema and
    small valid/refused fixture set; invalid or unsupported input fails before
    destination creation. Refused inputs include the handoff `AppName` reject
-   vectors (empty, `my app`, `my.app`, `my/app`, 65 `a` characters, `café`).
-   The driver reports stable code `APP.INVALID_NAME` and does not create the
+   vectors. This sprint does not copy that list. The driver reports stable
+   code `APP.INVALID_NAME` and does not create the
    destination. ADR-RUN-0010 is the predicate. That code is a row in
    deliverable 15.
 2. **REQ-RUN-0501 / REQ-RUN-0502** — A small `--var-file` driver sequences
@@ -167,10 +172,14 @@ its only meaningful proof.
    example service through REST, optional MCP, and the CLI's transport path.
 6. **REQ-RUN-0701** — Fixture CI discovers supported answers files and runs
    this sequence and nothing else: `just new`, then `just setup`, then
-   `just lint`, then `just test`, then `just build-cli`. No source file
-   changes between generation and the end of that sequence. A workspace-wide
-   build is not a matrix step. The `cargo tree -p cli -e normal` close is
-   the phase feature-enforcement table and deliverable 14.
+   `just lint`, then `just test`, then `just build-cli`. Those are `just`
+   recipes. They are not manual commands. `just build-cli` includes
+   `cargo tree -p cli -e normal --prefix none` and fails when a server-only
+   crate is present. `just test` includes the observability grep: rendered
+   `crates/daemon` requires `sc-observability` at the a-1 pin, does not
+   require `sc-observability-otlp`, and the logging-crate token does not
+   match `sc-observability-types`. No source file changes between generation
+   and the end of that sequence. A workspace-wide build is not a matrix step.
 7. **REQ-RUN-0306** — Plain cargo-generate remains usable for the template tree
    with documented limitations around separately rendered Jinja documents.
 8. **REQ-RUN-0307 / NFR-RUN-0006** — The generated project is an
@@ -190,7 +199,11 @@ its only meaningful proof.
 10. **REQ-RUN-0202 / REQ-RUN-0503 / REQ-RUN-0701** — Amend only those three
     sections of `docs/requirements.md`. REQ-RUN-0701's command list and
     success criterion 1 become `just new`, then `just setup`, then `just lint`,
-    then `just test`, then `just build-cli`. `just setup` installs the
+    then `just test`, then `just build-cli`. That criterion states that
+    `just build-cli` includes `cargo tree -p cli -e normal --prefix none` and
+    that `just test` includes the observability grep from deliverable 6.
+    Those checks run because fixture CI runs the recipes. They are not a
+    separate manual step. `just setup` installs the
     sc-lint 0.8.0 consumer and is not a source edit. REQ-RUN-0503 success
     criterion 2 names `just setup` immediately before `just lint`.
     REQ-RUN-0202 closes the OPEN on `daemon start`: the generated CLI provides
@@ -200,19 +213,34 @@ its only meaningful proof.
     requirement in that file.
 11. **NFR-RUN-0008** — After `template/**/*.rs` exists, root `just lint`'s
     sc-lint line-counts check covers those files. a-5 closed only
-    `crates/*/src`. This sprint does not add a line-counting script. Files
-    under a `tests/` directory stay exempt.
+    `crates/*/src`. This sprint's only `sc-lint.toml` edit is that path glob.
+    It does not change any other key, and it does not add a line-counting
+    script. Files under a `tests/` directory stay exempt.
 12. **REQ-RUN-0202** — Generated CLI `daemon start` execs the daemon binary.
     Report-only commands do not start a daemon. The suggested action
-    `run <app> daemon start` is that subcommand.
+    `run <app> daemon start` is that subcommand. Binary discovery is the
+    generated project's example choice (the workspace binary name). That
+    choice is illustrative.
 13. **REQ-RUN-0202** — Generated CLI `--json` mapping table for every
     `TransportError` variant in a-3's error inventory: `OpError` kind, code,
     message, `suggested_action`, and the envelope. The mapping lives in the
     generated CLI. It does not add an `sc-command` → `sc-transport` edge.
     One host-safe vector per variant.
+
+    **ADR-RUN-0002 point 6.** The mapping table and the `daemon start` exec
+    are Rust under `template/` outside the example operation, route and store
+    wiring, and configuration. They stay in the template. ADR-TRN-0003
+    forbids an `sc-transport` → `sc-command` edge, so the mapping cannot live
+    in either crate. `daemon start` adds no launch API to a published crate
+    and does not reopen the ADR-RUN-0204 launch-policy deferral.
 14. **NFR-RUN-0001** — Add consumer-owned `just build-cli` as specified in
-    the phase feature-enforcement table. The recipe warns that
-    `cargo build --workspace` is the exemption. Fixture CI runs the recipe.
+    the phase feature-enforcement table. The recipe runs
+    `cargo build -p cli --release` and `cargo tree -p cli -e normal --prefix none`,
+    and it warns that `cargo build --workspace` is the exemption. Fixture CI
+    runs the recipe. It does not run that tree as a manual command. The
+    generated example's in-process test enables `sc-runtime` feature
+    `test-util` only as a dev-dependency. The daemon's normal dependencies
+    do not enable it.
 15. **REQ-RUN-0501 / REQ-RUN-0502** — `docs/generation.md` holds the
     generation-driver error inventory before the driver freezes. The driver
     is not a JSON API. Stderr is one line: `<code> <cause> — <recovery>`.
@@ -273,12 +301,17 @@ its only meaningful proof.
    handling is documented honestly.
 9. `req:REQ-RUN-0701` — fixture CI runs deliverable 6 and nothing else in
    the matrix, with no edit between generation and the end of that sequence.
-   PR-mode lockfiles resolve all four libraries to the checkout paths;
-   release lockfiles resolve all four to the crates.io registry.
-10. `req:NFR-RUN-0001` — fixture CI runs the phase feature-enforcement
-    table's `cargo tree -p cli -e normal` check and deliverable 14. The named
-    server-only crates are absent. This criterion does not split crates and
-    does not depend on a-5 closing ADR-RUN-0003.
+   `just build-cli` includes `cargo tree -p cli -e normal --prefix none`.
+   `just test` includes the observability grep. Neither check is a manual
+   command outside those recipes. The amended REQ-RUN-0701 text from
+   deliverable 10 says the same. PR-mode lockfiles resolve all four
+   libraries to the checkout paths; release lockfiles resolve all four to
+   the crates.io registry.
+10. `req:NFR-RUN-0001` — fixture CI runs `just build-cli`, and that recipe
+    includes `cargo tree -p cli -e normal --prefix none`. The named
+    server-only crates are absent. This criterion does not split crates,
+    does not depend on a-5 closing ADR-RUN-0003, and does not add a manual
+    tree command.
 11. `ADR-RUN-0303` — inspection confirms that reusable runtime behavior remains
    in the published crates while routes, schema, queries, and application
    composition remain editable template code.
@@ -293,9 +326,12 @@ its only meaningful proof.
     requires the a-1 `sc-observability` version and has no
     `sc-observability-otlp` requirement. Rendered `main.rs` orders config
     load, then `sc-observability` init, then `Daemon::builder`.
-    Library logging edges stay on the crate manifests and leaf `cargo tree`
-    checks. This criterion does not add a four-crate tree in the generated
-    project.
+    `just test` runs the observability grep from deliverable 6, including
+    the rule that the logging-crate token does not match
+    `sc-observability-types`. That grep is not a manual check. Library
+    logging edges on the four library crates stay on the crate manifests
+    and leaf `cargo tree` checks. This criterion does not add a four-crate
+    tree in the generated project.
 14. `req:REQ-RUN-0401` — `wizard/answers.schema.json` loads as valid JSON
     Schema and `scripts/new_project.py` holds no option list.
 15. `req:REQ-RUN-0402` — `just test` runs a key-set test that reads schema
@@ -351,11 +387,13 @@ its only meaningful proof.
     and no Wyvern discovery.
 21. `req:NFR-RUN-0008` — this criterion closes `template/**/*.rs` only. a-5
     closed `crates/*/src`. Root `just lint` runs the sc-lint line-counts
-    check over `template/**/*.rs` and exits 0.
+    check over `template/**/*.rs` and exits 0. The only `sc-lint.toml` diff
+    in this sprint is that path glob.
 22. `req:REQ-RUN-0202` — one host-safe `--json` vector exists for every
     `TransportError` variant a-3 ships. Each vector checks kind, code,
     message, `suggested_action`, and the envelope. The mapping is generated
-    CLI code.
+    CLI code. Deliverable 13 states the ADR-RUN-0002 point 6 reason that
+    this mapping stays in the template.
 23. `req:REQ-RUN-0501` / `req:REQ-RUN-0502` — driver tests match deliverable
     15. Schema-invalid answers emit `GEN.SCHEMA_INVALID`. A `postgres` file
     and a `both` file emit `GEN.DB_RESERVED`. A missing `sc-compose` emits

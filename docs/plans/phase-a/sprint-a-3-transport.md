@@ -40,6 +40,7 @@ adrs:
   - ADR-TRN-0006
   - ADR-RUN-0003
   - ADR-RUN-0006
+  - ADR-RUN-0010
 owned_paths:
   - "crates/sc-transport/**"
   - "boundaries/sc-transport/**"
@@ -63,26 +64,33 @@ classification, and the public error surface. Before `TransportConfig`
 freezes, close the dual-bind OPEN in `docs/sc-transport/architecture.md` and
 `docs/sc-transport/requirements.md`: v0.1 binds exactly one listener, and
 `TransportConfig` reserves additive `additional_endpoints` (default empty,
-unused in v0.1) so a later dual-bind does not fork the facade. a-5 embeds
+reserved and ignored in v0.1) so a later dual-bind does not fork the facade.
+The ADR amendment states that the field is ignored in v0.1. a-5 embeds
 that type and does not decide a second shape. Publish an **error inventory**
 (stable codes and recovery for every `TransportError` variant, including
 non-`DaemonNotRunning` failures the CLI must report). `DaemonNotRunning`
 carries `sc_observability_types::ErrorCode` (`DAEMON.NOT_RUNNING`) on the code
 field and a plain `String` suggested action (`run <app> daemon start` with the
 `AppName` passed to `Client::new`). No `Remediation` on transport (RBP-F002,
-RBP-F005). The string names the `daemon start` subcommand a-6 ships (exec
-the daemon binary). It is not a caller-supplied launch hint and it is not
-auto-start. Record that in the crate ADR before the facade freezes.
+RBP-F005). The `ErrorCode`-only `sc-observability-types` dependency is the
+a-1 recorded lead decision that amends ADR-RUN-0004 and REQ-RUN-0309. This
+sprint consumes that amendment. It does not reopen it and it does not edit
+those root documents. The string names the `daemon start` subcommand a-6
+ships (exec the daemon binary). It is not a caller-supplied launch hint and
+it is not auto-start. Record that in the crate ADR before the facade freezes.
 Do not edit `docs/architecture.md`. Do not add auto-start APIs.
-`sc_transport::AppName` uses the predicate a-1 records in ADR-RUN-0010.
-This sprint does not invent a second predicate and does not write that ADR.
+`sc_transport::AppName` is the client wire identity. It uses the predicate
+a-1 records in ADR-RUN-0010 and the handoff vector list. This sprint does
+not copy that list, does not invent a second predicate, and does not write
+that ADR. It is not `sc_runtime::AppName`.
 
 ## Public contract produced
 
 This sprint owns the sc-transport types and methods in the canonical
 [minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff):
-`sc_transport::AppName`, `Endpoint`, `TransportConfig`, `resolve_endpoint`,
-`Client::new`, `get`, `post`, `bind`, `Listener`, and `TransportError`.
+`sc_transport::AppName`, `Endpoint`, `TransportConfig`, `instance_root`,
+`resolve_endpoint`, `Client::new`, `get`, `post`, `bind`, `Listener`, and
+`TransportError`.
 `Client::get` and `Client::post` are the handoff signatures, and both take
 that crate's `AppName` only through `Client::new`. The crate-local
 requirement and ADR sources are the decision record. This sprint amends
@@ -123,8 +131,11 @@ It does not edit `docs/architecture.md`.
    carries `sc_observability_types::ErrorCode` from a direct
    `sc-observability-types` dependency at the version a-1 recorded. That
    dependency is types-only: the crate does not depend on `sc-command` or on
-   `sc-observability` (RBP-F005). `sc_transport::AppName` uses the handoff
-   predicate and vectors. It is not `sc_config::AppName`. Invalid names fail
+   `sc-observability` (RBP-F005). That dependency is the a-1 recorded lead
+   decision amending ADR-RUN-0004 and REQ-RUN-0309. `sc_transport::AppName`
+   uses the handoff predicate and the handoff vector list. This sprint does
+   not copy that list. It is not `sc_config::AppName` and it is not
+   `sc_runtime::AppName`. Invalid names fail
    at construction with `APP.INVALID_NAME`. Display is `as_str` or
    `AsRef<str>`, and the type does not implement `Deref`.
 
@@ -155,7 +166,8 @@ It does not edit `docs/architecture.md`.
    `sc-command ` line and no `sc-observability ` line (crate name, then a
    space, so the types crate does not match the logging crate).
    `sc_transport::AppName` accepts the handoff accept vectors and rejects the
-   handoff reject vectors at construction, with stable code
+   handoff reject vectors at construction. The vectors are the handoff list,
+   not a copy in this sprint. Rejection uses stable code
    `APP.INVALID_NAME`. Public constructors take `sc_transport::AppName`. The
    type exposes `as_str` or `AsRef<str>` and does not implement `Deref`
    (RBP-F005).
@@ -164,10 +176,13 @@ It does not edit `docs/architecture.md`.
    dependency while `forbidden_edges` still contains `sc-observability`.
    `just lint gates` or `sc-lint lint sc-boundary` exits 0 on
    `boundaries/sc-transport/sc-transport.toml`.
-8. `ADR-TRN-0002` — `TransportConfig` is frozen as v0.1 single-bind with
-   additive `additional_endpoints` defaulting empty and unused. The transport
-   dual-bind OPEN is deleted. The suggested action is the a-6 `daemon start`
-   subcommand, not a caller launch hint.
+8. `ADR-TRN-0002` — the crate ADR amendment states that v0.1 binds exactly
+   one listener and that `additional_endpoints` is reserved and ignored in
+   v0.1. The field is present, defaults empty, and the implementation does
+   not read it. The ADR says so, so the ignore is not an undocumented
+   failure. A later release may use the field without forking the facade.
+   The transport dual-bind OPEN is deleted. The suggested action is the a-6
+   `daemon start` subcommand, not a caller launch hint.
 
 ## This sprint does not close
 

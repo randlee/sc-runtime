@@ -33,6 +33,7 @@ adrs:
   - ADR-RUN-0003
   - ADR-RUN-0006
   - ADR-RUN-0007
+  - ADR-RUN-0010
 owned_paths:
   - "crates/sc-config/**"
   - "boundaries/sc-config/**"
@@ -65,8 +66,9 @@ not add a-1 to `must_follow` and it does not move this sprint off wave 0.
 This sprint owns the sc-config types and methods in the canonical
 [minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff):
 `sc_config::AppName`, `load`, `Loader::new`, `Loader::load`, and
-`ConfigError`. The newtype uses the handoff validation predicate and test
-vectors. It is not `sc_transport::AppName` or `sc_runtime::AppName`. The
+`ConfigError`. The newtype uses the handoff validation predicate and the
+handoff vector list. This sprint does not copy that list. It is not
+`sc_transport::AppName` or `sc_runtime::AppName`. The
 crate-local requirement and ADR sources record any remaining signature
 decisions, including the `&str` application-name parameters those sources
 still show. This sprint amends `docs/sc-config/architecture.md` and
@@ -105,7 +107,8 @@ signature contract.
    failure mode, stable code, cause payload, and recovery steps. Typed path
    and line fields stay on the variants that carry a source location
    (RBP-F002). `sc_config::AppName` is a validated newtype using the handoff
-   predicate and vectors. Invalid names fail in the constructor with
+   predicate and the handoff vector list. This sprint does not copy that
+   list. Invalid names fail in the constructor with
    `APP.INVALID_NAME`. Public loaders take `sc_config::AppName`. Display is
    `as_str` or `AsRef<str>`. The type does not implement `Deref` (RBP-F005).
    Amend the crate requirement's `&str` application-name parameters to this
