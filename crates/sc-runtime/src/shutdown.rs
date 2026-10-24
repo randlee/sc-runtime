@@ -1,8 +1,16 @@
 //! SIGINT, SIGTERM, and the fixture's private shutdown trigger.
 
+use std::time::Duration;
+
 use tokio::sync::oneshot;
 
 use crate::error::RuntimeError;
+
+/// How long in-flight requests may finish after shutdown starts.
+pub(crate) const DRAIN_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// Extra time after [`DRAIN_TIMEOUT`] for connections to close once handlers return.
+pub(crate) const DRAIN_BACKSTOP: Duration = Duration::from_secs(1);
 
 /// How `run` waits before it stops accepting connections.
 pub(crate) struct RunControl {
@@ -12,6 +20,8 @@ pub(crate) struct RunControl {
     /// because a process signal would stop every fixture in the test binary.
     /// The shutdown sequence after the trigger is the same either way.
     pub(crate) listen_for_signals: bool,
+    /// Bound on in-flight work after the shutdown trigger.
+    pub(crate) drain: Duration,
 }
 
 impl RunControl {
@@ -20,6 +30,21 @@ impl RunControl {
             ready: None,
             shutdown: None,
             listen_for_signals: true,
+            drain: DRAIN_TIMEOUT,
+        }
+    }
+
+    /// Private trigger, no process signals, production drain bound.
+    #[cfg(feature = "test-util")]
+    pub(crate) fn detached(
+        ready: Option<oneshot::Sender<sc_transport::Endpoint>>,
+        shutdown: Option<oneshot::Receiver<()>>,
+    ) -> Self {
+        Self {
+            ready,
+            shutdown,
+            listen_for_signals: false,
+            drain: DRAIN_TIMEOUT,
         }
     }
 }
@@ -30,18 +55,28 @@ pub(crate) struct Signals {
     interrupt: tokio::signal::unix::Signal,
     #[cfg(unix)]
     terminate: tokio::signal::unix::Signal,
+    /// Same listener polled during install. A later `ctrl_c()` call would
+    /// miss a Ctrl-C that arrived while the daemon was locking or binding.
+    #[cfg(windows)]
+    ctrl_c: tokio::signal::windows::CtrlC,
+    /// Set when the install poll already observed Ctrl-C.
+    #[cfg(windows)]
+    seen: bool,
 }
 
 /// Installs process signal handlers when `listen` is set.
 ///
-/// Signal streams are registered before lock and bind so start-up is not a
-/// race (FTQ-003). Windows installs Ctrl-C here; the future is created again
-/// in [`wait`] once serving starts.
+/// The caller awaits this before the instance lock and before bind. Unix
+/// registers SIGINT and SIGTERM when [`tokio::signal::unix::signal`] returns.
+/// On Windows, [`tokio::signal::windows::ctrl_c`] installs the console handler
+/// when it is called, and the listener does nothing until it is polled. This
+/// function polls that listener once before returning, so a Ctrl-C during
+/// lock, stores, or bind is observed by the same listener [`wait`] uses.
 ///
 /// # Errors
 ///
 /// Returns [`RuntimeError::ServeFailed`] when a handler cannot be installed.
-pub(crate) fn install(listen: bool) -> Result<Option<Signals>, RuntimeError> {
+pub(crate) async fn install(listen: bool) -> Result<Option<Signals>, RuntimeError> {
     if !listen {
         return Ok(None);
     }
@@ -58,10 +93,14 @@ pub(crate) fn install(listen: bool) -> Result<Option<Signals>, RuntimeError> {
     }
     #[cfg(windows)]
     {
-        // Install the Ctrl-C handler before lock and bind. The future is
-        // created again in `wait` once serving starts.
-        drop(tokio::signal::ctrl_c());
-        Ok(Some(Signals {}))
+        let mut ctrl_c = tokio::signal::windows::ctrl_c()
+            .map_err(|err| RuntimeError::serve_failed(err.to_string()))?;
+        let seen = std::future::poll_fn(|cx| match ctrl_c.poll_recv(cx) {
+            std::task::Poll::Ready(_) => std::task::Poll::Ready(true),
+            std::task::Poll::Pending => std::task::Poll::Ready(false),
+        })
+        .await;
+        Ok(Some(Signals { ctrl_c, seen }))
     }
     #[cfg(not(any(unix, windows)))]
     {
@@ -87,11 +126,12 @@ pub(crate) async fn wait(signals: Option<Signals>, cancel: Option<oneshot::Recei
     }
     #[cfg(windows)]
     {
-        let _ = signals;
+        if signals.seen {
+            return;
+        }
+        let mut ctrl_c = signals.ctrl_c;
         tokio::select! {
-            result = tokio::signal::ctrl_c() => {
-                let _ = result;
-            }
+            _ = ctrl_c.recv() => {}
             _ = recv_cancel(cancel) => {}
         }
     }
@@ -107,5 +147,16 @@ async fn recv_cancel(cancel: Option<oneshot::Receiver<()>>) {
         let _ = cancel.await;
     } else {
         std::future::pending::<()>().await;
+    }
+}
+
+#[cfg(all(test, windows))]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn windows_ctrl_c_is_registered_and_polled() {
+        let signals = install(true).await.expect("install");
+        assert!(signals.is_some());
     }
 }

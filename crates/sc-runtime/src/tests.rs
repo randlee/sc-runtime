@@ -1,6 +1,8 @@
 //! Crate tests that need the private shutdown trigger or a known instance root.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use rmcp::ServerHandler;
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
@@ -92,11 +94,7 @@ async fn lock_precedes_stores_then_routes_and_mcp() {
                     demo_service(stores)
                 }
             })
-            .with_control(RunControl {
-                ready: Some(ready_tx),
-                shutdown: Some(stop_rx),
-                listen_for_signals: false,
-            })
+            .with_control(RunControl::detached(Some(ready_tx), Some(stop_rx)))
             .run()
             .await
     });
@@ -122,11 +120,7 @@ async fn lock_contention_skips_stores() {
             Daemon::builder(&app(), &config)
                 .stores(|| async { Ok(()) })
                 .routes(|()| OpenApiRouter::new())
-                .with_control(RunControl {
-                    ready: Some(ready_tx),
-                    shutdown: Some(stop_rx),
-                    listen_for_signals: false,
-                })
+                .with_control(RunControl::detached(Some(ready_tx), Some(stop_rx)))
                 .run()
                 .await
         }
@@ -250,6 +244,13 @@ async fn bad_endpoint_does_not_bind() {
         .expect_err("endpoint");
     assert!(matches!(err, RuntimeError::EndpointFailed { .. }));
     assert_eq!(err.code(), "RUNTIME.ENDPOINT_FAILED");
+    let transport = err.transport().expect("structured transport error");
+    assert_eq!(transport.code(), sc_transport::CODE_INVALID_ENDPOINT);
+    assert_eq!(err.remediation(), transport.recovery());
+    let cause = err.cause().expect("cause");
+    assert!(cause.contains("not-an-endpoint"), "{cause}");
+    assert!(cause.contains(transport.code()), "{cause}");
+    assert_ne!(cause, transport.to_string());
     assert!(!*called.lock().expect("flag"));
 }
 
@@ -282,7 +283,76 @@ async fn busy_tcp_port_is_bind_failed() {
         .expect_err("bind");
     assert!(matches!(err, RuntimeError::BindFailed { .. }));
     assert_eq!(err.code(), "RUNTIME.BIND_FAILED");
+    let transport = err.transport().expect("structured transport error");
+    assert_eq!(transport.code(), sc_transport::CODE_BIND);
+    assert_eq!(err.remediation(), transport.recovery());
+    let cause = err.cause().expect("cause");
+    assert!(cause.contains(transport.code()), "{cause}");
+    assert!(cause.contains(&addr.to_string()), "{cause}");
+    match transport {
+        sc_transport::TransportError::Bind {
+            endpoint, cause, ..
+        } => {
+            assert!(
+                endpoint.to_string().contains(&addr.to_string()),
+                "{endpoint}"
+            );
+            assert!(!cause.as_str().is_empty());
+        }
+        other => panic!("expected TransportError::Bind, got {other:?}"),
+    }
     drop(listener);
+}
+
+#[tokio::test]
+async fn shutdown_drain_is_bounded() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let config = rooted_config(dir.path());
+    let (ready_tx, ready_rx) = oneshot::channel();
+    let (stop_tx, stop_rx) = oneshot::channel();
+    let started = Arc::new(AtomicBool::new(false));
+    let mut control = RunControl::detached(Some(ready_tx), Some(stop_rx));
+    control.drain = Duration::from_millis(200);
+    let started_for_route = Arc::clone(&started);
+    let task = tokio::spawn(async move {
+        Daemon::builder(&app(), &config)
+            .stores(|| async { Ok(()) })
+            .routes(move |()| {
+                let started_for_route = Arc::clone(&started_for_route);
+                OpenApiRouter::new().route(
+                    "/hang",
+                    axum::routing::get(move || {
+                        let started_for_route = Arc::clone(&started_for_route);
+                        async move {
+                            started_for_route.store(true, Ordering::SeqCst);
+                            tokio::time::sleep(Duration::from_secs(60)).await;
+                            "done"
+                        }
+                    }),
+                )
+            })
+            .with_control(control)
+            .run()
+            .await
+    });
+    let endpoint = ready_rx.await.expect("daemon ready");
+    let client = sc_transport::Client::new(endpoint).expect("client");
+    let request = tokio::spawn(async move {
+        let _ = client.get::<serde_json::Value>("/hang").await;
+    });
+    for _ in 0..100 {
+        if started.load(Ordering::SeqCst) {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    assert!(started.load(Ordering::SeqCst), "handler never started");
+    let _ = stop_tx.send(());
+    let joined = tokio::time::timeout(Duration::from_secs(2), task)
+        .await
+        .expect("drain was not bounded");
+    joined.expect("join").expect("shutdown");
+    request.abort();
 }
 
 #[test]
