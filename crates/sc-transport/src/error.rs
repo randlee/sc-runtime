@@ -86,6 +86,8 @@ impl AsRef<str> for TransportCause {
 /// `DaemonNotRunning` carries `code`, the endpoint, and the cause. It has no
 /// suggested action, no application name, and no observability error type.
 /// A later CLI maps `DAEMON.NOT_RUNNING` and chooses the action text.
+/// [`TransportError::recovery`] is the next step for every variant. It is
+/// not a remediation type and it does not name a daemon start command.
 ///
 /// Each struct variant is [`non_exhaustive`]. The `code` field is
 /// informational. [`TransportError::code`] is the source of truth.
@@ -223,6 +225,51 @@ impl TransportError {
         }
     }
 
+    /// Returns the recovery step for this failure.
+    ///
+    /// The text is the next step for the caller. It is static, it is not a
+    /// `suggested_action`, and [`Self::DaemonNotRunning`] does not name a
+    /// start command.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sc_transport::AppName;
+    ///
+    /// let error = AppName::new("").expect_err("empty name");
+    /// assert!(error.recovery().contains("ASCII"));
+    /// assert!(error.to_string().contains(error.recovery()));
+    /// ```
+    pub fn recovery(&self) -> &'static str {
+        match self {
+            Self::InvalidName { .. } => "Use 1 to 64 bytes of ASCII letters, digits, '-', and '_'.",
+            Self::InvalidEndpoint { .. } => "Use uds:<path> or tcp:<socket-addr>.",
+            Self::MissingTcpPort { .. } => MISSING_TCP_PORT_DETAIL,
+            Self::InstanceRootUnavailable { .. } => {
+                "Set XDG_RUNTIME_DIR or HOME on Unix, LOCALAPPDATA on Windows, or pass TransportConfig::instance_root."
+            }
+            Self::DaemonNotRunning { .. } => {
+                "Check that a listener is accepting connections on the endpoint. This crate only reports the failure."
+            }
+            Self::ResponseDecode { .. } => {
+                "Compare the HTTP status, the decode cause, and body_preview with the requested type."
+            }
+            Self::TimedOut { .. } => {
+                "Retry the call. Connect and request timeouts are fixed at 2 seconds in v0.1."
+            }
+            Self::Request { .. } => "Correct the endpoint. This failure is not a down daemon.",
+            Self::Bind { .. } => {
+                "Free the address or create the parent directory. This crate does not create it."
+            }
+            Self::EndpointBusy { .. } => {
+                "Leave the existing socket in place. Another listener holds the endpoint lock."
+            }
+            Self::NotASocket { .. } => {
+                "Choose a socket path. The existing path was left unchanged."
+            }
+        }
+    }
+
     pub(crate) fn invalid_name(name: impl Into<String>, detail: impl Into<String>) -> Self {
         Self::InvalidName {
             code: CODE_INVALID_NAME,
@@ -337,17 +384,22 @@ impl TransportError {
 
 impl fmt::Display for TransportError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let recovery = self.recovery();
         match self {
-            Self::InvalidName { code, name, detail } => write!(f, "{code}: {name}: {detail}"),
+            Self::InvalidName { code, name, detail } => {
+                write_with_recovery(f, &format!("{code}: {name}: {detail}"), recovery)
+            }
             Self::InvalidEndpoint {
                 code,
                 source,
                 detail,
-            } => {
-                write!(f, "{code}: {source}: {detail}")
+            } => write_with_recovery(f, &format!("{code}: {source}: {detail}"), recovery),
+            Self::MissingTcpPort { code, detail } => {
+                write_with_recovery(f, &format!("{code}: {detail}"), recovery)
             }
-            Self::MissingTcpPort { code, detail } => write!(f, "{code}: {detail}"),
-            Self::InstanceRootUnavailable { code, detail } => write!(f, "{code}: {detail}"),
+            Self::InstanceRootUnavailable { code, detail } => {
+                write_with_recovery(f, &format!("{code}: {detail}"), recovery)
+            }
             Self::DaemonNotRunning {
                 code,
                 endpoint,
@@ -377,22 +429,30 @@ impl fmt::Display for TransportError {
                 code,
                 endpoint,
                 cause,
-            } => {
-                write!(f, "{code}: {endpoint}: {cause}")
-            }
+            } => write_with_recovery(f, &format!("{code}: {endpoint}: {cause}"), recovery),
             Self::ResponseDecode {
                 code,
                 status,
                 cause,
                 body_preview,
             } => {
-                if body_preview.is_empty() {
-                    write!(f, "{code}: http {status}: {cause}")
+                let fact = if body_preview.is_empty() {
+                    format!("{code}: http {status}: {cause}")
                 } else {
-                    write!(f, "{code}: http {status}: {cause}: {body_preview}")
-                }
+                    format!("{code}: http {status}: {cause}: {body_preview}")
+                };
+                write_with_recovery(f, &fact, recovery)
             }
         }
+    }
+}
+
+/// Appends `recovery` when the diagnostic does not already contain it.
+fn write_with_recovery(f: &mut fmt::Formatter<'_>, fact: &str, recovery: &str) -> fmt::Result {
+    if fact.contains(recovery) {
+        f.write_str(fact)
+    } else {
+        write!(f, "{fact}; {recovery}")
     }
 }
 
@@ -438,7 +498,83 @@ mod tests {
     fn missing_tcp_port_explains_recovery() {
         let err = TransportError::missing_tcp_port();
         assert_eq!(err.code(), CODE_MISSING_TCP_PORT);
-        assert!(err.to_string().contains("tcp_port"), "{err}");
+        assert!(err.recovery().contains("tcp_port"), "{}", err.recovery());
+        assert!(err.to_string().contains(err.recovery()), "{err}");
         assert!(Error::source(&err).is_none());
+    }
+
+    #[test]
+    fn recovery_text_is_displayed_for_key_variants() {
+        let endpoint = Endpoint::Tcp("127.0.0.1:9".parse().unwrap());
+        let cases = [
+            TransportError::invalid_name("my app", "name contains ' '"),
+            TransportError::invalid_endpoint("http://x", "endpoint must start with uds: or tcp:"),
+            TransportError::missing_tcp_port(),
+            TransportError::instance_root("HOME is unset"),
+            TransportError::daemon_not_running(endpoint.clone(), "connection refused"),
+            TransportError::response_decode(500, "expected object", "{\"err\":true}"),
+            TransportError::timed_out(endpoint.clone(), "timed out"),
+            TransportError::request(endpoint.clone(), "not a socket directory"),
+            TransportError::Bind {
+                code: CODE_BIND,
+                endpoint: endpoint.clone(),
+                cause: TransportCause::new("address already in use"),
+            },
+            TransportError::EndpointBusy {
+                code: CODE_ENDPOINT_BUSY,
+                endpoint: endpoint.clone(),
+                cause: TransportCause::new("lock held"),
+            },
+            TransportError::NotASocket {
+                code: CODE_NOT_A_SOCKET,
+                endpoint,
+                cause: TransportCause::new("regular file"),
+            },
+        ];
+        for err in cases {
+            let recovery = err.recovery();
+            assert!(!recovery.is_empty(), "{err:?}");
+            assert!(
+                err.to_string().contains(recovery),
+                "display missing recovery for {err:?}: {err}"
+            );
+            assert!(
+                !recovery.contains("daemon start"),
+                "recovery must not name a start command: {recovery}"
+            );
+            assert!(
+                !recovery.contains("suggested_action"),
+                "recovery is not a suggested_action field: {recovery}"
+            );
+        }
+
+        let invalid = TransportError::invalid_name("", "name is empty");
+        assert!(
+            invalid.recovery().contains("ASCII"),
+            "{}",
+            invalid.recovery()
+        );
+        let endpoint_err = TransportError::invalid_endpoint("", "endpoint text is empty");
+        assert!(
+            endpoint_err.recovery().contains("uds:"),
+            "{}",
+            endpoint_err.recovery()
+        );
+        let down = TransportError::daemon_not_running(
+            Endpoint::Uds(PathBuf::from("daemon.sock")),
+            "connection refused",
+        );
+        assert!(down.recovery().contains("listener"), "{}", down.recovery());
+        let root = TransportError::instance_root("missing");
+        assert!(
+            root.recovery().contains("XDG_RUNTIME_DIR"),
+            "{}",
+            root.recovery()
+        );
+        assert!(
+            root.recovery().contains("LOCALAPPDATA"),
+            "{}",
+            root.recovery()
+        );
     }
 }
