@@ -1,8 +1,11 @@
 @prefix triage: <urn:atm:triage:> .
 
 # triage:order is the unique sprint sequence number.
-# triage:follows is the must_follow predecessor (order edge). It matches the
-# dependency table in docs/plans/phase-a/phase-a-plan.md.
+# triage:follows on a sprint is the must_follow predecessor (order edge). It
+# matches the dependency table in docs/plans/phase-a/phase-a-plan.md.
+# triage:a-2-appname-freeze is a gate bead, not a sprint. It follows a-1 and
+# blocks only the sc_config::AppName constructor freeze. a-2's sprint
+# must_follow stays empty, so wave 0 stays parallel with a-1.
 
 triage:PhaseA a triage:Phase .
 
@@ -16,7 +19,14 @@ triage:a-2 a triage:Sprint ;
   triage:inPhase triage:PhaseA ;
   triage:order 2 ;
   triage:branch "sprint/a-2-config" ;
-  triage:criteria "docs/plans/phase-a/sprint-a-2-config.md" .
+  triage:criteria "docs/plans/phase-a/sprint-a-2-config.md" ;
+  triage:gate triage:a-2-appname-freeze .
+
+triage:a-2-appname-freeze a triage:Gate ;
+  triage:inPhase triage:PhaseA ;
+  triage:follows triage:a-1 ;
+  triage:blocks "sc_config::AppName constructor freeze" ;
+  triage:criterion "ADR-RUN-0010 is Active in docs/architecture.md" .
 
 triage:a-3 a triage:Sprint ;
   triage:inPhase triage:PhaseA ;

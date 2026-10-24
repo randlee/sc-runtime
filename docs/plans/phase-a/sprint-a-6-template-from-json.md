@@ -60,7 +60,6 @@ adrs:
   - ADR-RUN-0010
   - ADR-RUN-0201
   - ADR-RUN-0202
-  - ADR-RUN-0204
   - ADR-RUN-0301
   - ADR-RUN-0302
   - ADR-RUN-0303
@@ -134,13 +133,17 @@ Deliverable 14 adds `just build-cli`. This sprint does not split crates.
 
 Unknown route, Axum body rejection, and rmcp `Err(McpError)` stay deferred
 for v0.1. Do not extend ADR-CMD-0001 when the example widget operation is
-added. The widget create/get operation error table in the phase handoff is
-the inventory. Deliverable 17 repeats it. It does not add rows.
+added. Deliverable 17 is the only copy of the widget create/get operation
+error table. The phase handoff does not repeat it. This sprint does not
+add rows.
 
 This sprint amends two slices of `docs/architecture.md` and no other section
-of that file. Deliverable 18 amends ADR-RUN-0401. Deliverable 19 amends
-ADR-RUN-0201 point 6. ADR-RUN-0204 stays on the `adrs` list because that
-amendment cites it as still deferred. It is not a Phase A closure.
+of that file. Deliverable 18 amends ADR-RUN-0401, including the
+generation-driver error inventory and the stderr contract. Deliverable 19
+amends ADR-RUN-0201 point 6. ADR-RUN-0204 stays deferred. Cite that deferral
+in prose only. It is not on the `adrs` list, because its status is not
+Active or Approved. ADR-RUN-0201 is the binding launch-policy ADR. It is
+not a Phase A closure.
 
 ## Dependencies and parallel safety
 
@@ -155,8 +158,9 @@ its only meaningful proof.
 
 1. **REQ-RUN-0401 / REQ-RUN-0402 / REQ-RUN-0403** — One versioned schema and
    small valid/refused fixture set; invalid or unsupported input fails before
-   destination creation. Refused inputs include the handoff `AppName` reject
-   vectors. This sprint does not copy that list. The driver reports stable
+   destination creation. Refused inputs are the reject strings in
+   `tests/fixtures/app-name-vectors.json`. Tests and the driver load that
+   file. This sprint does not copy it. The driver reports stable
    code `APP.INVALID_NAME` and does not create the
    destination. ADR-RUN-0010 is the predicate. That code is a row in
    deliverable 15.
@@ -185,7 +189,9 @@ its only meaningful proof.
    crate is present. `just test` includes the observability grep: rendered
    `crates/daemon` requires `sc-observability` at the a-1 pin, does not
    require `sc-observability-otlp`, and the logging-crate token does not
-   match `sc-observability-types`. No source file changes between generation
+   match `sc-observability-types`. `just test` also runs
+   `cargo tree -p daemon -e normal --prefix none` and fails when that output
+   contains `test-util`, `tempfile`, or `tempdir`. No source file changes between generation
    and the end of that sequence. A workspace-wide build is not a matrix step.
 7. **REQ-RUN-0306** — Plain cargo-generate remains usable for the template tree
    with documented limitations around separately rendered Jinja documents.
@@ -208,14 +214,17 @@ its only meaningful proof.
     success criterion 1 become `just new`, then `just setup`, then `just lint`,
     then `just test`, then `just build-cli`. That criterion states that
     `just build-cli` includes `cargo tree -p cli -e normal --prefix none` and
-    that `just test` includes the observability grep from deliverable 6.
+    that `just test` includes the observability grep from deliverable 6 and
+    `cargo tree -p daemon -e normal --prefix none` with no `test-util`,
+    `tempfile`, or `tempdir` line.
     Those checks run because fixture CI runs the recipes. They are not a
     separate manual step. `just setup` installs the
     sc-lint 0.8.0 consumer and is not a source edit. REQ-RUN-0503 success
     criterion 2 names `just setup` immediately before `just lint`.
     REQ-RUN-0202 closes the OPEN on `daemon start`: the generated CLI provides
-    that subcommand, it execs the daemon binary, and the suggested-action
-    string matches it. The same section records the `--json` mapping for
+    that subcommand, it execs the daemon binary, and the CLI mapping sets
+    `suggested_action` to `run <app> daemon start`. Transport does not carry
+    that string. The same section records the `--json` mapping for
     every `TransportError` variant a-3 ships. Do not amend any other
     requirement in that file.
 11. **NFR-RUN-0008** — After `template/**/*.rs` exists, root `just lint`'s
@@ -224,15 +233,20 @@ its only meaningful proof.
     It does not change any other key, and it does not add a line-counting
     script. Files under a `tests/` directory stay exempt.
 12. **REQ-RUN-0202** — Generated CLI `daemon start` execs the daemon binary.
-    Report-only commands do not start a daemon. The suggested action
-    `run <app> daemon start` is that subcommand. Binary discovery is the
+    Report-only commands do not start a daemon. The CLI mapping sets
+    `suggested_action` to `run <app> daemon start` for `DaemonNotRunning`.
+    Transport does not carry that string. Binary discovery is the
     generated project's example choice (the workspace binary name). That
     choice is illustrative.
 13. **REQ-RUN-0202** — Generated CLI `--json` mapping table for every
     `TransportError` variant in a-3's error inventory: `OpError` kind, code,
-    message, `suggested_action`, and the envelope. The mapping lives in the
-    generated CLI. It does not add an `sc-command` → `sc-transport` edge.
-    One host-safe vector per variant.
+    message, `suggested_action`, and the envelope. This mapping is the only
+    owner of `suggested_action` for every `TransportError`. Transport carries
+    endpoint and cause on `DaemonNotRunning` and does not carry the string.
+    The `DaemonNotRunning` row sets `suggested_action` to
+    `run <app> daemon start` from the generated application's own name.
+    The mapping lives in the generated CLI. It does not add an
+    `sc-command` → `sc-transport` edge. One host-safe vector per variant.
 
     **ADR-RUN-0002 point 6.** The mapping table and the `daemon start` exec
     are Rust under `template/` outside the example operation, route and store
@@ -247,7 +261,9 @@ its only meaningful proof.
     runs the recipe. It does not run that tree as a manual command. The
     generated example's in-process test enables `sc-runtime` feature
     `test-util` only as a dev-dependency. The daemon's normal dependencies
-    do not enable it.
+    do not enable it. `just test` runs
+    `cargo tree -p daemon -e normal --prefix none` and fails when the output
+    contains `test-util`, `tempfile`, or `tempdir`.
 15. **REQ-RUN-0501 / REQ-RUN-0502** — `docs/generation.md` holds the
     generation-driver error inventory before the driver freezes. The driver
     is not a JSON API. Stderr is one line: `<code> <cause> — <recovery>`.
@@ -268,8 +284,9 @@ its only meaningful proof.
     no `sc-*` crate directory. The root workspace `members` list does not
     match `template/`. `template/` is not a workspace member.
 17. **REQ-RUN-0203** — The generated service implements the widget
-    operation error table from the phase handoff. This sprint repeats that
-    table and does not add rows. The rows are not added to ADR-CMD-0001.
+    operation error table. This deliverable is the only copy. The phase
+    handoff does not repeat it, and this sprint does not add rows. The rows
+    are not added to ADR-CMD-0001.
     Golden vectors are the three-surface checks named in the table.
 
     | Failure | Kind | Code | Cause | suggested_action | Recovery | Golden vector |
@@ -291,14 +308,21 @@ its only meaningful proof.
     project-name decision: the key sets are equal except for the
     project-name key, which one named constant exempts, because
     `cargo generate` takes that name through `--name`. Delete the
-    project-name OPEN. This amendment does not edit any ADR other than
-    ADR-RUN-0401. Deliverable 19 is the only other edit in that file.
+    project-name OPEN. The same amendment records the generation-driver
+    error inventory and the stderr contract from deliverable 15: stable
+    codes `GEN.SCHEMA_INVALID`, `GEN.DB_RESERVED`, `APP.INVALID_NAME`,
+    `GEN.TOOL_MISSING`, `GEN.DEST_CONFLICT`, and `GEN.STEP_FAILED`, each
+    with its cause and recovery, and stderr as one line
+    `<code> <cause> — <recovery>`. `GEN.STEP_FAILED` puts the failed
+    pipeline step in the cause. This amendment does not edit any ADR other
+    than ADR-RUN-0401. Deliverable 19 is the only other edit in that file.
 19. **ADR-RUN-0201** — Amend only point 6 of ADR-RUN-0201. Report-only
     commands MUST NOT start the daemon. An explicit `daemon start`
     subcommand that execs the daemon binary is allowed. That subcommand is
     not auto-start. Deferred ADR-RUN-0204 stays the optional auto-start
-    layer and is not a Phase A closure. The `adrs` list keeps ADR-RUN-0204
-    because this amendment cites it as still deferred.
+    layer and is not a Phase A closure. Cite that deferral in prose only.
+    ADR-RUN-0204 is not on the `adrs` list. ADR-RUN-0201 is the binding
+    launch-policy ADR.
 
 ## Acceptance criteria
 
@@ -310,8 +334,9 @@ its only meaningful proof.
    This proves connectivity, not permanent application architecture.
 3. `req:REQ-RUN-0202` — report-only `--json` against an unreachable endpoint
    returns a nonzero status and the exact `DAEMON.NOT_RUNNING` envelope without
-   creating daemon, lock, socket, or database artifacts. The suggested action
-   is `run <app> daemon start`. `daemon start` is a generated subcommand that
+   creating daemon, lock, socket, or database artifacts. The generated CLI
+   mapping sets `suggested_action` to `run <app> daemon start`. Transport
+   does not carry that string. `daemon start` is a generated subcommand that
    execs the daemon binary and does not run on other commands. The REQ-RUN-0202
    OPEN that asked whether that subcommand exists is closed by this amendment.
    The real CLI-binary proof runs only on an isolated CI runner; a host-safe
@@ -337,14 +362,18 @@ its only meaningful proof.
 9. `req:REQ-RUN-0701` — fixture CI runs deliverable 6 and nothing else in
    the matrix, with no edit between generation and the end of that sequence.
    `just build-cli` includes `cargo tree -p cli -e normal --prefix none`.
-   `just test` includes the observability grep. Neither check is a manual
-   command outside those recipes. The amended REQ-RUN-0701 text from
+   `just test` includes the observability grep and
+   `cargo tree -p daemon -e normal --prefix none`. That daemon tree prints
+   no line for `test-util`, `tempfile`, or `tempdir`. Those checks are not
+   manual commands outside those recipes. The amended REQ-RUN-0701 text from
    deliverable 10 says the same. PR-mode lockfiles resolve all four
    libraries to the checkout paths; release lockfiles resolve all four to
    the crates.io registry.
 10. `req:NFR-RUN-0001` — fixture CI runs `just build-cli`, and that recipe
     includes `cargo tree -p cli -e normal --prefix none`. The named
-    server-only crates are absent. This criterion does not split crates,
+    server-only crates are absent. `just test` runs
+    `cargo tree -p daemon -e normal --prefix none` and that output contains
+    no `test-util`, `tempfile`, or `tempdir` line. This criterion does not split crates,
     does not depend on a-5 closing ADR-RUN-0003, and does not add a manual
     tree command.
 11. `ADR-RUN-0303` — inspection confirms that reusable runtime behavior remains
@@ -388,9 +417,10 @@ its only meaningful proof.
     `cargo`, does not create the destination, and emits
     `GEN.SCHEMA_INVALID`. Refused files, including one `postgres` answers
     file and one `both` answers file, live outside `wizard/fixtures/*.json`
-    and emit `GEN.DB_RESERVED`. The same driver tests refuse the handoff
-    `AppName` reject vectors before destination creation and emit
-    `APP.INVALID_NAME`.
+    and emit `GEN.DB_RESERVED`. The same driver tests load
+    `tests/fixtures/app-name-vectors.json` and refuse every reject string
+    before destination creation and emit `APP.INVALID_NAME`. The test source
+    does not embed a second list.
 17. `req:REQ-RUN-0304` — Liquid conditionals in `template/**/*.rs` stay
     minimal. A file present in one variant and absent in another is named
     in a conditional `ignore` list in
@@ -430,8 +460,10 @@ its only meaningful proof.
 22. `req:REQ-RUN-0202` — one host-safe `--json` vector exists for every
     `TransportError` variant a-3 ships. Each vector checks kind, code,
     message, `suggested_action`, and the envelope. The mapping is generated
-    CLI code. Deliverable 13 states the ADR-RUN-0002 point 6 reason that
-    this mapping stays in the template.
+    CLI code and is the only owner of `suggested_action` for those variants.
+    The `DaemonNotRunning` vector's `suggested_action` is
+    `run <app> daemon start`. Deliverable 13 states the ADR-RUN-0002 point 6
+    reason that this mapping stays in the template.
 23. `req:REQ-RUN-0501` / `req:REQ-RUN-0502` — driver tests match deliverable
     15. Schema-invalid answers emit `GEN.SCHEMA_INVALID`. A `postgres` file
     and a `both` file emit `GEN.DB_RESERVED`. A missing `sc-compose` emits
@@ -464,9 +496,23 @@ its only meaningful proof.
     that key by one named constant. Points 6 and 8 name `just setup`,
     `just lint`, `just test`, and `just build-cli`. No other ADR section
     in `docs/architecture.md` changes in this sprint except deliverable 19.
+    The ADR-RUN-0401 amendment also records the deliverable 15 error
+    inventory and the one-line stderr contract
+    `<code> <cause> — <recovery>`.
 28. `ADR-RUN-0201` — point 6 is the deliverable 19 text. Report-only
     commands do not start a daemon. Explicit `daemon start` execs the
-    daemon binary. ADR-RUN-0204 stays deferred and is not implemented.
+    daemon binary. ADR-RUN-0204 stays deferred, is cited in prose only, and
+    is not on the `adrs` list. It is not implemented.
+29. `req:NFR-RUN-0002` — template success criteria 1–3.
+    Inspection of the template: every function in `crates/daemon/src/routes.rs`
+    and `crates/daemon/src/mcp.rs` that serves a request, every public
+    function in `crates/service`, and every public query function in the
+    store crate is declared `async fn`.
+    `grep -rn "block_on\|thread::sleep\|reqwest::blocking" crates/*/src template`
+    prints no line in non-test code. Review of the same directories finds no
+    `std::fs` or `std::net` call reachable from a request handler. Library
+    criteria 4 and 5, including the bind-time and shutdown carve-out, stay
+    with a-5.
 
 ## This sprint does not close
 

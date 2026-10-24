@@ -94,6 +94,12 @@ Do not add application options or reopen the schema during UI work.
 4. `req:REQ-RUN-0001` — `wizard/wizard.json`, `wizard/pages/`, and
    `scripts/run_wizard.py` exist. This criterion does not re-check the
    four-crate workspace or the paths a-7 already closed.
+5. `boundary:wizard` — a diff allowlist check fails this sprint when
+   `git diff --name-only <a-6>...HEAD` lists a path under
+   `tests/unit/generation/` or `tests/integration/generation/`. The a-6
+   generation suite stays byte-identical: that diff is empty. The
+   `scripts/new_project.py` diff is entry-mode flags only. Any other hunk
+   in that file fails the check.
 
 ## This sprint does not close
 
@@ -106,6 +112,7 @@ None.
 
 ## Required validation
 
-Run the acceptance criteria, including the unchanged a-6 generation suite.
+Run the acceptance criteria, including the diff allowlist in criterion 5
+and the unchanged a-6 generation suite.
 The crate and template trees stay at the a-6 merge. This sprint does not
 wait for a-7.

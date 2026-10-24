@@ -32,8 +32,10 @@ adrs:
   - ADR-CFG-0002
   - ADR-CFG-0003
   - ADR-RUN-0003
+  - ADR-RUN-0004
   - ADR-RUN-0006
   - ADR-RUN-0007
+  - ADR-RUN-0008
   - ADR-RUN-0010
 owned_paths:
   - "crates/sc-config/**"
@@ -59,16 +61,19 @@ mode, stable code, cause, recovery) in the crate ADR before the facade
 freezes (RBP-F002, RBP-F005). Record only decisions necessary to make the
 crate coherent. Do not freeze the `sc_config::AppName` constructor until
 a-1 has made ADR-RUN-0010 Active in `docs/architecture.md`. This sprint
-does not write that ADR. The wait is the facade-freeze gate only. It does
-not add a-1 to `must_follow` and it does not move this sprint off wave 0.
+does not write that ADR. The wait is the gate bead
+`triage:a-2-appname-freeze` in `.sprints/a/structure.ttl`. That bead
+follows a-1. It does not add a-1 to this sprint's `must_follow` and it
+does not move this sprint off wave 0.
 
 ## Public contract produced
 
 This sprint owns the sc-config types and methods in the canonical
 [minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff):
 `sc_config::AppName`, `load`, `Loader::new`, `Loader::load`, and
-`ConfigError`. The newtype uses the handoff validation predicate and the
-handoff vector list. This sprint does not copy that list. It is not
+`ConfigError`. The newtype uses the handoff validation predicate.
+Construction tests load `tests/fixtures/app-name-vectors.json`. This sprint
+does not copy that file. It is not
 `sc_transport::AppName` or `sc_runtime::AppName`. The
 crate-local requirement and ADR sources record any remaining signature
 decisions, including the `&str` application-name parameters those sources
@@ -96,20 +101,21 @@ signature contract.
    layer, focused tests, and a compiling standalone README example.
 5. **REQ-RUN-0005** — The sc-config boundary manifest at
    `boundaries/sc-config/sc-config.toml`. `forbidden_edges` includes
-   `sc-observability-types` as well as the logging crates. Once
-   `crates/sc-config/Cargo.toml` exists, run `just lint gates` or
-   `sc-lint lint sc-boundary --root . --config sc-lint.toml` against this
-   manifest and keep the command output in the PR. If the analyzer needs a
-   package manifest, this sprint's crate `Cargo.toml` is enough. Do not wait
-   for a-5. Do not install sc-lint or own the permanent root workspace
-   `Cargo.toml` (a-5 still creates the four-member workspace).
+   `sc-observability-types` as well as the logging crates (ADR-RUN-0004).
+   Once `crates/sc-config/Cargo.toml` exists, run the single-crate
+   `sc-lint lint sc-boundary` command a-1 recorded in
+   `docs/architecture.md` against this manifest. Exit 0 is the gate. Do not
+   paste analyzer output into the pull request. Do not wait for a-5. Do not
+   install sc-lint or own the permanent root workspace `Cargo.toml` (a-5
+   still creates the four-member workspace). The command does not need that
+   workspace.
 6. **REQ-CFG-0004 / ADR-CFG-0001** — Before the facade freezes, the crate ADR
    contains an error-inventory table with one row per `ConfigError` failure:
    failure mode, stable code, cause payload, and recovery steps. Typed path
    and line fields stay on the variants that carry a source location
    (RBP-F002). `sc_config::AppName` is a validated newtype using the handoff
-   predicate and the handoff vector list. This sprint does not copy that
-   list. Invalid names fail in the constructor with
+   predicate. Tests load `tests/fixtures/app-name-vectors.json`. This sprint
+   does not copy that file. Invalid names fail in the constructor with
    `APP.INVALID_NAME`. Public loaders take `sc_config::AppName`. Display is
    `as_str` or `AsRef<str>`. The type does not implement `Deref` (RBP-F005).
    Amend the crate requirement's `&str` application-name parameters to this
@@ -127,15 +133,18 @@ signature contract.
    `ConfigError` failure with a stable code, cause payload, and recovery
    steps, and the variants that name a file or variable still carry that
    typed path or line data (RBP-F002).
-5. `boundary:sc-config` — `sc_config::AppName` accepts the handoff accept
-   vectors and rejects the handoff reject vectors at construction, with
-   stable code `APP.INVALID_NAME`. `load` and `Loader::new` take
-   `sc_config::AppName`. The type exposes `as_str` or `AsRef<str>` and does
-   not implement `Deref` (RBP-F005).
-6. `boundary:sc-config` — `just lint gates` or
-   `sc-lint lint sc-boundary --root . --config sc-lint.toml` exits 0 on
-   `boundaries/sc-config/sc-config.toml` after `crates/sc-config/Cargo.toml`
-   exists. The manifest forbids `sc-observability-types`.
+5. `boundary:sc-config` — tests load
+   `tests/fixtures/app-name-vectors.json`. `sc_config::AppName` accepts every
+   accept string in that file and rejects every reject string at
+   construction, with stable code `APP.INVALID_NAME`. `load` and
+   `Loader::new` take `sc_config::AppName`. The type exposes `as_str` or
+   `AsRef<str>` and does not implement `Deref` (RBP-F005). The test source
+   does not embed a second vector list.
+6. `boundary:sc-config` — the single-crate `sc-lint lint sc-boundary`
+   command a-1 recorded exits 0 on `boundaries/sc-config/sc-config.toml`
+   after `crates/sc-config/Cargo.toml` exists. The manifest forbids
+   `sc-observability-types`. The pull request does not retain analyzer
+   output. Exit 0 is the evidence.
 7. `boundary:sc-config` — NFR-CFG-0001 is this crate's strictness on
    NFR-RUN-0009. Public loaders return `Result<_, ConfigError>`. Tests pass
    a missing file and malformed JSON and assert the `ConfigError` variant.
@@ -161,5 +170,6 @@ None.
 Run crate tests, doctests, formatting/linting, and workspace build once
 registered. Check the default dependency tree. Review the manifest against
 REQ-RUN-0005. Confirm the ADR-CFG-0001 error-inventory table and the
-`AppName` construction tests. Run `just lint gates` or
-`sc-lint lint sc-boundary` on this crate's manifest.
+`AppName` construction tests, which load
+`tests/fixtures/app-name-vectors.json`. Run the single-crate
+`sc-lint lint sc-boundary` command a-1 recorded on this crate's manifest.

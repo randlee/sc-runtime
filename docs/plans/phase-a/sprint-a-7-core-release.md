@@ -161,8 +161,8 @@ workflow. Kit-generated `.github/workflows/release*.yml` and
    `wizard/fixtures/`; `scripts/new_project.py`; `tests/unit/`; `docs/`;
    `boundaries/`; `Justfile`; `.github/workflows/`.
    `find template -path '*wizard*' -o -name 'new_project.py' -o -name 'run_wizard.py'`
-   prints nothing. `test -d docs/adr` fails, and
-   `grep -c '^## ADR-' docs/architecture.md` prints a number greater than 0.
+   prints nothing. `test -d docs/adr` fails. ADR content is the named
+   ADR-RUN-0002 amendment in this sprint, not a heading count.
    `wizard/wizard.json`, `wizard/pages/`, and `scripts/run_wizard.py` are
    a-8. Their absence at this tag is the wizard milestone, not a failure of
    this criterion.
@@ -181,6 +181,12 @@ workflow. Kit-generated `.github/workflows/release*.yml` and
    not a failure). Each requirement is a tilde or an equivalent bounded
    range on the `MAJOR.MINOR` a-1 recorded. All of them show that series.
    This sprint does not choose a different minor.
+9. `boundary:release-distribution` — a diff allowlist check fails this
+   sprint when `git diff --name-only <merge-base>...HEAD` lists a path
+   matching `crates/*/src/**`, or when the `crates/*/Cargo.toml` diff
+   adds, removes, or edits a `[dependencies]` table. The allowed
+   `Cargo.toml` edits are the version, license, description, repository,
+   and readme fields named in Decision prerequisites.
 
 ## This sprint does not close
 

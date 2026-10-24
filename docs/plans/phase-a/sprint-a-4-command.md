@@ -37,6 +37,7 @@ adrs:
   - ADR-RUN-0001
   - ADR-RUN-0003
   - ADR-RUN-0006
+  - ADR-RUN-0008
 owned_paths:
   - "crates/sc-command/**"
   - "boundaries/sc-command/**"
@@ -120,9 +121,9 @@ boundary.
    includes `sc-observability-types`.    `forbidden_edges` keeps
    `sc-observability` and `sc-observability-otlp` and does not list
    `sc-observability-types`. Once `crates/sc-command/Cargo.toml` exists,
-   run `just lint gates` or `sc-lint lint sc-boundary --root . --config sc-lint.toml`
-   on this manifest. Do not wait for a-5. Do not own the permanent root
-   workspace `Cargo.toml`.
+   run the single-crate `sc-lint lint sc-boundary` command a-1 recorded.
+   Exit 0 is the gate. Do not paste analyzer output into the pull request.
+   Do not wait for a-5. Do not own the permanent root workspace `Cargo.toml`.
 
 ## Acceptance criteria
 
@@ -152,8 +153,9 @@ boundary.
 6. `req:NFR-CMD-0001` — the amended default dependency list is `serde`,
    `serde_json`, and `sc-observability-types`. Analyze accepts the types
    crate while `forbidden_edges` still contains `sc-observability`.
-   `just lint gates` or `sc-lint lint sc-boundary` exits 0 on
-   `boundaries/sc-command/sc-command.toml`. The `serde_json` OPEN is gone.
+   The single-crate `sc-lint lint sc-boundary` command a-1 recorded exits 0
+   on `boundaries/sc-command/sc-command.toml`. Analyzer output is not pasted
+   into the pull request. The `serde_json` OPEN is gone.
 7. `boundary:sc-command` — NFR-RUN-0009 for this crate: serialization
    failure returns an error and does not panic; `unwrap`, `expect`,
    `panic!`, `unreachable!`, `todo!`, and `unimplemented!` are not reachable
@@ -188,4 +190,5 @@ build once registered. Review the manifest against REQ-RUN-0005. Confirm
 the ADR-CMD-0001 wire-failure inventory, the `suggested_action` string-or-null
 serializer, the sealed `IntoMcp` impl, and the absence of `sc-observability`
 from the normal tree.
-Run `just lint gates` or `sc-lint lint sc-boundary` on this crate's manifest.
+Run the single-crate `sc-lint lint sc-boundary` command a-1 recorded on
+this crate's manifest.

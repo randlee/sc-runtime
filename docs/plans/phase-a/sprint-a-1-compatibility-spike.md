@@ -29,6 +29,7 @@ adrs:
   - ADR-RUN-0003
   - ADR-RUN-0004
   - ADR-RUN-0005
+  - ADR-RUN-0008
   - ADR-RUN-0009
   - ADR-RUN-0010
   - ADR-RUN-0202
@@ -39,6 +40,8 @@ owned_paths:
   - "examples/spike/**"
   - "docs/architecture.md"
   - "docs/requirements.md"
+  - "docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md"
+  - "tests/fixtures/app-name-vectors.json"
 ---
 
 # Sprint a-1 — compatibility spike
@@ -105,9 +108,15 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    `sc-command` and, for `ErrorCode` only, on `sc-transport`. `Remediation`
    stays on `sc-command` only. The logging runtime stays forbidden on all
    four libraries. This amendment is the authority for that types
-   dependency. It is not an unrecorded override of the Active text. a-3
-   cites this decision and does not reopen it. The same amendment replaces
-   the Active 1.2.x sentences with the version pair this spike records.
+   dependency. It is not an unrecorded override of the Active text. The
+   amendment cites
+   `docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md`.
+   This sprint writes that artifact. It states why `ErrorCode` on
+   `DaemonNotRunning` needs `sc-observability-types` on `sc-transport` when
+   `sc-runtime` (`StoresFailed`) and the generator keep that foreign type off
+   their facades. a-3 cites this decision and the artifact path and does not
+   reopen it. The same amendment replaces the Active 1.2.x sentences with
+   the version pair this spike records.
 7. **ADR-RUN-0005 / REQ-RUN-0307 / NFR-RUN-0006** — Amend those ids to the
    sc-lint 0.8.0 consumer install: `sc-lint init --just`, committed
    `template/sc-lint.toml` (`minimum_version` 0.8.0) and
@@ -122,26 +131,40 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    hang this decision on it. ADR-RUN-0010 states three crate-local types
    and why they are not redundant: `sc_config::AppName` is the configuration
    identity; `sc_transport::AppName` is the client wire identity
-   (`Client::new`, `resolve_endpoint`, `instance_root`); `sc_runtime::AppName`
-   is the daemon and application identity for builder paths. `Daemon::builder`
-   takes `sc_runtime::AppName`. `sc-runtime` must not re-export
-   `sc_transport::AppName` and must not put that transport type on the
-   builder surface. There is no shared `AppName` type and no fifth crate.
+   (`resolve_endpoint`, `instance_root`); `Client::new` takes an `Endpoint`
+   only; `sc_runtime::AppName` is the daemon and application identity for
+   builder paths. `Daemon::builder` takes `sc_runtime::AppName`.
+   `sc-runtime` must not re-export `sc_transport::AppName` and must not put
+   that transport type on the builder surface. ADR-RUN-0010 records the
+   rejected alternative that `Daemon::builder` take `sc_transport::AppName`
+   directly: `sc-runtime` already depends on `sc-transport`, and that
+   alternative is rejected because the builder surface must not expose the
+   transport type. There is no shared `AppName` type and no fifth crate.
    The handoff predicate (ASCII `A-Z`, `a-z`, `0-9`, `-`, `_`; length 1
    through 64 bytes) is the only predicate; rejection code `APP.INVALID_NAME`
    on that crate's own error; display through `as_str` or `AsRef<str>`; no
-   `Deref`. The handoff vector list is the only enumeration. Do not paste
-   the ADR body into this sprint doc. Leaf sprints consume the Active ADR.
-   They do not invent a second predicate and they do not copy the vector
-   list.
+   `Deref`. This sprint writes `tests/fixtures/app-name-vectors.json`. That
+   file is the only enumeration. Accept strings are `my-app`, `A`, `app_1`,
+   and 64 `a` characters. Reject strings are the empty string, `my app`,
+   `my.app`, `my/app`, 65 `a` characters, and `café`. ADR-RUN-0010 references
+   that path and does not paste the vectors. The file is not packaged in any
+   crate. Do not paste the ADR body into this sprint doc. a-2, a-3, a-5, and
+   a-6 tests load the file. They do not invent a second predicate and they
+   do not embed a second list.
 9. **REQ-RUN-0005** — Amend only the observability-types edges in that
    requirement's table. `sc-observability-types` is an allowed dependency of
    `sc-transport` and `sc-command` only. Their `forbidden_edges` keep
    `sc-observability` and `sc-observability-otlp` and do not list
    `sc-observability-types` (the logging-crate token must not match the types
-   crate). `sc-config` and `sc-runtime` forbid `sc-observability-types`.
-   Do not edit the `sc-runtime` → `sc-config` MAY in this sprint. a-3 and a-4
-   amend NFR-TRN-0001 and NFR-CMD-0001 to the same dependency lists.
+   crate). `sc-config` forbids `sc-observability-types` on every edge,
+   direct and transitive. The `sc-runtime` forbidden edge for
+   `sc-observability-types` is direct-only. A transitive copy that arrives
+   through `sc-command` is allowed. Success criterion 5 of this requirement
+   exempts that transitive `sc-observability-types ` line for `sc-runtime`
+   and still fails a direct `sc-runtime` dependency on the crate. a-5 amends
+   NFR-RT-0002 to the same direct-only rule. Do not edit the `sc-runtime` →
+   `sc-config` MAY in this sprint. a-3 and a-4 amend NFR-TRN-0001 and
+   NFR-CMD-0001 to the same dependency lists.
 10. **NFR-RUN-0007** — Record the spike's rmcp pin. Every spike `Cargo.toml`
     that names `rmcp` pins one minor series: a tilde requirement on
     `MAJOR.MINOR`, or an equivalent range `>=MAJOR.MINOR.0, <MAJOR.(MINOR+1).0`.
@@ -150,6 +173,12 @@ rmcp signatures plus the recorded `sc-observability-types` version.
     and replace the NFR-RUN-0007 OPEN (which minor is pinned) with it.
     a-6 and a-7 verify later manifests against this record. They do not
     choose a second series.
+11. **REQ-RUN-0005** — Prove single-crate boundary lint. On a disposable
+    crate tree with no root `[workspace]`, run `sc-lint lint sc-boundary`
+    once. Record the exact command and an exit code of 0 in
+    `docs/architecture.md`. a-2, a-3, and a-4 run that recorded command on
+    their own crate `Cargo.toml` and manifest. They do not wait for the a-5
+    workspace, and they do not paste analyzer output into a pull request.
 
 ## Acceptance criteria
 
@@ -180,7 +209,9 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    deliverable 6: `sc-observability-types` is allowed on `sc-command` and,
    for `ErrorCode` only, on `sc-transport`. `Remediation` stays on
    `sc-command` only. They forbid the logging runtime on all four libraries.
-   No Active sentence still requires 1.2.x. a-3 cites this decision.
+   No Active sentence still requires 1.2.x. Both amendments cite
+   `docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md`,
+   and that file is in the sprint diff. a-3 cites this decision.
    a-6 remains the feature-level close of the generated daemon.
 8. `boundary:compatibility-evidence` — ADR-RUN-0005, REQ-RUN-0307, and
    NFR-RUN-0006 are the sc-lint 0.8.0 consumer install named in deliverable 7,
@@ -189,18 +220,29 @@ rmcp signatures plus the recorded `sc-observability-types` version.
 9. `ADR-RUN-0010` — `docs/architecture.md` contains Active ADR-RUN-0010 and
    its index row, matching deliverable 8, including the three identities
    and the rule that `sc-runtime` does not re-export `sc_transport::AppName`
-   on the builder surface. The sprint diff adds that ADR. It does not
+   on the builder surface. The ADR references
+   `tests/fixtures/app-name-vectors.json` and records the rejected
+   alternative that `Daemon::builder` take `sc_transport::AppName` directly.
+   The sprint diff adds that ADR and that file. It does not
    rewrite ADR-RUN-0006 into the AppName decision. a-2 does not freeze
-   `sc_config::AppName` until this ADR is Active.
+   `sc_config::AppName` until this ADR is Active. The gate bead
+   `triage:a-2-appname-freeze` follows this sprint.
 10. `req:REQ-RUN-0005` — the amended table allows `sc-observability-types` on
-    `sc-transport` and `sc-command` only, and forbids it on `sc-config` and
-    `sc-runtime`. The forbidden token `sc-observability` is not the types
-    crate. The `sc-runtime` → `sc-config` MAY is unchanged in this sprint.
+    `sc-transport` and `sc-command` only. `sc-config` forbids it on every
+    edge. The `sc-runtime` forbidden edge is direct-only, and success
+    criterion 5 allows the transitive `sc-observability-types ` line that
+    arrives through `sc-command`. A direct `sc-runtime` dependency on that
+    crate still fails. The forbidden token `sc-observability` is not the
+    types crate. The `sc-runtime` → `sc-config` MAY is unchanged in this
+    sprint.
 11. `req:NFR-RUN-0007` — the evidence record names one rmcp `MAJOR.MINOR`.
     Every spike manifest that names `rmcp` uses a tilde requirement or an
     equivalent bounded range on that series. The NFR-RUN-0007 OPEN that
     asked which minor is pinned is gone. a-6 and a-7 grep later manifests
     against this series.
+12. `req:REQ-RUN-0005` — `docs/architecture.md` records the single-crate
+    `sc-lint lint sc-boundary` command from deliverable 11 and that the
+    command exited 0 on a tree with no root `[workspace]`.
 
 ## This sprint does not close
 
@@ -220,5 +262,5 @@ commands, platform, commit, concrete type/signature evidence, and results in
 `docs/architecture.md`, including the resolved `sc-observability` and
 `sc-observability-types` versions, and confirm the ADR-RUN-0003,
 ADR-RUN-0004, ADR-RUN-0005, ADR-RUN-0010, REQ-RUN-0309, REQ-RUN-0307,
-REQ-RUN-0005, NFR-RUN-0006, and NFR-RUN-0007 amendments landed in the owned files. If a Verify item fails, stop dependent
+REQ-RUN-0005, NFR-RUN-0006, and NFR-RUN-0007 amendments landed in the owned files, including the lead-ruling artifact, the AppName vector file, the direct-only `sc-runtime` edge, and the single-crate lint record. If a Verify item fails, stop dependent
 planning rather than adding an adapter automatically.

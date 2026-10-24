@@ -136,9 +136,10 @@ of one identity:
 
 - `sc_config::AppName` is the configuration identity. Loaders take it.
   `sc-config` does not depend on `sc-transport` or `sc-runtime` to obtain it.
-- `sc_transport::AppName` is the client wire identity. `Client::new`,
-  `resolve_endpoint`, and `instance_root` take it. Suggested-action text uses
-  that value. It is not a daemon builder argument.
+- `sc_transport::AppName` is the client wire identity. `resolve_endpoint`
+  and `instance_root` take it. `Client::new` takes an `Endpoint` only.
+  Transport does not render suggested-action text. It is not a daemon
+  builder argument.
 - `sc_runtime::AppName` is the daemon and application identity for builder
   paths (instance root and lock). `Daemon::builder` takes this type.
   `sc-runtime` must not re-export `sc_transport::AppName` and must not put
@@ -146,7 +147,9 @@ of one identity:
   converts with `as_str()` into `sc_transport::AppName` and calls
   `instance_root`. The shared predicate makes a name that constructed the
   runtime type a valid transport name. That conversion is not a second
-  predicate and is not a public re-export.
+  predicate and is not a public re-export. If the transport constructor
+  returns `Err`, `run` maps it to the `RuntimeError` variant in the a-5
+  ADR-RT-0004 inventory. It does not use `unreachable!`.
 
 No leaf depends on another to obtain its newtype, and `sc-runtime` does not
 depend on `sc-config` for it.
@@ -161,18 +164,24 @@ One validation predicate applies to all three constructors:
 - rejection uses the stable code string `APP.INVALID_NAME` on that crate's
   own error type.
 
-Accept vectors: `my-app`, `A`, `app_1`, and 64 `a` characters. Reject
-vectors: the empty string, `my app`, `my.app`, `my/app`, 65 `a` characters,
-and `café`. This handoff list is the only enumeration of those vectors.
-a-2, a-3, and a-5 tests reference this list. They do not copy it into their
-sprint docs or into a second fixture file. Wizard fixtures and the generation
-driver use this list. They do not keep another vector file. Each of those
-leaf sprints amends the `&str` application-name parameters in the crate
+The only enumeration of accept and reject vectors is
+`tests/fixtures/app-name-vectors.json`, which a-1 writes and owns. Accept
+strings in that file are `my-app`, `A`, `app_1`, and 64 `a` characters.
+Reject strings are the empty string, `my app`, `my.app`, `my/app`, 65 `a`
+characters, and `café`. ADR-RUN-0010 references that file and does not paste
+the vectors. a-2, a-3, a-5, and a-6 tests load the file. They do not embed a
+second list and they do not copy the vectors into sprint docs. The wizard
+and the generation driver load the same file. Crate packaging excludes it.
+Each leaf sprint amends the `&str` application-name parameters in the crate
 requirement file it already owns. a-1 records this family, including the
-three identities and the no-re-export rule above, as new ADR-RUN-0010 in
-`docs/architecture.md` before a-2, a-3, or a-5 freezes a facade. ADR-RUN-0006
-stays the typed-error rule. a-2's constructor freeze waits on that Active
-ADR. That wait is not a `must_follow` edge and does not move a-2 off wave 0.
+three identities, the no-re-export rule above, the fixture path, and the
+rejected alternative that `Daemon::builder` take `sc_transport::AppName`
+directly, as new ADR-RUN-0010 in `docs/architecture.md` before a-2, a-3, or
+a-5 freezes a facade. ADR-RUN-0006 stays the typed-error rule. a-2's
+constructor freeze waits on that Active ADR. The wait is the gate bead
+`triage:a-2-appname-freeze` in `.sprints/a/structure.ttl`. That bead
+`triage:follows` a-1. It is not a sprint `must_follow` edge and it does not
+move a-2 off wave 0.
 The generation driver refuses the reject vectors with `APP.INVALID_NAME`
 before it creates a destination.
 
@@ -200,7 +209,8 @@ impl Loader {
 }
 
 // sc-transport (default features unless marked server)
-// app is sc_transport::AppName
+// resolve_endpoint and instance_root take sc_transport::AppName.
+// Client::new takes an Endpoint only.
 pub enum Endpoint { Uds(std::path::PathBuf), Tcp(std::net::SocketAddr) }
 // a-3 freezes TransportConfig's field list in docs/sc-transport/architecture.md
 // before the facade freezes. a-5 DaemonConfig embeds that sc-transport type.
@@ -214,7 +224,7 @@ pub fn resolve_endpoint(
     config: &TransportConfig,
 ) -> Result<Endpoint, TransportError>;
 impl Client {
-    pub fn new(app: AppName, endpoint: Endpoint) -> Result<Self, TransportError>;
+    pub fn new(endpoint: Endpoint) -> Result<Self, TransportError>;
     pub async fn get<T: serde::de::DeserializeOwned>(
         &self,
         path: &str,
@@ -228,8 +238,9 @@ impl Client {
 // #[cfg(feature = "server")]
 pub async fn bind(endpoint: &Endpoint) -> Result<Listener, TransportError>;
 // TransportError::DaemonNotRunning: code = sc_observability_types::ErrorCode
-// (DAEMON.NOT_RUNNING); suggested_action = String (`run <app> daemon start`
-// with the AppName passed to Client::new). No Remediation type on transport.
+// (DAEMON.NOT_RUNNING); fields are the endpoint and the cause only.
+// No suggested_action string and no Remediation type on transport.
+// a-6's generated CLI mapping sets suggested_action for every TransportError.
 
 // sc-command (default features)
 pub enum Envelope<T> { Success { version: String, data: T }, Failure { version: String, error: OpError } }
@@ -246,9 +257,11 @@ impl<T> From<Result<T, OpError>> for Envelope<T>;
 // server: IntoResponse for Envelope<T>; sealed IntoMcp for Result<T, OpError> only (static dispatch)
 ```
 
-a-6 ships a generated `daemon start` subcommand that execs the daemon binary
-and matches `run <app> daemon start`. That subcommand is not auto-start.
-a-3 records the string in the transport ADR. a-6 closes the REQ-RUN-0202 OPEN.
+a-6 ships a generated `daemon start` subcommand that execs the daemon binary.
+The generated CLI mapping owns `suggested_action` for every `TransportError`,
+including `run <app> daemon start` on `DaemonNotRunning`. Transport carries
+the endpoint and the cause only. That subcommand is not auto-start.
+a-6 closes the REQ-RUN-0202 OPEN.
 a-3 freezes `TransportConfig` as v0.1 single-bind and reserves additive
 `additional_endpoints` (default empty, reserved and ignored in v0.1) before
 the facade freezes. The a-3 ADR amendment states that ignore. a-5 embeds
@@ -269,18 +282,12 @@ freezes. The rows are only `sc-command`'s own wire failures: an invalid or
 contradictory envelope discriminant, serialization failure, and the five
 `ErrorKind` mappings. Each row has a stable code, cause, recovery steps, and
 a docs link where one exists. Widget create/get codes live in the generated
-service. They are not rows in ADR-CMD-0001. This table is the operation
-error inventory. a-6 repeats it on the generated service before the example
-pattern freezes and does not add rows. It does not extend ADR-CMD-0001.
-
-| Failure | Kind | Code | Cause | suggested_action | Recovery | Golden vector |
-|---|---|---|---|---|---|---|
-| `widget.get` id is absent | NotFound | `WIDGET.NOT_FOUND` | the id is not in the store | `create the widget, then get the returned id` | call `widget.create` and retry get with that id | missing-id vector: one id never created; REST, MCP, and CLI `--json` envelopes are equal; `ok` is false; `data` is null; `error.code` is `WIDGET.NOT_FOUND` |
-| `widget.create` name is empty or whitespace | InvalidInput | `WIDGET.NAME_BLANK` | `name` is empty or only whitespace | `send a non-empty name` | set `name` to a non-empty string and retry | blank-name vector: the same three surfaces; envelopes are equal; `error.code` is `WIDGET.NAME_BLANK` |
-
-v0.1 has no other widget application code. A duplicate name is allowed.
-Store failures stay `RuntimeError::StoresFailed` inside the stores closure.
-They are not widget codes.
+service. They are not rows in ADR-CMD-0001. a-6 deliverable 17 is the only
+copy of that operation error inventory, including its golden vectors. This
+handoff does not repeat the table. v0.1 has no other widget application
+code. A duplicate name is allowed. Store failures stay
+`RuntimeError::StoresFailed` inside the stores closure. They are not widget
+codes.
 
 `Envelope<T>` uses a custom serde representation with exactly the four wire
 keys `version`, `ok`, `data`, and `error`; contradictory/missing discriminant
@@ -406,7 +413,7 @@ NFR-RUN-0001 `cargo tree -p cli` close. Sprint text points here.
 |---|---|
 | a-1 | Measure default vs `server` graphs; **close** ADR-RUN-0003 workspace-unification OPEN and NFR-RUN-0001 first OPEN: `cargo build -p cli` is normative, workspace-wide build is exempt, **no** client/server crate split in v0.1. |
 | a-5 | Workspace composition only. Records `sc-runtime` → `sc-config` as **edge absent** in every architecture edge table, the REQ-RUN-0005 slice, and `sc-runtime` `forbidden_edges`. Does not run `cargo tree -p cli` (a-6 owns that). |
-| a-6 | Sole owner of the NFR-RUN-0001 feature-level close. Fixture CI runs `just` recipes, not a manual check: `just build-cli` includes `cargo tree -p cli -e normal`, and `just test` includes the observability grep. A workspace-wide build is the documented exemption and is not the shipped agent binary. |
+| a-6 | Sole owner of the NFR-RUN-0001 feature-level close. Fixture CI runs `just` recipes, not a manual check: `just build-cli` includes `cargo tree -p cli -e normal`, and `just test` includes the observability grep and `cargo tree -p daemon -e normal` with no `test-util`, `tempfile`, or `tempdir` line. A workspace-wide build is the documented exemption and is not the shipped agent binary. |
 | a-7 | REQ-RUN-0702 is the registry-backed fixture running a-6's fixture CI in release mode. It is not a second pin, tree, or observability gate. |
 
 a-6 does not wait for a-5 to close ADR-RUN-0003. a-7 does not add a second
@@ -430,11 +437,15 @@ wrap logging. `sc-command` depends on `sc-observability-types` for `OpError`.
 `sc-transport` depends on `sc-observability-types` for `ErrorCode` on
 `DaemonNotRunning`. That `ErrorCode`-only dependency on `sc-transport` and
 `sc-command` is the a-1 recorded lead decision that amends ADR-RUN-0004 and
-REQ-RUN-0309. The edge is types-only: it is not an edge to `sc-command` from
-`sc-transport`, and it is not a dependency on the logging runtime. `sc-config`
-stays on `serde` and `serde_json` and forbids `sc-observability-types`.
-`sc-runtime` does not depend on `sc-observability-types`. `StoresFailed`
-uses the plain types in the handoff.
+REQ-RUN-0309. The amendments cite
+`docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md`,
+which a-1 writes. The edge is types-only: it is not an edge to `sc-command`
+from `sc-transport`, and it is not a dependency on the logging runtime.
+`sc-config` stays on `serde` and `serde_json` and forbids
+`sc-observability-types`. `sc-runtime` forbids a direct dependency on
+`sc-observability-types`. A transitive copy through `sc-command` is allowed
+by REQ-RUN-0005 success criterion 5. `StoresFailed` uses the plain types in
+the handoff.
 
 Version policy: a-1 records the exact `sc-observability` and
 `sc-observability-types` versions the spike resolves. The pin is the latest
@@ -445,7 +456,7 @@ use that recorded pair.
 
 | Sprint | Responsibility |
 |---|---|
-| a-1 | Depend on both crates in the spike, record the exact resolved versions in `docs/architecture.md`, and amend ADR-RUN-0004 and REQ-RUN-0309 to that pair. The same amendment is the recorded lead decision that allows `sc-observability-types` on `sc-command` and, for `ErrorCode` only, on `sc-transport`. |
+| a-1 | Depend on both crates in the spike, record the exact resolved versions in `docs/architecture.md`, and amend ADR-RUN-0004 and REQ-RUN-0309 to that pair. The same amendment is the recorded lead decision that allows `sc-observability-types` on `sc-command` and, for `ErrorCode` only, on `sc-transport`. The amendments cite `docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md`. The `sc-runtime` forbidden edge for that crate is direct-only. |
 | a-4 | `sc-command` depends on the recorded `sc-observability-types` version and not on `sc-observability`. |
 | a-6 | Generated daemon depends on the recorded `sc-observability` version; init order is config, then observability, then `Daemon::builder`; no OTLP crate in the template. Fixture CI's `just test` runs the observability grep. |
 | a-7 | The registry-backed fixture is a-6's fixture CI in release mode. That run is the release evidence. |
@@ -454,7 +465,7 @@ use that recorded pair.
 
 | Wave | Milestone | Sprint | Closure | Target boundary | Owned paths |
 |---|---|---|---|---|---|
-| 0 | spike | a-1 compatibility spike | contract (evidence record) | compatibility-evidence | `examples/spike/**`, `docs/architecture.md`, `docs/requirements.md` |
+| 0 | spike | a-1 compatibility spike | contract (evidence record) | compatibility-evidence | `examples/spike/**`, `docs/architecture.md`, `docs/requirements.md`, `docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md`, `tests/fixtures/app-name-vectors.json` |
 | 0 | core | a-2 config | boundary | sc-config | `crates/sc-config/**`, `boundaries/sc-config/**`, sc-config requirement/ADR sources |
 | 1 | core | a-3 transport | boundary | sc-transport | `crates/sc-transport/**`, `boundaries/sc-transport/**`, sc-transport requirement/ADR sources |
 | 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**`, sc-command requirement/ADR sources |
@@ -487,9 +498,9 @@ blocking the core release.
 
 | Child | Parent(s) | Relation and named artifact |
 |---|---|---|
-| a-2 | — | `must_follow` is empty. `parallel_safe` with a-1, a-3, and a-4. The sc-config facade is `serde` / `serde_json` plus `sc_config::AppName`. It consumes no spike signature. The `sc_config::AppName` constructor freezes only after a-1 records ADR-RUN-0010. That wait is not a `must_follow` edge. |
+| a-2 | — | `must_follow` is empty. `parallel_safe` with a-1, a-3, and a-4. The sc-config facade is `serde` / `serde_json` plus `sc_config::AppName`. It consumes no spike signature. The `sc_config::AppName` constructor freeze waits on gate bead `triage:a-2-appname-freeze`, which `triage:follows` a-1 until ADR-RUN-0010 is Active. That bead is not a sprint `must_follow` edge. |
 | a-3, a-4 | a-1 | `must_follow`: consume demonstrated reqwest/Axum/rmcp signatures and the recorded `sc-observability-types` version. |
-| a-5 | a-2, a-3, a-4 | `must_follow`: registers the `sc-config` crate and `boundaries/sc-config/sc-config.toml` from a-2; consumes endpoint and listener types from `sc-transport`; consumes the `sc-command` server conversions. Not `parallel_safe` with a-2. `sc-runtime` does not depend on `sc-config` and consumes no type from it. Leaf sprints already run `just lint gates` or `sc-lint lint sc-boundary` on their own manifests. |
+| a-5 | a-2, a-3, a-4 | `must_follow`: registers the `sc-config` crate and `boundaries/sc-config/sc-config.toml` from a-2; consumes endpoint and listener types from `sc-transport`; consumes the `sc-command` server conversions. Not `parallel_safe` with a-2. `sc-runtime` does not depend on `sc-config` and consumes no type from it. Leaf sprints already run the single-crate `sc-lint lint sc-boundary` command a-1 recorded. Exit 0 is that gate. |
 | a-6 | a-5 | `must_follow`: consumes the production runtime facade and rewritten-spike composition pattern. Sole owner of the NFR-RUN-0001 close in the feature-enforcement table. |
 | a-7 | a-6 | `must_follow`: consumes the template tree, the answers schema, and the `--var-file` driver. Publishes only after that generated project is green against the release candidates. |
 | a-8 | a-6 | `must_follow`: consumes the settled answers schema and `--var-file` pipeline. |
@@ -502,14 +513,17 @@ owner. **`docs/architecture.md` sequential owners:** a-1 (compatibility and
 ADR amendments, including new ADR-RUN-0010, as pointers to crate ADRs, and
 the NFR-RUN-0007 rmcp minor recorded in the evidence section), a-5
 (edge-absent tables and the dual-bind OPEN paragraphs, copying a-3's
-decision), a-6 (ADR-RUN-0401 points 2, 6, and 8, and ADR-RUN-0201 point 6
+decision), a-6 (ADR-RUN-0401 points 2, 6, and 8, the generation-driver error
+inventory and stderr contract, and ADR-RUN-0201 point 6
 only), a-7 (ADR-RUN-0002 publish contract: sc-publish kit sole
 workflow owner; GitHub Release includes
 `sc-runtime-{version}-source.tar.gz`). a-7 does not add a release section to
 ADR-RUN-0001. a-6 does not edit a-1, a-5, or a-7 slices of that file.
 **`docs/requirements.md` sequential slices:** a-1 (its amendment
 tasks, including the REQ-RUN-0005 `sc-observability-types` rows: allowed on
-`sc-transport` and `sc-command` only, and the NFR-RUN-0007 pin OPEN), a-5 (REQ-RUN-0001 spike membership,
+`sc-transport` and `sc-command` only, the `sc-runtime` edge direct-only with
+criterion 5 allowing the transitive crate through `sc-command`, and the
+NFR-RUN-0007 pin OPEN), a-5 (REQ-RUN-0001 spike membership,
 the layout-table rename of `justfile` to `Justfile`,
 REQ-RUN-0004 lint tools, REQ-RUN-0005 manifest filename and the
 `sc-runtime` → `sc-config` row, REQ-RUN-0205 dual-bind), a-6 (REQ-RUN-0202,
@@ -545,9 +559,9 @@ fix rounds. `arch-qa` must read the framework charter and
 `docs/sc-runtime-design.md` for every phase plan review.
 
 Boundary QA for a-2 through a-4 reviews one crate, its manifest, tests, README,
-and boundary manifest. Each of those sprints runs `just lint gates` or
-`sc-lint lint sc-boundary` on its own manifest once a minimal `Cargo.toml`
-exists. a-5 reviews composition and the source-maintainer install, not the
+and boundary manifest. Each of those sprints runs the single-crate
+`sc-lint lint sc-boundary` command a-1 recorded. Exit 0 is the gate. Analyzer
+output is not pasted into the pull request. a-5 reviews composition and the source-maintainer install, not the
 first analyze. a-6 reviews the minimal generated application and the
 `--var-file` workflow. a-7 reviews packaging and the registry-backed run of
 a-6's fixture CI. a-8 reviews wizard/schema equivalence. The a-8 diff to

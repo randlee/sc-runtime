@@ -138,8 +138,11 @@ consume an `sc-config` type. It produces `sc_runtime::AppName` under the
 handoff predicate a-1 records as ADR-RUN-0010. That type is the daemon and
 application identity for builder paths. `Daemon::builder` does not take or
 re-export `sc_transport::AppName`. See the
-[handoff](phase-a-plan.md#minimal-public-contract-handoff) for the predicate
-and the only vector list. This sprint does not copy that list.
+[handoff](phase-a-plan.md#minimal-public-contract-handoff) for the predicate.
+Construction tests load `tests/fixtures/app-name-vectors.json`. This sprint
+does not copy that file. Inside `run`, `as_str()` into
+`sc_transport::AppName` that returns `Err` becomes the `RuntimeError`
+variant in deliverable 5. That path does not use `unreachable!`.
 This sprint does not write that ADR. `DaemonConfig` embeds the
 `TransportConfig` type a-3 froze. The sc-runtime requirement and ADR sources
 remain authoritative for the builder. `docs/architecture.md` edits are the
@@ -155,7 +158,9 @@ slices in deliverables 9 and 11.
   `TransportConfig`, including the v0.1 single-bind decision.
 - `must_follow a-4`: consumes the required `sc-command` server conversions. The
   `sc-runtime -> sc-command/server` edge is binding in REQ-RUN-0005 and
-  ADR-RUN-0003; application handlers still use ordinary Axum/rmcp types.
+  ADR-RUN-0003. `run` uses `sc_command::Envelope`'s server-feature Axum
+  `IntoResponse` for the health route closed in deliverable 13. Application
+  handlers still use ordinary Axum/rmcp types.
 
 a-3 and a-4 may run in parallel. a-2 is not `parallel_safe` with this sprint.
 A dependency discovered to be unnecessary is removed rather than preserved
@@ -188,8 +193,15 @@ for symmetry.
    Message, remediation, and optional cause text are `String`. The
    application maps its store error into that variant inside the stores
    closure. `sc-runtime` does not name or match the foreign error type and
-   does not depend on `sc-observability-types`.
-   `Box<dyn Error>` and generic `RuntimeError<E>` are rejected. Delete any
+   does not declare a direct dependency on `sc-observability-types`.
+   Transitive `sc-observability-types` through `sc-command` is the a-1
+   exemption in REQ-RUN-0005 criterion 5. `Box<dyn Error>` and generic
+   `RuntimeError<E>` are rejected. The inventory includes one variant for
+   the `as_str()` conversion into `sc_transport::AppName` inside `run`
+   when that constructor returns `Err`. The stable code is
+   `APP.INVALID_NAME`. The cause is the rejected name. Recovery is the
+   ADR-RUN-0010 predicate. `run` maps that `Err` to the variant. It does
+   not use `unreachable!`. Delete any
    `source()`-without-downcast or named-foreign-payload requirement from the
    crate ADR and from REQ-RT-0007 (RBP-F003). `run` never calls `process::exit`.
 6. **REQ-RUN-0103 / REQ-RUN-0204 / REQ-RUN-0205** — Rewrite the spike against
@@ -222,8 +234,12 @@ for symmetry.
    - `docs/sc-runtime/requirements.md` NFR-RT-0003, the `sc-config` OPEN only.
      Deliverable 12 closes the fixture, temp-dir, and `rmcp` OPENs.
    - `boundaries/sc-runtime/sc-runtime.toml` `forbidden_edges`
-   Keep a-1's rule that `sc-runtime` forbids `sc-observability-types`.
-   `sc-runtime` does not depend on `sc-config` or on `sc-observability-types`.
+   Keep a-1's rule that the `sc-runtime` forbidden edge for
+   `sc-observability-types` is direct-only. Amend NFR-RT-0002 so a direct
+   dependency is forbidden and the transitive crate through `sc-command`
+   stays allowed, matching REQ-RUN-0005 success criterion 5.
+   `sc-runtime` does not depend on `sc-config` and does not declare a direct
+   dependency on `sc-observability-types`.
    This sprint does not add `cargo tree -p cli`; the phase
    feature-enforcement table assigns that check to a-6.
    Workspace-unification was closed in a-1.
@@ -260,8 +276,34 @@ for symmetry.
       type and does not re-export it (ADR-RUN-0001 point 4).
     The `sc-config` OPEN stays the edge-absent close in deliverable 9.
     `Daemon::builder` still takes `sc_runtime::AppName`. It does not take or
-    re-export `sc_transport::AppName`. Construction tests reference the
-    handoff vector list and do not copy it.
+    re-export `sc_transport::AppName`. Construction tests load
+    `tests/fixtures/app-name-vectors.json` and do not embed a second list.
+    `cargo tree -p sc-runtime -e normal --prefix none` prints no line for
+    `test-util`, `tempfile`, or `tempdir`.
+13. **REQ-RT-0004 / NFR-RT-0003** — Close the health-route body OPEN in
+    `docs/sc-runtime/requirements.md`: the path, HTTP method, status code,
+    and response body. `GET /health` returns status 200. The body is the
+    `sc_command` success envelope, produced by the server-feature Axum
+    `IntoResponse` for `sc_command::Envelope`. That conversion is the
+    `sc_command` item `crates/sc-runtime/src` uses. Amend NFR-RT-0003
+    success criterion 2 so the criterion fails when `crates/sc-runtime/src`
+    contains no `sc_command` use, in the same shape as the existing
+    `sc_config` use check. The `sc-runtime -> sc-command/server` edge stays.
+    Delete that body OPEN. Do not leave the body undecided.
+14. **NFR-RT-0001** — Amend the facade table and success criteria 2 and 3
+    in `docs/sc-runtime/requirements.md`. Admit exactly one validated
+    newtype, `sc_runtime::AppName`. The public `testing` module and
+    `DaemonFixture` sit behind the non-default `test-util` feature. Record
+    both in `[public] facade` of `boundaries/sc-runtime/sc-runtime.toml`.
+    Success criterion 2 counts that newtype and that feature-gated test
+    module and nothing else. No other public item is added.
+15. **NFR-RUN-0002** — Close library success criteria 4 and 5. Review
+    `grep -rn "std::fs\|std::net\|block_on\|thread::sleep" crates/sc-transport/src crates/sc-runtime/src`.
+    Every match outside `#[cfg(test)]` is in a function that runs only at
+    bind time, at start-up, or during shutdown. None is reachable from the
+    code that serves an accepted connection or from a `sc_transport::Client`
+    request method. Every public request method of `sc_transport::Client`
+    is declared `async fn`. Template criteria 1–3 stay with a-6.
 
 ## Acceptance criteria
 
@@ -304,7 +346,11 @@ for symmetry.
     `RuntimeError` variant a stable code, cause payload, and recovery text.
     A test matches `StoresFailed` and reads its code as `&'static str` and its
     message, remediation, and optional cause as `String`. The crate manifest
-    does not depend on `sc-observability-types`. The stores closure is what maps an
+    does not declare a direct dependency on `sc-observability-types`.
+    The inventory row for the `as_str()` conversion into
+    `sc_transport::AppName` is present. A test maps that constructor `Err`
+    to the variant and reads code `APP.INVALID_NAME`. The production path
+    does not use `unreachable!`. The stores closure is what maps an
     application store error into that variant. The test does not call
     `source()` and does not downcast. Public signatures contain no
     `Box<dyn Error>`, and `RuntimeError` is not generic (RBP-F002, RBP-F003).
@@ -315,16 +361,19 @@ for symmetry.
     `RuntimeError`. `Daemon::builder` takes `sc_runtime::AppName`, the daemon
     and application identity for builder paths. It does not take or re-export
     `sc_transport::AppName`. Construction
-    tests use the handoff accept and reject vectors and expect
-    `APP.INVALID_NAME` on rejection. The vectors are the handoff list. This
-    sprint does not copy that list. The type exposes `as_str` or `AsRef<str>`
+    tests load `tests/fixtures/app-name-vectors.json` and expect
+    `APP.INVALID_NAME` on every reject string. The test source does not
+    embed a second list. The type exposes `as_str` or `AsRef<str>`
     and does not implement `Deref`. The predicate is ADR-RUN-0010. The in-run
     ordering test remains, and it is not the only proof of the caller-facing
     sequence (RBP-F007).
 12. `ADR-RUN-0003` / `req:REQ-RUN-0005` — every slice in deliverable 9 records
     the `sc-runtime` → `sc-config` edge as absent, and
     `boundaries/sc-runtime/sc-runtime.toml` `forbidden_edges` includes
-    `sc-config`. `sc-runtime` does not depend on `sc-config`.
+    `sc-config`. `sc-runtime` does not depend on `sc-config`. NFR-RT-0002
+    states the direct-only `sc-observability-types` rule from deliverable 9:
+    a transitive line through `sc-command` is allowed, and a direct
+    dependency is forbidden.
 13. `req:REQ-RUN-0205` — the dual-bind OPEN paragraphs named in deliverable 11
     match a-3: v0.1 single-bind, `additional_endpoints` reserved and ignored
     in v0.1.
@@ -333,8 +382,9 @@ for symmetry.
     temp-dir crate is optional on that feature only and is absent from normal
     dependencies. `rmcp` is a direct dependency, and the crate does not wrap
     or re-export the rmcp service type. A default build does not link
-    `DaemonFixture`. The facade is not frozen while any of those three OPENs
-    remains.
+    `DaemonFixture`. `cargo tree -p sc-runtime -e normal --prefix none`
+    prints no line for `test-util`, `tempfile`, or `tempdir`. The facade is
+    not frozen while any of those three OPENs remains.
 15. `req:REQ-RUN-0001` — this sprint closes the workspace half of the
     success criteria. Root `Cargo.toml` `[workspace] members` resolves to
     exactly `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`,
@@ -342,8 +392,8 @@ for symmetry.
     package, not a fifth member and not a Cargo example. `cargo metadata
     --no-deps --format-version 1` lists no package whose manifest path is
     under `template/`. `cargo build --workspace` exits 0 and compiles no
-    file under `template/`. `test -d docs/adr` fails, and
-    `grep -c '^## ADR-' docs/architecture.md` prints a number greater than 0.
+    file under `template/`. `test -d docs/adr` fails. ADR content is the
+    named amendments in this sprint and in a-1, not a heading count.
     The amended layout table names `Justfile`. `template/`, `wizard/`,
     `scripts/`, and `tests/unit/` are later sprints. a-7 closes success
     criteria 3 and 4 for the paths that exist at the core tag. a-8 closes
@@ -357,6 +407,24 @@ for symmetry.
     `DaemonFixture`. No test binds a fixed TCP port. `template/` is a-6's
     half of the same grep. A generated project running beside a developer's
     daemon is a-6.
+17. `req:NFR-RT-0003` — the health-route body OPEN named in deliverable 13
+    is gone. `GET /health` returns status 200 and the `sc_command` success
+    envelope through `sc_command::Envelope`'s server-feature `IntoResponse`.
+    A search of `crates/sc-runtime/src` finds at least one `sc_command` use.
+    The criterion fails when that use is absent.
+18. `req:NFR-RT-0001` — the amended facade table admits exactly
+    `sc_runtime::AppName` and the `test-util`-gated `testing` module.
+    `[public] facade` in `boundaries/sc-runtime/sc-runtime.toml` lists those
+    items. Success criteria 2 and 3 match that table. No other public item
+    is added.
+19. `req:NFR-RUN-0002` — library criteria 4 and 5.
+    `grep -rn "std::fs\|std::net\|block_on\|thread::sleep" crates/sc-transport/src crates/sc-runtime/src`
+    is reviewed. Every match outside `#[cfg(test)]` is in a function that
+    runs only at bind time, at start-up, or during shutdown. None is
+    reachable from the code that serves an accepted connection or from a
+    `sc_transport::Client` request method. Every public request method of
+    `sc_transport::Client` is declared `async fn`. Template criteria 1–3
+    stay with a-6.
 
 ## This sprint does not close
 
