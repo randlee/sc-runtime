@@ -12,7 +12,7 @@ worktree: sprint/a-1-compatibility-spike
 recommended_agent: solar
 recommended_model: sol
 must_follow: []
-parallel_safe: []
+parallel_safe: [a-2]
 requirements:
   - REQ-RUN-0101
   - REQ-RUN-0102
@@ -20,9 +20,14 @@ requirements:
   - NFR-RUN-0007
   - NFR-RUN-0010
   - REQ-RUN-0306
+  - REQ-RUN-0307
+  - REQ-RUN-0309
+  - NFR-RUN-0006
 adrs:
   - ADR-RUN-0001
   - ADR-RUN-0003
+  - ADR-RUN-0004
+  - ADR-RUN-0005
   - ADR-RUN-0202
   - ADR-RUN-0203
   - ADR-RUN-0302
@@ -30,6 +35,7 @@ adrs:
 owned_paths:
   - "examples/spike/**"
   - "docs/architecture.md"
+  - "docs/requirements.md"
 ---
 
 # Sprint a-1 — compatibility spike
@@ -38,6 +44,11 @@ owned_paths:
 
 Prove only the external facts that the core libraries and generator need.
 The spike is disposable evidence, not an early framework or template.
+
+`closure_type: contract` means that evidence record. Later sprints consume
+the recorded versions, signatures, and the amendments below. QA uses this
+sprint's validation section. It does not use a contract-sprint checklist of
+API signatures, test doubles, and boundary manifests.
 
 ## Decision prerequisites
 
@@ -48,8 +59,10 @@ compatibility wrappers.
 
 ## Dependencies and parallel safety
 
-There is no predecessor. a-2, a-3, and a-4 consume its recorded versions and
-demonstrated third-party signatures.
+There is no predecessor. `parallel_safe` with a-2: `sc-config` does not
+consume spike signatures, and the owned paths do not intersect. a-3 and a-4
+`must_follow` this sprint and consume the demonstrated reqwest, Axum, and
+rmcp signatures plus the recorded `sc-observability-types` version.
 
 ## Deliverables
 
@@ -68,11 +81,34 @@ demonstrated third-party signatures.
 3. **NFR-RUN-0001 / ADR-RUN-0003** — Measure default vs `server` feature
    graphs for the spike workspace. Record whether Axum, rmcp, and sqlx stay
    out of the default **CLI** dependency graph, and document **policy options**
-   (crate split vs workspace build with CI `cargo tree -p cli` gate) in
-   `docs/architecture.md`. Do not alone close the product policy; a-5 owns
-   the binding ADR decision before release (RBP-F004).
+   in `docs/architecture.md`. Leave the workspace-unification OPEN open. a-6
+   owns the NFR-RUN-0001 `cargo tree -p cli` close. a-5 does not close that
+   OPEN (RBP-F004).
 4. **REQ-RUN-0306** — Prove plain cargo-generate can consume the proposed
    template mechanics; do not build the product template here.
+5. **ADR-RUN-0003 / ADR-RUN-0004** — Amend `docs/architecture.md` before a-3
+   and a-4 start. The amendment tasks point at those ADR ids. Do not paste
+   replacement ADR text into this sprint doc. `TransportError::DaemonNotRunning`
+   carries `sc_observability_types::ErrorCode`, not plain strings. `OpError`
+   wire `suggested_action` follows the phase handoff: a JSON string or JSON
+   `null` from the custom serializer, not a required plain-string field and
+   not the tagged `Remediation` object. Leave the workspace-unification OPEN
+   open. The `sc-runtime` → `sc-config` MAY stays for a-5.
+6. **REQ-RUN-0309 / ADR-RUN-0004** — Amend `docs/requirements.md` and
+   `docs/architecture.md` so the daemon dependency and the library
+   observability rule use the version pair this spike records. Replace the
+   Active 1.2.x sentences with that pair. `sc-observability-types` is allowed
+   on `sc-command` and, for `ErrorCode` only, on `sc-transport`. The logging
+   runtime stays forbidden on all four libraries. `sc-command` remains the
+   only `Remediation` user.
+7. **ADR-RUN-0005 / REQ-RUN-0307 / NFR-RUN-0006** — Amend those ids to the
+   sc-lint 0.8.0 consumer install: `sc-lint init --just`, committed
+   `template/sc-lint.toml` (`minimum_version` 0.8.0) and
+   `template/.sc-lint/bootstrap.py`, public recipes `setup`, `lint`, `test`,
+   and `upgrade`, plus consumer-owned `db-prepare` that must survive a later
+   init. `sc-lint.toml` is the consumer pin, not a hand-written
+   clippy/rustfmt/deny or `boundaries/` policy. Remove the placeholder
+   Justfile and the prototype-handoff order from the Active text.
 
 ## Acceptance criteria
 
@@ -85,16 +121,34 @@ demonstrated third-party signatures.
    spike, and names that pair as the Phase A pin for a-4, a-6, and a-7.
 4. `ADR-RUN-0003` — the dependency measurement records default and server
    selections and lists policy options with evidence. a-1 leaves the
-   workspace-unification OPEN for a-5 to close.
+   workspace-unification OPEN open. a-6 owns the NFR-RUN-0001 feature-level
+   close. a-5 does not close that OPEN.
 5. `ADR-RUN-0203` / `ADR-RUN-0402` — every evidence row is recorded with the
    exact version, type path, signature or template syntax, both ADRs are made
    Active (or amended to the proved result), and no dependent sprint starts
    while either remains Proposed.
+6. `boundary:compatibility-evidence` — `docs/architecture.md` is amended at
+   ADR-RUN-0003 and ADR-RUN-0004 so `DaemonNotRunning` carries
+   `sc_observability_types::ErrorCode` and `OpError` wire `suggested_action`
+   is a JSON string or `null` under the phase handoff. The
+   workspace-unification OPEN is still open.
+7. `boundary:compatibility-evidence` — REQ-RUN-0309 and ADR-RUN-0004 name the
+   spike's recorded `sc-observability` and `sc-observability-types` versions
+   as the Phase A pin. They allow `sc-observability-types` on `sc-command`
+   and, for `ErrorCode` only, on `sc-transport`. They forbid the logging
+   runtime on all four libraries. No Active sentence still requires 1.2.x.
+   a-6 remains the feature-level close of the generated daemon.
+8. `boundary:compatibility-evidence` — ADR-RUN-0005, REQ-RUN-0307, and
+   NFR-RUN-0006 are the sc-lint 0.8.0 consumer install named in deliverable 7,
+   including the retired placeholder Justfile and prototype-handoff order.
+   a-6 remains the feature-level close of the generated consumer install.
 
 ## This sprint does not close
 
 No public SC crate API, daemon lifecycle, generated application, CLI policy,
-release artifact, or wizard is closed here.
+release artifact, or wizard is closed here. The workspace-unification OPEN
+stays open. This sprint does not produce contract tests, test doubles, or
+boundary manifests.
 
 ## Paths to delete
 
@@ -106,5 +160,7 @@ Build and run each proof with the exact recorded versions on an ephemeral CI
 runner; refuse any child-process proof on an unmarked developer host. Save
 commands, platform, commit, concrete type/signature evidence, and results in
 `docs/architecture.md`, including the resolved `sc-observability` and
-`sc-observability-types` versions. If a Verify item fails, stop dependent
+`sc-observability-types` versions, and confirm the ADR-RUN-0003,
+ADR-RUN-0004, ADR-RUN-0005, REQ-RUN-0309, REQ-RUN-0307, and NFR-RUN-0006
+amendments landed in the owned files. If a Verify item fails, stop dependent
 planning rather than adding an adapter automatically.

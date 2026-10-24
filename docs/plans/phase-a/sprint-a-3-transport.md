@@ -56,20 +56,28 @@ It discovers and reports; it does not own application launch policy.
 
 Resolve endpoint syntax and precedence, OS defaults, directory ownership,
 listener representation, UDS permissions/stale-file behavior, timeout/status
-classification, and the public error surface. Publish an **error inventory**
+classification, and the public error surface. Freeze `TransportConfig`'s
+field list in `docs/sc-transport/architecture.md` before the facade freezes.
+a-5 embeds that type on `DaemonConfig` and does not decide a second
+endpoint-config shape. Publish an **error inventory**
 (stable codes and recovery for every `TransportError` variant, including
 non-`DaemonNotRunning` failures the CLI must report). `DaemonNotRunning`
 carries `sc_observability_types::ErrorCode`, not plain strings (RBP-F002,
-RBP-F005). Record choices in the owned ADR before the facade freezes. Do not
-add auto-start APIs.
+RBP-F005). Record choices in the owned crate ADR before the facade freezes.
+Do not edit `docs/architecture.md`. Do not add auto-start APIs.
 
 ## Public contract produced
 
 This sprint owns the sc-transport types and methods in the canonical
 [minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff):
-`AppName`, `Endpoint`, `TransportConfig`, `resolve_endpoint`, `Client::new`,
-`get`, `post`, `bind`, `Listener`, and `TransportError`. The crate-local
-requirement and ADR sources are the decision record.
+`sc_transport::AppName`, `Endpoint`, `TransportConfig`, `resolve_endpoint`,
+`Client::new`, `get`, `post`, `bind`, `Listener`, and `TransportError`.
+`Client::get` and `Client::post` are the handoff signatures, and both take
+that crate's `AppName` only through `Client::new`. The crate-local
+requirement and ADR sources are the decision record. This sprint amends
+`docs/sc-transport/architecture.md` and `docs/sc-transport/requirements.md`
+only, including `&str` application-name parameters those sources still show.
+It does not edit `docs/architecture.md`.
 
 ## Dependencies and parallel safety
 
@@ -98,9 +106,10 @@ requirement and ADR sources are the decision record.
    carries `sc_observability_types::ErrorCode` from a direct
    `sc-observability-types` dependency at the version a-1 recorded. That
    dependency is types-only: the crate does not depend on `sc-command` or on
-   `sc-observability` (RBP-F005). `AppName` follows the a-2 newtype rule:
-   invalid names fail at construction, display is `as_str` or `AsRef<str>`,
-   and the type does not implement `Deref`.
+   `sc-observability` (RBP-F005). `sc_transport::AppName` uses the handoff
+   predicate and vectors. It is not `sc_config::AppName`. Invalid names fail
+   at construction with `APP.INVALID_NAME`. Display is `as_str` or
+   `AsRef<str>`, and the type does not implement `Deref`.
 
 ## Acceptance criteria
 
@@ -114,7 +123,7 @@ requirement and ADR sources are the decision record.
    rmcp, sqlx, runtime crate, process launcher, or application command type.
 3. `ADR-TRN-0005` — client failures remain transport facts; generated CLI
    policy is neither implemented nor implied.
-4. `docs/sc-transport/architecture.md` — the crate ADR error-inventory table
+4. `ADR-TRN-0001` — the crate ADR error-inventory table
    lists every `TransportError` variant, including non-`DaemonNotRunning`
    failures, with a stable code, cause payload, and recovery steps
    (RBP-F002).
@@ -122,16 +131,19 @@ requirement and ADR sources are the decision record.
    `sc_observability_types::ErrorCode`. `cargo tree -p sc-transport -e normal --prefix none`
    has a `sc-observability-types ` line at the a-1 recorded version and has no
    `sc-command ` line and no `sc-observability ` line (crate name, then a
-   space, so the types crate does not match the logging crate). `AppName`
-   rejects an invalid name at construction, public constructors take
-   `AppName`, and the type exposes `as_str` or `AsRef<str>` and does not
-   implement `Deref` (RBP-F005).
+   space, so the types crate does not match the logging crate).
+   `sc_transport::AppName` accepts the handoff accept vectors and rejects the
+   handoff reject vectors at construction, with stable code
+   `APP.INVALID_NAME`. Public constructors take `sc_transport::AppName`. The
+   type exposes `as_str` or `AsRef<str>` and does not implement `Deref`
+   (RBP-F005).
 
 ## This sprint does not close
 
 Daemon lifecycle, CLI auto-start, application retries, service-manager
 integration, and generated CLI tests are outside this boundary. Root
-`just lint` and `sc-lint-boundary analyze` close in a-5.
+`just lint` and `sc-lint-boundary analyze` close in a-5. This sprint does
+not edit `docs/architecture.md` or `docs/requirements.md`.
 
 ## Paths to delete
 

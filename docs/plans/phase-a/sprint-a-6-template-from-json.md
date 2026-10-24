@@ -4,7 +4,7 @@ phase: a
 status: planned
 closure_type: integration
 target_boundary: template-from-json
-vertical_rationale: "The generator and editable example do not exist yet; one thin vertical sprint creates the single JSON-to-project artifact and proves it without introducing a reusable application framework."
+vertical_rationale: "The generator and editable example do not exist yet; one vertical sprint creates the single JSON-to-project artifact and proves it without introducing a reusable application framework. Splitting the driver from the template would only serialize the same artifact."
 track: generation
 wave: 3
 branch: sprint/a-6-template-from-json
@@ -110,10 +110,22 @@ The only root `justfile` edit here is `just new` and generation-test
 discovery.
 
 Pin generated `crates/daemon` to the `sc-observability` version a-1 recorded
-(the latest release at spike time; 1.5.0 as of this plan). `main` loads
-config, initialises `sc-observability` with plain values from that config,
-then calls `Daemon::builder`. Leave `sc-observability-otlp` out of the
-template. OpenTelemetry export stays optional for a later project change.
+(the latest release at spike time; 1.5.0 as of this plan) after a-1 has
+amended REQ-RUN-0309 and ADR-RUN-0004 to that pair. `main` loads config,
+initialises `sc-observability` with plain values from that config, then calls
+`Daemon::builder`. At that application boundary, convert with `as_str()` into
+`sc_config::AppName`, `sc_transport::AppName`, and `sc_runtime::AppName`.
+Leave `sc-observability-otlp` out of the template. OpenTelemetry export stays
+optional for a later project change.
+
+This sprint is the sole owner of the NFR-RUN-0001 feature-level close.
+Fixture CI runs `cargo tree -p cli -e normal`, and the named server-only
+crates are absent. `cargo build -p cli` is the normative selection. A
+workspace-wide build is the documented exemption. This sprint does not split
+crates and does not wait for a-5 to close the workspace-unification OPEN.
+Unknown route, Axum body rejection, and rmcp `Err(McpError)` stay deferred
+for v0.1. Do not extend ADR-CMD-0001 when the example widget operation is
+added.
 
 ## Dependencies and parallel safety
 
@@ -181,7 +193,9 @@ its only meaningful proof.
    same reporting path without prescribing helper functions.
 4. `req:REQ-RUN-0203` — success and operation-failure envelopes are equal as
    JSON across REST, MCP and CLI `--json`; unknown `data` and `error.details`
-   content and the received version survive CLI output unchanged.
+   content and the received version survive CLI output unchanged. Unknown
+   route, Axum body rejection, and rmcp `Err(McpError)` are deferred for v0.1
+   in the phase deferred-scope table. This criterion does not close that OPEN.
 5. `req:REQ-RUN-0301` / `req:REQ-RUN-0302` — generation produces the minimal
    editable api-types/store-sqlite/service/daemon/cli example, and the create/get
    operation reaches one service path through all enabled surfaces.
@@ -200,10 +214,12 @@ its only meaningful proof.
    validation.
    PR-mode lockfiles resolve all four libraries to the checkout paths; release
    lockfiles resolve all four to the crates.io registry.
-10. `req:NFR-RUN-0001` / `ADR-RUN-0003` — Generated `cli` crate isolation
-    matches the **Active** policy closed in a-5: either no server-enabled SC
-    deps on `cli`, or the documented exemption plus fixture CI
-    `cargo tree -p cli -e normal` (and named forbidden crates absent).
+10. `req:NFR-RUN-0001` — This sprint is the feature-level close. Fixture CI
+    runs `cargo tree -p cli -e normal` on the generated project, and the named
+    server-only crates are absent. `cargo build -p cli` is the normative
+    selection. A workspace-wide build is the documented exemption. This
+    criterion does not split crates and does not depend on a-5 closing
+    ADR-RUN-0003.
 11. `ADR-RUN-0303` — inspection confirms that reusable runtime behavior remains
    in the published crates while routes, schema, queries, and application
    composition remain editable template code.
@@ -229,7 +245,9 @@ CLI helper/test shapes, attribute macros, attribute-generated tests, process
 daemon tests, Postgres, or the wizard. It does not claim the example's internal
 file/crate organization is mandatory for generated applications. It does not
 replace the source-maintainer sc-lint install owned by a-5, and it does not
-hand a prototype repository to the sc-lint team.
+hand a prototype repository to the sc-lint team. It does not map unknown
+routes, Axum body rejections, or rmcp `Err(McpError)` into the envelope. It
+does not add widget operation codes to ADR-CMD-0001.
 
 ## Paths to delete
 
@@ -240,8 +258,9 @@ tests. No repository source path is deleted.
 
 Run root lint/test, all fixture generations, and in each generated project
 `just setup && just lint` followed by `just test` and the workspace build.
-Also run the plain cargo-generate smoke, schema/refused-input tests, and
-static checks for unrendered Jinja/Liquid. No daemon child process runs on
+Also run the plain cargo-generate smoke, schema/refused-input tests,
+`cargo tree -p cli -e normal` in a generated project, and static checks for
+unrendered Jinja/Liquid. No daemon child process runs on
 the host. Record the supported variants, the sc-lint 0.8.0 pin, the
 `sc-observability` pin copied from a-1, and results in
 `docs/validation/phase-a-generation.md`.

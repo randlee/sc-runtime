@@ -51,14 +51,18 @@ handler framework, CLI generator, or test-generation system.
 ## Decision prerequisites
 
 Resolve envelope version/representation, error-kind/status mapping, and
-serialization-failure behavior. **Close REQ-CMD-0002:** `OpError` stores
-`sc_observability_types::Remediation` (wire `suggested_action` derived at
-serialize time; no bare `Option<String>` as the authoritative type). Publish
-an **operation error inventory** before the facade freezes (RBP-F001). **Seal
-`IntoMcp`** with a private supertrait; only `Result<T, OpError>` implements
-it (RBP-F006). Record in the ADR that **`IntoMcp` is static dispatch only**
-(`self` by value; no `dyn IntoMcp`) (RBP-F008). Leave application command
-shape open.
+serialization-failure behavior. Record REQ-CMD-0002 in the crate ADR:
+`OpError.remediation` is `Option<sc_observability_types::Remediation>` or a
+documented empty variant. A custom serializer writes wire `suggested_action`
+as a JSON string when present and JSON `null` when absent, never the tagged
+`Remediation` object. `details` is `Option` and JSON `null` when absent.
+Delete that OPEN. Do not treat the field type as already closed until the
+ADR matches this handoff. Publish a **library wire-failure inventory** before
+the facade freezes (RBP-F001). **Seal `IntoMcp`** with a private supertrait;
+only `Result<T, OpError>` implements it (RBP-F006). Record in the ADR that
+**`IntoMcp` is static dispatch only** (`self` by value; no `dyn IntoMcp`)
+(RBP-F008). Leave application command shape open. Do not edit
+`docs/architecture.md`.
 
 ## Public contract produced
 
@@ -66,7 +70,10 @@ This sprint owns the sc-command types and conversions in the canonical
 [minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff):
 `Envelope`, `OpError`, `ErrorKind`, result conversion, and server-feature
 Axum/rmcp conversions. The crate-local requirement and ADR sources are the
-decision record; application command shape remains outside this boundary.
+decision record. This sprint amends `docs/sc-command/architecture.md` and
+`docs/sc-command/requirements.md` only. It does not edit
+`docs/architecture.md`. Application command shape remains outside this
+boundary.
 
 ## Dependencies and parallel safety
 
@@ -79,14 +86,21 @@ decision record; application command shape remains outside this boundary.
    envelope that converts results without discarding received versions or
    unknown JSON payload content.
 2. **REQ-CMD-0002 / ADR-CMD-0001** — `OpError` stores
-   `sc_observability_types::ErrorCode` and
-   `sc_observability_types::Remediation`. Wire `suggested_action` is derived
-   from `Remediation` at serialization time. The crate depends on the
-   `sc-observability-types` version a-1 recorded and does not depend on
-   `sc-observability` or `sc-observability-otlp`. Before the facade freezes,
-   ADR-CMD-0001 holds an operation error inventory: one row per Phase A
-   envelope operation, with stable code, cause, recovery steps, and a docs
-   link where one exists (RBP-F001).
+   `sc_observability_types::ErrorCode`. `remediation` is
+   `Option<sc_observability_types::Remediation>` or a documented empty
+   variant. A custom serializer writes wire `suggested_action` as a JSON
+   string or JSON `null`. `details` is `Option` and JSON `null` when absent.
+   The tagged `Remediation` object is not the wire form. The crate depends on
+   the `sc-observability-types` version a-1 recorded and does not depend on
+   `sc-observability` or `sc-observability-otlp`. Amend the ADR-CMD-0001
+   sentence that called this the only library observability dependency so it
+   matches a-1: `sc-transport` may depend on `sc-observability-types` for
+   `ErrorCode` only. Before the facade freezes, ADR-CMD-0001 holds a library
+   wire-failure inventory. The rows are an invalid or contradictory envelope
+   discriminant, serialization failure, and the five `ErrorKind` mappings.
+   Each row has a stable code, cause, recovery steps, and a docs link where
+   one exists (RBP-F001). Widget create/get and other application operation
+   codes are not rows.
 3. **REQ-CMD-0004 / REQ-CMD-0005** — Server-feature conversions use ordinary
    Axum and rmcp types. `IntoMcp` is sealed with a private supertrait and
    implemented only for `Result<T, OpError>`; downstream callers can still
@@ -113,10 +127,15 @@ decision record; application command shape remains outside this boundary.
    `into_mcp` and cannot implement the trait; `into_mcp` takes `self` by
    value; the ADR states that dispatch is static and that `dyn IntoMcp` is
    not a supported API (RBP-F006, RBP-F008).
-5. `ADR-CMD-0001` — the operation error inventory lists every Phase A
-   envelope operation with a stable code, cause, recovery steps, and a docs
-   link where one exists. `OpError.remediation` is
-   `sc_observability_types::Remediation`. `cargo tree -p sc-command -e normal --prefix none`
+5. `ADR-CMD-0001` — the wire-failure inventory lists an invalid or
+   contradictory envelope discriminant, serialization failure, and the five
+   `ErrorKind` mappings, each with a stable code, cause, recovery steps, and
+   a docs link where one exists. It has no widget create/get row and no other
+   application operation code. `OpError.remediation` is
+   `Option<sc_observability_types::Remediation>` or the documented empty
+   variant. A custom serializer writes `suggested_action` as a JSON string or
+   JSON `null`, and `details` is JSON `null` when absent. The tagged
+   `Remediation` object is not on the wire. `cargo tree -p sc-command -e normal --prefix none`
    has a `sc-observability-types ` line at the a-1 recorded version and has no
    `sc-observability ` or `sc-observability-otlp ` line (crate name, then a
    space) (RBP-F001).
@@ -125,7 +144,10 @@ decision record; application command shape remains outside this boundary.
 
 Application command declarations, CLI rendering policy, attribute generation,
 and end-to-end surface parity close outside Phase A or in the minimal template
-proof only. Root `just lint` and `sc-lint-boundary analyze` close in a-5.
+proof only. Widget and other application operation codes stay in the generated
+service. a-6 does not extend ADR-CMD-0001 for them. Root `just lint` and
+`sc-lint-boundary analyze` close in a-5. This sprint does not edit
+`docs/architecture.md` or `docs/requirements.md`.
 
 ## Paths to delete
 
@@ -135,7 +157,8 @@ None.
 
 Run default/server tests and doctests, dependency-tree checks, and workspace
 build once registered. Review the manifest against REQ-RUN-0005. Confirm
-the ADR-CMD-0001 error inventory, the `Remediation` field, the sealed
-`IntoMcp` impl, and the absence of `sc-observability` from the normal tree.
+the ADR-CMD-0001 wire-failure inventory, the `suggested_action` string-or-null
+serializer, the sealed `IntoMcp` impl, and the absence of `sc-observability`
+from the normal tree.
 `sc-lint-boundary analyze` is the a-5 root-lint gate, not a command this
 sprint adds.

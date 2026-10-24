@@ -56,7 +56,8 @@ Do not add application options or reopen the schema during UI work.
   pipeline as its contract and oracle.
 - `parallel_safe a-7`: it modifies no crate, template, release workflow, or
   publication metadata. Its narrow sequential ownership of driver/docs begins
-  only after a-6 merges.
+  only after a-6 merges. It does not wait for a-7 and does not diff against
+  a-7.
 
 ## Deliverables
 
@@ -95,5 +96,6 @@ None.
 ## Required validation
 
 Run descriptor/page unit tests, prefill/cancel tests, one interactive smoke,
-fixture-equivalence generation, and the unchanged a-6 generation suite. Confirm
-the crate and template trees are unchanged from their a-6/a-7 artifacts.
+fixture-equivalence generation, and the unchanged a-6 generation suite. The
+crate and template trees stay at the a-6 merge. This sprint does not wait for
+a-7 and does not diff against a-7.

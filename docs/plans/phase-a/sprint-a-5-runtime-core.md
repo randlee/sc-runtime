@@ -11,8 +11,8 @@ branch: sprint/a-5-runtime-core
 worktree: sprint/a-5-runtime-core
 recommended_agent: solar
 recommended_model: sol
-must_follow: [a-2, a-3, a-4]
-parallel_safe: []
+must_follow: [a-3, a-4]
+parallel_safe: [a-2]
 requirements:
   - REQ-RT-0001
   - REQ-RT-0002
@@ -66,6 +66,7 @@ owned_paths:
   - ".github/workflows/crates.yml"
   - "docs/sc-runtime/requirements.md"
   - "docs/sc-runtime/architecture.md"
+  - "docs/architecture.md"
   - "docs/validation/phase-a-runtime.md"
 ---
 
@@ -85,17 +86,20 @@ without increasing width.
 ## Decision prerequisites
 
 Resolve builder inputs, router/service types, lock behavior, health/OpenAPI,
-shutdown, fixture cleanup, and typed errors. **Close the
-workspace-unification OPEN in ADR-RUN-0003** using a-1 evidence. The ADR
-stays Active and records either crate split or a CI `cargo tree -p cli`
-exemption (RBP-F004).
+shutdown, fixture cleanup, and typed errors. Record the `sc-runtime` →
+`sc-config` MAY in ADR-RUN-0003 and NFR-RT-0003 as edge absent. That is the
+only edit to `docs/architecture.md`. Do not close the workspace-unification
+OPEN, do not choose a crate split, and do not add `cargo tree -p cli`
+(RBP-F004). a-6 owns that NFR-RUN-0001 close.
 Choose **consuming typestate** for `DaemonBuilder` or explicit
-`RuntimeError` for missing required closures (RBP-F007). Reject
-`Box<dyn Error>` and generic `RuntimeError<E>` for `StoresFailed`; use
-concrete source variants (RBP-F003). Publish runtime **error inventory**
-(RBP-F002). Do not resolve CLI auto-start or application test architecture
-here. Record builder and lifecycle choices in the owned ADR before the facade
-freezes.
+`RuntimeError` for missing required closures (RBP-F007).
+`RuntimeError::StoresFailed` is non-generic and runtime-owned: stable code,
+message, remediation, and optional owned cause text. The application maps
+its store error into that variant inside the stores closure. Reject
+`Box<dyn Error>` and generic `RuntimeError<E>` (RBP-F003). Publish runtime
+**error inventory** (RBP-F002). Do not resolve CLI auto-start or application
+test architecture here. Record builder and lifecycle choices in the owned
+crate ADR before the facade freezes.
 
 Install sc-lint 0.8.0 as the source-maintainer model from the sc-lint docs.
 This repository's root `justfile` stays maintained here. `sc-lint init --just`
@@ -112,66 +116,82 @@ that key when the install lands.
 
 ## Public contracts consumed
 
-This sprint consumes the three canonical leaf facades from the
+This sprint consumes the `sc-transport` and `sc-command` facades from the
 [minimal public contract handoff](phase-a-plan.md#minimal-public-contract-handoff)
-after a-2, a-3, and a-4 have recorded their decisions in their owned source
-documents. It produces the runtime builder contract already rooted in
-REQ-RT-0001; the sc-runtime requirement and ADR sources remain authoritative.
+after a-3 and a-4 have recorded their decisions in their owned source
+documents. It consumes endpoint and listener types, and the `sc-command`
+server conversions. It does not consume an `sc-config` type. It produces
+`sc_runtime::AppName` under the handoff predicate and the runtime builder
+contract already rooted in REQ-RT-0001. `DaemonConfig` embeds the
+`TransportConfig` type a-3 froze. It does not decide a second
+endpoint-config shape. The sc-runtime requirement and ADR sources remain
+authoritative for the builder. The only `docs/architecture.md` edit is the
+edge-absent decision.
 
 ## Dependencies and parallel safety
 
-- `must_follow a-2`: consumes the real config facade if runtime configuration
-  loading is retained as a dependency; otherwise records that applications load
-  config before calling runtime.
-- `must_follow a-3`: consumes endpoint/listener types and binding behavior.
-- `must_follow a-4`: consumes the required `sc-command` server facade. The
+- `must_follow a-3`: consumes endpoint and listener types and binding behavior.
+- `must_follow a-4`: consumes the required `sc-command` server conversions. The
   `sc-runtime -> sc-command/server` edge is binding in REQ-RUN-0005 and
   ADR-RUN-0003; application handlers still use ordinary Axum/rmcp types.
+- `parallel_safe a-2`: `sc-runtime` does not depend on `sc-config` and consumes
+  no type from it. There is no fallback that adds that edge during this sprint.
+  Applications load configuration before calling runtime.
 
-The three parent implementations may run in parallel. A dependency discovered
-to be unnecessary is removed rather than preserved for symmetry.
+a-3 and a-4 may run in parallel. A dependency discovered to be unnecessary is
+removed rather than preserved for symmetry.
 
 ## Deliverables
 
-1. **REQ-RT-0001 / REQ-RT-0003 / REQ-RT-0008 / ADR-RUN-0003** — Application
-   loads config before `Daemon::builder(AppName, &DaemonConfig)`. Builder uses
-   consuming typestate so `run` exists only after `stores` and `routes`, with
-   optional `mcp` on that ready state. The call chain remains
-   `stores` → `routes` → optional `mcp` → `run`. If ADR-RT-0001 rejects
-   typestate, a missing required closure returns an explicit `RuntimeError`
-   (RBP-F007). The in-run ordering test does not replace that caller-facing
-   check. Lock precedes stores; bind is last. Close the workspace-unification
-   OPEN in ADR-RUN-0003 before a-7, leaving the ADR Active: crate split, or a
-   documented exemption whose CI command is `cargo tree -p cli -e normal`
-   with the named server-only crates absent (RBP-F004). Ordinary
-   routers/services; no command or store registry.
+1. **REQ-RT-0001 / REQ-RT-0003 / REQ-RT-0008** — Application loads config
+   before `Daemon::builder(sc_runtime::AppName, &DaemonConfig)`. `DaemonConfig`
+   embeds a-3's `TransportConfig`. Builder uses consuming typestate so `run`
+   exists only after `stores` and `routes`, with optional `mcp` on that ready
+   state. The call chain remains `stores` → `routes` → optional `mcp` → `run`.
+   If ADR-RT-0001 rejects typestate, a missing required closure returns an
+   explicit `RuntimeError` (RBP-F007). The in-run ordering test does not
+   replace that caller-facing check. Lock precedes stores; bind is last.
+   Ordinary routers/services; no command or store registry. Workspace
+   composition stays the four library crates. This deliverable does not close
+   the workspace-unification OPEN and does not run `cargo tree -p cli`.
 2. **REQ-RT-0002** — A retained nonblocking singleton lock protects one daemon
    instance without PID/probe machinery.
 3. **REQ-RT-0004 / REQ-RT-0005** — One router/listener composition and graceful
    shutdown use standard Axum/Tokio/rmcp facilities.
 4. **REQ-RT-0006** — An in-process `DaemonFixture` uses the production assembly
    path and a fresh temporary instance root; it never launches a daemon process.
-5. **REQ-RT-0007** — Before the facade freezes, the crate ADR holds a runtime
-   error inventory: every `RuntimeError` variant has a failure mode, stable
-   code, cause payload, and recovery text (RBP-F002). `StoresFailed` carries
-   a concrete `Send + Sync` source behind `Error::source` or as a named
-   payload the caller can match. `Box<dyn Error>` and generic
-   `RuntimeError<E>` are rejected. Static, matchable errors are the dispatch
-   model (RBP-F003). `run` never calls `process::exit`.
+5. **REQ-RT-0007 / ADR-RT-0004** — Before the facade freezes, the crate ADR
+   holds a runtime error inventory: every `RuntimeError` variant has a failure
+   mode, stable code, cause payload, and recovery text (RBP-F002).
+   `RuntimeError::StoresFailed` is non-generic. Its payload is owned by
+   `sc-runtime`: stable code, message, remediation, and optional owned cause
+   text. The application maps its store error into that variant inside the
+   stores closure. `sc-runtime` does not name or match the foreign error type.
+   `Box<dyn Error>` and generic `RuntimeError<E>` are rejected. Delete any
+   `source()`-without-downcast or named-foreign-payload requirement from the
+   crate ADR and from REQ-RT-0007 (RBP-F003). `run` never calls `process::exit`.
 6. **REQ-RUN-0103 / REQ-RUN-0204 / REQ-RUN-0205** — Rewrite the spike against
    the four crates, keep its server `main.rs` small, and prove one-listener
    REST/OpenAPI/MCP composition.
 7. **REQ-RUN-0001 / REQ-RUN-0004 / REQ-RUN-0005** — Create the four-member
    workspace, root core recipes/CI, and runtime boundary manifest without
    registering template packages as workspace members. `boundaries/sc-runtime/`
-   joins the three leaf manifests. Root `just lint` is the first run of
-   `sc-lint-boundary analyze` across all four.
+   joins the leaf manifests. The `sc-config` workspace member is path
+   registration only and adds no `sc-runtime` dependency. a-2 is not a
+   dispatch predecessor. Root `just lint` is the first run of
+   `sc-lint-boundary analyze` across the manifests on the branch.
 8. **REQ-RUN-0004 / NFR-RUN-0008** — Source-maintainer sc-lint 0.8.0 install:
    `sc-lint.toml` pins `minimum_version` to `0.8.0`, `.sc-lint/bootstrap.py`
    is the 0.8.0 helper, and `just lint` includes `sc-lint-boundary analyze`
    plus the 1000-line line-counts check. Crate CI calls `just setup` before
    `just lint` and `just test`. Do not copy boundary manifests into the
    template.
+9. **ADR-RUN-0003 / NFR-RT-0003** — Record the `sc-runtime` → `sc-config` MAY
+   as edge absent in `docs/architecture.md` (ADR-RUN-0003 only) and in
+   `docs/sc-runtime/requirements.md` (NFR-RT-0003). `sc-runtime` does not
+   depend on `sc-config` and consumes no type from it. This is the only
+   `docs/architecture.md` edit in this sprint. It does not close the
+   workspace-unification OPEN and it does not add `cargo tree -p cli`.
 
 ## Acceptance criteria
 
@@ -197,42 +217,47 @@ to be unnecessary is removed rather than preserved for symmetry.
    failed startup cannot remove its socket.
 7. `boundary:sc-runtime` — crate tests, README example, default/server feature
    checks, workspace build, and all four boundary manifests are green.
-8. `ADR-RUN-0003` — the workspace-unification OPEN is closed and the ADR
-   stays Active with either the crate split or the documented exemption.
-   Under the exemption, CI runs `cargo tree -p cli -e normal` and the named
-   server-only crates are absent. Under the split, the generated `cli` crate
-   does not depend on server-enabled SC crates. Server items stay off the
-   default facade (RBP-F004).
-9. `ADR-RUN-0004` — inspection finds no application command registry, generated
+8. `ADR-RUN-0004` — inspection finds no application command registry, generated
    CLI testing abstraction, service-manager launcher, or SQL schema in the
    reusable libraries. Those libraries do not depend on `sc-observability` or
    `sc-observability-otlp` and do not wrap logging. `sc-observability-types`
    appears only on `sc-command` and, for `ErrorCode`, on `sc-transport`.
-10. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
+   `sc-runtime` does not depend on `sc-config`.
+9. `req:REQ-RUN-0004` / `req:REQ-RUN-0005` / `req:NFR-RUN-0008` — `just --list`
    shows `setup`, `lint`, `test`, and `upgrade`. `just lint` invokes
    `sc-lint-boundary analyze` and exits 0 on the four manifests. The same
    recipe runs the sc-lint line-counts check and fails, naming the file, when
    a non-test source file exceeds 1000 source lines. The root `justfile` is
    not the output of `sc-lint init --just`.
-11. `req:REQ-RT-0007` — the crate ADR error-inventory table gives every
+10. `req:REQ-RT-0007` — the crate ADR error-inventory table gives every
     `RuntimeError` variant a stable code, cause payload, and recovery text.
-    A test matches `StoresFailed` and reads the store error from `source()`
-    or the named payload without downcasting a trait object. Public
-    signatures contain no `Box<dyn Error>`, and `RuntimeError` is not generic
-    (RBP-F002, RBP-F003).
-12. `req:REQ-RT-0001` — caller-facing builder sequence is closed in
+    A test matches `StoresFailed` and reads its runtime-owned code, message,
+    remediation, and optional cause text. The stores closure is what maps an
+    application store error into that variant. The test does not call
+    `source()` and does not downcast. Public signatures contain no
+    `Box<dyn Error>`, and `RuntimeError` is not generic (RBP-F002, RBP-F003).
+11. `req:REQ-RT-0001` — caller-facing builder sequence is closed in
     ADR-RT-0001: either consuming typestate makes `run` available only after
     `stores` and `routes`, with optional `mcp` on that ready state, or the
     ADR rejects typestate and a missing required closure returns an explicit
-    `RuntimeError`. The in-run ordering test remains, and it is not the only
-    proof of the caller-facing sequence (RBP-F007).
+    `RuntimeError`. `Daemon::builder` takes `sc_runtime::AppName`. Construction
+    tests use the handoff accept and reject vectors and expect
+    `APP.INVALID_NAME` on rejection. The type exposes `as_str` or `AsRef<str>`
+    and does not implement `Deref`. The in-run ordering test remains, and it
+    is not the only proof of the caller-facing sequence (RBP-F007).
+12. `ADR-RUN-0003` — ADR-RUN-0003 and NFR-RT-0003 record the `sc-runtime` →
+    `sc-config` edge as absent. The sprint diff to `docs/architecture.md` is
+    that decision only. The workspace-unification OPEN stays open. This sprint
+    adds no `cargo tree -p cli` command (RBP-F004).
 
 ## This sprint does not close
 
 Generated application structure, the consumer sc-lint install inside the
 template, JSON-driven generation, registry publication, CLI auto-start,
 generated-application process tests, attribute-generated tests, and the
-wizard remain open. `just new` is added by a-6.
+wizard remain open. `just new` is added by a-6. The workspace-unification
+OPEN and `cargo tree -p cli` / NFR-RUN-0001 stay with a-6. This sprint does
+not edit `docs/architecture.md` beyond the `sc-runtime` → `sc-config` edge.
 
 ## Paths to delete
 
@@ -243,9 +268,10 @@ None. a-7 removes the rewritten spike after release evidence is preserved.
 Run `just setup`, then root `just lint` and `just test`, workspace build, all
 default/server package selections, doctests, `sc-lint-boundary analyze` over
 the four manifests, the line-counts check, feature-specific dependency-tree
-checks, the CLI isolation command chosen for ADR-RUN-0003, the runtime
-error-inventory table, the `StoresFailed` match test, the caller-facing
-builder check, and the rewritten spike proofs. Host validation uses only
+checks, the runtime error-inventory table, the `StoresFailed` field match,
+the caller-facing builder check, the `sc_runtime::AppName` vectors, the
+edge-absent ADR-RUN-0003 diff, and the rewritten spike proofs. Do not run
+`cargo tree -p cli` here. Host validation uses only
 in-process fixtures; signal/process proofs run only on an ephemeral CI runner
 with an explicit isolation guard. Record results in
 `docs/validation/phase-a-runtime.md`.
