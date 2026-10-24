@@ -26,6 +26,8 @@ requirements:
   - REQ-RUN-0005
   - NFR-RUN-0003
   - NFR-RUN-0004
+  - NFR-RUN-0005
+  - NFR-RUN-0009
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0004
@@ -152,6 +154,16 @@ boundary.
    crate while `forbidden_edges` still contains `sc-observability`.
    `just lint gates` or `sc-lint lint sc-boundary` exits 0 on
    `boundaries/sc-command/sc-command.toml`. The `serde_json` OPEN is gone.
+7. `boundary:sc-command` — NFR-RUN-0009 for this crate: serialization
+   failure returns an error and does not panic; `unwrap`, `expect`,
+   `panic!`, `unreachable!`, `todo!`, and `unimplemented!` are not reachable
+   from a public function; no public signature names `anyhow::Error` or
+   `Box<dyn Error>` except the recorded `IntoMcp` `McpError` exception.
+   Non-test code under `crates/sc-command/src` contains no literal `/tmp`,
+   `/Users/`, `/home/`, or `C:\Users` path. No test binds a fixed TCP port.
+   Tests that write files use a temporary directory. a-5 closes the
+   repo-wide NFR-RUN-0005 parallel `just test` runs and the four-crate
+   NFR-RUN-0009 grep.
 
 ## This sprint does not close
 
@@ -161,8 +173,9 @@ proof only. Widget and other application operation codes stay in the generated
 service. a-6 documents the example operation inventory on the generated
 service and does not extend ADR-CMD-0001. This sprint runs the boundary
 analyzer on its own manifest. Root `just lint` across all four manifests
-stays with a-5. This sprint does not edit `docs/architecture.md` or
-`docs/requirements.md`.
+stays with a-5. Repo-wide parallel `just test` (NFR-RUN-0005) and the
+four-crate panic grep (NFR-RUN-0009) stay with a-5. This sprint does not
+edit `docs/architecture.md` or `docs/requirements.md`.
 
 ## Paths to delete
 

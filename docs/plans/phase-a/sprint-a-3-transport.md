@@ -28,6 +28,7 @@ requirements:
   - NFR-RUN-0003
   - NFR-RUN-0004
   - NFR-RUN-0005
+  - NFR-RUN-0009
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0004
@@ -176,7 +177,14 @@ It does not edit `docs/architecture.md`.
    dependency while `forbidden_edges` still contains `sc-observability`.
    `just lint gates` or `sc-lint lint sc-boundary` exits 0 on
    `boundaries/sc-transport/sc-transport.toml`.
-8. `ADR-TRN-0002` — the crate ADR amendment states that v0.1 binds exactly
+8. `boundary:sc-transport` — NFR-TRN-0004 is this crate's strictness on
+   NFR-RUN-0009. Every `TransportError` variant, including an unreachable
+   endpoint, is a `Result` value. `unwrap`, `expect`, `panic!`,
+   `unreachable!`, `todo!`, and `unimplemented!` are not reachable from a
+   public function. No public signature names `anyhow::Error` or
+   `Box<dyn Error>`. The repo-wide grep and the parallel `just test` runs
+   stay with a-5.
+9. `ADR-TRN-0002` — the crate ADR amendment states that v0.1 binds exactly
    one listener and that `additional_endpoints` is reserved and ignored in
    v0.1. The field is present, defaults empty, and the implementation does
    not read it. The ADR says so, so the ignore is not an undocumented

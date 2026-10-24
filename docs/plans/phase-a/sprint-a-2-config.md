@@ -25,6 +25,7 @@ requirements:
   - NFR-RUN-0003
   - NFR-RUN-0004
   - NFR-RUN-0005
+  - NFR-RUN-0009
 adrs:
   - ADR-RUN-0002
   - ADR-CFG-0001
@@ -135,6 +136,13 @@ signature contract.
    `sc-lint lint sc-boundary --root . --config sc-lint.toml` exits 0 on
    `boundaries/sc-config/sc-config.toml` after `crates/sc-config/Cargo.toml`
    exists. The manifest forbids `sc-observability-types`.
+7. `boundary:sc-config` — NFR-CFG-0001 is this crate's strictness on
+   NFR-RUN-0009. Public loaders return `Result<_, ConfigError>`. Tests pass
+   a missing file and malformed JSON and assert the `ConfigError` variant.
+   `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, and
+   `unimplemented!` are not reachable from a public function. No public
+   signature names `anyhow::Error` or `Box<dyn Error>`. The repo-wide grep
+   and the parallel `just test` runs stay with a-5.
 
 ## This sprint does not close
 

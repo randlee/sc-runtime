@@ -53,6 +53,7 @@ adrs:
   - ADR-RUN-0004
   - ADR-RUN-0006
   - ADR-RUN-0007
+  - ADR-RUN-0008
   - ADR-RUN-0009
   - ADR-RUN-0010
   - ADR-RUN-0201
@@ -235,7 +236,12 @@ for symmetry.
       analyze, line-counts, fmt, clippy) through `.sc-lint/bootstrap.py`.
       `just lint gates` is the early boundary plus line-counts profile.
     - REQ-RUN-0005: the manifest file name is `boundaries/<crate>/<crate>.toml`.
-    Delete those three OPEN lines.
+    - REQ-RUN-0001 layout table: the root recipe path is `Justfile`
+      (capital J), the name sc-lint init and this repository use. Delete the
+      lowercase `justfile` cell. Do not leave a sentence in that requirement
+      that requires a lowercase `justfile` path.
+    Delete those three OPEN lines. The layout-table rename is not an OPEN;
+    it is the filename amendment.
 11. **REQ-RT-0001 / REQ-RUN-0205** — Copy a-3's dual-bind decision. Amend the
     runtime requirement and ADR OPENs, the REQ-RUN-0205 OPEN, and the
     dual-bind OPEN paragraphs in `docs/architecture.md`: v0.1 binds one
@@ -329,6 +335,28 @@ for symmetry.
     or re-export the rmcp service type. A default build does not link
     `DaemonFixture`. The facade is not frozen while any of those three OPENs
     remains.
+15. `req:REQ-RUN-0001` — this sprint closes the workspace half of the
+    success criteria. Root `Cargo.toml` `[workspace] members` resolves to
+    exactly `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`,
+    and `crates/sc-runtime`. `examples/spike` is an excluded standalone
+    package, not a fifth member and not a Cargo example. `cargo metadata
+    --no-deps --format-version 1` lists no package whose manifest path is
+    under `template/`. `cargo build --workspace` exits 0 and compiles no
+    file under `template/`. `test -d docs/adr` fails, and
+    `grep -c '^## ADR-' docs/architecture.md` prints a number greater than 0.
+    The amended layout table names `Justfile`. `template/`, `wizard/`,
+    `scripts/`, and `tests/unit/` are later sprints. a-7 closes success
+    criteria 3 and 4 for the paths that exist at the core tag. a-8 closes
+    `wizard/wizard.json`, `wizard/pages/`, and `scripts/run_wizard.py`.
+16. `req:NFR-RUN-0005` — maintainer half. `just test` passes with the
+    default parallel runner. No recipe passes `--test-threads=1`. Two
+    simultaneous `just test` runs from two checkouts of this repository
+    both pass. `grep -rn '"/tmp\|/Users/\|/home/\|C:\\\\Users' crates/*/src`
+    prints no line in non-test code. Every test in this sprint that starts
+    a daemon takes its instance root from a temporary-directory API or from
+    `DaemonFixture`. No test binds a fixed TCP port. `template/` is a-6's
+    half of the same grep. A generated project running beside a developer's
+    daemon is a-6.
 
 ## This sprint does not close
 

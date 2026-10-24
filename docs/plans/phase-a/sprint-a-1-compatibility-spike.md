@@ -142,6 +142,14 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    crate). `sc-config` and `sc-runtime` forbid `sc-observability-types`.
    Do not edit the `sc-runtime` → `sc-config` MAY in this sprint. a-3 and a-4
    amend NFR-TRN-0001 and NFR-CMD-0001 to the same dependency lists.
+10. **NFR-RUN-0007** — Record the spike's rmcp pin. Every spike `Cargo.toml`
+    that names `rmcp` pins one minor series: a tilde requirement on
+    `MAJOR.MINOR`, or an equivalent range `>=MAJOR.MINOR.0, <MAJOR.(MINOR+1).0`.
+    `"3"`, a caret `"3.4"`, and `"*"` are not pins. All of those manifests
+    use the same `MAJOR.MINOR`. Write that series into `docs/architecture.md`
+    and replace the NFR-RUN-0007 OPEN (which minor is pinned) with it.
+    a-6 and a-7 verify later manifests against this record. They do not
+    choose a second series.
 
 ## Acceptance criteria
 
@@ -188,6 +196,11 @@ rmcp signatures plus the recorded `sc-observability-types` version.
     `sc-transport` and `sc-command` only, and forbids it on `sc-config` and
     `sc-runtime`. The forbidden token `sc-observability` is not the types
     crate. The `sc-runtime` → `sc-config` MAY is unchanged in this sprint.
+11. `req:NFR-RUN-0007` — the evidence record names one rmcp `MAJOR.MINOR`.
+    Every spike manifest that names `rmcp` uses a tilde requirement or an
+    equivalent bounded range on that series. The NFR-RUN-0007 OPEN that
+    asked which minor is pinned is gone. a-6 and a-7 grep later manifests
+    against this series.
 
 ## This sprint does not close
 
@@ -207,5 +220,5 @@ commands, platform, commit, concrete type/signature evidence, and results in
 `docs/architecture.md`, including the resolved `sc-observability` and
 `sc-observability-types` versions, and confirm the ADR-RUN-0003,
 ADR-RUN-0004, ADR-RUN-0005, ADR-RUN-0010, REQ-RUN-0309, REQ-RUN-0307,
-REQ-RUN-0005, and NFR-RUN-0006 amendments landed in the owned files. If a Verify item fails, stop dependent
+REQ-RUN-0005, NFR-RUN-0006, and NFR-RUN-0007 amendments landed in the owned files. If a Verify item fails, stop dependent
 planning rather than adding an adapter automatically.

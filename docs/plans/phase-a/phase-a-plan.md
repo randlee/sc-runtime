@@ -268,10 +268,19 @@ The a-4 crate ADR holds the library wire-failure inventory before the facade
 freezes. The rows are only `sc-command`'s own wire failures: an invalid or
 contradictory envelope discriminant, serialization failure, and the five
 `ErrorKind` mappings. Each row has a stable code, cause, recovery steps, and
-a docs link where one exists. Widget create/get and any other application
-operation codes live in the generated service. They are not rows in
-ADR-CMD-0001. a-6 documents that operation error inventory on the generated
-service before the example pattern freezes. It does not extend ADR-CMD-0001.
+a docs link where one exists. Widget create/get codes live in the generated
+service. They are not rows in ADR-CMD-0001. This table is the operation
+error inventory. a-6 repeats it on the generated service before the example
+pattern freezes and does not add rows. It does not extend ADR-CMD-0001.
+
+| Failure | Kind | Code | Cause | suggested_action | Recovery | Golden vector |
+|---|---|---|---|---|---|---|
+| `widget.get` id is absent | NotFound | `WIDGET.NOT_FOUND` | the id is not in the store | `create the widget, then get the returned id` | call `widget.create` and retry get with that id | missing-id vector: one id never created; REST, MCP, and CLI `--json` envelopes are equal; `ok` is false; `data` is null; `error.code` is `WIDGET.NOT_FOUND` |
+| `widget.create` name is empty or whitespace | InvalidInput | `WIDGET.NAME_BLANK` | `name` is empty or only whitespace | `send a non-empty name` | set `name` to a non-empty string and retry | blank-name vector: the same three surfaces; envelopes are equal; `error.code` is `WIDGET.NAME_BLANK` |
+
+v0.1 has no other widget application code. A duplicate name is allowed.
+Store failures stay `RuntimeError::StoresFailed` inside the stores closure.
+They are not widget codes.
 
 `Envelope<T>` uses a custom serde representation with exactly the four wire
 keys `version`, `ok`, `data`, and `error`; contradictory/missing discriminant
@@ -352,7 +361,8 @@ sc-lint 0.8.0 is the lint and `just` system for this phase. Two roles stay
 distinct, matching the sc-lint source-maintainer and consumer docs.
 
 This repository is the source maintainer. a-5 owns that install. a-5 verifies
-and extends the existing root `Justfile` (capital J). Its first line stays
+and extends the existing root `Justfile` (capital J). a-5 also amends the
+REQ-RUN-0001 layout table so that cell is `Justfile`, not `justfile`. Its first line stays
 the sc-lint init header already on that file. a-5 does not
 replace that file or contradict the header. Public recipes `setup`, `lint`,
 `test`, and `upgrade` stay in the sc-lint-managed block and call
@@ -449,7 +459,7 @@ use that recorded pair.
 | 1 | core | a-3 transport | boundary | sc-transport | `crates/sc-transport/**`, `boundaries/sc-transport/**`, sc-transport requirement/ADR sources |
 | 1 | core | a-4 command | boundary | sc-command | `crates/sc-command/**`, `boundaries/sc-command/**`, sc-command requirement/ADR sources |
 | 2 | core | a-5 runtime core | integration | runtime-composition | root workspace registries, source-maintainer `sc-lint.toml` and `.sc-lint/bootstrap.py`, `crates/sc-runtime/**`, `boundaries/sc-runtime/**`, sc-runtime requirement/ADR sources, the edge-absent slices listed in the a-5 deliverables (architecture edge tables, REQ-RUN-0001/0004/0005 and REQ-RUN-0205 sections of `docs/requirements.md`), rewritten spike, core CI/just recipes |
-| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, `wizard/answers.schema.json`, `wizard/fixtures/**`, driver, root `Justfile` generation entry, the `sc-lint.toml` line-counts glob for `template/**/*.rs` only, REQ-RUN-0202, REQ-RUN-0503, and REQ-RUN-0701 sections of `docs/requirements.md`, generation tests and template CI |
+| 3 | template | a-6 template from JSON | integration | template-from-json | `template/**` including the sc-lint 0.8.0 consumer install, `wizard/answers.schema.json`, `wizard/fixtures/**`, driver, root `Justfile` generation entry, the `sc-lint.toml` line-counts glob for `template/**/*.rs` only, REQ-RUN-0202, REQ-RUN-0503, and REQ-RUN-0701 sections of `docs/requirements.md`, ADR-RUN-0401 and ADR-RUN-0201 point 6 in `docs/architecture.md`, generation tests and template CI |
 | 4 | release | a-7 core release | integration | release-distribution | authored `release/sc-publish-*`, `docs/development/sc-publish.md`, `docs/architecture.md` ADR-RUN-0002 publish-contract amendment, `install.py` outputs (`.github/workflows/release*.yml`, `scripts/release_*.py`), `.github/workflows/crates.yml` spike-reference cleanup, `.github/workflows/template.yml` release-mode selector only, publish-metadata fields on `crates/*/Cargo.toml`, `crates/*/README.md`, and per-crate `LICENSE` copies, root release metadata, spike removal |
 | 4 | wizard | a-8 wizard | integration | wizard | `wizard/wizard.json`, `wizard/pages/**`, `scripts/run_wizard.py`, sequential `scripts/new_project.py` and `docs/generation.md` (entry-mode only), wizard tests |
 
@@ -489,14 +499,18 @@ blocking the core release.
 Parent development is merged into a child before each development/fix round;
 parent PR merges before the child PR. Shared root files have one sequential
 owner. **`docs/architecture.md` sequential owners:** a-1 (compatibility and
-ADR amendments, including new ADR-RUN-0010, as pointers to crate ADRs), a-5
+ADR amendments, including new ADR-RUN-0010, as pointers to crate ADRs, and
+the NFR-RUN-0007 rmcp minor recorded in the evidence section), a-5
 (edge-absent tables and the dual-bind OPEN paragraphs, copying a-3's
-decision), a-7 (ADR-RUN-0002 publish contract: sc-publish kit sole
+decision), a-6 (ADR-RUN-0401 points 2, 6, and 8, and ADR-RUN-0201 point 6
+only), a-7 (ADR-RUN-0002 publish contract: sc-publish kit sole
 workflow owner; GitHub Release includes
 `sc-runtime-{version}-source.tar.gz`). a-7 does not add a release section to
-ADR-RUN-0001. **`docs/requirements.md` sequential slices:** a-1 (its amendment
+ADR-RUN-0001. a-6 does not edit a-1, a-5, or a-7 slices of that file.
+**`docs/requirements.md` sequential slices:** a-1 (its amendment
 tasks, including the REQ-RUN-0005 `sc-observability-types` rows: allowed on
-`sc-transport` and `sc-command` only), a-5 (REQ-RUN-0001 spike membership,
+`sc-transport` and `sc-command` only, and the NFR-RUN-0007 pin OPEN), a-5 (REQ-RUN-0001 spike membership,
+the layout-table rename of `justfile` to `Justfile`,
 REQ-RUN-0004 lint tools, REQ-RUN-0005 manifest filename and the
 `sc-runtime` → `sc-config` row, REQ-RUN-0205 dual-bind), a-6 (REQ-RUN-0202,
 REQ-RUN-0503, REQ-RUN-0701 only). a-2, a-3, and a-4 amend crate-local

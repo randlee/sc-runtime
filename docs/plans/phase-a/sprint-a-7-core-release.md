@@ -149,6 +149,38 @@ workflow. Kit-generated `.github/workflows/release*.yml` and
    GitHub Release for the tag includes
    `sc-runtime-{version}-source.tar.gz` from the kit (linux `release_targets`
    row; `release_binaries` remains empty).
+6. `req:REQ-RUN-0001` — at the core tag, success criteria 1, 2, and 5 hold,
+   and success criteria 3 and 4 hold for every layout path except the three
+   a-8 paths. `[workspace] members` is exactly the four library crates.
+   `cargo metadata --no-deps --format-version 1` lists those four and no
+   package under `template/`. `examples/spike/` is absent, which is the
+   success-criterion 3 exemption. `cargo build --workspace` exits 0 and
+   compiles no file under `template/`. These paths exist: `template/`
+   including `template/cargo-generate.toml`, `template/AGENTS.md.j2`, and
+   `template/CLAUDE.md.j2`; `wizard/answers.schema.json` and
+   `wizard/fixtures/`; `scripts/new_project.py`; `tests/unit/`; `docs/`;
+   `boundaries/`; `Justfile`; `.github/workflows/`.
+   `find template -path '*wizard*' -o -name 'new_project.py' -o -name 'run_wizard.py'`
+   prints nothing. `test -d docs/adr` fails, and
+   `grep -c '^## ADR-' docs/architecture.md` prints a number greater than 0.
+   `wizard/wizard.json`, `wizard/pages/`, and `scripts/run_wizard.py` are
+   a-8. Their absence at this tag is the wizard milestone, not a failure of
+   this criterion.
+7. `req:REQ-RUN-0003` — release-mode generation of every
+   `wizard/fixtures/*.json` file is registry-only for the four libraries.
+   Each rendered dependency on `sc-config`, `sc-transport`, `sc-command`,
+   or `sc-runtime` has a crates.io version requirement. The rendered
+   manifests contain no `path`, `git`, or `[patch.crates-io]` substitute
+   for those four. The rendered tree contains no directory named
+   `sc-config`, `sc-transport`, `sc-command`, or `sc-runtime`. This
+   criterion is not the publish dry-run and it is not the REQ-RUN-0702
+   tag matrix.
+8. `req:NFR-RUN-0007` — after spike deletion,
+   `grep -rn "rmcp" --include='Cargo.toml*' crates template` lists every
+   remaining manifest that names `rmcp` (a missing `examples` directory is
+   not a failure). Each requirement is a tilde or an equivalent bounded
+   range on the `MAJOR.MINOR` a-1 recorded. All of them show that series.
+   This sprint does not choose a different minor.
 
 ## This sprint does not close
 

@@ -14,6 +14,7 @@ recommended_model: luna
 must_follow: [a-6]
 parallel_safe: [a-7]
 requirements:
+  - REQ-RUN-0001
   - REQ-RUN-0401
   - REQ-RUN-0402
   - REQ-RUN-0403
@@ -78,6 +79,9 @@ Do not add application options or reopen the schema during UI work.
    byte-identical. No wizard asset is copied into generated projects, and no
    reusable crate depends on Wyvern or UI code. a-6 deliverable 16 is that
    check.
+5. **REQ-RUN-0001** — Create the three layout paths the core tag does not
+   require: `wizard/wizard.json`, `wizard/pages/`, and `scripts/run_wizard.py`.
+   a-7's `req:REQ-RUN-0001` criterion leaves these three to this sprint.
 
 ## Acceptance criteria
 
@@ -87,6 +91,9 @@ Do not add application options or reopen the schema during UI work.
    produce the documented driver outcomes.
 3. `req:REQ-RUN-0603` — equivalent wizard and fixture answers produce equivalent
    generated project files, excluding documented nondeterministic metadata.
+4. `req:REQ-RUN-0001` — `wizard/wizard.json`, `wizard/pages/`, and
+   `scripts/run_wizard.py` exist. This criterion does not re-check the
+   four-crate workspace or the paths a-7 already closed.
 
 ## This sprint does not close
 

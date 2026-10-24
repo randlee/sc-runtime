@@ -79,6 +79,7 @@ owned_paths:
   - "tests/integration/generation/**"
   - ".github/workflows/template.yml"
   - "docs/generation.md"
+  - "docs/architecture.md"
   - "sc-lint.toml"
 ---
 
@@ -133,7 +134,13 @@ Deliverable 14 adds `just build-cli`. This sprint does not split crates.
 
 Unknown route, Axum body rejection, and rmcp `Err(McpError)` stay deferred
 for v0.1. Do not extend ADR-CMD-0001 when the example widget operation is
-added. Document the widget operation error inventory on the generated service.
+added. The widget create/get operation error table in the phase handoff is
+the inventory. Deliverable 17 repeats it. It does not add rows.
+
+This sprint amends two slices of `docs/architecture.md` and no other section
+of that file. Deliverable 18 amends ADR-RUN-0401. Deliverable 19 amends
+ADR-RUN-0201 point 6. ADR-RUN-0204 stays on the `adrs` list because that
+amendment cites it as still deferred. It is not a Phase A closure.
 
 ## Dependencies and parallel safety
 
@@ -260,10 +267,38 @@ its only meaningful proof.
     directory, no `scripts/new_project.py`, no `boundaries/` directory, and
     no `sc-*` crate directory. The root workspace `members` list does not
     match `template/`. `template/` is not a workspace member.
-17. **REQ-RUN-0203** — The generated service documents an operation error
-    inventory for widget create and get: failure mode, stable code, cause,
-    `suggested_action`, and recovery. Golden failure vectors cover those
-    rows. The rows are not added to ADR-CMD-0001.
+17. **REQ-RUN-0203** — The generated service implements the widget
+    operation error table from the phase handoff. This sprint repeats that
+    table and does not add rows. The rows are not added to ADR-CMD-0001.
+    Golden vectors are the three-surface checks named in the table.
+
+    | Failure | Kind | Code | Cause | suggested_action | Recovery | Golden vector |
+    |---|---|---|---|---|---|---|
+    | `widget.get` id is absent | NotFound | `WIDGET.NOT_FOUND` | the id is not in the store | `create the widget, then get the returned id` | call `widget.create` and retry get with that id | missing-id vector: one id never created; REST, MCP, and CLI `--json` envelopes are equal; `ok` is false; `data` is null; `error.code` is `WIDGET.NOT_FOUND` |
+    | `widget.create` name is empty or whitespace | InvalidInput | `WIDGET.NAME_BLANK` | `name` is empty or only whitespace | `send a non-empty name` | set `name` to a non-empty string and retry | blank-name vector: the same three surfaces; envelopes are equal; `error.code` is `WIDGET.NAME_BLANK` |
+
+    v0.1 has no other widget application code. A duplicate name is allowed.
+    Store failures stay inside the stores closure as
+    `RuntimeError::StoresFailed`. They are not widget codes.
+18. **ADR-RUN-0401** — Amend only ADR-RUN-0401 in `docs/architecture.md`.
+    Point 6's driver steps, in order, become: run the wizard unless
+    `--var-file` is given; validate the answers against the schema; write
+    `values.toml`; run `cargo generate`; run `sc-compose`; run `just setup`,
+    `just lint`, `just test`, and `just build-cli` in the generated project.
+    Point 8's fixture CI becomes `just new`, then `just setup`, then
+    `just lint`, then `just test`, then `just build-cli` for each file in
+    `wizard/fixtures/*.json`. Wyvern is not required. Point 2 records the
+    project-name decision: the key sets are equal except for the
+    project-name key, which one named constant exempts, because
+    `cargo generate` takes that name through `--name`. Delete the
+    project-name OPEN. This amendment does not edit any ADR other than
+    ADR-RUN-0401. Deliverable 19 is the only other edit in that file.
+19. **ADR-RUN-0201** — Amend only point 6 of ADR-RUN-0201. Report-only
+    commands MUST NOT start the daemon. An explicit `daemon start`
+    subcommand that execs the daemon binary is allowed. That subcommand is
+    not auto-start. Deferred ADR-RUN-0204 stays the optional auto-start
+    layer and is not a Phase A closure. The `adrs` list keeps ADR-RUN-0204
+    because this amendment cites it as still deferred.
 
 ## Acceptance criteria
 
@@ -338,8 +373,11 @@ its only meaningful proof.
     property keys and `template/cargo-generate.toml` placeholder keys from
     the working tree and fails when either set has a name the other lacks.
     The test source has no literal list of option names. The project-name
-    key is either exempted by one named constant or declared as a
-    placeholder. The test matches that decision and exempts nothing else.
+    key is exempt, identified by one named constant, because `cargo generate`
+    takes the project name through `--name` and not through a placeholder.
+    The two sets are equal except for that key. The test exempts nothing
+    else. Deliverable 18 writes that decision into ADR-RUN-0401 point 2
+    and deletes that OPEN.
 16. `req:REQ-RUN-0403` — `wizard/fixtures/sqlite-mcp.json` has `db` `sqlite`
     and `mcp` true. Another fixture has `db` `sqlite` and `mcp` false. One
     fixture states a licence other than `MIT`, and every fixture states its
@@ -403,9 +441,32 @@ its only meaningful proof.
     recovery text, exits non-zero, and does not run a later step. Invalid
     project names emit `APP.INVALID_NAME`.
 24. `req:REQ-RUN-0203` — the generated service's operation error inventory
-    lists each widget create/get failure with a stable code, cause,
-    `suggested_action`, and recovery. Golden vectors match those rows.
+    is deliverable 17. `widget.get` of an absent id returns
+    `WIDGET.NOT_FOUND`. `widget.create` with an empty or whitespace `name`
+    returns `WIDGET.NAME_BLANK`. Each golden vector checks kind, code,
+    cause, `suggested_action`, and recovery, and the three surfaces agree.
     ADR-CMD-0001 gains no widget row.
+25. `req:NFR-RUN-0005` — generated-project half. `just test` in a project
+    generated from `wizard/fixtures/sqlite-mcp.json` passes while a daemon
+    of the same application is running under the developer's normal
+    instance root. `grep -rn '"/tmp\|/Users/\|/home/\|C:\\\\Users' template`
+    prints no line in non-test code. Every generated test that starts a
+    daemon takes its instance root from a temporary-directory API or from
+    `DaemonFixture`. No generated test binds a fixed TCP port. The
+    maintainer `just test` parallel runs stay with a-5.
+26. `req:NFR-RUN-0007` — `grep -rn "rmcp" --include='Cargo.toml*' template`
+    lists every template manifest that names `rmcp`. Each version
+    requirement is a tilde on the a-1 `MAJOR.MINOR` or an equivalent bounded
+    range. All of them show that same series. This sprint does not choose
+    a different minor.
+27. `ADR-RUN-0401` — the sprint diff amends points 2, 6, and 8 as
+    deliverable 18 states. The project-name OPEN is gone. Point 2 exempts
+    that key by one named constant. Points 6 and 8 name `just setup`,
+    `just lint`, `just test`, and `just build-cli`. No other ADR section
+    in `docs/architecture.md` changes in this sprint except deliverable 19.
+28. `ADR-RUN-0201` — point 6 is the deliverable 19 text. Report-only
+    commands do not start a daemon. Explicit `daemon start` execs the
+    daemon binary. ADR-RUN-0204 stays deferred and is not implemented.
 
 ## This sprint does not close
 
