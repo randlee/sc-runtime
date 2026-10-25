@@ -1,0 +1,50 @@
+{
+  "schema": "plan-anchoring/anchors/1",
+  "plan": "phase-current",
+  "intent_ref": "doc/plan/phase-current/intent.md",
+  "anchors": [
+    {
+      "id": "ANC-001",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface. An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.",
+      "quote": "the 'general database commands' would be expected to be disabled by the customer. they are simply a bootstrap tool and could easily be 'replaced' w/ a command that has better ux and does a similar call on the back-end. i.e. delete row <table> <id> would be a general command which could be used 'under the hood' w/ a different cli/mcp/http call.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Bootstrap database commands the consumer can disable",
+      "scope": "a bead that edits template CLI, MCP, or HTTP commands",
+      "deterministic_check": "The generated template registers a general delete-row command on the CLI, on MCP, and over HTTP, and a generation flag omits those three registrations while the backend operation remains callable.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-8bp",
+        "plan_questions": "run-8bp.1",
+        "dev_questions": "run-8bp.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:47:23+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:47:30+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-8bp",
+            "plan_questions": "run-8bp.1",
+            "dev_questions": "run-8bp.2"
+          }
+        }
+      ]
+    }
+  ]
+}
