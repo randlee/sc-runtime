@@ -30,7 +30,7 @@ Land `sc-runtime-db-sqlite`, the rusqlite write actor, as its own crate. Port `s
 
 | Wave | Sprints | Critical path | Width | Sprint count |
 |---|---|---|---|---|
-| 1 | `b-1`, `b-2` | 2 | 2 | 3 |
+| 1 | `b-1`, `b-2` | 1 | 2 | 3 |
 | 2 | `b-3` | 2 | 1 | 3 |
 
 ## Requirements and ADRs
