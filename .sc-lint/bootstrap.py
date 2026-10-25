@@ -18,6 +18,7 @@ import subprocess
 import sysconfig
 import tarfile
 import tempfile
+import tomllib
 import urllib.error
 import urllib.request
 import venv
@@ -285,12 +286,64 @@ def main(argv=None):
         return status
     if operation == "test":
         return run([bootstrap.binary, "test", "--config", config, *positional])
-    arguments = [bootstrap.binary, "lint", "--consumer", "--config", config, "ci"]
-    if positional and positional[0]:
-        arguments += ["--profile", positional[0]]
-    if len(positional) == 2:
-        arguments += ["--platform-scope", positional[1]]
-    return run(arguments)
+    return run_maintainer_lint(bootstrap.binary, config, positional)
+
+
+def load_maintainer_lints(config):
+    try:
+        with Path(config).open("rb") as handle:
+            data = tomllib.load(handle)
+    except (OSError, tomllib.TOMLDecodeError) as error:
+        fail(f"lint: could not read {config}: {error} (CLI.SC_LINT_CONFIG_MALFORMED)", 3)
+    tool = data.get("tool", {}).get("sc-lint", {})
+    steps = {}
+    for item in tool.get("lint", []):
+        if not isinstance(item, dict) or not item.get("name") or not isinstance(item.get("command"), list):
+            fail(f"lint: malformed [[tool.sc-lint.lint]] entry in {config} (CLI.SC_LINT_CONFIG_MALFORMED)", 3)
+        steps[item["name"]] = [str(part) for part in item["command"]]
+    profiles = tool.get("lint_profiles", {})
+    if not isinstance(profiles, dict):
+        fail(f"lint: lint_profiles must be a table in {config} (CLI.SC_LINT_CONFIG_MALFORMED)", 3)
+    return steps, {name: list(names) for name, names in profiles.items()}
+
+
+def maintainer_lint_steps(config, positional):
+    steps, profiles = load_maintainer_lints(config)
+    selector = positional[0] if positional and positional[0] else "full"
+    if selector in profiles:
+        names = profiles[selector]
+    elif selector in steps:
+        names = [selector]
+    else:
+        known = ", ".join(sorted(set(profiles) | set(steps))) or "(none)"
+        fail(f"lint: unknown maintainer profile or step {selector!r}; known: {known}", 2)
+    commands = []
+    for name in names:
+        if name not in steps:
+            fail(f"lint: profile {selector!r} names unknown step {name!r}", 2)
+        commands.append((name, steps[name]))
+    return commands
+
+
+def rewrite_lint_command(command, binary):
+    if command and command[0] == "sc-lint":
+        return [str(binary), *command[1:]]
+    return command
+
+
+def run_maintainer_lint(binary, config, positional):
+    # Source-maintainer lint runs the named sc-lint.toml profile (full/gates)
+    # or a single declared step. It does not dispatch `sc-lint lint --consumer ci`.
+    status = 0
+    for name, command in maintainer_lint_steps(config, positional):
+        argv = rewrite_lint_command(command, binary)
+        print(f"lint.{name}: running {' '.join(argv)}")
+        step = run(argv)
+        print(f"lint.{name}: {'ok' if step == 0 else 'failed'}")
+        if step:
+            return step
+        status = step
+    return status
 
 
 if __name__ == "__main__":

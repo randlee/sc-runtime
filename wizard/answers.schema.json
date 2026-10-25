@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/randlee/sc-runtime/wizard/answers.schema.json",
+  "title": "Generation answers",
+  "type": "object",
+  "additionalProperties": false,
+  "x-schema-version": 1,
+  "required": ["project_name", "db", "mcp"],
+  "properties": {
+    "project_name": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$",
+      "x-role": "project-name"
+    },
+    "db": {
+      "type": "string",
+      "enum": ["sqlite", "postgres", "both"],
+      "default": "sqlite",
+      "x-role": "database",
+      "x-v01-reserved": ["postgres", "both"]
+    },
+    "mcp": {
+      "type": "boolean",
+      "default": true
+    },
+    "licence": {
+      "type": "string",
+      "minLength": 1,
+      "default": "MIT"
+    }
+  }
+}

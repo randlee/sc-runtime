@@ -1,0 +1,52 @@
+boundary_id = "BOUNDARY-sc-runtime"
+owner_package = "sc-runtime"
+owner_crate_path = "sc_runtime"
+name = "sc-runtime"
+
+[public]
+facade = "Daemon, DaemonBuilder, DaemonConfig, RuntimeError, testing"
+notes = "testing::DaemonFixture is behind the non-default test-util feature. There is no sc_runtime::AppName. NeedStores, NeedRoutes, and Ready are doc(hidden) typestate markers in the builder signature."
+
+[implementation]
+type = "library"
+module = "sc_runtime"
+visibility = "public"
+constructor = "public"
+
+[composition]
+roots = ["Daemon", "DaemonBuilder", "DaemonConfig", "RuntimeError", "testing"]
+
+[dependencies]
+allowed_dependents = []
+allowed_dependencies = [
+  "sc-transport",
+  "sc-command",
+  "axum",
+  "tokio",
+  "fd-lock",
+  "utoipa",
+  "utoipa-axum",
+  "serde",
+  "rmcp",
+]
+# sqlx, sc-observability, and sc-observability-otlp are not workspace members.
+# sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree
+# enforces those edges. sc-observability-types is direct-only: a transitive
+# line through sc-command is allowed, and a direct dependency is rejected by
+# cargo tree rather than a forbidden edge that would also fail that crate.
+forbidden_edges = ["sc-runtime -> sc-config"]
+
+[references]
+scope = "outside_owner_crate"
+forbidden = []
+
+[testing]
+allowed_test_double_paths = []
+forbidden_test_bypasses = []
+
+[enforcement]
+lint_rules = []
+review_gates = []
+
+[status]
+state = "concrete_landed"

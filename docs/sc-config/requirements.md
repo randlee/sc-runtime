@@ -3,7 +3,7 @@
 **ID Range:** REQ-CFG-0001 through REQ-CFG-0004; NFR-CFG-0001 through NFR-CFG-0003  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-10-23  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -46,8 +46,16 @@ merge rules below are decided in this document.
 The crate MUST export this function:
 
 ```rust
-pub fn load<T: serde::de::DeserializeOwned>(app: &str) -> Result<T, ConfigError>
+pub fn load<T: serde::de::DeserializeOwned>(app: AppName) -> Result<T, ConfigError>
 ```
+
+`app` is an `sc_config::AppName`. Callers construct it with `AppName::new` or
+`TryFrom<&str>`. A name that is empty, longer than 64 bytes, or outside ASCII
+letters, digits, `-`, and `_` fails in that constructor with
+`ConfigError::InvalidName` and stable code `APP.INVALID_NAME`. It does not
+reach `load`. The name still selects only the environment-variable prefix
+(entry 9). Display is `as_str` or `AsRef<str>`. The type does not implement
+`Deref`.
 
 1. `load` MUST read `config/default.json`, resolved against the process's
    current working directory.
@@ -179,11 +187,13 @@ Variable name:
 
 1. The prefix MUST be the app name with every ASCII lower-case letter
    upper-cased and every `-` replaced by `_`, followed by `__` (two
-   underscores). App `my-app` gives prefix `MY_APP__`.
-2. A variable MUST be treated as an override if and only if its name starts
-   with that prefix, subject to the OPEN items below on empty segments and
-   on names or values that are not valid Unicode. The comparison is exact and
-   case-sensitive.
+   underscores). App `my-app` gives prefix `MY_APP__`. `_` is already that
+   character, so `my_app` yields the same prefix. `AppName::env_prefix` is
+   the function that implements this rule.
+2. A variable MUST be treated as an override if and only if its encoded name
+   starts with that prefix. The comparison is exact and case-sensitive. Empty
+   segments, application order, and non-Unicode names or values are decided
+   below.
 3. Every variable whose name does not start with the prefix MUST be ignored,
    whatever its value. `OTHER_APP__DAEMON__PORT` and `MY_APP_DAEMON_PORT`
    (single underscores) are both ignored for app `my-app`.
@@ -225,24 +235,28 @@ Applying an override with key path `k1, k2, ..., kn`:
 14. Overrides MUST take precedence over `config/default.json` and
     `config/local.json`.
 
-**OPEN:** The treatment of an app name that is empty or contains a character
-outside `A-Z`, `a-z`, `0-9`, `-` and `_` is undecided (reject with an error,
-or transform as is).
+**Decided:** An application name is `sc_config::AppName`, not a free `&str`.
+`AppName::new` accepts only ASCII `A-Z`, `a-z`, `0-9`, `-`, and `_`, length 1
+through 64 bytes. Every other string is `ConfigError::InvalidName` with code
+`APP.INVALID_NAME`. The only accept and reject list is
+`tests/fixtures/app-name-vectors.json`.
 
-**OPEN:** The treatment of an empty path segment is undecided. `MY_APP__` has
-an empty remainder; `MY_APP__A____B` and `MY_APP__A__` contain an empty
-segment. The choices are to ignore the variable or to return the
-cannot-be-applied error.
+**Decided:** An empty path segment is the cannot-be-applied failure
+(`ConfigError::Override`, code `CFG.OVERRIDE`). `MY_APP__`, `MY_APP__A____B`,
+and `MY_APP__A__` each return that variant and carry the variable name. The
+variable is not ignored.
 
-**OPEN:** The order in which overrides are applied is undecided. It matters
-only when one key path is a prefix of another, for example
-`MY_APP__DAEMON={"port":1}` together with `MY_APP__DAEMON__PORT=2`. The order
-of the process environment is unspecified, so a rule is needed for the result
-to be deterministic.
+**Decided:** Matching variables are applied in ascending order of the
+variable name's encoded bytes. Process-environment order is not used. A name
+that is a byte-prefix of another is applied first, so
+`MY_APP__DAEMON__PORT` wins over `MY_APP__DAEMON` on the keys the longer path
+sets.
 
-**OPEN:** The treatment of a variable whose name starts with the prefix (as
-bytes) but whose name or value is not valid Unicode is undecided (ignore, or
-return an error). It MUST NOT panic
+**Decided:** A variable whose encoded name starts with the prefix, and whose
+name or value is not valid Unicode, returns `ConfigError::NonUnicode` (code
+`CFG.NON_UNICODE`) and carries the name as `OsString`. A non-Unicode name
+that does not start with the prefix is ignored. The load does not panic and
+does not apply a lossy conversion
 ([NFR-CFG-0001](requirements.md)).
 
 Worked example for app `my-app`. Value after merging the files:
@@ -389,13 +403,13 @@ This item covers the `Loader` type of the `sc-config` crate
 
 Using `./config` and the process environment as the defaults of `load` is
 decided in this document; the design fixes only the file names
-`config/default.json` and `config/local.json` and the call
-`sc_config::load("my-app")`.
+`config/default.json` and `config/local.json`. The call takes
+`AppName::new("my-app")`.
 
-**OPEN:** The names and signatures of the `Loader` constructor and of any
-builder methods are undecided, as is the item type of the environment
-iterator (`(String, String)` or `(OsString, OsString)`). Only the type name
-`Loader` and the method `Loader::load::<T>()` are fixed.
+**Decided:** `Loader::new(app: AppName, config_dir: PathBuf, environment: Vec<(OsString, OsString)>) -> Loader`.
+The constructor stores those arguments and does not return `Result`.
+`Loader::load` and `load` return `Result<T, ConfigError>`. Environment pairs
+are `OsString` so a non-Unicode value is reported instead of panicking.
 
 ### Rationale
 
@@ -410,8 +424,8 @@ for the tests of any program that uses it.
 
 ### Success Criteria
 
-1. Inspection: `crates/sc-config/src/lib.rs` exports `Loader`, `load` and
-   `ConfigError`.
+1. Inspection: `crates/sc-config/src/lib.rs` exports `AppName`, `Loader`,
+   `load` and `ConfigError`.
 2. A unit test creates two temporary directories with different
    `default.json` content, builds one `Loader` per directory, and asserts each
    returns its own directory's values.
@@ -424,7 +438,7 @@ for the tests of any program that uses it.
    writes `config/default.json` with content `{"a":0}` under a temporary
    directory `D`. It starts a helper executable with `std::process::Command`,
    with `.current_dir(D)` and `.env("MY_APP__A", "1")`. The helper calls
-   `sc_config::load::<serde_json::Value>("my-app")` and prints the result as
+   `sc_config::load::<serde_json::Value>` for `AppName::new("my-app")` and prints the result as
    JSON on standard output. The test asserts the printed value is `{"a":1}`.
    How the helper executable is built (for example a test-only binary target
    of the crate) is left to the implementation.
@@ -481,9 +495,14 @@ message string.
    is found in the merged document, where the origin of a value is no longer
    known.
 
-**OPEN:** The variant names and field names of `ConfigError` are undecided.
-Tests match on whatever names the implementation chooses; the five-way split
-and the carried data are binding.
+**Decided:** The five load failures are `MissingDefault { path }`,
+`Read { path, source }` where `source` is `std::io::Error`,
+`Parse { path, line, column, message }`, `Override { variable }`, and
+`Deserialize { message, files, variables }`. Name construction adds
+`InvalidName { name }` with code `APP.INVALID_NAME`. A prefix-matching
+non-Unicode environment entry adds `NonUnicode { variable }`. Stable codes
+and recovery steps are the error inventory in
+[ADR-CFG-0001](architecture.md).
 
 ### Rationale
 
@@ -572,13 +591,11 @@ commented exception. Test code is exempt. This item applies that rule to
 8. Code inside `#[cfg(test)]` modules and under `crates/sc-config/tests/` is
    exempt from entries 4 and 5.
 
-**OPEN:** Whether a public `Loader` constructor or builder method that cannot
-fail (one that only stores its arguments) MUST also return
-`Result<T, ConfigError>` is undecided. The design says every public method
-returns a discriminated union and names no exception;
-[NFR-RUN-0009](../requirements.md) requires `Result` only of operations that
-can fail. The options are: every public function and method returns `Result`
-without exception, or only those that can fail.
+**Decided:** Only an operation that can fail returns `Result<T, ConfigError>`.
+`Loader::new` stores a validated `AppName` plus the caller's directory and
+environment, so it returns `Loader`. `AppName::new` can fail and returns
+`Result<AppName, ConfigError>`. [NFR-RUN-0009](../requirements.md) requires
+`Result` of operations that can fail.
 
 ### Rationale
 
@@ -599,8 +616,8 @@ code.
    function. A comment on the line is not grounds for accepting a match.
 2. Inspection of every `pub fn` in `crates/sc-config/src` that can fail: the
    return type is `Result<_, ConfigError>`. Standard trait implementations
-   are outside this check. Once the OPEN above is decided: if every public
-   function must return `Result`, the same inspection covers every `pub fn`.
+   are outside this check. `Loader::new` cannot fail and returns `Loader`.
+   `AppName::new` can fail and returns `Result<AppName, ConfigError>`.
 3. Inspection of code reachable from a public function in
    `crates/sc-config/src` finds no `[` index expression on a slice, string,
    `Vec` or `serde_json::Value`.
@@ -645,10 +662,9 @@ third-party list.
    [REQ-RUN-0005](../requirements.md). This item adds only the `cargo tree`
    check in criterion 3.
 
-**OPEN:** Whether `[dev-dependencies]` is restricted is undecided. The tests
-need temporary directories, which the standard library does not provide. The
-design lists the crate's dependencies as `serde` and `serde_json` and does not
-mention test-only dependencies.
+**Decided:** `[dev-dependencies]` is empty. Tests create a private directory
+under `std::env::temp_dir` and remove it when the test ends. No third test
+crate is added.
 
 ### Rationale
 

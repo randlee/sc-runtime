@@ -28,6 +28,43 @@ gates = ["boundary", "line-counts"]
 # Full maintainer gate once the workspace exists (a-5+).
 full = ["boundary", "line-counts", "fmt", "clippy"]
 
+# Non-test lines under crates/*/src. Key from sc-lint 0.8.0 line-counts.
+[line_counts]
+max_production_lines = 1000
+paths = ["crates/*/src/**/*.rs", "template/**/*.rs"]
+
 [[tool.sc-lint.test]]
 name = "workspace"
 command = ["cargo", "test", "--workspace"]
+
+[[tool.sc-lint.test]]
+name = "sc-config"
+command = ["cargo", "test", "-p", "sc-config"]
+
+[[tool.sc-lint.test]]
+name = "sc-transport-default"
+command = ["cargo", "test", "-p", "sc-transport"]
+
+[[tool.sc-lint.test]]
+name = "sc-command-default"
+command = ["cargo", "test", "-p", "sc-command"]
+
+[[tool.sc-lint.test]]
+name = "sc-runtime-default"
+command = ["cargo", "test", "-p", "sc-runtime"]
+
+[[tool.sc-lint.test]]
+name = "sc-transport-server"
+command = ["cargo", "test", "-p", "sc-transport", "--features", "server"]
+
+[[tool.sc-lint.test]]
+name = "sc-command-server"
+command = ["cargo", "test", "-p", "sc-command", "--features", "server"]
+
+[[tool.sc-lint.test]]
+name = "sc-runtime-test-util"
+command = ["cargo", "test", "-p", "sc-runtime", "--features", "test-util"]
+
+[[tool.sc-lint.test]]
+name = "generation"
+command = ["python3", "scripts/run_generation_tests.py"]

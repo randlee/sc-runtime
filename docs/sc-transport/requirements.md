@@ -3,7 +3,7 @@
 **ID Range:** REQ-TRN-0001 through REQ-TRN-0006; NFR-TRN-0001 through NFR-TRN-0004  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-09-19  
+**Last Updated:** 2026-10-23
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -75,8 +75,10 @@ The platform default MUST be:
 | Windows | TCP on IP address `127.0.0.1`, with the port taken from the caller's configuration |
 
 `<instance-root>` is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](requirements.md)).
+sc-transport, or an explicitly supplied path. On Unix the default base is
+non-empty `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`. On Windows it
+is `LOCALAPPDATA`. The path is `<base>/<app>`
+([REQ-TRN-0002](requirements.md)). `instance_root` does not create it.
 
 The Windows address `127.0.0.1` is stated by the sc-runtime design. That the
 Windows port comes from the caller's configuration is decided in this
@@ -108,27 +110,40 @@ the original. Any code that needs that string, including
 ([REQ-RT-0006](../sc-runtime/requirements.md)), obtains it from this
 conversion and does not format it itself. This follows from REQ-RT-0006 and
 [REQ-RT-0008](../sc-runtime/requirements.md), which bar `sc-runtime` from
-holding endpoint logic; the name of the conversion (for example a `Display`
-implementation on the endpoint type) is covered by the OPEN on names below.
+holding endpoint logic. The conversion is `Display` and `FromStr` on
+`Endpoint`: `uds:<path>` and `tcp:<socket-addr>`. `tcp:` takes a literal
+`SocketAddr` and does not resolve DNS. An empty string is
+`TransportError::InvalidEndpoint` and does not fall through.
 
-**OPEN:** The names `Endpoint`, `Uds`, `Tcp`, `resolve_endpoint` and the
-resolver's parameter list are illustrative until the contract sprint pins
-them. This includes the name of the convenience form, if any, and the name
-of the `TransportError` variant for an unparseable value.
+Pinned by sprint a-3:
 
-**OPEN:** The string syntax of an endpoint value in `--endpoint` and
-`SC_ENDPOINT` (how a UDS path is told apart from a TCP `host:port`, and
-whether an empty value counts as absent) is not decided.
+- The endpoint type is `Endpoint::{Uds(PathBuf), Tcp(SocketAddr)}`.
+- The resolver is
+  `resolve_endpoint(&AppName, flag: Option<&OsStr>, environment: Option<&OsStr>, &TransportConfig) -> Result<Endpoint, TransportError>`.
+  `resolve_endpoint_from_env` is the convenience form and reads only
+  `std::env::var_os("SC_ENDPOINT")`.
+- An unparseable value is `TransportError::InvalidEndpoint`
+  (`TRANSPORT.INVALID_ENDPOINT`).
+- The configuration type is `TransportConfig`. It is `#[non_exhaustive]`
+  and `serde::Deserialize`. Its fields are `endpoint: Option<String>`,
+  `instance_root: Option<PathBuf>`, and `tcp_port: Option<u16>`. It has no
+  `additional_endpoints` field. v0.1 binds exactly one listener per config.
+  A later dual-bind adds a field on this type. v0.1 does not ignore a
+  reserved value. `DaemonConfig` field names stay with
+  [REQ-RT-0001](../sc-runtime/requirements.md); that type embeds
+  `TransportConfig`.
+- On Windows, a missing `tcp_port` with no override is
+  `TransportError::MissingTcpPort` (`TRANSPORT.MISSING_TCP_PORT`). `detail`
+  says to set `TransportConfig.tcp_port` or pass a `tcp:` override. This
+  crate has no default TCP port.
+- An override or `TransportConfig.endpoint` that names `uds:<path>` is a
+  UDS endpoint on every platform, including Windows. The resolver returns
+  it. `Client::new` and `bind` reject a UDS endpoint on non-Unix targets
+  when they are used (`TransportError::Request` and `TransportError::Bind`).
 
-**OPEN:** The name of the configuration type, its field names, and the shape
-of its endpoint value (a full endpoint, a port only, or both) are not
-decided. The same open point is recorded for the fields of `DaemonConfig` in
-[REQ-RT-0001](../sc-runtime/requirements.md); the two MUST be pinned
-together. The Windows default result when the configuration supplies no port
-is not decided either.
-
-**OPEN:** The behaviour when an override or configuration names a UDS path on
-Windows is not decided.
+Whether the project template writes a default TCP port into generated
+configuration stays with [REQ-RUN-0301](../requirements.md). This crate does
+not decide that.
 
 ### Rationale
 
@@ -166,7 +181,8 @@ resolves the daemon's bind endpoint only through this resolver
    override and a configuration port `P`, and asserts the result is the TCP
    address `127.0.0.1:P`.
 6. A unit test supplies an unparseable source 1 value and asserts the result
-   is `Err` with a `TransportError`, not a panic and not the source 2 value.
+   is `Err` with `TransportError::InvalidEndpoint`. The source 2 value is
+   not returned.
 7. Inspection of `crates/sc-transport` (source and tests) finds no call to
    `std::env::set_var` or `std::env::remove_var`; tests 1 to 6 pass
    `SC_ENDPOINT` as an argument and pass under the default parallel test
@@ -183,8 +199,8 @@ resolves the daemon's bind endpoint only through this resolver
     literal TCP port number used as a default endpoint.
 12. A unit test renders one UDS endpoint and one TCP endpoint to the string
     form, parses each string back as an explicit `--endpoint` value, and
-    asserts the result equals the original endpoint. Once the OPEN on the
-    string syntax is decided, the test also asserts the literal strings.
+    asserts the result equals the original endpoint, and asserts the literal
+    strings `uds:<path>` and `tcp:<socket-addr>`.
 
 ---
 
@@ -199,9 +215,11 @@ for one application and one operating-system user: the UDS socket file
 `daemon.sock` and the singleton lock file `daemon.lock`.
 
 The crate `sc-transport` MUST expose a public function that takes an
-application name (a string such as `"my-app"`) and returns the default
-instance root path for that application and the current user. In the crate's
-public-surface sketch this is `instance_root(app)`.
+application name (an [`AppName`](architecture.md), such as `"my-app"`) and
+returns the default instance root path for that application and the current
+user. The function is `instance_root(&AppName) -> Result<PathBuf, TransportError>`.
+The crate-private function `instance_root_from_base(&AppName, Option<&Path>)`
+is the path builder that receives the per-user base. It is not a facade item.
 
 The default instance root MUST be a per-user location: two different
 operating-system users MUST get different paths for the same application
@@ -226,16 +244,23 @@ changing the process environment. The public function obtains the base
 location from the operating system or environment and calls that function.
 This structure is decided in this document.
 
-**OPEN:** The exact per-user location of the default instance root on each
-of macOS, Linux and Windows (which base directory, and how the application
-name is combined with it) is not decided.
+The default base is decided by sprint a-3:
 
-**OPEN:** Whether resolving the instance root also creates the directory, or
-whether the caller creates it, is not decided.
+- Unix: non-empty `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`.
+- Windows: non-empty `LOCALAPPDATA`.
+- The instance root is `<base>/<app>`. `instance_root` does not create the
+  directory. The caller creates it.
+- An explicit `TransportConfig.instance_root` is used unchanged as the Unix
+  default's directory (`<explicit>/daemon.sock`), not as `<explicit>/<app>`.
+- Failure is `TransportError::InstanceRootUnavailable`
+  (`TRANSPORT.INSTANCE_ROOT_UNAVAILABLE`).
 
-**OPEN:** The name `instance_root`, its signature, the way an explicit root
-is supplied, and the `TransportError` variant name are illustrative until
-the contract sprint pins them.
+`AppName::new` accepts ASCII `A-Z`, `a-z`, `0-9`, `-`, and `_`, length
+1 through 64 bytes. Rejection is `TransportError::InvalidName`
+(`APP.INVALID_NAME`). `detail` says whether the name was empty, longer than
+64 bytes, or which character was outside that set. The type exposes `as_str`
+and `AsRef<str>`. It does not implement `Deref`. Tests load
+`tests/fixtures/app-name-vectors.json` and do not embed a second list.
 
 ### Rationale
 
@@ -267,9 +292,9 @@ that tests run in parallel and never touch a developer's real daemon
 7. A unit test calls the path-building function with the base location
    absent and asserts the result is `Err` with a `TransportError`, with no
    panic.
-8. Inspection of the public function finds that the base location it passes
-   is obtained at run time from the operating system or environment (which
-   call or variable is the first OPEN above) and is not a constant.
+8. Inspection of `instance_root` finds that the base location is
+   `XDG_RUNTIME_DIR` or `HOME` on Unix and `LOCALAPPDATA` on Windows, read
+   at run time with `std::env::var_os`.
 
 ---
 
@@ -282,7 +307,11 @@ that tests run in parallel and never touch a developer's real daemon
 When the cargo feature `server` of the crate `sc-transport` is enabled, the
 crate MUST expose a public function that takes a resolved endpoint (a UDS
 path or a TCP socket address) and returns a bound listener. In the crate's
-public-surface sketch these are `bind(&Endpoint)` and `Listener`.
+public-surface sketch these are `bind(&Endpoint) -> Result<Listener, TransportError>`
+and `Listener`. `Listener` is one type for both transports. `local_endpoint`
+returns the bound `Endpoint` (`TransportError::Bind` if the TCP address
+cannot be read). A TCP port of `0` is reported as the port the operating
+system assigned. `Listener` implements `axum::serve::Listener`.
 
 The returned listener MUST be accepted by `axum::serve` (axum 0.8) together
 with an ordinary `axum::Router`. The router and its handlers MUST NOT need
@@ -295,10 +324,13 @@ When the TCP port is `0` the listener MUST let the caller read the actual
 bound address.
 
 One process MUST be able to hold a UDS listener and a TCP listener from this
-function at the same time and serve the same router on both. This item
-provides that capability only. Whether `sc_runtime::Daemon::builder()` binds
-two listeners in v0.1 is undecided and is recorded as an OPEN in
-[REQ-RT-0001](../sc-runtime/requirements.md).
+same time and serve the same router on both. v0.1 `TransportConfig` describes
+exactly one endpoint. It has no `additional_endpoints` field. A later
+dual-bind adds a field on that type. v0.1 does not ignore a reserved value.
+Calling `bind` twice remains valid. Whether `sc_runtime::Daemon::builder()`
+uses two listeners is owned by
+[REQ-RT-0001](../sc-runtime/requirements.md); a-5 copies the one-listener
+decision into the root documents. This crate's dual-bind question is closed.
 
 A bind failure (for example the address is in use, or the directory does not
 exist) MUST be returned as an `Err` of the crate's error enum
@@ -307,12 +339,10 @@ exist) MUST be returned as an `Err` of the crate's error enum
 The function and the listener type MUST NOT exist in a build without the
 `server` feature.
 
-**OPEN:** The names `bind` and `Listener`, whether `Listener` is one type
-covering both transports or two types, the accessor for the bound address,
-and the `TransportError` variant name for a bind failure are illustrative
-until the contract sprint pins them.
-
-**OPEN:** The behaviour of binding a UDS endpoint on Windows is not decided.
+A bind failure is `TransportError::Bind` (`TRANSPORT.BIND`). The endpoint
+lock already being held is `TransportError::EndpointBusy`
+(`TRANSPORT.ENDPOINT_BUSY`). On a non-Unix target, `bind` of a UDS endpoint
+returns `TransportError::Bind`. The parent directory is not created.
 
 ### Rationale
 
@@ -386,20 +416,19 @@ Points 2, 3 and 4 are decided in this document
 file permissions restrict access to the user.
 
 `<instance-root>` is the per-application, per-user directory resolved by
-sc-transport, or an explicitly supplied path; its default location is
-undecided ([REQ-TRN-0002](requirements.md)).
+sc-transport, or an explicitly supplied path. On Unix the default base is
+non-empty `XDG_RUNTIME_DIR`, otherwise `$HOME/.local/state`. On Windows it
+is `LOCALAPPDATA`. The path is `<base>/<app>`
+([REQ-TRN-0002](requirements.md)). `instance_root` does not create it.
 
 Removing the old file and setting the permissions happen once, at bind time.
 They are outside the request path, so they do not conflict with the rule
 that request handling never blocks ([NFR-RUN-0002](../requirements.md)).
 
-**OPEN:** The exact permission mode of the socket file (for example `0600`
-or `0700`), and whether it is set on the socket file, on the instance root
-directory, or on both, is not decided. Only the "no group or other access"
-property above is binding.
-
-**OPEN:** The behaviour when the existing path is not a socket (a regular
-file or a directory) is not decided.
+The socket file mode is `0o600`. The mode is set on the socket file only.
+The instance-root directory is left unchanged. When the existing path is not
+a socket, `bind` returns `TransportError::NotASocket`
+(`TRANSPORT.NOT_A_SOCKET`) and leaves the path in place.
 
 ### Rationale
 
@@ -442,50 +471,44 @@ The crate `sc-transport` MUST expose, in its default build (no cargo
 features), a public HTTP client type. In the design sketch it is used as:
 
 ```rust
-// names are illustrative
-let client = sc_transport::Client::new("my-app", cfg.endpoint.clone())?;
+let client = sc_transport::Client::new(endpoint)?;
 let widget: Envelope<Widget> =
     client.post("/ops/widget.create", &CreateWidget { name }).await?;
 ```
 
-1. `Client::new(app, endpoint)` MUST take the application name (used in
-   the `DAEMON.NOT_RUNNING` suggested action,
-   [REQ-TRN-0006](requirements.md)) and an endpoint (a UDS path or a TCP
-   address). The endpoint argument is the value returned by the endpoint
-   resolver of [REQ-TRN-0001](requirements.md). `Client::new` MUST NOT perform
-   any endpoint resolution of its own: it MUST NOT read `SC_ENDPOINT`,
-   configuration or the instance root. This is decided in this document;
-   the sketch above, taken from the sc-runtime design, passes
-   `&cfg.endpoint` and does not show the resolver call.
+1. `Client::new(endpoint)` MUST take an endpoint (a UDS path or a TCP
+   address) and nothing else. It does not take an application name.
+   `DaemonNotRunning` carries no suggested action
+   ([REQ-TRN-0006](requirements.md)). The endpoint argument is the value
+   returned by the endpoint resolver of [REQ-TRN-0001](requirements.md).
+   `Client::new` MUST NOT perform any endpoint resolution of its own: it
+   MUST NOT read `SC_ENDPOINT`, configuration or the instance root.
 2. It MUST build a `reqwest::Client` (reqwest 0.13). For a UDS endpoint it
    MUST configure it with `reqwest::ClientBuilder::unix_socket(path)`. For a
-   TCP endpoint it MUST use the base URL `http://<ip>:<port>`.
+   TCP endpoint it MUST use the base URL `http://<ip>:<port>`. The UDS base
+   URL is `http://localhost`.
 3. `get(path)` MUST send an HTTP `GET` to `path` on that endpoint.
 4. `post(path, &body)` MUST send an HTTP `POST` to `path` with `body`
    serialised as JSON, for any `B: serde::Serialize`.
 5. Both methods MUST be `async`, MUST deserialise the JSON response body
    into the caller-chosen type `T`, for any `T: serde::de::DeserializeOwned`,
-   and MUST return `Result<T, TransportError>`.
+   and MUST return `Result<T, TransportError>`. Deserialisation runs for
+   every HTTP status, including non-2xx. A body that is `T` is `Ok(T)`.
 6. The crate MUST NOT name or depend on any concrete response type such as
    `Envelope<T>`; the caller chooses `T`.
 7. No method may panic; every failure is a `TransportError` value.
 
 The constructor signature is
-`Client::new(app: &str, endpoint: Endpoint) -> Result<Client, TransportError>`.
-It stores an owned application name and endpoint and builds the reqwest
-client; it does not contact the daemon. An unreachable daemon is first
-reported by `get` or `post`. The generic method signatures are pinned in the
-Phase A public-contract handoff and recorded here by sprint a-3.
-
-**OPEN:** Client timeouts (connect timeout, whole-request timeout, and
-whether the caller can set them) are not decided.
-
-**OPEN:** How a response with a non-2xx HTTP status is treated is not
-decided: see [REQ-TRN-0006](requirements.md), which carries the same open
-point.
-
-**OPEN:** The behaviour of `new` with a UDS endpoint on Windows, where
-`unix_socket` does not exist, is not decided.
+`Client::new(endpoint: Endpoint) -> Result<Client, TransportError>`.
+It stores the endpoint and builds the reqwest client. It does not contact
+the daemon. An unreachable daemon is first reported by `get` or `post`.
+Connect timeout and request timeout are each two seconds. The caller cannot
+set them in v0.1. [ADR-TRN-0001](architecture.md) reserves a future
+`#[non_exhaustive] ClientOptions` and `Client::with_options` for timeouts
+and default headers. v0.1 does not define that type. `Client::new` stays the
+handoff constructor. On a non-Unix target, `Client::new` with a UDS endpoint
+returns `TransportError::Request`. The resolver may still return that UDS
+endpoint.
 
 ### Rationale
 
@@ -499,8 +522,8 @@ the two crates must stay independent so either can be used alone
 ### Success Criteria
 
 1. A test on Unix starts an HTTP server on a UDS path in a tempdir with a
-   `POST` route that echoes a JSON struct, calls `new` with an application
-   name and that endpoint, calls `post` with a test struct
+   `POST` route that echoes a JSON struct, calls `Client::new` with that
+   endpoint, calls `post` with a test struct
    `Req { name: String }`, and asserts the
    returned test struct `Resp` has the expected field values.
 2. The same test over TCP on `127.0.0.1` with an ephemeral port.
@@ -531,50 +554,45 @@ variant `DaemonNotRunning`.
    a connection to the endpoint for one of these reasons: the UDS socket
    file does not exist; the UDS socket file exists but nothing is listening
    (connection refused); the TCP connection is refused.
-2. `DaemonNotRunning` MUST carry two plain strings: the code, exactly
-   `DAEMON.NOT_RUNNING`, and the suggested action, exactly
-   `run <app> daemon start` with `<app>` replaced by the application name
-   given to `Client::new` (for `"my-app"`: `run my-app daemon start`).
+2. `DaemonNotRunning` MUST carry `code: &'static str`, exactly
+   `DAEMON.NOT_RUNNING`, the endpoint, and the cause. `code()` returns
+   `DAEMON.NOT_RUNNING`. The variant has no `suggested_action`, no
+   `AppName`, no `sc_observability_types::ErrorCode`, and no `Remediation`.
+   This crate does not name `daemon start`. a-6 maps the string to
+   `ErrorCode` and owns `suggested_action` for every `TransportError`.
 3. The `Client` MUST NOT start the daemon, spawn any process, or retry in
    order to wait for a daemon. Phase A's generated CLI is report-only.
    Deferred [REQ-RUN-0206](../requirements.md) preserves a possible later
    optional auto-start layer outside this transport boundary.
 4. A response body that cannot be deserialised into the requested type MUST
-   produce a `TransportError` variant other than `DaemonNotRunning`.
+   produce `TransportError::ResponseDecode` (`TRANSPORT.RESPONSE_DECODE`),
+   which carries the HTTP status, the cause, and `body_preview` (a lossy
+   UTF-8 prefix of at most 512 bytes of the body). A body that deserialises
+   as `T` is `Ok(T)` for every HTTP status.
+5. Connect timeout and request timeout are each two seconds and are not
+   caller-configurable in v0.1. The extension point is `ClientOptions` in
+   [ADR-TRN-0001](architecture.md). A timeout is `TransportError::TimedOut`
+   (`TRANSPORT.TIMED_OUT`).
+6. A client failure that is neither a missing socket, nor connection
+   refused, nor a timeout, nor a decode failure is `TransportError::Request`
+   (`TRANSPORT.REQUEST`). A UDS path that is a directory is `Request`.
 
-**OPEN:** Whether the client has any request timeout is not decided
-([REQ-TRN-0005](requirements.md) carries the same open point). Once a
-timeout is decided to exist: a request that times out MUST produce a
-`TransportError` variant that is neither `DaemonNotRunning` nor the
-undecodable-body variant of point 4.
-
-**OPEN:** How the client treats a response with a non-2xx HTTP status is not
-decided. The earlier text of this requirement made "HTTP error status" its
-own error variant. That conflicts with two other facts: the daemon returns a
-failed operation as a JSON envelope with `ok: false` under a 4xx or 5xx
-status (`sc-command`), and the CLI is meant to receive and print that
-envelope. Returning an error variant without the body would hide the
-envelope from the CLI. The choice (always deserialise the body into `T`
-whatever the status; or an error variant that carries status and body) must
-be made in the contract sprint.
-
-**OPEN:** The names of the non-`DaemonNotRunning` variants, the field or
-accessor names for the code and suggested action, and whether other
-connection errors (for example permission denied on the socket file) map to
-`DaemonNotRunning` are not decided.
+The inventory of every `TransportError` variant is the error-inventory
+table in [ADR-TRN-0001](architecture.md). [ADR-TRN-0003](architecture.md)
+records the same table as the decision for `DaemonNotRunning`.
 
 ### Rationale
 
 The daemon being down is the most common CLI failure. It must be told apart
-from every other failure so that an agent or a person knows the fix is to
-start the daemon, and automation can branch on the stable code
-`DAEMON.NOT_RUNNING`. The `Client` only reports; any later optional auto-start
-layer under deferred [REQ-RUN-0206](../requirements.md) would act outside
-this boundary. The code and action are plain strings because
-this crate must not depend on `sc-command`, where `OpError` lives; the
-project's CLI maps this variant into an `OpError`. Which `code` and envelope
-a CLI prints for the other `TransportError` variants is not decided in this
-crate; that open point is recorded in
+from every other failure so that an agent or a person can branch on the
+stable code `DAEMON.NOT_RUNNING`. The `Client` only reports; any later
+optional auto-start layer under deferred
+[REQ-RUN-0206](../requirements.md) would act outside this boundary. The
+code is a `&'static str` because this crate must not depend on
+`sc-observability-types` or on `sc-command`, where `ErrorCode` and `OpError`
+live. a-6 maps the string and chooses `suggested_action`, including any
+`daemon start` text. Which envelope a CLI prints for the other
+`TransportError` variants is recorded in
 [REQ-RUN-0202](../requirements.md).
 
 ### Success Criteria
@@ -587,19 +605,19 @@ crate; that open point is recorded in
    `DaemonNotRunning`.
 3. A test binds `127.0.0.1:0`, records the port, closes the listener, calls
    the client against that port, and asserts `DaemonNotRunning`.
-4. Each of tests 1 to 3 uses the application name `"my-app"` and asserts the
-   code equals `DAEMON.NOT_RUNNING` and the suggested action equals
-   `run my-app daemon start`.
-5. A second client using the same unreachable endpoint and application name
-   `"other-app"` returns the same code and suggested action
-   `run other-app daemon start`.
-6. A test asserts that an undecodable response body gives a variant that is
-   not `DaemonNotRunning`.
+4. Each of tests 1 to 3 asserts the code equals `DAEMON.NOT_RUNNING`, the
+   endpoint equals the endpoint passed to `Client::new`, and the cause is
+   present. The matched fields are `code`, `endpoint`, and `cause`.
+5. A same-crate unit test matches `DaemonNotRunning` exhaustively on
+   `code`, `endpoint`, and `cause`. The error carries no application name.
+   `Client::new` takes an `Endpoint` only.
+6. A test asserts that an undecodable response body gives
+   `ResponseDecode` whose `body_preview` contains that body, and that a
+   non-2xx body that deserialises as `T` is `Ok(T)`.
 7. Inspection of `crates/sc-transport/src` finds no use of
    `std::process::Command` or `tokio::process`.
-8. Once a request timeout is decided to exist: a test calls the client
-   against a route that never responds and asserts an `Err` whose variant is
-   neither `DaemonNotRunning` nor the variant asserted in test 6.
+8. A test calls the client against a route that never responds and asserts
+   `TimedOut`.
 
 ---
 
@@ -616,14 +634,17 @@ In `crates/sc-transport/Cargo.toml`:
 3. `axum` MUST be declared `optional = true` and MUST be enabled only by the
    `server` feature.
 4. With default features the direct non-dev dependencies MUST be exactly
-   `tokio`, `reqwest` and `serde`. `tokio` and `reqwest` are stated by the
-   sc-runtime design. `serde` follows from the crate's own API: the client
-   methods are bounded by `serde::Serialize` and
+   `tokio`, `reqwest`, `serde`, and `serde_json`. `tokio` and `reqwest` are
+   stated by the sc-runtime design. `serde` follows from the crate's own API:
+   the client methods are bounded by `serde::Serialize` and
    `serde::de::DeserializeOwned` ([REQ-TRN-0005](requirements.md)) and the
    configuration type implements `serde::Deserialize`
-   ([REQ-TRN-0001](requirements.md)).
+   ([REQ-TRN-0001](requirements.md)). `serde_json` decodes a buffered body so
+   `ResponseDecode` can keep `body_preview`. The list does not name
+   `sc-observability-types`. `allowed_dependencies` does not include it.
+   `server` still adds only `axum`.
 5. With the `server` feature the direct non-dev dependencies MUST be exactly
-   those three plus `axum`.
+   those four plus `axum`.
 6. The default build MUST NOT have `axum` anywhere in its normal dependency
    tree.
 7. All listener-binding code MUST be compiled only under
@@ -663,11 +684,11 @@ therefore all run with `-p sc-transport`.
 5. `Cargo.toml` inspection: `default` does not list `server`; `axum` has
    `optional = true`.
 6. `cargo tree -p sc-transport -e normal --depth 1 --prefix none` prints,
-   after the first line (the crate itself), exactly three lines, beginning
-   with `reqwest `, `serde ` and `tokio `.
+   after the first line (the crate itself), exactly four lines, beginning
+   with `reqwest `, `serde `, `serde_json `, and `tokio `.
 7. The same command with `--features server` prints, after the first line,
-   exactly four lines, beginning with `axum `, `reqwest `, `serde ` and
-   `tokio `.
+   exactly five lines, beginning with `axum `, `reqwest `, `serde `,
+   `serde_json `, and `tokio `.
 
 ---
 
@@ -712,7 +733,7 @@ Standard crates used the documented way mean less code to own and review.
 
 ### Requirement Statement
 
-`crates/sc-transport/Cargo.toml` MUST NOT list any of these five crates
+`crates/sc-transport/Cargo.toml` MUST NOT list any of these crates
 under `[dependencies]`, `[dev-dependencies]`, `[build-dependencies]` or any
 target-specific dependency table, with any feature set:
 
@@ -723,21 +744,33 @@ target-specific dependency table, with any feature set:
 | `sc-runtime` | library crate of this workspace |
 | `sc-observability` | the SC logging and telemetry crate |
 | `sc-observability-otlp` | its OpenTelemetry export crate |
+| `sc-observability-types` | its error-code crate |
 
 The list is owned by [REQ-RUN-0005](../requirements.md), which states the
 workspace-internal and forbidden edges of all four crates; this item applies
 it to `sc-transport` and MUST stay identical to it.
 
 The crate's boundary manifest under the repository directory
-`boundaries/sc-transport/` is a TOML file. Its `[dependencies]` table MUST
-contain a `forbidden_edges` list with these five entries:
-`"sc-transport -> sc-config"`, `"sc-transport -> sc-command"`,
-`"sc-transport -> sc-runtime"`, `"sc-transport -> sc-observability"` and
-`"sc-transport -> sc-observability-otlp"`. `sc-lint-boundary` checks
-inter-crate edges and the public facade list only. The manifest format has
-no cargo-feature key, so the rule that `axum` is allowed only with `server`
-is checked by the `cargo tree` criteria of
-[NFR-TRN-0001](requirements.md), not by the manifest.
+`boundaries/sc-transport/` is a TOML file. Sprint a-3 lints it as a
+single-crate workspace (`sc-lint lint sc-boundary --root crates/sc-transport`).
+sc-lint 0.8.0 lists a `forbidden_edges` target only when that target is a
+workspace member of the lint tree, and it exits 3 for a name absent from
+the workspace and from the cargo resolve
+([REQ-RUN-0005](../requirements.md)). This tree's only member is
+`sc-transport`, so `forbidden_edges` is empty. The policy above is enforced
+by `cargo tree`: no line begins with `sc-config `, `sc-command `,
+`sc-runtime `, `sc-observability `, `sc-observability-types `, or
+`sc-observability-otlp ` (each name followed by a space).
+
+`allowed_dependents` is empty in this tree. The only intended dependent is
+`sc-runtime`, recorded in the manifest notes. Naming `sc-runtime` before it
+is a workspace member makes sc-lint 0.8.0 exit 3. a-5 adds that name when
+the four-crate workspace exists.
+
+`allowed_dependencies` for the default build is `tokio`, `reqwest`, `serde`,
+and `serde_json`. `axum` is absent from that list because the manifest has no
+feature key; [NFR-TRN-0001](requirements.md) checks it with `cargo tree`.
+`sc-lint-boundary` checks inter-crate edges and the public facade list only.
 
 ### Rationale
 
@@ -755,14 +788,17 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
 
 1. `cargo tree -p sc-transport -e normal --prefix none` and the same command
    with `--features server` each print no line beginning with `sc-config `,
-   `sc-command `, `sc-runtime `, `sc-observability ` or
-   `sc-observability-otlp ` (each name followed by a space).
-2. Inspection of `crates/sc-transport/Cargo.toml` finds none of the five
-   names as a key in `[dev-dependencies]`, `[build-dependencies]` or a
-   `[target.*]` dependency table.
-3. A TOML manifest file exists under `boundaries/sc-transport/` and its
-   `forbidden_edges` list contains the five entries given above.
-4. `just lint`, which runs `sc-lint-boundary`, exits 0.
+   `sc-command `, `sc-runtime `, `sc-observability `,
+   `sc-observability-types `, or `sc-observability-otlp ` (each name
+   followed by a space).
+2. Inspection of `crates/sc-transport/Cargo.toml` finds none of those names
+   as a key in `[dependencies]`, `[dev-dependencies]`,
+   `[build-dependencies]`, or a `[target.*]` dependency table.
+3. A TOML manifest file exists under `boundaries/sc-transport/`. Its
+   `forbidden_edges` list is empty. Its `allowed_dependents` list is empty.
+   Its `allowed_dependencies` are `tokio`, `reqwest`, `serde`, and `serde_json`.
+4. `sc-lint lint sc-boundary --root crates/sc-transport` exits 0. Root
+   `just lint` across all four manifests stays with a-5.
 5. `cargo test -p sc-transport` passes from a clean checkout.
 
 ---
@@ -775,7 +811,9 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
 
 Every public function and method of the crate `sc-transport` that can fail
 MUST return `Result<T, TransportError>`, where `TransportError` is one public
-`enum` defined in this crate. It is the crate's only public error type.
+`enum` defined in this crate. Public functions return that enum only.
+`TransportCause` is the `cause` payload and the `Error::source` value. It
+is not a function's `Err` type.
 
 The rule is owned by [NFR-RUN-0009](../requirements.md), which applies to
 every library crate of the workspace; this item applies it to
@@ -794,9 +832,11 @@ unreadable environment variable).
 Public signatures MUST NOT use opaque error types such as `anyhow::Error` or
 `Box<dyn std::error::Error>`.
 
-**OPEN:** The full list of `TransportError` variants and their names is not
-decided, except `DaemonNotRunning`
-([REQ-TRN-0006](requirements.md)), which is fixed.
+Every variant, its stable code, its cause payload, and its recovery are the
+error-inventory table in [ADR-TRN-0001](architecture.md). The variants are
+`InvalidName`, `InvalidEndpoint`, `MissingTcpPort`,
+`InstanceRootUnavailable`, `DaemonNotRunning`, `ResponseDecode`, `TimedOut`,
+`Request`, `Bind`, `EndpointBusy`, and `NotASocket`.
 
 ### Rationale
 

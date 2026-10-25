@@ -1,7 +1,7 @@
 ---
 id: a-3
 phase: a
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-transport
 track: core
@@ -127,9 +127,10 @@ It does not edit `docs/architecture.md`.
    are `tokio`, `reqwest`, and `serde`. Do not add
    `sc-observability-types`. `server` still adds only `axum`.
    `allowed_dependencies` does not include `sc-observability-types`.
-   `forbidden_edges` lists `sc-observability` and `sc-observability-types`
-   as distinct strings, direct and transitive, plus `sc-observability-otlp`.
-   Once `crates/sc-transport/Cargo.toml` exists, run the single-crate
+   In the single-crate lint tree, `forbidden_edges` and `allowed_dependents`
+   are empty per amended **NFR-TRN-0003**; observability bans are enforced
+   with `cargo tree` (no `sc-observability*` lines). Once
+   `crates/sc-transport/Cargo.toml` exists, run the single-crate
    `sc-lint lint sc-boundary` command a-1 recorded.
    Do not paste analyzer output into the pull request. The binding evidence
    is the QA re-run in Required validation. Do not wait for a-5. Do not own
@@ -186,14 +187,13 @@ It does not edit `docs/architecture.md`.
    `sc_transport::AppName`. `Client::new` takes an `Endpoint` only. The
    type exposes `as_str` or `AsRef<str>` and does not implement `Deref`
    (RBP-F005).
-7. `req:NFR-TRN-0001` — the amended dependency list does not name
-   `sc-observability-types`. `allowed_dependents` is `sc-runtime` only.
-   `forbidden_edges` contains `sc-observability` and
-   `sc-observability-types` as distinct strings. The single-crate
-   `sc-lint lint sc-boundary` command a-1 recorded exits 0 on
-   `boundaries/sc-transport/sc-transport.toml`. Analyzer output is not
-   pasted into the pull request. Leaf QA re-runs that command at the
-   reviewed commit.
+7. `req:NFR-TRN-0003` — the amended dependency list does not name
+   `sc-observability-types`. In the single-crate lint tree,
+   `forbidden_edges` and `allowed_dependents` are empty; `cargo tree -p
+   sc-transport` shows no forbidden observability or workspace crate lines.
+   The single-crate `sc-lint lint sc-boundary --root crates/sc-transport`
+   command exits 0. Analyzer output is not pasted into the pull request.
+   Leaf QA re-runs that command at the reviewed commit.
 8. `boundary:sc-transport` — NFR-TRN-0004 is this crate's strictness on
    NFR-RUN-0009. Every `TransportError` variant, including an unreachable
    endpoint, is a `Result` value. `unwrap`, `expect`, `panic!`,

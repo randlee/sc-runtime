@@ -1,7 +1,7 @@
 ---
 id: a-8
 phase: a
-status: planned
+status: complete
 closure_type: integration
 target_boundary: wizard
 vertical_rationale: "The copied Wyvern UI and its narrow driver entry point form one small producer/consumer pair over an already-settled JSON contract."
@@ -15,6 +15,7 @@ must_follow: [a-6]
 parallel_safe: [a-7]
 requirements:
   - REQ-RUN-0001
+  - REQ-RUN-0004
   - REQ-RUN-0401
   - REQ-RUN-0402
   - REQ-RUN-0403
@@ -27,6 +28,7 @@ requirements:
   - NFR-RUN-0005
 adrs:
   - ADR-RUN-0008
+  - ADR-RUN-0010
   - ADR-RUN-0401
   - ADR-RUN-0402
 owned_paths:
@@ -37,6 +39,11 @@ owned_paths:
   - "tests/unit/wizard/**"
   - "tests/integration/wizard/**"
   - "docs/generation.md"
+  - "scripts/run_generation_tests.py"
+  - "docs/project-plan.md"
+  - "docs/requirements.md"
+  - "docs/architecture.md"
+  - "docs/plans/phase-a/phase-a-plan.md"
 ---
 
 # Sprint a-8 — wizard
@@ -73,7 +80,14 @@ Do not add application options or reopen the schema during UI work.
    no destination. The wizard does not re-implement the project-name
    predicate. Finished answers pass `wizard/answers.schema.json`, whose
    project-name `pattern` is that predicate. The driver remains the
-   validator.
+   validator. Validation uses the `jsonschema` package the driver already
+   requires. The runner does not keep a second schema checker. Acquisition
+   failures end on the ADR-RUN-0401 inventory: missing Wyvern is
+   `GEN.TOOL_MISSING`, cancel and dismissed are `GEN.WIZARD_CANCELLED`, and
+   runner schema and project-name rejects are `GEN.SCHEMA_INVALID` and
+   `APP.INVALID_NAME`. `--var-file` wins when it is combined with
+   `--prefill`. A prefill key the schema does not define is dropped with a
+   stderr warning.
 3. **REQ-RUN-0603** — Demonstrate fixture-equivalent answers and generated
    output without changing the core crates or template contract.
 4. **REQ-RUN-0501 / REQ-RUN-0502** — Preserve the a-6 pipeline and
@@ -85,6 +99,10 @@ Do not add application options or reopen the schema during UI work.
 5. **REQ-RUN-0001** — Create the three layout paths the core tag does not
    require: `wizard/wizard.json`, `wizard/pages/`, and `scripts/run_wizard.py`.
    a-7's `req:REQ-RUN-0001` criterion leaves these three to this sprint.
+6. **REQ-RUN-0004** — `just new` keeps passing further arguments through
+   unchanged. `just test` runs the wizard suites: `scripts/run_generation_tests.py`
+   discovers `tests/unit/wizard` and `tests/integration/wizard` along with the
+   a-6 generation suites.
 
 ## Acceptance criteria
 
@@ -103,6 +121,9 @@ Do not add application options or reopen the schema during UI work.
    generation suite stays byte-identical: that diff is empty. The
    `scripts/new_project.py` diff is entry-mode flags only. Any other hunk
    in that file fails the check.
+6. `req:REQ-RUN-0004` — `scripts/run_generation_tests.py` loads
+   `tests/unit/wizard` and `tests/integration/wizard`, so `just test` runs
+   them. The `just new` recipe still forwards extra arguments.
 
 ## This sprint does not close
 
@@ -116,6 +137,8 @@ None.
 ## Required validation
 
 Run the acceptance criteria, including the diff allowlist in criterion 5
-and the unchanged a-6 generation suite.
+and the unchanged a-6 generation suite. `just test` runs
+`scripts/run_generation_tests.py`, which discovers the wizard suites and
+the a-6 generation suites.
 The crate and template trees stay at the a-6 merge. This sprint does not
 wait for a-7.

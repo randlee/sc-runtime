@@ -89,8 +89,9 @@ SIGTERM. The project's `main.rs` loads config with `sc-config` and initialises
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)). There is one
-`axum::Router`, served unchanged on every listener `run()` binds; whether the
-builder can bind a UDS and a TCP listener at once in v0.1 is undecided
+`axum::Router`, served unchanged on the one listener `run()` binds. v0.1 binds
+exactly one listener. `TransportConfig` is `#[non_exhaustive]` and has no
+`additional_endpoints` field
 ([REQ-RT-0001](sc-runtime/requirements.md)).
 
 ## Crate graph
@@ -100,16 +101,25 @@ workspace-internal edges and the forbidden edges of the four library crates.
 
 | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
 |---|---|---|
-| `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `tokio` |
-| `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
+| `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+| `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
 | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 
-**OPEN:** the sc-runtime design lists the edge `sc-runtime` -> `sc-config` but
-names nothing that `sc-runtime` uses from `sc-config`, and `sc-runtime` MUST
-NOT load configuration ([NFR-RT-0002](sc-runtime/requirements.md)). The edge is
-therefore recorded as MAY. Whether it exists in v0.1, and for what, is
-undecided.
+`sc-observability-types` is an allowed dependency of `sc-command` only.
+The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
+list only targets that are workspace members in that crate's lint tree;
+crates.io names and other non-member targets are enforced by criterion 5 of
+[REQ-RUN-0005](requirements.md) (`cargo tree`). sc-lint 0.8.0 cannot fail a
+crates.io edge, so the `sc-runtime` direct-only rule is
+`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no line
+beginning with `sc-observability-types `. A transitive line through
+`sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
+`sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
+edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
+entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
+`sc-runtime` does not depend on `sc-config` and does not load configuration
+([NFR-RT-0002](sc-runtime/requirements.md)).
 
 The allowed third-party dependencies of each crate are owned by that crate's
 NFR and are not restated here:
@@ -139,8 +149,8 @@ project. Template CI runs the same driver over every fixture in
 
 ## Index of ADRs
 
-`Active` is binding. `Proposed` is not binding until sprint a-1 (the spike
-sprint) makes it `Active` or amends it.
+`Active` is binding. `Proposed` is not binding. Sprint a-1 made
+ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 
 | Id | Title | Status |
 |---|---|---|
@@ -153,16 +163,17 @@ sprint) makes it `Active` or amends it.
 | ADR-RUN-0007 | Async end to end on Tokio; `sc-config` is synchronous | Active |
 | ADR-RUN-0008 | Requirements must mean less code; prefer standard designs | Active |
 | ADR-RUN-0009 | Daemon-process tests run in a virtual machine; no test daemon | Active |
+| ADR-RUN-0010 | Two AppName newtypes; no runtime name | Active |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
-| ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Proposed |
+| ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Active |
 | ADR-RUN-0204 | The CLI auto-starts the daemon, launched as launchd would | Deferred — post-core application layer |
 | ADR-RUN-0301 | One store crate per database backend | Active |
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
-| ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Proposed |
+| ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 
 ---
 
@@ -224,13 +235,11 @@ command is. A project could then do only what the wrappers expose.
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
 
-The builder method names `stores`, `routes`, `mcp` and `run` are illustrative
-and not yet pinned; the shape in points 3, 5 and 6 is what binds.
-
-**OPEN:** whether the builder can bind two listeners (a UDS and a TCP listener
-at once) in v0.1 is undecided ([REQ-RT-0001](sc-runtime/requirements.md)). In
-either case there is one `axum::Router`, served unchanged on every listener
-`run()` binds.
+The builder method names are `stores`, `routes`, `mcp`, and `run`.
+`Daemon::builder` takes `&sc_transport::AppName`. v0.1 binds exactly one
+listener. `TransportConfig` is `#[non_exhaustive]` and has no
+`additional_endpoints` field ([REQ-RT-0001](sc-runtime/requirements.md)).
+There is one `axum::Router`, served on that listener.
 
 ### Consequences
 
@@ -285,7 +294,8 @@ crate's exported items a visible manifest change for that review.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19: independent crates stated by the owner; one repository with crates.io versions is a design recommendation accepted for sprint planning. Replaces an earlier scaffold plan of path dependencies extracted later. The review check in point 6 is decided in this document  
+**Amended:** 2026-10-24 (sprint a-7), points 7–9, the publish and release contract  
+**Source:** sc-runtime design, 2026-09-19: independent crates stated by the owner; one repository with crates.io versions is a design recommendation accepted for sprint planning. Replaces an earlier scaffold plan of path dependencies extracted later. The review check in point 6 is decided in this document. Points 7–9 are decided in sprint a-7  
 
 ### Context
 
@@ -324,6 +334,20 @@ path: every fix would have to be re-applied by hand in every project.
    under `template/` other than the example operation, the wiring of routes,
    MCP tools, CLI commands and stores, or configuration MUST state in its
    sprint document why that code cannot live in a crate.
+7. `install.py` from the pinned sc-publish kit is the only owner of release
+   workflows. The authored release inputs are `release/sc-publish-pin.toml`,
+   `release/sc-publish-consumer-input.json`, and
+   `docs/development/sc-publish.md`. `install.py` writes
+   `.github/workflows/release*.yml` and the kit release scripts. Those
+   outputs are generated files and MUST NOT be hand-edited.
+8. Hand-authored publish workflows are forbidden, including a hand-authored
+   `.github/workflows/crates-publish.yml`. A workflow of that name is
+   allowed only as byte-for-byte `install.py` output.
+9. The GitHub Release for tag `v0.1.0` MUST include a workspace source
+   archive named `sc-runtime-{version}-source.tar.gz`. The kit produces that
+   archive from the linux `release_targets` row (`x86_64-unknown-linux-gnu`,
+   `ubuntu-latest`, `tar.gz`). `release_binaries` stays empty. Phase A ships
+   no release binaries.
 
 **OPEN:** point 3's same-commit testing needs a generated project to resolve
 the four crates from the checked-out `crates/` directory and not from
@@ -339,7 +363,9 @@ Generated projects pick up fixes with `cargo update`. The template stays
 small, which keeps the fixture matrix (one generated project per answers
 fixture) cheap to run. Publishing becomes part of every release, and each
 crate's public API is a semver contract from `v0.1.0`. Any crate can move to
-its own repository later without an API change.
+its own repository later without an API change. The `v0.1.0` GitHub Release
+carries the workspace source archive from point 9 and no release binaries.
+Release workflow files stay kit output.
 
 ### Alternatives Considered
 
@@ -361,7 +387,9 @@ own); `req-qa` on [REQ-RUN-0003](requirements.md) (points 4 and 5: rendered `Car
 files contain version requirements and no `path =` entry for these crates);
 the fixture matrix ([REQ-RUN-0701](requirements.md)), which generates and tests a project
 per fixture on every change; `arch-qa` review of the sprint document for
-point 6.
+point 6. Points 7–9 are the sprint a-7 amendment: `install.py` output under
+`.github/workflows/release*.yml`, an empty `release_binaries` array, and the
+linux `release_targets` row in `release/sc-publish-consumer-input.json`.
 
 ### Related Documents
 
@@ -399,10 +427,22 @@ as its own selection.
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `tokio` |
-   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. MAY: `sc-config` (see the OPEN below) | `sqlx`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+
+`sc-observability-types` is an allowed dependency of `sc-command` only.
+The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
+list only workspace-member targets in that lint tree; crates.io names use
+criterion 5 `cargo tree` checks (see sprint a-1 evidence). sc-lint 0.8.0
+cannot fail a crates.io edge, so the `sc-runtime` direct-only rule is
+`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no
+line beginning with `sc-observability-types `. A transitive line through
+`sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
+`sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
+edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
+entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
 
 2. `sc-config`, `sc-transport` and `sc-command` MUST NOT depend on one
    another, because each must be usable without the others. `sc-runtime` MUST
@@ -435,32 +475,31 @@ as its own selection.
    built as its own selection, `cargo build -p cli`
    ([NFR-RUN-0001](requirements.md), which owns the property and its criterion).
 
-**OPEN:** the sc-runtime design lists the edge `sc-runtime` -> `sc-config` but
-names nothing that `sc-runtime` uses from `sc-config`, and `sc-runtime` MUST
-NOT load configuration ([NFR-RT-0002](sc-runtime/requirements.md)). The edge is
-therefore recorded as MAY. Whether it exists in v0.1, and for what, is
-undecided.
+The edge `sc-runtime` -> `sc-config` is absent. `sc-runtime` does not depend
+on `sc-config` and does not load configuration
+([NFR-RT-0002](sc-runtime/requirements.md)).
 
-**OPEN:** under `cargo build --workspace` (and `cargo test --workspace`) in a
-generated project, cargo unifies features, so `sc-transport` and `sc-command`
-are compiled once with `server` enabled and the `cli` binary is built against
-them. Whether workspace-wide builds are exempt from the property in point 8,
-or the two crates must instead be split into client and server crates, is
-undecided. Sprint a-1 (the spike sprint) MUST measure what a `cli` binary
-links under both build selections before this is decided.
+Sprint a-1 measured both selections on `examples/spike` and closed this
+question. `cargo build -p cli` is the normative selection. A workspace-wide
+build is exempt from the property in point 8. Splitting `sc-transport` and
+`sc-command` into client and server crates is rejected for v0.1. a-6 owns
+the generated-project check `cargo tree -p cli -e normal`. a-5 does not run
+that command. The measurement is the sprint a-1 evidence record.
 
 ### Consequences
 
 A CLI built with `cargo build -p cli` depends on the default builds of
-`sc-transport` and `sc-command` and links none of axum, rmcp or sqlx. The same
-is not claimed for a workspace-wide build (second OPEN above).
+`sc-transport` and `sc-command` and links none of axum, rmcp or sqlx. A
+workspace-wide build is exempt. The client/server crate split is rejected
+for v0.1.
 
 A shared concept cannot be shared by adding an edge between two standalone
-crates. Example, decided in this document: `sc-transport` reports an
-unreachable daemon as its own typed error `TransportError::DaemonNotRunning`
-carrying the code and suggested action as plain strings, and the generated
-project's CLI, which depends on both crates, maps it into an `OpError`
-([ADR-TRN-0003](sc-transport/architecture.md)).
+crates. `TransportError::DaemonNotRunning` is owned by
+[ADR-TRN-0003](sc-transport/architecture.md). The `OpError` wire form is
+owned by [ADR-CMD-0001](sc-command/architecture.md). The Phase A decision
+for the daemon-not-running code is point 5 of
+[ADR-RUN-0004](architecture.md). This ADR does not restate those field
+types.
 
 `sc-lint-boundary` cannot express "axum only with `server`": its manifest
 format has no cargo-feature key. Feature-conditional dependencies are checked
@@ -468,12 +507,10 @@ with `cargo tree`, and wrapper-type rules by `arch-qa` review.
 
 ### Alternatives Considered
 
-- Splitting each of the two crates into a `-client` and a `-server` crate. Not
-  adopted for v0.1 planning because it doubles the crates to publish and
-  version. It is not equivalent to a feature: a crate split is not subject to
-  cargo feature unification, and a feature is. The second OPEN above may
-  reopen this alternative once the spike has measured the workspace-wide
-  build.
+- Splitting each of the two crates into a `-client` and a `-server` crate.
+  Rejected for v0.1. It doubles the crates to publish and version. Sprint a-1
+  measured workspace unification and the normative selection stays
+  `cargo build -p cli`, with workspace-wide builds exempt.
 - Letting `sc-command` depend on `sc-transport` so they can share the
   daemon-not-running error. Rejected because neither crate would then be
   usable alone.
@@ -500,7 +537,8 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 ### Related Documents
 
 - [NFR-RUN-0001](requirements.md): a CLI binary built as its own selection links none of
-  axum, rmcp or sqlx; records the same feature-unification OPEN.
+  axum, rmcp or sqlx. Workspace-wide builds are exempt. a-6 owns
+  `cargo tree -p cli -e normal`.
 - [REQ-RUN-0002](requirements.md): each crate is an independent deliverable.
 - [REQ-RUN-0004](requirements.md): what `just test` runs, with and without `server`.
 - [REQ-RUN-0005](requirements.md): owner of the workspace-internal and forbidden edges; a
@@ -513,7 +551,8 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 - [NFR-RT-0003](sc-runtime/requirements.md): allowed dependencies of `sc-runtime`, the only
   assembler.
 - [ADR-CFG-0003](sc-config/architecture.md): rejects a cargo feature in `sc-config` because
-  of feature unification, the same effect the second OPEN records here.
+  of feature unification. Workspace-wide builds of a generated project are
+  exempt from the CLI link rule; the feature stays.
 - [ADR-RUN-0303](architecture.md): the crate graph of a generated project.
 
 ---
@@ -522,12 +561,14 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
+**Amends:** ADR-TRN-0003 (Phase A `DaemonNotRunning` field inventory)  
 **Source:** sc-runtime design, 2026-09-19: stated by the owner  
 
 ### Context
 
-`sc-observability` 1.2.x is the SC logging standard and every generated
-daemon uses it. The tempting design is to have `sc-config` or `sc-runtime`
+`sc-observability` 1.5.0 and `sc-observability-types` 1.5.0 are the Phase A
+pin recorded by sprint a-1. Every generated daemon uses `sc-observability`
+at that pin. The tempting design is to have `sc-config` or `sc-runtime`
 initialise it. That would make those crates depend on the observability
 stack, so `sc-config` could no longer be used by a program that does not use
 `sc-observability`, and observability would in turn be tied to how config is
@@ -540,11 +581,25 @@ loaded.
 2. Those four crates MUST NOT wrap `sc-observability`, re-export it, or define
    logging wrapper functions.
 3. The only observability dependency allowed inside the four crates is
-   `sc-observability-types` in `sc-command`, because the sc-ai-cli response
-   envelope's error code and remediation types are defined in that crate.
+   `sc-observability-types` on `sc-command`. It is not allowed on
+   `sc-transport`. The logging runtime `sc-observability` and
+   `sc-observability-otlp` stay forbidden on all four libraries.
+   `Remediation` stays on `sc-command` only.
 4. The generated `daemon/src/main.rs` MUST, in this order: load config with
-   `sc-config`; initialise `sc-observability` directly with plain values taken
-   from that config; then call `sc_runtime::Daemon::builder()`.
+   `sc-config`; initialise `sc-observability` 1.5.0 directly with plain values
+   taken from that config; then call `sc_runtime::Daemon::builder()`.
+5. `TransportError::DaemonNotRunning` is owned by
+   [ADR-TRN-0003](sc-transport/architecture.md). It carries
+   `code: &'static str` (`DAEMON.NOT_RUNNING`) plus the endpoint and the
+   cause. It does not carry `sc_observability_types::ErrorCode` or
+   `Remediation` on the transport error. Sprint a-4's `sc-command` publishes
+   a constructor from that code plus endpoint and cause into the `OpError`
+   wire form (including `ErrorCode` and `suggested_action`) without adding
+   a dependency from `sc-command` to `sc-transport`. a-6's generated CLI calls
+   that constructor. The `OpError` wire form stays owned by
+   [ADR-CMD-0001](sc-command/architecture.md). This ADR does not restate the
+   rest of those field types. a-3 consumes this decision and does not add
+   `sc-observability-types` to `sc-transport`.
 
 ### Consequences
 
@@ -579,8 +634,8 @@ for the order in point 4.
 
 - [REQ-RUN-0005](requirements.md): owner of the forbidden-edge table; `sc-observability`
   and `sc-observability-otlp` are forbidden for all four crates.
-- [REQ-RUN-0309](requirements.md): the generated daemon initialises `sc-observability` 1.2.x
-  directly in `main.rs`.
+- [REQ-RUN-0309](requirements.md): the generated daemon initialises `sc-observability` 1.5.0
+  directly in `main.rs`. `sc-observability-types` 1.5.0 is the matching pin.
 - [NFR-CFG-0002](sc-config/requirements.md): `sc-config` has minimal dependencies and none on
   observability.
 - [NFR-CMD-0002](sc-command/requirements.md): `sc-command` takes only types from
@@ -594,7 +649,7 @@ for the order in point 4.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner; leaving drift checks to sc-lint and the placeholder `Justfile` are design recommendations accepted for sprint planning. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document  
+**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the sc-lint 0.8.0 consumer install. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document  
 
 ### Context
 
@@ -609,36 +664,36 @@ be upgraded.
 
 ### Decision
 
-1. `template/` MUST NOT contain lint configuration, crate-boundary rules,
-   adapter-drift tooling or `just` modules.
+1. `template/` MUST NOT contain hand-written lint configuration, crate-boundary
+   rules, adapter-drift tooling, or `just` modules. `sc-lint.toml` is the
+   consumer pin. It is not a hand-written clippy, rustfmt, deny, or
+   `boundaries/` policy.
 2. This repository MUST NOT build surface-snapshot or adapter-drift tooling.
-3. The template MUST ship a minimal placeholder `Justfile` that provides the
-   standard base recipe names `just lint` and `just test` (and
-   `just db-prepare` for the store crate's `.sqlx/` data), so generated
-   projects and CI have stable gates.
-4. When sc-lint ships its install command (of the form
-   `sc-lint create --vars answers.json`; the exact command is sc-lint's to
-   define), the driver `scripts/new_project.py` gains exactly one step that
-   calls it with the answers JSON, and the placeholder `Justfile` is deleted
-   from the template. The recipe names do not change.
-5. The order of work is: the MVP generator produces a prototype set of
-   generated repositories, one per meaningful option combination; the sc-lint
-   team builds install packages from them; then the driver calls sc-lint.
+3. A generated project gets its `just` and lint install from sc-lint 0.8.0.
+   The install command is `sc-lint init --just`. The template commits
+   `template/sc-lint.toml` with `minimum_version` 0.8.0 and
+   `template/.sc-lint/bootstrap.py`.
+4. The public recipes are `setup`, `lint`, `test`, and `upgrade`. The
+   consumer-owned recipe `db-prepare` MUST survive a later `sc-lint init`.
+   a-6 owns the generated consumer install.
+5. The placeholder `Justfile` and the prototype-handoff order are retired.
+   There is no step that generates prototype repositories so the sc-lint team
+   can build an install from them, and no later deletion of a placeholder
+   `Justfile`.
 6. Decided in this document; the sc-runtime design does not state it: this
    repository's own crates MUST be linted by the standard sc-lint setup,
    including `sc-lint-boundary`, through `just lint`. `sc-lint-boundary`
    enforces inter-crate edges and each crate's public facade list only
-   ([REQ-RUN-0005](requirements.md)).
+   ([REQ-RUN-0005](requirements.md)). The single-crate command and its exit
+   codes are in the sprint a-1 evidence record.
 
 ### Consequences
 
 When sc-lint's rules or the standard `just` system change, generated projects
-pick that up from sc-lint and nothing in this repository changes. The only
-interface between the two projects is the answers JSON and
-`wizard/answers.schema.json`, which therefore must be versioned. What this
-project hands to the sc-lint team is three things it already produces: the
-schema, the answers fixtures in `wizard/fixtures/`, and the prototype
-repositories generated from them.
+pick that up from `sc-lint init` and nothing in this repository's hand-written
+lint policy changes, because the template does not carry one. The consumer
+pin is `template/sc-lint.toml`. `db-prepare` is consumer-owned and survives
+a later init. a-6 owns the generated install.
 
 ### Alternatives Considered
 
@@ -652,20 +707,20 @@ repositories generated from them.
 
 **Enforced by:** [NFR-RUN-0006](requirements.md), checked by inspecting the contents of
 `template/` for lint configuration, boundary rules and `just` modules;
-`req-qa` on [REQ-RUN-0307](requirements.md) (the placeholder `Justfile`); `req-qa` on
+`req-qa` on [REQ-RUN-0307](requirements.md) (the sc-lint 0.8.0 consumer install); `req-qa` on
 [REQ-RUN-0005](requirements.md) for point 6.
 
 ### Related Documents
 
-- [REQ-RUN-0307](requirements.md): the placeholder `Justfile` and its recipe names.
+- [REQ-RUN-0307](requirements.md): sc-lint 0.8.0 consumer install and its recipe names.
 - [NFR-RUN-0006](requirements.md): the template carries no lint knowledge.
 - [REQ-RUN-0004](requirements.md): this repository's own `just lint`, `just test` and
   `just new <dest>`.
 - [REQ-RUN-0005](requirements.md): boundary manifests for this repository's crates.
 - [REQ-RUN-0401](requirements.md): `answers.schema.json` is the versioned contract sc-lint
   consumes.
-- [ADR-RUN-0401](architecture.md): the driver `scripts/new_project.py` that gains the one
-  sc-lint step.
+- [ADR-RUN-0401](architecture.md): the generation pipeline. The consumer install
+  is `sc-lint init --just`, owned by a-6, not a prototype handoff.
 
 ---
 
@@ -1028,6 +1083,69 @@ new crate, binary or feature whose purpose is testing the daemon.
 
 ---
 
+## ADR-RUN-0010: Two AppName newtypes; no runtime name
+
+**Status:** Active  
+**Decision Date:** 2026-10-24  
+**Source:** sprint a-1, recorded before a-2, a-3, or a-5 freezes a facade. ADR-RUN-0006 stays the typed-error rule and does not carry this decision  
+
+### Context
+
+Configuration and the client wire each need a validated application name.
+`sc-runtime` already depends on `sc-transport`, so a third newtype inside
+`sc-runtime` would duplicate the predicate and add a fallible conversion that
+is not a boundary.
+
+### Decision
+
+1. There are two crate-local types and no shared `AppName` type and no fifth
+   crate. `sc_config::AppName` is the configuration identity.
+   `sc_transport::AppName` is the client wire identity (`resolve_endpoint`,
+   `instance_root`) and the name `Daemon::builder` borrows.
+2. `Client::new` takes an `Endpoint` only. `Daemon::builder` takes
+   `&sc_transport::AppName`.
+3. There is no `sc_runtime::AppName`. `sc-runtime` does not re-export the
+   transport type under another name and does not convert inside `run`.
+4. Both constructors use one predicate: ASCII `A-Z`, `a-z`, `0-9`, `-`, `_`,
+   length 1 through 64 bytes. Rejection uses that crate's own error with code
+   `APP.INVALID_NAME`. Display is `as_str` or `AsRef<str>`. There is no
+   `Deref`.
+5. The only enumeration of accept and reject strings is
+   `tests/fixtures/app-name-vectors.json`. This ADR does not paste those
+   strings. The file is not packaged in any crate. Generation tooling uses
+   the project-name `pattern` on `wizard/answers.schema.json` and does not
+   re-implement the predicate. a-2, a-3, and a-6 tests load the file. a-5
+   does not construct a runtime name.
+
+### Consequences
+
+a-2 does not freeze `sc_config::AppName` until this ADR is Active. a-3 uses
+`sc_transport::AppName` for `resolve_endpoint`, `instance_root`, and
+`Daemon::builder`. A third runtime newtype is rejected: `sc-runtime` already
+depends on `sc-transport`.
+
+### Alternatives Considered
+
+- A third `sc_runtime::AppName`, with a fallible conversion from the transport
+  type inside `run`. Rejected. The duplicate predicate is not a boundary.
+- One shared `AppName` in a fifth crate. Rejected. The two identities stay
+  crate-local.
+
+### Implementation
+
+**Enforced by:** a-2, a-3, and a-6 tests that load
+`tests/fixtures/app-name-vectors.json` and do not embed a second list.
+`arch-qa` review that `sc-runtime` has no `AppName` type and does not convert
+inside `run`.
+
+### Related Documents
+
+- [ADR-RUN-0006](architecture.md): typed library errors. Unchanged by this ADR.
+- `tests/fixtures/app-name-vectors.json`: the only accept and reject enumeration.
+
+---
+
+
 ## ADR-RUN-0201: Daemon owns the database; all clients use HTTP
 
 **Status:** Active  
@@ -1058,19 +1176,20 @@ happens to be up.
    code `DAEMON.NOT_RUNNING` and
    `suggested_action: "run <app> daemon start"` (a plain JSON string), and
    MUST exit non-zero (the non-zero exit is decided in this document).
-6. In Phase A the CLI is report-only and MUST NOT start the daemon. Deferred
-   [ADR-RUN-0204](architecture.md) preserves a possible optional auto-start
-   layer for later evaluation; it does not amend this point in Phase A.
+6. Report-only commands MUST NOT start the daemon. An explicit `daemon start`
+   subcommand that execs the daemon binary is allowed. That subcommand is
+   not auto-start. Deferred [ADR-RUN-0204](architecture.md) stays the optional
+   auto-start layer and is not a Phase A closure.
 
 `<instance-root>` is the per-application, per-user directory resolved by
 sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
 
-**OPEN:** a daemon MAY bind a UDS and a TCP listener at once, and
-`sc-transport` provides both kinds of listener
-([REQ-TRN-0003](sc-transport/requirements.md)). Whether
-`sc_runtime::Daemon::builder()` supports two listeners in v0.1 is undecided
-([REQ-RT-0001](sc-runtime/requirements.md)).
+v0.1 of `sc_runtime::Daemon::builder()` binds exactly one listener.
+`TransportConfig` is `#[non_exhaustive]` and has no `additional_endpoints`
+field. `sc-transport` can bind either a UDS or a TCP listener
+([REQ-TRN-0003](sc-transport/requirements.md),
+[REQ-RT-0001](sc-runtime/requirements.md)).
 
 ### Consequences
 
@@ -1156,8 +1275,11 @@ unverified facts held in [ADR-RUN-0203](architecture.md).
    library versions change, or the way the input struct is declared changes.
    Points 1 to 6 do not change.
 
-**OPEN:** the URL path of the OpenAPI document route (the document is named
-`openapi.json`) and the URL path of the health route are undecided.
+The OpenAPI document route is `GET /openapi.json`. The health route is
+`GET /health`, status 200, body the `sc_command` success envelope with data
+`{ "status": "ok" }`. Those paths are reserved: a project router that already
+defines them, or `/mcp` when `.mcp(...)` was called, makes `run()` return
+`RuntimeError` with code `RUNTIME.ROUTE_CONFLICT` instead of panicking in axum.
 
 ### Consequences
 
@@ -1210,7 +1332,7 @@ nothing.
 
 ## ADR-RUN-0203: Library versions on one router; one struct for both schemas
 
-**Status:** Proposed  
+**Status:** Active  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: both facts are marked by the design as unverified and to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0202 and ADR-RUN-0302 so that those two hold only accepted decisions  
 **Acceptance:** made Active, or amended, by sprint a-1
@@ -1237,10 +1359,11 @@ version, and that one struct can carry both the schema derive rmcp reads
    `Parameters<T>` input of the MCP tool and the request body of the REST
    handler.
 
-Both points are unverified. The evidence that proves each is defined in one
-place, the evidence table of [REQ-RUN-0102](requirements.md):
+Both points are verified by sprint a-1. The evidence rows are defined in
+[REQ-RUN-0102](requirements.md). The right-hand column below is a non-normative
+summary of those rows:
 
-| # | Unverified fact | Evidence row in REQ-RUN-0102 |
+| # | Fact | Evidence row in REQ-RUN-0102 |
 |---|---|---|
 | 1 | `rmcp` 3.x, `utoipa-axum` 0.2 and `axum` 0.8 coexist on one `axum::Router` with no dependency version conflict | V1: `cargo tree -i axum` for the spike shows one `axum` version, and the spike serves a REST route and `/mcp` from one router |
 | 2 | rmcp `Parameters<T>` accepts a struct that also derives `utoipa::ToSchema`, with no clash between the two derives or their schemas | V2: the struct compiles and answers as a REST body and as `Parameters<T>`; MCP `tools/list` returns an input schema for the tool and `openapi.json` contains the struct as a component schema |
@@ -1248,31 +1371,23 @@ place, the evidence table of [REQ-RUN-0102](requirements.md):
 The right-hand column summarises the rows; the rows in
 [REQ-RUN-0102](requirements.md) are the definition of "proven".
 
-**OPEN:** the exact version pins for `axum`, `utoipa`, `utoipa-axum` and
-`rmcp` are not known until sprint a-1 records them.
-
 ### Consequences
 
-This ADR is Proposed. It is not binding, and no sprint other than a-1 may
-depend on it, until both rows are proven. Sprint a-1 is the spike sprint: it
-builds the throwaway binary `examples/spike` (axum, utoipa-axum, an rmcp
-stateless service at `/mcp`, sqlx SQLite, a UDS listener, and a clap client
-using reqwest `unix_socket`).
+Sprint a-1 proved both rows. V1 is true: `cargo tree -p spike-server -i axum`
+prints one version, `axum v0.8.9`, and one process served REST, OpenAPI, and
+`/mcp`. V2 is true: `Note` derives `Serialize`, `Deserialize`,
+`schemars::JsonSchema`, and `utoipa::ToSchema`, and both the REST body and
+`Parameters<Note>` answered. MCP `tools/list` returned an `inputSchema` for
+`note_put`. `openapi.json` lists component schema `Note`.
 
-When both rows are proven, sprint a-1 MUST write the evidence and the exact
-version pins into this Consequences section, remove the `**OPEN:**` line, and
-set Status to Active.
+Pins from that run: `axum` 0.8.9, `utoipa` 5.5.0, `utoipa-axum` 0.2.0, `rmcp`
+3.7.0 (`~3.7`), `sqlx` 0.9.0, `reqwest` 0.13.5. The full command log is the
+sprint a-1 evidence record at the end of this file.
 
-If row 1 is false, sprint a-1 MUST amend point 1 to the versions the spike
-found to work before setting Status to Active;
-[ADR-RUN-0202](architecture.md) does not change. If row 2 is false, sprint
-a-1 MUST amend point 2 to what the spike found to work, and MUST in the same
-change amend points 2 and 3 of [ADR-RUN-0302](architecture.md) (every
-surface uses the one struct; no struct defined twice), because those points
-presume one struct can serve both surfaces, and the clauses of
-[REQ-RUN-0201](requirements.md) and [REQ-RUN-0302](requirements.md) that are
-marked conditional on this ADR. What
-replaces it is undecided until the finding is known.
+Point 1 holds on those pins. `utoipa-axum` 0.2.0 resolves `utoipa` 5.5.0, not
+utoipa 6. Point 2 holds for one struct with both derives. The MCP `tools/list`
+dump question is closed without investigation.
+
 
 ### Alternatives Considered
 
@@ -1299,7 +1414,7 @@ structs.
 - [REQ-RUN-0101](requirements.md): what `examples/spike` contains and which three clients
   must reach one service function.
 - [REQ-RUN-0102](requirements.md): owner of the evidence rows V1 and V2 and of the version
-  record; moves this ADR from Proposed to Active.
+  record. Sprint a-1 moved this ADR from Proposed to Active.
 - [ADR-RUN-0202](architecture.md): the accepted shape these facts sit under.
 - [ADR-RUN-0302](architecture.md): one shared `api-types` struct; no generated client.
 - [NFR-RUN-0007](requirements.md): rmcp is pinned to a minor version in every manifest.
@@ -1821,8 +1936,8 @@ match the sc-ai-cli templates, and `cargo-generate`'s Liquid and Jinja both
 use `{{ }}`, so one engine cannot render both kinds of file.
 
 This ADR holds the pipeline shape, which is accepted. The `cargo-generate`
-mechanics it uses are unverified and are held in
-[ADR-RUN-0402](architecture.md).
+mechanics it uses are recorded in Active
+[ADR-RUN-0402](architecture.md). Sprint a-1 proved them.
 
 ### Decision
 
@@ -1830,8 +1945,11 @@ mechanics it uses are unverified and are held in
    every generation option: names, types, defaults, enums and conditional
    requirements.
 2. The placeholder keys in `template/cargo-generate.toml` MUST equal the
-   schema's keys. A unit test under `tests/unit/` MUST assert the two key sets
-   are equal.
+   schema's property keys except for the project-name key. One named constant
+   exempts that key, because `cargo generate` takes the project name through
+   `--name` and not through a placeholder. A unit test under `tests/unit/`
+   MUST assert the two sets are equal aside from that one key, and it MUST
+   exempt nothing else.
 3. `cargo-generate` MUST render the Rust workspace from `template/`, from a
    values file that the driver writes from the validated answers, with no
    prompt.
@@ -1840,35 +1958,63 @@ mechanics it uses are unverified and are held in
 5. `AGENTS.md.j2` and `CLAUDE.md.j2` MUST NOT be rendered by `cargo-generate`.
    The driver MUST render them with `sc-compose` from the same answers and
    remove the `.j2` sources from the generated project.
-6. The driver MUST be the Python script `scripts/new_project.py`, reusing
-   `run_wizard.py` from `p3-nuget-template` as `scripts/run_wizard.py`, and
-   exposed as `just new <dest>`. Its steps, in order: run the wizard unless
-   `--var-file` is given; validate the answers against the schema; write
-   `values.toml`; run `cargo generate`; run `sc-compose`; run `just lint` and
-   `just test` in the generated project.
+6. The driver MUST be the Python script `scripts/new_project.py`, exposed as
+   `just new <dest>`. Its steps, in order: run the wizard unless `--var-file`
+   is given; validate the answers against the schema; write `values.toml`;
+   run `cargo generate`; run `sc-compose`; run `just setup`, `just lint`,
+   `just test`, `just build-cli`, and `just build-daemon` in the generated
+   project. Sprint a-6 implements the `--var-file` path. The wizard UI is a
+   later sprint.
 7. The driver MUST support three entry modes that all produce the same answers
    JSON: the interactive wizard; `--prefill <json>` (agent-written guesses
    merged into the wizard for human review); `--var-file <answers.json>`
    (no wizard, no prompts).
-8. Template CI MUST run the driver with `--var-file` for each file in
-   `wizard/fixtures/*.json`, then `just lint` and `just test` in the result.
-   Wyvern MUST NOT be required in CI.
+8. Template CI MUST run `just new`, then `just setup`, then `just lint`, then
+   `just test`, then `just build-cli`, then `just build-daemon` for each file
+   in `wizard/fixtures/*.json`. Wyvern is not required.
 9. `wizard/` and `scripts/` MUST sit beside `template/` and MUST NOT be inside
    it, so nothing of them is copied into a generated project.
 10. The `cargo-generate` mechanics that realise points 3, 4 and 5 (the command
     line, conditional `ignore` lists, the `exclude` list, placeholder syntax
-    and the version pin) are [ADR-RUN-0402](architecture.md). If a fact of
-    that ADR turns out false, the mechanism changes. Points 1 to 9 do not
-    change.
+    and the version pin) are Active [ADR-RUN-0402](architecture.md). Sprint
+    a-1 confirmed those facts, so this mechanism stands. Points 1 to 9 do
+    not change with that confirmation.
 
-**OPEN:** the name and format of the version field in `answers.schema.json`
-are undecided.
+The schema version field is `x-schema-version`, an integer at the root of
+`answers.schema.json`. Bump it when a breaking option change ships. The
+shipped value is `1`.
 
-**OPEN:** whether the project-name key is exempt from the key-set equality of
-point 2 is undecided, because `cargo generate` takes the project name through
-`--name` and not through a placeholder
-([REQ-RUN-0402](requirements.md)). Once it is decided, point 2 reads either
-"equal" or "equal except for the project-name key".
+Stderr from `--var-file` is one line, `<code> <cause> — <recovery>`, using
+U+2014. Wizard modes may print `[run-wizard]` diagnostics first; the last
+line is still that inventory row. There is no uncoded `ERROR:` line.
+`GEN.STEP_FAILED` puts the failed pipeline step in the cause. The
+inventory is:
+
+| Failure | Code | Cause | Recovery |
+|---|---|---|---|
+| schema-invalid answers | `GEN.SCHEMA_INVALID` | answers fail `wizard/answers.schema.json` | fix the file; cargo is not called; the destination is not created |
+| reserved database | `GEN.DB_RESERVED` | `db` is `postgres` or `both` | set `db` to `sqlite`; the destination is not created |
+| invalid project name | `APP.INVALID_NAME` | name fails the project-name `pattern` in `wizard/answers.schema.json` | fix the name to that pattern; the destination is not created |
+| missing sc-compose | `GEN.TOOL_MISSING` | `SC_COMPOSE` unset and `sc-compose` not on `PATH` | set `SC_COMPOSE` or install `sc-compose` on `PATH`; `cargo generate` does not run |
+| bad `SC_COMPOSE` override | `GEN.TOOL_MISSING` | `SC_COMPOSE` does not point at an executable file | set `SC_COMPOSE` to the sc-compose binary; `cargo generate` does not run |
+| cargo missing | `GEN.TOOL_MISSING` | cargo is not on `PATH` | install cargo on `PATH`; later steps do not run |
+| wrong cargo-generate version | `GEN.TOOL_MISSING` | cargo-generate is not 0.25.1 | install cargo-generate 0.25.1; `cargo generate` does not run |
+| cargo-generate won't start | `GEN.TOOL_MISSING` | cargo generate could not start | install cargo-generate 0.25.1; `cargo generate` does not run |
+| tool missing on `PATH` | `GEN.TOOL_MISSING` | the tool name is not on `PATH` | install that tool on `PATH`; later steps do not run |
+| missing Wyvern | `GEN.TOOL_MISSING` | `WYVERN_BIN` unset and `wyvern` not on `PATH` | set `WYVERN_BIN` or install `wyvern` on `PATH`; `cargo generate` does not run |
+| unresolved `WYVERN_BIN` | `GEN.TOOL_MISSING` | `WYVERN_BIN` is set but does not resolve to an executable | set `WYVERN_BIN` to the wyvern binary path; `cargo generate` does not run |
+| Wyvern runtime failure | `GEN.TOOL_MISSING` | wyvern exited with a non-zero status | fix Wyvern or the wizard UI; `cargo generate` does not run |
+| missing jsonschema | `GEN.TOOL_MISSING` | jsonschema is not installed | pip install jsonschema==4.26.0; `cargo generate` does not run |
+| wizard cancel or dismiss | `GEN.WIZARD_CANCELLED` | wizard cancelled or dismissed | finish the wizard; the destination is not created |
+| destination conflict | `GEN.DEST_CONFLICT` | the destination path exists | choose an absent path |
+| pipeline step | `GEN.STEP_FAILED` | step is `values`, `cargo-generate`, `sc-compose`, `setup`, `lint`, `test`, `build-cli`, or `build-daemon` | fix it or remove the partial destination; later steps do not run |
+
+Wizard acquisition uses those rows. A runner-side schema reject is
+`GEN.SCHEMA_INVALID`. A runner-side project-name reject is
+`APP.INVALID_NAME`. `[run-wizard]` lines may precede the inventory line. The
+last line is the code an agent selects. `--var-file` prints no runner lines.
+A schema-valid finish that the driver then rejects keeps the runner
+diagnostics and ends with the driver's inventory line.
 
 ### Consequences
 
@@ -1915,13 +2061,13 @@ failing before `cargo generate` runs); the fixture matrix in
 - [REQ-RUN-0601](requirements.md) through [REQ-RUN-0603](requirements.md): the Wyvern wizard and its three entry
   modes.
 - [REQ-RUN-0701](requirements.md): fixture-matrix CI.
-- [ADR-RUN-0402](architecture.md): the unverified `cargo-generate` mechanics.
+- [ADR-RUN-0402](architecture.md): the `cargo-generate` mechanics. Sprint a-1 made that ADR Active.
 
 ---
 
 ## ADR-RUN-0402: `cargo-generate` mechanics used by the generation pipeline
 
-**Status:** Proposed  
+**Status:** Active  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: the design describes these `cargo-generate` behaviours and marks them as unverified, to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0401 so that it holds only accepted decisions  
 **Acceptance:** made Active, or amended, by sprint a-1
@@ -1932,9 +2078,8 @@ failing before `cargo generate` runs); the fixture matrix in
 the Rust workspace from `template/` with no prompt, from a values file; options
 include or exclude whole files; `AGENTS.md.j2` and `CLAUDE.md.j2` reach the
 generated project unrendered so that `sc-compose` can render them. Each of
-these relies on a `cargo-generate` behaviour that nobody has yet verified on a
-fixed `cargo-generate` version. The version that counts is the
-`cargo-generate` version pinned by sprint a-1.
+these relies on a `cargo-generate` behaviour that sprint a-1 verified on
+cargo-generate 0.25.1. That is the pinned version.
 
 ### Decision
 
@@ -1952,10 +2097,11 @@ fixed `cargo-generate` version. The version that counts is the
 5. `cargo-generate` is pinned to the version recorded by sprint a-1, in the
    driver's tool check and in CI.
 
-All five points are unverified. The evidence that proves them is defined in
-one place, the evidence table of [REQ-RUN-0102](requirements.md):
+All five points are verified by sprint a-1. The evidence rows are defined in
+[REQ-RUN-0102](requirements.md). The right-hand column below is a non-normative
+summary of those rows:
 
-| # | Unverified fact | Evidence row in REQ-RUN-0102 |
+| # | Fact | Evidence row in REQ-RUN-0102 |
 |---|---|---|
 | 1 | On the `cargo-generate` version pinned by sprint a-1, `cargo-generate.toml` accepts `string`, `bool` and `array` placeholders, a conditional `ignore` list and an `exclude` list; the exact syntax of each is known | V3a: a scratch `cargo-generate.toml` using every one of these constructs, copied into the record, that the pinned version parses without error |
 | 2 | A conditional `ignore` list includes or excludes a whole file | V3b: two runs of the scratch template that differ only in one `bool` value; the conditionally ignored file is present in one output and absent in the other |
@@ -1965,28 +2111,42 @@ one place, the evidence table of [REQ-RUN-0102](requirements.md):
 The right-hand column summarises the rows; the rows in
 [REQ-RUN-0102](requirements.md) are the definition of "proven".
 
-**OPEN:** the exact `cargo-generate.toml` syntax for placeholders, conditional
-`ignore` and `exclude` is not known until sprint a-1 records it.
-
-**OPEN:** the exact `cargo-generate` version pin is not known until sprint
-a-1 records it.
-
 ### Consequences
 
-This ADR is Proposed. It is not binding, and no sprint other than a-1 may
-depend on it, until every row is proven. Sprint a-1 is the spike sprint; it
-proves these rows with a throwaway template and values file. A requirement
-whose mechanism clause names conditional `ignore`, `exclude` or
-`--template-values-file` is conditional on this ADR.
+Sprint a-1 proved V3a, V3b, V4a, and V4b on cargo-generate 0.25.1
+(`cargo generate --version` prints `cargo generate-generate 0.25.1`). That is
+the pin for the driver tool check and for CI.
 
-When every row is proven, sprint a-1 MUST write the evidence, the working
-`cargo-generate.toml` syntax and the `cargo-generate` version pin into this
-Consequences section, remove both `**OPEN:**` lines, and set Status to Active.
+An array `default` is accepted only when `choices` is also set. Working
+syntax, copied from `examples/spike/generate-scratch/template/cargo-generate.toml`:
 
-If any row is false, sprint a-1 MUST amend the Decision to the mechanism the
-spike found to work before setting Status to Active, and the requirements
-that are conditional on this ADR MUST be amended in the same change.
-[ADR-RUN-0401](architecture.md) does not change.
+```toml
+[template]
+cargo_generate_version = ">=0.23.0"
+exclude = ["AGENTS.md.j2"]
+
+[placeholders.project_label]
+type = "string"
+prompt = "Project label?"
+default = "demo"
+
+[placeholders.use_extra]
+type = "bool"
+prompt = "Include the extra file?"
+default = true
+
+[placeholders.tags]
+type = "array"
+prompt = "Tags?"
+choices = ["alpha", "beta", "one", "two"]
+default = ["alpha", "beta"]
+
+[conditional.'use_extra == false']
+ignore = ["extra.txt"]
+```
+
+Two `cargo generate --path <template> --template-values-file <file> --name spike-proof --destination <existing-dir> --silent` runs, stdin closed, differed only in `use_extra`. Both exited 0 and printed no prompt. Rendered output contained `label=from-file`, `extra=true` or `extra=false`, and `tag=one` / `tag=two`. `extra.txt` was present only for `use_extra = true`. `cmp` of the excluded `AGENTS.md.j2` exited 0. The destination directory must already exist; `cargo generate` creates `<destination>/spike-proof` inside it.
+
 
 ### Alternatives Considered
 
@@ -2015,11 +2175,191 @@ option excludes is absent from the rendered project) and of
 ### Related Documents
 
 - [REQ-RUN-0102](requirements.md): owner of the evidence rows V3a, V3b, V4a and V4b and of
-  the version record; moves this ADR from Proposed to Active.
+  the version record. Sprint a-1 moved this ADR from Proposed to Active.
 - [ADR-RUN-0401](architecture.md): the accepted pipeline shape these mechanics serve.
 - [REQ-RUN-0303](requirements.md) through [REQ-RUN-0306](requirements.md): options, the limit on in-file
   Liquid, `sc-compose` rendering and plain `cargo generate`; their mechanism
-  clauses are conditional on this ADR.
+  clauses follow this ADR, which sprint a-1 made Active.
 - [REQ-RUN-0501](requirements.md) and [REQ-RUN-0502](requirements.md): the driver's `cargo generate` step and
   its non-interactive mode.
 - [REQ-RUN-0701](requirements.md): fixture-matrix CI.
+
+## Sprint a-1 evidence record
+
+This section is the compatibility evidence for sprint a-1. The spike under
+`examples/spike` is disposable. a-7 deletes it. It is not a production crate
+and it does not start a test daemon.
+
+**Platform:** GitHub Actions ephemeral runner, `ubuntu-latest` (Linux). A
+developer host is not the acceptance environment.  
+**Workflow:** `.github/workflows/phase-a-spike.yml`.
+It runs on pull requests, on pushes to `sprint/a-1-compatibility-spike` and
+`main`, and on `workflow_dispatch`.  
+**Commands,** from `examples/spike`:
+
+```text
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo test --workspace --all-features --locked
+./boundary-proof/run.sh
+```
+
+The workflow installs Rust 1.99.0 with rustfmt and clippy, `pkg-config`,
+`libsqlite3-dev`, and the sc-lint 0.8.0 Linux archive (`sc-lint` and
+`sc-lint-boundary` from
+`sc-lint_0.8.0_x86_64-unknown-linux-gnu.tar.gz`). The boundary step fails
+when a case's `lint_exit` differs from the table below. That script is the
+child-process boundary proof; acceptance is this runner, not a developer
+host.  
+**Tools:** `sc-lint 0.8.0`, `sc-lint-boundary 0.8.0`, `cargo generate-generate 0.25.1`.  
+**Rust:** `rustc 1.99.0`.  
+**Evidence:** acceptance is a green run of
+`.github/workflows/phase-a-spike.yml` on `ubuntu-latest` for the commit that
+contains this workflow. Version rows below are the lockfile resolutions the
+job builds with `--locked`.
+
+The server feature binds a Unix domain socket.
+`examples/spike/stack/src/lib.rs` compiles that module only under `cfg(unix)`
+and emits `compile_error` on any other target. `examples/spike/cli` does the
+same for `reqwest`'s Unix socket client. The `put_note` async test stores its
+SQLite file in a `tempfile` directory so parallel tests do not share one path.
+No cargo test starts the server. The socket transcript below records the
+call sites that this workflow compiles and tests. It is not a developer-host
+acceptance run. There was no instance root and no `daemon.lock`.
+NFR-RUN-0010's isolation marker is still open, so this spike is not an
+isolated-machine daemon-process proof.
+
+### Resolved versions
+
+Taken from `cargo tree` in `examples/spike` with `--offline`, and from
+`cargo generate --version`.
+
+| Crate | Resolved | Spike requirement |
+|---|---|---|
+| `axum` | 0.8.9 | `0.8.9` on the `server` feature |
+| `utoipa` | 5.5.0 | `5` (utoipa-axum 0.2 requires utoipa 5; utoipa 6 is a later line) |
+| `utoipa-axum` | 0.2.0 | `0.2.0` |
+| `rmcp` | 3.7.0 | `~3.7` in `examples/spike/stack/Cargo.toml`, the only spike manifest that names `rmcp` |
+| `sqlx` | 0.9.0 | `0.9.0`, features `runtime-tokio` and `sqlite` |
+| `reqwest` | 0.13.5 | `0.13` on `spike-cli` |
+| `schemars` | 1.2.3 | `1` |
+| `clap` | 4.6.7 | `4` |
+| `tokio` | 1.54.1 | `1` |
+| `sc-observability` | 1.5.0 | `1.5.0` |
+| `sc-observability-types` | 1.5.0 | `1.5.0` |
+| `cargo-generate` | 0.25.1 | tool pin, not a Cargo dependency |
+
+Phase A pin for a-4, a-6, and a-7: `sc-observability` 1.5.0 and
+`sc-observability-types` 1.5.0. rmcp series for NFR-RUN-0007: 3.7, written
+`~3.7`.
+
+`cargo tree -p spike-server -i axum` prints one version, `axum v0.8.9`, reached
+from `spike-stack` and from `utoipa-axum v0.2.0`.
+
+### Call sites that compiled against those versions
+
+- `OpenApiRouter::new().routes(routes!(put_note_route)).split_for_parts()`
+  (`utoipa_axum` 0.2).
+- `StreamableHttpService::new(factory, Arc<LocalSessionManager>, StreamableHttpServerConfig::default().with_legacy_session_mode(false).with_json_response(true))`, then `Router::nest_service("/mcp", mcp)` (`rmcp` 3.7.0). rmcp 3.7 requires a session-manager argument to this constructor; with `legacy_session_mode(false)` the spike uses stateless streamable HTTP only. `LocalSessionManager` here is rmcp transport plumbing, not an application MCP session store. [REQ-RUN-0302](requirements.md) forbids a project session manager in the product template; a-6 may pass the same type when rmcp requires it.
+- `SqlitePoolOptions::new().connect_with(SqliteConnectOptions::new().filename(database).create_if_missing(true))` (`sqlx` 0.9.0). Runtime queries, not `query!`.
+- `tokio::net::UnixListener::bind(socket)` passed to `axum::serve`. Unix-only, gated by `cfg(unix)` with `compile_error` on other targets.
+- `reqwest::Client::builder().unix_socket(&*path)` where `path` is a `PathBuf`, so the argument is `&Path` (`reqwest` 0.13.5).
+- `Note` derives `Serialize`, `Deserialize`, `schemars::JsonSchema`, and `utoipa::ToSchema`. REST takes `Json<Note>`. The MCP tool takes `Parameters<Note>`.
+- `sc_observability_types::ErrorCode::new_static("SPIKE.PIN")` and `sc_observability::constants::DEFAULT_LOG_FILE_SUFFIX`.
+
+The only SQL is `put_note` in `examples/spike/stack/src/serve.rs`. The REST
+handler `put_note_route` and the MCP tool `note_put` both call it.
+
+### V1 and V2
+
+Both true, on axum 0.8.9, utoipa-axum 0.2.0, utoipa 5.5.0, rmcp 3.7.0.
+
+One process, socket `/tmp/spike-a1.542qFr/spike.sock`:
+
+- `curl --unix-socket "$socket" -H 'content-type: application/json' -d '{"key":"spike","body":"ok"}' http://localhost/notes` printed `{"key":"spike","body":"ok"}`.
+- `spike-cli --socket "$socket" --key spike --body ok` printed the same body and exited 0.
+- `GET /openapi.json` component schemas were `['Note']` and paths were `['/notes']`.
+- MCP `initialize` with protocol `2025-03-26` and no session id returned HTTP 200 `{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-03-26","capabilities":{"tools":{}},"serverInfo":{"name":"rmcp","version":"3.7.0"}}}`.
+- `tools/list` returned `note_put` with an `inputSchema` whose properties are `key` and `body`.
+- `tools/call` `note_put` with `{"key":"spike","body":"ok"}` returned `{"content":[{"type":"text","text":"{\"key\":\"spike\",\"body\":\"ok\"}"}],"isError":false}`.
+
+The MCP `tools/list` dump question is closed without investigation. Snapshot
+tooling is not part of this repository.
+
+### Feature graphs (NFR-RUN-0001 / ADR-RUN-0003)
+
+`cargo tree -p spike-cli -e normal --prefix none` prints no line beginning
+with `axum `, `rmcp `, or `sqlx `.
+
+`cargo tree --workspace -p spike-cli -i axum`, `-i rmcp`, and `-i sqlx` each
+show that crate on `spike-cli`, because the workspace build unifies the
+`server` feature of `spike-stack`.
+
+Closed decision, all three parts: `cargo build -p cli` is the normative
+selection; a workspace-wide build is exempt; a client/server crate split is
+rejected for v0.1. a-6 owns `cargo tree -p cli -e normal` on the generated
+project. a-5 does not run that command. The edge `sc-runtime` → `sc-config`
+is absent ([ADR-RUN-0003](architecture.md),
+[NFR-RT-0003](sc-runtime/requirements.md)).
+
+### V3a, V3b, V4a, V4b
+
+All true on cargo-generate 0.25.1. An array `default` is accepted only when
+`choices` is also set. The working scratch file is
+`examples/spike/generate-scratch/template/cargo-generate.toml`, copied into
+ADR-RUN-0402. Two `--silent` runs with stdin closed differed only in
+`use_extra`. Both exited 0, printed no prompt (`NO_PROMPT`), rendered
+`label=from-file` and `tag=one` / `tag=two`, and `cmp` of `AGENTS.md.j2`
+exited 0. `extra.txt` was present only when `use_extra` was true.
+
+### Single-crate boundary lint
+
+Command, after copying the fixture to a directory with no ancestor
+`Cargo.toml` (the fixtures sit under the `examples/spike` workspace, and
+cargo walks upward):
+
+```text
+sc-lint lint sc-boundary --root <case>
+```
+
+`sc-lint-boundary analyze --root <case> --format text` is how the edge name
+is printed. `analyze` exits 0 even when `status=fail`. The exit code that
+matters is the `sc-lint lint` exit. `examples/spike/boundary-proof/run.sh`
+copies the cases and runs both.
+
+| Case | `sc-lint lint` exit | Result |
+|---|---|---|
+| `no-workspace` | 3 | `workspace.package.version missing from Cargo.toml`. A package with no `[workspace]` cannot exit 0. |
+| `exit-ok` | 0 | One member, `members = ["."]`, `[workspace.package].version`, and `authors`, `edition`, `homepage`, `license`, `repository`, `rust-version` set with `.workspace = true`. |
+| `prefix-match` | 0 | Workspace members `app`, `sc-observability`, and `sc-observability-types`. `app` depends only on `sc-observability-types` and forbids `app -> sc-observability`. The logging name does not match the types crate. The two names stay distinct forbidden-edge strings. |
+| `direct-forbidden` | 10 | Direct path dependency on `sc-observability`, which the manifest forbids. Analyze prints SCB-DEPENDENCY-003 for edge `app -> sc-observability`. |
+| `transitive-only` | 0 | Forbids `app -> leaf` while `leaf` arrives only through `mid`. A transitive workspace edge does not fire. |
+| `direct-only-transitive` | 0 | Forbids `proof-runtime -> sc-observability-types` while that crate arrives only through `proof-command`. Direct-only holds when the target is a workspace member. |
+| `direct-only-direct` | 10 | The same forbid, with a direct path dependency. Analyze names `proof-runtime -> sc-observability-types`. |
+| `external-prefix` | 3 | Depends on crates.io `sc-observability-types` 1.5.0 and forbids `sc-observability`, which is not in the resolve. The diagnostic is an unknown workspace package reference, not a match against the types crate. |
+| `external-direct` | 0 | Direct crates.io dependency on `sc-observability-types`, and `forbidden_edges` names that crate. The edge does not fire. |
+
+Path dependencies in a fixture need `version = "0.0.0"` or the lint also
+reports `SCB-MANIFEST-002`. `boundaries/planning.toml` needs
+`current_sprint = "A.1"` (`<phase>.<step>`). Each boundary file needs `name`.
+
+sc-lint 0.8.0 matches `forbidden_edges` only for a direct edge whose two ends
+are workspace members. A crates.io name that is in the resolve is accepted and
+does not fire (`external-direct`, exit 0). A name absent from the workspace
+and from the resolve makes the command exit 3 (`external-prefix`). The
+analyzer can express direct-only for a workspace-member target and cannot
+express it for crates.io `sc-observability-types`.
+
+The `sc-runtime` rule for that crate therefore moves to
+`cargo tree -p sc-runtime -e normal --depth 1 --prefix none`, which must not
+print a line beginning with `sc-observability-types `. The full tree may
+print that line when it arrives through `sc-command`. A direct dependency
+still fails the depth-1 command. `sc-config` and `sc-transport` still list
+`sc-observability-types` as its own `forbidden_edges` string. Criterion 5 of
+REQ-RUN-0005 (any line beginning `sc-observability-types `) is what fails
+those edges, because the analyzer will not.
+
+a-2, a-3, a-4, and a-5 read this record before writing a manifest. Exit 0 on
+a single crate needs a `[workspace]` with `[workspace.package].version`. A
+tree with no `[workspace]` exits 3.
+

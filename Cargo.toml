@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/sc-config",
+    "crates/sc-transport",
+    "crates/sc-command",
+    "crates/sc-runtime",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Rand Lee"]
+edition = "2024"
+homepage = "https://github.com/randlee/sc-runtime"
+license = "MIT"
+repository = "https://github.com/randlee/sc-runtime"
+rust-version = "1.94.1"

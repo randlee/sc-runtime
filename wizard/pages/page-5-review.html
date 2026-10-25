@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Review</title>
+  <link rel="stylesheet" href="/shared/embedded-chrome.css" />
+  <link rel="stylesheet" href="/shared/wizard-chrome.css" />
+  <link rel="stylesheet" href="wizard-page.css" />
+  <script src="/shared/wyvern-api.js"></script>
+  <script src="wizard-answers.js"></script>
+  <style>
+    .summary { display: grid; grid-template-columns: 14rem 1fr; row-gap: 0.5rem; column-gap: 1rem; max-width: 40rem; }
+    .summary dt { font-weight: 600; color: #475569; }
+    .summary dd { margin: 0; }
+    .summary dd.empty { color: #94a3b8; font-style: italic; }
+  </style>
+</head>
+<body>
+  <!-- Terminal page: the root sets data-wizard-terminal="true". Finish posts
+       the accumulated answers object. Cancel finishes with button "cancel"
+       and does not create a destination. -->
+  <main id="dialog" class="dialog dialog--frame" data-wizard-terminal="true" data-testid="page-5-review">
+    <h1 data-testid="page-5-heading">Review</h1>
+    <p class="lead">
+      These values are the answers object. The driver validates them against
+      <code>wizard/answers.schema.json</code> and then generates the project.
+      Go Back to change anything, Cancel to stop, or Finish to generate.
+    </p>
+
+    <dl class="summary" data-testid="review-summary"></dl>
+
+    <nav class="wizard-chrome" data-wizard-nav aria-label="Wizard navigation">
+      <button type="button" class="secondary" data-wizard-back data-testid="wizard-back">
+        Back
+      </button>
+      <button type="button" class="secondary" data-testid="wizard-cancel">
+        Cancel
+      </button>
+      <button type="button" class="primary" data-wizard-next data-testid="wizard-next">
+        Finish
+      </button>
+    </nav>
+    <p class="wizard-error" data-testid="wizard-error" hidden></p>
+  </main>
+
+  <script>
+    // This page adds no fields. ANSWERS is the complete object accumulated
+    // by the earlier pages. Finish submits that object; the runner treats
+    // button "cancel" as a stop that writes no answers file.
+    var ANSWERS = window.WizardAnswers.DEFAULTS;
+
+    function summaryEl() {
+      return document.querySelector("[data-testid='review-summary']");
+    }
+
+    function addRow(label, value) {
+      var dt = document.createElement("dt");
+      dt.textContent = label;
+      var dd = document.createElement("dd");
+      if (value === undefined || value === null || value === "") {
+        dd.textContent = "(none)";
+        dd.className = "empty";
+      } else {
+        dd.textContent = String(value);
+      }
+      summaryEl().appendChild(dt);
+      summaryEl().appendChild(dd);
+    }
+
+    function renderSummary() {
+      addRow("project_name", ANSWERS.project_name || "");
+      addRow("db", ANSWERS.db || "");
+      addRow("mcp", ANSWERS.mcp ? "true" : "false");
+      addRow("licence", ANSWERS.licence || "");
+    }
+
+    window.WizardAnswers.ready().then(function (answers) {
+      ANSWERS = answers;
+      renderSummary();
+    });
+
+    window.collectCurrentPageData = function () {
+      return ANSWERS;
+    };
+
+    function showFinishError(msg) {
+      var el = document.querySelector("[data-testid='wizard-error']");
+      if (el) { el.hidden = false; el.textContent = msg; }
+      if (typeof console !== "undefined" && console.error) { console.error(msg); }
+    }
+
+    function buildFinishStack() {
+      var w = window.wyvern || {};
+      var prior = Array.isArray(w.stack) ? w.stack.slice() : [];
+      prior.push({ page: w.page, data: ANSWERS });
+      return prior;
+    }
+
+    var finishButton = document.querySelector("[data-wizard-next]");
+    if (finishButton) {
+      finishButton.__wyvernWizardNavWired = true;
+      finishButton.addEventListener("click", function () {
+        var w = window.wyvern || {};
+        if (!w.page || !w.page.id || !w.page.title || !w.page.html) {
+          showFinishError(
+            "Wizard state has not finished loading (no page descriptor yet). " +
+            "Wait a moment and click Finish again."
+          );
+          return;
+        }
+        finishButton.disabled = true;
+        fetch("/api/wizard/finish", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ button: "finish", data: ANSWERS, stack: buildFinishStack() }),
+        })
+          .then(function (res) {
+            if (res.ok) { return null; }
+            return res.text().then(function (text) {
+              finishButton.disabled = false;
+              showFinishError("Finish failed (HTTP " + res.status + "): " + text);
+            });
+          })
+          .catch(function (err) {
+            finishButton.disabled = false;
+            showFinishError("Finish failed: " + (err && err.message ? err.message : err));
+          });
+      });
+    }
+
+    var cancelButton = document.querySelector("[data-testid='wizard-cancel']");
+    if (cancelButton) {
+      cancelButton.addEventListener("click", function () {
+        window.wyvernWizardFinish({ button: "cancel", data: {}, stack: [] });
+      });
+    }
+  </script>
+  <script src="/shared/wizard-nav.js" data-wizard-chrome></script>
+</body>
+</html>

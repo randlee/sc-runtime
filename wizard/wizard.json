@@ -1,0 +1,11 @@
+{
+  "type": "wizard",
+  "page": {
+    "id": "identity",
+    "title": "Project",
+    "html": "pages/page-1-identity.html"
+  },
+  "config": {
+    "note": "Generation answers must match wizard/answers.schema.json. A prefill file is merged into config.prefill and is not itself the validated answers."
+  }
+}

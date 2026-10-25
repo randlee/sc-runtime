@@ -1,0 +1,17 @@
+{
+  "code": "APP.INVALID_NAME",
+  "accept": [
+    "my-app",
+    "A",
+    "app_1",
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  ],
+  "reject": [
+    "",
+    "my app",
+    "my.app",
+    "my/app",
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "café"
+  ]
+}

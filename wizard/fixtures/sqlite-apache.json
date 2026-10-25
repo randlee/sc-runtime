@@ -1,0 +1,6 @@
+{
+  "project_name": "widget-apache",
+  "db": "sqlite",
+  "mcp": true,
+  "licence": "Apache-2.0"
+}
