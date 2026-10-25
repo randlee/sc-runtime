@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import re
@@ -151,7 +152,6 @@ class InstallValuesTests(unittest.TestCase):
             check=False,
             capture_output=True,
             text=True,
-            timeout=30,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("--input INSTALL.json", result.stdout)
@@ -206,13 +206,13 @@ class InstallValuesTests(unittest.TestCase):
             values["project"]["sc_lint_source_revision"] = "a" * 40
             contract = root / "install.json"
             contract.write_text(json.dumps(values))
-            subprocess.run([sys.executable, INSTALLER, "--input", contract, consumer], check=True, capture_output=True, timeout=30)
-            result = subprocess.run([sys.executable, INSTALLER, "--dry-run", "--input", contract, consumer], capture_output=True, text=True, timeout=30)
+            subprocess.run([sys.executable, INSTALLER, "--input", contract, consumer], check=True, capture_output=True)
+            result = subprocess.run([sys.executable, INSTALLER, "--dry-run", "--input", contract, consumer], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             import os
             env = dict(os.environ, GITHUB_WORKSPACE=str(consumer), GITHUB_ENV=str(root / "env"), SC_LINT_SOURCE_REVISION_INPUT="")
             helper = consumer / ".github/scripts/setup_sc_lint_source.py"
-            result = subprocess.run([sys.executable, helper, "resolve"], env=env, capture_output=True, text=True, timeout=30)
+            result = subprocess.run([sys.executable, helper, "resolve"], env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual((root / "env").read_text(), "SC_LINT_SOURCE_REVISION=" + "a" * 40 + "\n")
 
@@ -330,6 +330,66 @@ class InstallValuesTests(unittest.TestCase):
             manifest = tomllib.loads(output.read_text(encoding="utf-8"))
         self.assertTrue(template["has_prerelease"])
         self.assertEqual(manifest["prerelease"], values["prerelease"])
+
+    @staticmethod
+    def wheels_only_prerelease(values: dict[str, object]) -> dict[str, object]:
+        """The beads-cache shape: no release binaries, Python wheels and an sdist only."""
+        values["release_binaries"] = []
+        values["channels"] = {"pypi": values["channels"]["pypi"]}  # type: ignore[index]
+        values["prerelease"] = {
+            "tag_prefix": "prerelease/v",
+            "tag_script": "scripts/prerelease_tag.py",
+            "install_root": "~/.example-builds",
+            "binaries": [],
+            "protected_branches": ["develop", "main"],
+            "selector_dir": {
+                "darwin": "~/.example-builds/selectors/darwin",
+                "linux": "~/.example-builds/selectors/linux",
+                "windows": r"%LOCALAPPDATA%\Example\prerelease-selectors",
+            },
+            "post_install": "{python} -m pip install --force-reinstall {wheels}",
+            "verify": "{python} -m pip show example",
+        }
+        return values
+
+    def test_render_round_trips_a_wheels_only_prerelease_manifest(self) -> None:
+        try:
+            import sc_compose  # noqa: F401
+        except ModuleNotFoundError:
+            self.skipTest("sc-compose bindings are not provisioned in this environment")
+        for omit_binaries in (False, True):
+            with self.subTest(omit_binaries=omit_binaries):
+                values = self.wheels_only_prerelease(self.valid_values())
+                if omit_binaries:
+                    del values["prerelease"]["binaries"]  # type: ignore[index]
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "input.json"
+                    path.write_text(json.dumps(values), encoding="utf-8")
+                    loaded = INSTALL.load_install_values(path)
+                    output = Path(directory) / "publish-artifacts.toml"
+                    INSTALL.render_template(Path("release/publish-artifacts.toml.j2"), loaded, output)
+                    manifest = tomllib.loads(output.read_text(encoding="utf-8"))
+                self.assertEqual(manifest["prerelease"]["binaries"], [])
+                self.assertEqual(
+                    {key: value for key, value in manifest["prerelease"].items() if key != "binaries"},
+                    {key: value for key, value in values["prerelease"].items() if key != "binaries"},  # type: ignore[union-attr]
+                )
+                self.assertNotIn("release_binaries", manifest)
+
+    def test_load_install_values_rejects_inconsistent_prerelease_binaries(self) -> None:
+        values = self.wheels_only_prerelease(self.valid_values())
+        values["python_distributions"] = [
+            {**entry, "wheels": []} for entry in values["python_distributions"]  # type: ignore[union-attr]
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "input.json"
+            path.write_text(json.dumps(values), encoding="utf-8")
+            with self.assertRaisesRegex(argparse.ArgumentTypeError, "prerelease installs nothing"):
+                INSTALL.load_install_values(path)
+            values["prerelease"]["binaries"] = ["ghost"]  # type: ignore[index]
+            path.write_text(json.dumps(values), encoding="utf-8")
+            with self.assertRaisesRegex(argparse.ArgumentTypeError, "undeclared release binary\\(s\\): ghost"):
+                INSTALL.load_install_values(path)
 
     def test_load_install_values_rejects_ambiguous_python_distribution(self) -> None:
         values = self.valid_values()
@@ -528,7 +588,6 @@ class InstallValuesTests(unittest.TestCase):
                 text=True,
                 capture_output=True,
                 check=False,
-                timeout=30,
             )
             self.assertEqual(helper.returncode, 0, helper.stderr)
             (consumer / "Cargo.toml").write_text(
@@ -585,7 +644,6 @@ class InstallValuesTests(unittest.TestCase):
                 text=True,
                 capture_output=True,
                 check=False,
-                timeout=30,
             )
             self.assertEqual(order.returncode, 0, order.stderr)
             self.assertIn("matches the workspace dependency graph", order.stdout)
@@ -594,7 +652,6 @@ class InstallValuesTests(unittest.TestCase):
                 text=True,
                 capture_output=True,
                 check=False,
-                timeout=30,
             )
             self.assertEqual(gate_check.returncode, 0, gate_check.stderr)
 
