@@ -31,7 +31,7 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-023 | locked | A generated application is ready to run | 2026-10-25 |
 | ANC-024 | locked | sc-cron is a phase-b sprint | 2026-10-25 |
 | ANC-025 | locked | sc-cron decisions stay in the ADR or reqs | 2026-10-25 |
-| ANC-026 | locked | Sync method is Rust or python3 | 2026-10-25 |
+| ANC-026 | locked | SQLite cron runs a Rust job or python3 | 2026-10-25 |
 
 ## ANC-001
 
@@ -435,16 +435,16 @@ Beads: anchor `run-af2`, plan questions `run-af2.1`, dev questions `run-af2.2`
 
 ## ANC-026
 
-Anchor: A cache-sync method is either a Rust function or a Python program run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+Anchor: sc-cron is a SQLite scheduler. The caller starts a schedule, stops it, and runs one worker. A due row runs as an in-process Rust job with run and should_stop, or as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
 
 > A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: locked. Version 2.
 
-Summary: Sync method is Rust or python3
+Summary: SQLite cron runs a Rust job or python3
 
-Scope: a bead that adds a cache-sync method
+Scope: a bead that adds or edits crates/sc-cron
 
-Deterministic check to pair with the development gate: A schedule row names a Rust function, or a Python module invoked as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+Deterministic check to pair with the development gate: crates/sc-cron exposes start_async, stop_async, spawn_worker, Job::run, and Job::should_stop, and can run python3 <module> cron.tick or cron.stop with JSON on stdin.
 
 Beads: anchor `run-oez`, plan questions `run-oez.1`, dev questions `run-oez.2`

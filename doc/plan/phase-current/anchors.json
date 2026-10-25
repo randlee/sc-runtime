@@ -1128,21 +1128,21 @@
       "id": "ANC-026",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "A cache-sync method is either a Rust function or a Python program run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "statement": "sc-cron is a SQLite scheduler. The caller starts a schedule, stops it, and runs one worker. A due row runs as an in-process Rust job with run and should_stop, or as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
       "quote": "A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-10-25",
       "context": "planning session",
-      "summary": "Sync method is Rust or python3",
-      "scope": "a bead that adds a cache-sync method",
-      "deterministic_check": "A schedule row names a Rust function, or a Python module invoked as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "summary": "SQLite cron runs a Rust job or python3",
+      "scope": "a bead that adds or edits crates/sc-cron",
+      "deterministic_check": "crates/sc-cron exposes start_async, stop_async, spawn_worker, Job::run, and Job::should_stop, and can run python3 <module> cron.tick or cron.stop with JSON on stdin.",
       "fixtures": {
         "pass": [],
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -1164,6 +1164,17 @@
             "plan_questions": "run-oez.1",
             "dev_questions": "run-oez.2"
           }
+        },
+        {
+          "at": "2026-10-25T20:06:22+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "A cache-sync method is either a Rust function or a Python program run as python3 <module> cron.tick or cron.stop with one JSON object on stdin."
         }
       ]
     }
