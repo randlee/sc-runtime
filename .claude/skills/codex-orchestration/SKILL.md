@@ -7,8 +7,11 @@ depends_on:
   quality-mgr: 0.x
   req-qa: 0.x
   arch-qa: 0.x
+  extensibility-qa: 0.x
   flaky-test-qa: 0.x
   ruthless-boundary-qa: 0.x
+  ceremony-qa: 0.x
+  ceremony-finding-screen: 0.x
   rust-qa-agent: 0.x
   rust-best-practices-agent: 0.x
   rust-service-hardening-agent: 0.x
@@ -72,6 +75,10 @@ Before starting a sprint:
    - `quality-mgr.md`
    - `req-qa.md`
    - `arch-qa.md`
+   - `extensibility-qa.md`
+   - `ruthless-boundary-qa.md`
+   - `ceremony-qa.md`
+   - `ceremony-finding-screen.md`
    - `flaky-test-qa.md`
    - installed Rust reviewers from `sc-rust`
 5. The following QA reporting skill exists in `.claude/skills/`:
@@ -145,16 +152,20 @@ This is the lifecycle contract for development, fix, and QA work.
    QA pass):
    - `req-qa`
    - `arch-qa`
+   - `extensibility-qa`
    - `ruthless-boundary-qa`
    - `rust-qa-agent`
    - `rust-best-practices-agent`
    - `rust-service-hardening-agent`
    - `flaky-test-qa` when test instability risk is present
+   Every round that has findings runs `ceremony-finding-screen` before the
+   report is published.
 7. QA-2 and later (fix-verification) rounds on the same sprint branch never
-   rerun `ruthless-boundary-qa`, `rust-best-practices-agent`, or
-   `rust-service-hardening-agent` open-ended. Dispatch one only when the round
-   carries an assigned finding that reviewer owns (`RBQA-*`, `RBP-*`, or
-   `RSH-*`), and scope-lock its output to those ids; a reviewer that raised
+   rerun `extensibility-qa`, `ruthless-boundary-qa`,
+   `rust-best-practices-agent`, or `rust-service-hardening-agent` open-ended.
+   Dispatch one only when the round
+   carries an assigned finding that reviewer owns (`EXT-*`, `RBQA-*`, `RBP-*`,
+   or `RSH-*`), and scope-lock its output to those ids; a reviewer that raised
    no QA-1 findings is not re-run. As open reviews they reliably surface
    findings on any diff regardless of size, which turns a small fix-round
    into unbounded review churn. QA-2+ rounds always launch
@@ -170,9 +181,10 @@ This is the lifecycle contract for development, fix, and QA work.
    merge — merge gate is 0B+0I+0m with no exceptions and no backlog
    deferral. QA-1 findings route back to the developer via
    `fix-assignment.xml.j2` before QA-2, following the standard
-   triage-and-fix path. `ruthless-boundary-qa`, `rust-best-practices-agent`,
-   and `rust-service-hardening-agent` run open reviews on plan QA-1 and
-   phase-ending review.
+   triage-and-fix path. `extensibility-qa`, `ruthless-boundary-qa`,
+   `rust-best-practices-agent`, and `rust-service-hardening-agent` run open
+   reviews on plan QA-1 and phase-ending review. `ceremony-qa` runs open
+   only on plan QA-1.
 8. After QA closes, the lead reads the verdict before `bd ready`. PASS and
    green CI permit merge work to become ready; FAIL must not expose merge.
 9. On FAIL, the lead triages the findings, creates fix child beads and a
@@ -263,6 +275,7 @@ For phase-ending QA routed through `quality-mgr`, the reviewer set is
 mandatory:
 - `req-qa`
 - `arch-qa`
+- `extensibility-qa`
 - `ruthless-boundary-qa`
 - `rust-qa-agent`
 - `rust-best-practices-agent`

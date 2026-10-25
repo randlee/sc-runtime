@@ -228,6 +228,7 @@ otherwise.
 For implementation QA-1 in this Rust repo:
 - always run `req-qa`
 - always run `arch-qa`
+- always run `extensibility-qa`
 - always run `ruthless-boundary-qa`
 - always run `rust-qa-agent`
 - always run `rust-best-practices-agent`
@@ -272,6 +273,7 @@ Subjective-review fix-round rule:
 For phase-ending QA, launch the reviewers selected by repository policy and:
 - always run `req-qa`
 - always run `arch-qa`
+- always run `extensibility-qa`
 - always run `ruthless-boundary-qa`
 - always run `rust-qa-agent`
 - always run `rust-best-practices-agent`

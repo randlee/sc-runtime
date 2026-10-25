@@ -24,7 +24,7 @@ Does **not** modify `.claude/skills/codex-orchestration/` or
 | Orchestrator | this parent session | spawns `rust-developer`, reviewers, `cursor-quality-mgr` |
 | Developer | `rust-developer` | parent Task `subagent_type: rust-developer` |
 | Quality manager | **`cursor-quality-mgr` only** | parent Task — **spawn/evidence enforcer** (see **cursor-quality-mgr enforcer role**) |
-| Reviewers | shared `.claude` agents | **parent** Task spawns: `req-qa`, `arch-qa`, `extensibility-qa` (QA-1 / plan only), `ruthless-boundary-qa` + `ceremony-qa` (plan QA-1 per `quality-policy.md`), `rust-qa-agent`, `rust-best-practices-agent`, `rust-service-hardening-agent`, `flaky-test-qa` |
+| Reviewers | shared `.claude` agents | **parent** Task spawns the set in `.claude/project/quality-policy.md`: implementation QA-1 is `req-qa`, `arch-qa`, `extensibility-qa`, `ruthless-boundary-qa`, `rust-qa-agent`, `rust-best-practices-agent`, `rust-service-hardening-agent`, plus `flaky-test-qa` when tests are unstable; plan QA-1 adds `ceremony-qa` and drops `rust-qa-agent`; phase-end is the implementation set plus `flaky-test-qa` |
 
 ### Quality-mgr binding (critical)
 
@@ -203,7 +203,7 @@ Other phase-end reviewers stay on their YAML defaults.
 3. These exist and are readable (repo-root-relative):
    - `.cursor/orchestration-agent-models.yaml`
    - `.cursor/agents/cursor-quality-mgr.md`
-   - `.claude/agents/{req-qa,arch-qa,extensibility-qa,ceremony-qa,ruthless-boundary-qa,flaky-test-qa,rust-qa-agent,rust-best-practices-agent,rust-service-hardening-agent,rust-developer}.md`
+   - `.claude/agents/{req-qa,arch-qa,extensibility-qa,ceremony-qa,ceremony-finding-screen,ruthless-boundary-qa,flaky-test-qa,rust-qa-agent,rust-best-practices-agent,rust-service-hardening-agent,rust-developer}.md`
    - `.claude/skills/quality-management-gh/SKILL.md`
    - `.claude/assets/sc-rust/quality-mgr/quality-mgr.rust.md`
 4. `sc-compose` is on `PATH` and usable (see **Tool recipes**).

@@ -583,20 +583,22 @@ launching you. Your job is to **audit the handoff** against this list and
 
 Implementation QA-1:
 
-- always: `req-qa`, `arch-qa`, `extensibility-qa`, `rust-qa-agent`,
-  `rust-best-practices-agent`, `rust-service-hardening-agent`
+- always: `req-qa`, `arch-qa`, `extensibility-qa`, `ruthless-boundary-qa`,
+  `rust-qa-agent`, `rust-best-practices-agent`, `rust-service-hardening-agent`
 - conditional: `flaky-test-qa` when tests changed, CI flakes, or rust-qa
   surfaces instability
 
 QA-2 and later rechecks:
 
 - always: `req-qa`, `arch-qa`, `rust-qa-agent`
-- do **not** run `extensibility-qa`, `rust-best-practices-agent`, or
-  `rust-service-hardening-agent` (spawn with `round_limit: true` if a stub is
-  required; `extensibility-qa` returns SKIPPED)
+- do **not** run `extensibility-qa`, `ruthless-boundary-qa`,
+  `rust-best-practices-agent`, or `rust-service-hardening-agent` open-ended
+  (spawn with `round_limit: true` if a stub is required; `extensibility-qa`
+  returns SKIPPED). Dispatch one only for an assigned carry-forward finding
+  it owns
 - conditional: `flaky-test-qa` as above
 
-Phase-ending QA: all six reviewers (flaky always on).
+Phase-ending QA: the implementation QA-1 set plus `flaky-test-qa`.
 
 - Parent spawns `rust-qa-agent` with **`gpt-5.6-terra-medium`** (GPT-5.6 Terra)
   when available in Task; otherwise use the YAML default for `rust-qa-agent`.
