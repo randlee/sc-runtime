@@ -604,9 +604,12 @@ Phase-ending QA: all six reviewers (flaky always on).
 
 Docs-only plan review (`review_mode: plan`):
 
-- `req-qa`, `arch-qa`, `extensibility-qa`, `rust-best-practices-agent`,
-  `rust-service-hardening-agent`
+- `req-qa`, `arch-qa`, `extensibility-qa`, `ruthless-boundary-qa`,
+  `rust-best-practices-agent`, `rust-service-hardening-agent`, and
+  `ceremony-qa` (prompt: `.claude/agents/ceremony-qa.md`)
 - do **not** run `rust-qa-agent`
+- after findings, parent runs `ceremony-finding-screen` over the round's
+  findings before publishing the QA report (same as ATM `quality-mgr`)
 - `arch-qa` / `extensibility-qa` `reference_docs` must include
   `docs/framework-charter.md`, `docs/sc-runtime-design.md`, and
   `docs/architecture.md`
