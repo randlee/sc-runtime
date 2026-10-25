@@ -1661,8 +1661,9 @@ decided either.
 
 ### Rationale
 
-Database backends arrive in the order SQLite, then Postgres, then MySQL, and
-v0.1 ships SQLite only. The answers schema is a published contract that the
+Phase b generates every layout in [REQ-RUN-0326](requirements.md), including
+MySQL, in one phase with the pairing and the adaptor. v0.1 shipped SQLite
+only. The answers schema is a published contract that the
 sc-lint project also reads, so its shape should not change when Postgres
 arrives; reserving the enum values now keeps it stable. Varying whole files,
 not lines within files, keeps every template source file readable and
@@ -2596,6 +2597,8 @@ sqlx 0.9 ships drivers for SQLite, Postgres, and MySQL. Postgres and MySQL are t
 | SQLite and MySQL | `store-sqlite` and `store-mysql` |
 
 A layout with both stores renders the adaptor in [ADR-RUN-0305](architecture.md). A layout with one store renders that store and no adaptor. A layout with no database renders no store crate and no adaptor.
+
+Phase b generates all six layouts, the store pairing, and the adaptor. Postgres and MySQL are the same wave so the pairing is not hardened on one remote engine.
 
 ### Success Criteria
 

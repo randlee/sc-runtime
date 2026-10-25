@@ -1674,7 +1674,7 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database.
 
 ### Consequences
 
-[REQ-RUN-0313](requirements.md) through [REQ-RUN-0328](requirements.md) are this decision. The adaptor is rendered only for a layout in [REQ-RUN-0326](requirements.md) that has both SQLite and a SQL engine. A plan that drops the adaptor drops a binding requirement. The rusqlite writer and the host lint profile do not implement it.
+[REQ-RUN-0313](requirements.md) through [REQ-RUN-0328](requirements.md) are this decision. Phase b plans them with the writer, the lint profile, and sc-cron: eight sprints, `b-1` through `b-8`. The adaptor is rendered for a layout that has SQLite and a SQL engine. The rusqlite writer sprint does not replace the template sqlx store.
 
 ### Alternatives Considered
 
