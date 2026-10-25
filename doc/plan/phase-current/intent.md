@@ -8,9 +8,9 @@ sc-runtime is a set of crates and a template for deploying a new application tha
 
 ## What success looks like
 
-- A generated project exposes general database commands on the CLI, on MCP, and over HTTP, including `delete row <table> <id>`.
-- The consumer can turn that surface off.
-- An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.
+- A generated project exposes general database commands on the CLI, on MCP, and over HTTP, including `delete row <table> <id>`. The consumer can turn that surface off, and an application command calls the same backend operation.
+- The copy cache and the host-aggregate cache are both generated. The consumer defines the host rollup. Tables can be skipped on either side.
+- `sc-cron` is an optional crate with one SQLite table and normal cron strings. A sync method is Rust or a Python hook. The consuming application schedules the sync.
 
 ## What is deliberately out of scope
 
