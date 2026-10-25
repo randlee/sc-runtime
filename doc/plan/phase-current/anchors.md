@@ -21,7 +21,7 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-013 | locked | sc-cron config is one SQLite table | 2026-10-25 |
 | ANC-014 | locked | sc-cron schedules with cron strings | 2026-10-25 |
 | ANC-015 | locked | Richer scheduling API is the consumer's | 2026-10-25 |
-| ANC-016 | locked | Sync method is Rust or python3 | 2026-10-25 |
+| ANC-016 | retired | Sync method is Rust or python3 | 2026-10-25 |
 | ANC-017 | locked | beads-cache uses SQLite only | 2026-10-25 |
 | ANC-018 | locked | beads-cache syncs to Dolt through beads | 2026-10-25 |
 | ANC-019 | locked | beads-cache does not use Postgres | 2026-10-25 |
@@ -31,6 +31,7 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-023 | locked | A generated application is ready to run | 2026-10-25 |
 | ANC-024 | locked | sc-cron is a phase-b sprint | 2026-10-25 |
 | ANC-025 | locked | sc-cron decisions stay in the ADR or reqs | 2026-10-25 |
+| ANC-026 | locked | Sync method is Rust or python3 | 2026-10-25 |
 
 ## ANC-001
 
@@ -278,7 +279,7 @@ Anchor: A cache-sync method is either a Rust function or a Python program run as
 
 > A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook (this is what atm-core is doing today w/ atm-cron).
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 2.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 3.
 
 Summary: Sync method is Rust or python3
 
@@ -431,3 +432,19 @@ Scope: a bead that edits docs/architecture.md or docs/requirements.md
 Deterministic check to pair with the development gate: docs/architecture.md or docs/requirements.md states the sc-cron contract.
 
 Beads: anchor `run-af2`, plan questions `run-af2.1`, dev questions `run-af2.2`
+
+## ANC-026
+
+Anchor: A cache-sync method is either a Rust function or a Python program run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+
+> A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook
+
+Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+
+Summary: Sync method is Rust or python3
+
+Scope: a bead that adds a cache-sync method
+
+Deterministic check to pair with the development gate: A schedule row names a Rust function, or a Python module invoked as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+
+Beads: anchor `run-oez`, plan questions `run-oez.1`, dev questions `run-oez.2`
