@@ -47,17 +47,17 @@ vertical_rationale: One ported crate. The expression change and the scheduler li
 
 ## Goal
 
-Port beads-cache `crates/sc-cron` into this workspace as specified in [architecture.md](../../sc-cron/architecture.md). Five-field crontab strings parse as minute-first. The app registers the `Job`. The schedule file is not the writer database.
+Port beads-cache `crates/sc-cron` into this workspace as specified in [architecture.md](../../sc-cron/architecture.md). It is an optional drop-in: one SQLite configuration table, cron strings, and a hook that is either Rust or `python3 <module> <hook-name>`.
 
 ## Public types
 
-Implement the types already in the beads-cache crate, with the expression rule in [docs/sc-cron/architecture.md](../../sc-cron/architecture.md): `CronExpr`, `CronError`, `ScheduleSpec`, `Schedule`, `Scheduler`, `SqliteScheduleStore`, `Job`, `RunOutcome`, `StopDecision`, `WorkerHandle`.
+Implement the types in [docs/sc-cron/architecture.md](../../sc-cron/architecture.md): `CronExpr`, `CronError`, `ScheduleSpec`, `HookTarget`, `Scheduler`, `Job`, `RunOutcome`, `StopDecision`. `HookTarget` is `Rust` or `Python { module }`.
 
 ## Tasks
 
 1. REQ-RUN-0001, REQ-CRON-0001: copy the crate into `crates/sc-cron` and add the workspace member.
 2. REQ-CRON-0002: accept a five-field minute-first string, keep six-field seconds-first, and update the `BadExpression` recovery text.
-3. REQ-CRON-0003, REQ-CRON-0004: keep `start_async`, `stop_async`, `spawn_worker`, and `SqliteScheduleStore::open` on the crate's own file. Add no HTTP route, MCP tool, or binary.
+3. REQ-CRON-0003, REQ-CRON-0004: create one schedule table. A `Rust` row calls `Job`. A `Python` row runs `python3 <module> cron.tick` or `cron.stop` with one JSON object on stdin. Add no HTTP route, MCP tool, or binary.
 4. REQ-RUN-0005: add `boundaries/sc-cron/sc-cron.toml` with `allowed_dependents = []` and forbidden edges to every other workspace crate. Add `sc-cron` to the forbidden edges of `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-runtime-db-sqlite`.
 5. NFR-RUN-0005: tests open the schedule file under a `tempfile::TempDir`. They do not set process environment variables.
 
@@ -69,7 +69,8 @@ Implement the types already in the beads-cache crate, with the expression rule i
 - `rg sc-cron template` prints nothing.
 - `cargo tree -p sc-cron -e normal --prefix none` prints no line `sqlx` and no workspace crate.
 - `CronExpr::parse("*/5 * * * *")` is covered by a test that expects success.
+- A test runs a Python hook with a stub interpreter and checks the argv is `python3`, the module, and `cron.tick`, and that stdin is one JSON object.
 
 ## Non-goals
 
-No beads CLI client. No Postgres store. No store-adaptor generator. No edit to `sc-lint.toml` (sprint `b-2` owns that file). No edit to `crates/sc-runtime-db-sqlite/` source (sprint `b-1` owns that crate; this sprint only adds the forbidden edge in its manifest).
+No beads CLI client. No Postgres store. No store-adaptor generator. No HTTP, MCP, or CLI API on this crate. No edit to `sc-lint.toml` (sprint `b-2` owns that file). No edit to `crates/sc-runtime-db-sqlite/` source (sprint `b-1` owns that crate; this sprint only adds the forbidden edge in its manifest).

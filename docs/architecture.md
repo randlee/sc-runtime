@@ -2259,26 +2259,27 @@ Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc
 
 **Status:** Active  
 **Decision Date:** 2026-10-25  
-**Source:** Owner, 2026-10-25. Port beads-cache `crates/sc-cron` into this workspace. Schedules use normal crontab strings. The consuming app registers the hook. beads-cache stays SQLite-only and syncs to Dolt through beads.
+**Source:** Owner, 2026-10-25. Port beads-cache `crates/sc-cron` as an optional drop-in. Configuration is one SQLite table. Schedules are cron strings. The hook is Rust or a Python module, as atm-core does with `atm-cron`. A richer scheduling API is the consumer's.
 
 ### Context
 
 beads-cache `develop` already contains `sc-cron`, extracted from atm-core's `atm-cron` (beads-cache ADR-BDC-0006). It is a tokio scheduler with a rusqlite schedule store, generation fencing, and a generic JSON payload. It depends on no beads-cache or ATM type. That ADR says the crate moves to sc-runtime unchanged once this team accepts it.
 
-The expression parser on that branch refuses a five-field string. A normal crontab string is five fields, minute first. The same crate's `Job` is the hook: the app calls `Scheduler` to start and stop a schedule. beads-cache's sync job calls the beads CLI and API. beads owns the Dolt database. That consumer does not open Postgres and does not use a store adaptor.
+The expression parser on that branch refuses a five-field string. A normal crontab string is five fields, minute first. atm-core runs a cron hook as `python3 <module> <hook-name>` with one JSON object on stdin (`cron.tick`, `cron.stop`). A consumer may instead point the same schedule at a Rust function. beads-cache's sync job calls the beads CLI and API. beads owns the Dolt database. That consumer does not open Postgres.
 
 ### Decision
 
-1. `sc-cron` is a workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The template does not depend on it. `sc-runtime` does not start it.
+1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The template does not depend on it unless a later generation flag says so. `sc-runtime` does not start it.
 2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
-3. The hook is `Job`. The app registers it by calling `Scheduler::start_async` with a name, the cron string, a timeout, and a JSON payload, and stops it through the scheduler's stop call. `sc-cron` has no HTTP, MCP, or CLI surface. The consuming app owns that API and calls this crate.
-4. `SqliteScheduleStore` keeps its own database file and its own rusqlite connection. Schedule writes do not go through `SqliteWriter`.
-5. `CronError` is the crate's one error enum. Variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `Store`, and `Fenced`, with the stable codes already on the beads-cache crate. `BadExpression`'s recovery text names the five-field form.
-6. beads-cache remains a SQLite-only consumer. Its scheduled job syncs through beads to Dolt. Postgres, the copy adaptor, and the host-plus-aggregate adaptor are not part of that consumer and are not part of this crate. After this crate is published, beads-cache depends on it from crates.io instead of carrying its own copy. That dependency change is beads-cache's work.
+3. Configuration is one SQLite table. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`.
+4. The hook target is either a Rust function the consumer supplies or a Python module. The Python invocation is `python3 <module> <hook-name>` with one JSON object on stdin, the same process shape as atm-core. The hook names are `cron.tick` and `cron.stop`. The JSON carries the schedule name and the row's payload. It does not carry ATM team or phase fields.
+5. A cache-sync adaptor lives in the consumer repo. It exposes the sync methods. A schedule row points at one of those methods, in Rust or in Python. `sc-cron` only fires the row. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
+6. `CronError` is the crate's one error enum. Variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `Store`, and `Fenced`, with the stable codes already on the beads-cache crate. `BadExpression`'s recovery text names the five-field form.
+7. beads-cache remains a SQLite-only consumer. Its scheduled hook syncs through beads to Dolt. Postgres and the copy or host-plus-aggregate adaptors are other consumers' hooks, not part of this crate. After this crate is published, beads-cache depends on it from crates.io instead of carrying its own copy. That dependency change is beads-cache's work.
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, and adds the boundary manifest. The store-adaptor generator is not this phase. When a later phase generates one, the app schedules it by registering a `Job` here.
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. The store-adaptor generator is not this phase. A later generated adaptor exposes sync methods and stores a cron row that points at one of them.
 
 ### Related Documents
 

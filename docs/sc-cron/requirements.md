@@ -10,13 +10,13 @@
 
 `CronExpr::parse("*/5 * * * *")` succeeds and means every fifth minute. `CronExpr::parse("0 */5 * * * *")` succeeds and means second 0 of every fifth minute. `CronExpr::parse("@hourly")` succeeds.
 
-## REQ-CRON-0003: The app registers the hook
+## REQ-CRON-0003: Rust or Python hook
 
-`Scheduler::start_async` stores a schedule. `spawn_worker` calls the app's `Job`. `stop_async` stops a schedule. The crate exposes no HTTP route, MCP tool, or binary.
+A schedule row names either the in-process `Job` or a Python module. For Python, the crate runs `python3 <module> cron.tick` or `python3 <module> cron.stop` and writes one JSON object to stdin. The object includes the schedule name and the row payload. The crate exposes no HTTP route, MCP tool, or binary. A consumer may build one that inserts rows.
 
-## REQ-CRON-0004: Own schedule file
+## REQ-CRON-0004: One configuration table
 
-`SqliteScheduleStore` opens its own file. A test can show a schedule write without constructing `SqliteWriter`.
+The crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The crate does not migrate the consumer's other tables.
 
 ## REQ-CRON-0005: One error enum
 
