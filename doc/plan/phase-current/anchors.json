@@ -682,21 +682,21 @@
       "id": "ANC-016",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "A cache-sync method is Rust code or a Python hook, as atm-cron does.",
+      "statement": "A cache-sync method is either a Rust function or a Python program run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
       "quote": "A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook (this is what atm-core is doing today w/ atm-cron).",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-10-25",
       "context": "planning session",
-      "summary": "Sync method is Rust or a Python hook",
+      "summary": "Sync method is Rust or python3",
       "scope": "a bead that adds a cache-sync method",
-      "deterministic_check": "A schedule row names either a Rust function or a Python module.",
+      "deterministic_check": "A schedule row names a Rust function, or a Python module invoked as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
       "fixtures": {
         "pass": [],
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -718,6 +718,16 @@
             "plan_questions": "run-50w.1",
             "dev_questions": "run-50w.2"
           }
+        },
+        {
+          "at": "2026-10-25T20:02:26+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "A cache-sync method is Rust code or a Python hook, as atm-cron does."
         }
       ]
     },

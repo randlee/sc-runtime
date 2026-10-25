@@ -21,7 +21,7 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-013 | locked | sc-cron config is one SQLite table | 2026-10-25 |
 | ANC-014 | locked | sc-cron schedules with cron strings | 2026-10-25 |
 | ANC-015 | locked | Richer scheduling API is the consumer's | 2026-10-25 |
-| ANC-016 | locked | Sync method is Rust or a Python hook | 2026-10-25 |
+| ANC-016 | locked | Sync method is Rust or python3 | 2026-10-25 |
 | ANC-017 | locked | beads-cache uses SQLite only | 2026-10-25 |
 | ANC-018 | locked | beads-cache syncs to Dolt through beads | 2026-10-25 |
 | ANC-019 | locked | beads-cache does not use Postgres | 2026-10-25 |
@@ -274,17 +274,17 @@ Beads: anchor `run-ezk`, plan questions `run-ezk.1`, dev questions `run-ezk.2`
 
 ## ANC-016
 
-Anchor: A cache-sync method is Rust code or a Python hook, as atm-cron does.
+Anchor: A cache-sync method is either a Rust function or a Python program run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
 
 > A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook (this is what atm-core is doing today w/ atm-cron).
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: locked. Version 2.
 
-Summary: Sync method is Rust or a Python hook
+Summary: Sync method is Rust or python3
 
 Scope: a bead that adds a cache-sync method
 
-Deterministic check to pair with the development gate: A schedule row names either a Rust function or a Python module.
+Deterministic check to pair with the development gate: A schedule row names a Rust function, or a Python module invoked as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
 
 Beads: anchor `run-50w`, plan questions `run-50w.1`, dev questions `run-50w.2`
 
