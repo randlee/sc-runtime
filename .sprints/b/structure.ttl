@@ -1,0 +1,18 @@
+@prefix triage: <urn:atm:triage:> .
+
+# triage:order is the sprint sequence number.
+# b-1 and b-2 share a wave. Neither has a triage:follows edge.
+
+triage:PhaseB a triage:Phase .
+
+triage:b-1 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 1 ;
+  triage:branch "sprint/b-1-sqlite-writer" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-1-sqlite-writer.md" .
+
+triage:b-2 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 2 ;
+  triage:branch "sprint/b-2-lint-profile" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-2-lint-profile.md" .

@@ -129,4 +129,4 @@ an interface, its compatibility rule, evidence paths, and approval authority,
 
 ## Repository Exceptions
 
-None.
+Phase ids `a` and `b` are single letters. Later phases use the letter-pair form in Plan Naming.

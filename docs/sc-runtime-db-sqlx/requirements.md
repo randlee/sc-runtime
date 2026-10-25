@@ -1,5 +1,7 @@
 # sc-runtime-db-sqlx Requirements
 
+**Withdrawn 2026-10-25.** [ADR-RUN-0012](../architecture.md) does not add an sqlx implementer of a shared SQL trait. This file is not a contract. Sprint `b-1` deletes it.
+
 This document defines the requirements for `sc-runtime-db-sqlx`, the sqlx
 implementation of `StorageBackend` supporting SQLite and PostgreSQL.
 

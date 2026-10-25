@@ -1,5 +1,7 @@
 # sc-runtime-db Requirements
 
+**Withdrawn 2026-10-25.** [ADR-RUN-0012](../architecture.md) removes the portable `StorageBackend`. This file is not a contract. Sprint `b-1` deletes it.
+
 This document defines the requirements for `sc-runtime-db`, the storage
 abstraction crate for the sc-runtime workspace.
 

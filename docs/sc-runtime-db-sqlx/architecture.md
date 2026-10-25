@@ -1,5 +1,7 @@
 # sc-runtime-db-sqlx Architecture
 
+**Withdrawn 2026-10-25.** [ADR-RUN-0012](../architecture.md) does not add an sqlx implementer of a shared SQL trait. Template `store-sqlite` stays [ADR-RUN-0301](../architecture.md) points 1–7. This file is not a contract. Sprint `b-1` deletes it.
+
 This document defines the architecture of `sc-runtime-db-sqlx`, the sqlx
 implementation of `StorageBackend` supporting SQLite and PostgreSQL via
 connection URL.
