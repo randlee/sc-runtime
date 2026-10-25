@@ -8,7 +8,7 @@ Entry state is the workspace at tag `v0.1.0`: four library crates, template `sto
 
 ## Objective
 
-Land `sc-runtime-db-sqlite`, the rusqlite write actor, as its own crate. Turn on the installed host analyzers and the Windows cross-check. The template sqlx store does not change.
+Land `sc-runtime-db-sqlite`, the rusqlite write actor, as its own crate. Port `sc-cron` from beads-cache and accept normal five-field crontab strings. Turn on the installed host analyzers and the Windows cross-check. The template sqlx store does not change.
 
 ## Boundary map
 
@@ -16,6 +16,7 @@ Land `sc-runtime-db-sqlite`, the rusqlite write actor, as its own crate. Turn on
 |---|---|---|---|
 | `sc-runtime-db-sqlite` | `b-1` | the writer crate, its manifest, the membership amendments already recorded in [ADR-RUN-0012](../../architecture.md) | none |
 | host lint profile | `b-2` | `sc-lint.toml`, the hot-path grep, the xwin install declaration | none |
+| `sc-cron` | `b-3` | the cron crate, its manifest, the membership row in [ADR-RUN-0013](../../architecture.md) | `b-1`, for `Cargo.toml` and the boundary manifests |
 
 ## Sprint index
 
@@ -23,16 +24,18 @@ Land `sc-runtime-db-sqlite`, the rusqlite write actor, as its own crate. Turn on
 |---|---|---|---|---|
 | `b-1` | [sprint-b-1-sqlite-writer.md](sprint-b-1-sqlite-writer.md) | `boundary` | writer | 1 |
 | `b-2` | [sprint-b-2-lint-profile.md](sprint-b-2-lint-profile.md) | `boundary` | lint | 1 |
+| `b-3` | [sprint-b-3-sc-cron.md](sprint-b-3-sc-cron.md) | `boundary` | cron | 2 |
 
 ## Wave table
 
 | Wave | Sprints | Critical path | Width | Sprint count |
 |---|---|---|---|---|
-| 1 | `b-1`, `b-2` | 1 | 2 | 2 |
+| 1 | `b-1`, `b-2` | 2 | 2 | 3 |
+| 2 | `b-3` | 2 | 1 | 3 |
 
 ## Requirements and ADRs
 
-- [REQ-RUN-0001](../../requirements.md), [REQ-RUN-0004](../../requirements.md), [REQ-RUN-0005](../../requirements.md), [REQ-RUN-0308](../../requirements.md), [NFR-RUN-0002](../../requirements.md), [NFR-RUN-0005](../../requirements.md), [NFR-RUN-0008](../../requirements.md), [NFR-RUN-0009](../../requirements.md), [ADR-RUN-0003](../../architecture.md), [ADR-RUN-0005](../../architecture.md), [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0011](../../architecture.md), [ADR-RUN-0012](../../architecture.md), [ADR-RUN-0301](../../architecture.md) points 1–7.
+- [REQ-RUN-0001](../../requirements.md), [REQ-RUN-0004](../../requirements.md), [REQ-RUN-0005](../../requirements.md), [REQ-RUN-0308](../../requirements.md), [NFR-RUN-0002](../../requirements.md), [NFR-RUN-0005](../../requirements.md), [NFR-RUN-0008](../../requirements.md), [NFR-RUN-0009](../../requirements.md), [ADR-RUN-0003](../../architecture.md), [ADR-RUN-0005](../../architecture.md), [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0011](../../architecture.md), [ADR-RUN-0012](../../architecture.md), [ADR-RUN-0013](../../architecture.md), [ADR-RUN-0301](../../architecture.md) points 1–7.
 - Acceptance for the writer contract roots at [ADR-RUN-0012](../../architecture.md) and [docs/sc-runtime-db-sqlite/architecture.md](../../sc-runtime-db-sqlite/architecture.md). `req:` roots only where a requirement statement is the subject.
 
 ## Out of this phase

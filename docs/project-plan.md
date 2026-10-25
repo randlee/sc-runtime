@@ -33,9 +33,10 @@ authorization and registry credentials. Merging the release kit onto
 | a-7 core release | [sprint-a-7](plans/phase-a/sprint-a-7-core-release.md) | complete | `sprint/a-7-core-release` |
 | a-8 Wyvern wizard | [sprint-a-8](plans/phase-a/sprint-a-8-wizard.md) | complete | `sprint/a-8-wizard` |
 
-Phase b is the rusqlite writer and the host lint profile. See [Phase b plan](plans/phase-b/phase-b-plan.md).
+Phase b is the rusqlite writer, the `sc-cron` port, and the host lint profile. See [Phase b plan](plans/phase-b/phase-b-plan.md).
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | b-1 rusqlite writer | [sprint-b-1](plans/phase-b/sprint-b-1-sqlite-writer.md) | planned | `sprint/b-1-sqlite-writer` |
 | b-2 host lint profile | [sprint-b-2](plans/phase-b/sprint-b-2-lint-profile.md) | planned | `sprint/b-2-lint-profile` |
+| b-3 sc-cron | [sprint-b-3](plans/phase-b/sprint-b-3-sc-cron.md) | planned | `sprint/b-3-sc-cron` |

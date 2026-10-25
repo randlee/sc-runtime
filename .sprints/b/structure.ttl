@@ -1,7 +1,7 @@
 @prefix triage: <urn:atm:triage:> .
 
 # triage:order is the sprint sequence number.
-# b-1 and b-2 share a wave. Neither has a triage:follows edge.
+# b-1 and b-2 share wave 1. b-3 follows b-1 because both edit Cargo.toml.
 
 triage:PhaseB a triage:Phase .
 
@@ -16,3 +16,10 @@ triage:b-2 a triage:Sprint ;
   triage:order 2 ;
   triage:branch "sprint/b-2-lint-profile" ;
   triage:criteria "docs/plans/phase-b/sprint-b-2-lint-profile.md" .
+
+triage:b-3 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 3 ;
+  triage:branch "sprint/b-3-sc-cron" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-3-sc-cron.md" ;
+  triage:follows triage:b-1 .

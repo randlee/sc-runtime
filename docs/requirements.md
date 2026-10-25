@@ -70,6 +70,7 @@ each waits until a project asks for it.
 | SQL Server | never; sqlx has no driver |
 | SQLite batched write actor inside template `store-sqlite` | forbidden; that crate stays the sqlx two-pool store ([ADR-RUN-0301](architecture.md) points 1–7) |
 | Library rusqlite writer `sc-runtime-db-sqlite` | phase `b`; not a portable query layer and not a template dependency ([ADR-RUN-0012](architecture.md)) |
+| `sc-cron` | phase `b`; SQLite-backed cron ported from beads-cache ([ADR-RUN-0013](architecture.md)) |
 | `tracing` bridge into `sc-observability` | undecided |
 | Bearer token for TCP; Origin and Host checks on `/mcp` | ideas only; relevant only on TCP |
 | Surface snapshots and adapter-drift tooling | owned by sc-lint |
@@ -96,7 +97,7 @@ each waits until a project asks for it.
 The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace,
 declared in the root `Cargo.toml`.
 
-The workspace members MUST be exactly these library crates. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md)): `sc-runtime-db-sqlite` is the fifth member. It is not a store the daemon opens, and the template does not depend on it.
+The workspace members MUST be exactly these library crates. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md), [ADR-RUN-0013](architecture.md)): `sc-runtime-db-sqlite` and `sc-cron` are members. Neither is a store the daemon opens, and the template does not depend on either.
 
 | Member path | Crate name | Purpose |
 |---|---|---|
@@ -105,6 +106,7 @@ The workspace members MUST be exactly these library crates. Amended 2026-10-25 (
 | `crates/sc-command` | `sc-command` | response envelope, `OpError`, REST and MCP conversions |
 | `crates/sc-runtime` | `sc-runtime` | daemon assembly: `Daemon::builder()`, `daemon.lock`, `DaemonFixture` |
 | `crates/sc-runtime-db-sqlite` | `sc-runtime-db-sqlite` | rusqlite write actor; one connection, one thread |
+| `crates/sc-cron` | `sc-cron` | SQLite-backed cron; the app registers the job |
 
 The repository root MUST also contain these directories and files, none of
 which is a workspace member:
@@ -416,7 +418,7 @@ This requirement is decided in this document; the sc-runtime design does not
 state it.
 
 1. For each workspace crate (`sc-config`, `sc-transport`, `sc-command`,
-   `sc-runtime`, and, from the 2026-10-25 amendment, `sc-runtime-db-sqlite`)
+   `sc-runtime`, and, from the 2026-10-25 amendment, `sc-runtime-db-sqlite` and `sc-cron`)
    the repository MUST contain a boundary manifest: one or more TOML files under `boundaries/<crate>/` at the
    repository root, in the format read by the `sc-lint-boundary` tool.
 2. The manifest format, as observed in the sc-lint repository, is TOML with
@@ -435,11 +437,12 @@ state it.
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
-   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-   | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
+   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
+   | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
+| `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
@@ -3810,7 +3813,7 @@ comments and spacing are never a reason to split a file or to strip comments.
 This item is the single owner of the error rule and the panic rule for the
 public API of the library crates `sc-config`, `sc-transport`,
 `sc-command`, `sc-runtime`, and, from the 2026-10-25 amendment,
-`sc-runtime-db-sqlite`. Each crate's own non-functional requirement
+`sc-runtime-db-sqlite` and `sc-cron`. Each crate's own non-functional requirement
 references this item and adds only strictness specific to that crate. The
 decision is recorded in [ADR-RUN-0006](architecture.md).
 
@@ -3840,6 +3843,7 @@ owned by that crate, with one enum per crate:
 | `sc-transport` | `TransportError` |
 | `sc-runtime` | `RuntimeError` |
 | `sc-runtime-db-sqlite` | `SqliteWriterError` |
+| `sc-cron` | `CronError` |
 | `sc-command` | undecided; see the OPEN below |
 
 A public API MUST NOT return an opaque error type such as `anyhow::Error` or
