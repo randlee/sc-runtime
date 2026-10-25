@@ -6,6 +6,8 @@ Written 2026-10-25 by randlee. This page frames the anchors. Jev judges the anch
 
 sc-runtime is a set of crates and a template for deploying a new application that can use its database immediately. General database commands are the bootstrap. The consumer disables that public surface and adds application commands that call the same backend operations.
 
+The storage plan is ADR-RUN-0305. SQLite and Postgres meet in an adaptor crate that `just new` generates into the consumer repository. That plan stays a requirement when a sprint list changes.
+
 ## What success looks like
 
 - A generated project exposes general database commands on the CLI, on MCP, and over HTTP, including `delete row <table> <id>`. The consumer can turn that surface off, and an application command calls the same backend operation.

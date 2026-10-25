@@ -172,6 +172,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
+| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 
@@ -1594,8 +1595,10 @@ variable, so two such crates can build in one workspace.
    MUST NOT be a portable query layer.
 5. Store crates are template code owned by the project. `sc-runtime` MUST only
    call the project's stores closure and MUST NOT inspect its result.
-6. There MUST NOT be forwarding, replication, outbox or routing policy between
-   stores in this repository.
+6. The sc-runtime crates and the template do not move rows between stores.
+   A consumer adaptor does, including a local cache
+   ([ADR-RUN-0305](architecture.md)). This repository does not contain a
+   replication mechanism, an outbox, or a routing policy.
 7. v0.1 ships `store-sqlite` only. `store-postgres` and the `db = both` option
    follow, then `store-mysql` when a project needs it. SQL Server is out of
    scope because sqlx has no driver for it.
@@ -1638,6 +1641,46 @@ on sqlx and only `service` depends on `store-*`; `arch-qa` review for points
   function.
 - [REQ-RT-0003](sc-runtime/requirements.md): `sc-runtime` never inspects `Stores`.
 - [ADR-RUN-0303](architecture.md): the full crate graph of a generated project.
+- [ADR-RUN-0305](architecture.md): the consumer adaptor that moves rows between the two stores.
+
+---
+
+## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
+**Amends:** [ADR-RUN-0301](architecture.md) point 6  
+
+### Context
+
+SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. The first phase-b writeup put that pairing behind one `StorageBackend` and one constructor that accepted both `sqlite://` and `postgres://`. A query written for both engines is forbidden by [ADR-RUN-0301](architecture.md) point 4. That writeup was deleted. The pairing itself is the plan.
+
+### Decision
+
+1. SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
+2. The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The consumer repository defines the rollup.
+4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
+5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
+6. Every consumer repository gets the same generated implementation of a common pattern. Generated SQLite code and generated Postgres code are separate files.
+7. An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+8. The consuming application schedules synchronization. The adaptor starts no timer.
+9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
+
+### Consequences
+
+[REQ-RUN-0313](requirements.md) through [REQ-RUN-0325](requirements.md) are this decision. A plan that drops the adaptor drops a binding requirement. The rusqlite writer and the host lint profile do not implement it.
+
+### Alternatives Considered
+
+- One `StorageBackend` and one constructor that runs the same query on SQLite and Postgres. Rejected. Point 4 of ADR-RUN-0301 stands: a query is written for one engine. The schemas may differ.
+- Leaving the pairing for each consumer to invent. Rejected. A common pattern has one generated implementation.
+
+### Related Documents
+
+- [ADR-RUN-0301](architecture.md) points 4 and 6.
+- [REQ-RUN-0313](requirements.md) through [REQ-RUN-0325](requirements.md).
 
 ---
 

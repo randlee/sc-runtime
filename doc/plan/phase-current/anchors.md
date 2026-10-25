@@ -7,16 +7,16 @@ Intent: `doc/plan/phase-current/intent.md`
 | ID | Status | Summary | Stated |
 | --- | --- | --- | --- |
 | ANC-001 | locked | Bootstrap database commands the consumer can disable | 2026-10-25 |
-| ANC-002 | locked | Copy cache matches the remote schema | 2026-10-25 |
-| ANC-003 | locked | Host cache aggregates many hosts | 2026-10-25 |
-| ANC-004 | locked | Consumer defines the host rollup | 2026-10-25 |
-| ANC-005 | locked | just new generates the adaptor | 2026-10-25 |
-| ANC-006 | locked | Tables may be skipped either way | 2026-10-25 |
-| ANC-007 | locked | Flags name server-added columns | 2026-10-25 |
-| ANC-008 | locked | One implementation per common pattern | 2026-10-25 |
-| ANC-009 | locked | Different code per database model | 2026-10-25 |
-| ANC-010 | locked | Advanced adaptors are consumer code | 2026-10-25 |
-| ANC-011 | locked | The app schedules store sync | 2026-10-25 |
+| ANC-002 | retired | Copy cache matches the remote schema | 2026-10-25 |
+| ANC-003 | retired | Host cache aggregates many hosts | 2026-10-25 |
+| ANC-004 | retired | Consumer defines the host rollup | 2026-10-25 |
+| ANC-005 | retired | just new generates the adaptor | 2026-10-25 |
+| ANC-006 | retired | Tables may be skipped either way | 2026-10-25 |
+| ANC-007 | retired | Flags name server-added columns | 2026-10-25 |
+| ANC-008 | retired | One implementation per common pattern | 2026-10-25 |
+| ANC-009 | retired | Different code per database model | 2026-10-25 |
+| ANC-010 | retired | Advanced adaptors are consumer code | 2026-10-25 |
+| ANC-011 | retired | The app schedules store sync | 2026-10-25 |
 | ANC-012 | retired | sc-cron is an optional crate | 2026-10-25 |
 | ANC-013 | retired | sc-cron config is one SQLite table | 2026-10-25 |
 | ANC-014 | retired | sc-cron schedules with cron strings | 2026-10-25 |
@@ -25,8 +25,8 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-017 | locked | beads-cache uses SQLite only | 2026-10-25 |
 | ANC-018 | locked | beads-cache syncs to Dolt through beads | 2026-10-25 |
 | ANC-019 | locked | beads-cache does not use Postgres | 2026-10-25 |
-| ANC-020 | locked | Adaptor crate defines the store relationship | 2026-10-25 |
-| ANC-021 | locked | A cache forwards data between stores | 2026-10-25 |
+| ANC-020 | retired | Adaptor crate defines the store relationship | 2026-10-25 |
+| ANC-021 | retired | A cache forwards data between stores | 2026-10-25 |
 | ANC-022 | locked | sc-runtime is crates plus a template | 2026-10-25 |
 | ANC-023 | locked | A generated application is ready to run | 2026-10-25 |
 | ANC-024 | locked | sc-cron is a phase-b sprint | 2026-10-25 |
@@ -38,6 +38,20 @@ Intent: `doc/plan/phase-current/intent.md`
 | REQ-CRON-0004 | locked | One schedule table | 2026-10-25 |
 | REQ-CRON-0005 | locked | One CronError enum | 2026-10-25 |
 | ADR-RUN-0013 | locked | ADR-RUN-0013 sc-cron decision | 2026-10-25 |
+| ADR-RUN-0305 | locked | Generated consumer store adaptor | 2026-10-25 |
+| REQ-RUN-0313 | locked | Adaptor crate defines the stores | 2026-10-25 |
+| REQ-RUN-0314 | locked | Copy adaptor matches the remote schema | 2026-10-25 |
+| REQ-RUN-0315 | locked | Host aggregate collects many hosts | 2026-10-25 |
+| REQ-RUN-0316 | locked | Consumer defines the host rollup | 2026-10-25 |
+| REQ-RUN-0317 | locked | just new generates the adaptor | 2026-10-25 |
+| REQ-RUN-0318 | locked | Library crate generates nothing | 2026-10-25 |
+| REQ-RUN-0319 | locked | Flags name one-sided tables and columns | 2026-10-25 |
+| REQ-RUN-0320 | locked | One implementation per common pattern | 2026-10-25 |
+| REQ-RUN-0321 | locked | Separate code per database engine | 2026-10-25 |
+| REQ-RUN-0322 | locked | Advanced adaptor is consumer code | 2026-10-25 |
+| REQ-RUN-0324 | locked | Adaptor moves rows between stores | 2026-10-25 |
+| REQ-RUN-0325 | locked | Framework crates move no rows | 2026-10-25 |
+| REQ-RUN-0323 | locked | The application schedules sync | 2026-10-25 |
 
 ## ANC-001
 
@@ -61,7 +75,7 @@ Anchor: The simple local cache is a copy of the remote Postgres or SQL database 
 
 > if local cache is a) simply a 'copy' of the remote postgres/sql database with the same schema to allow faster/offline access to data, that is the simple case.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Copy cache matches the remote schema
 
@@ -77,7 +91,7 @@ Anchor: The host-specific cache is a cache whose Postgres or SQL database aggreg
 
 > if the cache is b) host specific and the postgres/sql aggregates info from many hosts
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Host cache aggregates many hosts
 
@@ -93,7 +107,7 @@ Anchor: The host-aggregate cache requires logic in the consumer repository to de
 
 > that would be a bit more complicated and require some consumer repo logic to define.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Consumer defines the host rollup
 
@@ -109,7 +123,7 @@ Anchor: Adaptor Rust code and models in a new repository are generated by the ge
 
 > sc-runtime could generate a new repo w/ the adaptor rust code and models
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 3.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 4.
 
 Summary: just new generates the adaptor
 
@@ -125,7 +139,7 @@ Anchor: Table skipping is allowed for an extra SQLite table and for an extra SQL
 
 > skipping tables may occur both ways (extra tables may be sqlite, may be sql/postgres server).
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Tables may be skipped either way
 
@@ -141,7 +155,7 @@ Anchor: Columns added on the SQL or Postgres server are indicated by a consumer-
 
 > consumer repo flags indicating what tables to skip, what columns are added for sql/postgres server
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Flags name server-added columns
 
@@ -157,7 +171,7 @@ Anchor: No consumer repository uses a different implementation of one common pat
 
 > What I want to avoid is each consuming repo making different choices about how to implement common patterns.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: One implementation per common pattern
 
@@ -173,7 +187,7 @@ Anchor: Different code for different models is allowed on the consuming reposito
 
 > Supporting multiple models may require dropping different code on the consuming repo.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Different code per database model
 
@@ -189,7 +203,7 @@ Anchor: A more advanced adaptor is written by the consumer from the building blo
 
 > more advanced senarios would be completely on the consumer to write the adaptor from the building blocks we provide.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Advanced adaptors are consumer code
 
@@ -205,7 +219,7 @@ Anchor: Store synchronization is scheduled by the consuming application.
 
 > scheduling of sync is on the consuming app
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: The app schedules store sync
 
@@ -349,7 +363,7 @@ Anchor: The store relationship is defined in an adaptor crate on the consumer re
 
 > there needs to be a place (i.e. schema, adaptor crate) on consumer repo that defines the relationship
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Adaptor crate defines the store relationship
 
@@ -365,7 +379,7 @@ Anchor: A cache is forwarding of data between stores.
 
 > caching would be forwarding between stores.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: A cache forwards data between stores
 
@@ -550,3 +564,227 @@ Scope: a bead that adds or edits crates/sc-cron
 Deterministic check to pair with the development gate: docs/architecture.md contains ADR-RUN-0013 and docs/sc-cron/requirements.md contains REQ-CRON-0001 through REQ-CRON-0005.
 
 Beads: anchor `run-pny`, plan questions `run-pny.1`, dev questions `run-pny.2`
+
+## ADR-RUN-0305
+
+Anchor: SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
+
+> SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Generated consumer store adaptor
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: docs/architecture.md contains ADR-RUN-0305.
+
+Beads: anchor `run-0fr`, plan questions `run-0fr.1`, dev questions `run-0fr.2`
+
+## REQ-RUN-0313
+
+Anchor: The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.
+
+> The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Adaptor crate defines the stores
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: A generated repository contains an adaptor crate that names both stores.
+
+Beads: anchor `run-dgl`, plan questions `run-dgl.1`, dev questions `run-dgl.2`
+
+## REQ-RUN-0314
+
+Anchor: The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+
+> The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Copy adaptor matches the remote schema
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: A generated copy adaptor creates the shared remote tables in SQLite.
+
+Beads: anchor `run-5zk`, plan questions `run-5zk.1`, dev questions `run-5zk.2`
+
+## REQ-RUN-0315
+
+Anchor: The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
+
+> The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Host aggregate collects many hosts
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.
+
+Beads: anchor `run-2is`, plan questions `run-2is.1`, dev questions `run-2is.2`
+
+## REQ-RUN-0316
+
+Anchor: The consumer repository defines the rollup from host rows into the Postgres aggregate.
+
+> The consumer repository defines the rollup from host rows into the Postgres aggregate.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Consumer defines the host rollup
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: The host-aggregate adaptor has a consumer-owned function that maps host rows into the Postgres aggregate.
+
+Beads: anchor `run-id3`, plan questions `run-id3.1`, dev questions `run-id3.2`
+
+## REQ-RUN-0317
+
+Anchor: Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py).
+
+> Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py).
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: just new generates the adaptor
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: just new writes the adaptor crate and its models into the new repository.
+
+Beads: anchor `run-bda`, plan questions `run-bda.1`, dev questions `run-bda.2`
+
+## REQ-RUN-0318
+
+Anchor: The library crate named sc-runtime does not generate adaptor code.
+
+> The library crate named sc-runtime does not generate adaptor code.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Library crate generates nothing
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: crates/sc-runtime contains no generator.
+
+Beads: anchor `run-cck`, plan questions `run-cck.1`, dev questions `run-cck.2`
+
+## REQ-RUN-0319
+
+Anchor: Generation flags name tables and columns that exist on only one of the two stores. A skipped table may be the SQLite table or the SQL-server table.
+
+> Generation flags name tables and columns that exist on only one of the two stores.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
+
+Summary: Flags name one-sided tables and columns
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: Generation input can name a SQLite-only table, a SQL-server-only table, and a column that exists on only one side.
+
+Beads: anchor `run-xoo`, plan questions `run-xoo.1`, dev questions `run-xoo.2`
+
+## REQ-RUN-0320
+
+Anchor: Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.
+
+> Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: One implementation per common pattern
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: Two generated repositories that select the same pattern contain the same adaptor implementation.
+
+Beads: anchor `run-jp8`, plan questions `run-jp8.1`, dev questions `run-jp8.2`
+
+## REQ-RUN-0321
+
+Anchor: Generated SQLite code and generated Postgres code are separate files.
+
+> Generated SQLite code and generated Postgres code are separate files.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Separate code per database engine
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: The generated SQLite store and the generated Postgres store are different files.
+
+Beads: anchor `run-iuv`, plan questions `run-iuv.1`, dev questions `run-iuv.2`
+
+## REQ-RUN-0322
+
+Anchor: An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+
+> An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Advanced adaptor is consumer code
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: A third adaptor is a file the consumer wrote.
+
+Beads: anchor `run-5ds`, plan questions `run-5ds.1`, dev questions `run-5ds.2`
+
+## REQ-RUN-0324
+
+Anchor: The consumer adaptor moves rows between the local store and the remote store.
+
+> The consumer adaptor moves rows between the local store and the remote store.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Adaptor moves rows between stores
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: The adaptor crate contains the copy from one store to the other.
+
+Beads: anchor `run-8b6`, plan questions `run-8b6.1`, dev questions `run-8b6.2`
+
+## REQ-RUN-0325
+
+Anchor: The sc-runtime crates do not move rows between stores.
+
+> The sc-runtime crates do not move rows between stores.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Framework crates move no rows
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: crates/ contains no store-to-store copy.
+
+Beads: anchor `run-683`, plan questions `run-683.1`, dev questions `run-683.2`
+
+## REQ-RUN-0323
+
+Anchor: Store synchronization is scheduled by the consuming application. The adaptor starts no timer.
+
+> Store synchronization is scheduled by the consuming application. The adaptor starts no timer.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: The application schedules sync
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: The adaptor crate starts no timer. A schedule is registered by application code.
+
+Beads: anchor `run-7mk`, plan questions `run-7mk.1`, dev questions `run-7mk.2`
