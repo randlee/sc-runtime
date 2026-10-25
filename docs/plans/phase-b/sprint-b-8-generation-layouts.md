@@ -11,6 +11,7 @@ worktree: sprint/b-8-generation-layouts
 requirements:
   - REQ-RUN-0326
   - REQ-RUN-0329
+  - REQ-RUN-0330
   - REQ-RUN-0317
   - REQ-RUN-0318
   - REQ-RUN-0303
@@ -41,7 +42,7 @@ The library crate `sc-runtime` does not generate any of this.
 
 1. REQ-RUN-0326: `wizard/answers.schema.json` accepts each layout.
 2. REQ-RUN-0317 and REQ-RUN-0318: `just new` writes the stores, the models, and the adaptor. `crates/sc-runtime` contains no generator.
-3. REQ-RUN-0329: each generated package name is the project name, a hyphen, and its role. The adaptor depends on `<project>-types` and `<project>-schema`.
+3. REQ-RUN-0329 and REQ-RUN-0330: each generated package name is the project name, a hyphen, and its role. Row structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
 4. A layout with a store renders that store's commands. A no-database layout renders no store command.
 
 ## Required validation
@@ -53,7 +54,7 @@ The library crate `sc-runtime` does not generate any of this.
 - Each two-store project contains both stores and the adaptor.
 - The no-database project contains no `store-*` crate.
 - `rg` of a generator under `crates/sc-runtime` prints nothing.
-- A project named `acme` has packages `acme-types` and `acme-schema`, and the adaptor depends on both.
+- A project named `acme` has packages `acme-types` and `acme-schema`. The row structs are in `acme-schema`. The adaptor depends on `acme-schema`.
 
 ## Non-goals
 
