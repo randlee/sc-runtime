@@ -51,7 +51,7 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0330 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. REQ-RUN-0327 and REQ-RUN-0328 are schema and trait pairing. REQ-RUN-0329 is the crates.io package name. REQ-RUN-0330 places row structs in the schema crate. |
+| REQ-RUN-0301 through REQ-RUN-0331 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. REQ-RUN-0327 and REQ-RUN-0328 are schema and trait pairing. REQ-RUN-0329 is the crates.io package name. REQ-RUN-0330 places row structs in the schema crate. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
@@ -1514,6 +1514,7 @@ REST and MCP have exactly one place to call.
 ## REQ-RUN-0302: Template example operations `widget.create`, `widget.get`
 
 **Status:** Active  
+**Amended:** 2026-10-25 by [REQ-RUN-0331](requirements.md). The widget pair remains the worked example. A layout with a store also has the general database commands in that requirement.
 
 ### Requirement Statement
 
@@ -2657,6 +2658,22 @@ The adaptor depends on `<project>-schema`. Each store crate still holds that eng
 1. The schema crate contains the row structs.
 2. The types crate contains no database row struct.
 3. The adaptor crate depends on the schema crate.
+
+## REQ-RUN-0331: General database commands are a disableable bootstrap
+
+**Status:** Active
+
+### Requirement Statement
+
+The template ships general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. The consumer can disable that surface. An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.
+
+A layout with no database renders none of these commands.
+
+### Success Criteria
+
+1. A generated project with a store registers `delete row <table> <id>` on the CLI, on MCP, and over HTTP.
+2. A flag removes those three commands.
+3. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 

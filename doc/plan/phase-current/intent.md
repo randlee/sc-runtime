@@ -23,4 +23,4 @@ The storage plan is ADR-RUN-0305. SQLite and Postgres meet in an adaptor crate t
 
 ## Anchors
 
-Anchors for this plan live in `anchors.json` (record of truth) and are rendered to `anchors.md`. Requirements and ADRs that govern this plan are listed there too, under their own IDs.
+The judged anchors are the REQ and ADR ids in the register. `anchors.json` records those ids. An ANC id is only a retired pointer at one of them.

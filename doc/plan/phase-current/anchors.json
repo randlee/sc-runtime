@@ -21,8 +21,8 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "locked",
+      "version": 2,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-8bp",
@@ -43,6 +43,12 @@
             "plan_questions": "run-8bp.1",
             "dev_questions": "run-8bp.2"
           }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0331",
+          "reason": "The register item is REQ-RUN-0331. The plan is judged against that id."
         }
       ]
     },
@@ -839,8 +845,8 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "locked",
+      "version": 2,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-854",
@@ -861,6 +867,12 @@
             "plan_questions": "run-854.1",
             "dev_questions": "run-854.2"
           }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
         }
       ]
     },
@@ -882,8 +894,8 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "locked",
+      "version": 2,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-rgm",
@@ -904,6 +916,12 @@
             "plan_questions": "run-rgm.1",
             "dev_questions": "run-rgm.2"
           }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
         }
       ]
     },
@@ -925,8 +943,8 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "locked",
+      "version": 2,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-0ms",
@@ -947,6 +965,12 @@
             "plan_questions": "run-0ms.1",
             "dev_questions": "run-0ms.2"
           }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
         }
       ]
     },
@@ -1066,8 +1090,8 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "locked",
+      "version": 2,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-10g",
@@ -1088,6 +1112,12 @@
             "plan_questions": "run-10g.1",
             "dev_questions": "run-10g.2"
           }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0002",
+          "reason": "The register item is ADR-RUN-0002. The plan is judged against that id."
         }
       ]
     },
@@ -1109,8 +1139,8 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "locked",
+      "version": 2,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-v0f",
@@ -1131,6 +1161,12 @@
             "plan_questions": "run-v0f.1",
             "dev_questions": "run-v0f.2"
           }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0503",
+          "reason": "The register item is REQ-RUN-0503. The plan is judged against that id."
         }
       ]
     },
@@ -1152,8 +1188,8 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "locked",
+      "version": 2,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-q75",
@@ -1174,6 +1210,12 @@
             "plan_questions": "run-q75.1",
             "dev_questions": "run-q75.2"
           }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
         }
       ]
     },
@@ -1195,8 +1237,8 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "locked",
+      "version": 2,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-af2",
@@ -1217,6 +1259,12 @@
             "plan_questions": "run-af2.1",
             "dev_questions": "run-af2.2"
           }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
         }
       ]
     },
@@ -2388,6 +2436,135 @@
             "anchor": "run-3mg",
             "plan_questions": "run-3mg.1",
             "dev_questions": "run-3mg.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0331",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0331",
+      "statement": "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.",
+      "quote": "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "Disableable database commands",
+      "scope": "a bead that edits template CLI, MCP, or HTTP commands",
+      "deterministic_check": "A generated project with a store registers delete row <table> <id> on the CLI, MCP, and HTTP, and a flag removes those commands.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-w7j",
+        "plan_questions": "run-w7j.1",
+        "dev_questions": "run-w7j.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T22:05:57+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T22:05:59+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-w7j",
+            "plan_questions": "run-w7j.1",
+            "dev_questions": "run-w7j.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ADR-RUN-0002",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0002",
+      "statement": "sc-runtime is a cargo-generate template plus published library crates.",
+      "quote": "sc-runtime is a cargo-generate template plus published library crates.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "Template plus published crates",
+      "scope": "a bead that adds a library crate or edits the template",
+      "deterministic_check": "Generated projects depend on the library crates by version, and template code is rendered into the project.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-o8s",
+        "plan_questions": "run-o8s.1",
+        "dev_questions": "run-o8s.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T22:05:59+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T22:06:00+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-o8s",
+            "plan_questions": "run-o8s.1",
+            "dev_questions": "run-o8s.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0503",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0503",
+      "statement": "A project generated by just new passes lint, test, and both builds with no file edited.",
+      "quote": "A project generated by just new passes lint, test, and both builds with no file edited.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "Generated project is green",
+      "scope": "a bead that edits the template or scripts/new_project.py",
+      "deterministic_check": "just new on the sqlite fixture exits 0, and just lint, just test, just build-cli, and just build-daemon exit 0 with no file edited.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-bfz",
+        "plan_questions": "run-bfz.1",
+        "dev_questions": "run-bfz.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T22:06:00+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-bfz",
+            "plan_questions": "run-bfz.1",
+            "dev_questions": "run-bfz.2"
           }
         }
       ]

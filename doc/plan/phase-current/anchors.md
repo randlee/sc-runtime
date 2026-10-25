@@ -6,7 +6,7 @@ Intent: `doc/plan/phase-current/intent.md`
 
 | ID | Status | Summary | Stated |
 | --- | --- | --- | --- |
-| ANC-001 | locked | Bootstrap database commands the consumer can disable | 2026-10-25 |
+| ANC-001 | retired | Bootstrap database commands the consumer can disable | 2026-10-25 |
 | ANC-002 | retired | Copy cache matches the remote schema | 2026-10-25 |
 | ANC-003 | retired | Host cache aggregates many hosts | 2026-10-25 |
 | ANC-004 | retired | Consumer defines the host rollup | 2026-10-25 |
@@ -22,15 +22,15 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-014 | retired | sc-cron schedules with cron strings | 2026-10-25 |
 | ANC-015 | retired | Richer scheduling API is the consumer's | 2026-10-25 |
 | ANC-016 | retired | Sync method is Rust or python3 | 2026-10-25 |
-| ANC-017 | locked | beads-cache uses SQLite only | 2026-10-25 |
-| ANC-018 | locked | beads-cache syncs to Dolt through beads | 2026-10-25 |
-| ANC-019 | locked | beads-cache does not use Postgres | 2026-10-25 |
+| ANC-017 | retired | beads-cache uses SQLite only | 2026-10-25 |
+| ANC-018 | retired | beads-cache syncs to Dolt through beads | 2026-10-25 |
+| ANC-019 | retired | beads-cache does not use Postgres | 2026-10-25 |
 | ANC-020 | retired | Adaptor crate defines the store relationship | 2026-10-25 |
 | ANC-021 | retired | A cache forwards data between stores | 2026-10-25 |
-| ANC-022 | locked | sc-runtime is crates plus a template | 2026-10-25 |
-| ANC-023 | locked | A generated application is ready to run | 2026-10-25 |
-| ANC-024 | locked | sc-cron is a phase-b sprint | 2026-10-25 |
-| ANC-025 | locked | sc-cron decisions stay in the ADR or reqs | 2026-10-25 |
+| ANC-022 | retired | sc-runtime is crates plus a template | 2026-10-25 |
+| ANC-023 | retired | A generated application is ready to run | 2026-10-25 |
+| ANC-024 | retired | sc-cron is a phase-b sprint | 2026-10-25 |
+| ANC-025 | retired | sc-cron decisions stay in the ADR or reqs | 2026-10-25 |
 | ANC-026 | retired | SQLite cron runs a Rust job or python3 | 2026-10-25 |
 | REQ-CRON-0001 | locked | sc-cron is a workspace member | 2026-10-25 |
 | REQ-CRON-0002 | locked | Normal five-field crontab | 2026-10-25 |
@@ -57,6 +57,9 @@ Intent: `doc/plan/phase-current/intent.md`
 | REQ-RUN-0328 | locked | Shared trait or a trait per store | 2026-10-25 |
 | REQ-RUN-0329 | locked | Package name carries the project name | 2026-10-25 |
 | REQ-RUN-0330 | locked | Row structs are in the schema crate | 2026-10-25 |
+| REQ-RUN-0331 | locked | Disableable database commands | 2026-10-25 |
+| ADR-RUN-0002 | locked | Template plus published crates | 2026-10-25 |
+| REQ-RUN-0503 | locked | Generated project is green | 2026-10-25 |
 
 ## ANC-001
 
@@ -64,7 +67,7 @@ Anchor: The template ships general database commands on the CLI, MCP, and HTTP, 
 
 > the 'general database commands' would be expected to be disabled by the customer. they are simply a bootstrap tool and could easily be 'replaced' w/ a command that has better ux and does a similar call on the back-end. i.e. delete row <table> <id> would be a general command which could be used 'under the hood' w/ a different cli/mcp/http call.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Bootstrap database commands the consumer can disable
 
@@ -320,7 +323,7 @@ Anchor: beads-cache uses SQLite only.
 
 > beads-cache would be a sqlite ONLY design
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: beads-cache uses SQLite only
 
@@ -336,7 +339,7 @@ Anchor: beads-cache synchronization to Dolt is through the beads CLI or API.
 
 > which syncronizes w/ dolt database through beads cli/api.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: beads-cache syncs to Dolt through beads
 
@@ -352,7 +355,7 @@ Anchor: beads-cache use of sc-runtime does not include SQL or Postgres.
 
 > it's use of sc-runtime would not include SQL/postgres which are out of scope (beads owns beads/dolt database).
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: beads-cache does not use Postgres
 
@@ -400,7 +403,7 @@ Anchor: sc-runtime is a set of crates and a templating system.
 
 > sc-runtime is a set of crates and a templating system for rapidly deploying new ready to run applications.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: sc-runtime is crates plus a template
 
@@ -416,7 +419,7 @@ Anchor: An application deployed from sc-runtime is ready to run.
 
 > for rapidly deploying new ready to run applications.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: A generated application is ready to run
 
@@ -432,7 +435,7 @@ Anchor: sc-cron is ported as part of the phase-b sprints.
 
 > we should probably port sc-cron as part of phase-b sprints
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: sc-cron is a phase-b sprint
 
@@ -448,7 +451,7 @@ Anchor: The sc-cron discussion is a permanent record in the ADR or requirements 
 
 > so any discussion becomes perment record in the adr/req documents.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: sc-cron decisions stay in the ADR or reqs
 
@@ -873,3 +876,51 @@ Scope: a bead that adds or generates the schema crate or the types crate
 Deterministic check to pair with the development gate: The schema crate contains the row structs. The types crate contains no database row struct. The adaptor depends on the schema crate.
 
 Beads: anchor `run-3mg`, plan questions `run-3mg.1`, dev questions `run-3mg.2`
+
+## REQ-RUN-0331
+
+Anchor: The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.
+
+> The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: Disableable database commands
+
+Scope: a bead that edits template CLI, MCP, or HTTP commands
+
+Deterministic check to pair with the development gate: A generated project with a store registers delete row <table> <id> on the CLI, MCP, and HTTP, and a flag removes those commands.
+
+Beads: anchor `run-w7j`, plan questions `run-w7j.1`, dev questions `run-w7j.2`
+
+## ADR-RUN-0002
+
+Anchor: sc-runtime is a cargo-generate template plus published library crates.
+
+> sc-runtime is a cargo-generate template plus published library crates.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: Template plus published crates
+
+Scope: a bead that adds a library crate or edits the template
+
+Deterministic check to pair with the development gate: Generated projects depend on the library crates by version, and template code is rendered into the project.
+
+Beads: anchor `run-o8s`, plan questions `run-o8s.1`, dev questions `run-o8s.2`
+
+## REQ-RUN-0503
+
+Anchor: A project generated by just new passes lint, test, and both builds with no file edited.
+
+> A project generated by just new passes lint, test, and both builds with no file edited.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: Generated project is green
+
+Scope: a bead that edits the template or scripts/new_project.py
+
+Deterministic check to pair with the development gate: just new on the sqlite fixture exits 0, and just lint, just test, just build-cli, and just build-daemon exit 0 with no file edited.
+
+Beads: anchor `run-bfz`, plan questions `run-bfz.1`, dev questions `run-bfz.2`
