@@ -56,6 +56,7 @@ Intent: `doc/plan/phase-current/intent.md`
 | REQ-RUN-0327 | locked | Same schema or a similar schema | 2026-10-25 |
 | REQ-RUN-0328 | locked | Shared trait or a trait per store | 2026-10-25 |
 | REQ-RUN-0329 | locked | Package name carries the project name | 2026-10-25 |
+| REQ-RUN-0330 | locked | Row structs are in the schema crate | 2026-10-25 |
 
 ## ANC-001
 
@@ -843,16 +844,32 @@ Beads: anchor `run-uc6`, plan questions `run-uc6.1`, dev questions `run-uc6.2`
 
 ## REQ-RUN-0329
 
-Anchor: A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema.
+Anchor: A generated crate's package name is the project name, a hyphen, and its role.
 
 > A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Package name carries the project name
 
 Scope: a bead that edits template crate manifests or generation of package names
 
-Deterministic check to pair with the development gate: A project named acme has packages acme-types and acme-schema, and the adaptor depends on both.
+Deterministic check to pair with the development gate: Two projects with different names produce no package name in common.
 
 Beads: anchor `run-3q5`, plan questions `run-3q5.1`, dev questions `run-3q5.2`
+
+## REQ-RUN-0330
+
+Anchor: Row type structs are in the schema crate. The types crate is for non-database types.
+
+> Row type structs are in the schema crate. The types crate is for non-database types.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Row structs are in the schema crate
+
+Scope: a bead that adds or generates the schema crate or the types crate
+
+Deterministic check to pair with the development gate: The schema crate contains the row structs. The types crate contains no database row struct. The adaptor depends on the schema crate.
+
+Beads: anchor `run-3mg`, plan questions `run-3mg.1`, dev questions `run-3mg.2`

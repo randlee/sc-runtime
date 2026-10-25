@@ -51,7 +51,7 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0329 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. REQ-RUN-0327 and REQ-RUN-0328 are schema and trait pairing. REQ-RUN-0329 is the crates.io package name. |
+| REQ-RUN-0301 through REQ-RUN-0330 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. REQ-RUN-0327 and REQ-RUN-0328 are schema and trait pairing. REQ-RUN-0329 is the crates.io package name. REQ-RUN-0330 places row structs in the schema crate. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
@@ -2636,14 +2636,27 @@ Two stores in one application use one shared trait or a different trait per stor
 
 ### Requirement Statement
 
-A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on `<project>-types` and `<project>-schema`.
-
-`<project>-types` holds the Rust structs for the shared rows. `<project>-schema` holds the description of tables and columns. Each store crate still holds that engine's SQL. Every other generated package that is published uses the same prefix.
+A generated crate's package name is the project name, a hyphen, and its role. Every generated package that is published uses that prefix. `<project>-types` is the non-database types crate. `<project>-schema` is the schema crate.
 
 ### Success Criteria
 
 1. Two projects generated with different project names produce no package name in common.
-2. The adaptor crate depends on `<project>-types` and `<project>-schema`.
+
+## REQ-RUN-0330: Row structs live in the schema crate
+
+**Status:** Active
+
+### Requirement Statement
+
+Row type structs are in the schema crate. The types crate is for non-database types.
+
+The adaptor depends on `<project>-schema`. Each store crate still holds that engine's SQL, generated from the schema crate.
+
+### Success Criteria
+
+1. The schema crate contains the row structs.
+2. The types crate contains no database row struct.
+3. The adaptor crate depends on the schema crate.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 
