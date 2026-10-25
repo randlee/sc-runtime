@@ -33,7 +33,7 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-025 | locked | sc-cron decisions stay in the ADR or reqs | 2026-10-25 |
 | ANC-026 | retired | SQLite cron runs a Rust job or python3 | 2026-10-25 |
 | REQ-CRON-0001 | locked | sc-cron is a workspace member | 2026-10-25 |
-| REQ-CRON-0002 | locked | Normal crontab strings | 2026-10-25 |
+| REQ-CRON-0002 | locked | Normal five-field crontab | 2026-10-25 |
 | REQ-CRON-0003 | locked | Rust job or Python module | 2026-10-25 |
 | REQ-CRON-0004 | locked | One schedule table | 2026-10-25 |
 | REQ-CRON-0005 | locked | One CronError enum | 2026-10-25 |
@@ -473,17 +473,17 @@ Beads: anchor `run-4x5`, plan questions `run-4x5.1`, dev questions `run-4x5.2`
 
 ## REQ-CRON-0002
 
-Anchor: CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.
+Anchor: A sc-cron schedule is a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
 
 > CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
-Summary: Normal crontab strings
+Summary: Normal five-field crontab
 
 Scope: a bead that edits the sc-cron expression parser
 
-Deterministic check to pair with the development gate: A test expects CronExpr::parse("*/5 * * * *") to succeed.
+Deterministic check to pair with the development gate: A test expects parsing */5 * * * * to mean every fifth minute.
 
 Beads: anchor `run-8n1`, plan questions `run-8n1.1`, dev questions `run-8n1.2`
 

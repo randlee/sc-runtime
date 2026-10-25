@@ -1255,21 +1255,21 @@
       "id": "REQ-CRON-0002",
       "source_type": "REQ",
       "source_ref": "REQ-CRON-0002",
-      "statement": "CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.",
+      "statement": "A sc-cron schedule is a normal crontab string of five fields: minute, hour, day of month, month, and day of week.",
       "quote": "CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-10-25",
       "context": "requirements register",
-      "summary": "Normal crontab strings",
+      "summary": "Normal five-field crontab",
       "scope": "a bead that edits the sc-cron expression parser",
-      "deterministic_check": "A test expects CronExpr::parse(\"*/5 * * * *\") to succeed.",
+      "deterministic_check": "A test expects parsing */5 * * * * to mean every fifth minute.",
       "fixtures": {
         "pass": [],
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -1291,6 +1291,16 @@
             "plan_questions": "run-8n1.1",
             "dev_questions": "run-8n1.2"
           }
+        },
+        {
+          "at": "2026-10-25T21:15:56+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds."
         }
       ]
     },
