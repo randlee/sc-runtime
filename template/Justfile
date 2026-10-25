@@ -1,0 +1,34 @@
+set windows-shell := ["cmd.exe", "/c"]
+
+python := if os_family() == "windows" { "python" } else { "python3" }
+
+# sc-lint managed recipes: default, setup, lint, test, upgrade.
+# Consumer-owned recipes, kept across `sc-lint init --just`: db-prepare,
+# build-cli, build-daemon.
+
+default: lint
+
+setup:
+    {% raw %}{{python}}{% endraw %} .sc-lint/bootstrap.py setup --config sc-lint.toml
+
+lint *profile:
+    {% raw %}{{python}}{% endraw %} .sc-lint/bootstrap.py lint --config sc-lint.toml {% raw %}{{profile}}{% endraw %}
+
+test *layer:
+    {% raw %}{{python}}{% endraw %} .sc-lint/bootstrap.py test --config sc-lint.toml {% raw %}{{layer}}{% endraw %}
+    {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py observability
+
+upgrade:
+    {% raw %}{{python}}{% endraw %} .sc-lint/bootstrap.py upgrade --config sc-lint.toml
+
+# Consumer-owned. A later `sc-lint init --just` must keep these recipes.
+db-prepare:
+    {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py db-prepare
+
+build-cli:
+    cargo build -p cli --release
+    {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py build-cli
+
+build-daemon:
+    cargo build -p daemon --release
+    {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py build-daemon

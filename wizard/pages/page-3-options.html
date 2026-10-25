@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Generation options</title>
+  <link rel="stylesheet" href="/shared/embedded-chrome.css" />
+  <link rel="stylesheet" href="/shared/wizard-chrome.css" />
+  <link rel="stylesheet" href="wizard-page.css" />
+  <script src="/shared/wyvern-api.js"></script>
+  <script src="wizard-answers.js"></script>
+  <style>
+    .form { display: flex; flex-direction: column; gap: 0.9rem; }
+    .form .hint { margin: 0.25rem 0 0; font-size: 0.85rem; color: #64748b; }
+    .form select { max-width: 28rem; }
+    .checkbox-row { display: flex; align-items: center; gap: 0.5rem; }
+    .checkbox-row label { margin: 0; font-weight: 600; }
+    .checkbox-row input[type="checkbox"] { width: 1.05rem; height: 1.05rem; }
+  </style>
+</head>
+<body>
+  <main id="dialog" class="dialog dialog--frame" data-testid="page-3-options">
+    <h1 data-testid="page-3-heading">Generation options</h1>
+    <p class="lead">
+      Database and MCP choices. The list is the schema enum. v0.1 still
+      refuses the reserved database values before it creates a destination.
+    </p>
+
+    <div class="form">
+      <div>
+        <label for="db">db</label>
+        <select id="db" data-testid="db" data-answer="db">
+          <option value="sqlite" selected>sqlite</option>
+          <option value="postgres">postgres</option>
+          <option value="both">both</option>
+        </select>
+        <p class="hint">Schema default is sqlite.</p>
+      </div>
+
+      <div class="checkbox-row">
+        <input id="mcp" type="checkbox" data-testid="mcp" data-answer="mcp" checked />
+        <label for="mcp">mcp</label>
+      </div>
+      <p class="hint">Schema default is enabled. Clear it to leave MCP out of the generated project.</p>
+    </div>
+
+    <nav class="wizard-chrome" data-wizard-nav aria-label="Wizard navigation">
+      <button type="button" class="secondary" data-wizard-back data-testid="wizard-back">
+        Back
+      </button>
+      <button type="button" class="primary" data-wizard-next data-testid="wizard-next">
+        Next
+      </button>
+    </nav>
+    <p class="wizard-error" data-testid="wizard-error" hidden></p>
+  </main>
+
+  <script>
+    // Uniform-schema mode: overwrite only db and mcp. The rest of ANSWERS,
+    // including project_name and licence from the previous page, is carried
+    // through untouched.
+    var ANSWERS = window.WizardAnswers.DEFAULTS;
+
+    function checked(id) {
+      var el = document.getElementById(id);
+      return !!(el && el.checked);
+    }
+
+    window.WizardAnswers.ready().then(function (answers) {
+      ANSWERS = answers;
+      var db = document.getElementById("db");
+      if (db && typeof ANSWERS.db === "string") db.value = ANSWERS.db;
+      var mcp = document.getElementById("mcp");
+      if (mcp) mcp.checked = !!ANSWERS.mcp;
+    });
+
+    window.collectCurrentPageData = function () {
+      var out = Object.assign({}, ANSWERS);
+      out.db = document.getElementById("db").value;
+      out.mcp = checked("mcp");
+      return out;
+    };
+
+    window.wizardNextDescriptor = {
+      id: "review",
+      title: "Review",
+      html: "pages/page-5-review.html",
+    };
+  </script>
+  <script src="/shared/wizard-nav.js" data-wizard-chrome></script>
+</body>
+</html>

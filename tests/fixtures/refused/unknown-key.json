@@ -1,0 +1,7 @@
+{
+  "project_name": "widget-app",
+  "db": "sqlite",
+  "mcp": true,
+  "licence": "MIT",
+  "extra": true
+}

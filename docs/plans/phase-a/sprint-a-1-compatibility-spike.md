@@ -1,7 +1,7 @@
 ---
 id: a-1
 phase: a
-status: planned
+status: complete
 closure_type: contract
 target_boundary: compatibility-evidence
 vertical_rationale: "The production boundaries do not exist; one disposable composition proves the external interfaces they will use."
@@ -36,6 +36,7 @@ adrs:
   - ADR-RUN-0203
   - ADR-RUN-0302
   - ADR-RUN-0402
+  - ADR-TRN-0003
 owned_paths:
   - "examples/spike/**"
   - "docs/architecture.md"
@@ -109,8 +110,10 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    `sc-command`. Do not extend that point to `sc-transport`.
    `DaemonNotRunning` carries `code: &'static str` (`DAEMON.NOT_RUNNING`)
    plus the endpoint and the cause. It does not carry
-   `sc_observability_types::ErrorCode`. a-6's generated CLI maps that string
-   to `ErrorCode` and sets `suggested_action`. This sprint does not write
+   `sc_observability_types::ErrorCode`. a-4's `sc-command` publishes the
+   constructor from those strings into `OpError`; a-6's generated CLI calls
+   it. Amend [ADR-TRN-0003](../../sc-transport/architecture.md) Active in
+   this sprint. This sprint does not write
    `docs/plans/phase-a/evidence/lead-ruling-sc-observability-types-transport.md`.
    `Remediation` stays on `sc-command` only. The logging runtime stays
    forbidden on all four libraries. a-3 consumes this decision and does not
@@ -181,8 +184,9 @@ rmcp signatures plus the recorded `sc-observability-types` version.
     a-6 and a-7 verify later manifests against this record. They do not
     choose a second series.
 11. **REQ-RUN-0005** — Prove single-crate boundary lint, including the
-    negative fixtures this plan relies on. On a disposable crate tree with
-    no root `[workspace]`, run `sc-lint lint sc-boundary` and record the
+    negative fixtures this plan relies on. On a disposable single-crate tree
+    that is its own `[workspace]` root (fixture `exit-ok`; a tree with no
+    `[workspace]` exits 3), run `sc-lint lint sc-boundary` and record the
     exact command plus each exit code in `docs/architecture.md` before a-2,
     a-3, a-4, or a-5 writes a manifest.
     - One manifest and crate that satisfy the command exit 0.
@@ -235,8 +239,8 @@ rmcp signatures plus the recorded `sc-observability-types` version.
    `Remediation` stays on `sc-command` only. They forbid the logging runtime
    on all four libraries. No Active sentence still requires 1.2.x. The sprint
    diff does not add a lead-ruling artifact. a-3 cites this decision.
-   a-6 remains the feature-level close of the generated daemon, including
-   the CLI map from that string to `ErrorCode`.
+   a-4 publishes the `sc-command` constructor; a-6 calls it in the generated
+   CLI.
 8. `boundary:compatibility-evidence` — ADR-RUN-0005, REQ-RUN-0307, and
    NFR-RUN-0006 are the sc-lint 0.8.0 consumer install named in deliverable 7,
    including the retired placeholder Justfile and prototype-handoff order.
@@ -268,7 +272,7 @@ rmcp signatures plus the recorded `sc-observability-types` version.
     against this series.
 12. `req:REQ-RUN-0005` — `docs/architecture.md` records the single-crate
     `sc-lint lint sc-boundary` command from deliverable 11, the exit-0 run
-    on a tree with no root `[workspace]`, and the negative fixture runs:
+    on a single-crate `[workspace]` root (`exit-ok`), and the negative fixture runs:
     prefix match (`sc-observability` forbidden while depending on
     `sc-observability-types`), a direct forbidden edge that exits non-zero,
     and transitive versus direct. The record is in `docs/architecture.md`

@@ -1,0 +1,40 @@
+boundary_id = "BOUNDARY-sc-command"
+owner_package = "sc-command"
+owner_crate_path = "sc_command"
+name = "sc-command"
+
+[public]
+facade = "Envelope"
+
+[implementation]
+type = "marker"
+module = "sc_command"
+visibility = "public"
+constructor = "none"
+
+[composition]
+roots = ["Envelope"]
+
+[dependencies]
+allowed_dependents = ["sc-runtime"]
+allowed_dependencies = ["serde", "serde_json", "sc-observability-types"]
+# `sc-observability` and `sc-observability-otlp` are not workspace members.
+# sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree
+# enforces those edges. `sc-observability-types` is not a forbidden edge.
+# `axum` and `rmcp` stay out of this table; cargo tree checks the `server` feature.
+forbidden_edges = []
+
+[references]
+scope = "outside_owner_crate"
+forbidden = []
+
+[testing]
+allowed_test_double_paths = []
+forbidden_test_bypasses = []
+
+[enforcement]
+lint_rules = []
+review_gates = []
+
+[status]
+state = "concrete_landed"

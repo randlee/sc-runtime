@@ -2,15 +2,33 @@
 
 Phase A follows the original five milestones: compatibility spike, reusable
 core crates, minimal JSON-driven SQLite template, core release, and wizard.
-Status: initial planning; scope reconciliation and owner decisions remain;
-no implementation has been dispatched.
+Sprints a-1 through a-8 are merged on `integrate/phase-a`.
 
 See [Phase A plan](plans/phase-a/phase-a-plan.md) for the eight-sprint boundary
 cut, five-milestone map, ownership, decision prerequisites, and flexibility
 guardrails.
 
-Later phases are not scheduled here. Attribute-generated CLI tests, unresolved
-auto-start policy, Postgres/both, prototype-repository handoff, and other
-post-core layers remain outside Phase A pending source reconciliation.
+The [deferred-scope table](plans/phase-a/phase-a-plan.md#authority-and-completed-source-reconciliation)
+still applies. CLI auto-start (`REQ-RUN-0206`, `ADR-RUN-0204`),
+attribute-generated CLI tests (`REQ-RUN-0312`, `ADR-RUN-0304`, `REQ-RUN-0311`),
+and framework-generated responses for unknown routes, Axum body rejection, and
+rmcp protocol errors (`REQ-RUN-0203` OPEN) stay deferred. Postgres/both,
+prototype-repository handoff, and other post-core layers stay outside Phase A.
 sc-lint 0.8.0 is in Phase A: a-5 installs it for this repository, and a-6
 installs the consumer contract into generated projects.
+
+`REQ-RUN-0702` stays open. Git tag `v0.1.0`, crates.io publication of the four
+crates, and the registry-backed fixture matrix at that tag still need release
+authorization and registry credentials. Merging the release kit onto
+`integrate/phase-a` is the integration record for that later publish.
+
+| Sprint | Plan | Status | Branch |
+| --- | --- | --- | --- |
+| a-1 compatibility spike | [sprint-a-1](plans/phase-a/sprint-a-1-compatibility-spike.md) | complete | `sprint/a-1-compatibility-spike` |
+| a-2 sc-config | [sprint-a-2](plans/phase-a/sprint-a-2-config.md) | complete | `sprint/a-2-config` |
+| a-3 sc-transport | [sprint-a-3](plans/phase-a/sprint-a-3-transport.md) | complete | `sprint/a-3-transport` |
+| a-4 sc-command | [sprint-a-4](plans/phase-a/sprint-a-4-command.md) | complete | `sprint/a-4-command` |
+| a-5 sc-runtime core | [sprint-a-5](plans/phase-a/sprint-a-5-runtime-core.md) | complete | `sprint/a-5-runtime-core` |
+| a-6 template from JSON | [sprint-a-6](plans/phase-a/sprint-a-6-template-from-json.md) | complete | `sprint/a-6-template-from-json` |
+| a-7 core release | [sprint-a-7](plans/phase-a/sprint-a-7-core-release.md) | complete | `sprint/a-7-core-release` |
+| a-8 Wyvern wizard | [sprint-a-8](plans/phase-a/sprint-a-8-wizard.md) | complete | `sprint/a-8-wizard` |

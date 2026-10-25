@@ -8,7 +8,7 @@
     "license": "MIT",
     "readme_dependency_crate": "sc-runtime",
     "workspace_toml": "Cargo.toml",
-    "rust_toolchain": "stable"
+    "rust_toolchain": "1.94.1"
   },
   "release_targets": [
     {

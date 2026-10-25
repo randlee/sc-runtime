@@ -19,10 +19,19 @@ Hand-editing installed kit files (workflows under `.github/workflows/`,
 | `release/sc-publish-consumer-input.json` | Crates, project metadata, release targets |
 | `release/publish-artifacts.toml` | Rendered by install (do not hand-edit) |
 | `release/publish-channel-contracts.toml` | Rendered by install (do not hand-edit) |
+| `release/publish-preflight.toml` | Rendered by install (do not hand-edit) |
 
 Phase A uses **crates + GitHub release only** (`channels: {}` in consumer
 input). Homebrew, npm, PyPI, scoop, and winget are out of scope until added
 to the consumer input and re-installed.
+
+`release_binaries` is empty. Phase A ships no release binaries. The single
+linux `release_targets` row (`x86_64-unknown-linux-gnu`, `ubuntu-latest`,
+`tar.gz`) is the row [ADR-RUN-0002](../architecture.md) names for the
+workspace source archive `sc-runtime-{version}-source.tar.gz` on the
+`v0.1.0` GitHub Release. The release toolchain is Rust `1.94.1`, the same
+`rust-version` as the workspace. Publish order is `sc-config`,
+`sc-transport`, `sc-command`, then `sc-runtime`.
 
 ## Install (a-7 or release maintainer)
 
