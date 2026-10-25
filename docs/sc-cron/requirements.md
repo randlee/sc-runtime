@@ -8,7 +8,7 @@
 
 ## REQ-CRON-0002: Normal crontab strings
 
-`CronExpr::parse("*/5 * * * *")` succeeds and means every fifth minute. `CronExpr::parse("0 */5 * * * *")` succeeds and means second 0 of every fifth minute. `CronExpr::parse("@hourly")` succeeds.
+A schedule uses a normal crontab string of five fields: minute, hour, day of month, month, and day of week. `*/5 * * * *` means every fifth minute.
 
 ## REQ-CRON-0003: Rust or Python hook
 

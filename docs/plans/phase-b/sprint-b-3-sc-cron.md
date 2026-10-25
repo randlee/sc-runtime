@@ -56,7 +56,7 @@ Implement the types in [docs/sc-cron/architecture.md](../../sc-cron/architecture
 ## Tasks
 
 1. REQ-RUN-0001, REQ-CRON-0001: copy the crate into `crates/sc-cron` and add the workspace member.
-2. REQ-CRON-0002: accept a five-field minute-first string, keep six-field seconds-first, and update the `BadExpression` recovery text.
+2. REQ-CRON-0002: a schedule uses a normal crontab string of five fields, minute first. `*/5 * * * *` means every fifth minute. ADR-RUN-0013 also keeps a six-field seconds-first string valid.
 3. REQ-CRON-0003, REQ-CRON-0004: create one schedule table. A `Rust` row calls `Job`. A `Python` row runs `python3 <module> cron.tick` or `cron.stop` with one JSON object on stdin. Add no HTTP route, MCP tool, or binary.
 4. REQ-RUN-0005: add `boundaries/sc-cron/sc-cron.toml` with `allowed_dependents = []` and forbidden edges to every other workspace crate. Add `sc-cron` to the forbidden edges of `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-runtime-db-sqlite`.
 5. NFR-RUN-0005: tests open the schedule file under a `tempfile::TempDir`. They do not set process environment variables.
