@@ -47,12 +47,14 @@ Intent: `doc/plan/phase-current/intent.md`
 | REQ-RUN-0318 | locked | Library crate generates nothing | 2026-10-25 |
 | REQ-RUN-0319 | locked | Flags name one-sided tables and columns | 2026-10-25 |
 | REQ-RUN-0320 | locked | One implementation per common pattern | 2026-10-25 |
-| REQ-RUN-0321 | locked | Separate code per database engine | 2026-10-25 |
+| REQ-RUN-0321 | locked | SQL stays in that engine's crate | 2026-10-25 |
 | REQ-RUN-0322 | locked | Advanced adaptor is consumer code | 2026-10-25 |
 | REQ-RUN-0324 | locked | Adaptor moves rows between stores | 2026-10-25 |
 | REQ-RUN-0325 | locked | Framework crates move no rows | 2026-10-25 |
 | REQ-RUN-0323 | locked | The application schedules sync | 2026-10-25 |
 | REQ-RUN-0326 | locked | Database layouts of a new application | 2026-10-25 |
+| REQ-RUN-0327 | locked | Same schema or a similar schema | 2026-10-25 |
+| REQ-RUN-0328 | locked | Shared trait or a trait per store | 2026-10-25 |
 
 ## ANC-001
 
@@ -712,17 +714,17 @@ Beads: anchor `run-jp8`, plan questions `run-jp8.1`, dev questions `run-jp8.2`
 
 ## REQ-RUN-0321
 
-Anchor: Generated SQLite code and generated Postgres code are separate files.
+Anchor: Each database engine's SQL is in that engine's store crate.
 
 > Generated SQLite code and generated Postgres code are separate files.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
-Summary: Separate code per database engine
+Summary: SQL stays in that engine's crate
 
 Scope: a bead that adds, removes, or generates a store adaptor
 
-Deterministic check to pair with the development gate: The generated SQLite store and the generated Postgres store are different files.
+Deterministic check to pair with the development gate: store-sqlite contains no Postgres SQL, and store-postgres contains no SQLite SQL.
 
 Beads: anchor `run-iuv`, plan questions `run-iuv.1`, dev questions `run-iuv.2`
 
@@ -805,3 +807,35 @@ Scope: a bead that edits scripts/new_project.py, wizard/answers.schema.json, or 
 Deterministic check to pair with the development gate: wizard/answers.schema.json accepts no database, SQLite only, one sqlx SQL engine, and SQLite plus one sqlx SQL engine.
 
 Beads: anchor `run-a67`, plan questions `run-a67.1`, dev questions `run-a67.2`
+
+## REQ-RUN-0327
+
+Anchor: Two stores in one application use the same schema or a similar schema.
+
+> Two stores in one application use the same schema or a similar schema.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Same schema or a similar schema
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: The copy pattern uses the same schema on both stores. The host-aggregate pattern uses a similar schema.
+
+Beads: anchor `run-hpn`, plan questions `run-hpn.1`, dev questions `run-hpn.2`
+
+## REQ-RUN-0328
+
+Anchor: Two stores in one application use one shared trait or a different trait per store.
+
+> Two stores in one application use one shared trait or a different trait per store.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Shared trait or a trait per store
+
+Scope: a bead that adds, removes, or generates a store adaptor
+
+Deterministic check to pair with the development gate: A generated pair names one trait that both stores implement, or a trait for each store.
+
+Beads: anchor `run-uc6`, plan questions `run-uc6.1`, dev questions `run-uc6.2`

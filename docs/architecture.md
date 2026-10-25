@@ -1591,8 +1591,10 @@ variable, so two such crates can build in one workspace.
    functions.
 3. Only `store-*` crates depend on sqlx. Only the generated `service` crate
    depends on `store-*` crates and calls store functions.
-4. A query MUST NOT be written to run on more than one backend, and there
-   MUST NOT be a portable query layer.
+4. A SQL query is written for one backend. No layer runs one SQL string on
+   more than one engine. Stores in one application use the same schema or a
+   similar schema, and one shared trait or a different trait per store
+   ([REQ-RUN-0327](requirements.md), [REQ-RUN-0328](requirements.md)).
 5. Store crates are template code owned by the project. `sc-runtime` MUST only
    call the project's stores closure and MUST NOT inspect its result.
 6. The sc-runtime crates and the template do not move rows between stores.
@@ -1650,7 +1652,7 @@ on sqlx and only `service` depends on `store-*`; `arch-qa` review for points
 **Status:** Active  
 **Decision Date:** 2026-10-25  
 **Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
-**Amends:** [ADR-RUN-0301](architecture.md) point 6  
+**Amends:** [ADR-RUN-0301](architecture.md) points 4 and 6  
 
 ### Context
 
@@ -1663,18 +1665,20 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database.
 3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The consumer repository defines the rollup.
 4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
 5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
-6. Every consumer repository gets the same generated implementation of a common pattern. Generated SQLite code and generated Postgres code are separate files.
+6. Every consumer repository gets the same generated implementation of a common pattern. Each engine's SQL is in that engine's store crate.
 7. An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
 8. The consuming application schedules synchronization. The adaptor starts no timer.
 9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
+10. Two stores in one application use the same schema or a similar schema.
+11. Two stores in one application use one shared trait or a different trait per store.
 
 ### Consequences
 
-[REQ-RUN-0313](requirements.md) through [REQ-RUN-0325](requirements.md) are this decision. The adaptor is rendered only for a layout in [REQ-RUN-0326](requirements.md) that has both SQLite and a SQL engine. A plan that drops the adaptor drops a binding requirement. The rusqlite writer and the host lint profile do not implement it.
+[REQ-RUN-0313](requirements.md) through [REQ-RUN-0328](requirements.md) are this decision. The adaptor is rendered only for a layout in [REQ-RUN-0326](requirements.md) that has both SQLite and a SQL engine. A plan that drops the adaptor drops a binding requirement. The rusqlite writer and the host lint profile do not implement it.
 
 ### Alternatives Considered
 
-- One `StorageBackend` and one constructor that runs the same query on SQLite and Postgres. Rejected. Point 4 of ADR-RUN-0301 stands: a query is written for one engine. The schemas may differ.
+- One SQL string executed on both SQLite and Postgres. Rejected. Each engine has its own SQL. A shared trait, or a different trait per engine, is allowed. The schemas are the same or similar.
 - Leaving the pairing for each consumer to invent. Rejected. A common pattern has one generated implementation.
 
 ### Related Documents

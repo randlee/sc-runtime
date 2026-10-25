@@ -1947,21 +1947,21 @@
       "id": "REQ-RUN-0321",
       "source_type": "REQ",
       "source_ref": "REQ-RUN-0321",
-      "statement": "Generated SQLite code and generated Postgres code are separate files.",
+      "statement": "Each database engine's SQL is in that engine's store crate.",
       "quote": "Generated SQLite code and generated Postgres code are separate files.",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-10-25",
       "context": "ADR-RUN-0305",
-      "summary": "Separate code per database engine",
+      "summary": "SQL stays in that engine's crate",
       "scope": "a bead that adds, removes, or generates a store adaptor",
-      "deterministic_check": "The generated SQLite store and the generated Postgres store are different files.",
+      "deterministic_check": "store-sqlite contains no Postgres SQL, and store-postgres contains no SQLite SQL.",
       "fixtures": {
         "pass": [],
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -1983,6 +1983,16 @@
             "plan_questions": "run-iuv.1",
             "dev_questions": "run-iuv.2"
           }
+        },
+        {
+          "at": "2026-10-25T21:26:44+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "Generated SQLite code and generated Postgres code are separate files."
         }
       ]
     },
@@ -2197,6 +2207,92 @@
             "anchor": "run-a67",
             "plan_questions": "run-a67.1",
             "dev_questions": "run-a67.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0327",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0327",
+      "statement": "Two stores in one application use the same schema or a similar schema.",
+      "quote": "Two stores in one application use the same schema or a similar schema.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Same schema or a similar schema",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "The copy pattern uses the same schema on both stores. The host-aggregate pattern uses a similar schema.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-hpn",
+        "plan_questions": "run-hpn.1",
+        "dev_questions": "run-hpn.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:26:44+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:26:45+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-hpn",
+            "plan_questions": "run-hpn.1",
+            "dev_questions": "run-hpn.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0328",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0328",
+      "statement": "Two stores in one application use one shared trait or a different trait per store.",
+      "quote": "Two stores in one application use one shared trait or a different trait per store.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Shared trait or a trait per store",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "A generated pair names one trait that both stores implement, or a trait for each store.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-uc6",
+        "plan_questions": "run-uc6.1",
+        "dev_questions": "run-uc6.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:26:45+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:26:47+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-uc6",
+            "plan_questions": "run-uc6.1",
+            "dev_questions": "run-uc6.2"
           }
         }
       ]

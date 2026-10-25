@@ -51,7 +51,7 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0326 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. |
+| REQ-RUN-0301 through REQ-RUN-0328 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. REQ-RUN-0327 and REQ-RUN-0328 are schema and trait pairing. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
@@ -2522,11 +2522,11 @@ Every consumer repository uses the same generated implementation of the copy pat
 
 ### Requirement Statement
 
-Generated SQLite code and generated Postgres code are separate files.
+Each database engine's SQL is in that engine's store crate.
 
 ### Success Criteria
 
-1. The generated SQLite store and the generated Postgres store are different files.
+1. `store-sqlite` contains no Postgres SQL, and `store-postgres` contains no SQLite SQL.
 
 ## REQ-RUN-0322: An advanced adaptor is consumer code
 
@@ -2602,6 +2602,30 @@ A layout with both stores renders the adaptor in [ADR-RUN-0305](architecture.md)
 1. `wizard/answers.schema.json` accepts each layout in the table.
 2. Generating each layout renders the stores in that row, and renders the adaptor only when the row has two stores.
 3. A layout whose store crate does not exist yet fails in `scripts/new_project.py` before `cargo generate` runs.
+
+## REQ-RUN-0327: Paired stores use the same schema or a similar schema
+
+**Status:** Active
+
+### Requirement Statement
+
+Two stores in one application use the same schema or a similar schema.
+
+### Success Criteria
+
+1. The copy pattern generates the same schema on both stores. The host-aggregate pattern generates a similar schema, with tables or columns that exist on only one side.
+
+## REQ-RUN-0328: Paired stores share a trait or use a trait per store
+
+**Status:** Active
+
+### Requirement Statement
+
+Two stores in one application use one shared trait or a different trait per store.
+
+### Success Criteria
+
+1. A generated pair names one trait that both stores implement, or a trait for each store.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 
