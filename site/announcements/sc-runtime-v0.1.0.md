@@ -31,6 +31,11 @@ The workspace is exactly four MIT-licensed crates at 0.1.0, each with its own `R
 - **`sc-command`** — the response envelope, with REST and MCP conversions.
 - **`sc-runtime`** — daemon assembly: instance lock, one router, graceful shutdown.
 
+Observability at v0.1.0 is the **vocabulary, not the logger**: `sc-command` depends on
+`sc-observability-types` 1.5.0 for the shared error-code and diagnostic types, so a
+component's errors compose with the SC logging stack. Wiring `sc-observability` itself as
+the default logging path is a 0.2.0 item (see *What's next*).
+
 Publish order is the three leaves, then `sc-runtime`. crates.io publication has not happened yet — the registry still returns 404 for all four names — so the working dependency form for v0.1.0 is the tag:
 
 ```toml
@@ -46,15 +51,36 @@ The workspace `rust-version` is 1.94.1 and release preflight uses that toolchain
 
 **As a release engineer, I want publishing to be kit-generated rather than hand-authored, so that a release cannot drift from the channel contracts it is supposed to satisfy.**
 
-Release workflows and `release/publish-*.toml` are produced by the sc-publish kit's `install.py`; the pin lives in `release/sc-publish-pin.toml`, and hand-authored publish workflows are forbidden (ADR-RUN-0002). The GitHub Release for `v0.1.0` carries the workspace source archive `sc-runtime-<version>-source.tar.gz`; `release_binaries` is empty, so this phase ships no binaries.
+Release workflows and `release/publish-*.toml` are produced by the sc-publish kit's `install.py`; the pin lives in `release/sc-publish-pin.toml`, and hand-authored publish workflows are forbidden (ADR-RUN-0002). The GitHub Release for `v0.1.0` carries the workspace source archive `sc-runtime-<version>-source.tar.gz`; no release binaries are configured, so this phase ships none.
 
 Note that this tag was cut on the integrated tree. Registry publication of the four crates and the registry-backed fixture matrix at the tag remain open gates that need release authorization and registry credentials.
 
 ## Not this release
 
-- **End users of an installed binary** — no release binaries ship in v0.1.0 (`release_binaries` is empty), so there is no installer, Homebrew, or Scoop path to document yet. Skipped by design, not by omission.
+- **End users of an installed binary** — no release binaries ship in v0.1.0 (none are configured), so there is no installer, Homebrew, or Scoop path to document yet. Skipped by design, not by omission.
 - **CLI auto-start** (REQ-RUN-0206) — the CLI still reports `DAEMON.NOT_RUNNING` when the daemon is unreachable; an auto-start layer is a later decision.
 - **Attribute-generated CLI tests** (REQ-RUN-0312) — the template proves the example operation through the daemon fixture instead.
+
+## What's next — 0.2.0
+
+Three commitments are already agreed for 0.2.0. None of them are in v0.1.0:
+
+- **sc-Observability logging as the default path.** The runtime takes ownership of logger
+  construction and lifecycle: shutdown drains the queue before the process model exits, and
+  logging health (queue depth, writer state, last error) appears on the runtime's health
+  surface. Callers stop wiring `sc-observability` by hand.
+- **Optional `sc-observability-otel`.** OTLP export becomes an opt-in cargo feature, off by
+  default: a deployment with a collector enables it, and a default build carries no
+  exporter, no background retry loop and no network egress. An absent collector degrades to
+  local logging without stalling shutdown.
+- **sc-lint clean, end to end.** 0.2.0 passes the runtime, cross-platform and boundary
+  sc-lint profiles, and the generated template ships that same sc-lint plus `just`
+  infrastructure — so a new service starts lint-clean rather than acquiring drift on its
+  first commit.
+
+v0.1.0 already carries the scaffolding this builds on: `.sc-lint/bootstrap.py` with
+`sc-lint.toml`, and a `Justfile` managed by `sc-lint init --just` (boundary rules, line
+counts, fmt, clippy).
 
 ## Get started
 
