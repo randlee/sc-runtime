@@ -215,11 +215,14 @@ of the stack.
 4. `quality-mgr` treats `review_mode: plan` as docs-only review and launches:
    - `req-qa`
    - `arch-qa`
+   - `extensibility-qa`
    - `ruthless-boundary-qa`
    - `rust-best-practices-agent`
    - `rust-service-hardening-agent`
-   - `ceremony-qa`
+   - `ceremony-qa` (prompt: `.claude/agents/ceremony-qa.md`)
    on plan QA-1 (the set in `.claude/project/quality-policy.md` governs).
+   Do not run `rust-qa-agent`. After findings, run `ceremony-finding-screen`
+   before publishing the report.
    Later rounds, the minor-findings rule, and the `ceremony-finding-screen`
    step follow `quality-mgr.md` "Reviewer Selection" and "Ceremony Disputes".
 5. If plan QA passes, the hardened plan is ready for implementation dispatch.
