@@ -74,13 +74,10 @@ Three commitments are already agreed for 0.2.0. None of them are in v0.1.0:
   exporter, no background retry loop and no network egress. An absent collector degrades to
   local logging without stalling shutdown.
 - **sc-lint clean, end to end.** 0.2.0 passes the runtime, cross-platform and boundary
-  sc-lint profiles, and the generated template ships that same sc-lint plus `just`
-  infrastructure — so a new service starts lint-clean rather than acquiring drift on its
-  first commit.
-
-v0.1.0 already carries the scaffolding this builds on: `.sc-lint/bootstrap.py` with
-`sc-lint.toml`, and a `Justfile` managed by `sc-lint init --just` (boundary rules, line
-counts, fmt, clippy).
+  sc-lint rule sets, and the generated template carries them too, so a new service starts
+  lint-clean rather than acquiring drift on its first commit. Today the template already
+  ships `.sc-lint/` and a sc-lint-managed `Justfile`, but its `sc-lint.toml` covers only
+  `fmt` and `clippy` — the three rule sets above are the 0.2.0 delta.
 
 ## Get started
 
