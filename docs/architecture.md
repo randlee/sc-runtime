@@ -2279,7 +2279,7 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. The store-adaptor generator is not this phase. A later generated adaptor exposes sync methods and stores a cron row that points at one of them.
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-7` generates the adaptor that stores a cron row pointing at a sync method. Sprint `b-8` generates the application layouts.
 
 ### Related Documents
 

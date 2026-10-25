@@ -69,7 +69,7 @@ After Phase A, `sc-runtime-example` uses `ScRuntimeBuilder<HasCli>` with a minim
 ## Phase Documents
 
 - [Phase A: Foundation](./phase-A/phase-A-plan.md) — workspace scaffold, sc-runtime-core, sc-runtime-cli, sc-runtime-mcp-stdio, facade NoCli→HasCli
-- [Phase b](../plans/phase-b/phase-b-plan.md) — rusqlite writer crate and host lint profile. The file under `docs/plan/phase-B/` is withdrawn
+- [Phase b](../plans/phase-b/phase-b-plan.md) — stores, adaptor, writer, cron, and lint. Eight sprints. The file under `docs/plan/phase-B/` is withdrawn
 - [Phase C: Daemon + RPC](./phase-C/phase-C-plan.md) — daemon lifecycle, signals, cross-platform RPC, facade HasCli→HasDaemon
 - [Phase D: Web + HTTP MCP](./phase-D/phase-D-plan.md) — axum server, HttpRouteRegistry, HTTP MCP SSE, facade .web() and .mcp_http()
 - [Phase E: Release](./phase-E/phase-E-plan.md) — sc-lint-version gate, xwin CI, Windows CI (compilation + unit tests via `windows-latest` runner; full Windows daemon integration tests are post-0.1.0), API surface review, crates.io publish sequence

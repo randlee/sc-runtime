@@ -36,7 +36,7 @@ vertical_rationale: One lint profile. Splitting the host analyzers from the Wind
 
 ## Goal
 
-`just lint` runs every installed host analyzer and the Windows cross-check, and it fails on the calls [ADR-RUN-0011](../../architecture.md) names, until [sc-lint#640](https://github.com/randlee/sc-lint/issues/640) replaces the grep. Warnings that fire are fixed. A local allow is a same-line comment that states why that corner case must break the practice. The usual place is a test. There is no profile-wide or file-wide exclusion.
+`just lint` runs every installed host analyzer and the Windows cross-check, and it fails on the calls [ADR-RUN-0011](../../architecture.md) names, until [sc-lint#640](https://github.com/randlee/sc-lint/issues/640) replaces the grep. Warnings that fire are fixed. A local allow is a same-line comment that states why that corner case must break the practice. The usual place is a test. There is no profile-wide or file-wide exclusion. The profile is the one `sc-cron`, `store-postgres`, `store-mysql`, and the adaptor will run when those sprints add them.
 
 ## Profile
 
