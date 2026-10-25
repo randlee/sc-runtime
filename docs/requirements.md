@@ -51,7 +51,7 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0312 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. |
+| REQ-RUN-0301 through REQ-RUN-0331 | Template | The template is what a project owns and edits after generation. REQ-RUN-0313 through REQ-RUN-0330 are the generated store adaptor, the database layouts, the package names, and the schema crate. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
@@ -78,7 +78,7 @@ each waits until a project asks for it.
 | `sc-config` reload, change notification, async interop | later, possibly `sc-config-tokio` |
 | stdio MCP clients | a stdio-to-HTTP shim is a later option |
 | A virtual machine definition, colima configuration or provisioning scripts for daemon-process tests | not built in v0.1, in this repository or in the template; the safety rule remains in [NFR-RUN-0010](requirements.md), while generated-project wording is deferred with [REQ-RUN-0311](requirements.md) |
-| Forwarding, replication, an outbox or routing policy between stores | never; data flow between stores is project code |
+| Forwarding inside the sc-runtime crates, a replication mechanism, an outbox, or a routing policy | the crates do not do it; the generated consumer adaptor moves rows, including a cache ([ADR-RUN-0305](architecture.md)) |
 | A query layer portable across database backends | never; each store crate has one fixed backend |
 | Web-application features: HTML templating, sessions, user authentication | never; this is not a web-app framework |
 | Adopting an existing scaffold (loco-rs, rust-web-app, axum-postgres-template) | never; none has the daemon plus thin-client split, so they stay pattern references |
@@ -1520,6 +1520,7 @@ REST and MCP have exactly one place to call.
 ## REQ-RUN-0302: Template example operations `widget.create`, `widget.get`
 
 **Status:** Active  
+**Amended:** 2026-10-25 by [REQ-RUN-0331](requirements.md). The widget pair remains the worked example. A layout with a store also has the general database commands in that requirement.
 
 ### Requirement Statement
 
@@ -1616,7 +1617,7 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
    | Option | Effect on the rendered project |
    |---|---|
    | project name | names the generated project |
-   | `db` | selects which `store-*` crates are rendered |
+   | `db` | selects the database layout in [REQ-RUN-0326](requirements.md) |
    | `mcp` | `true` renders `crates/daemon/src/mcp.rs`, the `mod mcp;` line and the `.mcp(...)` line in `crates/daemon/src/main.rs`; `false` omits all three |
    | licence | sets the licence stated in the `Cargo.toml` of every crate of the generated project; `MIT` when not supplied. The rendered project MUST NOT state `MIT` when a different licence was supplied |
 
@@ -1625,13 +1626,13 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
    licence text of a project that is not MIT licensed is not something this
    template can supply.
 
-2. In v0.1 the only accepted value of `db` is `sqlite`. The values `postgres`
-   and `both` MUST be present in the schema's enum, so the published schema
-   does not change shape when they become available, and an answers file
-   using either MUST fail the validation step of the driver
-   `scripts/new_project.py`, before `cargo generate` runs, until the
-   `store-postgres` crate ships.
-   Reserving the two values this way is decided in this document.
+2. [REQ-RUN-0326](requirements.md) owns the database layouts. v0.1 has the
+   SQLite store only, so v0.1 accepts `sqlite` and rejects every other
+   layout. A rejected layout fails in `scripts/new_project.py` before
+   `cargo generate` runs. It is accepted once the store crate for that
+   layout exists. [REQ-RUN-0329](requirements.md) names each generated
+   package with the project name. [REQ-RUN-0330](requirements.md) puts row
+   structs in `<project>-schema`.
 3. An option MUST include or exclude whole files through a conditional
    `ignore` list in `template/cargo-generate.toml`. With `mcp` equal to
    `false`, `crates/daemon/src/mcp.rs` is ignored. The `ignore` mechanism
@@ -2427,6 +2428,259 @@ functions costs nothing and needs no mocking layer.
    CLI leg as obligation 4 describes and passes under `just test`.
 
 ---
+
+## REQ-RUN-0313: The store relationship lives in a consumer adaptor
+
+**Status:** Active
+
+### Requirement Statement
+
+The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.
+
+### Success Criteria
+
+1. A generated repository that selects the copy pattern or the host-aggregate pattern contains an adaptor crate that names both stores.
+
+## REQ-RUN-0314: The copy adaptor matches the remote schema
+
+**Status:** Active
+
+### Requirement Statement
+
+The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+
+### Success Criteria
+
+1. A generated copy adaptor creates the shared remote tables in SQLite.
+
+## REQ-RUN-0315: The host-aggregate adaptor collects many hosts
+
+**Status:** Active
+
+### Requirement Statement
+
+The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
+
+### Success Criteria
+
+1. A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.
+
+## REQ-RUN-0316: The consumer defines the host rollup
+
+**Status:** Active
+
+### Requirement Statement
+
+The consumer repository defines the rollup from host rows into the Postgres aggregate.
+
+### Success Criteria
+
+1. The host-aggregate adaptor has a consumer-owned function that maps host rows into the Postgres aggregate.
+
+## REQ-RUN-0317: `just new` generates the adaptor
+
+**Status:** Active
+
+### Requirement Statement
+
+Adaptor Rust code and models in a new repository are generated by the command `just new` (`scripts/new_project.py`).
+
+### Success Criteria
+
+1. `just new` writes the adaptor crate and its models into the new repository.
+
+## REQ-RUN-0318: The `sc-runtime` library crate does not generate the adaptor
+
+**Status:** Active
+
+### Requirement Statement
+
+The library crate named `sc-runtime` does not generate adaptor code.
+
+### Success Criteria
+
+1. `crates/sc-runtime` contains no generator.
+
+## REQ-RUN-0319: Generation flags name one-sided tables and columns
+
+**Status:** Active
+
+### Requirement Statement
+
+Generation flags name tables and columns that exist on only one of the two stores. A skipped table may be the SQLite table or the SQL-server table.
+
+### Success Criteria
+
+1. Generation input can name a SQLite-only table, a SQL-server-only table, and a column that exists on only one side of a shared table.
+
+## REQ-RUN-0320: One generated implementation per common pattern
+
+**Status:** Active
+
+### Requirement Statement
+
+Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.
+
+### Success Criteria
+
+1. Two generated repositories that select the same pattern contain the same adaptor implementation.
+
+## REQ-RUN-0321: Each database engine has its own generated code
+
+**Status:** Active
+
+### Requirement Statement
+
+Each database engine's SQL is in that engine's store crate.
+
+### Success Criteria
+
+1. `store-sqlite` contains no Postgres SQL, and `store-postgres` contains no SQLite SQL.
+
+## REQ-RUN-0322: An advanced adaptor is consumer code
+
+**Status:** Active
+
+### Requirement Statement
+
+An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+
+### Success Criteria
+
+1. A third adaptor is a file the consumer wrote.
+
+## REQ-RUN-0323: The application schedules store synchronization
+
+**Status:** Active
+
+### Requirement Statement
+
+Store synchronization is scheduled by the consuming application. The adaptor starts no timer.
+
+### Success Criteria
+
+1. The adaptor crate starts no timer. A schedule is registered by application code.
+
+## REQ-RUN-0324: The consumer adaptor moves rows between stores
+
+**Status:** Active
+
+### Requirement Statement
+
+The consumer adaptor moves rows between the local store and the remote store.
+
+### Success Criteria
+
+1. The adaptor crate contains the copy from one store to the other.
+
+## REQ-RUN-0325: The sc-runtime crates do not move rows between stores
+
+**Status:** Active
+
+### Requirement Statement
+
+The sc-runtime crates do not move rows between stores.
+
+### Success Criteria
+
+1. `crates/` contains no store-to-store copy, outbox, or routing policy.
+
+## REQ-RUN-0326: Database layouts of a new application
+
+**Status:** Active
+
+### Requirement Statement
+
+A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
+
+sqlx 0.9 ships drivers for SQLite, Postgres, and MySQL. Postgres and MySQL are the SQL engines. A later sqlx driver is another engine in this set. The layouts are:
+
+| Layout | Stores |
+|---|---|
+| no database | none |
+| SQLite only | `store-sqlite` |
+| Postgres only | `store-postgres` |
+| MySQL only | `store-mysql` |
+| SQLite and Postgres | `store-sqlite` and `store-postgres` |
+| SQLite and MySQL | `store-sqlite` and `store-mysql` |
+
+A layout with both stores renders the adaptor in [ADR-RUN-0305](architecture.md). A layout with one store renders that store and no adaptor. A layout with no database renders no store crate and no adaptor.
+
+Phase b generates all six layouts, the store pairing, and the adaptor. Postgres and MySQL are the same wave so the pairing is not hardened on one remote engine.
+
+### Success Criteria
+
+1. `wizard/answers.schema.json` accepts each layout in the table.
+2. Generating each layout renders the stores in that row, and renders the adaptor only when the row has two stores.
+3. A layout whose store crate does not exist yet fails in `scripts/new_project.py` before `cargo generate` runs.
+
+## REQ-RUN-0327: Paired stores use the same schema or a similar schema
+
+**Status:** Active
+
+### Requirement Statement
+
+Two stores in one application use the same schema or a similar schema.
+
+### Success Criteria
+
+1. The copy pattern generates the same schema on both stores. The host-aggregate pattern generates a similar schema, with tables or columns that exist on only one side.
+
+## REQ-RUN-0328: Paired stores share a trait or use a trait per store
+
+**Status:** Active
+
+### Requirement Statement
+
+Two stores in one application use one shared trait or a different trait per store.
+
+### Success Criteria
+
+1. A generated pair names one trait that both stores implement, or a trait for each store.
+
+## REQ-RUN-0329: A generated package name carries the project name
+
+**Status:** Active
+
+### Requirement Statement
+
+A generated crate's package name is the project name, a hyphen, and its role. Every generated package that is published uses that prefix. `<project>-types` is the non-database types crate. `<project>-schema` is the schema crate.
+
+### Success Criteria
+
+1. Two projects generated with different project names produce no package name in common.
+
+## REQ-RUN-0330: Row structs live in the schema crate
+
+**Status:** Active
+
+### Requirement Statement
+
+Row type structs are in the schema crate. The types crate is for non-database types.
+
+The adaptor depends on `<project>-schema`. Each store crate still holds that engine's SQL, generated from the schema crate.
+
+### Success Criteria
+
+1. The schema crate contains the row structs.
+2. The types crate contains no database row struct.
+3. The adaptor crate depends on the schema crate.
+
+## REQ-RUN-0331: General database commands are a disableable bootstrap
+
+**Status:** Active
+
+### Requirement Statement
+
+The template ships general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. The consumer can disable that surface. An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.
+
+A layout with no database renders none of these commands.
+
+### Success Criteria
+
+1. A generated project with a store registers `delete row <table> <id>` on the CLI, on MCP, and over HTTP.
+2. A flag removes those three commands.
+3. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 

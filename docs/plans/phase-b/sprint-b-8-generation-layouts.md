@@ -12,6 +12,7 @@ requirements:
   - REQ-RUN-0326
   - REQ-RUN-0329
   - REQ-RUN-0330
+  - REQ-RUN-0331
   - REQ-RUN-0317
   - REQ-RUN-0318
   - REQ-RUN-0303
@@ -43,7 +44,7 @@ The library crate `sc-runtime` does not generate any of this.
 1. REQ-RUN-0326: `wizard/answers.schema.json` accepts each layout.
 2. REQ-RUN-0317 and REQ-RUN-0318: `just new` writes the stores, the models, and the adaptor. `crates/sc-runtime` contains no generator.
 3. REQ-RUN-0329 and REQ-RUN-0330: each generated package name is the project name, a hyphen, and its role. Row structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
-4. A layout with a store renders that store's commands. A no-database layout renders no store command.
+4. REQ-RUN-0331: a layout with a store renders general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. The consumer can disable that surface. A no-database layout renders none of them.
 
 ## Required validation
 

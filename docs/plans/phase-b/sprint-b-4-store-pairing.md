@@ -33,6 +33,8 @@ Two stores in one application use the same schema or a similar schema, and one s
 
 The trait is shaped for SQLite, Postgres, and MySQL. Postgres and MySQL crates are filled in `b-5` and `b-6`. This sprint reserves their place in the template workspace so those two sprints do not edit `template/Cargo.toml`.
 
+`<project>-schema` holds the table description and the row structs ([REQ-RUN-0330](../../requirements.md)). `<project>-types` holds non-database types. Package names are the project name, a hyphen, and the role ([REQ-RUN-0329](../../requirements.md)).
+
 ## Tasks
 
 1. REQ-RUN-0327: the copy relationship is the same schema on both stores. The host-aggregate relationship is a similar schema. One-sided tables and columns are representable.

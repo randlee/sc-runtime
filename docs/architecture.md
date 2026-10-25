@@ -173,6 +173,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
+| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 | ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
@@ -1593,15 +1594,19 @@ variable, so two such crates can build in one workspace.
    functions.
 3. Only `store-*` crates depend on sqlx. Only the generated `service` crate
    depends on `store-*` crates and calls store functions.
-4. A query MUST NOT be written to run on more than one backend, and there
-   MUST NOT be a portable query layer.
+4. A SQL query is written for one backend. No layer runs one SQL string on
+   more than one engine. Stores in one application use the same schema or a
+   similar schema, and one shared trait or a different trait per store
+   ([REQ-RUN-0327](requirements.md), [REQ-RUN-0328](requirements.md)).
 5. Store crates are template code owned by the project. `sc-runtime` MUST only
    call the project's stores closure and MUST NOT inspect its result.
-6. There MUST NOT be forwarding, replication, outbox or routing policy between
-   stores in this repository.
-7. v0.1 ships `store-sqlite` only. `store-postgres` and the `db = both` option
-   follow, then `store-mysql` when a project needs it. SQL Server is out of
-   scope because sqlx has no driver for it.
+6. The sc-runtime crates and the template do not move rows between stores.
+   A consumer adaptor does, including a local cache
+   ([ADR-RUN-0305](architecture.md)). This repository does not contain a
+   replication mechanism, an outbox, or a routing policy.
+7. v0.1 generates the SQLite store only. The layouts a new application can
+   use are [REQ-RUN-0326](requirements.md). SQL Server is out of scope
+   because sqlx has no driver for it.
 
 **OPEN:** the value of N for the SQLite read pool is undecided.
 
@@ -1641,6 +1646,49 @@ on sqlx and only `service` depends on `store-*`; `arch-qa` review for points
   function.
 - [REQ-RT-0003](sc-runtime/requirements.md): `sc-runtime` never inspects `Stores`.
 - [ADR-RUN-0303](architecture.md): the full crate graph of a generated project.
+
+---
+
+## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
+**Amends:** [ADR-RUN-0301](architecture.md) points 4 and 6  
+
+### Context
+
+SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. The first phase-b writeup put that pairing behind one `StorageBackend` and one constructor that accepted both `sqlite://` and `postgres://`. A query written for both engines is forbidden by [ADR-RUN-0301](architecture.md) point 4. That writeup was deleted. The pairing itself is the plan.
+
+### Decision
+
+1. SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
+2. The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The consumer repository defines the rollup.
+4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
+5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
+6. Every consumer repository gets the same generated implementation of a common pattern. Each engine's SQL is in that engine's store crate.
+7. An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+8. The consuming application schedules synchronization. The adaptor starts no timer.
+9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
+10. Two stores in one application use the same schema or a similar schema.
+11. Two stores in one application use one shared trait or a different trait per store.
+12. A generated package name is the project name, a hyphen, and its role.
+13. Row type structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
+
+### Consequences
+
+[REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md) are this decision. Phase b plans them with the writer, the lint profile, and sc-cron: eight sprints, `b-1` through `b-8`. The adaptor is rendered for a layout that has SQLite and a SQL engine. The rusqlite writer sprint does not replace the template sqlx store.
+
+### Alternatives Considered
+
+- One SQL string executed on both SQLite and Postgres. Rejected. Each engine has its own SQL. A shared trait, or a different trait per engine, is allowed. The schemas are the same or similar.
+- Leaving the pairing for each consumer to invent. Rejected. A common pattern has one generated implementation.
+
+### Related Documents
+
+- [ADR-RUN-0301](architecture.md) points 4 and 6.
+- [REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md).
 
 ---
 
@@ -1717,7 +1765,10 @@ built from the one `api-types` struct; for point 4, inspection of the rendered
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
+**Amended:** 2026-10-25 by [ADR-RUN-0305](architecture.md), [REQ-RUN-0329](requirements.md), and [REQ-RUN-0330](requirements.md)  
 **Source:** sc-runtime design, 2026-09-19: the generated-project crate table is a design recommendation accepted for sprint planning. The edges to `sc-command`, the edge `daemon` -> `api-types` and the location of `Stores` are not in that table; they follow necessarily from the design's own code for a service function, a REST handler and an MCP tool, as stated in each point  
+
+The role names in this ADR stay the roles. The published package name is the project name, a hyphen, and the role. `<project>-schema` holds the table description and the row structs. `<project>-types` holds non-database types. The adaptor depends on `<project>-schema` and on the store crates whose rows it moves. `service` depends on the adaptor. `daemon` and `cli` do not.
 
 ### Context
 
