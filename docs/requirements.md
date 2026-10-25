@@ -51,7 +51,7 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0325 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. |
+| REQ-RUN-0301 through REQ-RUN-0326 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
@@ -65,7 +65,7 @@ each waits until a project asks for it.
 
 | Item | Status |
 |---|---|
-| `store-postgres`, `db = both`, and a Postgres service container in template CI | v0.2, after the MVP |
+| Database layouts other than SQLite-only | accepted when that layout's store crate exists ([REQ-RUN-0326](requirements.md)); v0.1 generates SQLite only |
 | `store-mysql` | when the first project needs it |
 | SQL Server | never; sqlx has no driver |
 | SQLite batched write actor | ported from atm-core when a project measures write contention |
@@ -1610,7 +1610,7 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
    | Option | Effect on the rendered project |
    |---|---|
    | project name | names the generated project |
-   | `db` | selects which `store-*` crates are rendered |
+   | `db` | selects the database layout in [REQ-RUN-0326](requirements.md) |
    | `mcp` | `true` renders `crates/daemon/src/mcp.rs`, the `mod mcp;` line and the `.mcp(...)` line in `crates/daemon/src/main.rs`; `false` omits all three |
    | licence | sets the licence stated in the `Cargo.toml` of every crate of the generated project; `MIT` when not supplied. The rendered project MUST NOT state `MIT` when a different licence was supplied |
 
@@ -1619,13 +1619,11 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
    licence text of a project that is not MIT licensed is not something this
    template can supply.
 
-2. In v0.1 the only accepted value of `db` is `sqlite`. The values `postgres`
-   and `both` MUST be present in the schema's enum, so the published schema
-   does not change shape when they become available, and an answers file
-   using either MUST fail the validation step of the driver
-   `scripts/new_project.py`, before `cargo generate` runs, until the
-   `store-postgres` crate ships.
-   Reserving the two values this way is decided in this document.
+2. [REQ-RUN-0326](requirements.md) owns the database layouts. v0.1 has the
+   SQLite store only, so v0.1 accepts `sqlite` and rejects every other
+   layout. A rejected layout fails in `scripts/new_project.py` before
+   `cargo generate` runs. It is accepted once the store crate for that
+   layout exists.
 3. An option MUST include or exclude whole files through a conditional
    `ignore` list in `template/cargo-generate.toml`. With `mcp` equal to
    `false`, `crates/daemon/src/mcp.rs` is ignored. The `ignore` mechanism
@@ -2577,6 +2575,33 @@ The sc-runtime crates do not move rows between stores.
 ### Success Criteria
 
 1. `crates/` contains no store-to-store copy, outbox, or routing policy.
+
+## REQ-RUN-0326: Database layouts of a new application
+
+**Status:** Active
+
+### Requirement Statement
+
+A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
+
+sqlx 0.9 ships drivers for SQLite, Postgres, and MySQL. Postgres and MySQL are the SQL engines. A later sqlx driver is another engine in this set. The layouts are:
+
+| Layout | Stores |
+|---|---|
+| no database | none |
+| SQLite only | `store-sqlite` |
+| Postgres only | `store-postgres` |
+| MySQL only | `store-mysql` |
+| SQLite and Postgres | `store-sqlite` and `store-postgres` |
+| SQLite and MySQL | `store-sqlite` and `store-mysql` |
+
+A layout with both stores renders the adaptor in [ADR-RUN-0305](architecture.md). A layout with one store renders that store and no adaptor. A layout with no database renders no store crate and no adaptor.
+
+### Success Criteria
+
+1. `wizard/answers.schema.json` accepts each layout in the table.
+2. Generating each layout renders the stores in that row, and renders the adaptor only when the row has two stores.
+3. A layout whose store crate does not exist yet fails in `scripts/new_project.py` before `cargo generate` runs.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 

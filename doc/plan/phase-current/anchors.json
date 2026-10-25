@@ -2157,6 +2157,49 @@
           }
         }
       ]
+    },
+    {
+      "id": "REQ-RUN-0326",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0326",
+      "statement": "A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.",
+      "quote": "A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Database layouts of a new application",
+      "scope": "a bead that edits scripts/new_project.py, wizard/answers.schema.json, or template store crates",
+      "deterministic_check": "wizard/answers.schema.json accepts no database, SQLite only, one sqlx SQL engine, and SQLite plus one sqlx SQL engine.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-a67",
+        "plan_questions": "run-a67.1",
+        "dev_questions": "run-a67.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:25:42+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:25:43+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-a67",
+            "plan_questions": "run-a67.1",
+            "dev_questions": "run-a67.2"
+          }
+        }
+      ]
     }
   ]
 }

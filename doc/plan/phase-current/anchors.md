@@ -52,6 +52,7 @@ Intent: `doc/plan/phase-current/intent.md`
 | REQ-RUN-0324 | locked | Adaptor moves rows between stores | 2026-10-25 |
 | REQ-RUN-0325 | locked | Framework crates move no rows | 2026-10-25 |
 | REQ-RUN-0323 | locked | The application schedules sync | 2026-10-25 |
+| REQ-RUN-0326 | locked | Database layouts of a new application | 2026-10-25 |
 
 ## ANC-001
 
@@ -788,3 +789,19 @@ Scope: a bead that adds, removes, or generates a store adaptor
 Deterministic check to pair with the development gate: The adaptor crate starts no timer. A schedule is registered by application code.
 
 Beads: anchor `run-7mk`, plan questions `run-7mk.1`, dev questions `run-7mk.2`
+
+## REQ-RUN-0326
+
+Anchor: A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
+
+> A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Database layouts of a new application
+
+Scope: a bead that edits scripts/new_project.py, wizard/answers.schema.json, or template store crates
+
+Deterministic check to pair with the development gate: wizard/answers.schema.json accepts no database, SQLite only, one sqlx SQL engine, and SQLite plus one sqlx SQL engine.
+
+Beads: anchor `run-a67`, plan questions `run-a67.1`, dev questions `run-a67.2`

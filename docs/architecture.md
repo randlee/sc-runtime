@@ -1599,9 +1599,9 @@ variable, so two such crates can build in one workspace.
    A consumer adaptor does, including a local cache
    ([ADR-RUN-0305](architecture.md)). This repository does not contain a
    replication mechanism, an outbox, or a routing policy.
-7. v0.1 ships `store-sqlite` only. `store-postgres` and the `db = both` option
-   follow, then `store-mysql` when a project needs it. SQL Server is out of
-   scope because sqlx has no driver for it.
+7. v0.1 generates the SQLite store only. The layouts a new application can
+   use are [REQ-RUN-0326](requirements.md). SQL Server is out of scope
+   because sqlx has no driver for it.
 
 **OPEN:** the value of N for the SQLite read pool is undecided.
 
@@ -1670,7 +1670,7 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database.
 
 ### Consequences
 
-[REQ-RUN-0313](requirements.md) through [REQ-RUN-0325](requirements.md) are this decision. A plan that drops the adaptor drops a binding requirement. The rusqlite writer and the host lint profile do not implement it.
+[REQ-RUN-0313](requirements.md) through [REQ-RUN-0325](requirements.md) are this decision. The adaptor is rendered only for a layout in [REQ-RUN-0326](requirements.md) that has both SQLite and a SQL engine. A plan that drops the adaptor drops a binding requirement. The rusqlite writer and the host lint profile do not implement it.
 
 ### Alternatives Considered
 
