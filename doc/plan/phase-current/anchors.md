@@ -17,10 +17,10 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-009 | locked | Different code per database model | 2026-10-25 |
 | ANC-010 | locked | Advanced adaptors are consumer code | 2026-10-25 |
 | ANC-011 | locked | The app schedules store sync | 2026-10-25 |
-| ANC-012 | locked | sc-cron is an optional crate | 2026-10-25 |
-| ANC-013 | locked | sc-cron config is one SQLite table | 2026-10-25 |
-| ANC-014 | locked | sc-cron schedules with cron strings | 2026-10-25 |
-| ANC-015 | locked | Richer scheduling API is the consumer's | 2026-10-25 |
+| ANC-012 | retired | sc-cron is an optional crate | 2026-10-25 |
+| ANC-013 | retired | sc-cron config is one SQLite table | 2026-10-25 |
+| ANC-014 | retired | sc-cron schedules with cron strings | 2026-10-25 |
+| ANC-015 | retired | Richer scheduling API is the consumer's | 2026-10-25 |
 | ANC-016 | retired | Sync method is Rust or python3 | 2026-10-25 |
 | ANC-017 | locked | beads-cache uses SQLite only | 2026-10-25 |
 | ANC-018 | locked | beads-cache syncs to Dolt through beads | 2026-10-25 |
@@ -31,7 +31,13 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-023 | locked | A generated application is ready to run | 2026-10-25 |
 | ANC-024 | locked | sc-cron is a phase-b sprint | 2026-10-25 |
 | ANC-025 | locked | sc-cron decisions stay in the ADR or reqs | 2026-10-25 |
-| ANC-026 | locked | SQLite cron runs a Rust job or python3 | 2026-10-25 |
+| ANC-026 | retired | SQLite cron runs a Rust job or python3 | 2026-10-25 |
+| REQ-CRON-0001 | locked | sc-cron is a workspace member | 2026-10-25 |
+| REQ-CRON-0002 | locked | Normal crontab strings | 2026-10-25 |
+| REQ-CRON-0003 | locked | Rust job or Python module | 2026-10-25 |
+| REQ-CRON-0004 | locked | One schedule table | 2026-10-25 |
+| REQ-CRON-0005 | locked | One CronError enum | 2026-10-25 |
+| ADR-RUN-0013 | locked | ADR-RUN-0013 sc-cron decision | 2026-10-25 |
 
 ## ANC-001
 
@@ -215,7 +221,7 @@ Anchor: sc-cron is an optional drop-in crate.
 
 > I would expect sc-cron to be a simple optional drop in
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: sc-cron is an optional crate
 
@@ -231,7 +237,7 @@ Anchor: sc-cron configuration is one SQLite table.
 
 > that needs a sqlite table for configuration
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: sc-cron config is one SQLite table
 
@@ -247,7 +253,7 @@ Anchor: sc-cron scheduling uses normal cron strings.
 
 > scheduling would be done w/ cron strings
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 2.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 3.
 
 Summary: sc-cron schedules with cron strings
 
@@ -263,7 +269,7 @@ Anchor: A more sophisticated scheduling API is created by the consumer.
 
 > consumer can create more sophisticated api if they desire.
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 1.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 2.
 
 Summary: Richer scheduling API is the consumer's
 
@@ -439,7 +445,7 @@ Anchor: sc-cron is a SQLite scheduler. The caller starts a schedule, stops it, a
 
 > A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook
 
-Said by randlee, planning session, 2026-10-25. Status: locked. Version 2.
+Said by randlee, planning session, 2026-10-25. Status: retired. Version 3.
 
 Summary: SQLite cron runs a Rust job or python3
 
@@ -448,3 +454,99 @@ Scope: a bead that adds or edits crates/sc-cron
 Deterministic check to pair with the development gate: crates/sc-cron exposes start_async, stop_async, spawn_worker, Job::run, and Job::should_stop, and can run python3 <module> cron.tick or cron.stop with JSON on stdin.
 
 Beads: anchor `run-oez`, plan questions `run-oez.1`, dev questions `run-oez.2`
+
+## REQ-CRON-0001
+
+Anchor: crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
+
+> crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: sc-cron is a workspace member
+
+Scope: a bead that edits Cargo.toml or crates/sc-cron
+
+Deterministic check to pair with the development gate: Cargo.toml members include crates/sc-cron, and that crate depends on no other workspace crate.
+
+Beads: anchor `run-4x5`, plan questions `run-4x5.1`, dev questions `run-4x5.2`
+
+## REQ-CRON-0002
+
+Anchor: CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.
+
+> CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: Normal crontab strings
+
+Scope: a bead that edits the sc-cron expression parser
+
+Deterministic check to pair with the development gate: A test expects CronExpr::parse("*/5 * * * *") to succeed.
+
+Beads: anchor `run-8n1`, plan questions `run-8n1.1`, dev questions `run-8n1.2`
+
+## REQ-CRON-0003
+
+Anchor: A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
+
+> A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: Rust job or Python module
+
+Scope: a bead that adds or edits crates/sc-cron
+
+Deterministic check to pair with the development gate: crates/sc-cron runs a Rust job or python3 <module> cron.tick or cron.stop with JSON on stdin, and has no HTTP route, MCP tool, or binary.
+
+Beads: anchor `run-anr`, plan questions `run-anr.1`, dev questions `run-anr.2`
+
+## REQ-CRON-0004
+
+Anchor: The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables.
+
+> The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: One schedule table
+
+Scope: a bead that adds the sc-cron configuration table
+
+Deterministic check to pair with the development gate: A test writes a schedule row without constructing SqliteWriter.
+
+Beads: anchor `run-ec5`, plan questions `run-ec5.1`, dev questions `run-ec5.2`
+
+## REQ-CRON-0005
+
+Anchor: Fallible public functions in sc-cron return CronError.
+
+> Fallible public functions in sc-cron return CronError.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: One CronError enum
+
+Scope: a bead that adds or edits crates/sc-cron
+
+Deterministic check to pair with the development gate: The public error type in crates/sc-cron is CronError.
+
+Beads: anchor `run-whn`, plan questions `run-whn.1`, dev questions `run-whn.2`
+
+## ADR-RUN-0013
+
+Anchor: sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+
+> sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+
+Summary: ADR-RUN-0013 sc-cron decision
+
+Scope: a bead that adds or edits crates/sc-cron
+
+Deterministic check to pair with the development gate: docs/architecture.md contains ADR-RUN-0013 and docs/sc-cron/requirements.md contains REQ-CRON-0001 through REQ-CRON-0005.
+
+Beads: anchor `run-pny`, plan questions `run-pny.1`, dev questions `run-pny.2`
