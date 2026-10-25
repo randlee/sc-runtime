@@ -35,7 +35,7 @@ vertical_rationale: The copy pattern and the host-aggregate pattern are one adap
 
 ## Goal
 
-The relationship between the local SQLite store and a remote SQL store lives in an adaptor crate on the generated project. The copy pattern uses the remote schema. The host-aggregate pattern uses a similar schema, and the consumer owns the rollup function. The same pattern is generated the same way for Postgres and for MySQL.
+The relationship between the local SQLite store and a remote SQL store lives in an adaptor crate on the generated project. The adaptor depends on `<project>-types` and `<project>-schema` ([REQ-RUN-0329](../../requirements.md)). The copy pattern uses the remote schema. The host-aggregate pattern uses a similar schema, and the consumer owns the rollup function. The same pattern is generated the same way for Postgres and for MySQL.
 
 The adaptor moves rows. It starts no timer. The application schedules it, using `sc-cron` when it wants that scheduler. The `sc-runtime` crates do not move rows.
 
