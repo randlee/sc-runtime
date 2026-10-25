@@ -1,0 +1,6 @@
+{
+  "terminal.integrated.env.osx": {
+    "ATM_TEAM": "run",
+    "ATM_IDENTITY": "run-cursor"
+  }
+}
