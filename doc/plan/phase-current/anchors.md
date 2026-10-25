@@ -55,6 +55,7 @@ Intent: `doc/plan/phase-current/intent.md`
 | REQ-RUN-0326 | locked | Database layouts of a new application | 2026-10-25 |
 | REQ-RUN-0327 | locked | Same schema or a similar schema | 2026-10-25 |
 | REQ-RUN-0328 | locked | Shared trait or a trait per store | 2026-10-25 |
+| REQ-RUN-0329 | locked | Package name carries the project name | 2026-10-25 |
 
 ## ANC-001
 
@@ -839,3 +840,19 @@ Scope: a bead that adds, removes, or generates a store adaptor
 Deterministic check to pair with the development gate: A generated pair names one trait that both stores implement, or a trait for each store.
 
 Beads: anchor `run-uc6`, plan questions `run-uc6.1`, dev questions `run-uc6.2`
+
+## REQ-RUN-0329
+
+Anchor: A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema.
+
+> A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema.
+
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+
+Summary: Package name carries the project name
+
+Scope: a bead that edits template crate manifests or generation of package names
+
+Deterministic check to pair with the development gate: A project named acme has packages acme-types and acme-schema, and the adaptor depends on both.
+
+Beads: anchor `run-3q5`, plan questions `run-3q5.1`, dev questions `run-3q5.2`

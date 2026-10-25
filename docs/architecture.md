@@ -1671,6 +1671,7 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database.
 9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
 10. Two stores in one application use the same schema or a similar schema.
 11. Two stores in one application use one shared trait or a different trait per store.
+12. A generated package name is the project name, a hyphen, and its role. The adaptor depends on `<project>-types` and `<project>-schema`.
 
 ### Consequences
 
