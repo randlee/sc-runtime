@@ -36,11 +36,13 @@ vertical_rationale: The copy pattern and the host-aggregate pattern are one adap
 
 ## Goal
 
-The relationship between the local SQLite store and the remote Postgres or SQL store is defined in the template adaptor. This sprint's `Cargo.toml` depends only on the schema crate from `b-4`. Tests use `EngineStore` doubles. The adaptor calls `read_rows` on the source store and `write_rows` on the destination store. It contains no engine SQL and does not depend on sqlx. `b-8` renders the [ADR-RUN-0303](../../architecture.md) edges from the adaptor to the concrete `store-*` crates the layout contains.
+SQLite and Postgres meet in an adaptor crate generated into the consumer repository. The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository. This sprint writes that adaptor in the template. `b-8` renders it into the consumer repository.
+
+This sprint's `Cargo.toml` depends only on the schema crate from `b-4`. Tests use `EngineStore` doubles. The adaptor calls `read_rows` on the source store and `write_rows` on the destination store. It contains no engine SQL and does not depend on sqlx. `b-8` renders the [ADR-RUN-0303](../../architecture.md) edges from the adaptor to the concrete `store-*` crates the layout contains.
 
 The copy adaptor is a local SQLite database with the remote schema, for faster or offline access. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The same functions serve MySQL when MySQL is the layout's one sqlx engine. The consumer repository defines the rollup from host rows into the Postgres aggregate.
 
-The adaptor moves rows. It starts no timer. The application schedules it, using `sc-cron` when it wants that scheduler. The `sc-runtime` crates do not move rows.
+The template adaptor moves rows between the local store and the remote store. It starts no timer. The application schedules it, using `sc-cron` when it wants that scheduler. The sc-runtime crates do not move rows between stores. No file under `crates/` moves rows between stores. The template adaptor is not one of those crates.
 
 ## Adaptor sample
 
@@ -75,7 +77,7 @@ where
 2. REQ-RUN-0316: `Rollup` is the consumer-owned function that maps host rows into the Postgres aggregate. REQ-RUN-0319: `TableFlags` names tables and columns that exist on only one side, in either direction.
 3. REQ-RUN-0320: the template holds one copy implementation and one host-aggregate implementation. `b-8` renders that same implementation for every consumer that selects the pattern.
 4. REQ-RUN-0323 and REQ-RUN-0324: the adaptor moves rows through `read_rows` and `write_rows` and starts no timer. A schedule is application code. A cron row points at a Rust method or a Python hook, which is the `b-3` contract.
-5. REQ-RUN-0325: no crate under `crates/` in this repository moves rows between stores.
+5. REQ-RUN-0325: the sc-runtime crates do not move rows between stores. No file under `crates/` moves rows between stores. `copy_rows` lives only in `template/crates/store-adaptor`.
 6. REQ-RUN-0322: a third adaptor is a file the consumer writes. This sprint does not generate one.
 
 ## This sprint does not close
