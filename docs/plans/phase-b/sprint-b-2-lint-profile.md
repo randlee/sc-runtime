@@ -136,7 +136,7 @@ Root: `boundary:host-lint-profile` and [ADR-RUN-0011](../../architecture.md).
 ## Required validation
 
 - `just adr-run-0011` exits 0 on this tree. A probed `.block_on(` under `crates/*/src` without a same-line allow fails that command. `yield_now` does not.
-- `cargo xwin check --workspace --exclude sc-runtime-db-sqlite --target x86_64-pc-windows-msvc` exits 0 on macOS and on Linux. Ubuntu evidence is `just lint` in crate CI, which runs the full profile after `just setup`. On commit `1118f8c1fb2cb92cca7a64c00b0d6e4c561edbe9` that step exited 0 on `ubuntu-latest` in [Actions run 40282316408](https://github.com/randlee/sc-runtime/actions/runs/40282316408), job `just lint and just test`, step Lint, after `just setup`. That profile includes `xwin-check` and `xwin-clippy`. macOS evidence is `just lint full` on this worktree.
+- `cargo xwin check --workspace --exclude sc-runtime-db-sqlite --target x86_64-pc-windows-msvc` exits 0 on macOS and on Linux. Ubuntu evidence is `just lint` in crate CI, which runs the full profile after `just setup`. On commit `8e339d84aa5a9e16bf1b400d4442f46fdbcc5d03` that step exited 0 on `ubuntu-latest` in [Actions run 40283803352](https://github.com/randlee/sc-runtime/actions/runs/40283803352), job `just lint and just test`, step Lint, after `just setup`. That profile includes `xwin-check` and `xwin-clippy`. macOS `just lint full` on this worktree exited 0 at the same commit, including `xwin-check` and `xwin-clippy`.
 
 ## Non-goals
 
