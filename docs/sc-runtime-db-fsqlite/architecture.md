@@ -1,5 +1,7 @@
 # sc-runtime-db-fsqlite Architecture
 
+**Withdrawn 2026-10-25.** [ADR-RUN-0012](../architecture.md) does not add `sc-runtime-db-fsqlite`. This file is not a contract. Sprint `b-1` deletes it.
+
 This document defines the architecture of `sc-runtime-db-fsqlite`, the
 FrankenSQLite implementation of `StorageBackend` for the sc-runtime workspace.
 

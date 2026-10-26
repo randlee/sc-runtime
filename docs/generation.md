@@ -47,7 +47,7 @@ character class. The driver reads it from that schema. `project_name` is not a
 cargo-generate placeholder: `cargo generate` receives it as `--name`.
 
 `postgres` and `both` stay in the schema enum. Phase b accepts every layout
-in REQ-RUN-0326, including MySQL and no database. Until that sprint lands,
+in REQ-RUN-0326, including MySQL and no database. Until sprint `b-8` lands,
 v0.1 refuses a layout other than `sqlite` with `GEN.DB_RESERVED` before it creates the
 destination. The reserved values are an annotation on the schema, not a list
 in the driver. Plain `cargo generate` uses the same SQLite-only render:

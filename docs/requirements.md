@@ -51,7 +51,7 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0331 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. REQ-RUN-0327 and REQ-RUN-0328 are schema and trait pairing. REQ-RUN-0329 is the crates.io package name. REQ-RUN-0330 places row structs in the schema crate. |
+| REQ-RUN-0301 through REQ-RUN-0331 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. REQ-RUN-0327 and REQ-RUN-0328 are schema and trait pairing. REQ-RUN-0329 is the crates.io package name. REQ-RUN-0330 places row structs in the schema crate. REQ-RUN-0331 is the general database command surface. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
@@ -68,7 +68,9 @@ each waits until a project asks for it.
 | Database layouts other than SQLite-only | accepted when that layout's store crate exists ([REQ-RUN-0326](requirements.md)); v0.1 generates SQLite only |
 | `store-mysql` | when the first project needs it |
 | SQL Server | never; sqlx has no driver |
-| SQLite batched write actor | ported from atm-core when a project measures write contention |
+| SQLite batched write actor inside template `store-sqlite` | forbidden; that crate stays the sqlx two-pool store ([ADR-RUN-0301](architecture.md) points 1–7) |
+| Library rusqlite writer `sc-runtime-db-sqlite` | phase `b`; not a portable query layer and not a template dependency ([ADR-RUN-0012](architecture.md)) |
+| `sc-cron` | phase `b`; SQLite-backed cron ported from beads-cache ([ADR-RUN-0013](architecture.md)) |
 | `tracing` bridge into `sc-observability` | undecided |
 | Bearer token for TCP; Origin and Host checks on `/mcp` | ideas only; relevant only on TCP |
 | Surface snapshots and adapter-drift tooling | owned by sc-lint |
@@ -95,7 +97,7 @@ each waits until a project asks for it.
 The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace,
 declared in the root `Cargo.toml`.
 
-The workspace members MUST be exactly these four library crates:
+The workspace members MUST be exactly these library crates. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md), [ADR-RUN-0013](architecture.md)): `sc-runtime-db-sqlite` and `sc-cron` are members. Neither is a store the daemon opens, and the template does not depend on either.
 
 | Member path | Crate name | Purpose |
 |---|---|---|
@@ -103,6 +105,8 @@ The workspace members MUST be exactly these four library crates:
 | `crates/sc-transport` | `sc-transport` | UDS/TCP listener and client connector |
 | `crates/sc-command` | `sc-command` | response envelope, `OpError`, REST and MCP conversions |
 | `crates/sc-runtime` | `sc-runtime` | daemon assembly: `Daemon::builder()`, `daemon.lock`, `DaemonFixture` |
+| `crates/sc-runtime-db-sqlite` | `sc-runtime-db-sqlite` | rusqlite write actor; one connection, one thread |
+| `crates/sc-cron` | `sc-cron` | SQLite-backed cron; the app registers the job |
 
 The repository root MUST also contain these directories and files, none of
 which is a workspace member:
@@ -135,7 +139,7 @@ contain it.
 `examples/spike` is an excluded standalone package while it exists. It is not
 a fifth workspace member and it is not a Cargo example. Root `Cargo.toml`
 `exclude` names `examples/spike`. The workspace member list is exactly the
-four library crates above. Sprint a-5 deleted `crates/sc-command/lint-edge/`
+library crates in the table above. Sprint a-5 deleted `crates/sc-command/lint-edge/`
 when `crates/sc-runtime` landed. `sc-observability` and `sc-observability-otlp`
 are not workspace members. `cargo tree` enforces those edges, because sc-lint
 0.8.0 rejects a forbidden edge whose target is absent.
@@ -153,11 +157,15 @@ are not valid Rust until rendered.
 
 ### Success Criteria
 
-1. Inspect the root `Cargo.toml`: `[workspace] members` resolves to exactly
-   `crates/sc-config`, `crates/sc-transport`, `crates/sc-command` and
-   `crates/sc-runtime`. `cargo metadata --no-deps --format-version 1` lists
-   exactly those four packages while `examples/spike/` does not exist, and
-   lists no package whose manifest path is under `template/`.
+1. Inspect the root `Cargo.toml`: `[workspace] members` is the glob `crates/*`.
+   A missing directory is not a member. At the close of sprint `b-1` the glob
+   resolves to `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`,
+   `crates/sc-runtime`, and `crates/sc-runtime-db-sqlite`. Sprint `b-3` adds
+   `crates/sc-cron` and does not edit `Cargo.toml`. The member set is then
+   the six crates in the table above.
+   `cargo metadata --no-deps --format-version 1` lists those packages and
+   lists no package whose manifest path is under `template/`. Amended
+   2026-10-25.
 2. `cargo build --workspace` run at the repository root exits 0 and compiles
    no file under `template/`.
 3. Each path in the second table exists at the repository root (with
@@ -413,9 +421,9 @@ test. Routing CI through the same recipes means a green local `just lint` and
 This requirement is decided in this document; the sc-runtime design does not
 state it.
 
-1. For each of the four workspace crates (`sc-config`, `sc-transport`,
-   `sc-command`, `sc-runtime`) the repository MUST contain a boundary
-   manifest: one or more TOML files under `boundaries/<crate>/` at the
+1. For each workspace crate (`sc-config`, `sc-transport`, `sc-command`,
+   `sc-runtime`, and, from the 2026-10-25 amendment, `sc-runtime-db-sqlite` and `sc-cron`)
+   the repository MUST contain a boundary manifest: one or more TOML files under `boundaries/<crate>/` at the
    repository root, in the format read by the `sc-lint-boundary` tool.
 2. The manifest format, as observed in the sc-lint repository, is TOML with
    these keys: `boundary_id`, `owner_package`, a `[public]` table with
@@ -433,10 +441,12 @@ state it.
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
-   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-   | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
+   | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
+| `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
@@ -945,9 +955,9 @@ criterion 2 runs the real binary only on an isolated runner.
    same envelope as criterion 1 and a non-zero exit status, and that
    afterwards the instance root contains no `daemon.lock`, no `daemon.sock`
    and no database file.
-3. `cargo tree -p cli -e normal --prefix none` in the generated project
-   prints no line beginning with `sqlx `, `service ` or `store-sqlite ` (the
-   name followed by a space).
+3. `cargo tree -p <project>-cli -e normal --prefix none` in the generated project
+   prints no line beginning with `sqlx `, `<project>-service `, or a store package (the
+   name followed by a space). Amended 2026-10-25. v0.1 rendered the package as `cli`.
 4. A host-safe test gives the same CLI reporting path a transport failure that is not
    `DaemonNotRunning` (an undecodable response body) and asserts that
    `error.code` is not `"DAEMON.NOT_RUNNING"`. How a non-2xx response reaches
@@ -1375,18 +1385,25 @@ item.
 
 `template/` in the `randlee/sc-runtime` repository MUST be a standard
 `cargo-generate` template (configured by `template/cargo-generate.toml`)
-that renders a Cargo workspace with this layout. "v0.1" means the first
-release, in which the only database option is SQLite.
+that renders a Cargo workspace. Which crates render follows
+[REQ-RUN-0326](requirements.md). Package names are `<project>-<role>`
+([REQ-RUN-0329](requirements.md)). "v0.1" means the first release, in which
+the only database option was SQLite and the package names were the role
+names below. Amended 2026-10-25.
 
 ```text
 <project>/
   Cargo.toml                  # workspace
   crates/
-    api-types/                # request and response structs
-    store-sqlite/             # pool, migrations/, queries, sqlx.toml, .sqlx/
-    service/                  # async service functions
-    daemon/                   # src/main.rs, src/routes.rs, src/mcp.rs
-    cli/                      # clap commands
+    api-types/                # always; rendered package <project>-types
+    schema/                   # when the layout has a store; package <project>-schema
+    store-sqlite/             # when the layout includes SQLite
+    store-postgres/           # when the layout's engine is Postgres
+    store-mysql/              # when the layout's engine is MySQL
+    store-adaptor/            # when the layout has two stores
+    service/                  # always
+    daemon/                   # always; src/main.rs, src/routes.rs, src/mcp.rs
+    cli/                      # always
   config/
     default.json
   Justfile
@@ -1396,10 +1413,14 @@ release, in which the only database option is SQLite.
   .github/workflows/ci.yml
 ```
 
+A no-database layout renders no `schema` crate, no `store-*` crate, and no
+adaptor. A one-store layout renders that store and no adaptor. A two-store
+layout renders SQLite, that layout's one sqlx engine, and the adaptor.
+
 1. `crates/daemon/src/mcp.rs` MUST be rendered only when the option `mcp` is
    `true`.
-2. `crates/store-sqlite` MUST be rendered when the option `db` is `sqlite`
-   (the only value accepted in v0.1).
+2. The store directories a layout renders are [REQ-RUN-0326](requirements.md).
+   v0.1 rendered `crates/store-sqlite` only. Amended 2026-10-25.
 3. `config/local.json` is the developer's local override file. It MUST be
    listed in the rendered `.gitignore`.
 4. `AGENTS.md` and `CLAUDE.md` are produced from `template/AGENTS.md.j2` and
@@ -1410,19 +1431,27 @@ release, in which the only database option is SQLite.
 
    | Crate | MUST depend on | Why it is a separate crate |
    |---|---|---|
-   | `api-types` | `serde`, `schemars`, `utoipa` | shared by `daemon` and `cli`, so both compile against the same structs and no client code generator is needed |
-   | `store-sqlite` | `sqlx` with the `sqlite` feature | `sqlx` 0.9 checks queries against one database per crate |
-   | `service` | `api-types`, `store-sqlite`; the `sc-command` items `OpError` (default features, see below) | the single code path to SQL, called by REST handlers and MCP tools |
-   | `daemon` | `service`, `api-types`, `sc-runtime`, `sc-config`; the `sc-command` items `Envelope<T>` and `into_mcp()`, which need its `server` cargo feature (see below) | owns the wiring: which routes exist and what they call |
-   | `cli` | `api-types`, `sc-transport`, `sc-command`, `sc-config` | thin HTTP client |
+   | `<project>-types` | `serde`, `schemars`, `utoipa` | shared by `daemon` and `cli`, so both compile against the same structs and no client code generator is needed |
+   | `<project>-schema`, when the layout has a store | no SQL crate | row structs |
+   | each `<project>-store-*` the layout renders | `sqlx` with that engine's feature | `sqlx` 0.9 checks queries against one database per crate |
+   | `<project>-store-adaptor`, on a two-store layout | `<project>-schema` and the store crates whose rows it moves | moves rows between those stores |
+   | `<project>-service` | `<project>-types`; the adaptor on a two-store layout, or that one store on a one-store layout; the `sc-command` items `OpError` (default features, see below) | the single code path to SQL, called by REST handlers and MCP tools |
+   | `<project>-daemon` | `<project>-service`, `<project>-types`, `sc-runtime`, `sc-config`; the `sc-command` items `Envelope<T>` and `into_mcp()`, which need its `server` cargo feature (see below) | owns the wiring: which routes exist and what they call |
+   | `<project>-cli` | `<project>-types`, `sc-transport`, `sc-command`, `sc-config` | thin HTTP client |
+
+   Amended 2026-10-25. A one-store layout has no adaptor row. A no-database
+   layout has no schema row, no store row, and no adaptor row, and `service`
+   depends on `<project>-types` and `sc-command` only.
 
    The sc-runtime design's dependency table omits three of these edges. They
    follow from its own code: service functions return `OpError`, which is
    defined in `sc-command`; `daemon` handlers name `Envelope<T>`, call
    `into_mcp()`, and take `api-types` structs as input.
 6. The project's `Stores` struct MUST be defined in the `service` crate.
-   This follows from two rules: service functions take `&Stores`, and only
-   `service` may depend on a store crate.
+   Service functions take `&Stores`. A two-store layout's adaptor depends on
+   the store crates whose rows it moves, and `service` depends on the adaptor.
+   A one-store layout has no adaptor, and `service` depends on that store.
+   `daemon` and `cli` do not depend on a store crate. Amended 2026-10-25.
 7. These dependency edges MUST NOT exist:
    - `cli` on `service`, `store-sqlite`, `daemon`, `sc-runtime`, `sqlx`,
      `axum` or `rmcp` as a normal (non-dev) dependency, directly or
@@ -1431,7 +1460,7 @@ release, in which the only database option is SQLite.
      [NFR-RUN-0001](requirements.md);
    - `api-types` on any other crate of the generated workspace;
    - any crate other than a `store-*` crate on `sqlx` directly;
-   - any crate other than `service` on a `store-*` crate;
+   - any crate other than the adaptor, or `service` on a one-store layout, on a `store-*` crate. Amended 2026-10-25;
    - `store-sqlite` on `service`, `daemon` or `cli`;
    - any crate other than `daemon` on `sc-runtime` as a normal (non-dev)
      dependency.
@@ -1482,22 +1511,20 @@ REST and MCP have exactly one place to call.
 
 1. For each answers file in `wizard/fixtures/`, render the project with the
    driver (`just new <dest> --var-file <fixture>`) and assert
-   every path in the layout above exists, with `crates/daemon/src/mcp.rs`
-   present exactly when the fixture's `mcp` is `true`.
+   the paths that layout includes exist, and that the store and adaptor
+   directories that layout excludes do not. `crates/daemon/src/mcp.rs` is
+   present exactly when the fixture's `mcp` is `true`. Amended 2026-10-25.
 2. In each rendered project, `cargo metadata --format-version 1` shows the
-   workspace members `api-types`, `store-sqlite`, `service`, `daemon`, `cli`
-   and no others, and every "MUST depend on" edge of the table other than
-   the `sc-command` edge of `daemon`; this includes the direct edge from
-   `service` to `sc-command`. Once the direct dependency or re-export
-   question for `daemon` is decided: it shows that edge in the decided
-   form.
+   package names `<project>-<role>` for the crates that layout renders:
+   `types`, `schema`, each store, the adaptor when the layout has two stores,
+   `service`, `daemon`, and `cli`, and no others. Amended 2026-10-25.
 3. In each rendered project,
-   `cargo tree -p cli -e normal --prefix none` prints no line beginning with
-   `sqlx `, `axum `, `rmcp `, `sc-runtime `, `service `, `store-sqlite ` or
-   `daemon ` (the name followed by a space).
+   `cargo tree -p <project>-cli -e normal --prefix none` prints no line beginning with
+   `sqlx `, `axum `, `rmcp `, `sc-runtime `, `<project>-service `, a store package, or
+   `<project>-daemon ` (the name followed by a space). Amended 2026-10-25.
 4. In each rendered project, `sqlx` appears under `[dependencies]` only in
-   `crates/store-sqlite/Cargo.toml`, and `store-sqlite` appears under
-   `[dependencies]` only in `crates/service/Cargo.toml`.
+   `store-*` `Cargo.toml` files. A two-store layout's adaptor depends on those
+   stores. A one-store layout's `service` depends on that store. Amended 2026-10-25.
 5. The rendered `.gitignore` contains the line `config/local.json`.
 6. The rendered project contains no file ending in `.j2` and no file from
    `wizard/` or `scripts/`.
@@ -1579,8 +1606,11 @@ example keeps the template thin and leaves little to delete.
    `crates/daemon/src/mcp.rs` does not exist, and the example test covers
    REST and the CLI.
 3. The generated daemon's `openapi.json` lists the paths `/ops/widget.create`
-   and `/ops/widget.get`, and with `mcp` on an MCP `tools/list` returns
-   exactly `widget_create` and `widget_get`.
+   and `/ops/widget.get`. With `mcp` on and the general database surface off,
+   or with no database, an MCP `tools/list` returns exactly `widget_create`
+   and `widget_get`. With `mcp` on and the general surface on, `tools/list`
+   also returns the [REQ-RUN-0331](requirements.md) commands, including
+   `delete row`. Amended 2026-10-25.
 4. `grep -rn 'ops/' crates/` in the `randlee/sc-runtime` repository (the
    four library crates) finds no match outside tests and documentation.
 5. In a project generated with `mcp` equal to `true`, a test sends an MCP
@@ -1602,10 +1632,12 @@ example keeps the template thin and leaves little to delete.
 defined in `wizard/answers.schema.json` and mirrored as placeholders in
 `template/cargo-generate.toml`.
 
-1. The list of v0.1 options (project name, a string; `db`, a string enum of
-   `sqlite`, `postgres`, `both`; `mcp`, a boolean; the licence, a string
+1. The list of options (project name, a string; `db`, a string enum of
+   `none`, `sqlite`, `postgres`, `mysql`, `sqlite-postgres`, and
+   `sqlite-mysql`; `mcp`, a boolean; the licence, a string
    whose default is `MIT`), their types and the rule
    that the list is closed are owned by [REQ-RUN-0401](requirements.md).
+   `both` is not a value. Amended 2026-10-25.
    This item owns what each option does to the rendered project:
 
    | Option | Effect on the rendered project |
@@ -1620,11 +1652,13 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
    licence text of a project that is not MIT licensed is not something this
    template can supply.
 
-2. [REQ-RUN-0326](requirements.md) owns the database layouts. v0.1 has the
-   SQLite store only, so v0.1 accepts `sqlite` and rejects every other
-   layout. A rejected layout fails in `scripts/new_project.py` before
-   `cargo generate` runs. It is accepted once the store crate for that
-   layout exists.
+2. [REQ-RUN-0326](requirements.md) owns the database layouts. v0.1 shipped
+   the SQLite store only. Sprint `b-8` accepts the six `db` values above.
+   A value outside that enum, including `both`, fails schema validation in
+   `scripts/new_project.py` before `cargo generate` runs.
+   [REQ-RUN-0329](requirements.md) names each generated package with the
+   project name. [REQ-RUN-0330](requirements.md) puts row structs in
+   `<project>-schema`. Amended 2026-10-25.
 3. An option MUST include or exclude whole files through a conditional
    `ignore` list in `template/cargo-generate.toml`. With `mcp` equal to
    `false`, `crates/daemon/src/mcp.rs` is ignored. The `ignore` mechanism
@@ -1644,17 +1678,9 @@ decided ([REQ-RUN-0402](requirements.md) owns the question).
 
 **OPEN:** the defaults of `db` and `mcp` are not decided.
 
-**OPEN:** the mechanism that rejects `db` equal to `postgres` or `both` in
-v0.1 is not decided: the schema lists both values, so the rejection must be
-either an additional schema constraint or a check in the driver. A check in
-the driver would be option knowledge held outside the schema, which
-[REQ-RUN-0401](requirements.md) forbids (its criterion that
-`scripts/new_project.py` holds no option list of its own); choosing that
-branch requires relaxing that criterion for this one check. It also decides
-whether such answers files are schema-invalid or schema-valid but rejected
-([REQ-RUN-0403](requirements.md) classes the invalid fixtures). What plain
-`cargo generate` (without the driver) does when given those values is not
-decided either.
+`both` is outside the enum and fails schema validation
+([REQ-RUN-0403](requirements.md)). The v0.1 reserved-database check is
+removed by sprint `b-8`. Amended 2026-10-25.
 
 **OPEN:** the file names of the `mcp`-off fixture and of the invalid
 `db = postgres` answers file are not decided; only
@@ -1685,9 +1711,9 @@ compilable as Rust.
    project without `crates/daemon/src/mcp.rs`, whose
    `crates/daemon/src/main.rs` contains no `.mcp(` call, in which `just lint`
    and `just test` exit 0.
-4. A unit test runs the driver with an answers file whose `db` is `postgres`
-   and another whose `db` is `both`; each run exits non-zero, does not invoke
-   `cargo generate`, and creates no destination directory.
+4. A unit test runs the driver with an answers file whose `db` is `both`.
+   The run exits non-zero, does not invoke `cargo generate`, and creates no
+   destination directory. `both` fails schema validation. Amended 2026-10-25.
 5. `template/cargo-generate.toml` contains a conditional `ignore` entry for
    `crates/daemon/src/mcp.rs` keyed on `mcp`.
 6. Generating from the fixture whose licence is not `MIT`
@@ -1959,7 +1985,7 @@ It MUST have these properties:
 
 | Aspect | Requirement |
 |---|---|
-| Driver | depends on `sqlx` 0.9 with the `sqlite` feature; it is the only generated crate with a direct `sqlx` dependency |
+| Driver | depends on `sqlx` 0.9 with the `sqlite` feature. Only a `store-*` crate has a direct `sqlx` dependency. Amended 2026-10-25: `store-postgres` and `store-mysql` are the other engine crates |
 | Pools | two `sqlx` SQLite pools on the same database file: a read pool of N connections, and a write pool of exactly 1 connection; all writes go through the write pool |
 | Journal mode | WAL (write-ahead logging) is turned on when the pools are opened |
 | Migrations | SQL files in `crates/store-sqlite/migrations/`, embedded in the binary with `sqlx::migrate!` and run when the store is opened |
@@ -1967,7 +1993,7 @@ It MUST have these properties:
 | Database URL variable | `crates/store-sqlite/sqlx.toml` names `SQLITE_DATABASE_URL` as the variable the `sqlx` macros read, so a second store crate with a different variable can build in the same workspace later |
 | Offline data | `crates/store-sqlite/.sqlx/` is produced by `just db-prepare`. It is checked in to git in this repository as `template/crates/store-sqlite/.sqlx/` and rendered into every generated project, which checks it in with its first commit |
 | Public API | `open(cfg) -> Result<Store>`, which opens both pools and runs the migrations, plus typed async query functions (for the example: insert a widget, fetch a widget) |
-| Callers | only the generated `service` crate depends on `store-sqlite`; REST handlers, MCP tools and the CLI never call it |
+| Callers | A two-store layout: the adaptor depends on each `store-*` crate whose rows it moves, and `service` depends on the adaptor. A one-store layout has no adaptor, and `service` depends on that store. `daemon` and `cli` do not depend on a store crate. REST handlers, MCP tools, and the CLI never call a store crate. Amended 2026-10-25 |
 
 The crate MUST NOT contain a write actor, a queue or any other custom
 concurrency code; the two-pool arrangement is the whole mechanism.
@@ -1975,9 +2001,14 @@ concurrency code; the two-pool arrangement is the whole mechanism.
 **OPEN:** the value of N (the read pool size) and whether it is configurable
 are not stated.
 
-**OPEN:** the type of `cfg`, the error type inside `Result<Store>`, and how
-the database file path is chosen (a config key, or a default under
-`<instance-root>`) are not stated. `<instance-root>` is the per-application,
+`open` takes `OpenConfig { url: String }` and returns `StoreError` with
+`StoreCode` (`Connection`, `Query`, `Migration`) and `message`.
+`StoreError` implements `Display` and `std::error::Error`. `Display` includes
+the code. SQLite reads a file path from `url`. Postgres and MySQL read a
+database URL. The adaptor calls `read_rows` and `write_rows` on `EngineStore`.
+`RowRecord.payload` is UTF-8 JSON whose keys are column names. Amended 2026-10-25.
+How the application chooses that path (a config key, or a default under
+`<instance-root>`) is not stated. `<instance-root>` is the per-application,
 per-user directory resolved by sc-transport, or an explicitly supplied path;
 its default location is undecided
 ([REQ-TRN-0002](sc-transport/requirements.md)).
@@ -1997,7 +2028,10 @@ and on a fresh clone without a database.
 ### Success Criteria
 
 1. In a generated project, with `SQLITE_DATABASE_URL` unset,
-   `SQLX_OFFLINE=true cargo build -p store-sqlite` exits 0.
+   `SQLX_OFFLINE=true cargo build -p <project>-store-sqlite` exits 0.
+   The template workspace, before sprint `b-8` renders the package name,
+   builds `-p store-sqlite --manifest-path template/Cargo.toml`. Amended
+   2026-10-25.
 2. A test opens a `Store` on a tempdir database and issues at least 100
    inserts from concurrently running tasks; every insert returns `Ok`, none
    fails with a busy or locked error, and a count query then returns the
@@ -2013,8 +2047,9 @@ and on a fresh clone without a database.
    rendered project has no commit, so `git ls-files` inside it proves
    nothing and is not used.
 5. `cargo metadata` in the generated project shows `sqlx` as a direct
-   dependency of `store-sqlite` only, and `store-sqlite` as a dependency of
-   `service` only.
+   dependency of each `store-*` crate that layout renders, and of no other
+   generated crate. Amended 2026-10-25. A layout that renders only
+   `store-sqlite` still shows `sqlx` on that crate alone.
 6. Inspect the source: the write pool is built with a maximum of 1
    connection, and every `INSERT`, `UPDATE` or `DELETE` query function uses
    it.
@@ -2452,7 +2487,7 @@ The copy adaptor is a local SQLite database with the remote schema, for faster o
 
 ### Requirement Statement
 
-The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
+The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The same shape uses MySQL when MySQL is the layout's one sqlx engine. Amended 2026-10-25.
 
 ### Success Criteria
 
@@ -2464,7 +2499,7 @@ The host-aggregate adaptor is one SQLite database for this host and a Postgres d
 
 ### Requirement Statement
 
-The consumer repository defines the rollup from host rows into the Postgres aggregate.
+The consumer repository defines the rollup from host rows into the Postgres aggregate. The same function shape maps host rows into the MySQL aggregate when MySQL is that engine. Amended 2026-10-25.
 
 ### Success Criteria
 
@@ -2700,7 +2735,7 @@ decided in this document.
 | Option | JSON type | Values the schema lists |
 |---|---|---|
 | project name | string | any non-empty string |
-| `db` | string | `sqlite`, `postgres`, `both` |
+| `db` | string | `none`, `sqlite`, `postgres`, `mysql`, `sqlite-postgres`, `sqlite-mysql` |
 | `mcp` | boolean | `true`, `false` |
 | licence | string | the licence of the generated project's crates; default `MIT` when the answers object does not supply it |
 
@@ -2714,9 +2749,9 @@ SPDX licence expression as Cargo's `license` field takes, or something else),
 and how a project that is not open source states its licence (Cargo offers a
 `license-file` field for non-SPDX licences) are not decided.
 
-What each option does to the rendered project, and the rule that `postgres`
-and `both` are listed in the enum but not accepted in v0.1, are owned by
-[REQ-RUN-0303](requirements.md).
+What each option does to the rendered project is owned by
+[REQ-RUN-0303](requirements.md). Sprint `b-8` accepts the six `db` values.
+`both` is not in the enum. Amended 2026-10-25.
 
 The schema MUST carry a schema version, because it is a published contract:
 the sc-lint project reads the same answers object and the same schema to
@@ -2745,12 +2780,9 @@ kind of schema change requires a new version are not decided.
 **OPEN:** the JSON Schema draft (the `$schema` value) is not decided.  
 **OPEN:** the language and test runner of `tests/unit/` are not decided (the
 driver is Python).  
-**OPEN:** how an answers object with `db` equal to `postgres` or `both` is
-rejected in v0.1 is not decided ([REQ-RUN-0303](requirements.md) owns the
-question): an extra constraint in this schema, or a check in the driver. A
-check in the driver would be option knowledge held outside the schema, which
-the rule above forbids; if that branch is chosen, this item must be amended
-to allow that one check.
+A `db` value outside the six strings, including `both`, fails schema
+validation. Sprint `b-8` removes the v0.1 reserved-database driver check.
+Amended 2026-10-25.
 
 ### Rationale
 
@@ -2765,20 +2797,21 @@ and sc-lint, so the schema is versioned like any other published contract.
    asserts that it is a valid schema under the meta-schema named by its own
    `$schema` value.
 2. The same test asserts that the top-level `type` is `object`, that `db` is
-   a string property whose `enum` is exactly `sqlite`, `postgres`, `both`,
+   a string property whose `enum` is exactly `none`, `sqlite`, `postgres`,
+   `mysql`, `sqlite-postgres`, `sqlite-mysql`,
    that `mcp` is a boolean property, that a string property for the project
    name exists, and that a string property for the licence exists whose
-   default is `MIT` (its key name follows the licence OPEN above).
+   default is `MIT` (its key name follows the licence OPEN above). Amended
+   2026-10-25.
 3. The same test asserts that the top-level `properties` object has exactly
    four keys: `db`, `mcp`, the project-name key and the licence key. Once the
    way the schema version is carried is decided: if it is carried as a
    property, that key is the only permitted fifth key.
 4. The same test asserts that the schema version is present and non-empty.
 5. Inspection: `scripts/new_project.py` contains no list of option names or
-   option defaults of its own; it reads both from the schema. Once the
-   rejection mechanism for `db` equal to `postgres` or `both` is decided: if
-   it is a driver check, that check is the single permitted exception and
-   this criterion is amended to name it.
+   option defaults of its own; it reads both from the schema. Sprint `b-8`
+   removes the v0.1 reserved-database check. The driver holds no extra `db`
+   rejection list. Amended 2026-10-25.
 
 ---
 
@@ -2877,8 +2910,8 @@ There are two classes:
 
 | Class | What the file is | What must refuse it |
 |---|---|---|
-| schema-invalid | Breaks the schema in one way: a missing required key, a value of the wrong type, a `db` value outside the enum, or a key the schema does not define. | schema validation |
-| reserved in v0.1 | A complete answers object whose `db` is `postgres`, and another whose `db` is `both`. Both values are inside the schema's enum, and neither is accepted in v0.1. | the driver's validate step; whether that is schema validation or an extra driver check is undecided (see the OPEN below) |
+| schema-invalid | Breaks the schema in one way: a missing required key, a value of the wrong type, a `db` value outside the enum (`both` is this class), or a key the schema does not define. | schema validation |
+| accepted layout | A complete answers object whose `db` is `postgres`, `mysql`, `sqlite-postgres`, or `sqlite-mysql`. Sprint `b-8` accepts these. v0.1 reserved them. | schema validation accepts the file. Amended 2026-10-25 |
 
 `tests/unit/` MUST contain tests that assert:
 
@@ -2889,9 +2922,9 @@ There are two classes:
   status, it does not run `cargo generate`, and it does not create the
   destination directory.
 
-The test that the driver fails closed on the two reserved-in-v0.1 files is
-owned by [REQ-RUN-0303](requirements.md), which owns the rule that those
-values are not accepted; this item only requires the two files to exist.
+The test that the driver fails closed on `db` equal to `both` is owned by
+[REQ-RUN-0303](requirements.md) criterion 4. `postgres` is an accepted value
+after sprint `b-8`. Amended 2026-10-25.
 
 No clause of this item depends on the unverified `cargo-generate` mechanics
 held in [ADR-RUN-0402](architecture.md): the fail-closed test uses a stub
@@ -2900,12 +2933,8 @@ held in [ADR-RUN-0402](architecture.md): the fail-closed test uses a stub
 **OPEN:** the directory that holds the refused answers files is not decided.  
 **OPEN:** the file name of the `mcp = false` fixture, and the file names of
 the refused answers files, are not decided.  
-**OPEN:** whether the reserved-in-v0.1 files fail schema validation is not
-decided. It depends on how `db` equal to `postgres` or `both` is rejected
-(an extra schema constraint, or a driver check), which
-[REQ-RUN-0303](requirements.md) holds open. Once it is decided: if the
-rejection is a schema constraint, the reserved files join the schema-invalid
-class and criterion 3 covers them.  
+`both` is schema-invalid. `postgres` is accepted by sprint `b-8` and is not
+a refused file. Amended 2026-10-25.  
 **OPEN:** the language and test runner of `tests/unit/` are not decided (the
 driver is Python).
 
@@ -2933,10 +2962,10 @@ finished and is wrong.
    records any call. It asserts a
    non-zero exit status, that the stub recorded no call, and that `<dest>`
    does not exist afterwards.
-5. `ls wizard/fixtures/*.json` lists no schema-invalid file and no
-   reserved-in-v0.1 file.
-6. Outside `wizard/fixtures/`, the repository holds one complete answers
-   file with `db` equal to `"postgres"` and one with `db` equal to `"both"`.
+5. `ls wizard/fixtures/*.json` lists no schema-invalid file.
+6. Outside `wizard/fixtures/`, the repository holds one schema-invalid
+   answers file with `db` equal to `"both"`. A fixture with `db` equal to
+   `"postgres"` validates against the schema. Amended 2026-10-25.
 
 ---
 
@@ -3166,9 +3195,10 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
    `sc-observability` at 1.5.0, does not require `sc-observability-otlp`, and
    the logging-crate token does not match `sc-observability-types`.
 5. The same job then runs `just build-cli` in `$RUNNER_TEMP/app`, and it
-   exits 0. That recipe includes `cargo tree -p cli -e normal --prefix none`.
+   exits 0. That recipe includes `cargo tree -p <project>-cli -e normal --prefix none`.
+   Amended 2026-10-25.
 6. The same job then runs `just build-daemon` in `$RUNNER_TEMP/app`, and it
-   exits 0. That recipe includes `cargo tree -p daemon -e normal --prefix none`
+   exits 0. That recipe includes `cargo tree -p <project>-daemon -e normal --prefix none`
    and that output contains no `tempfile` or `tempdir` line.
 7. The `just test` output lists the example operation test as run and passed,
    not skipped or filtered out.
@@ -3405,10 +3435,10 @@ this order and MUST fail when any of them exits non-zero:
    at 1.5.0, does not require `sc-observability-otlp`, and the logging-crate
    token does not match `sc-observability-types`.
 5. `just build-cli` inside the generated project at `<dest>`. It includes
-   `cargo tree -p cli -e normal --prefix none`.
+   `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
 6. `just build-daemon` inside the generated project at `<dest>`. It includes
-   `cargo tree -p daemon -e normal --prefix none` and fails when that output
-   contains a `tempfile` or `tempdir` line.
+   `cargo tree -p <project>-daemon -e normal --prefix none` and fails when that output
+   contains a `tempfile` or `tempdir` line. Amended 2026-10-25.
 7. Once the selection question of [NFR-RUN-0010](requirements.md) is
    decided: the generated project's daemon-process tests (the tests that
    start the generated `daemon` binary),
@@ -3481,9 +3511,9 @@ would be tested against the old crate code.
    `just new` with `--var-file`, then `just setup`, then `just lint`, then
    `just test`, then `just build-cli`, then `just build-daemon` in the
    generated directory. `just build-cli` includes
-   `cargo tree -p cli -e normal --prefix none`. `just test` includes the
+   `cargo tree -p <project>-cli -e normal --prefix none`. `just test` includes the
    observability grep from the command list above. `just build-daemon`
-   includes `cargo tree -p daemon -e normal --prefix none` and that output
+   includes `cargo tree -p <project>-daemon -e normal --prefix none` and that output
    contains no `tempfile` or `tempdir` line. Those checks run because the
    job runs the recipes. They are not a separate manual step.
 2. A run of that workflow shows one matrix entry per file in
@@ -3598,14 +3628,16 @@ To make that possible:
   `sc-runtime` crate, the `service` crate, the `daemon` crate or any
   `store-*` crate.
 
-Sprint a-1 measured both selections and closed this question. `cargo build -p cli`
-is the normative selection. A workspace-wide build is exempt: under
-`cargo build --workspace` the CLI graph may contain `axum`, `rmcp`, and
-`sqlx` because cargo unifies the `server` feature. Splitting `sc-transport`
-and `sc-command` into client and server crates is rejected for v0.1. a-6 owns
-`cargo tree -p cli -e normal` on the generated project. a-5 does not run that
-command. The measurement is the sprint a-1 evidence record in
-`docs/architecture.md`.  
+Sprint a-1 measured both selections and closed this question. The normative
+selection is `cargo build -p <project>-cli`. v0.1 rendered that package as
+`cli`, and a-6 measured `cargo tree -p cli -e normal` on that package. Sprint
+`b-8` renders the package as `<project>-cli` and the daemon package as
+`<project>-daemon` ([REQ-RUN-0329](requirements.md)). Amended 2026-10-25. A
+workspace-wide build is exempt: under `cargo build --workspace` the CLI graph
+may contain `axum`, `rmcp`, and `sqlx` because cargo unifies the `server`
+feature. Splitting `sc-transport` and `sc-command` into client and server
+crates is rejected for v0.1. a-5 does not run that command. The measurement
+is the sprint a-1 evidence record in `docs/architecture.md`.  
 **OPEN:** the recipe or command by which a generated project builds and
 releases its `cli` binary (so that it is built with `-p`) is not decided. The
 public recipes of the sc-lint 0.8.0 install do not include a build recipe.
@@ -4058,8 +4090,9 @@ comments and spacing are never a reason to split a file or to strip comments.
 ### Requirement Statement
 
 This item is the single owner of the error rule and the panic rule for the
-public API of the four library crates `sc-config`, `sc-transport`,
-`sc-command` and `sc-runtime`. Each crate's own non-functional requirement
+public API of the library crates `sc-config`, `sc-transport`,
+`sc-command`, `sc-runtime`, and, from the 2026-10-25 amendment,
+`sc-runtime-db-sqlite` and `sc-cron`. Each crate's own non-functional requirement
 references this item and adds only strictness specific to that crate. The
 decision is recorded in [ADR-RUN-0006](architecture.md).
 
@@ -4088,6 +4121,8 @@ owned by that crate, with one enum per crate:
 | `sc-config` | `ConfigError` |
 | `sc-transport` | `TransportError` |
 | `sc-runtime` | `RuntimeError` |
+| `sc-runtime-db-sqlite` | `SqliteWriterError` |
+| `sc-cron` | `CronError` |
 | `sc-command` | undecided; see the OPEN below |
 
 A public API MUST NOT return an opaque error type such as `anyhow::Error` or

@@ -32,3 +32,16 @@ authorization and registry credentials. Merging the release kit onto
 | a-6 template from JSON | [sprint-a-6](plans/phase-a/sprint-a-6-template-from-json.md) | complete | `sprint/a-6-template-from-json` |
 | a-7 core release | [sprint-a-7](plans/phase-a/sprint-a-7-core-release.md) | complete | `sprint/a-7-core-release` |
 | a-8 Wyvern wizard | [sprint-a-8](plans/phase-a/sprint-a-8-wizard.md) | complete | `sprint/a-8-wizard` |
+
+Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL, the adaptor, and the six generation layouts. See [Phase b plan](plans/phase-b/phase-b-plan.md).
+
+| Sprint | Plan | Status | Branch |
+| --- | --- | --- | --- |
+| b-1 rusqlite writer | [sprint-b-1](plans/phase-b/sprint-b-1-sqlite-writer.md) | planned | `sprint/b-1-sqlite-writer` |
+| b-2 host lint profile | [sprint-b-2](plans/phase-b/sprint-b-2-lint-profile.md) | planned | `sprint/b-2-lint-profile` |
+| b-3 sc-cron | [sprint-b-3](plans/phase-b/sprint-b-3-sc-cron.md) | planned | `sprint/b-3-sc-cron` |
+| b-4 store pairing | [sprint-b-4](plans/phase-b/sprint-b-4-store-pairing.md) | planned | `sprint/b-4-store-pairing` |
+| b-5 store-postgres | [sprint-b-5](plans/phase-b/sprint-b-5-store-postgres.md) | planned | `sprint/b-5-store-postgres` |
+| b-6 store-mysql | [sprint-b-6](plans/phase-b/sprint-b-6-store-mysql.md) | planned | `sprint/b-6-store-mysql` |
+| b-7 store adaptor | [sprint-b-7](plans/phase-b/sprint-b-7-store-adaptor.md) | planned | `sprint/b-7-store-adaptor` |
+| b-8 generation layouts | [sprint-b-8](plans/phase-b/sprint-b-8-generation-layouts.md) | planned | `sprint/b-8-generation-layouts` |

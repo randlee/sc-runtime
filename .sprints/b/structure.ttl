@@ -1,0 +1,62 @@
+@prefix triage: <urn:atm:triage:> .
+
+# triage:order is the sprint sequence number.
+# b-1 and b-2 share wave 1. b-3 follows b-1. b-4 follows b-2.
+# b-5 and b-6 follow b-4 and share wave 3. b-7 follows both. b-8 follows b-7.
+
+triage:PhaseB a triage:Phase .
+
+triage:b-1 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 1 ;
+  triage:branch "sprint/b-1-sqlite-writer" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-1-sqlite-writer.md" .
+
+triage:b-2 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 2 ;
+  triage:branch "sprint/b-2-lint-profile" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-2-lint-profile.md" .
+
+triage:b-3 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 3 ;
+  triage:branch "sprint/b-3-sc-cron" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-3-sc-cron.md" ;
+  triage:follows triage:b-1 .
+
+triage:b-4 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 4 ;
+  triage:branch "sprint/b-4-store-pairing" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-4-store-pairing.md" ;
+  triage:follows triage:b-2 .
+
+triage:b-5 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 5 ;
+  triage:branch "sprint/b-5-store-postgres" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-5-store-postgres.md" ;
+  triage:follows triage:b-4 .
+
+triage:b-6 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 6 ;
+  triage:branch "sprint/b-6-store-mysql" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-6-store-mysql.md" ;
+  triage:follows triage:b-4 .
+
+triage:b-7 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 7 ;
+  triage:branch "sprint/b-7-store-adaptor" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-7-store-adaptor.md" ;
+  triage:follows triage:b-5 ;
+  triage:follows triage:b-6 .
+
+triage:b-8 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 8 ;
+  triage:branch "sprint/b-8-generation-layouts" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-8-generation-layouts.md" ;
+  triage:follows triage:b-7 .

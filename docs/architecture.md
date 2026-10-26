@@ -164,6 +164,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0008 | Requirements must mean less code; prefer standard designs | Active |
 | ADR-RUN-0009 | Daemon-process tests run in a virtual machine; no test daemon | Active |
 | ADR-RUN-0010 | Two AppName newtypes; no runtime name | Active |
+| ADR-RUN-0011 | No sleep or `block_on` on the hot path; no `Mutex` guard across `.await` | Active |
 | ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
 | ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
@@ -175,6 +176,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
 | ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Active |
+| ADR-RUN-0306 | General database commands ship on CLI, MCP, and HTTP | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 
@@ -475,15 +477,18 @@ entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
    each of the four crates, and `cargo test -p sc-transport --features server`
    and `cargo test -p sc-command --features server`.
 8. The property "a CLI links none of axum, rmcp or sqlx" is defined for a CLI
-   built as its own selection, `cargo build -p cli`
+   built as its own selection, `cargo build -p <project>-cli`
    ([NFR-RUN-0001](requirements.md), which owns the property and its criterion).
+   v0.1 rendered that package as `cli`. Amended 2026-10-25.
 
 The edge `sc-runtime` -> `sc-config` is absent. `sc-runtime` does not depend
 on `sc-config` and does not load configuration
 ([NFR-RT-0002](sc-runtime/requirements.md)).
 
 Sprint a-1 measured both selections on `examples/spike` and closed this
-question. `cargo build -p cli` is the normative selection. A workspace-wide
+question. `cargo build -p cli` is the normative selection measured on that
+spike. The generated package name is now `<project>-cli`
+([NFR-RUN-0001](requirements.md)). Amended 2026-10-25. A workspace-wide
 build is exempt from the property in point 8. Splitting `sc-transport` and
 `sc-command` into client and server crates is rejected for v0.1. a-6 owns
 the generated-project check `cargo tree -p cli -e normal`. a-5 does not run
@@ -946,10 +951,10 @@ requirements files, the architecture files and the sprint plans.
 ### Consequences
 
 Several things a framework might be expected to have are deliberately absent:
-a command registry, surface-snapshot tooling, a render engine, a SQLite write
-actor, a logging facade. Each would add code here, so each waits until a
-project asks for it. A reviewer may reject an addition solely because it
-fails point 1.
+a command registry, surface-snapshot tooling, a render engine, a logging
+facade. The SQLite write actor is `sc-runtime-db-sqlite`, added by
+[ADR-RUN-0012](architecture.md). Amended 2026-10-25. A reviewer may reject an
+addition solely because it fails point 1.
 
 ### Alternatives Considered
 
@@ -1581,18 +1586,25 @@ variable, so two such crates can build in one workspace.
 1. A store MUST be one crate in the generated project bound to exactly one
    sqlx driver:
 
-   | | `store-sqlite` | `store-postgres` |
-   |---|---|---|
-   | sqlx feature | `sqlite` | `postgres` |
-   | URL variable in `sqlx.toml` | `SQLITE_DATABASE_URL` | `POSTGRES_DATABASE_URL` |
-   | Migrations | `migrations/`, embedded with `sqlx::migrate!` | same |
-   | Offline query data | `.sqlx/` checked in, produced by `just db-prepare` | same |
-   | Default pool | read pool of N connections plus a one-connection write pool, WAL on | single pool |
+   | | `store-sqlite` | `store-postgres` | `store-mysql` |
+   |---|---|---|---|
+   | sqlx feature | `sqlite` | `postgres` | `mysql` |
+   | URL variable in `sqlx.toml` | `SQLITE_DATABASE_URL` | `POSTGRES_DATABASE_URL` | `MYSQL_DATABASE_URL` |
+   | Migrations | `migrations/`, embedded with `sqlx::migrate!` | same | same |
+   | Offline query data | `.sqlx/` checked in, produced by `just db-prepare` | same | same |
+   | Default pool | read pool of N connections plus a one-connection write pool, WAL on | single pool | single pool |
+   | Rendered package | `<project>-store-sqlite` | `<project>-store-postgres` | `<project>-store-mysql` |
 
-2. Each store crate MUST expose `open(cfg) -> Result<Store>` and typed query
-   functions.
-3. Only `store-*` crates depend on sqlx. Only the generated `service` crate
-   depends on `store-*` crates and calls store functions.
+2. Each store crate MUST expose `EngineStore`: `open`, `read_rows`, and
+   `write_rows`, as the sprint `b-4` sample states them. `OpenConfig` is
+   `{ url: String }`. `StoreError` carries `StoreCode` and `message` and
+   implements `Display` and `std::error::Error`. `RowRecord.payload` is UTF-8
+   JSON whose keys are column names. `EngineStore` is static dispatch.
+   Amended 2026-10-25.
+3. Only `store-*` crates depend on sqlx. A two-store layout's adaptor depends
+   on the `store-*` crates whose rows it moves, and `service` depends on the
+   adaptor. A one-store layout has no adaptor, and `service` depends on that
+   store. `daemon` and `cli` do not depend on `store-*`. Amended 2026-10-25.
 4. A SQL query is written for one backend. No layer runs one SQL string on
    more than one engine. Stores in one application use the same schema or a
    similar schema, and one shared trait or a different trait per store
@@ -1603,14 +1615,12 @@ variable, so two such crates can build in one workspace.
    A consumer adaptor does, including a local cache
    ([ADR-RUN-0305](architecture.md)). This repository does not contain a
    replication mechanism, an outbox, or a routing policy.
-7. v0.1 generates the SQLite store only. The layouts a new application can
-   use are [REQ-RUN-0326](requirements.md). SQL Server is out of scope
-   because sqlx has no driver for it.
+7. The layouts a new application can use are [REQ-RUN-0326](requirements.md).
+   v0.1 generated the SQLite store only. Sprint `b-8` accepts the six layouts
+   in that requirement. SQL Server is out of scope because sqlx has no driver
+   for it. Amended 2026-10-25.
 
 **OPEN:** the value of N for the SQLite read pool is undecided.
-
-**OPEN:** the error type of `open(cfg) -> Result<Store>` in point 2 is
-undecided ([REQ-RUN-0308](requirements.md)).
 
 ### Consequences
 
@@ -1635,8 +1645,10 @@ measures write contention; it is not part of v0.1.
 
 **Enforced by:** the generated workspace's dependency edges, inspected with
 `cargo metadata` per fixture ([REQ-RUN-0301](requirements.md)): only `store-*` crates depend
-on sqlx and only `service` depends on `store-*`; `arch-qa` review for points
-4 to 6.
+on sqlx; a two-store layout's adaptor depends on the `store-*` crates whose
+rows it moves and `service` depends on the adaptor; a one-store layout has no
+adaptor and `service` depends on that store; `arch-qa` review for points 4 to 6.
+Amended 2026-10-25.
 
 ### Related Documents
 
@@ -1675,6 +1687,50 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database.
 11. Two stores in one application use one shared trait or a different trait per store.
 12. A generated package name is the project name, a hyphen, and its role.
 13. Row type structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
+
+### Consequences
+
+[REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md) are this decision. Phase b plans them with the writer, the lint profile, and sc-cron: eight sprints, `b-1` through `b-8`. The adaptor is rendered for a layout that has SQLite and a SQL engine. The rusqlite writer sprint does not replace the template sqlx store.
+
+### Alternatives Considered
+
+- One SQL string executed on both SQLite and Postgres. Rejected. Each engine has its own SQL. A shared trait, or a different trait per engine, is allowed. The schemas are the same or similar.
+- Leaving the pairing for each consumer to invent. Rejected. A common pattern has one generated implementation.
+
+### Related Documents
+
+- [ADR-RUN-0301](architecture.md) points 4 and 6.
+- [REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md).
+
+---
+
+## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
+**Amends:** [ADR-RUN-0301](architecture.md) points 4 and 6  
+
+### Context
+
+SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. The first phase-b writeup put that pairing behind one `StorageBackend` and one constructor that accepted both `sqlite://` and `postgres://`. A query written for both engines is forbidden by [ADR-RUN-0301](architecture.md) point 4. That writeup was deleted. The pairing itself is the plan.
+
+### Decision
+
+1. SQLite and the layout's one sqlx engine meet in an adaptor crate generated into the consumer repository. That engine is Postgres or MySQL. Amended 2026-10-25.
+2. The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The same shape uses MySQL when MySQL is the layout's one sqlx engine. The consumer repository defines the rollup. Amended 2026-10-25.
+4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
+5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
+6. Every consumer repository gets the same generated implementation of a common pattern. Each engine's SQL is in that engine's store crate.
+7. An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+8. The consuming application schedules synchronization. The adaptor starts no timer.
+9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
+10. Two stores in one application use the same schema or a similar schema.
+11. Two stores in one application use one shared trait or a different trait per store.
+12. A generated package name is the project name, a hyphen, and its role.
+13. Row type structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
+14. `RowRecord.payload` is UTF-8 JSON whose keys are column names. Amended 2026-10-25.
 
 ### Consequences
 
@@ -1797,15 +1853,13 @@ The owner of these edges and of their criteria is
    |---|---|---|
    | `api-types` | `serde`, `schemars`, `utoipa` | design table |
    | `store-*` | `sqlx` with exactly one driver feature | design table |
-   | `service` | `api-types`, the `store-*` crates; `sc-command` with default features | design table; `sc-command` follows from service functions returning `OpError` |
+   | `service` | the adaptor, `api-types`; `sc-command` with default features | design table; `sc-command` follows from service functions returning `OpError` |
+   | adaptor | `<project>-schema` and the `store-*` crates whose rows it moves | [ADR-RUN-0305](architecture.md), [REQ-RUN-0324](requirements.md) |
    | `daemon` | `service`, `sc-runtime`, `sc-config`; `api-types`; `sc-command` with its `server` cargo feature | design table; the last two follow from handlers naming `api-types` structs, `Envelope<T>` and `into_mcp()` |
    | `cli` | `api-types`, `sc-transport`, `sc-command`, `sc-config`, none with the `server` cargo feature | design table |
 
-2. Only `store-*` crates depend on sqlx. Only `service` depends on `store-*`
-   crates.
-3. The project's `Stores` struct MUST be defined in `service`. This follows
-   from two facts: service functions take `&Stores`, and only `service` may
-   depend on the store crates whose handles `Stores` holds.
+2. Only `store-*` crates depend on sqlx. Only `service` and the adaptor depend on `store-*` crates. `service` depends on the adaptor. `daemon` and `cli` do not. Amended 2026-10-25.
+3. The project's `Stores` struct MUST be defined in `service`. Request handlers take `&Stores`. The adaptor holds the store handles it uses to move rows. Amended 2026-10-25: the adaptor, as well as `service`, may depend on `store-*`.
 4. `api-types` MUST NOT depend on any other crate of the generated workspace
    or on any of the four library crates.
 5. `cli` MUST NOT have a normal (non-dev) dependency, direct or transitive,
@@ -2035,8 +2089,9 @@ mechanics it uses are recorded in Active
     not change with that confirmation.
 
 The schema version field is `x-schema-version`, an integer at the root of
-`answers.schema.json`. Bump it when a breaking option change ships. The
-shipped value is `1`.
+`answers.schema.json`. Bump it when a breaking option change ships. v0.1
+shipped `1`. Sprint `b-8` ships `2` with the six `db` values in
+[REQ-RUN-0326](requirements.md). Amended 2026-10-25.
 
 Stderr from `--var-file` is one line, `<code> <cause> — <recovery>`, using
 U+2014. Wizard modes may print `[run-wizard]` diagnostics first; the last
@@ -2047,7 +2102,7 @@ inventory is:
 | Failure | Code | Cause | Recovery |
 |---|---|---|---|
 | schema-invalid answers | `GEN.SCHEMA_INVALID` | answers fail `wizard/answers.schema.json` | fix the file; cargo is not called; the destination is not created |
-| reserved database | `GEN.DB_RESERVED` | `db` is `postgres` or `both` | set `db` to `sqlite`; the destination is not created |
+| reserved database | `GEN.DB_RESERVED` | historical: v0.1 refused `db` of `postgres` or `both` | sprint `b-8` removes this check; a `db` value outside the six-value enum fails as `GEN.SCHEMA_INVALID` |
 | invalid project name | `APP.INVALID_NAME` | name fails the project-name `pattern` in `wizard/answers.schema.json` | fix the name to that pattern; the destination is not created |
 | missing sc-compose | `GEN.TOOL_MISSING` | `SC_COMPOSE` unset and `sc-compose` not on `PATH` | set `SC_COMPOSE` or install `sc-compose` on `PATH`; `cargo generate` does not run |
 | bad `SC_COMPOSE` override | `GEN.TOOL_MISSING` | `SC_COMPOSE` does not point at an executable file | set `SC_COMPOSE` to the sc-compose binary; `cargo generate` does not run |
@@ -2238,11 +2293,47 @@ option excludes is absent from the rendered project) and of
   its non-interactive mode.
 - [REQ-RUN-0701](requirements.md): fixture-matrix CI.
 
+## ADR-RUN-0011: No sleep or `block_on` on the hot path; no `Mutex` guard across `.await`
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25. These crates run on macOS, Linux, and Windows, and some sit on a high-rate write path. The rusqlite writer drains with `yield_now` inside a 1 ms budget. [sc-lint#640](https://github.com/randlee/sc-lint/issues/640) asks `sc-lint-runtime` for the rules. sc-lint 0.8.0 does not have them.
+
+### Context
+
+[ADR-RUN-0007](architecture.md) already forbids blocking a Tokio worker on a request path. The calls that stall a worker, or that stretch the writer's 1 ms coalesce window out to the OS timer, are not rules in `sc-lint-runtime` 0.8.0. That analyzer ships `SCB-RUNTIME-001` and `SCB-RUNTIME-002` only.
+
+`std::thread::sleep`, `sleep_until`, `tokio::time::sleep`, and `block_on` are call names a grep can see. A `std::sync::Mutex` guard held across `.await` is a lifetime. A grep cannot see it. `clippy::await_holding_lock` can, and it is not part of `cargo clippy -D warnings`.
+
+### Decision
+
+1. Production code under `crates/` and `template/` MUST NOT call `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, or `futures::executor::block_on`.
+2. Production code MUST NOT hold a `std::sync::Mutex` guard across `.await`.
+3. `yield_now` is legal. It is how the rusqlite writer fills its batch budget.
+4. Until [sc-lint#640](https://github.com/randlee/sc-lint/issues/640) is in the pinned `sc-lint` and this repo's `minimum_version` requires that release, `just lint` greps `crates/` and `template/` for the calls in point 1. A match outside `#[cfg(test)]` and outside a same-line allow comment fails the build. The grep is removed when those rules replace it.
+5. The grep does not satisfy point 2. Review of a `std::sync::Mutex` guard held across `.await` is mandatory on every change that adds a lock or an `.await`. `arch-qa` performs that review.
+6. A local allow is legal only where a corner case must break the practice, and the reason is written on the allow. That case is usually test code. The production path, including the hot path, follows points 1 and 2. A profile-wide or file-wide exclusion is not that allow.
+
+### Consequences
+
+Sprint `b-2` keeps the grep until sc-lint#640 lands, then deletes it and raises `minimum_version`. Point 2 is in force now, reviewed by `arch-qa`, and becomes a `sc-lint-runtime` failure when that issue ships.
+
+### Alternatives Considered
+
+- Waiting for sc-lint#640 with no interim check. Rejected. The call ban is enforceable today.
+- Treating a grep for `Mutex` or `.lock()` as the point 2 check. Rejected. It flags locks that are dropped before `.await` and misses a guard that is still in scope.
+
+### Related Documents
+
+- [ADR-RUN-0007](architecture.md): async end to end on Tokio.
+- [NFR-RUN-0002](requirements.md): the request-path ban on `block_on` and `std::thread::sleep`.
+- [sc-lint#640](https://github.com/randlee/sc-lint/issues/640): the `sc-lint-runtime` rules that retire the grep.
+
 ## ADR-RUN-0012: Rusqlite writer is its own crate; template stores stay sqlx
 
 **Status:** Active  
 **Decision Date:** 2026-10-25  
-**Source:** Owner, 2026-10-25. Copy the atm-core writer machine into a library crate. Do not put it behind a SQL trait shared with sqlx. Amends the "rejected for v0.1" alternative in [ADR-RUN-0301](architecture.md) for this crate only. Points 1–7 of that ADR stay in force for generated stores.
+**Source:** Owner, 2026-10-25. Copy the atm-core writer machine into a library crate. Do not put it behind a SQL trait shared with sqlx. Amends the "rejected for v0.1" alternative in [ADR-RUN-0301](architecture.md) for this crate only, and the absent-write-actor sentence in [ADR-RUN-0008](architecture.md). Points 1–7 of ADR-RUN-0301 stay in force for generated stores.
 
 ### Context
 
@@ -2262,7 +2353,7 @@ The measured atm-core path is a different mechanism: one rusqlite connection on 
 
 ### Consequences
 
-Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc. The template sqlx store is unchanged. Postgres stays out of this phase.
+Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc. The template sqlx store is unchanged. This sprint does not add a Postgres store. `store-postgres` is sprint `b-5`. `store-mysql` is sprint `b-6`. Amended 2026-10-25.
 
 ### Related Documents
 
@@ -2286,7 +2377,7 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The template does not depend on it unless a later generation flag says so. `sc-runtime` does not start it.
 2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
-3. Configuration is one SQLite table. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`.
+3. Configuration is one SQLite table in its own database file. That path is not the application `store-sqlite` file. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`. Amended 2026-10-25.
 4. The hook target is either a Rust function the consumer supplies or a Python module. The Python invocation is `python3 <module> <hook-name>` with one JSON object on stdin, the same process shape as atm-core. The hook names are `cron.tick` and `cron.stop`. The JSON carries the schedule name and the row's payload. It does not carry ATM team or phase fields.
 5. A cache-sync adaptor lives in the consumer repo. It exposes the sync methods. A schedule row points at one of those methods, in Rust or in Python. `sc-cron` only fires the row. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
 6. `CronError` is the crate's one error enum. Variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `Store`, and `Fenced`, with the stable codes already on the beads-cache crate. `BadExpression`'s recovery text names the five-field form.
@@ -2294,13 +2385,30 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-7` generates the adaptor that stores a cron row pointing at a sync method. Sprint `b-8` generates the application layouts.
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-25.
 
 ### Related Documents
 
 - beads-cache ADR-BDC-0006.
 - [ADR-RUN-0012](architecture.md). The writer and the cron store are separate rusqlite connections.
 - [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md).
+
+## ADR-RUN-0306: General database commands ship on CLI, MCP, and HTTP
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25, recorded as [REQ-RUN-0331](requirements.md).
+
+### Decision
+
+1. A layout that has a store renders general database commands on the CLI, MCP, and HTTP. The set includes `delete row <table> <id>`. The commands are on by default.
+2. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route. The worked example remains `widget.create` and `widget.get`.
+3. A flag removes the general commands from those three surfaces. A layout with no database renders none of them.
+4. The consumer adaptor moves rows. These commands do not add a command registry. Framework crates do not move rows.
+
+### Related Documents
+
+- [REQ-RUN-0331](requirements.md), [REQ-RUN-0302](requirements.md), [ADR-RUN-0001](architecture.md).
 
 ## Sprint a-1 evidence record
 
