@@ -37,6 +37,7 @@ owned_paths:
   - Cargo.lock
   - docs/sc-cron/
 must_follow: [b-1]
+blocked_by: beads-cache sprint b-8 (sprint/b-8-tick-python, REQ-CRON-0016, ADR-CRON-0009)
 parallel_safe: []
 recommended_agent: arch-ctm
 recommended_model: terra
@@ -44,6 +45,19 @@ vertical_rationale: One ported crate. The expression change and the scheduler li
 ---
 
 # Sprint b-3 — port sc-cron
+
+## Blocker
+
+This sprint copies `crates/sc-cron` after beads-cache sprint b-8 merges (`sprint/b-8-tick-python`, deliverable 6, REQ-CRON-0016, ADR-CRON-0009). That merge is the tree this sprint copies.
+
+- Each schedule row chooses a Rust job or a Python module, so both can sit in the one table.
+- `StopDecision::Stop` is removed. `Delete` replaces it.
+- The crate's rustdoc and test fixtures carry no beads-cache names.
+- The crate gains no beads-cache API, protocol, environment policy, or option.
+
+beads-cache sprint b-9 edits comments, provenance, and tests, and does not bump the version. It does not hold this port. Maturin and PyO3 bindings stay out of this port.
+
+`must_follow` stays `b-1`. No later sprint in this phase waits on this one.
 
 ## Goal
 

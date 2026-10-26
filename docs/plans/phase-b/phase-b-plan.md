@@ -18,7 +18,7 @@ Plan and build the storage phase as one phase. The layouts, the schema, the trai
 |---|---|---|---|
 | `sc-runtime-db-sqlite` | `b-1` | the rusqlite writer crate and its manifest | none |
 | host lint profile | `b-2` | `sc-lint.toml`, the hot-path grep, the xwin install declaration | none |
-| `sc-cron` | `b-3` | the cron crate and its manifest | `b-1`, for `Cargo.toml` and the boundary manifests |
+| `sc-cron` | `b-3` | the cron crate and its manifest | `b-1`, for `Cargo.toml` and the boundary manifests. Also blocked on beads-cache sprint `b-8` (`sprint/b-8-tick-python`) merging |
 | store pairing | `b-4` | the schema rule and the trait rule, applied to `store-sqlite` and prepared for Postgres and MySQL | `b-2`, because `b-2` lints `template/` |
 | `store-postgres` | `b-5` | the Postgres store crate in the template | `b-4` |
 | `store-mysql` | `b-6` | the MySQL store crate in the template | `b-4` |
@@ -49,6 +49,8 @@ Plan and build the storage phase as one phase. The layouts, the schema, the trai
 | 5 | `b-8` | 5 | 1 | 8 |
 
 `b-5` and `b-6` are the same wave so Postgres and MySQL are built against one pairing, not one after the other has hardened a two-engine assumption.
+
+`b-3` waits on beads-cache sprint `b-8` before it copies `crates/sc-cron`. That sprint lands the per-row hook target and removes `StopDecision::Stop`. `b-4` stays parallel with `b-3` and does not wait. beads-cache sprint `b-9` is comments, provenance, and tests, with no version bump, and does not hold the port.
 
 ## Requirements and ADRs
 
