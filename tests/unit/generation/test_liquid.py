@@ -45,7 +45,15 @@ class LiquidTests(unittest.TestCase):
         ignored = cargo["conditional"]["mcp == false"]["ignore"]
         self.assertIn("crates/daemon/src/mcp.rs", ignored)
         self.assertIn("crates/cli/tests/widget_mcp.rs", ignored)
-        self.assertEqual(cargo["template"]["exclude"], ["AGENTS.md.j2", "CLAUDE.md.j2"])
+        self.assertEqual(
+            cargo["template"]["exclude"],
+            [
+                "AGENTS.md.j2",
+                "CLAUDE.md.j2",
+                "crates/store-adaptor/src/lib.rs",
+                "crates/store-adaptor/tests/adaptor.rs",
+            ],
+        )
 
 
 if __name__ == "__main__":
