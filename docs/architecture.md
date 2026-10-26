@@ -164,6 +164,8 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0008 | Requirements must mean less code; prefer standard designs | Active |
 | ADR-RUN-0009 | Daemon-process tests run in a virtual machine; no test daemon | Active |
 | ADR-RUN-0010 | Two AppName newtypes; no runtime name | Active |
+| ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
+| ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Active |
@@ -172,6 +174,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0302 | One shared `api-types` struct; no generated Rust client | Active |
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
+| ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 
@@ -1590,15 +1593,19 @@ variable, so two such crates can build in one workspace.
    functions.
 3. Only `store-*` crates depend on sqlx. Only the generated `service` crate
    depends on `store-*` crates and calls store functions.
-4. A query MUST NOT be written to run on more than one backend, and there
-   MUST NOT be a portable query layer.
+4. A SQL query is written for one backend. No layer runs one SQL string on
+   more than one engine. Stores in one application use the same schema or a
+   similar schema, and one shared trait or a different trait per store
+   ([REQ-RUN-0327](requirements.md), [REQ-RUN-0328](requirements.md)).
 5. Store crates are template code owned by the project. `sc-runtime` MUST only
    call the project's stores closure and MUST NOT inspect its result.
-6. There MUST NOT be forwarding, replication, outbox or routing policy between
-   stores in this repository.
-7. v0.1 ships `store-sqlite` only. `store-postgres` and the `db = both` option
-   follow, then `store-mysql` when a project needs it. SQL Server is out of
-   scope because sqlx has no driver for it.
+6. The sc-runtime crates and the template do not move rows between stores.
+   A consumer adaptor does, including a local cache
+   ([ADR-RUN-0305](architecture.md)). This repository does not contain a
+   replication mechanism, an outbox, or a routing policy.
+7. v0.1 generates the SQLite store only. The layouts a new application can
+   use are [REQ-RUN-0326](requirements.md). SQL Server is out of scope
+   because sqlx has no driver for it.
 
 **OPEN:** the value of N for the SQLite read pool is undecided.
 
@@ -1638,6 +1645,50 @@ on sqlx and only `service` depends on `store-*`; `arch-qa` review for points
   function.
 - [REQ-RT-0003](sc-runtime/requirements.md): `sc-runtime` never inspects `Stores`.
 - [ADR-RUN-0303](architecture.md): the full crate graph of a generated project.
+- [ADR-RUN-0305](architecture.md): the consumer adaptor that moves rows between the two stores.
+
+---
+
+## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
+**Amends:** [ADR-RUN-0301](architecture.md) points 4 and 6  
+
+### Context
+
+SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. The first phase-b writeup put that pairing behind one `StorageBackend` and one constructor that accepted both `sqlite://` and `postgres://`. A query written for both engines is forbidden by [ADR-RUN-0301](architecture.md) point 4. That writeup was deleted. The pairing itself is the plan.
+
+### Decision
+
+1. SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
+2. The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The consumer repository defines the rollup.
+4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
+5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
+6. Every consumer repository gets the same generated implementation of a common pattern. Each engine's SQL is in that engine's store crate.
+7. An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+8. The consuming application schedules synchronization. The adaptor starts no timer.
+9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
+10. Two stores in one application use the same schema or a similar schema.
+11. Two stores in one application use one shared trait or a different trait per store.
+12. A generated package name is the project name, a hyphen, and its role.
+13. Row type structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
+
+### Consequences
+
+[REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md) are this decision. Phase b plans them with the writer, the lint profile, and sc-cron: eight sprints, `b-1` through `b-8`. The adaptor is rendered for a layout that has SQLite and a SQL engine. The rusqlite writer sprint does not replace the template sqlx store.
+
+### Alternatives Considered
+
+- One SQL string executed on both SQLite and Postgres. Rejected. Each engine has its own SQL. A shared trait, or a different trait per engine, is allowed. The schemas are the same or similar.
+- Leaving the pairing for each consumer to invent. Rejected. A common pattern has one generated implementation.
+
+### Related Documents
+
+- [ADR-RUN-0301](architecture.md) points 4 and 6.
+- [REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md).
 
 ---
 
@@ -1714,7 +1765,10 @@ built from the one `api-types` struct; for point 4, inspection of the rendered
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
+**Amended:** 2026-10-25 by [ADR-RUN-0305](architecture.md), [REQ-RUN-0329](requirements.md), and [REQ-RUN-0330](requirements.md)  
 **Source:** sc-runtime design, 2026-09-19: the generated-project crate table is a design recommendation accepted for sprint planning. The edges to `sc-command`, the edge `daemon` -> `api-types` and the location of `Stores` are not in that table; they follow necessarily from the design's own code for a service function, a REST handler and an MCP tool, as stated in each point  
+
+The role names in this ADR stay the roles. The published package name is the project name, a hyphen, and the role. `<project>-schema` holds the table description and the row structs. `<project>-types` holds non-database types. The adaptor depends on `<project>-schema` and on the store crates whose rows it moves. `service` depends on the adaptor. `daemon` and `cli` do not.
 
 ### Context
 
@@ -2183,6 +2237,70 @@ option excludes is absent from the rendered project) and of
 - [REQ-RUN-0501](requirements.md) and [REQ-RUN-0502](requirements.md): the driver's `cargo generate` step and
   its non-interactive mode.
 - [REQ-RUN-0701](requirements.md): fixture-matrix CI.
+
+## ADR-RUN-0012: Rusqlite writer is its own crate; template stores stay sqlx
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25. Copy the atm-core writer machine into a library crate. Do not put it behind a SQL trait shared with sqlx. Amends the "rejected for v0.1" alternative in [ADR-RUN-0301](architecture.md) for this crate only. Points 1–7 of that ADR stay in force for generated stores.
+
+### Context
+
+[ADR-RUN-0301](architecture.md) binds `template/crates/store-sqlite` to sqlx 0.9, typed `query!` functions, a read pool plus one write connection, and no write actor. A `StorageBackend` whose `execute` and `query` run the same SQL on rusqlite and on Postgres is the portable query layer that ADR rejects.
+
+The measured atm-core path is a different mechanism: one rusqlite connection on one thread, a bounded channel, a 1 ms `yield_now` drain, `BEGIN IMMEDIATE`, one savepoint for a contiguous run of batchable executes, and a reply only after commit. Callers that need a second database construct a second writer. `sc-runtime` does not open either one.
+
+### Decision
+
+1. `sc-runtime-db-sqlite` is a workspace crate. Its public handle is `SqliteWriter`. It depends on no other workspace crate. `sc-runtime`, `sc-config`, `sc-transport`, and `sc-command` do not depend on it. Template `store-sqlite` does not depend on it.
+2. There is no `StorageBackend`, no `sc-runtime-db`, no `sc-runtime-db-sqlx`, and no `sc-runtime-db-fsqlite` in this phase. Documents under `docs/sc-runtime-db/`, `docs/sc-runtime-db-sqlx/`, and `docs/sc-runtime-db-fsqlite/` are withdrawn. `docs/sc-runtime-db-sqlite/` is rewritten by sprint `b-1` to this contract.
+3. `SqliteWriter::execute` enqueues. The writer thread is the only rusqlite caller. Contiguous executes share one savepoint inside one `BEGIN IMMEDIATE` transaction. Each caller is answered only after that transaction commits. A `transaction` closure runs alone on that thread and is not folded into another caller's batch.
+4. `yield_now` is the drain. `sleep`, `sleep_until`, and `block_on` are not. A `std::sync::Mutex` guard is not held across `.await` ([ADR-RUN-0011](architecture.md)).
+5. `SqliteWriterError` is the crate's one error enum. It is not `Box<dyn Error>` and not an observability `ErrorCode`.
+6. The facade does not gain a `.db()` method and does not inspect the writer. A project that wants the actor depends on this crate itself. A second database is a second `SqliteWriter` the project constructs.
+7. `SqliteWriter::open` takes a path and nothing else. The channel capacity, batch budget, write deadline, and shutdown join are the constants in the crate architecture. A production caller does not pass options.
+
+### Consequences
+
+Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc. The template sqlx store is unchanged. Postgres stays out of this phase.
+
+### Related Documents
+
+- [ADR-RUN-0301](architecture.md) points 1–7.
+- [ADR-RUN-0011](architecture.md).
+- [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md), [REQ-RUN-0308](requirements.md).
+
+## ADR-RUN-0013: sc-cron is the SQLite cron crate
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25. Port beads-cache `crates/sc-cron` as an optional drop-in. Configuration is one SQLite table. Schedules are cron strings. The hook is Rust or a Python module, as atm-core does with `atm-cron`. A richer scheduling API is the consumer's.
+
+### Context
+
+beads-cache `develop` already contains `sc-cron`, extracted from atm-core's `atm-cron` (beads-cache ADR-BDC-0006). It is a tokio scheduler with a rusqlite schedule store, generation fencing, and a generic JSON payload. It depends on no beads-cache or ATM type. That ADR says the crate moves to sc-runtime unchanged once this team accepts it.
+
+The expression parser on that branch refuses a five-field string. A normal crontab string is five fields, minute first. atm-core runs a cron hook as `python3 <module> <hook-name>` with one JSON object on stdin (`cron.tick`, `cron.stop`). A consumer may instead point the same schedule at a Rust function. beads-cache's sync job calls the beads CLI and API. beads owns the Dolt database. That consumer does not open Postgres.
+
+### Decision
+
+1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The template does not depend on it unless a later generation flag says so. `sc-runtime` does not start it.
+2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
+3. Configuration is one SQLite table. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`.
+4. The hook target is either a Rust function the consumer supplies or a Python module. The Python invocation is `python3 <module> <hook-name>` with one JSON object on stdin, the same process shape as atm-core. The hook names are `cron.tick` and `cron.stop`. The JSON carries the schedule name and the row's payload. It does not carry ATM team or phase fields.
+5. A cache-sync adaptor lives in the consumer repo. It exposes the sync methods. A schedule row points at one of those methods, in Rust or in Python. `sc-cron` only fires the row. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
+6. `CronError` is the crate's one error enum. Variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `Store`, and `Fenced`, with the stable codes already on the beads-cache crate. `BadExpression`'s recovery text names the five-field form.
+7. beads-cache remains a SQLite-only consumer. Its scheduled hook syncs through beads to Dolt. Postgres and the copy or host-plus-aggregate adaptors are other consumers' hooks, not part of this crate. After this crate is published, beads-cache depends on it from crates.io instead of carrying its own copy. That dependency change is beads-cache's work.
+
+### Consequences
+
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-7` generates the adaptor that stores a cron row pointing at a sync method. Sprint `b-8` generates the application layouts.
+
+### Related Documents
+
+- beads-cache ADR-BDC-0006.
+- [ADR-RUN-0012](architecture.md). The writer and the cron store are separate rusqlite connections.
+- [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md).
 
 ## Sprint a-1 evidence record
 

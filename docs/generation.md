@@ -46,8 +46,9 @@ The project-name `pattern` on `wizard/answers.schema.json` is the only
 character class. The driver reads it from that schema. `project_name` is not a
 cargo-generate placeholder: `cargo generate` receives it as `--name`.
 
-`postgres` and `both` stay in the schema enum so a later release can accept
-them. v0.1 refuses them with `GEN.DB_RESERVED` before it creates the
+`postgres` and `both` stay in the schema enum. Phase b accepts every layout
+in REQ-RUN-0326, including MySQL and no database. Until that sprint lands,
+v0.1 refuses a layout other than `sqlite` with `GEN.DB_RESERVED` before it creates the
 destination. The reserved values are an annotation on the schema, not a list
 in the driver. Plain `cargo generate` uses the same SQLite-only render:
 `template/cargo-generate.toml` lists `sqlite` as the only `db` choice, so a
@@ -165,8 +166,9 @@ project name is `--name`. `db` accepts only `sqlite`.
 
 Limitations, stated honestly:
 
-- `postgres` and `both` stay in `wizard/answers.schema.json` for a later
-  store. The driver refuses them with `GEN.DB_RESERVED` before
+- `postgres` and `both` stay in `wizard/answers.schema.json`. Phase b is
+  the plan that accepts every REQ-RUN-0326 layout. Until sprint `b-8`, the
+  driver refuses a layout other than `sqlite` with `GEN.DB_RESERVED` before
   `cargo generate`. Plain `cargo generate` rejects them because they are
   not `db` choices. v0.1 does not render a Postgres store.
 - `AGENTS.md.j2` and `CLAUDE.md.j2` are excluded from Liquid and are copied
