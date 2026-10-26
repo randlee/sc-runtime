@@ -1742,11 +1742,15 @@
       "scope": "a bead that adds, removes, or generates a store adaptor",
       "deterministic_check": "A generated copy adaptor creates the shared remote tables in SQLite.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "The copy adaptor is a local SQLite database with the remote schema, for faster or offline access."
+        ],
+        "fail": [
+          "The copy adaptor keeps a schema that differs from the remote database."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -1768,6 +1772,13 @@
             "plan_questions": "run-5zk.1",
             "dev_questions": "run-5zk.2"
           }
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -1785,11 +1796,15 @@
       "scope": "a bead that adds, removes, or generates a store adaptor",
       "deterministic_check": "A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts."
+        ],
+        "fail": [
+          "The host-aggregate adaptor is one SQLite database that aggregates many hosts and has no Postgres database."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -1811,6 +1826,13 @@
             "plan_questions": "run-2is.1",
             "dev_questions": "run-2is.2"
           }
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -2051,11 +2073,15 @@
       "scope": "a bead that adds, removes, or generates a store adaptor",
       "deterministic_check": "store-sqlite contains no Postgres SQL, and store-postgres contains no SQLite SQL.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Each database engine's SQL is in that engine's store crate."
+        ],
+        "fail": [
+          "Postgres SQL is in the SQLite store crate."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -2087,6 +2113,13 @@
             "deterministic_check"
           ],
           "previous_statement": "Generated SQLite code and generated Postgres code are separate files."
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -2423,11 +2456,15 @@
       "scope": "a bead that edits template crate manifests or generation of package names",
       "deterministic_check": "Two projects with different names produce no package name in common.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "A generated crate's package name is the project name, a hyphen, and its role."
+        ],
+        "fail": [
+          "A generated crate's package name is its role alone, and the project name is not part of that name."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 4,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -2458,6 +2495,20 @@
             "deterministic_check"
           ],
           "previous_statement": "A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema."
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:17:07+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -2475,11 +2526,15 @@
       "scope": "a bead that adds or generates the schema crate or the types crate",
       "deterministic_check": "The schema crate contains the row structs. The types crate contains no database row struct. The adaptor depends on the schema crate.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Row type structs are in the schema crate. The types crate is for non-database types."
+        ],
+        "fail": [
+          "Row type structs are in the types crate, and the schema crate holds no row structs."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -2501,6 +2556,13 @@
             "plan_questions": "run-3mg.1",
             "dev_questions": "run-3mg.2"
           }
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },

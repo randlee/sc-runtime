@@ -620,7 +620,7 @@ Anchor: The copy adaptor is a local SQLite database with the remote schema, for 
 
 > The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Copy adaptor matches the remote schema
 
@@ -630,13 +630,17 @@ Deterministic check to pair with the development gate: A generated copy adaptor 
 
 Beads: anchor `run-5zk`, plan questions `run-5zk.1`, dev questions `run-5zk.2`
 
+Fixtures:
+- pass: The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+- fail: The copy adaptor keeps a schema that differs from the remote database.
+
 ## REQ-RUN-0315
 
 Anchor: The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
 
 > The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Host aggregate collects many hosts
 
@@ -645,6 +649,10 @@ Scope: a bead that adds, removes, or generates a store adaptor
 Deterministic check to pair with the development gate: A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.
 
 Beads: anchor `run-2is`, plan questions `run-2is.1`, dev questions `run-2is.2`
+
+Fixtures:
+- pass: The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
+- fail: The host-aggregate adaptor is one SQLite database that aggregates many hosts and has no Postgres database.
 
 ## REQ-RUN-0316
 
@@ -732,7 +740,7 @@ Anchor: Each database engine's SQL is in that engine's store crate.
 
 > Generated SQLite code and generated Postgres code are separate files.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 3.
 
 Summary: SQL stays in that engine's crate
 
@@ -741,6 +749,10 @@ Scope: a bead that adds, removes, or generates a store adaptor
 Deterministic check to pair with the development gate: store-sqlite contains no Postgres SQL, and store-postgres contains no SQLite SQL.
 
 Beads: anchor `run-iuv`, plan questions `run-iuv.1`, dev questions `run-iuv.2`
+
+Fixtures:
+- pass: Each database engine's SQL is in that engine's store crate.
+- fail: Postgres SQL is in the SQLite store crate.
 
 ## REQ-RUN-0322
 
@@ -864,7 +876,7 @@ Anchor: A generated crate's package name is the project name, a hyphen, and its 
 
 > A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 4.
 
 Summary: Package name carries the project name
 
@@ -874,13 +886,17 @@ Deterministic check to pair with the development gate: Two projects with differe
 
 Beads: anchor `run-3q5`, plan questions `run-3q5.1`, dev questions `run-3q5.2`
 
+Fixtures:
+- pass: A generated crate's package name is the project name, a hyphen, and its role.
+- fail: A generated crate's package name is its role alone, and the project name is not part of that name.
+
 ## REQ-RUN-0330
 
 Anchor: Row type structs are in the schema crate. The types crate is for non-database types.
 
 > Row type structs are in the schema crate. The types crate is for non-database types.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Row structs are in the schema crate
 
@@ -889,6 +905,10 @@ Scope: a bead that adds or generates the schema crate or the types crate
 Deterministic check to pair with the development gate: The schema crate contains the row structs. The types crate contains no database row struct. The adaptor depends on the schema crate.
 
 Beads: anchor `run-3mg`, plan questions `run-3mg.1`, dev questions `run-3mg.2`
+
+Fixtures:
+- pass: Row type structs are in the schema crate. The types crate is for non-database types.
+- fail: Row type structs are in the types crate, and the schema crate holds no row structs.
 
 ## REQ-RUN-0331
 
