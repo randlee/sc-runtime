@@ -36,7 +36,7 @@ vertical_rationale: The six layouts are one answers contract. Accepting Postgres
 
 ## Goal
 
-`just new` (`scripts/new_project.py`) creates an application in any layout from REQ-RUN-0326: no database, SQLite only, Postgres only, MySQL only, SQLite plus Postgres, or SQLite plus MySQL. A two-store layout renders the adaptor from `b-7`. A one-store layout renders that store and no adaptor. A no-database layout renders no store crate and no adaptor.
+`just new` (`scripts/new_project.py`) creates an application in any layout from REQ-RUN-0326: no database, SQLite only, Postgres only, MySQL only, SQLite plus Postgres, or SQLite plus MySQL. Postgres only and MySQL only are the two layouts for one sqlx SQL engine. SQLite plus Postgres and SQLite plus MySQL are the two layouts for SQLite plus one sqlx SQL engine. A two-store layout renders the adaptor from `b-7`. A one-store layout renders that store and no adaptor. A no-database layout renders no store crate and no adaptor.
 
 The library crate `sc-runtime` does not generate any of this.
 
