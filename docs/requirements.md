@@ -955,9 +955,9 @@ criterion 2 runs the real binary only on an isolated runner.
    same envelope as criterion 1 and a non-zero exit status, and that
    afterwards the instance root contains no `daemon.lock`, no `daemon.sock`
    and no database file.
-3. `cargo tree -p cli -e normal --prefix none` in the generated project
-   prints no line beginning with `sqlx `, `service ` or `store-sqlite ` (the
-   name followed by a space).
+3. `cargo tree -p <project>-cli -e normal --prefix none` in the generated project
+   prints no line beginning with `sqlx `, `<project>-service `, or a store package (the
+   name followed by a space). Amended 2026-10-25. v0.1 rendered the package as `cli`.
 4. A host-safe test gives the same CLI reporting path a transport failure that is not
    `DaemonNotRunning` (an undecodable response body) and asserts that
    `error.code` is not `"DAEMON.NOT_RUNNING"`. How a non-2xx response reaches
@@ -1385,18 +1385,25 @@ item.
 
 `template/` in the `randlee/sc-runtime` repository MUST be a standard
 `cargo-generate` template (configured by `template/cargo-generate.toml`)
-that renders a Cargo workspace with this layout. "v0.1" means the first
-release, in which the only database option is SQLite.
+that renders a Cargo workspace. Which crates render follows
+[REQ-RUN-0326](requirements.md). Package names are `<project>-<role>`
+([REQ-RUN-0329](requirements.md)). "v0.1" means the first release, in which
+the only database option was SQLite and the package names were the role
+names below. Amended 2026-10-25.
 
 ```text
 <project>/
   Cargo.toml                  # workspace
   crates/
-    api-types/                # request and response structs
-    store-sqlite/             # pool, migrations/, queries, sqlx.toml, .sqlx/
-    service/                  # async service functions
-    daemon/                   # src/main.rs, src/routes.rs, src/mcp.rs
-    cli/                      # clap commands
+    api-types/                # always; rendered package <project>-types
+    schema/                   # when the layout has a store; package <project>-schema
+    store-sqlite/             # when the layout includes SQLite
+    store-postgres/           # when the layout's engine is Postgres
+    store-mysql/              # when the layout's engine is MySQL
+    store-adaptor/            # when the layout has two stores
+    service/                  # always
+    daemon/                   # always; src/main.rs, src/routes.rs, src/mcp.rs
+    cli/                      # always
   config/
     default.json
   Justfile
@@ -1405,6 +1412,10 @@ release, in which the only database option is SQLite.
   .gitignore                  # lists config/local.json
   .github/workflows/ci.yml
 ```
+
+A no-database layout renders no `schema` crate, no `store-*` crate, and no
+adaptor. A one-store layout renders that store and no adaptor. A two-store
+layout renders SQLite, that layout's one sqlx engine, and the adaptor.
 
 1. `crates/daemon/src/mcp.rs` MUST be rendered only when the option `mcp` is
    `true`.
@@ -1420,11 +1431,17 @@ release, in which the only database option is SQLite.
 
    | Crate | MUST depend on | Why it is a separate crate |
    |---|---|---|
-   | `api-types` | `serde`, `schemars`, `utoipa` | shared by `daemon` and `cli`, so both compile against the same structs and no client code generator is needed |
-   | `store-sqlite` | `sqlx` with the `sqlite` feature | `sqlx` 0.9 checks queries against one database per crate |
-   | `service` | `api-types`, `store-sqlite`; the `sc-command` items `OpError` (default features, see below) | the single code path to SQL, called by REST handlers and MCP tools |
-   | `daemon` | `service`, `api-types`, `sc-runtime`, `sc-config`; the `sc-command` items `Envelope<T>` and `into_mcp()`, which need its `server` cargo feature (see below) | owns the wiring: which routes exist and what they call |
-   | `cli` | `api-types`, `sc-transport`, `sc-command`, `sc-config` | thin HTTP client |
+   | `<project>-types` | `serde`, `schemars`, `utoipa` | shared by `daemon` and `cli`, so both compile against the same structs and no client code generator is needed |
+   | `<project>-schema`, when the layout has a store | no SQL crate | row structs |
+   | each `<project>-store-*` the layout renders | `sqlx` with that engine's feature | `sqlx` 0.9 checks queries against one database per crate |
+   | `<project>-store-adaptor`, on a two-store layout | `<project>-schema` and the store crates whose rows it moves | moves rows between those stores |
+   | `<project>-service` | `<project>-types`; the adaptor on a two-store layout, or that one store on a one-store layout; the `sc-command` items `OpError` (default features, see below) | the single code path to SQL, called by REST handlers and MCP tools |
+   | `<project>-daemon` | `<project>-service`, `<project>-types`, `sc-runtime`, `sc-config`; the `sc-command` items `Envelope<T>` and `into_mcp()`, which need its `server` cargo feature (see below) | owns the wiring: which routes exist and what they call |
+   | `<project>-cli` | `<project>-types`, `sc-transport`, `sc-command`, `sc-config` | thin HTTP client |
+
+   Amended 2026-10-25. A one-store layout has no adaptor row. A no-database
+   layout has no schema row, no store row, and no adaptor row, and `service`
+   depends on `<project>-types` and `sc-command` only.
 
    The sc-runtime design's dependency table omits three of these edges. They
    follow from its own code: service functions return `OpError`, which is
@@ -1494,8 +1511,9 @@ REST and MCP have exactly one place to call.
 
 1. For each answers file in `wizard/fixtures/`, render the project with the
    driver (`just new <dest> --var-file <fixture>`) and assert
-   every path in the layout above exists, with `crates/daemon/src/mcp.rs`
-   present exactly when the fixture's `mcp` is `true`.
+   the paths that layout includes exist, and that the store and adaptor
+   directories that layout excludes do not. `crates/daemon/src/mcp.rs` is
+   present exactly when the fixture's `mcp` is `true`. Amended 2026-10-25.
 2. In each rendered project, `cargo metadata --format-version 1` shows the
    package names `<project>-<role>` for the crates that layout renders:
    `types`, `schema`, each store, the adaptor when the layout has two stores,
@@ -1974,7 +1992,7 @@ It MUST have these properties:
 | Database URL variable | `crates/store-sqlite/sqlx.toml` names `SQLITE_DATABASE_URL` as the variable the `sqlx` macros read, so a second store crate with a different variable can build in the same workspace later |
 | Offline data | `crates/store-sqlite/.sqlx/` is produced by `just db-prepare`. It is checked in to git in this repository as `template/crates/store-sqlite/.sqlx/` and rendered into every generated project, which checks it in with its first commit |
 | Public API | `open(cfg) -> Result<Store>`, which opens both pools and runs the migrations, plus typed async query functions (for the example: insert a widget, fetch a widget) |
-| Callers | the adaptor depends on each `store-*` crate whose rows it moves; `service` depends on the adaptor; `daemon` and `cli` do not depend on a store crate. REST handlers, MCP tools, and the CLI never call a store crate. Amended 2026-10-25 |
+| Callers | A two-store layout: the adaptor depends on each `store-*` crate whose rows it moves, and `service` depends on the adaptor. A one-store layout has no adaptor, and `service` depends on that store. `daemon` and `cli` do not depend on a store crate. REST handlers, MCP tools, and the CLI never call a store crate. Amended 2026-10-25 |
 
 The crate MUST NOT contain a write actor, a queue or any other custom
 concurrency code; the two-pool arrangement is the whole mechanism.
@@ -3416,10 +3434,10 @@ this order and MUST fail when any of them exits non-zero:
    at 1.5.0, does not require `sc-observability-otlp`, and the logging-crate
    token does not match `sc-observability-types`.
 5. `just build-cli` inside the generated project at `<dest>`. It includes
-   `cargo tree -p cli -e normal --prefix none`.
+   `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
 6. `just build-daemon` inside the generated project at `<dest>`. It includes
-   `cargo tree -p daemon -e normal --prefix none` and fails when that output
-   contains a `tempfile` or `tempdir` line.
+   `cargo tree -p <project>-daemon -e normal --prefix none` and fails when that output
+   contains a `tempfile` or `tempdir` line. Amended 2026-10-25.
 7. Once the selection question of [NFR-RUN-0010](requirements.md) is
    decided: the generated project's daemon-process tests (the tests that
    start the generated `daemon` binary),
@@ -3492,9 +3510,9 @@ would be tested against the old crate code.
    `just new` with `--var-file`, then `just setup`, then `just lint`, then
    `just test`, then `just build-cli`, then `just build-daemon` in the
    generated directory. `just build-cli` includes
-   `cargo tree -p cli -e normal --prefix none`. `just test` includes the
+   `cargo tree -p <project>-cli -e normal --prefix none`. `just test` includes the
    observability grep from the command list above. `just build-daemon`
-   includes `cargo tree -p daemon -e normal --prefix none` and that output
+   includes `cargo tree -p <project>-daemon -e normal --prefix none` and that output
    contains no `tempfile` or `tempdir` line. Those checks run because the
    job runs the recipes. They are not a separate manual step.
 2. A run of that workflow shows one matrix entry per file in
@@ -3609,14 +3627,16 @@ To make that possible:
   `sc-runtime` crate, the `service` crate, the `daemon` crate or any
   `store-*` crate.
 
-Sprint a-1 measured both selections and closed this question. `cargo build -p cli`
-is the normative selection. A workspace-wide build is exempt: under
-`cargo build --workspace` the CLI graph may contain `axum`, `rmcp`, and
-`sqlx` because cargo unifies the `server` feature. Splitting `sc-transport`
-and `sc-command` into client and server crates is rejected for v0.1. a-6 owns
-`cargo tree -p cli -e normal` on the generated project. a-5 does not run that
-command. The measurement is the sprint a-1 evidence record in
-`docs/architecture.md`.  
+Sprint a-1 measured both selections and closed this question. The normative
+selection is `cargo build -p <project>-cli`. v0.1 rendered that package as
+`cli`, and a-6 measured `cargo tree -p cli -e normal` on that package. Sprint
+`b-8` renders the package as `<project>-cli` and the daemon package as
+`<project>-daemon` ([REQ-RUN-0329](requirements.md)). Amended 2026-10-25. A
+workspace-wide build is exempt: under `cargo build --workspace` the CLI graph
+may contain `axum`, `rmcp`, and `sqlx` because cargo unifies the `server`
+feature. Splitting `sc-transport` and `sc-command` into client and server
+crates is rejected for v0.1. a-5 does not run that command. The measurement
+is the sprint a-1 evidence record in `docs/architecture.md`.  
 **OPEN:** the recipe or command by which a generated project builds and
 releases its `cli` binary (so that it is built with `-p`) is not decided. The
 public recipes of the sc-lint 0.8.0 install do not include a build recipe.

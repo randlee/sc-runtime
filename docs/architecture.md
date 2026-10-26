@@ -477,15 +477,18 @@ entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
    each of the four crates, and `cargo test -p sc-transport --features server`
    and `cargo test -p sc-command --features server`.
 8. The property "a CLI links none of axum, rmcp or sqlx" is defined for a CLI
-   built as its own selection, `cargo build -p cli`
+   built as its own selection, `cargo build -p <project>-cli`
    ([NFR-RUN-0001](requirements.md), which owns the property and its criterion).
+   v0.1 rendered that package as `cli`. Amended 2026-10-25.
 
 The edge `sc-runtime` -> `sc-config` is absent. `sc-runtime` does not depend
 on `sc-config` and does not load configuration
 ([NFR-RT-0002](sc-runtime/requirements.md)).
 
 Sprint a-1 measured both selections on `examples/spike` and closed this
-question. `cargo build -p cli` is the normative selection. A workspace-wide
+question. `cargo build -p cli` is the normative selection measured on that
+spike. The generated package name is now `<project>-cli`
+([NFR-RUN-0001](requirements.md)). Amended 2026-10-25. A workspace-wide
 build is exempt from the property in point 8. Splitting `sc-transport` and
 `sc-command` into client and server crates is rejected for v0.1. a-6 owns
 the generated-project check `cargo tree -p cli -e normal`. a-5 does not run
@@ -1598,9 +1601,10 @@ variable, so two such crates can build in one workspace.
    implements `Display` and `std::error::Error`. `RowRecord.payload` is UTF-8
    JSON whose keys are column names. `EngineStore` is static dispatch.
    Amended 2026-10-25.
-3. Only `store-*` crates depend on sqlx. The adaptor depends on the `store-*`
-   crates whose rows it moves. `service` depends on the adaptor. `daemon` and
-   `cli` do not depend on `store-*`. Amended 2026-10-25.
+3. Only `store-*` crates depend on sqlx. A two-store layout's adaptor depends
+   on the `store-*` crates whose rows it moves, and `service` depends on the
+   adaptor. A one-store layout has no adaptor, and `service` depends on that
+   store. `daemon` and `cli` do not depend on `store-*`. Amended 2026-10-25.
 4. A SQL query is written for one backend. No layer runs one SQL string on
    more than one engine. Stores in one application use the same schema or a
    similar schema, and one shared trait or a different trait per store
@@ -1641,8 +1645,9 @@ measures write contention; it is not part of v0.1.
 
 **Enforced by:** the generated workspace's dependency edges, inspected with
 `cargo metadata` per fixture ([REQ-RUN-0301](requirements.md)): only `store-*` crates depend
-on sqlx; the adaptor depends on the `store-*` crates whose rows it moves;
-`service` depends on the adaptor; `arch-qa` review for points 4 to 6.
+on sqlx; a two-store layout's adaptor depends on the `store-*` crates whose
+rows it moves and `service` depends on the adaptor; a one-store layout has no
+adaptor and `service` depends on that store; `arch-qa` review for points 4 to 6.
 Amended 2026-10-25.
 
 ### Related Documents
