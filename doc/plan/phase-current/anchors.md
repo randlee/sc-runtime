@@ -1188,7 +1188,6 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-1`: Sprint b-1 does not carry this obligation.
 - `b-2`: Sprint b-2 does not carry this obligation.
 - `b-3`: Sprint b-3 does not carry this obligation.
-- `b-4`: Sprint b-4 does not carry this obligation.
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.

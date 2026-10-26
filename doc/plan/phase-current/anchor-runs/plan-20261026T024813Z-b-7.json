@@ -1,0 +1,1267 @@
+{
+  "schema": "plan-anchoring/run/1",
+  "run_id": "plan-20261026T024813Z-b-7",
+  "gate": "plan",
+  "created_at": "2026-10-26T02:48:13+00:00",
+  "anchors_path": "doc/plan/phase-current/anchors.json",
+  "plan": "phase-current",
+  "item": {
+    "id": "b-7",
+    "title": "store adaptor",
+    "source": "doc/plan/phase-current/anchor-runs/items/sprint-b-7-store-adaptor.md",
+    "chars": 5278,
+    "truncated": false,
+    "chars_before_reduction": 5278,
+    "code_reduced": {
+      "blocks": 0,
+      "lines": 0
+    }
+  },
+  "model_requested": "jev-latest",
+  "model_answered": "jev-1.14.0",
+  "threshold": 0.6,
+  "max_request_bytes": 24000,
+  "min_item_chars": 2000,
+  "dry_run": false,
+  "fixture": false,
+  "results": [
+    {
+      "anchor_id": "ADR-RUN-0305",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0305",
+      "statement": "SQLite and Postgres meet in an adaptor crate generated into the consumer repository.",
+      "quote": "SQLite and Postgres meet in an adaptor crate generated into the consumer repository.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "docs/architecture.md contains ADR-RUN-0305.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "near_threshold": true,
+      "unstable": true,
+      "answers_second": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.72,
+          "probabilities": {
+            "yes": 0.81,
+            "no": 0.16,
+            "unclear": 0.03
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.94,
+          "probabilities": {
+            "yes": 0.04,
+            "no": 0.96,
+            "unclear": 0.0
+          }
+        }
+      },
+      "verdict_first": "underspecified",
+      "verdict_second": "satisfied",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.53,
+          "probabilities": {
+            "yes": 0.69,
+            "no": 0.24,
+            "unclear": 0.07
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.92,
+          "probabilities": {
+            "yes": 0.04,
+            "no": 0.95,
+            "unclear": 0.01
+          }
+        }
+      },
+      "min_confidence": 0.53,
+      "explanation": "Jev was not confident (min confidence 0.53); the anchor or the bead may be underspecified.",
+      "usage": {
+        "input_tokens": 2533,
+        "output_tokens": 117
+      },
+      "low_questions": [
+        {
+          "ask": "first",
+          "role": "compliance",
+          "question_id": "addressed",
+          "choice": "yes",
+          "confidence": 0.53
+        }
+      ],
+      "attempts": 2,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8291
+    },
+    {
+      "anchor_id": "REQ-RUN-0313",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0313",
+      "statement": "The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.",
+      "quote": "The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "A generated repository contains an adaptor crate that names both stores.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.86,
+          "probabilities": {
+            "yes": 0.91,
+            "no": 0.07,
+            "unclear": 0.02
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.48,
+          "probabilities": {
+            "yes": 0.31,
+            "no": 0.65,
+            "unclear": 0.04
+          }
+        }
+      },
+      "min_confidence": 0.48,
+      "explanation": "Jev was not confident (min confidence 0.48); the anchor or the bead may be underspecified.",
+      "usage": {
+        "input_tokens": 2544,
+        "output_tokens": 117
+      },
+      "low_questions": [
+        {
+          "ask": "first",
+          "role": "conflict",
+          "question_id": "contradicted",
+          "choice": "no",
+          "confidence": 0.48
+        }
+      ],
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8350
+    },
+    {
+      "anchor_id": "REQ-RUN-0325",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0325",
+      "statement": "The sc-runtime crates do not move rows between stores.",
+      "quote": "The sc-runtime crates do not move rows between stores.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "crates/ contains no store-to-store copy.",
+      "kind": "prohibition",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "underspecified",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.35,
+          "probabilities": {
+            "yes": 0.42,
+            "no": 0.57,
+            "unclear": 0.01
+          }
+        }
+      },
+      "min_confidence": 0.35,
+      "explanation": "Jev was not confident (min confidence 0.35); the anchor or the bead may be underspecified.",
+      "usage": {
+        "input_tokens": 2529,
+        "output_tokens": 117
+      },
+      "low_questions": [
+        {
+          "ask": "first",
+          "role": "conflict",
+          "question_id": "contradicted",
+          "choice": "no",
+          "confidence": 0.35
+        }
+      ],
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8261
+    },
+    {
+      "anchor_id": "REQ-RUN-0314",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0314",
+      "statement": "The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.",
+      "quote": "The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "A generated copy adaptor creates the shared remote tables in SQLite.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2537,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8304
+    },
+    {
+      "anchor_id": "REQ-RUN-0315",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0315",
+      "statement": "The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.",
+      "quote": "The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2542,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8322
+    },
+    {
+      "anchor_id": "REQ-RUN-0316",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0316",
+      "statement": "The consumer repository defines the rollup from host rows into the Postgres aggregate.",
+      "quote": "The consumer repository defines the rollup from host rows into the Postgres aggregate.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "The host-aggregate adaptor has a consumer-owned function that maps host rows into the Postgres aggregate.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.95,
+          "probabilities": {
+            "yes": 0.03,
+            "no": 0.97,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.95,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2534,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8293
+    },
+    {
+      "anchor_id": "REQ-RUN-0319",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0319",
+      "statement": "Generation flags name tables and columns that exist on only one of the two stores. A skipped table may be the SQLite table or the SQL-server table.",
+      "quote": "Generation flags name tables and columns that exist on only one of the two stores.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 3,
+      "deterministic_check": "Generation input can name a SQLite-only table, a SQL-server-only table, and a column that exists on only one side.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.98,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.97,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2548,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8354
+    },
+    {
+      "anchor_id": "REQ-RUN-0320",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0320",
+      "statement": "Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.",
+      "quote": "Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "Two generated repositories that select the same pattern contain the same adaptor implementation.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.97,
+          "probabilities": {
+            "yes": 0.02,
+            "no": 0.98,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.97,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2544,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8360
+    },
+    {
+      "anchor_id": "REQ-RUN-0322",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0322",
+      "statement": "An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.",
+      "quote": "An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 3,
+      "deterministic_check": "A third adaptor is a file the consumer wrote.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.92,
+          "probabilities": {
+            "yes": 0.95,
+            "no": 0.04,
+            "unclear": 0.01
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.86,
+          "probabilities": {
+            "yes": 0.08,
+            "no": 0.91,
+            "unclear": 0.01
+          }
+        }
+      },
+      "min_confidence": 0.86,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2545,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8340
+    },
+    {
+      "anchor_id": "REQ-RUN-0323",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0323",
+      "statement": "Store synchronization is scheduled by the consuming application. The adaptor starts no timer.",
+      "quote": "Store synchronization is scheduled by the consuming application. The adaptor starts no timer.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "The adaptor crate starts no timer. A schedule is registered by application code.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 0.0,
+            "no": 1.0,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 1.0,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2533,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8300
+    },
+    {
+      "anchor_id": "REQ-RUN-0324",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0324",
+      "statement": "The consumer adaptor moves rows between the local store and the remote store.",
+      "quote": "The consumer adaptor moves rows between the local store and the remote store.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "The adaptor crate contains the copy from one store to the other.",
+      "kind": "directive",
+      "leaning": "satisfied",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "satisfied",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.01,
+            "no": 0.99,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.98,
+      "explanation": "The directive is carried forward.",
+      "usage": {
+        "input_tokens": 2532,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 5278,
+      "item_shortened": false,
+      "request_bytes": 8284
+    },
+    {
+      "anchor_id": "ADR-RUN-0002",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0002",
+      "statement": "sc-runtime is a cargo-generate template plus published library crates.",
+      "quote": "sc-runtime is a cargo-generate template plus published library crates.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "Generated projects depend on the library crates by version, and template code is rendered into the project.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "ADR-RUN-0013",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0013",
+      "statement": "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "quote": "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "docs/architecture.md contains ADR-RUN-0013 and docs/sc-cron/requirements.md contains REQ-CRON-0001 through REQ-CRON-0005.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-CRON-0001",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0001",
+      "statement": "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.",
+      "quote": "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "Cargo.toml members include crates/sc-cron, and that crate depends on no other workspace crate.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-CRON-0002",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0002",
+      "statement": "A sc-cron schedule is a normal crontab string of five fields: minute, hour, day of month, month, and day of week.",
+      "quote": "CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 3,
+      "deterministic_check": "A test expects parsing */5 * * * * to mean every fifth minute.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-CRON-0003",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0003",
+      "statement": "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.",
+      "quote": "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "crates/sc-cron runs a Rust job or python3 <module> cron.tick or cron.stop with JSON on stdin, and has no HTTP route, MCP tool, or binary.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-CRON-0004",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0004",
+      "statement": "The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables.",
+      "quote": "The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "A test writes a schedule row without constructing SqliteWriter.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-CRON-0005",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0005",
+      "statement": "Fallible public functions in sc-cron return CronError.",
+      "quote": "Fallible public functions in sc-cron return CronError.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "The public error type in crates/sc-cron is CronError.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0317",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0317",
+      "statement": "Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py).",
+      "quote": "Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py).",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "just new writes the adaptor crate and its models into the new repository.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0318",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0318",
+      "statement": "The library crate named sc-runtime does not generate adaptor code.",
+      "quote": "The library crate named sc-runtime does not generate adaptor code.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "crates/sc-runtime contains no generator.",
+      "kind": "prohibition",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0321",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0321",
+      "statement": "Each database engine's SQL is in that engine's store crate.",
+      "quote": "Generated SQLite code and generated Postgres code are separate files.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 3,
+      "deterministic_check": "store-sqlite contains no Postgres SQL, and store-postgres contains no SQLite SQL.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0326",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0326",
+      "statement": "A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.",
+      "quote": "A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 3,
+      "deterministic_check": "wizard/answers.schema.json accepts no database, SQLite only, one sqlx SQL engine, and SQLite plus one sqlx SQL engine.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0327",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0327",
+      "statement": "Two stores in one application use the same schema or a similar schema.",
+      "quote": "Two stores in one application use the same schema or a similar schema.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "The copy pattern uses the same schema on both stores. The host-aggregate pattern uses a similar schema.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0328",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0328",
+      "statement": "Two stores in one application use one shared trait or a different trait per store.",
+      "quote": "Two stores in one application use one shared trait or a different trait per store.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "A generated pair names one trait that both stores implement, or a trait for each store.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0329",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0329",
+      "statement": "A generated crate's package name is the project name, a hyphen, and its role.",
+      "quote": "A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 4,
+      "deterministic_check": "Two projects with different names produce no package name in common.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0330",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0330",
+      "statement": "Row type structs are in the schema crate. The types crate is for non-database types.",
+      "quote": "Row type structs are in the schema crate. The types crate is for non-database types.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "The schema crate contains the row structs. The types crate contains no database row struct. The adaptor depends on the schema crate.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0331",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0331",
+      "statement": "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.",
+      "quote": "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "A generated project with a store registers delete row <table> <id> on the CLI, MCP, and HTTP, and a flag removes those commands.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    },
+    {
+      "anchor_id": "REQ-RUN-0503",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0503",
+      "statement": "A project generated by just new passes lint, test, and both builds with no file edited.",
+      "quote": "A project generated by just new passes lint, test, and both builds with no file edited.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "just new on the sqlite fixture exits 0, and just lint, just test, just build-cli, and just build-daemon exit 0 with no file edited.",
+      "kind": "directive",
+      "leaning": null,
+      "verdict": "excluded",
+      "answers": null,
+      "min_confidence": null,
+      "exclusion": {
+        "item": "b-7",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      "explanation": "Excluded from this bead by the anchor's exclude list: Sprint b-7 does not carry this obligation.",
+      "attempts": 0
+    }
+  ],
+  "summary": {
+    "counts": {
+      "underspecified": 3,
+      "satisfied": 8,
+      "excluded": 17
+    },
+    "failing": [
+      "ADR-RUN-0305",
+      "REQ-RUN-0313",
+      "REQ-RUN-0325"
+    ],
+    "leaning_counts": {
+      "satisfied": 11
+    },
+    "unstable": [
+      "ADR-RUN-0305"
+    ],
+    "errors": [],
+    "excluded": [
+      {
+        "anchor_id": "ADR-RUN-0002",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "ADR-RUN-0013",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-CRON-0001",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-CRON-0002",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-CRON-0003",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-CRON-0004",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-CRON-0005",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0317",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0318",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0321",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0326",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0327",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0328",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0329",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0330",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0331",
+        "reason": "Sprint b-7 does not carry this obligation."
+      },
+      {
+        "anchor_id": "REQ-RUN-0503",
+        "reason": "Sprint b-7 does not carry this obligation."
+      }
+    ],
+    "shortened": [],
+    "pass": false
+  }
+}

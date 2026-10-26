@@ -4666,6 +4666,11 @@
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-26T02:47:58+00:00",
+          "event": "exclusion_removed",
+          "item": "b-4"
         }
       ],
       "exclude": [
@@ -4680,10 +4685,6 @@
         {
           "item": "b-3",
           "reason": "Sprint b-3 does not carry this obligation."
-        },
-        {
-          "item": "b-4",
-          "reason": "Sprint b-4 does not carry this obligation."
         },
         {
           "item": "b-5",

@@ -24,9 +24,9 @@ owned_paths:
   - crates/sc-transport/
   - crates/sc-command/
   - crates/sc-runtime/
-  - template/
+  - template/sc-lint.toml
 must_follow: []
-parallel_safe: [b-1]
+parallel_safe: [b-1, b-4]
 recommended_agent: arch-ctm
 recommended_model: terra
 vertical_rationale: One lint profile. Splitting the host analyzers from the Windows cross-check would make both sprints edit sc-lint.toml.
@@ -65,16 +65,28 @@ A `just lint` step searches `crates/` (including `sc-runtime-db-sqlite` once tha
 
 The clippy step `just lint` already runs passes `-D clippy::await_holding_lock` as well. That is [ADR-RUN-0011](../../architecture.md) point 2. arch-qa still reviews a guard the lint cannot name.
 
-## Tasks
+At this sprint's close the two cross commands are package-scoped to `sc-config`, `sc-transport`, `sc-command`, and `sc-runtime`. The recipe keeps the workspace form for later sprints. A failure outside the owned paths is not this sprint's failure.
+
+## Deliverables
 
 1. ADR-RUN-0005: regenerate `sc-lint.toml`, re-apply the steps above, and fix every warning the new steps report under the owned paths.
 2. ADR-RUN-0011: add the grep step to the `Justfile` recipe that `just lint` already runs.
 3. ADR-RUN-0011: declare `cargo-xwin` and run the two cross commands. Fix the warnings they report under the same allow rule.
 
+## Acceptance criteria
+
+Root: `boundary:host-lint-profile` and [ADR-RUN-0011](../../architecture.md).
+
+- The new profile exits 0 on the paths this sprint owns: `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`, `crates/sc-runtime`, `sc-lint.toml`, `Justfile`, `.sc-lint/install.json`, and `template/sc-lint.toml`.
+- A violation of ADR-RUN-0011 point 1 under any other path is not this sprint's failure.
+- A non-test `tokio::time::sleep` under an owned path fails the grep. `yield_now` does not.
+- Warning fixes land only under the owned paths. A warning in a file `b-4` or `b-8` owns is fixed in that sprint.
+
 ## Required validation
 
-- `just lint` exits 0 on macOS and on Linux.
-- A non-test `tokio::time::sleep` added under `crates/` fails the grep. `yield_now` does not.
+- `rg -n 'std::thread::sleep|std::thread::sleep_until|tokio::time::sleep|tokio::time::sleep_until|Runtime::block_on|Handle::block_on|futures::executor::block_on' crates/sc-config crates/sc-transport crates/sc-command crates/sc-runtime` exits 1.
+- A non-test `tokio::time::sleep` added under `crates/sc-runtime` fails that command. `yield_now` does not.
+- `cargo xwin check -p sc-config -p sc-transport -p sc-command -p sc-runtime --target x86_64-pc-windows-msvc` exits 0 on macOS and on Linux.
 
 ## Non-goals
 
