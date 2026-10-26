@@ -53,13 +53,16 @@ Port beads-cache `crates/sc-cron` into this workspace as specified in [architect
 
 Implement the types in [docs/sc-cron/architecture.md](../../sc-cron/architecture.md): `CronExpr`, `CronError`, `ScheduleSpec`, `HookTarget`, `Scheduler`, `Job`, `RunOutcome`, `StopDecision`. `HookTarget` is `Rust` or `Python { module }`.
 
+Fallible public functions return `CronError`, the crate's one error enum. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `Store`, and `Fenced`, with the codes in [ADR-RUN-0013](../../architecture.md) point 6.
+
 ## Tasks
 
 1. REQ-RUN-0001, REQ-CRON-0001: copy the crate into `crates/sc-cron` and add the workspace member.
 2. REQ-CRON-0002: a schedule uses a normal crontab string of five fields, minute first. `*/5 * * * *` means every fifth minute. ADR-RUN-0013 also keeps a six-field seconds-first string valid.
-3. REQ-CRON-0003, REQ-CRON-0004: create one schedule table. A `Rust` row calls `Job`. A `Python` row runs `python3 <module> cron.tick` or `cron.stop` with one JSON object on stdin. Add no HTTP route, MCP tool, or binary.
-4. REQ-RUN-0005: add `boundaries/sc-cron/sc-cron.toml` with `allowed_dependents = []` and forbidden edges to every other workspace crate. Add `sc-cron` to the forbidden edges of `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-runtime-db-sqlite`.
-5. NFR-RUN-0005: tests open the schedule file under a `tempfile::TempDir`. They do not set process environment variables.
+3. REQ-CRON-0003: a `Rust` row calls `Job`. A `Python` row runs `python3 <module> cron.tick` or `python3 <module> cron.stop` and writes one JSON object to stdin. The object includes the schedule name and the row payload. It does not include ATM team or phase fields. The crate exposes no HTTP route, MCP tool, or binary.
+4. REQ-CRON-0004: the crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The crate does not migrate the consumer's other tables.
+5. REQ-RUN-0005: add `boundaries/sc-cron/sc-cron.toml` with `allowed_dependents = []` and forbidden edges to every other workspace crate. Add `sc-cron` to the forbidden edges of `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-runtime-db-sqlite`.
+6. NFR-RUN-0005: tests open the schedule file under a `tempfile::TempDir`. They do not set process environment variables.
 
 ## Required validation
 
@@ -69,7 +72,8 @@ Implement the types in [docs/sc-cron/architecture.md](../../sc-cron/architecture
 - `rg sc-cron template` prints nothing.
 - `cargo tree -p sc-cron -e normal --prefix none` prints no line `sqlx` and no workspace crate.
 - `CronExpr::parse("*/5 * * * *")` is covered by a test that expects success.
-- A test runs a Python hook with a stub interpreter and checks the argv is `python3`, the module, and `cron.tick`, and that stdin is one JSON object.
+- A test runs a Python hook with a stub interpreter and checks the argv is `python3`, the module, and `cron.tick` or `cron.stop`, and that stdin is one JSON object that includes the schedule name and the row payload and does not include ATM team or phase fields.
+- A test writes a schedule row without constructing `SqliteWriter`. The crate's migrations create only the schedule table.
 
 ## Non-goals
 

@@ -13,6 +13,7 @@ requirements:
   - REQ-RUN-0329
   - REQ-RUN-0330
   - REQ-RUN-0331
+  - REQ-RUN-0503
   - REQ-RUN-0317
   - REQ-RUN-0318
   - REQ-RUN-0303
@@ -44,11 +45,13 @@ The library crate `sc-runtime` does not generate any of this.
 1. REQ-RUN-0326: `wizard/answers.schema.json` accepts each layout.
 2. REQ-RUN-0317 and REQ-RUN-0318: `just new` writes the stores, the models, and the adaptor. `crates/sc-runtime` contains no generator.
 3. REQ-RUN-0329 and REQ-RUN-0330: each generated package name is the project name, a hyphen, and its role. Row structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
-4. REQ-RUN-0331: a layout with a store renders general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. The consumer can disable that surface. A no-database layout renders none of them.
+4. REQ-RUN-0331: a layout with a store renders general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route. A flag removes the general commands from those three surfaces. A no-database layout renders none of them.
+5. REQ-RUN-0503: `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` exits 0. With no file added, changed, or deleted, `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon` exit 0. `just setup` installs the sc-lint consumer and is not a source edit.
 
 ## Required validation
 
 - `just new` for each of the six layouts exits 0.
+- `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` exits 0. With no file added, changed, or deleted, `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon` exit 0.
 - The SQLite-only project contains `store-sqlite` and no adaptor.
 - The Postgres-only project contains `store-postgres` and no `store-sqlite`.
 - The MySQL-only project contains `store-mysql` and no `store-sqlite`.

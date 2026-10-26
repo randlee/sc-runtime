@@ -37,7 +37,7 @@ The trait is shaped for SQLite, Postgres, and MySQL. Postgres and MySQL crates a
 
 ## Tasks
 
-1. REQ-RUN-0327: the copy relationship is the same schema on both stores. The host-aggregate relationship is a similar schema. One-sided tables and columns are representable.
+1. REQ-RUN-0327: the copy pattern generates the same schema on both stores. The host-aggregate pattern generates a similar schema, with tables or columns that exist on only one side.
 2. REQ-RUN-0328: the stores name one trait both implement, or a trait per store. Both shapes are legal. The generated common patterns pick one shape and use it for every consumer.
 3. REQ-RUN-0321: SQLite SQL stays in `store-sqlite`. The trait carries no SQL string that runs on more than one engine.
 

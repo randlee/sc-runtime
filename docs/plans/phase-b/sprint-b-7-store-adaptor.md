@@ -41,8 +41,8 @@ The adaptor moves rows. It starts no timer. The application schedules it, using 
 
 ## Tasks
 
-1. REQ-RUN-0314 and REQ-RUN-0315: generate the copy adaptor and the host-aggregate adaptor.
-2. REQ-RUN-0316 and REQ-RUN-0319: the host rollup is a consumer-owned function. Flags name tables and columns that exist on only one side, in either direction.
+1. REQ-RUN-0314: generate the copy adaptor. REQ-RUN-0315: generate the host-aggregate adaptor as one SQLite database for this host and a Postgres database that aggregates many hosts.
+2. REQ-RUN-0316: the consumer repository defines the rollup, and that function maps host rows into the Postgres aggregate. REQ-RUN-0319: flags name tables and columns that exist on only one side, in either direction.
 3. REQ-RUN-0320: a consumer that selects the copy pattern gets the same adaptor implementation as every other consumer that selects it. The same for the host-aggregate pattern.
 4. REQ-RUN-0323 and REQ-RUN-0324: the adaptor moves rows and starts no timer. A schedule is application code. A cron row points at a Rust method or a Python hook, which is the `b-3` contract.
 5. REQ-RUN-0325: no crate under `crates/` in this repository moves rows between stores.
@@ -52,7 +52,7 @@ The adaptor moves rows. It starts no timer. The application schedules it, using 
 
 - The adaptor crate contains the copy from one store to the other.
 - The adaptor crate starts no timer.
-- `rg` of a store-to-store copy under `crates/sc-runtime`, `crates/sc-runtime-db-sqlite`, and `crates/sc-cron` prints nothing.
+- `crates/` contains no store-to-store copy, outbox, or routing policy.
 
 ## Non-goals
 
