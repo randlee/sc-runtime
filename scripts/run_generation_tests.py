@@ -8,12 +8,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 # `just test` discovers these suites. Generation stays byte-identical to a-6;
-# wizard tests are the a-8 contract and entry-mode checks.
+# wizard tests are the a-8 contract and entry-mode checks. The CI scope
+# classifier is not part of that frozen generation suite.
 SUITES = (
     ("unit", "generation"),
     ("integration", "generation"),
     ("unit", "wizard"),
     ("integration", "wizard"),
+    ("unit", "ci"),
 )
 
 
