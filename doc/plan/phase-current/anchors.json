@@ -1,0 +1,5092 @@
+{
+  "schema": "plan-anchoring/anchors/1",
+  "plan": "phase-current",
+  "intent_ref": "doc/plan/phase-current/intent.md",
+  "anchors": [
+    {
+      "id": "ANC-001",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface. An application command calls the same backend operation through its own CLI command, MCP tool, and HTTP route.",
+      "quote": "the 'general database commands' would be expected to be disabled by the customer. they are simply a bootstrap tool and could easily be 'replaced' w/ a command that has better ux and does a similar call on the back-end. i.e. delete row <table> <id> would be a general command which could be used 'under the hood' w/ a different cli/mcp/http call.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Bootstrap database commands the consumer can disable",
+      "scope": "a bead that edits template CLI, MCP, or HTTP commands",
+      "deterministic_check": "The generated template registers a general delete-row command on the CLI, on MCP, and over HTTP, and a generation flag omits those three registrations while the backend operation remains callable.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-8bp",
+        "plan_questions": "run-8bp.1",
+        "dev_questions": "run-8bp.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:47:23+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:47:30+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-8bp",
+            "plan_questions": "run-8bp.1",
+            "dev_questions": "run-8bp.2"
+          }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0331",
+          "reason": "The register item is REQ-RUN-0331. The plan is judged against that id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-002",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The simple local cache is a copy of the remote Postgres or SQL database with the same schema, for faster or offline access.",
+      "quote": "if local cache is a) simply a 'copy' of the remote postgres/sql database with the same schema to allow faster/offline access to data, that is the simple case.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Copy cache matches the remote schema",
+      "scope": "a bead that defines the local cache",
+      "deterministic_check": "The generated copy adaptor creates SQLite tables for the shared remote schema.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-72g",
+        "plan_questions": "run-72g.1",
+        "dev_questions": "run-72g.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:19+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-72g",
+            "plan_questions": "run-72g.1",
+            "dev_questions": "run-72g.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:34+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0314",
+          "reason": "The requirement is REQ-RUN-0314 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-003",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The host-specific cache is a cache whose Postgres or SQL database aggregates information from many hosts.",
+      "quote": "if the cache is b) host specific and the postgres/sql aggregates info from many hosts",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Host cache aggregates many hosts",
+      "scope": "a bead that defines the host-specific cache",
+      "deterministic_check": "The host-aggregate adaptor documents one SQLite database per host and a Postgres aggregate.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-egh",
+        "plan_questions": "run-egh.1",
+        "dev_questions": "run-egh.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:20+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-egh",
+            "plan_questions": "run-egh.1",
+            "dev_questions": "run-egh.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:34+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0315",
+          "reason": "The requirement is REQ-RUN-0315 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-004",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The host-aggregate cache requires logic in the consumer repository to define the aggregate.",
+      "quote": "that would be a bit more complicated and require some consumer repo logic to define.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Consumer defines the host rollup",
+      "scope": "a bead that defines the host-aggregate cache",
+      "deterministic_check": "The host-aggregate adaptor has a consumer-owned function that maps host rows into the Postgres aggregate.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-s7f",
+        "plan_questions": "run-s7f.1",
+        "dev_questions": "run-s7f.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:21+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-s7f",
+            "plan_questions": "run-s7f.1",
+            "dev_questions": "run-s7f.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:35+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0316",
+          "reason": "The requirement is REQ-RUN-0316 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-005",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Adaptor Rust code and models in a new repository are generated by the generation driver, the command just new (scripts/new_project.py). The library crate named sc-runtime does not generate them.",
+      "quote": "sc-runtime could generate a new repo w/ the adaptor rust code and models",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "just new generates the adaptor",
+      "scope": "a bead that edits scripts/new_project.py or the template",
+      "deterministic_check": "just new writes the adaptor crate and its models into the new repository. crates/sc-runtime contains no generator.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-n0i",
+        "plan_questions": "run-n0i.1",
+        "dev_questions": "run-n0i.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:22+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-n0i",
+            "plan_questions": "run-n0i.1",
+            "dev_questions": "run-n0i.2"
+          }
+        },
+        {
+          "at": "2026-10-25T19:59:37+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "A new repository with the adaptor Rust code and the models is generated by sc-runtime."
+        },
+        {
+          "at": "2026-10-25T20:00:05+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "Adaptor Rust code and models in a new repository are generated by the sc-runtime tool, the generator and template, and not by the library crate named sc-runtime."
+        },
+        {
+          "at": "2026-10-25T21:22:35+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0317",
+          "reason": "The requirement is REQ-RUN-0317 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-006",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Table skipping is allowed for an extra SQLite table and for an extra SQL-server table.",
+      "quote": "skipping tables may occur both ways (extra tables may be sqlite, may be sql/postgres server).",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Tables may be skipped either way",
+      "scope": "a bead that chooses which tables to sync",
+      "deterministic_check": "Generation input can name a SQLite-only table and a SQL-server-only table.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-goz",
+        "plan_questions": "run-goz.1",
+        "dev_questions": "run-goz.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:23+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-goz",
+            "plan_questions": "run-goz.1",
+            "dev_questions": "run-goz.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:35+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0319",
+          "reason": "The requirement is REQ-RUN-0319 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-007",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Columns added on the SQL or Postgres server are indicated by a consumer-repository flag.",
+      "quote": "consumer repo flags indicating what tables to skip, what columns are added for sql/postgres server",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Flags name server-added columns",
+      "scope": "a bead that adds generation flags",
+      "deterministic_check": "The generation input names columns that exist on the SQL server and not in SQLite.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-ey3",
+        "plan_questions": "run-ey3.1",
+        "dev_questions": "run-ey3.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:24+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ey3",
+            "plan_questions": "run-ey3.1",
+            "dev_questions": "run-ey3.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:35+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0319",
+          "reason": "The requirement is REQ-RUN-0319 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-008",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "No consumer repository uses a different implementation of one common pattern from the others.",
+      "quote": "What I want to avoid is each consuming repo making different choices about how to implement common patterns.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "One implementation per common pattern",
+      "scope": "a bead that implements a common pattern in a consumer repository",
+      "deterministic_check": "Two generated repositories that select the same pattern contain the same adaptor implementation.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-00l",
+        "plan_questions": "run-00l.1",
+        "dev_questions": "run-00l.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:25+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-00l",
+            "plan_questions": "run-00l.1",
+            "dev_questions": "run-00l.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:35+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0320",
+          "reason": "The requirement is REQ-RUN-0320 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-009",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Different code for different models is allowed on the consuming repository.",
+      "quote": "Supporting multiple models may require dropping different code on the consuming repo.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Different code per database model",
+      "scope": "a bead that generates store code for more than one database",
+      "deterministic_check": "Generated SQLite code and generated Postgres code are separate files.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-apv",
+        "plan_questions": "run-apv.1",
+        "dev_questions": "run-apv.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:26+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-apv",
+            "plan_questions": "run-apv.1",
+            "dev_questions": "run-apv.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:35+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0321",
+          "reason": "The requirement is REQ-RUN-0321 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-010",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "A more advanced adaptor is written by the consumer from the building blocks sc-runtime provides.",
+      "quote": "more advanced senarios would be completely on the consumer to write the adaptor from the building blocks we provide.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Advanced adaptors are consumer code",
+      "scope": "a bead that adds a store adaptor",
+      "deterministic_check": "An adaptor that is neither the copy pattern nor the host-aggregate pattern is a file the consumer wrote.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-xau",
+        "plan_questions": "run-xau.1",
+        "dev_questions": "run-xau.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:27+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-xau",
+            "plan_questions": "run-xau.1",
+            "dev_questions": "run-xau.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:35+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0322",
+          "reason": "The requirement is REQ-RUN-0322 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-011",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Store synchronization is scheduled by the consuming application.",
+      "quote": "scheduling of sync is on the consuming app",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "The app schedules store sync",
+      "scope": "a bead that generates a store adaptor or a sync schedule",
+      "deterministic_check": "The adaptor crate starts no timer; a schedule is registered by application code.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-ebh",
+        "plan_questions": "run-ebh.1",
+        "dev_questions": "run-ebh.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:29+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ebh",
+            "plan_questions": "run-ebh.1",
+            "dev_questions": "run-ebh.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:45+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0323",
+          "reason": "The requirement is REQ-RUN-0323 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-012",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-cron is an optional drop-in crate.",
+      "quote": "I would expect sc-cron to be a simple optional drop in",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "sc-cron is an optional crate",
+      "scope": "a bead that adds crates/sc-cron",
+      "deterministic_check": "The template builds with sc-cron absent, and a flag adds the crate.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-443",
+        "plan_questions": "run-443.1",
+        "dev_questions": "run-443.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:30+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-443",
+            "plan_questions": "run-443.1",
+            "dev_questions": "run-443.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:14:28+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-CRON-0001",
+          "reason": "The requirement is REQ-CRON-0001. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-013",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-cron configuration is one SQLite table.",
+      "quote": "that needs a sqlite table for configuration",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "sc-cron config is one SQLite table",
+      "scope": "a bead that adds the sc-cron configuration table",
+      "deterministic_check": "crates/sc-cron creates one schedule table.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-bmj",
+        "plan_questions": "run-bmj.1",
+        "dev_questions": "run-bmj.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:31+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-bmj",
+            "plan_questions": "run-bmj.1",
+            "dev_questions": "run-bmj.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:14:28+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-CRON-0004",
+          "reason": "The requirement is REQ-CRON-0004. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-014",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-cron scheduling uses normal cron strings.",
+      "quote": "scheduling would be done w/ cron strings",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "sc-cron schedules with cron strings",
+      "scope": "a bead that edits sc-cron scheduling",
+      "deterministic_check": "A schedule row stores a cron string and the parser accepts it.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-8dy",
+        "plan_questions": "run-8dy.1",
+        "dev_questions": "run-8dy.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:18+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "sc-cron scheduling uses cron strings."
+        },
+        {
+          "at": "2026-10-25T19:55:32+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-8dy",
+            "plan_questions": "run-8dy.1",
+            "dev_questions": "run-8dy.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:14:28+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-CRON-0002",
+          "reason": "The requirement is REQ-CRON-0002. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-015",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "A more sophisticated scheduling API is created by the consumer.",
+      "quote": "consumer can create more sophisticated api if they desire.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Richer scheduling API is the consumer's",
+      "scope": "a bead that adds a scheduling API",
+      "deterministic_check": "crates/sc-cron has no HTTP route, MCP tool, or binary; a consumer project may add one.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-ezk",
+        "plan_questions": "run-ezk.1",
+        "dev_questions": "run-ezk.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:33+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ezk",
+            "plan_questions": "run-ezk.1",
+            "dev_questions": "run-ezk.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:14:28+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-CRON-0003",
+          "reason": "The requirement is REQ-CRON-0003. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-016",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "A cache-sync method is either a Rust function or a Python program run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "quote": "A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook (this is what atm-core is doing today w/ atm-cron).",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Sync method is Rust or python3",
+      "scope": "a bead that adds a cache-sync method",
+      "deterministic_check": "A schedule row names a Rust function, or a Python module invoked as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-50w",
+        "plan_questions": "run-50w.1",
+        "dev_questions": "run-50w.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:34+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-50w",
+            "plan_questions": "run-50w.1",
+            "dev_questions": "run-50w.2"
+          }
+        },
+        {
+          "at": "2026-10-25T20:02:26+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "A cache-sync method is Rust code or a Python hook, as atm-cron does."
+        },
+        {
+          "at": "2026-10-25T20:04:47+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-026",
+          "reason": "The quote named atm-cron. The testability check sends the quote to Jev."
+        }
+      ]
+    },
+    {
+      "id": "ANC-017",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "beads-cache uses SQLite only.",
+      "quote": "beads-cache would be a sqlite ONLY design",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "beads-cache uses SQLite only",
+      "scope": "a bead that wires beads-cache",
+      "deterministic_check": "The beads-cache crate depends on SQLite and has no Postgres driver.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-854",
+        "plan_questions": "run-854.1",
+        "dev_questions": "run-854.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:35+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-854",
+            "plan_questions": "run-854.1",
+            "dev_questions": "run-854.2"
+          }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-018",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "beads-cache synchronization to Dolt is through the beads CLI or API.",
+      "quote": "which syncronizes w/ dolt database through beads cli/api.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "beads-cache syncs to Dolt through beads",
+      "scope": "a bead that wires beads-cache",
+      "deterministic_check": "The beads-cache sync job calls the beads CLI or API.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-rgm",
+        "plan_questions": "run-rgm.1",
+        "dev_questions": "run-rgm.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:36+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-rgm",
+            "plan_questions": "run-rgm.1",
+            "dev_questions": "run-rgm.2"
+          }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-019",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "beads-cache use of sc-runtime does not include SQL or Postgres.",
+      "quote": "it's use of sc-runtime would not include SQL/postgres which are out of scope (beads owns beads/dolt database).",
+      "kind": "prohibition",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "beads-cache does not use Postgres",
+      "scope": "a bead that wires beads-cache",
+      "deterministic_check": "beads-cache Cargo.toml has no Postgres driver and no store-postgres dependency.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-0ms",
+        "plan_questions": "run-0ms.1",
+        "dev_questions": "run-0ms.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:37+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-0ms",
+            "plan_questions": "run-0ms.1",
+            "dev_questions": "run-0ms.2"
+          }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-020",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The store relationship is defined in an adaptor crate on the consumer repository.",
+      "quote": "there needs to be a place (i.e. schema, adaptor crate) on consumer repo that defines the relationship",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "Adaptor crate defines the store relationship",
+      "scope": "a bead that adds an adaptor crate",
+      "deterministic_check": "The generated consumer repository contains an adaptor crate that names the SQLite and SQL-server relationship.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-awh",
+        "plan_questions": "run-awh.1",
+        "dev_questions": "run-awh.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:38+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-awh",
+            "plan_questions": "run-awh.1",
+            "dev_questions": "run-awh.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:34+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0313",
+          "reason": "The requirement is REQ-RUN-0313 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-021",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "A cache is forwarding of data between stores.",
+      "quote": "caching would be forwarding between stores.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "A cache forwards data between stores",
+      "scope": "a bead that adds a cache between stores",
+      "deterministic_check": "The consumer adaptor copies rows from one store to the other.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-82j",
+        "plan_questions": "run-82j.1",
+        "dev_questions": "run-82j.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:39+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-82j",
+            "plan_questions": "run-82j.1",
+            "dev_questions": "run-82j.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:35+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0324",
+          "reason": "The requirement is REQ-RUN-0324 under ADR-RUN-0305. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-022",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-runtime is a set of crates and a templating system.",
+      "quote": "sc-runtime is a set of crates and a templating system for rapidly deploying new ready to run applications.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "sc-runtime is crates plus a template",
+      "scope": "every plan bead",
+      "deterministic_check": "The repository contains crates/ and template/.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-10g",
+        "plan_questions": "run-10g.1",
+        "dev_questions": "run-10g.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:06+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:40+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-10g",
+            "plan_questions": "run-10g.1",
+            "dev_questions": "run-10g.2"
+          }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0002",
+          "reason": "The register item is ADR-RUN-0002. The plan is judged against that id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-023",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "An application deployed from sc-runtime is ready to run.",
+      "quote": "for rapidly deploying new ready to run applications.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "A generated application is ready to run",
+      "scope": "a bead that changes generation or the template",
+      "deterministic_check": "just new produces a project that passes just test with no file edited.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-v0f",
+        "plan_questions": "run-v0f.1",
+        "dev_questions": "run-v0f.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:07+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:41+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-v0f",
+            "plan_questions": "run-v0f.1",
+            "dev_questions": "run-v0f.2"
+          }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-RUN-0503",
+          "reason": "The register item is REQ-RUN-0503. The plan is judged against that id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-024",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-cron is ported as part of the phase-b sprints.",
+      "quote": "we should probably port sc-cron as part of phase-b sprints",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "sc-cron is a phase-b sprint",
+      "scope": "the phase-b plan",
+      "deterministic_check": "docs/plans/phase-b contains a sprint whose deliverable is crates/sc-cron.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-q75",
+        "plan_questions": "run-q75.1",
+        "dev_questions": "run-q75.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:07+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:42+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-q75",
+            "plan_questions": "run-q75.1",
+            "dev_questions": "run-q75.2"
+          }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-025",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The sc-cron discussion is a permanent record in the ADR or requirements documents.",
+      "quote": "so any discussion becomes perment record in the adr/req documents.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "sc-cron decisions stay in the ADR or reqs",
+      "scope": "a bead that edits docs/architecture.md or docs/requirements.md",
+      "deterministic_check": "docs/architecture.md or docs/requirements.md states the sc-cron contract.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-af2",
+        "plan_questions": "run-af2.1",
+        "dev_questions": "run-af2.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T19:55:07+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T19:55:43+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-af2",
+            "plan_questions": "run-af2.1",
+            "dev_questions": "run-af2.2"
+          }
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "retired",
+          "replaced_by": "ADR-RUN-0013",
+          "reason": "The register item is ADR-RUN-0013. The plan is judged against that id."
+        }
+      ]
+    },
+    {
+      "id": "ANC-026",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-cron is a SQLite scheduler. The caller starts a schedule, stops it, and runs one worker. A due row runs as an in-process Rust job with run and should_stop, or as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "quote": "A cache sync adaptor would expose cron sync methods which could be rust code, or could be python hook",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "planning session",
+      "summary": "SQLite cron runs a Rust job or python3",
+      "scope": "a bead that adds or edits crates/sc-cron",
+      "deterministic_check": "crates/sc-cron exposes start_async, stop_async, spawn_worker, Job::run, and Job::should_stop, and can run python3 <module> cron.tick or cron.stop with JSON on stdin.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "retired",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-oez",
+        "plan_questions": "run-oez.1",
+        "dev_questions": "run-oez.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T20:04:47+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T20:04:47+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-oez",
+            "plan_questions": "run-oez.1",
+            "dev_questions": "run-oez.2"
+          }
+        },
+        {
+          "at": "2026-10-25T20:06:22+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "A cache-sync method is either a Rust function or a Python program run as python3 <module> cron.tick or cron.stop with one JSON object on stdin."
+        },
+        {
+          "at": "2026-10-25T21:14:28+00:00",
+          "event": "retired",
+          "replaced_by": "REQ-CRON-0003",
+          "reason": "The requirement is REQ-CRON-0003. An anchor pins that register id."
+        }
+      ]
+    },
+    {
+      "id": "REQ-CRON-0001",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0001",
+      "statement": "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.",
+      "quote": "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "sc-cron is a workspace member",
+      "scope": "a bead that edits Cargo.toml or crates/sc-cron",
+      "deterministic_check": "Cargo.toml members include crates/sc-cron, and that crate depends on no other workspace crate.",
+      "fixtures": {
+        "pass": [
+          "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it."
+        ],
+        "fail": [
+          "crates/sc-cron depends on the sc-runtime library crate, and the template names sc-cron."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-4x5",
+        "plan_questions": "run-4x5.1",
+        "dev_questions": "run-4x5.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:14:20+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:14:22+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-4x5",
+            "plan_questions": "run-4x5.1",
+            "dev_questions": "run-4x5.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:08+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-CRON-0002",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0002",
+      "statement": "A sc-cron schedule is a normal crontab string of five fields: minute, hour, day of month, month, and day of week.",
+      "quote": "CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "Normal five-field crontab",
+      "scope": "a bead that edits the sc-cron expression parser",
+      "deterministic_check": "A test expects parsing */5 * * * * to mean every fifth minute.",
+      "fixtures": {
+        "pass": [
+          "A sc-cron schedule is a normal crontab string of five fields: minute, hour, day of month, month, and day of week."
+        ],
+        "fail": [
+          "A sc-cron schedule is a six-field string with seconds first, and a five-field crontab is invalid."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-8n1",
+        "plan_questions": "run-8n1.1",
+        "dev_questions": "run-8n1.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:14:22+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:14:23+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-8n1",
+            "plan_questions": "run-8n1.1",
+            "dev_questions": "run-8n1.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:15:56+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds."
+        },
+        {
+          "at": "2026-10-26T00:56:11+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:08+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-CRON-0003",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0003",
+      "statement": "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.",
+      "quote": "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "Rust job or Python module",
+      "scope": "a bead that adds or edits crates/sc-cron",
+      "deterministic_check": "crates/sc-cron runs a Rust job or python3 <module> cron.tick or cron.stop with JSON on stdin, and has no HTTP route, MCP tool, or binary.",
+      "fixtures": {
+        "pass": [
+          "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary."
+        ],
+        "fail": [
+          "A Python schedule row is served by an HTTP route on the sc-cron crate, and the crate does not run python3."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-anr",
+        "plan_questions": "run-anr.1",
+        "dev_questions": "run-anr.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:14:24+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:14:25+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-anr",
+            "plan_questions": "run-anr.1",
+            "dev_questions": "run-anr.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:08+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-CRON-0004",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0004",
+      "statement": "The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables.",
+      "quote": "The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "One schedule table",
+      "scope": "a bead that adds the sc-cron configuration table",
+      "deterministic_check": "A test writes a schedule row without constructing SqliteWriter.",
+      "fixtures": {
+        "pass": [
+          "The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables."
+        ],
+        "fail": [
+          "The sc-cron crate migrates the consumer's other tables, and a schedule row is written by constructing SqliteWriter."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-ec5",
+        "plan_questions": "run-ec5.1",
+        "dev_questions": "run-ec5.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:14:25+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:14:26+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ec5",
+            "plan_questions": "run-ec5.1",
+            "dev_questions": "run-ec5.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:08+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-CRON-0005",
+      "source_type": "REQ",
+      "source_ref": "REQ-CRON-0005",
+      "statement": "Fallible public functions in sc-cron return CronError.",
+      "quote": "Fallible public functions in sc-cron return CronError.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "One CronError enum",
+      "scope": "a bead that adds or edits crates/sc-cron",
+      "deterministic_check": "The public error type in crates/sc-cron is CronError.",
+      "fixtures": {
+        "pass": [
+          "Fallible public functions in sc-cron return CronError."
+        ],
+        "fail": [
+          "Fallible public functions in sc-cron return a type other than CronError."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-whn",
+        "plan_questions": "run-whn.1",
+        "dev_questions": "run-whn.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:14:26+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:14:27+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-whn",
+            "plan_questions": "run-whn.1",
+            "dev_questions": "run-whn.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:08+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "ADR-RUN-0013",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0013",
+      "statement": "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "quote": "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "ADR-RUN-0013 sc-cron decision",
+      "scope": "a bead that adds or edits crates/sc-cron",
+      "deterministic_check": "docs/architecture.md contains ADR-RUN-0013 and docs/sc-cron/requirements.md contains REQ-CRON-0001 through REQ-CRON-0005.",
+      "fixtures": {
+        "pass": [
+          "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin."
+        ],
+        "fail": [
+          "sc-cron is required for every application, and a schedule string is six fields with seconds first."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-pny",
+        "plan_questions": "run-pny.1",
+        "dev_questions": "run-pny.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:14:27+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:14:28+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-pny",
+            "plan_questions": "run-pny.1",
+            "dev_questions": "run-pny.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:08+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "ADR-RUN-0305",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0305",
+      "statement": "SQLite and Postgres meet in an adaptor crate generated into the consumer repository.",
+      "quote": "SQLite and Postgres meet in an adaptor crate generated into the consumer repository.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Generated consumer store adaptor",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "docs/architecture.md contains ADR-RUN-0305.",
+      "fixtures": {
+        "pass": [
+          "SQLite and Postgres meet in an adaptor crate generated into the consumer repository."
+        ],
+        "fail": [
+          "SQLite and Postgres meet inside the sc-runtime library crate, and no adaptor is generated into the consumer repository."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-0fr",
+        "plan_questions": "run-0fr.1",
+        "dev_questions": "run-0fr.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:18+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:19+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-0fr",
+            "plan_questions": "run-0fr.1",
+            "dev_questions": "run-0fr.2"
+          }
+        },
+        {
+          "at": "2026-10-26T00:41:39+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 pairs the stores. It does not generate the adaptor crate. That generation is sprint b-7.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T00:41:40+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 fills the Postgres store. It does not generate the adaptor crate. That generation is sprint b-7.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T00:41:40+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 fills the MySQL store. It does not generate the adaptor crate. That generation is sprint b-7.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": true
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": true
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": true
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0313",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0313",
+      "statement": "The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.",
+      "quote": "The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Adaptor crate defines the stores",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "A generated repository contains an adaptor crate that names both stores.",
+      "fixtures": {
+        "pass": [
+          "The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository."
+        ],
+        "fail": [
+          "The relationship between the local SQLite store and the remote store is defined in the sc-runtime library crate."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-dgl",
+        "plan_questions": "run-dgl.1",
+        "dev_questions": "run-dgl.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:19+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:21+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-dgl",
+            "plan_questions": "run-dgl.1",
+            "dev_questions": "run-dgl.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0314",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0314",
+      "statement": "The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.",
+      "quote": "The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Copy adaptor matches the remote schema",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "A generated copy adaptor creates the shared remote tables in SQLite.",
+      "fixtures": {
+        "pass": [
+          "The copy adaptor is a local SQLite database with the remote schema, for faster or offline access."
+        ],
+        "fail": [
+          "The copy adaptor keeps a schema that differs from the remote database."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-5zk",
+        "plan_questions": "run-5zk.1",
+        "dev_questions": "run-5zk.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:21+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:22+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-5zk",
+            "plan_questions": "run-5zk.1",
+            "dev_questions": "run-5zk.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0315",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0315",
+      "statement": "The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.",
+      "quote": "The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Host aggregate collects many hosts",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.",
+      "fixtures": {
+        "pass": [
+          "The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts."
+        ],
+        "fail": [
+          "The host-aggregate adaptor is one SQLite database that aggregates many hosts and has no Postgres database."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-2is",
+        "plan_questions": "run-2is.1",
+        "dev_questions": "run-2is.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:22+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:23+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-2is",
+            "plan_questions": "run-2is.1",
+            "dev_questions": "run-2is.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0316",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0316",
+      "statement": "The consumer repository defines the rollup from host rows into the Postgres aggregate.",
+      "quote": "The consumer repository defines the rollup from host rows into the Postgres aggregate.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Consumer defines the host rollup",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "The host-aggregate adaptor has a consumer-owned function that maps host rows into the Postgres aggregate.",
+      "fixtures": {
+        "pass": [
+          "The consumer repository defines the rollup from host rows into the Postgres aggregate."
+        ],
+        "fail": [
+          "The sc-runtime library defines the rollup from host rows into the Postgres aggregate."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-id3",
+        "plan_questions": "run-id3.1",
+        "dev_questions": "run-id3.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:23+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:25+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-id3",
+            "plan_questions": "run-id3.1",
+            "dev_questions": "run-id3.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0317",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0317",
+      "statement": "Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py).",
+      "quote": "Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py).",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "just new generates the adaptor",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "just new writes the adaptor crate and its models into the new repository.",
+      "fixtures": {
+        "pass": [
+          "Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py)."
+        ],
+        "fail": [
+          "Adaptor Rust code in a new repository is written by hand, and just new does not generate it."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-bda",
+        "plan_questions": "run-bda.1",
+        "dev_questions": "run-bda.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:25+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:26+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-bda",
+            "plan_questions": "run-bda.1",
+            "dev_questions": "run-bda.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0318",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0318",
+      "statement": "The library crate named sc-runtime does not generate adaptor code.",
+      "quote": "The library crate named sc-runtime does not generate adaptor code.",
+      "kind": "prohibition",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Library crate generates nothing",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "crates/sc-runtime contains no generator.",
+      "fixtures": {
+        "pass": [
+          "The library crate named sc-runtime does not generate adaptor code."
+        ],
+        "fail": [
+          "The library crate named sc-runtime generates the adaptor code."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-cck",
+        "plan_questions": "run-cck.1",
+        "dev_questions": "run-cck.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:26+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:27+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-cck",
+            "plan_questions": "run-cck.1",
+            "dev_questions": "run-cck.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:47+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:16+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0319",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0319",
+      "statement": "Generation flags name tables and columns that exist on only one of the two stores. A skipped table may be the SQLite table or the SQL-server table.",
+      "quote": "Generation flags name tables and columns that exist on only one of the two stores.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Flags name one-sided tables and columns",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "Generation input can name a SQLite-only table, a SQL-server-only table, and a column that exists on only one side.",
+      "fixtures": {
+        "pass": [
+          "Generation flags name tables and columns that exist on only one of the two stores. A skipped table may be the SQLite table or the SQL-server table."
+        ],
+        "fail": [
+          "Generation has no flag for a table that exists on only one of the two stores."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-xoo",
+        "plan_questions": "run-xoo.1",
+        "dev_questions": "run-xoo.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:27+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:28+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-xoo",
+            "plan_questions": "run-xoo.1",
+            "dev_questions": "run-xoo.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:22:45+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "Generation flags name tables and columns that exist on only one of the two stores."
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0320",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0320",
+      "statement": "Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.",
+      "quote": "Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "One implementation per common pattern",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "Two generated repositories that select the same pattern contain the same adaptor implementation.",
+      "fixtures": {
+        "pass": [
+          "Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern."
+        ],
+        "fail": [
+          "Each consumer repository writes its own copy-pattern implementation."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-jp8",
+        "plan_questions": "run-jp8.1",
+        "dev_questions": "run-jp8.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:28+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:29+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-jp8",
+            "plan_questions": "run-jp8.1",
+            "dev_questions": "run-jp8.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0321",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0321",
+      "statement": "Each database engine's SQL is in that engine's store crate.",
+      "quote": "Generated SQLite code and generated Postgres code are separate files.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "SQL stays in that engine's crate",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "store-sqlite contains no Postgres SQL, and store-postgres contains no SQLite SQL.",
+      "fixtures": {
+        "pass": [
+          "Each database engine's SQL is in that engine's store crate."
+        ],
+        "fail": [
+          "Postgres SQL is in the SQLite store crate."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-iuv",
+        "plan_questions": "run-iuv.1",
+        "dev_questions": "run-iuv.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:29+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:31+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-iuv",
+            "plan_questions": "run-iuv.1",
+            "dev_questions": "run-iuv.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:26:44+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "Generated SQLite code and generated Postgres code are separate files."
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0322",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0322",
+      "statement": "An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.",
+      "quote": "An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Advanced adaptor is consumer code",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "A third adaptor is a file the consumer wrote.",
+      "fixtures": {
+        "pass": [
+          "An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks."
+        ],
+        "fail": [
+          "An adaptor that is neither the copy pattern nor the host-aggregate pattern is generated by just new, and the consumer does not write it."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-5ds",
+        "plan_questions": "run-5ds.1",
+        "dev_questions": "run-5ds.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:31+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:32+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-5ds",
+            "plan_questions": "run-5ds.1",
+            "dev_questions": "run-5ds.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:00+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0324",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0324",
+      "statement": "The consumer adaptor moves rows between the local store and the remote store.",
+      "quote": "The consumer adaptor moves rows between the local store and the remote store.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Adaptor moves rows between stores",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "The adaptor crate contains the copy from one store to the other.",
+      "fixtures": {
+        "pass": [
+          "The consumer adaptor moves rows between the local store and the remote store."
+        ],
+        "fail": [
+          "The consumer adaptor does not move rows between the local store and the remote store."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-8b6",
+        "plan_questions": "run-8b6.1",
+        "dev_questions": "run-8b6.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:32+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:33+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-8b6",
+            "plan_questions": "run-8b6.1",
+            "dev_questions": "run-8b6.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0325",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0325",
+      "statement": "The sc-runtime crates do not move rows between stores.",
+      "quote": "The sc-runtime crates do not move rows between stores.",
+      "kind": "prohibition",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Framework crates move no rows",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "crates/ contains no store-to-store copy.",
+      "fixtures": {
+        "pass": [
+          "The sc-runtime crates do not move rows between stores."
+        ],
+        "fail": [
+          "The sc-runtime crates move rows between stores."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-683",
+        "plan_questions": "run-683.1",
+        "dev_questions": "run-683.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:33+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:34+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-683",
+            "plan_questions": "run-683.1",
+            "dev_questions": "run-683.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0323",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0323",
+      "statement": "Store synchronization is scheduled by the consuming application. The adaptor starts no timer.",
+      "quote": "Store synchronization is scheduled by the consuming application. The adaptor starts no timer.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "The application schedules sync",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "The adaptor crate starts no timer. A schedule is registered by application code.",
+      "fixtures": {
+        "pass": [
+          "Store synchronization is scheduled by the consuming application. The adaptor starts no timer."
+        ],
+        "fail": [
+          "The adaptor starts a timer that synchronizes the stores."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-7mk",
+        "plan_questions": "run-7mk.1",
+        "dev_questions": "run-7mk.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:22:43+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:22:44+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-7mk",
+            "plan_questions": "run-7mk.1",
+            "dev_questions": "run-7mk.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:09+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0326",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0326",
+      "statement": "A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.",
+      "quote": "A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Database layouts of a new application",
+      "scope": "a bead that edits scripts/new_project.py, wizard/answers.schema.json, or template store crates",
+      "deterministic_check": "wizard/answers.schema.json accepts no database, SQLite only, one sqlx SQL engine, and SQLite plus one sqlx SQL engine.",
+      "fixtures": {
+        "pass": [
+          "A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine."
+        ],
+        "fail": [
+          "A new application is created with SQLite only, and is not created with no database, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine."
+        ]
+      },
+      "question_overrides": {},
+      "version": 3,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-a67",
+        "plan_questions": "run-a67.1",
+        "dev_questions": "run-a67.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:25:42+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:25:43+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-a67",
+            "plan_questions": "run-a67.1",
+            "dev_questions": "run-a67.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:10:34+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:10:56+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:11+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0327",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0327",
+      "statement": "Two stores in one application use the same schema or a similar schema.",
+      "quote": "Two stores in one application use the same schema or a similar schema.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Same schema or a similar schema",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "The copy pattern uses the same schema on both stores. The host-aggregate pattern uses a similar schema.",
+      "fixtures": {
+        "pass": [
+          "Two stores in one application use the same schema or a similar schema."
+        ],
+        "fail": [
+          "Two stores in one application use unrelated schemas."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-hpn",
+        "plan_questions": "run-hpn.1",
+        "dev_questions": "run-hpn.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:26:44+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:26:45+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-hpn",
+            "plan_questions": "run-hpn.1",
+            "dev_questions": "run-hpn.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0328",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0328",
+      "statement": "Two stores in one application use one shared trait or a different trait per store.",
+      "quote": "Two stores in one application use one shared trait or a different trait per store.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Shared trait or a trait per store",
+      "scope": "a bead that adds, removes, or generates a store adaptor",
+      "deterministic_check": "A generated pair names one trait that both stores implement, or a trait for each store.",
+      "fixtures": {
+        "pass": [
+          "Two stores in one application use one shared trait or a different trait per store."
+        ],
+        "fail": [
+          "Two stores in one application share no trait and do not have a trait per store."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-uc6",
+        "plan_questions": "run-uc6.1",
+        "dev_questions": "run-uc6.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:26:45+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:26:47+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-uc6",
+            "plan_questions": "run-uc6.1",
+            "dev_questions": "run-uc6.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:22+00:00",
+          "event": "excluded",
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-8",
+          "reason": "Sprint b-8 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0329",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0329",
+      "statement": "A generated crate's package name is the project name, a hyphen, and its role.",
+      "quote": "A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Package name carries the project name",
+      "scope": "a bead that edits template crate manifests or generation of package names",
+      "deterministic_check": "Two projects with different names produce no package name in common.",
+      "fixtures": {
+        "pass": [
+          "A generated crate's package name is the project name, a hyphen, and its role."
+        ],
+        "fail": [
+          "A generated crate's package name is its role alone, and the project name is not part of that name."
+        ]
+      },
+      "question_overrides": {},
+      "version": 4,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-3q5",
+        "plan_questions": "run-3q5.1",
+        "dev_questions": "run-3q5.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:50:22+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:50:25+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-3q5",
+            "plan_questions": "run-3q5.1",
+            "dev_questions": "run-3q5.2"
+          }
+        },
+        {
+          "at": "2026-10-25T21:51:38+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "deterministic_check"
+          ],
+          "previous_statement": "A generated crate's package name is the project name, a hyphen, and its role. The adaptor depends on <project>-types and <project>-schema."
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:17:07+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0330",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0330",
+      "statement": "Row type structs are in the schema crate. The types crate is for non-database types.",
+      "quote": "Row type structs are in the schema crate. The types crate is for non-database types.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "summary": "Row structs are in the schema crate",
+      "scope": "a bead that adds or generates the schema crate or the types crate",
+      "deterministic_check": "The schema crate contains the row structs. The types crate contains no database row struct. The adaptor depends on the schema crate.",
+      "fixtures": {
+        "pass": [
+          "Row type structs are in the schema crate. The types crate is for non-database types."
+        ],
+        "fail": [
+          "Row type structs are in the types crate, and the schema crate holds no row structs."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-3mg",
+        "plan_questions": "run-3mg.1",
+        "dev_questions": "run-3mg.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T21:51:39+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T21:51:40+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-3mg",
+            "plan_questions": "run-3mg.1",
+            "dev_questions": "run-3mg.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:16:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:13+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T02:47:58+00:00",
+          "event": "exclusion_removed",
+          "item": "b-4"
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0331",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0331",
+      "statement": "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.",
+      "quote": "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "Disableable database commands",
+      "scope": "a bead that edits template CLI, MCP, or HTTP commands",
+      "deterministic_check": "A generated project with a store registers delete row <table> <id> on the CLI, MCP, and HTTP, and a flag removes those commands.",
+      "fixtures": {
+        "pass": [
+          "The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface."
+        ],
+        "fail": [
+          "The template ships no database command on the CLI, on MCP, or over HTTP."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-w7j",
+        "plan_questions": "run-w7j.1",
+        "dev_questions": "run-w7j.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T22:05:57+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T22:05:59+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-w7j",
+            "plan_questions": "run-w7j.1",
+            "dev_questions": "run-w7j.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:17+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:19+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "ADR-RUN-0002",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0002",
+      "statement": "sc-runtime is a cargo-generate template plus published library crates.",
+      "quote": "sc-runtime is a cargo-generate template plus published library crates.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "Template plus published crates",
+      "scope": "a bead that adds a library crate or edits the template",
+      "deterministic_check": "Generated projects depend on the library crates by version, and template code is rendered into the project.",
+      "fixtures": {
+        "pass": [
+          "sc-runtime is a cargo-generate template plus published library crates."
+        ],
+        "fail": [
+          "sc-runtime is only an application, with no cargo-generate template and no published library crates."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-o8s",
+        "plan_questions": "run-o8s.1",
+        "dev_questions": "run-o8s.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T22:05:59+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T22:06:00+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-o8s",
+            "plan_questions": "run-o8s.1",
+            "dev_questions": "run-o8s.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-RUN-0503",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0503",
+      "statement": "A project generated by just new passes lint, test, and both builds with no file edited.",
+      "quote": "A project generated by just new passes lint, test, and both builds with no file edited.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "summary": "Generated project is green",
+      "scope": "a bead that edits the template or scripts/new_project.py",
+      "deterministic_check": "just new on the sqlite fixture exits 0, and just lint, just test, just build-cli, and just build-daemon exit 0 with no file edited.",
+      "fixtures": {
+        "pass": [
+          "A project generated by just new passes lint, test, and both builds with no file edited."
+        ],
+        "fail": [
+          "A project generated by just new fails lint until a source file is edited."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-bfz",
+        "plan_questions": "run-bfz.1",
+        "dev_questions": "run-bfz.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-25T22:06:00+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-25T22:06:02+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-bfz",
+            "plan_questions": "run-bfz.1",
+            "dev_questions": "run-bfz.2"
+          }
+        },
+        {
+          "at": "2026-10-26T01:20:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:21:10+00:00",
+          "event": "excluded",
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:12+00:00",
+          "event": "excluded",
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:14+00:00",
+          "event": "excluded",
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:15+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:18+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:20+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T01:21:21+00:00",
+          "event": "excluded",
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-1",
+          "reason": "Sprint b-1 does not carry this obligation."
+        },
+        {
+          "item": "b-2",
+          "reason": "Sprint b-2 does not carry this obligation."
+        },
+        {
+          "item": "b-3",
+          "reason": "Sprint b-3 does not carry this obligation."
+        },
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 does not carry this obligation."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 does not carry this obligation."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-7",
+          "reason": "Sprint b-7 does not carry this obligation."
+        }
+      ]
+    }
+  ]
+}

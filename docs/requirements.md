@@ -51,7 +51,7 @@ Three principles decide what belongs here:
 | REQ-RUN-0001 through REQ-RUN-0005 | Repository | - |
 | REQ-RUN-0101 through REQ-RUN-0103 | Spike: verifying the design's open facts | The design marks several facts as "Verify": they are believed true but nothing may be planned around them until a throwaway spike proves them. These requirements define that spike. |
 | REQ-RUN-0201 through REQ-RUN-0206 | End-to-end behaviour | These are properties of the assembled system. No single crate can satisfy one alone, so they close in integration sprints. |
-| REQ-RUN-0301 through REQ-RUN-0331 | Template | The template is what a project owns and edits after generation. REQ-RUN-0313 through REQ-RUN-0330 are the generated store adaptor, the database layouts, the package names, and the schema crate. |
+| REQ-RUN-0301 through REQ-RUN-0331 | Template | The template is what a project owns and edits after generation. It is kept thin: it contains the example operation and the wiring, and nothing that should improve across projects. REQ-RUN-0313 through REQ-RUN-0325 are the generated store adaptor. REQ-RUN-0326 is the database layout of a new application. REQ-RUN-0327 and REQ-RUN-0328 are schema and trait pairing. REQ-RUN-0329 is the crates.io package name. REQ-RUN-0330 places row structs in the schema crate. REQ-RUN-0331 is the general database command surface. |
 | REQ-RUN-0401 through REQ-RUN-0403 | Answers contract | - |
 | REQ-RUN-0501 through REQ-RUN-0503 | Driver | - |
 | REQ-RUN-0601 through REQ-RUN-0603 | Wizard | - |
@@ -65,7 +65,7 @@ each waits until a project asks for it.
 
 | Item | Status |
 |---|---|
-| `store-postgres`, `db = both`, and a Postgres service container in template CI | v0.2, after the MVP |
+| Database layouts other than SQLite-only | accepted when that layout's store crate exists ([REQ-RUN-0326](requirements.md)); v0.1 generates SQLite only |
 | `store-mysql` | when the first project needs it |
 | SQL Server | never; sqlx has no driver |
 | SQLite batched write actor inside template `store-sqlite` | forbidden; that crate stays the sqlx two-pool store ([ADR-RUN-0301](architecture.md) points 1–7) |
@@ -1688,8 +1688,9 @@ removed by sprint `b-8`. Amended 2026-10-25.
 
 ### Rationale
 
-Database backends arrive in the order SQLite, then Postgres, then MySQL, and
-v0.1 ships SQLite only. The answers schema is a published contract that the
+Phase b generates every layout in [REQ-RUN-0326](requirements.md), including
+MySQL, in one phase with the pairing and the adaptor. v0.1 shipped SQLite
+only. The answers schema is a published contract that the
 sc-lint project also reads, so its shape should not change when Postgres
 arrives; reserving the enum values now keeps it stable. Varying whole files,
 not lines within files, keeps every template source file readable and

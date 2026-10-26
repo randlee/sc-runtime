@@ -165,6 +165,8 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0009 | Daemon-process tests run in a virtual machine; no test daemon | Active |
 | ADR-RUN-0010 | Two AppName newtypes; no runtime name | Active |
 | ADR-RUN-0011 | No sleep or `block_on` on the hot path; no `Mutex` guard across `.await` | Active |
+| ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
+| ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Active |
@@ -177,8 +179,6 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0306 | General database commands ship on CLI, MCP, and HTTP | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
-| ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
-| ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active |
 
 ---
 
@@ -1657,6 +1657,50 @@ Amended 2026-10-25.
   function.
 - [REQ-RT-0003](sc-runtime/requirements.md): `sc-runtime` never inspects `Stores`.
 - [ADR-RUN-0303](architecture.md): the full crate graph of a generated project.
+- [ADR-RUN-0305](architecture.md): the consumer adaptor that moves rows between the two stores.
+
+---
+
+## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
+**Amends:** [ADR-RUN-0301](architecture.md) points 4 and 6  
+
+### Context
+
+SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. The first phase-b writeup put that pairing behind one `StorageBackend` and one constructor that accepted both `sqlite://` and `postgres://`. A query written for both engines is forbidden by [ADR-RUN-0301](architecture.md) point 4. That writeup was deleted. The pairing itself is the plan.
+
+### Decision
+
+1. SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
+2. The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
+3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The consumer repository defines the rollup.
+4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
+5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
+6. Every consumer repository gets the same generated implementation of a common pattern. Each engine's SQL is in that engine's store crate.
+7. An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+8. The consuming application schedules synchronization. The adaptor starts no timer.
+9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
+10. Two stores in one application use the same schema or a similar schema.
+11. Two stores in one application use one shared trait or a different trait per store.
+12. A generated package name is the project name, a hyphen, and its role.
+13. Row type structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
+
+### Consequences
+
+[REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md) are this decision. Phase b plans them with the writer, the lint profile, and sc-cron: eight sprints, `b-1` through `b-8`. The adaptor is rendered for a layout that has SQLite and a SQL engine. The rusqlite writer sprint does not replace the template sqlx store.
+
+### Alternatives Considered
+
+- One SQL string executed on both SQLite and Postgres. Rejected. Each engine has its own SQL. A shared trait, or a different trait per engine, is allowed. The schemas are the same or similar.
+- Leaving the pairing for each consumer to invent. Rejected. A common pattern has one generated implementation.
+
+### Related Documents
+
+- [ADR-RUN-0301](architecture.md) points 4 and 6.
+- [REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md).
 
 ---
 
