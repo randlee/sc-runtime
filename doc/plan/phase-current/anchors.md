@@ -812,7 +812,7 @@ Anchor: A new application is created with no database, with SQLite only, with on
 
 > A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 3.
 
 Summary: Database layouts of a new application
 
@@ -821,6 +821,10 @@ Scope: a bead that edits scripts/new_project.py, wizard/answers.schema.json, or 
 Deterministic check to pair with the development gate: wizard/answers.schema.json accepts no database, SQLite only, one sqlx SQL engine, and SQLite plus one sqlx SQL engine.
 
 Beads: anchor `run-a67`, plan questions `run-a67.1`, dev questions `run-a67.2`
+
+Fixtures:
+- pass: A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
+- fail: A new application is created with SQLite only, and is not created with no database, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine.
 
 ## REQ-RUN-0327
 

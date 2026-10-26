@@ -2276,11 +2276,15 @@
       "scope": "a bead that edits scripts/new_project.py, wizard/answers.schema.json, or template store crates",
       "deterministic_check": "wizard/answers.schema.json accepts no database, SQLite only, one sqlx SQL engine, and SQLite plus one sqlx SQL engine.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "A new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine."
+        ],
+        "fail": [
+          "A new application is created with SQLite only, and is not created with no database, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -2302,6 +2306,20 @@
             "plan_questions": "run-a67.1",
             "dev_questions": "run-a67.2"
           }
+        },
+        {
+          "at": "2026-10-26T01:10:34+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-26T01:10:56+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
