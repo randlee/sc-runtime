@@ -8,6 +8,7 @@ const CODE_QUEUE_FULL: &str = "DBSQ.QUEUE_FULL";
 const CODE_DEADLINE_EXCEEDED: &str = "DBSQ.DEADLINE_EXCEEDED";
 const CODE_SQLITE: &str = "DBSQ.SQLITE";
 const CODE_COMMIT: &str = "DBSQ.COMMIT";
+const CODE_REPLY_TYPE_MISMATCH: &str = "DBSQ.REPLY_TYPE_MISMATCH";
 
 const RECOVERY_OPEN: &str =
     "Create the parent directory if it is missing, then open the database again.";
@@ -19,6 +20,7 @@ const RECOVERY_SQLITE: &str =
     "Read the SQLite code and the source error. This crate does not retry the statement.";
 const RECOVERY_COMMIT: &str =
     "Read the SQLite code and the source error. The commit did not succeed.";
+const RECOVERY_REPLY_TYPE_MISMATCH: &str = "Do not retry a non-idempotent write until you check the database. The transaction reply was not the type the body returned.";
 
 /// Failure from opening the database or from a writer call.
 ///
@@ -30,6 +32,8 @@ const RECOVERY_COMMIT: &str =
 /// the write may still commit, so a non-idempotent write must not be retried
 /// until the caller checks the database. `ChannelClosed` means the writer
 /// thread is gone; reopen with [`crate::SqliteWriter::open`].
+/// `ReplyTypeMismatch` means the transaction reply was not the type the body
+/// returned. That is not `ChannelClosed`.
 ///
 /// `Error::source` on `Sqlite` and `Commit` is the underlying
 /// [`rusqlite::Error`]. That type is part of this crate's public contract, so
@@ -54,7 +58,8 @@ pub enum SqliteWriterError {
     /// The writer thread has exited, or the reply channel closed before a reply.
     ///
     /// The handle cannot be reused. Reopen the database. This variant is not
-    /// a failed downcast and not a reply-shape mismatch.
+    /// a failed downcast ([`Self::ReplyTypeMismatch`]) and not a reply-shape
+    /// mismatch.
     ChannelClosed,
 
     /// The bounded queue could not accept the job.
@@ -98,6 +103,14 @@ pub enum SqliteWriterError {
         /// Underlying rusqlite error, shared with every caller of the commit.
         source: Arc<rusqlite::Error>,
     },
+
+    /// The transaction reply was not the type the body returned.
+    ///
+    /// The job was accepted. The outer commit may already have succeeded, so a
+    /// non-idempotent write must not be retried until the caller checks the
+    /// database. This is not [`Self::ChannelClosed`]. A panic on the writer
+    /// thread is `ChannelClosed`.
+    ReplyTypeMismatch,
 }
 
 impl SqliteWriterError {
@@ -111,6 +124,7 @@ impl SqliteWriterError {
             Self::DeadlineExceeded => CODE_DEADLINE_EXCEEDED,
             Self::Sqlite { .. } => CODE_SQLITE,
             Self::Commit { .. } => CODE_COMMIT,
+            Self::ReplyTypeMismatch => CODE_REPLY_TYPE_MISMATCH,
         }
     }
 
@@ -127,6 +141,7 @@ impl SqliteWriterError {
             Self::DeadlineExceeded => RECOVERY_DEADLINE_EXCEEDED,
             Self::Sqlite { .. } => RECOVERY_SQLITE,
             Self::Commit { .. } => RECOVERY_COMMIT,
+            Self::ReplyTypeMismatch => RECOVERY_REPLY_TYPE_MISMATCH,
         }
     }
 
@@ -172,7 +187,11 @@ impl SqliteWriterError {
                 message: message.clone(),
                 source: Arc::clone(source),
             },
-            Self::Open { .. } | Self::ChannelClosed | Self::QueueFull | Self::DeadlineExceeded => {
+            Self::Open { .. }
+            | Self::ChannelClosed
+            | Self::QueueFull
+            | Self::DeadlineExceeded
+            | Self::ReplyTypeMismatch => {
                 unreachable!("only sqlite and commit failures are shared across a batch")
             }
         }
@@ -249,6 +268,12 @@ impl fmt::Display for SqliteWriterError {
                 format_args!("commit failed: sqlite error {sqlite_code}: {message}"),
                 self.recovery(),
             ),
+            Self::ReplyTypeMismatch => write_failure(
+                formatter,
+                self.code(),
+                format_args!("transaction reply type mismatch"),
+                self.recovery(),
+            ),
         }
     }
 }
@@ -260,7 +285,10 @@ impl Error for SqliteWriterError {
                 .as_ref()
                 .map(|error| error.as_ref() as &(dyn Error + 'static)),
             Self::Sqlite { source, .. } | Self::Commit { source, .. } => Some(source.as_ref()),
-            Self::ChannelClosed | Self::QueueFull | Self::DeadlineExceeded => None,
+            Self::ChannelClosed
+            | Self::QueueFull
+            | Self::DeadlineExceeded
+            | Self::ReplyTypeMismatch => None,
         }
     }
 }

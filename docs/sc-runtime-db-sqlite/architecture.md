@@ -51,6 +51,7 @@ pub enum SqliteWriterError {
     DeadlineExceeded,
     Sqlite { sqlite_code: i32, message: String, source: std::sync::Arc<rusqlite::Error> },
     Commit { sqlite_code: i32, message: String, source: std::sync::Arc<rusqlite::Error> },
+    ReplyTypeMismatch,
 }
 
 impl SqliteWriterError {
@@ -80,6 +81,7 @@ pub const SHUTDOWN_JOIN: std::time::Duration = std::time::Duration::from_secs(5)
 | `DeadlineExceeded` | `DBSQ.DEADLINE_EXCEEDED` | `write deadline exceeded` |
 | `Sqlite` | `DBSQ.SQLITE` | `sqlite error {sqlite_code}: {message}` |
 | `Commit` | `DBSQ.COMMIT` | `commit failed: sqlite error {sqlite_code}: {message}` |
+| `ReplyTypeMismatch` | `DBSQ.REPLY_TYPE_MISMATCH` | `transaction reply type mismatch` |
 
 `Error::source` on `Sqlite` and `Commit` returns the original `rusqlite::Error`. The crate does not build a synthetic `SqliteFailure`. rusqlite 0.39's error is not `Clone`, so the variant stores `Arc<rusqlite::Error>` and every caller in a failed batch shares that same error. `Open`'s source is that rusqlite error, or the `std::io::Error` from starting the thread, when one exists. The `rusqlite::Error` behind `Sqlite.source` and `Commit.source` is public, so the rusqlite pin below is the semver boundary for this crate.
 
@@ -91,6 +93,7 @@ Retry follows the variant, not a shared flag:
 - `Open`: no writer started. Create a missing parent directory and open again.
 - `Sqlite`: the statement failed. Read `sqlite_code` and `source`. This crate does not retry it.
 - `Commit`: the commit failed. Read `sqlite_code` and `source`.
+- `ReplyTypeMismatch`: the transaction reply was not the type the body returned. The job was accepted and the write may already be committed. Do not retry a non-idempotent write until the database has been checked. This is not `ChannelClosed`.
 
 `SqliteWriter` is `Clone + Send + Sync`. `WriterConn` is not `Sync`. `execute` on `SqliteWriter` is the batchable job. Contiguous `execute` calls share one savepoint inside one `BEGIN IMMEDIATE` transaction. A `transaction` body runs alone on the writer thread and calls `WriterConn::execute`. It is not folded into another caller's batch. The body must use only that `WriterConn`. Capturing a `SqliteWriter` and calling `execute` or `transaction` on it deadlocks until `WRITE_DEADLINE`, because the body occupies the only writer thread. The reply is sent only after the outer commit. On any member failure the savepoint is dropped and that batch is replayed one statement at a time.
 
@@ -100,7 +103,7 @@ Retry follows the variant, not a shared flag:
 
 `execute` and `transaction` wait up to `WRITE_DEADLINE` for the reply. If the channel cannot accept the job, the error is `QueueFull`. If the job was accepted and the reply does not arrive in time, the error is `DeadlineExceeded`.
 
-If the writer thread exits for any reason, including a panic, every pending caller receives `Err(ChannelClosed)` and does not block. The thread catches the panic with `std::panic::catch_unwind` and drains pending reply senders with `ChannelClosed` before the thread ends. A failed downcast of a transaction reply, or a reply whose shape does not match the job, is an invariant breach and panics. It is not `ChannelClosed`.
+If the writer thread exits for any reason, including a panic, every pending caller receives `Err(ChannelClosed)` and does not block. The thread catches the panic with `std::panic::catch_unwind` and drains pending reply senders with `ChannelClosed` before the thread ends. A failed downcast of a transaction reply returns `ReplyTypeMismatch` and does not panic. It is not `ChannelClosed`. A reply whose shape does not match the job is an invariant breach and panics on the writer thread. That panic is not `ReplyTypeMismatch`.
 
 Dropping the last `SqliteWriter` joins the writer thread within `SHUTDOWN_JOIN`. The drain uses `yield_now` inside `BATCH_TIME_BUDGET`. The batch path does not emit `tracing`. That lane is not part of this crate. The writer thread is named `sqlite-writer:<file name>`. The job sender is a `SyncSender` and is not behind a mutex. The join handle is `!Sync`, so only that handle sits in a mutex.
 

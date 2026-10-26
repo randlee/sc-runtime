@@ -148,6 +148,20 @@ fn error_display_and_source() {
             .is_some()
     );
     assert_eq!(commit.code(), "DBSQ.COMMIT");
+    assert_eq!(
+        SqliteWriterError::ReplyTypeMismatch.to_string(),
+        "DBSQ.REPLY_TYPE_MISMATCH: transaction reply type mismatch; Do not retry a non-idempotent write until you check the database. The transaction reply was not the type the body returned."
+    );
+    assert_eq!(
+        SqliteWriterError::ReplyTypeMismatch.code(),
+        "DBSQ.REPLY_TYPE_MISMATCH"
+    );
+    assert!(
+        SqliteWriterError::ReplyTypeMismatch
+            .recovery()
+            .contains("was not the type")
+    );
+    assert!(std::error::Error::source(&SqliteWriterError::ReplyTypeMismatch).is_none());
 }
 
 #[test]

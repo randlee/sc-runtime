@@ -186,14 +186,10 @@ impl SqliteWriter {
     ///
     /// Returns the same queue, deadline, and channel errors as [`Self::execute`].
     /// An error returned by `body` is returned to this caller after the rest of
-    /// the outer batch commits or fails. A panic inside `body` closes the writer.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the reply value is not `T`. The body is the only producer of
-    /// that reply and it boxes `T`, so a mismatch is an invariant breach. A
-    /// disconnected writer is [`SqliteWriterError::ChannelClosed`], not a
-    /// failed downcast.
+    /// the outer batch commits or fails. A panic inside `body` closes the writer,
+    /// and this call returns [`SqliteWriterError::ChannelClosed`].
+    /// [`SqliteWriterError::ReplyTypeMismatch`] means the reply value was not
+    /// `T`. That mismatch does not panic, and it is not `ChannelClosed`.
     pub fn transaction<T, F>(&self, body: F) -> Result<T, SqliteWriterError>
     where
         F: FnOnce(&mut crate::WriterConn) -> Result<T, SqliteWriterError> + Send + 'static,
@@ -210,10 +206,7 @@ impl SqliteWriter {
         };
         self.enqueue(job)?;
         let boxed = batch::wait_reply(&receiver, self.shared.deadline, started)?;
-        let value = boxed
-            .downcast::<T>()
-            .expect("transaction reply is the type the body returned");
-        Ok(*value)
+        downcast_transaction_reply(boxed)
     }
 
     /// Enqueues a job that panics on the writer thread before commit.
@@ -270,6 +263,15 @@ impl Drop for Shared {
     }
 }
 
+fn downcast_transaction_reply<T: 'static>(
+    boxed: Box<dyn Any + Send>,
+) -> Result<T, SqliteWriterError> {
+    match boxed.downcast::<T>() {
+        Ok(value) => Ok(*value),
+        Err(_) => Err(SqliteWriterError::ReplyTypeMismatch),
+    }
+}
+
 fn writer_thread_name(path: &Path) -> String {
     let base = path
         .file_name()
@@ -299,5 +301,25 @@ impl fmt::Debug for SqliteWriter {
             .debug_struct("SqliteWriter")
             .field("deadline", &self.shared.deadline)
             .finish_non_exhaustive()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn transaction_reply_downcast_returns_the_body_type() {
+        let boxed: Box<dyn Any + Send> = Box::new("ok".to_owned());
+        let value = downcast_transaction_reply::<String>(boxed).expect("same type");
+        assert_eq!(value, "ok");
+    }
+
+    #[test]
+    fn transaction_reply_type_mismatch_is_not_channel_closed() {
+        let boxed: Box<dyn Any + Send> = Box::new(1_u32);
+        let error = downcast_transaction_reply::<String>(boxed).expect_err("type mismatch");
+        assert!(matches!(error, SqliteWriterError::ReplyTypeMismatch));
+        assert_ne!(error.code(), SqliteWriterError::ChannelClosed.code());
     }
 }

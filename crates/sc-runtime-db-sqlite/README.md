@@ -29,6 +29,6 @@ fn main() -> Result<(), sc_runtime_db_sqlite::SqliteWriterError> {
 
 A `transaction` body must use only the `WriterConn` it is given. Do not capture a `SqliteWriter`. Calling `execute` or `transaction` on a captured handle deadlocks until the write deadline, because the body is running on the only writer thread.
 
-`QueueFull` means the job was not accepted and is safe to retry. `DeadlineExceeded` means the job was accepted and the outcome is unknown: the write may still commit, so do not retry a non-idempotent write until you check the database. `ChannelClosed` means the writer thread is gone; reopen with `SqliteWriter::open`.
+`QueueFull` means the job was not accepted and is safe to retry. `DeadlineExceeded` means the job was accepted and the outcome is unknown: the write may still commit, so do not retry a non-idempotent write until you check the database. `ChannelClosed` means the writer thread is gone; reopen with `SqliteWriter::open`. `ReplyTypeMismatch` means the transaction reply was not the type the body returned. The write may already be committed. It is not `ChannelClosed`.
 
 The writer thread is named `sqlite-writer:<file name>`.
