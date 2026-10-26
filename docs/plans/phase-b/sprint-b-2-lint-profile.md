@@ -24,9 +24,9 @@ owned_paths:
   - crates/sc-transport/
   - crates/sc-command/
   - crates/sc-runtime/
-  - template/
+  - template/sc-lint.toml
 must_follow: []
-parallel_safe: [b-1]
+parallel_safe: [b-1, b-4]
 recommended_agent: arch-ctm
 recommended_model: terra
 vertical_rationale: One lint profile. Splitting the host analyzers from the Windows cross-check would make both sprints edit sc-lint.toml.
@@ -65,11 +65,19 @@ A `just lint` step searches `crates/` (including `sc-runtime-db-sqlite` once tha
 
 The clippy step `just lint` already runs passes `-D clippy::await_holding_lock` as well. That is [ADR-RUN-0011](../../architecture.md) point 2. arch-qa still reviews a guard the lint cannot name.
 
-## Tasks
+## Deliverables
 
 1. ADR-RUN-0005: regenerate `sc-lint.toml`, re-apply the steps above, and fix every warning the new steps report under the owned paths.
 2. ADR-RUN-0011: add the grep step to the `Justfile` recipe that `just lint` already runs.
 3. ADR-RUN-0011: declare `cargo-xwin` and run the two cross commands. Fix the warnings they report under the same allow rule.
+
+## Acceptance criteria
+
+Root: `boundary:host-lint-profile` and [ADR-RUN-0011](../../architecture.md).
+
+- `just lint` exits 0 on macOS and on Linux.
+- A non-test `tokio::time::sleep` under an owned path fails the grep. `yield_now` does not.
+- Warning fixes land only under the owned paths. A warning in a file `b-4` or `b-8` owns is fixed in that sprint.
 
 ## Required validation
 

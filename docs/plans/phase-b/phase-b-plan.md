@@ -8,7 +8,7 @@ Entry state is the workspace at tag `v0.1.0`: four library crates, template `sto
 
 ## Objective
 
-Plan and build the storage phase as one phase. The layouts, the schema, the trait, the adaptor, the writer, cron, and the lint profile are all in this plan because each one changes the others.
+Plan and build the storage phase as one phase. One chain is the rusqlite writer, then the sc-cron port. The other chain is the lint profile and the store pairing in wave 1, the two engine crates and the adaptor in wave 2, and the generation integration sprint in wave 3. `b-4` stays parallel with `b-3`.
 
 `just new` creates an application with no database, SQLite only, Postgres only, MySQL only, SQLite plus Postgres, or SQLite plus MySQL. Each generated package is named `<project>-<role>`. `<project>-schema` holds the tables, the columns, and the row structs. `<project>-types` holds non-database types. The adaptor depends on `<project>-schema`. Paired stores use the same schema or a similar schema, and one shared trait or a trait per store. Each engine's SQL stays in that engine's crate. The adaptor is generated for a two-store layout. `store-sqlite` stays the sqlx store it is. The rusqlite writer is a separate building block. `sc-cron` is the scheduler the application uses. The lint profile is the one every crate in this phase runs.
 
@@ -16,14 +16,14 @@ Plan and build the storage phase as one phase. The layouts, the schema, the trai
 
 | Boundary | Sprint | Owns | Depends on |
 |---|---|---|---|
-| `sc-runtime-db-sqlite` | `b-1` | the rusqlite writer crate and its manifest | none |
-| host lint profile | `b-2` | `sc-lint.toml`, the hot-path grep, the xwin install declaration | none |
-| `sc-cron` | `b-3` | the cron crate and its manifest | `b-1`, for `Cargo.toml` and the boundary manifests. Also blocked on beads-cache sprint `b-8` (`sprint/b-8-tick-python`) merging |
-| store pairing | `b-4` | the schema rule and the trait rule, applied to `store-sqlite` and prepared for Postgres and MySQL | `b-2`, because `b-2` lints `template/` |
-| `store-postgres` | `b-5` | the Postgres store crate in the template | `b-4` |
-| `store-mysql` | `b-6` | the MySQL store crate in the template | `b-4` |
-| store adaptor | `b-7` | the copy adaptor and the host-aggregate adaptor | `b-5` and `b-6` |
-| generation layouts | `b-8` | `just new` selecting one of the six layouts | `b-7` |
+| `sc-runtime-db-sqlite` | `b-1` | the rusqlite writer crate, root `Cargo.toml` membership glob `crates/*`, and the host boundary manifests | none |
+| host lint profile | `b-2` | `sc-lint.toml`, the hot-path grep, the xwin install declaration, and the host crates | none |
+| `sc-cron` | `b-3` | `crates/sc-cron`, `boundaries/sc-cron`, and `docs/sc-cron` | `b-1`, for the `crates/*` membership glob. Also blocked on beads-cache sprint `b-8` (`sprint/b-8-tick-python`) merging |
+| store pairing | `b-4` | the schema crate, the pairing trait, `store-sqlite`, and `template/Cargo.toml` | none |
+| `store-postgres` | `b-5` | `template/crates/store-postgres` | `b-4`, for the `EngineStore` trait |
+| `store-mysql` | `b-6` | `template/crates/store-mysql` | `b-4`, for the `EngineStore` trait |
+| store adaptor | `b-7` | `template/crates/store-adaptor` | `b-4`, for the `EngineStore` trait |
+| generation layouts | `b-8` | `just new`, the six layouts, package names, and the database command surface | `b-5`, `b-6`, and `b-7`, for the store crates and the adaptor |
 
 ## Sprint index
 
@@ -32,30 +32,30 @@ Plan and build the storage phase as one phase. The layouts, the schema, the trai
 | `b-1` | [sprint-b-1-sqlite-writer.md](sprint-b-1-sqlite-writer.md) | `boundary` | writer | 1 |
 | `b-2` | [sprint-b-2-lint-profile.md](sprint-b-2-lint-profile.md) | `boundary` | lint | 1 |
 | `b-3` | [sprint-b-3-sc-cron.md](sprint-b-3-sc-cron.md) | `boundary` | cron | 2 |
-| `b-4` | [sprint-b-4-store-pairing.md](sprint-b-4-store-pairing.md) | `boundary` | stores | 2 |
-| `b-5` | [sprint-b-5-store-postgres.md](sprint-b-5-store-postgres.md) | `boundary` | stores | 3 |
-| `b-6` | [sprint-b-6-store-mysql.md](sprint-b-6-store-mysql.md) | `boundary` | stores | 3 |
-| `b-7` | [sprint-b-7-store-adaptor.md](sprint-b-7-store-adaptor.md) | `boundary` | stores | 4 |
-| `b-8` | [sprint-b-8-generation-layouts.md](sprint-b-8-generation-layouts.md) | `boundary` | stores | 5 |
+| `b-4` | [sprint-b-4-store-pairing.md](sprint-b-4-store-pairing.md) | `boundary` | stores | 1 |
+| `b-5` | [sprint-b-5-store-postgres.md](sprint-b-5-store-postgres.md) | `boundary` | stores | 2 |
+| `b-6` | [sprint-b-6-store-mysql.md](sprint-b-6-store-mysql.md) | `boundary` | stores | 2 |
+| `b-7` | [sprint-b-7-store-adaptor.md](sprint-b-7-store-adaptor.md) | `boundary` | stores | 2 |
+| `b-8` | [sprint-b-8-generation-layouts.md](sprint-b-8-generation-layouts.md) | `integration` | stores | 3 |
 
 ## Wave table
 
-| Wave | Sprints | Critical path | Width | Sprint count |
-|---|---|---|---|---|
-| 1 | `b-1`, `b-2` | 1 | 2 | 8 |
-| 2 | `b-3`, `b-4` | 2 | 2 | 8 |
-| 3 | `b-5`, `b-6` | 3 | 2 | 8 |
-| 4 | `b-7` | 4 | 1 | 8 |
-| 5 | `b-8` | 5 | 1 | 8 |
+| Wave | Sprints |
+|---|---|
+| 1 | `b-1`, `b-2`, `b-4` |
+| 2 | `b-3`, `b-5`, `b-6`, `b-7` |
+| 3 | `b-8` |
 
-`b-5` and `b-6` are the same wave so Postgres and MySQL are built against one pairing, not one after the other has hardened a two-engine assumption.
+Critical path 3 (`b-4` → `b-5` → `b-8`). Width 4. Sprint count 8.
+
+`b-5` and `b-6` are the same wave so Postgres and MySQL are built against one pairing, not one after the other has hardened a two-engine assumption. `b-7` is in that wave because it consumes the `EngineStore` trait from `b-4` and does not wait for either engine crate.
 
 `b-3` waits on beads-cache sprint `b-8` before it copies `crates/sc-cron`. That sprint lands the per-row hook target and removes `StopDecision::Stop`. `b-4` stays parallel with `b-3` and does not wait. beads-cache sprint `b-9` is comments, provenance, and tests, with no version bump, and does not hold the port.
 
 ## Requirements and ADRs
 
-- [REQ-RUN-0001](../../requirements.md), [REQ-RUN-0004](../../requirements.md), [REQ-RUN-0005](../../requirements.md), [REQ-RUN-0308](../../requirements.md), [REQ-RUN-0313](../../requirements.md) through [REQ-RUN-0331](../../requirements.md), [REQ-RUN-0503](../../requirements.md), [NFR-RUN-0002](../../requirements.md), [NFR-RUN-0005](../../requirements.md), [NFR-RUN-0008](../../requirements.md), [NFR-RUN-0009](../../requirements.md).
-- [ADR-RUN-0003](../../architecture.md), [ADR-RUN-0005](../../architecture.md), [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0011](../../architecture.md), [ADR-RUN-0012](../../architecture.md), [ADR-RUN-0013](../../architecture.md), [ADR-RUN-0301](../../architecture.md), [ADR-RUN-0305](../../architecture.md).
+- [REQ-RUN-0001](../../requirements.md), [REQ-RUN-0004](../../requirements.md), [REQ-RUN-0005](../../requirements.md), [REQ-RUN-0303](../../requirements.md), [REQ-RUN-0308](../../requirements.md), [REQ-RUN-0313](../../requirements.md) through [REQ-RUN-0331](../../requirements.md), [REQ-RUN-0503](../../requirements.md), [NFR-RUN-0002](../../requirements.md), [NFR-RUN-0005](../../requirements.md), [NFR-RUN-0008](../../requirements.md), [NFR-RUN-0009](../../requirements.md).
+- [ADR-RUN-0002](../../architecture.md), [ADR-RUN-0003](../../architecture.md), [ADR-RUN-0005](../../architecture.md), [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0011](../../architecture.md), [ADR-RUN-0012](../../architecture.md), [ADR-RUN-0013](../../architecture.md), [ADR-RUN-0301](../../architecture.md), [ADR-RUN-0303](../../architecture.md), [ADR-RUN-0305](../../architecture.md), [ADR-RUN-0306](../../architecture.md), [ADR-RUN-0401](../../architecture.md).
 - Acceptance for the writer contract roots at [ADR-RUN-0012](../../architecture.md) and [docs/sc-runtime-db-sqlite/architecture.md](../../sc-runtime-db-sqlite/architecture.md).
 
 REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../../requirements.md) and [architecture.md](../../architecture.md).
@@ -64,6 +64,6 @@ REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../.
 
 - Implementing sc-lint-runtime rules or raising `minimum_version`. That work is [sc-lint#640](https://github.com/randlee/sc-lint/issues/640).
 - SQL Server. sqlx has no driver for it.
-- A phase-wide checkpoint. Each sprint closes on its own boundary.
+- A checkpoint that re-runs every earlier sprint. `b-8` is the generation integration sprint for the six layouts.
 
 The old narrative at `docs/plan/phase-B/phase-B-plan.md` is a pointer to this file.

@@ -43,7 +43,26 @@ pub trait Job: Send + Sync {
     async fn run(&self, payload: &serde_json::Value, deadline: std::time::Instant) -> RunOutcome;
     async fn should_stop(&self, payload: &serde_json::Value) -> StopDecision;
 }
+
+pub struct CronExpr;
+
+pub struct Scheduler;
+
+pub enum RunOutcome {
+    Ok,
+    Refused(String),
+    Failed(String),
+    TimedOut,
+}
+
+pub enum StopDecision {
+    Continue,
+    Disable(String),
+    Delete(String),
+}
 ```
+
+`CronExpr::parse` accepts the schedule strings above. `Scheduler` opens the one schedule table. `StopDecision` is `Continue`, `Disable(String)`, and `Delete(String)`. `Stop` is not a variant. The port copies this enum from beads-cache after sprint b-8 removes the `Stop` alias.
 
 A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule row points at one of them. This crate does not know whether that method talks to beads or to Postgres.
 

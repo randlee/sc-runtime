@@ -157,11 +157,13 @@ are not valid Rust until rendered.
 
 ### Success Criteria
 
-1. Inspect the root `Cargo.toml`: `[workspace] members` resolves to exactly
-   `crates/sc-config`, `crates/sc-transport`, `crates/sc-command` and
-   `crates/sc-runtime`. `cargo metadata --no-deps --format-version 1` lists
-   exactly those four packages while `examples/spike/` does not exist, and
-   lists no package whose manifest path is under `template/`.
+1. Inspect the root `Cargo.toml`: `[workspace] members` is the glob `crates/*`.
+   That glob resolves to exactly the library crates in the table above:
+   `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`,
+   `crates/sc-runtime`, `crates/sc-runtime-db-sqlite`, and `crates/sc-cron`.
+   `cargo metadata --no-deps --format-version 1` lists exactly those packages
+   while `examples/spike/` does not exist, and lists no package whose manifest
+   path is under `template/`. Amended 2026-10-25.
 2. `cargo build --workspace` run at the repository root exits 0 and compiles
    no file under `template/`.
 3. Each path in the second table exists at the repository root (with
@@ -1966,7 +1968,7 @@ It MUST have these properties:
 
 | Aspect | Requirement |
 |---|---|
-| Driver | depends on `sqlx` 0.9 with the `sqlite` feature; it is the only generated crate with a direct `sqlx` dependency |
+| Driver | depends on `sqlx` 0.9 with the `sqlite` feature. Only a `store-*` crate has a direct `sqlx` dependency. Amended 2026-10-25: `store-postgres` and `store-mysql` are the other engine crates |
 | Pools | two `sqlx` SQLite pools on the same database file: a read pool of N connections, and a write pool of exactly 1 connection; all writes go through the write pool |
 | Journal mode | WAL (write-ahead logging) is turned on when the pools are opened |
 | Migrations | SQL files in `crates/store-sqlite/migrations/`, embedded in the binary with `sqlx::migrate!` and run when the store is opened |
@@ -2020,8 +2022,9 @@ and on a fresh clone without a database.
    rendered project has no commit, so `git ls-files` inside it proves
    nothing and is not used.
 5. `cargo metadata` in the generated project shows `sqlx` as a direct
-   dependency of `store-sqlite` only, and `store-sqlite` as a dependency of
-   `service` only.
+   dependency of each `store-*` crate that layout renders, and of no other
+   generated crate. Amended 2026-10-25. A layout that renders only
+   `store-sqlite` still shows `sqlx` on that crate alone.
 6. Inspect the source: the write pool is built with a maximum of 1
    connection, and every `INSERT`, `UPDATE` or `DELETE` query function uses
    it.

@@ -174,6 +174,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0303 | Crate graph of the generated workspace | Active |
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
 | ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Active |
+| ADR-RUN-0306 | General database commands ship on CLI, MCP, and HTTP | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 | ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
@@ -1797,15 +1798,13 @@ The owner of these edges and of their criteria is
    |---|---|---|
    | `api-types` | `serde`, `schemars`, `utoipa` | design table |
    | `store-*` | `sqlx` with exactly one driver feature | design table |
-   | `service` | `api-types`, the `store-*` crates; `sc-command` with default features | design table; `sc-command` follows from service functions returning `OpError` |
+   | `service` | the adaptor, `api-types`; `sc-command` with default features | design table; `sc-command` follows from service functions returning `OpError` |
+   | adaptor | `<project>-schema` and the `store-*` crates whose rows it moves | [ADR-RUN-0305](architecture.md), [REQ-RUN-0324](requirements.md) |
    | `daemon` | `service`, `sc-runtime`, `sc-config`; `api-types`; `sc-command` with its `server` cargo feature | design table; the last two follow from handlers naming `api-types` structs, `Envelope<T>` and `into_mcp()` |
    | `cli` | `api-types`, `sc-transport`, `sc-command`, `sc-config`, none with the `server` cargo feature | design table |
 
-2. Only `store-*` crates depend on sqlx. Only `service` depends on `store-*`
-   crates.
-3. The project's `Stores` struct MUST be defined in `service`. This follows
-   from two facts: service functions take `&Stores`, and only `service` may
-   depend on the store crates whose handles `Stores` holds.
+2. Only `store-*` crates depend on sqlx. Only `service` and the adaptor depend on `store-*` crates. `service` depends on the adaptor. `daemon` and `cli` do not. Amended 2026-10-25.
+3. The project's `Stores` struct MUST be defined in `service`. Request handlers take `&Stores`. The adaptor holds the store handles it uses to move rows. Amended 2026-10-25: the adaptor, as well as `service`, may depend on `store-*`.
 4. `api-types` MUST NOT depend on any other crate of the generated workspace
    or on any of the four library crates.
 5. `cli` MUST NOT have a normal (non-dev) dependency, direct or transitive,
@@ -2337,6 +2336,23 @@ Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook 
 - beads-cache ADR-BDC-0006.
 - [ADR-RUN-0012](architecture.md). The writer and the cron store are separate rusqlite connections.
 - [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md).
+
+## ADR-RUN-0306: General database commands ship on CLI, MCP, and HTTP
+
+**Status:** Active  
+**Decision Date:** 2026-10-25  
+**Source:** Owner, 2026-10-25, recorded as [REQ-RUN-0331](requirements.md).
+
+### Decision
+
+1. A layout that has a store renders general database commands on the CLI, MCP, and HTTP. The set includes `delete row <table> <id>`. The commands are on by default.
+2. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route. The worked example remains `widget.create` and `widget.get`.
+3. A flag removes the general commands from those three surfaces. A layout with no database renders none of them.
+4. The consumer adaptor moves rows. These commands do not add a command registry. Framework crates do not move rows.
+
+### Related Documents
+
+- [REQ-RUN-0331](requirements.md), [REQ-RUN-0302](requirements.md), [ADR-RUN-0001](architecture.md).
 
 ## Sprint a-1 evidence record
 
