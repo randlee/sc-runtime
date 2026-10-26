@@ -58,7 +58,7 @@ Fallible public functions return `CronError`, the crate's one error enum. The va
 ## Tasks
 
 1. REQ-RUN-0001, REQ-CRON-0001: copy the crate into `crates/sc-cron` and add the workspace member.
-2. REQ-CRON-0002: a schedule uses a normal crontab string of five fields, minute first. `*/5 * * * *` means every fifth minute. ADR-RUN-0013 also keeps a six-field seconds-first string valid.
+2. REQ-CRON-0002: a sc-cron schedule is a normal crontab string of five fields: minute, hour, day of month, month, and day of week. `*/5 * * * *` means every fifth minute. ADR-RUN-0013 point 2 keeps a six-field seconds-first string valid so an existing spec still parses. That six-field string is a compatibility note. It is not the REQ-CRON-0002 schedule.
 3. REQ-CRON-0003: a `Rust` row calls `Job`. A `Python` row runs `python3 <module> cron.tick` or `python3 <module> cron.stop` and writes one JSON object to stdin. The object includes the schedule name and the row payload. It does not include ATM team or phase fields. The crate exposes no HTTP route, MCP tool, or binary.
 4. REQ-CRON-0004: the crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The crate does not migrate the consumer's other tables.
 5. REQ-RUN-0005: add `boundaries/sc-cron/sc-cron.toml` with `allowed_dependents = []` and forbidden edges to every other workspace crate. Add `sc-cron` to the forbidden edges of `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-runtime-db-sqlite`.
