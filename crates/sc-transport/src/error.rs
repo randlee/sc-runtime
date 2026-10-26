@@ -37,6 +37,9 @@ pub const CODE_ENDPOINT_BUSY: &str = "TRANSPORT.ENDPOINT_BUSY";
 /// Stable code when a UDS path exists and is not a socket.
 pub const CODE_NOT_A_SOCKET: &str = "TRANSPORT.NOT_A_SOCKET";
 
+/// Stable code when the platform cannot bind a UDS endpoint.
+pub const CODE_UNSUPPORTED_ENDPOINT: &str = "TRANSPORT.UNSUPPORTED_ENDPOINT";
+
 const MISSING_TCP_PORT_DETAIL: &str = "set TransportConfig::tcp_port or pass a tcp: endpoint override; this crate has no default port";
 
 /// Cause text chained from [`TransportError::source`].
@@ -202,6 +205,16 @@ pub enum TransportError {
         /// Why the path was rejected.
         cause: TransportCause,
     },
+    /// This platform cannot bind the endpoint. UDS on non-Unix is this case.
+    #[non_exhaustive]
+    UnsupportedEndpoint {
+        /// Informational copy of [`CODE_UNSUPPORTED_ENDPOINT`]. Prefer [`TransportError::code`].
+        code: &'static str,
+        /// The endpoint that was rejected.
+        endpoint: Endpoint,
+        /// Why the endpoint is unsupported.
+        cause: TransportCause,
+    },
 }
 
 impl TransportError {
@@ -222,6 +235,7 @@ impl TransportError {
             Self::Bind { .. } => CODE_BIND,
             Self::EndpointBusy { .. } => CODE_ENDPOINT_BUSY,
             Self::NotASocket { .. } => CODE_NOT_A_SOCKET,
+            Self::UnsupportedEndpoint { .. } => CODE_UNSUPPORTED_ENDPOINT,
         }
     }
 
@@ -266,6 +280,9 @@ impl TransportError {
             }
             Self::NotASocket { .. } => {
                 "Choose a socket path. The existing path was left unchanged."
+            }
+            Self::UnsupportedEndpoint { .. } => {
+                "Use a tcp: endpoint. Unix domain sockets are not available on this platform."
             }
         }
     }
@@ -347,12 +364,24 @@ impl TransportError {
         }
     }
 
+    /// Rejects an endpoint this platform cannot bind.
+    ///
+    /// Recovery tells the caller to use a `tcp:` endpoint.
+    #[cfg(all(feature = "server", not(unix)))]
+    pub(crate) fn unsupported_endpoint(endpoint: Endpoint, cause: impl Into<String>) -> Self {
+        Self::UnsupportedEndpoint {
+            code: CODE_UNSUPPORTED_ENDPOINT,
+            endpoint,
+            cause: TransportCause::new(cause),
+        }
+    }
+
     #[cfg(feature = "server")]
     #[cfg_attr(
         windows,
         expect(
             dead_code,
-            reason = "Windows build of the UDS lock error; bind rejects UDS before this constructor runs"
+            reason = "Unix endpoint-lock error. Windows bind returns UnsupportedEndpoint instead"
         )
     )]
     pub(crate) fn endpoint_busy(endpoint: Endpoint, cause: impl Into<String>) -> Self {
@@ -368,7 +397,7 @@ impl TransportError {
         windows,
         expect(
             dead_code,
-            reason = "Windows build of the UDS path error; bind rejects UDS before this constructor runs"
+            reason = "Unix socket-path error. Windows bind returns UnsupportedEndpoint instead"
         )
     )]
     pub(crate) fn not_a_socket(endpoint: Endpoint, cause: impl Into<String>) -> Self {
@@ -387,7 +416,8 @@ impl TransportError {
             | Self::Request { cause, .. }
             | Self::Bind { cause, .. }
             | Self::EndpointBusy { cause, .. }
-            | Self::NotASocket { cause, .. } => Some(cause),
+            | Self::NotASocket { cause, .. }
+            | Self::UnsupportedEndpoint { cause, .. } => Some(cause),
             Self::InvalidName { .. }
             | Self::InvalidEndpoint { .. }
             | Self::MissingTcpPort { .. }
@@ -440,6 +470,11 @@ impl fmt::Display for TransportError {
                 cause,
             }
             | Self::NotASocket {
+                code,
+                endpoint,
+                cause,
+            }
+            | Self::UnsupportedEndpoint {
                 code,
                 endpoint,
                 cause,
@@ -541,8 +576,13 @@ mod tests {
             },
             TransportError::NotASocket {
                 code: CODE_NOT_A_SOCKET,
-                endpoint,
+                endpoint: endpoint.clone(),
                 cause: TransportCause::new("regular file"),
+            },
+            TransportError::UnsupportedEndpoint {
+                code: CODE_UNSUPPORTED_ENDPOINT,
+                endpoint,
+                cause: TransportCause::new("UDS endpoints are not supported on this platform"),
             },
         ];
         for err in cases {
@@ -589,6 +629,17 @@ mod tests {
             root.recovery().contains("LOCALAPPDATA"),
             "{}",
             root.recovery()
+        );
+        let unsupported = TransportError::UnsupportedEndpoint {
+            code: CODE_UNSUPPORTED_ENDPOINT,
+            endpoint: Endpoint::Uds(PathBuf::from("daemon.sock")),
+            cause: TransportCause::new("UDS endpoints are not supported on this platform"),
+        };
+        assert_eq!(unsupported.code(), CODE_UNSUPPORTED_ENDPOINT);
+        assert!(
+            unsupported.recovery().contains("tcp:"),
+            "{}",
+            unsupported.recovery()
         );
     }
 }

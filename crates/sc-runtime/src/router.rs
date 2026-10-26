@@ -4,6 +4,8 @@
 //! HTTP. Store and dependency readiness stay on a project route such as
 //! `GET /ready`. That path is left unreserved, and `/health` stays liveness.
 
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -14,7 +16,7 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use rmcp::transport::streamable_http_server::StreamableHttpService;
-use sc_command::Envelope;
+use sc_command::{Envelope, ErrorKind, OpError};
 use serde::Serialize;
 use utoipa::openapi::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
@@ -30,6 +32,12 @@ pub(crate) const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 const REQUEST_TIMEOUT_BODY: &str = "the handler exceeded its time limit";
 const DRAIN_TIMEOUT_BODY: &str = "shutdown finished waiting for this request";
+
+/// Stable code when a handler exceeds [`REQUEST_TIMEOUT`].
+const CODE_REQUEST_TIMEOUT: &str = "RUNTIME.REQUEST_TIMEOUT";
+
+/// Stable code when shutdown stops waiting for an in-flight handler.
+const CODE_DRAIN_TIMEOUT: &str = "RUNTIME.DRAIN_TIMEOUT";
 
 /// Body of the liveness probe `GET /health`.
 ///
@@ -110,48 +118,87 @@ async fn enforce_deadlines(
     let handler = next.run(request);
     tokio::pin!(handler);
     let deadline = tokio::time::Instant::now() + limit;
-    let shutdown_started = async {
-        if *shutdown.borrow() {
+    match tokio::time::timeout_at(
+        deadline,
+        race_handler_or_shutdown(handler.as_mut(), shutdown),
+    )
+    .await
+    {
+        Ok(Some(response)) => response,
+        Err(_elapsed) => request_timeout_response(),
+        Ok(None) => drain_handler(handler, deadline, drain).await,
+    }
+}
+
+/// Returns the handler response, or `None` when shutdown has started.
+///
+/// The handler stays in the caller's [`Pin`] when shutdown wins, so the drain
+/// bound can keep polling it. `timeout_at` on this future is the request limit.
+async fn race_handler_or_shutdown(
+    handler: Pin<&mut impl Future<Output = Response>>,
+    shutdown: &mut tokio::sync::watch::Receiver<bool>,
+) -> Option<Response> {
+    tokio::select! {
+        biased;
+        response = handler => Some(response),
+        () = shutdown_signal(shutdown) => None,
+    }
+}
+
+async fn shutdown_signal(shutdown: &mut tokio::sync::watch::Receiver<bool>) {
+    if *shutdown.borrow() {
+        return;
+    }
+    loop {
+        if shutdown.changed().await.is_err() || *shutdown.borrow() {
             return;
         }
-        loop {
-            if shutdown.changed().await.is_err() || *shutdown.borrow() {
-                return;
-            }
-        }
-    };
-    tokio::pin!(shutdown_started);
-
-    tokio::select! {
-        biased;
-        response = &mut handler => return response,
-        () = until(deadline) => {
-            return deadline_response(StatusCode::REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY);
-        }
-        () = &mut shutdown_started => {}
     }
+}
 
+async fn drain_handler(
+    handler: Pin<&mut impl Future<Output = Response>>,
+    request_deadline: tokio::time::Instant,
+    drain: Duration,
+) -> Response {
     let drain_deadline = tokio::time::Instant::now() + drain;
-    tokio::select! {
-        biased;
-        response = handler => response,
-        () = until(drain_deadline) => {
-            deadline_response(StatusCode::SERVICE_UNAVAILABLE, DRAIN_TIMEOUT_BODY)
-        }
-        () = until(deadline) => deadline_response(StatusCode::REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY),
+    let request_first = request_deadline <= drain_deadline;
+    let bound = if request_first {
+        request_deadline
+    } else {
+        drain_deadline
+    };
+    match tokio::time::timeout_at(bound, handler).await {
+        Ok(response) => response,
+        Err(_elapsed) if request_first => request_timeout_response(),
+        Err(_elapsed) => drain_timeout_response(),
     }
 }
 
-/// Completes when `deadline` is reached.
-///
-/// The request and drain bounds use an absolute deadline so a worker is not
-/// parked by a timer call named in ADR-RUN-0011.
-async fn until(deadline: tokio::time::Instant) {
-    let _ = tokio::time::timeout_at(deadline, std::future::pending::<()>()).await;
+fn request_timeout_response() -> Response {
+    // [`ErrorKind`] has no 408. The envelope kind stays `unavailable` and the
+    // HTTP status is set to 408 after serialization.
+    deadline_response(
+        StatusCode::REQUEST_TIMEOUT,
+        CODE_REQUEST_TIMEOUT,
+        REQUEST_TIMEOUT_BODY,
+    )
 }
 
-fn deadline_response(status: StatusCode, body: &'static str) -> Response {
-    (status, body).into_response()
+fn drain_timeout_response() -> Response {
+    deadline_response(
+        StatusCode::SERVICE_UNAVAILABLE,
+        CODE_DRAIN_TIMEOUT,
+        DRAIN_TIMEOUT_BODY,
+    )
+}
+
+fn deadline_response(status: StatusCode, code: &'static str, message: &'static str) -> Response {
+    let envelope =
+        Envelope::<()>::failure(OpError::from_code(ErrorKind::Unavailable, code, message));
+    let mut response = envelope.into_response();
+    *response.status_mut() = status;
+    response
 }
 
 /// Mounts the rmcp service at `/mcp` as it was given.
@@ -261,8 +308,56 @@ mod tests {
             .await
             .expect("slow");
         assert_eq!(slow.status(), reqwest::StatusCode::REQUEST_TIMEOUT);
-        assert_eq!(slow.text().await.expect("body"), REQUEST_TIMEOUT_BODY);
+        let body: serde_json::Value = slow.json().await.expect("envelope");
+        assert_eq!(body["ok"], false);
+        assert_eq!(body["error"]["code"], CODE_REQUEST_TIMEOUT);
+        assert_eq!(body["error"]["message"], REQUEST_TIMEOUT_BODY);
         drop(shutdown_tx);
+    }
+
+    #[tokio::test]
+    async fn shutdown_during_handler_returns_drain_envelope() {
+        let (_shutdown_tx, shutdown_rx) = tokio::sync::watch::channel(true);
+        let router = with_request_timeout(
+            axum::Router::new()
+                .route("/fast", get(|| async { "ok" }))
+                .route("/slow", get(std::future::pending::<&'static str>)),
+            Duration::from_secs(30),
+            shutdown_rx,
+            Duration::from_millis(100),
+        );
+        let listener = tokio::net::TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 0))
+            .await
+            .expect("bind");
+        let addr = listener.local_addr().expect("addr");
+        tokio::spawn(async move {
+            let _ = axum::serve(listener, router).await;
+        });
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .expect("client");
+        let fast_url = format!("http://{addr}/fast");
+        let mut ready = false;
+        for _ in 0..50 {
+            if client.get(&fast_url).send().await.is_ok() {
+                ready = true;
+                break;
+            }
+            let _ =
+                tokio::time::timeout(Duration::from_millis(10), std::future::pending::<()>()).await;
+        }
+        assert!(ready, "server did not accept");
+        let slow = client
+            .get(format!("http://{addr}/slow"))
+            .send()
+            .await
+            .expect("slow");
+        assert_eq!(slow.status(), reqwest::StatusCode::SERVICE_UNAVAILABLE);
+        let body: serde_json::Value = slow.json().await.expect("envelope");
+        assert_eq!(body["ok"], false);
+        assert_eq!(body["error"]["code"], CODE_DRAIN_TIMEOUT);
+        assert_eq!(body["error"]["message"], DRAIN_TIMEOUT_BODY);
     }
 
     #[test]

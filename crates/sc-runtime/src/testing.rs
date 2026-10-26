@@ -367,7 +367,7 @@ where
             return Err(err);
         }
     };
-    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx))
+    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx)) // allow: NFR-RUN-0002 fixture thread
 }
 
 async fn run_until_stopped<S, FStores, Fut, FRoutes>(

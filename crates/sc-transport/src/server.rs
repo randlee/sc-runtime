@@ -54,7 +54,8 @@ use crate::error::TransportError;
 /// directory is missing, or lock I/O fails. Returns
 /// [`TransportError::EndpointBusy`] when the endpoint lock is held. Returns
 /// [`TransportError::NotASocket`] when the UDS path is not a socket. On
-/// non-Unix targets a UDS endpoint returns [`TransportError::Bind`].
+/// non-Unix targets a UDS endpoint returns [`TransportError::UnsupportedEndpoint`]
+/// and the recovery text names a `tcp:` endpoint.
 ///
 /// # Examples
 ///
@@ -350,14 +351,28 @@ async fn bind_tcp(addr: std::net::SocketAddr) -> Result<Listener, TransportError
 }
 
 async fn bind_uds(path: &Path) -> Result<Listener, TransportError> {
-    let path = path.to_path_buf();
-    let endpoint = Endpoint::Uds(path.clone());
-    match tokio::task::spawn_blocking(move || bind_uds_blocking(path)).await {
-        Ok(result) => result,
-        Err(err) => Err(TransportError::bind(
-            endpoint,
-            format!("blocking bind task failed: {err}"),
-        )),
+    #[cfg(unix)]
+    {
+        let path = path.to_path_buf();
+        let endpoint = Endpoint::Uds(path.clone());
+        match tokio::task::spawn_blocking(move || bind_uds_blocking(path)).await {
+            Ok(result) => result,
+            Err(err) => Err(TransportError::bind(
+                endpoint,
+                format!("blocking bind task failed: {err}"),
+            )),
+        }
+    }
+    #[cfg(windows)]
+    {
+        bind_uds_blocking(path.to_path_buf())
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        Err(TransportError::unsupported_endpoint(
+            Endpoint::Uds(path.to_path_buf()),
+            "UDS endpoints are not supported on this platform",
+        ))
     }
 }
 
@@ -399,34 +414,27 @@ fn bind_uds_blocking(path: PathBuf) -> Result<Listener, TransportError> {
     })
 }
 
-#[cfg(windows)]
-fn bind_uds_blocking(path: PathBuf) -> Result<Listener, TransportError> {
-    let endpoint = Endpoint::Uds(path.clone());
-    let lock_path = endpoint_lock_path(&path);
-    let Err(err) = acquire_endpoint_lock(&endpoint, &lock_path) else {
-        return Err(TransportError::bind(
-            endpoint,
-            "UDS endpoints are not supported on this platform",
-        ));
-    };
-    Err(err)
+fn endpoint_lock_path(socket: &Path) -> PathBuf {
+    let mut name = socket.as_os_str().to_owned();
+    name.push(".lock");
+    PathBuf::from(name)
 }
 
 #[cfg(windows)]
-fn acquire_endpoint_lock(endpoint: &Endpoint, lock_path: &Path) -> Result<File, TransportError> {
-    Err(TransportError::bind(
+fn bind_uds_blocking(path: PathBuf) -> Result<Listener, TransportError> {
+    let endpoint = Endpoint::Uds(path.clone());
+    Err(acquire_endpoint_lock(&endpoint, &endpoint_lock_path(&path)))
+}
+
+#[cfg(windows)]
+fn acquire_endpoint_lock(endpoint: &Endpoint, lock_path: &Path) -> TransportError {
+    TransportError::unsupported_endpoint(
         endpoint.clone(),
         format!(
             "UDS endpoints are not supported on this platform ({})",
             lock_path.display()
         ),
-    ))
-}
-
-fn endpoint_lock_path(socket: &Path) -> PathBuf {
-    let mut name = socket.as_os_str().to_owned();
-    name.push(".lock");
-    PathBuf::from(name)
+    )
 }
 
 #[cfg(unix)]

@@ -42,23 +42,28 @@ command = ["sc-lint", "lint", "identity-literals", "--root", ".", "--config", "s
 name = "compatibility"
 command = ["sc-lint", "compatibility", "check", "--config", "sc-lint.toml"]
 
-# Package-scoped until the rest of the workspace cross-compiles. Later sprints
-# restore the workspace form:
+# Re-apply after `sc-lint init --just`. The recipe uses {{python}}.
+[[tool.sc-lint.lint]]
+name = "adr-run-0011"
+command = ["just", "adr-run-0011"]
+
+# `sc-runtime-db-sqlite` is excluded until that crate cross-compiles.
+# Later sprints drop the exclude and keep the workspace form:
 #   cargo xwin check --workspace --target x86_64-pc-windows-msvc
 #   cargo xwin clippy --workspace --all-targets --target x86_64-pc-windows-msvc -- -D warnings -D clippy::await_holding_lock
 [[tool.sc-lint.lint]]
 name = "xwin-check"
-command = ["cargo", "xwin", "check", "-p", "sc-config", "-p", "sc-transport", "-p", "sc-command", "-p", "sc-runtime", "--target", "x86_64-pc-windows-msvc"]
+command = ["cargo", "xwin", "check", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--target", "x86_64-pc-windows-msvc"]
 
 [[tool.sc-lint.lint]]
 name = "xwin-clippy"
-command = ["cargo", "xwin", "clippy", "-p", "sc-config", "-p", "sc-transport", "-p", "sc-command", "-p", "sc-runtime", "--all-targets", "--target", "x86_64-pc-windows-msvc", "--", "-D", "warnings", "-D", "clippy::await_holding_lock"]
+command = ["cargo", "xwin", "clippy", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--all-targets", "--target", "x86_64-pc-windows-msvc", "--", "-D", "warnings", "-D", "clippy::await_holding_lock"]
 
 [tool.sc-lint.lint_profiles]
 # Fast boundary-only pass while leaf crates land (a-2..a-4).
 gates = ["boundary", "line-counts"]
 # Full maintainer gate once the workspace exists (a-5+).
-full = ["boundary", "line-counts", "fmt", "clippy", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "xwin-check", "xwin-clippy"]
+full = ["boundary", "line-counts", "fmt", "clippy", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
 
 [tool.sc-lint.analyzers.portability]
 exclude_rules = []
