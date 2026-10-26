@@ -1,0 +1,103 @@
+{
+  "schema": "plan-anchoring/run/1",
+  "run_id": "plan-20261026T012056Z-fixture_ADR-RUN-0002_fail_1",
+  "gate": "plan",
+  "created_at": "2026-10-26T01:20:56+00:00",
+  "anchors_path": "doc/plan/phase-current/anchors.json",
+  "plan": "phase-current",
+  "item": {
+    "id": "fixture:ADR-RUN-0002:fail:1",
+    "title": "fixture",
+    "source": "fixtures",
+    "chars": 99,
+    "truncated": false
+  },
+  "model_requested": "jev-latest",
+  "model_answered": "jev-1.14.0",
+  "threshold": 0.6,
+  "max_request_bytes": 24000,
+  "min_item_chars": 2000,
+  "dry_run": false,
+  "fixture": false,
+  "results": [
+    {
+      "anchor_id": "ADR-RUN-0002",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0002",
+      "statement": "sc-runtime is a cargo-generate template plus published library crates.",
+      "quote": "sc-runtime is a cargo-generate template plus published library crates.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "requirements register",
+      "anchor_version": 2,
+      "deterministic_check": "Generated projects depend on the library crates by version, and template code is rendered into the project.",
+      "kind": "directive",
+      "leaning": "contradicted",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "verdict": "contradicted",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.4,
+          "probabilities": {
+            "yes": 0.33,
+            "no": 0.6,
+            "unclear": 0.07
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.95,
+          "probabilities": {
+            "yes": 0.97,
+            "no": 0.03,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.4,
+      "explanation": "This bead proposes something the anchor rules out.",
+      "usage": {
+        "input_tokens": 1005,
+        "output_tokens": 117
+      },
+      "attempts": 1,
+      "item_chars_sent": 99,
+      "item_shortened": false,
+      "request_bytes": 3004
+    }
+  ],
+  "summary": {
+    "counts": {
+      "contradicted": 1
+    },
+    "failing": [
+      "ADR-RUN-0002"
+    ],
+    "leaning_counts": {
+      "contradicted": 1
+    },
+    "unstable": [],
+    "errors": [],
+    "excluded": [],
+    "shortened": [],
+    "pass": false
+  }
+}

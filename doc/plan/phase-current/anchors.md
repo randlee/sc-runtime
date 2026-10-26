@@ -483,7 +483,7 @@ Anchor: crates/sc-cron is a workspace member. It depends on no other workspace c
 
 > crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
 Summary: sc-cron is a workspace member
 
@@ -491,7 +491,20 @@ Scope: a bead that edits Cargo.toml or crates/sc-cron
 
 Deterministic check to pair with the development gate: Cargo.toml members include crates/sc-cron, and that crate depends on no other workspace crate.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-4x5`, plan questions `run-4x5.1`, dev questions `run-4x5.2`
+
+Fixtures:
+- pass: crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
+- fail: crates/sc-cron depends on the sc-runtime library crate, and the template names sc-cron.
 
 ## REQ-CRON-0002
 
@@ -507,6 +520,15 @@ Scope: a bead that edits the sc-cron expression parser
 
 Deterministic check to pair with the development gate: A test expects parsing */5 * * * * to mean every fifth minute.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-8n1`, plan questions `run-8n1.1`, dev questions `run-8n1.2`
 
 Fixtures:
@@ -519,7 +541,7 @@ Anchor: A schedule row names either an in-process Rust job or a Python module. F
 
 > A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
 Summary: Rust job or Python module
 
@@ -527,7 +549,20 @@ Scope: a bead that adds or edits crates/sc-cron
 
 Deterministic check to pair with the development gate: crates/sc-cron runs a Rust job or python3 <module> cron.tick or cron.stop with JSON on stdin, and has no HTTP route, MCP tool, or binary.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-anr`, plan questions `run-anr.1`, dev questions `run-anr.2`
+
+Fixtures:
+- pass: A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
+- fail: A Python schedule row is served by an HTTP route on the sc-cron crate, and the crate does not run python3.
 
 ## REQ-CRON-0004
 
@@ -535,7 +570,7 @@ Anchor: The sc-cron crate creates one schedule table. A test writes a row withou
 
 > The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
 Summary: One schedule table
 
@@ -543,7 +578,20 @@ Scope: a bead that adds the sc-cron configuration table
 
 Deterministic check to pair with the development gate: A test writes a schedule row without constructing SqliteWriter.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-ec5`, plan questions `run-ec5.1`, dev questions `run-ec5.2`
+
+Fixtures:
+- pass: The sc-cron crate creates one schedule table. A test writes a row without constructing SqliteWriter. The crate does not migrate the consumer's other tables.
+- fail: The sc-cron crate migrates the consumer's other tables, and a schedule row is written by constructing SqliteWriter.
 
 ## REQ-CRON-0005
 
@@ -551,7 +599,7 @@ Anchor: Fallible public functions in sc-cron return CronError.
 
 > Fallible public functions in sc-cron return CronError.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
 Summary: One CronError enum
 
@@ -559,7 +607,20 @@ Scope: a bead that adds or edits crates/sc-cron
 
 Deterministic check to pair with the development gate: The public error type in crates/sc-cron is CronError.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-whn`, plan questions `run-whn.1`, dev questions `run-whn.2`
+
+Fixtures:
+- pass: Fallible public functions in sc-cron return CronError.
+- fail: Fallible public functions in sc-cron return a type other than CronError.
 
 ## ADR-RUN-0013
 
@@ -567,7 +628,7 @@ Anchor: sc-cron is an optional SQLite cron crate. A normal schedule string is fi
 
 > sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
 Summary: ADR-RUN-0013 sc-cron decision
 
@@ -575,7 +636,20 @@ Scope: a bead that adds or edits crates/sc-cron
 
 Deterministic check to pair with the development gate: docs/architecture.md contains ADR-RUN-0013 and docs/sc-cron/requirements.md contains REQ-CRON-0001 through REQ-CRON-0005.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-pny`, plan questions `run-pny.1`, dev questions `run-pny.2`
+
+Fixtures:
+- pass: sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+- fail: sc-cron is required for every application, and a schedule string is six fields with seconds first.
 
 ## ADR-RUN-0305
 
@@ -583,7 +657,7 @@ Anchor: SQLite and Postgres meet in an adaptor crate generated into the consumer
 
 > SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Generated consumer store adaptor
 
@@ -592,11 +666,18 @@ Scope: a bead that adds, removes, or generates a store adaptor
 Deterministic check to pair with the development gate: docs/architecture.md contains ADR-RUN-0305.
 
 Excluded from (not judged; the cell passes as `excluded`):
-- `b-4`: Sprint b-4 pairs the stores. It does not generate the adaptor crate. That generation is sprint b-7.
-- `b-5`: Sprint b-5 fills the Postgres store. It does not generate the adaptor crate. That generation is sprint b-7.
-- `b-6`: Sprint b-6 fills the MySQL store. It does not generate the adaptor crate. That generation is sprint b-7.
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
 
 Beads: anchor `run-0fr`, plan questions `run-0fr.1`, dev questions `run-0fr.2`
+
+Fixtures:
+- pass: SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
+- fail: SQLite and Postgres meet inside the sc-runtime library crate, and no adaptor is generated into the consumer repository.
 
 ## REQ-RUN-0313
 
@@ -604,7 +685,7 @@ Anchor: The relationship between the local SQLite store and the remote Postgres 
 
 > The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Adaptor crate defines the stores
 
@@ -612,7 +693,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: A generated repository contains an adaptor crate that names both stores.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-dgl`, plan questions `run-dgl.1`, dev questions `run-dgl.2`
+
+Fixtures:
+- pass: The relationship between the local SQLite store and the remote Postgres or SQL store is defined in an adaptor crate on the consumer repository.
+- fail: The relationship between the local SQLite store and the remote store is defined in the sc-runtime library crate.
 
 ## REQ-RUN-0314
 
@@ -627,6 +721,15 @@ Summary: Copy adaptor matches the remote schema
 Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: A generated copy adaptor creates the shared remote tables in SQLite.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
 
 Beads: anchor `run-5zk`, plan questions `run-5zk.1`, dev questions `run-5zk.2`
 
@@ -648,6 +751,15 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-2is`, plan questions `run-2is.1`, dev questions `run-2is.2`
 
 Fixtures:
@@ -660,7 +772,7 @@ Anchor: The consumer repository defines the rollup from host rows into the Postg
 
 > The consumer repository defines the rollup from host rows into the Postgres aggregate.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Consumer defines the host rollup
 
@@ -668,7 +780,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: The host-aggregate adaptor has a consumer-owned function that maps host rows into the Postgres aggregate.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-id3`, plan questions `run-id3.1`, dev questions `run-id3.2`
+
+Fixtures:
+- pass: The consumer repository defines the rollup from host rows into the Postgres aggregate.
+- fail: The sc-runtime library defines the rollup from host rows into the Postgres aggregate.
 
 ## REQ-RUN-0317
 
@@ -676,7 +801,7 @@ Anchor: Adaptor Rust code and models in a new repository are generated by the co
 
 > Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py).
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: just new generates the adaptor
 
@@ -684,7 +809,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: just new writes the adaptor crate and its models into the new repository.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+
 Beads: anchor `run-bda`, plan questions `run-bda.1`, dev questions `run-bda.2`
+
+Fixtures:
+- pass: Adaptor Rust code and models in a new repository are generated by the command just new (scripts/new_project.py).
+- fail: Adaptor Rust code in a new repository is written by hand, and just new does not generate it.
 
 ## REQ-RUN-0318
 
@@ -692,7 +830,7 @@ Anchor: The library crate named sc-runtime does not generate adaptor code.
 
 > The library crate named sc-runtime does not generate adaptor code.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Library crate generates nothing
 
@@ -700,7 +838,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: crates/sc-runtime contains no generator.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+
 Beads: anchor `run-cck`, plan questions `run-cck.1`, dev questions `run-cck.2`
+
+Fixtures:
+- pass: The library crate named sc-runtime does not generate adaptor code.
+- fail: The library crate named sc-runtime generates the adaptor code.
 
 ## REQ-RUN-0319
 
@@ -708,7 +859,7 @@ Anchor: Generation flags name tables and columns that exist on only one of the t
 
 > Generation flags name tables and columns that exist on only one of the two stores.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 3.
 
 Summary: Flags name one-sided tables and columns
 
@@ -716,7 +867,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: Generation input can name a SQLite-only table, a SQL-server-only table, and a column that exists on only one side.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-xoo`, plan questions `run-xoo.1`, dev questions `run-xoo.2`
+
+Fixtures:
+- pass: Generation flags name tables and columns that exist on only one of the two stores. A skipped table may be the SQLite table or the SQL-server table.
+- fail: Generation has no flag for a table that exists on only one of the two stores.
 
 ## REQ-RUN-0320
 
@@ -724,7 +888,7 @@ Anchor: Every consumer repository uses the same generated implementation of the 
 
 > Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: One implementation per common pattern
 
@@ -732,7 +896,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: Two generated repositories that select the same pattern contain the same adaptor implementation.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-jp8`, plan questions `run-jp8.1`, dev questions `run-jp8.2`
+
+Fixtures:
+- pass: Every consumer repository uses the same generated implementation of the copy pattern and the same generated implementation of the host-aggregate pattern.
+- fail: Each consumer repository writes its own copy-pattern implementation.
 
 ## REQ-RUN-0321
 
@@ -748,6 +925,13 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: store-sqlite contains no Postgres SQL, and store-postgres contains no SQLite SQL.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-iuv`, plan questions `run-iuv.1`, dev questions `run-iuv.2`
 
 Fixtures:
@@ -760,7 +944,7 @@ Anchor: An adaptor that is neither the copy pattern nor the host-aggregate patte
 
 > An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 3.
 
 Summary: Advanced adaptor is consumer code
 
@@ -768,7 +952,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: A third adaptor is a file the consumer wrote.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-5ds`, plan questions `run-5ds.1`, dev questions `run-5ds.2`
+
+Fixtures:
+- pass: An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
+- fail: An adaptor that is neither the copy pattern nor the host-aggregate pattern is generated by just new, and the consumer does not write it.
 
 ## REQ-RUN-0324
 
@@ -776,7 +973,7 @@ Anchor: The consumer adaptor moves rows between the local store and the remote s
 
 > The consumer adaptor moves rows between the local store and the remote store.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Adaptor moves rows between stores
 
@@ -784,7 +981,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: The adaptor crate contains the copy from one store to the other.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-8b6`, plan questions `run-8b6.1`, dev questions `run-8b6.2`
+
+Fixtures:
+- pass: The consumer adaptor moves rows between the local store and the remote store.
+- fail: The consumer adaptor does not move rows between the local store and the remote store.
 
 ## REQ-RUN-0325
 
@@ -792,7 +1002,7 @@ Anchor: The sc-runtime crates do not move rows between stores.
 
 > The sc-runtime crates do not move rows between stores.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Framework crates move no rows
 
@@ -800,7 +1010,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: crates/ contains no store-to-store copy.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-683`, plan questions `run-683.1`, dev questions `run-683.2`
+
+Fixtures:
+- pass: The sc-runtime crates do not move rows between stores.
+- fail: The sc-runtime crates move rows between stores.
 
 ## REQ-RUN-0323
 
@@ -808,7 +1031,7 @@ Anchor: Store synchronization is scheduled by the consuming application. The ada
 
 > Store synchronization is scheduled by the consuming application. The adaptor starts no timer.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: The application schedules sync
 
@@ -816,7 +1039,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: The adaptor crate starts no timer. A schedule is registered by application code.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-7mk`, plan questions `run-7mk.1`, dev questions `run-7mk.2`
+
+Fixtures:
+- pass: Store synchronization is scheduled by the consuming application. The adaptor starts no timer.
+- fail: The adaptor starts a timer that synchronizes the stores.
 
 ## REQ-RUN-0326
 
@@ -832,6 +1068,15 @@ Scope: a bead that edits scripts/new_project.py, wizard/answers.schema.json, or 
 
 Deterministic check to pair with the development gate: wizard/answers.schema.json accepts no database, SQLite only, one sqlx SQL engine, and SQLite plus one sqlx SQL engine.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+
 Beads: anchor `run-a67`, plan questions `run-a67.1`, dev questions `run-a67.2`
 
 Fixtures:
@@ -844,7 +1089,7 @@ Anchor: Two stores in one application use the same schema or a similar schema.
 
 > Two stores in one application use the same schema or a similar schema.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Same schema or a similar schema
 
@@ -852,7 +1097,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: The copy pattern uses the same schema on both stores. The host-aggregate pattern uses a similar schema.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-hpn`, plan questions `run-hpn.1`, dev questions `run-hpn.2`
+
+Fixtures:
+- pass: Two stores in one application use the same schema or a similar schema.
+- fail: Two stores in one application use unrelated schemas.
 
 ## REQ-RUN-0328
 
@@ -860,7 +1118,7 @@ Anchor: Two stores in one application use one shared trait or a different trait 
 
 > Two stores in one application use one shared trait or a different trait per store.
 
-Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 1.
+Said by randlee, ADR-RUN-0305, 2026-10-25. Status: locked. Version 2.
 
 Summary: Shared trait or a trait per store
 
@@ -868,7 +1126,20 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: A generated pair names one trait that both stores implement, or a trait for each store.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+- `b-8`: Sprint b-8 does not carry this obligation.
+
 Beads: anchor `run-uc6`, plan questions `run-uc6.1`, dev questions `run-uc6.2`
+
+Fixtures:
+- pass: Two stores in one application use one shared trait or a different trait per store.
+- fail: Two stores in one application share no trait and do not have a trait per store.
 
 ## REQ-RUN-0329
 
@@ -883,6 +1154,15 @@ Summary: Package name carries the project name
 Scope: a bead that edits template crate manifests or generation of package names
 
 Deterministic check to pair with the development gate: Two projects with different names produce no package name in common.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
 
 Beads: anchor `run-3q5`, plan questions `run-3q5.1`, dev questions `run-3q5.2`
 
@@ -904,6 +1184,15 @@ Scope: a bead that adds or generates the schema crate or the types crate
 
 Deterministic check to pair with the development gate: The schema crate contains the row structs. The types crate contains no database row struct. The adaptor depends on the schema crate.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+
 Beads: anchor `run-3mg`, plan questions `run-3mg.1`, dev questions `run-3mg.2`
 
 Fixtures:
@@ -916,7 +1205,7 @@ Anchor: The template ships general database commands on the CLI, MCP, and HTTP, 
 
 > The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
 Summary: Disableable database commands
 
@@ -924,7 +1213,20 @@ Scope: a bead that edits template CLI, MCP, or HTTP commands
 
 Deterministic check to pair with the development gate: A generated project with a store registers delete row <table> <id> on the CLI, MCP, and HTTP, and a flag removes those commands.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+
 Beads: anchor `run-w7j`, plan questions `run-w7j.1`, dev questions `run-w7j.2`
+
+Fixtures:
+- pass: The template ships general database commands on the CLI, MCP, and HTTP, including delete row <table> <id>. The consumer can disable that surface.
+- fail: The template ships no database command on the CLI, on MCP, or over HTTP.
 
 ## ADR-RUN-0002
 
@@ -932,7 +1234,7 @@ Anchor: sc-runtime is a cargo-generate template plus published library crates.
 
 > sc-runtime is a cargo-generate template plus published library crates.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
 Summary: Template plus published crates
 
@@ -940,7 +1242,19 @@ Scope: a bead that adds a library crate or edits the template
 
 Deterministic check to pair with the development gate: Generated projects depend on the library crates by version, and template code is rendered into the project.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+
 Beads: anchor `run-o8s`, plan questions `run-o8s.1`, dev questions `run-o8s.2`
+
+Fixtures:
+- pass: sc-runtime is a cargo-generate template plus published library crates.
+- fail: sc-runtime is only an application, with no cargo-generate template and no published library crates.
 
 ## REQ-RUN-0503
 
@@ -948,7 +1262,7 @@ Anchor: A project generated by just new passes lint, test, and both builds with 
 
 > A project generated by just new passes lint, test, and both builds with no file edited.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 1.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
 
 Summary: Generated project is green
 
@@ -956,4 +1270,17 @@ Scope: a bead that edits the template or scripts/new_project.py
 
 Deterministic check to pair with the development gate: just new on the sqlite fixture exits 0, and just lint, just test, just build-cli, and just build-daemon exit 0 with no file edited.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-1`: Sprint b-1 does not carry this obligation.
+- `b-2`: Sprint b-2 does not carry this obligation.
+- `b-3`: Sprint b-3 does not carry this obligation.
+- `b-4`: Sprint b-4 does not carry this obligation.
+- `b-5`: Sprint b-5 does not carry this obligation.
+- `b-6`: Sprint b-6 does not carry this obligation.
+- `b-7`: Sprint b-7 does not carry this obligation.
+
 Beads: anchor `run-bfz`, plan questions `run-bfz.1`, dev questions `run-bfz.2`
+
+Fixtures:
+- pass: A project generated by just new passes lint, test, and both builds with no file edited.
+- fail: A project generated by just new fails lint until a source file is edited.
