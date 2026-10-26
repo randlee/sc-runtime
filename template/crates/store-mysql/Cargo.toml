@@ -12,9 +12,13 @@ futures-util = "0.3.31"
 serde_json.workspace = true
 # Direct pin. Engine features differ per store crate, and this sprint does not
 # edit the workspace manifest. Beads run-ze5 tracks a later workspace hoist.
+# mysql-rsa finishes caching_sha2_password without TLS. tls-rustls-ring-webpki
+# lets an ssl-mode URL negotiate TLS.
 sqlx = { version = "0.9.0", default-features = false, features = [
     "runtime-tokio",
     "mysql",
+    "mysql-rsa",
+    "tls-rustls-ring-webpki",
     "macros",
     "migrate",
     "sqlx-toml",

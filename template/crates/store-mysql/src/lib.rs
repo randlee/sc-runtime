@@ -13,11 +13,16 @@
 //!
 //! MySQL uses one pool of [`POOL_SIZE`] connections. Reads and writes share
 //! it. There is no write actor and no queue. TLS settings such as `ssl-mode`
-//! belong in the database URL. Pool size and acquire timeout are the constants
-//! in this crate.
+//! belong in the database URL. This crate enables sqlx `mysql-rsa` and
+//! `tls-rustls-ring-webpki`, so MySQL 8 `caching_sha2_password` can finish
+//! without a TLS server, and an `ssl-mode` URL can negotiate TLS. Pool size
+//! and acquire timeout are the constants in this crate.
 //!
 //! Live tests read `MYSQL_DATABASE_URL` and skip when it is unset.
-//! `REQUIRE_MYSQL=1` makes those tests panic instead of skipping.
+//! `REQUIRE_MYSQL=1` makes those tests panic instead of skipping. The
+//! `store-mysql live SQL` job in `.github/workflows/store-mysql.yml` sets
+//! that variable and the URL against a MySQL service, and fails if the suite
+//! skips.
 
 use std::time::Duration;
 
@@ -36,6 +41,18 @@ const ACQUIRE_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// The only table this engine's pairing path dispatches.
 const WIDGETS: &str = "widgets";
+
+/// MySQL `VARCHAR(255)` primary key, in characters.
+///
+/// A longer id cannot be stored without widening the column. Widening it to
+/// `TEXT` makes MySQL refuse the key (error 1170).
+const MAX_WIDGET_ID_CHARS: usize = 255;
+
+/// MySQL `MEDIUMTEXT` byte limit.
+///
+/// `TEXT` is 64 KiB, which is smaller than the 1 MiB pairing payload. This
+/// column is `MEDIUMTEXT` so a legal payload fits.
+const MAX_WIDGET_NAME_BYTES: usize = 16_777_215;
 
 /// One MySQL pool on the database named by [`OpenConfig::url`].
 #[derive(Debug, Clone)]
@@ -66,8 +83,10 @@ impl EngineStore for Store {
     }
 }
 
-// The table check and RowRecord codec match the other engine stores. Moving
-// them into the schema crate is outside this sprint's owned path.
+// The table check, RowRecord codec, and credential redaction match the other
+// engine stores. Moving them into the schema crate is beads run-brx: this
+// sprint cannot edit template/crates/schema. `consumer_checks.py
+// store-boundaries` fails if these copies drift.
 /// The one table-name decision for read and write.
 fn known_table(table: &str) -> Result<(), StoreError> {
     if table == WIDGETS {
@@ -78,6 +97,34 @@ fn known_table(table: &str) -> Result<(), StoreError> {
             format!("unknown table {table}"),
         ))
     }
+}
+
+/// Rejects an id or name the `widgets` columns cannot store.
+///
+/// # Errors
+///
+/// Returns [`StoreCode::Query`] when `id` is longer than
+/// [`MAX_WIDGET_ID_CHARS`] or `name` is longer than [`MAX_WIDGET_NAME_BYTES`].
+fn check_column_limits(id: &str, name: &str) -> Result<(), StoreError> {
+    let id_chars = id.chars().count();
+    if id_chars > MAX_WIDGET_ID_CHARS {
+        return Err(StoreError::new(
+            StoreCode::Query,
+            format!(
+                "widget id of {id_chars} characters exceeds the {MAX_WIDGET_ID_CHARS}-character limit"
+            ),
+        ));
+    }
+    if name.len() > MAX_WIDGET_NAME_BYTES {
+        return Err(StoreError::new(
+            StoreCode::Query,
+            format!(
+                "widget name of {} bytes exceeds the MEDIUMTEXT limit of {MAX_WIDGET_NAME_BYTES}",
+                name.len()
+            ),
+        ));
+    }
+    Ok(())
 }
 
 fn require_mysql_url(url: &str) -> Result<(), StoreError> {
@@ -175,9 +222,12 @@ fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
 /// Opens the database at `config.url` and runs migrations.
 ///
 /// `url` is a `mysql://` database URL. TLS settings such as `ssl-mode` belong
-/// in that URL's query. Pool size ([`POOL_SIZE`]) and the acquire timeout
-/// ([`ACQUIRE_TIMEOUT`]) are constants in this consumer-owned crate, not URL
-/// parameters. A filesystem path is rejected.
+/// in that URL's query. sqlx is built with `mysql-rsa` and
+/// `tls-rustls-ring-webpki`, so `caching_sha2_password` can finish when the
+/// server has no TLS, and `ssl-mode` can negotiate TLS. Pool size
+/// ([`POOL_SIZE`]) and the acquire timeout ([`ACQUIRE_TIMEOUT`]) are constants
+/// in this consumer-owned crate, not URL parameters. A filesystem path is
+/// rejected.
 ///
 /// # Examples
 ///
@@ -223,11 +273,13 @@ pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
 ///
 /// # Errors
 ///
-/// Returns [`StoreCode::Query`] when the insert fails, [`StoreCode::Conflict`]
-/// when a constraint rejects it, and [`StoreCode::Unavailable`] when the pool
-/// times out, the pool is closed, the driver reports an I/O failure, or MySQL
-/// returns SQLSTATE `40001`, `08S01`, or `08004` (or error number 1040, 1205,
-/// 1213, 2006, or 2013).
+/// Returns [`StoreCode::Query`] when the insert fails, `UUID()` returns no id,
+/// the name exceeds the `MEDIUMTEXT` limit, or the generated id exceeds the
+/// 255-character limit,
+/// [`StoreCode::Conflict`] when a constraint rejects it, and
+/// [`StoreCode::Unavailable`] when the pool times out, the pool is closed, the
+/// driver reports an I/O failure, or MySQL returns SQLSTATE `40001`, `08S01`,
+/// or `08004` (or error number 1040, 1205, 1213, 2006, or 2013).
 pub async fn insert_widget(store: &Store, name: &str) -> Result<WidgetRow, StoreError> {
     let mut tx = store
         .pool
@@ -238,7 +290,13 @@ pub async fn insert_widget(store: &Store, name: &str) -> Result<WidgetRow, Store
         .fetch_one(&mut *tx)
         .await
         .map_err(|err| from_driver(StoreCode::Query, err))?;
-    let id = generated.id;
+    let Some(id) = generated.id else {
+        return Err(StoreError::new(
+            StoreCode::Query,
+            "mysql UUID() returned no id",
+        ));
+    };
+    check_column_limits(&id, name)?;
     sqlx::query!("INSERT INTO widgets (id, name) VALUES (?, ?)", id, name)
         .execute(&mut *tx)
         .await
@@ -327,6 +385,7 @@ async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), Stor
         let widget = widget_from_payload(&row.payload)?;
         let id = widget.id.as_str();
         let name = widget.name.as_str();
+        check_column_limits(id, name)?;
         sqlx::query!("INSERT INTO widgets (id, name) VALUES (?, ?)", id, name)
             .execute(&mut *tx)
             .await
@@ -560,6 +619,38 @@ mod tests {
     }
 
     #[test]
+    fn column_limits_reject_an_id_over_255_characters() {
+        let ok_id = "a".repeat(MAX_WIDGET_ID_CHARS);
+        assert!(check_column_limits(&ok_id, "bolt").is_ok());
+        let wide = "é".repeat(MAX_WIDGET_ID_CHARS);
+        assert!(check_column_limits(&wide, "bolt").is_ok());
+
+        let id = "a".repeat(MAX_WIDGET_ID_CHARS + 1);
+        let err = check_column_limits(&id, "bolt").expect_err("id");
+        assert_eq!(err.code, StoreCode::Query);
+        assert!(!err.is_retryable());
+        assert!(err.message.contains("255-character limit"));
+        assert!(std::error::Error::source(&err).is_none());
+
+        let name = "n".repeat(MAX_WIDGET_NAME_BYTES + 1);
+        let err = check_column_limits("abc", &name).expect_err("name");
+        assert_eq!(err.code, StoreCode::Query);
+        assert!(err.message.contains("MEDIUMTEXT"));
+        assert!(!err.is_retryable());
+    }
+
+    #[test]
+    fn widgets_migration_uses_binary_ids_and_mediumtext() {
+        let sql = include_str!("../migrations/0001_widgets.sql");
+        assert!(sql.contains("VARCHAR(255)"));
+        assert!(sql.contains("utf8mb4_bin"));
+        assert!(sql.contains("MEDIUMTEXT"));
+        let manifest = include_str!("../Cargo.toml");
+        assert!(manifest.contains("mysql-rsa"));
+        assert!(manifest.contains("tls-rustls-ring-webpki"));
+    }
+
+    #[test]
     fn read_rows_rejects_payload_over_one_mib() {
         let name = "n".repeat(MAX_ROW_PAYLOAD_BYTES);
         let err = record_from_columns("id".to_owned(), name).expect_err("payload");
@@ -727,6 +818,15 @@ mod tests {
             serde_json::from_slice(&rows[0].payload).expect("json object");
         assert_eq!(payload["id"], "abc");
         assert_eq!(payload["name"], "bolt");
+        let upper = RowRecord {
+            table: WIDGETS.to_owned(),
+            payload: br#"{"id":"ABC","name":"nut"}"#.to_vec(),
+        };
+        store
+            .write_rows(WIDGETS, &[upper])
+            .await
+            .expect("case-distinct id");
+        assert_eq!(count_widgets(&store).await.expect("count"), 2);
         let loaded = get_widget(&store, WidgetId::from_column("abc"))
             .await
             .expect("get");
