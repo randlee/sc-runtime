@@ -102,9 +102,14 @@
 //! #         host_rows: &[RowRecord],
 //! #         _one_sided_columns: &[String],
 //! #     ) -> Vec<RowRecord> {
+//! #         let count = host_rows.len().to_string();
+//! #         let mut payload = vec![b'{'];
+//! #         payload.extend_from_slice(b"\"rows\":");
+//! #         payload.extend_from_slice(count.as_bytes());
+//! #         payload.push(b'}');
 //! #         vec![RowRecord {
 //! #             table: "widgets".to_owned(),
-//! #             payload: format!(r#"{{"rows":{}}}"#, host_rows.len()).into_bytes(),
+//! #             payload,
 //! #         }]
 //! #     }
 //! # }
@@ -268,10 +273,12 @@ impl TableFlags {
 ///             .first()
 ///             .map(|row| row.table.clone())
 ///             .unwrap_or_else(|| "widgets".to_owned());
-///         vec![RowRecord {
-///             table,
-///             payload: format!(r#"{{"rows":{}}}"#, host_rows.len()).into_bytes(),
-///         }]
+///         let count = host_rows.len().to_string();
+///         let mut payload = vec![b'{'];
+///         payload.extend_from_slice(b"\"rows\":");
+///         payload.extend_from_slice(count.as_bytes());
+///         payload.push(b'}');
+///         vec![RowRecord { table, payload }]
 ///     }
 /// }
 ///

@@ -117,6 +117,15 @@ impl EngineStore for MemoryStore {
     }
 }
 
+fn rows_count_json(row_count: usize) -> String {
+    let mut s = String::with_capacity(9 + row_count.to_string().len());
+    s.push('{');
+    s.push_str("\"rows\":");
+    s.push_str(&row_count.to_string());
+    s.push('}');
+    s
+}
+
 fn row(table: &str, payload: &str) -> RowRecord {
     RowRecord {
         table: table.to_owned(),
@@ -132,7 +141,7 @@ impl Rollup for CountRows {
             .first()
             .map(|row| row.table.clone())
             .unwrap_or_else(|| "widgets".to_owned());
-        vec![row(&table, &format!(r#"{{"rows":{}}}"#, host_rows.len()))]
+        vec![row(&table, &rows_count_json(host_rows.len()))]
     }
 }
 
