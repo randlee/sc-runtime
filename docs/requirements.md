@@ -1408,8 +1408,8 @@ release, in which the only database option is SQLite.
 
 1. `crates/daemon/src/mcp.rs` MUST be rendered only when the option `mcp` is
    `true`.
-2. `crates/store-sqlite` MUST be rendered when the option `db` is `sqlite`
-   (the only value accepted in v0.1).
+2. The store directories a layout renders are [REQ-RUN-0326](requirements.md).
+   v0.1 rendered `crates/store-sqlite` only. Amended 2026-10-25.
 3. `config/local.json` is the developer's local override file. It MUST be
    listed in the rendered `.gitignore`.
 4. `AGENTS.md` and `CLAUDE.md` are produced from `template/AGENTS.md.j2` and
@@ -1431,8 +1431,10 @@ release, in which the only database option is SQLite.
    defined in `sc-command`; `daemon` handlers name `Envelope<T>`, call
    `into_mcp()`, and take `api-types` structs as input.
 6. The project's `Stores` struct MUST be defined in the `service` crate.
-   This follows from two rules: service functions take `&Stores`, and only
-   `service` may depend on a store crate.
+   Service functions take `&Stores`. A two-store layout's adaptor depends on
+   the store crates whose rows it moves, and `service` depends on the adaptor.
+   A one-store layout has no adaptor, and `service` depends on that store.
+   `daemon` and `cli` do not depend on a store crate. Amended 2026-10-25.
 7. These dependency edges MUST NOT exist:
    - `cli` on `service`, `store-sqlite`, `daemon`, `sc-runtime`, `sqlx`,
      `axum` or `rmcp` as a normal (non-dev) dependency, directly or
@@ -1441,7 +1443,7 @@ release, in which the only database option is SQLite.
      [NFR-RUN-0001](requirements.md);
    - `api-types` on any other crate of the generated workspace;
    - any crate other than a `store-*` crate on `sqlx` directly;
-   - any crate other than `service` on a `store-*` crate;
+   - any crate other than the adaptor, or `service` on a one-store layout, on a `store-*` crate. Amended 2026-10-25;
    - `store-sqlite` on `service`, `daemon` or `cli`;
    - any crate other than `daemon` on `sc-runtime` as a normal (non-dev)
      dependency.
@@ -1495,19 +1497,16 @@ REST and MCP have exactly one place to call.
    every path in the layout above exists, with `crates/daemon/src/mcp.rs`
    present exactly when the fixture's `mcp` is `true`.
 2. In each rendered project, `cargo metadata --format-version 1` shows the
-   workspace members `api-types`, `store-sqlite`, `service`, `daemon`, `cli`
-   and no others, and every "MUST depend on" edge of the table other than
-   the `sc-command` edge of `daemon`; this includes the direct edge from
-   `service` to `sc-command`. Once the direct dependency or re-export
-   question for `daemon` is decided: it shows that edge in the decided
-   form.
+   package names `<project>-<role>` for the crates that layout renders:
+   `types`, `schema`, each store, the adaptor when the layout has two stores,
+   `service`, `daemon`, and `cli`, and no others. Amended 2026-10-25.
 3. In each rendered project,
-   `cargo tree -p cli -e normal --prefix none` prints no line beginning with
-   `sqlx `, `axum `, `rmcp `, `sc-runtime `, `service `, `store-sqlite ` or
-   `daemon ` (the name followed by a space).
+   `cargo tree -p <project>-cli -e normal --prefix none` prints no line beginning with
+   `sqlx `, `axum `, `rmcp `, `sc-runtime `, `<project>-service `, a store package, or
+   `<project>-daemon ` (the name followed by a space). Amended 2026-10-25.
 4. In each rendered project, `sqlx` appears under `[dependencies]` only in
-   `crates/store-sqlite/Cargo.toml`, and `store-sqlite` appears under
-   `[dependencies]` only in `crates/service/Cargo.toml`.
+   `store-*` `Cargo.toml` files. A two-store layout's adaptor depends on those
+   stores. A one-store layout's `service` depends on that store. Amended 2026-10-25.
 5. The rendered `.gitignore` contains the line `config/local.json`.
 6. The rendered project contains no file ending in `.j2` and no file from
    `wizard/` or `scripts/`.
@@ -1589,8 +1588,11 @@ example keeps the template thin and leaves little to delete.
    `crates/daemon/src/mcp.rs` does not exist, and the example test covers
    REST and the CLI.
 3. The generated daemon's `openapi.json` lists the paths `/ops/widget.create`
-   and `/ops/widget.get`, and with `mcp` on an MCP `tools/list` returns
-   exactly `widget_create` and `widget_get`.
+   and `/ops/widget.get`. With `mcp` on and the general database surface off,
+   or with no database, an MCP `tools/list` returns exactly `widget_create`
+   and `widget_get`. With `mcp` on and the general surface on, `tools/list`
+   also returns the [REQ-RUN-0331](requirements.md) commands, including
+   `delete row`. Amended 2026-10-25.
 4. `grep -rn 'ops/' crates/` in the `randlee/sc-runtime` repository (the
    four library crates) finds no match outside tests and documentation.
 5. In a project generated with `mcp` equal to `true`, a test sends an MCP
@@ -1980,10 +1982,12 @@ concurrency code; the two-pool arrangement is the whole mechanism.
 **OPEN:** the value of N (the read pool size) and whether it is configurable
 are not stated.
 
-`open` takes `OpenConfig { url: String }` and returns `StoreError { message: String }`.
-`StoreError` implements `Display` and `std::error::Error`. SQLite reads a
-file path from `url`. Postgres and MySQL read a database URL. The adaptor
-calls `read_rows` and `write_rows` on `EngineStore`. Amended 2026-10-25.
+`open` takes `OpenConfig { url: String }` and returns `StoreError` with
+`StoreCode` (`Connection`, `Query`, `Migration`) and `message`.
+`StoreError` implements `Display` and `std::error::Error`. `Display` includes
+the code. SQLite reads a file path from `url`. Postgres and MySQL read a
+database URL. The adaptor calls `read_rows` and `write_rows` on `EngineStore`.
+`RowRecord.payload` is UTF-8 JSON whose keys are column names. Amended 2026-10-25.
 How the application chooses that path (a config key, or a default under
 `<instance-root>`) is not stated. `<instance-root>` is the per-application,
 per-user directory resolved by sc-transport, or an explicitly supplied path;
@@ -3172,9 +3176,10 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
    `sc-observability` at 1.5.0, does not require `sc-observability-otlp`, and
    the logging-crate token does not match `sc-observability-types`.
 5. The same job then runs `just build-cli` in `$RUNNER_TEMP/app`, and it
-   exits 0. That recipe includes `cargo tree -p cli -e normal --prefix none`.
+   exits 0. That recipe includes `cargo tree -p <project>-cli -e normal --prefix none`.
+   Amended 2026-10-25.
 6. The same job then runs `just build-daemon` in `$RUNNER_TEMP/app`, and it
-   exits 0. That recipe includes `cargo tree -p daemon -e normal --prefix none`
+   exits 0. That recipe includes `cargo tree -p <project>-daemon -e normal --prefix none`
    and that output contains no `tempfile` or `tempdir` line.
 7. The `just test` output lists the example operation test as run and passed,
    not skipped or filtered out.

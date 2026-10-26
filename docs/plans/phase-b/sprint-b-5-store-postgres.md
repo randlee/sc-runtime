@@ -10,11 +10,15 @@ branch: sprint/b-5-store-postgres
 worktree: sprint/b-5-store-postgres
 requirements:
   - REQ-RUN-0321
+  - REQ-RUN-0328
   - REQ-RUN-0308
+  - NFR-RUN-0002
 adrs:
   - ADR-RUN-0301
   - ADR-RUN-0303
   - ADR-RUN-0305
+  - ADR-RUN-0011
+  - ADR-RUN-0007
 owned_paths:
   - template/crates/store-postgres/
 must_follow: [b-4]
@@ -35,8 +39,8 @@ REQ-RUN-0308's offline-data rule applies to this crate: checked-in `.sqlx` data,
 ## Deliverables
 
 1. REQ-RUN-0321: Postgres queries live in `template/crates/store-postgres`.
-2. ADR-RUN-0301: the crate depends on sqlx with the `postgres` feature. `sqlx.toml` names `POSTGRES_DATABASE_URL`. Migrations live in the crate and run with `sqlx::migrate!`. Check in `template/crates/store-postgres/.sqlx/` from `just db-prepare`.
-3. The crate implements `EngineStore::open`, `read_rows`, and `write_rows` from the `b-4` sample. It does not declare a second trait and it does not declare adaptor types.
+2. ADR-RUN-0301 and REQ-RUN-0308: the crate depends on sqlx with the `postgres` feature. `sqlx.toml` names `POSTGRES_DATABASE_URL`. Migrations live in the crate and run with `sqlx::migrate!`. Check in `template/crates/store-postgres/.sqlx/` from `just db-prepare`.
+3. REQ-RUN-0328 and NFR-RUN-0002: the crate implements `EngineStore::open`, `read_rows`, and `write_rows` from the `b-4` sample. It does not declare a second trait and it does not declare adaptor types. The query functions do not call the sleep or `block_on` names.
 
 ## Acceptance criteria
 

@@ -23,9 +23,11 @@ adrs:
   - ADR-RUN-0012
   - ADR-RUN-0301
   - ADR-RUN-0011
+  - ADR-RUN-0002
   - ADR-RUN-0003
   - ADR-RUN-0005
   - ADR-RUN-0006
+  - ADR-RUN-0008
 owned_paths:
   - crates/sc-runtime-db-sqlite/
   - boundaries/sc-runtime-db-sqlite/
@@ -76,7 +78,7 @@ Add `sc-runtime-db-sqlite` to the forbidden edges of `sc-config`, `sc-transport`
 
 1. REQ-RUN-0001: set `[workspace] members` to the glob `crates/*` and implement the types and the writer thread. The requirement already names that glob. This sprint does not edit it again, and `b-3` does not edit `Cargo.toml`.
 2. REQ-RUN-0005: add the boundary manifest and the four forbidden edges.
-3. ADR-RUN-0012: delete `docs/sc-runtime-db/`, `docs/sc-runtime-db-sqlx/`, and `docs/sc-runtime-db-fsqlite/`. Keep `docs/sc-runtime-db-sqlite/` matching the code.
+3. ADR-RUN-0012: delete `docs/sc-runtime-db/`, `docs/sc-runtime-db-sqlx/`, and `docs/sc-runtime-db-fsqlite/`. That deletion is the consequence of this ADR. Keep `docs/sc-runtime-db-sqlite/` matching the code.
 4. ADR-RUN-0012, NFR-RUN-0005, NFR-RUN-0009: tests for open, one `execute` round-trip, two concurrent `execute` calls with reply-after-commit, a `transaction` body that is not interleaved with another caller's statements, savepoint replay, shutdown join, `QueueFull`, `DeadlineExceeded`, and writer-thread panic. Each test opens the writer on a `tempfile::TempDir` path or on `:memory:`. No test uses a fixed path. Tests do not set process environment variables. A `#[cfg(test)]` constructor may shorten `WRITE_DEADLINE`; production `open` does not. Savepoint replay: when statement B in a concurrent batch A, B, C fails, the batch savepoint rolls back, A and C are replayed one statement at a time and their callers receive `Ok`, B's caller receives the error, and the database contains A's and C's rows. Shutdown: dropping the last `SqliteWriter` joins the writer thread within `SHUTDOWN_JOIN`. Queue full: with the writer held, filling `CHANNEL_CAPACITY` and sending one more call returns `Err(QueueFull)` before `WRITE_DEADLINE`. Deadline: a held writer returns `Err(DeadlineExceeded)` for a job that was accepted and not answered. Panic: a panic on the writer thread after enqueue and before commit makes every enqueued caller receive `Err(ChannelClosed)` and return.
 
 ## Acceptance criteria
@@ -95,7 +97,6 @@ Root: `boundary:sc-runtime-db-sqlite` and [ADR-RUN-0012](../../architecture.md).
 - `rg sc-runtime-db-sqlite template` prints nothing.
 - `cargo tree -p sc-runtime-db-sqlite -e normal --prefix none` prints no line `sqlx`.
 - `rg -n 'thread::sleep|sleep_until|block_on' crates/sc-runtime-db-sqlite/src` exits 1.
-- `rg -n yield_now crates/sc-runtime-db-sqlite/src` exits 0.
 
 ## Non-goals
 

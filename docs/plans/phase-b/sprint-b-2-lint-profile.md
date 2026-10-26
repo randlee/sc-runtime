@@ -69,8 +69,8 @@ At this sprint's close the two cross commands are package-scoped to `sc-config`,
 
 ## Deliverables
 
-1. ADR-RUN-0005: regenerate `sc-lint.toml`, re-apply the steps above, and fix every warning the new steps report under the owned paths.
-2. ADR-RUN-0011: add the grep step to the `Justfile` recipe that `just lint` already runs.
+1. REQ-RUN-0004, NFR-RUN-0008, and ADR-RUN-0005: regenerate `sc-lint.toml`, re-apply the steps above, and fix every warning the new steps report under the owned paths.
+2. NFR-RUN-0002 and ADR-RUN-0011: add the grep step to the `Justfile` recipe that `just lint` already runs.
 3. ADR-RUN-0011: declare `cargo-xwin` and run the two cross commands. Fix the warnings they report under the same allow rule.
 
 ## Acceptance criteria

@@ -948,10 +948,10 @@ requirements files, the architecture files and the sprint plans.
 ### Consequences
 
 Several things a framework might be expected to have are deliberately absent:
-a command registry, surface-snapshot tooling, a render engine, a SQLite write
-actor, a logging facade. Each would add code here, so each waits until a
-project asks for it. A reviewer may reject an addition solely because it
-fails point 1.
+a command registry, surface-snapshot tooling, a render engine, a logging
+facade. The SQLite write actor is `sc-runtime-db-sqlite`, added by
+[ADR-RUN-0012](architecture.md). Amended 2026-10-25. A reviewer may reject an
+addition solely because it fails point 1.
 
 ### Alternatives Considered
 
@@ -1594,8 +1594,10 @@ variable, so two such crates can build in one workspace.
 
 2. Each store crate MUST expose `EngineStore`: `open`, `read_rows`, and
    `write_rows`, as the sprint `b-4` sample states them. `OpenConfig` is
-   `{ url: String }`. `StoreError` is `{ message: String }` and implements
-   `Display` and `std::error::Error`. Amended 2026-10-25.
+   `{ url: String }`. `StoreError` carries `StoreCode` and `message` and
+   implements `Display` and `std::error::Error`. `RowRecord.payload` is UTF-8
+   JSON whose keys are column names. `EngineStore` is static dispatch.
+   Amended 2026-10-25.
 3. Only `store-*` crates depend on sqlx. The adaptor depends on the `store-*`
    crates whose rows it moves. `service` depends on the adaptor. `daemon` and
    `cli` do not depend on `store-*`. Amended 2026-10-25.
@@ -1679,6 +1681,7 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database.
 11. Two stores in one application use one shared trait or a different trait per store.
 12. A generated package name is the project name, a hyphen, and its role.
 13. Row type structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
+14. `RowRecord.payload` is UTF-8 JSON whose keys are column names. Amended 2026-10-25.
 
 ### Consequences
 
@@ -2281,7 +2284,7 @@ Sprint `b-2` keeps the grep until sc-lint#640 lands, then deletes it and raises 
 
 **Status:** Active  
 **Decision Date:** 2026-10-25  
-**Source:** Owner, 2026-10-25. Copy the atm-core writer machine into a library crate. Do not put it behind a SQL trait shared with sqlx. Amends the "rejected for v0.1" alternative in [ADR-RUN-0301](architecture.md) for this crate only. Points 1–7 of that ADR stay in force for generated stores.
+**Source:** Owner, 2026-10-25. Copy the atm-core writer machine into a library crate. Do not put it behind a SQL trait shared with sqlx. Amends the "rejected for v0.1" alternative in [ADR-RUN-0301](architecture.md) for this crate only, and the absent-write-actor sentence in [ADR-RUN-0008](architecture.md). Points 1–7 of ADR-RUN-0301 stay in force for generated stores.
 
 ### Context
 
@@ -2325,7 +2328,7 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The template does not depend on it unless a later generation flag says so. `sc-runtime` does not start it.
 2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
-3. Configuration is one SQLite table. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`.
+3. Configuration is one SQLite table in its own database file. That path is not the application `store-sqlite` file. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`. Amended 2026-10-25.
 4. The hook target is either a Rust function the consumer supplies or a Python module. The Python invocation is `python3 <module> <hook-name>` with one JSON object on stdin, the same process shape as atm-core. The hook names are `cron.tick` and `cron.stop`. The JSON carries the schedule name and the row's payload. It does not carry ATM team or phase fields.
 5. A cache-sync adaptor lives in the consumer repo. It exposes the sync methods. A schedule row points at one of those methods, in Rust or in Python. `sc-cron` only fires the row. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
 6. `CronError` is the crate's one error enum. Variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `Store`, and `Fenced`, with the stable codes already on the beads-cache crate. `BadExpression`'s recovery text names the five-field form.
@@ -2333,7 +2336,7 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-7` generates the adaptor that stores a cron row pointing at a sync method. Sprint `b-8` generates the application layouts.
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-25.
 
 ### Related Documents
 
