@@ -30,20 +30,20 @@ must_follow: [b-7]
 parallel_safe: []
 recommended_agent: arch-ctm
 recommended_model: terra
-vertical_rationale: The six layouts are one answers contract. Accepting Postgres first and MySQL in a later phase would change the schema twice.
+vertical_rationale: Each application chooses one sqlx SQL engine, Postgres or MySQL. Both engines are layouts in this sprint so the answers schema is written once.
 ---
 
 # Sprint b-8 — generation layouts
 
 ## Goal
 
-`just new` (`scripts/new_project.py`) creates an application in any layout from REQ-RUN-0326: no database, SQLite only, Postgres only, MySQL only, SQLite plus Postgres, or SQLite plus MySQL. Postgres only and MySQL only are the two layouts for one sqlx SQL engine. SQLite plus Postgres and SQLite plus MySQL are the two layouts for SQLite plus one sqlx SQL engine. A two-store layout renders the adaptor from `b-7`. A one-store layout renders that store and no adaptor. A no-database layout renders no store crate and no adaptor.
+`just new` (`scripts/new_project.py`) creates an application in exactly one layout. The layout is no database, SQLite only, one sqlx SQL engine and no SQLite, or SQLite plus one sqlx SQL engine. That sqlx engine is Postgres or MySQL. One application contains one of those engines. The Postgres-only layout and the MySQL-only layout are the one-engine layouts. The SQLite-plus-Postgres layout and the SQLite-plus-MySQL layout are the SQLite-plus-one-engine layouts. For a SQLite-plus-Postgres layout, SQLite and Postgres meet in an adaptor crate generated into the consumer repository. For a SQLite-plus-MySQL layout, SQLite and MySQL meet in an adaptor crate generated the same way. A one-store layout renders that store and no adaptor. A no-database layout renders no store crate and no adaptor.
 
 The library crate `sc-runtime` does not generate any of this.
 
 ## Tasks
 
-1. REQ-RUN-0326: a new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine. Postgres only and MySQL only are that one engine. SQLite plus Postgres and SQLite plus MySQL are SQLite plus that one engine. `wizard/answers.schema.json` accepts each of those layouts.
+1. REQ-RUN-0326: a new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine. The engine is Postgres or MySQL, and the application contains that one engine. `wizard/answers.schema.json` accepts the Postgres-only layout, the MySQL-only layout, the SQLite-plus-Postgres layout, and the SQLite-plus-MySQL layout as those two families. No application contains both Postgres and MySQL.
 2. REQ-RUN-0317 and REQ-RUN-0318: `just new` writes the stores, the models, and the adaptor. `crates/sc-runtime` contains no generator.
 3. REQ-RUN-0329 and REQ-RUN-0330: each generated package name is the project name, a hyphen, and its role. Row structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
 4. REQ-RUN-0331: a layout with a store renders general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route. A flag removes the general commands from those three surfaces. A no-database layout renders none of them.
@@ -57,7 +57,7 @@ The library crate `sc-runtime` does not generate any of this.
 - The SQLite-only project contains `store-sqlite` and no adaptor.
 - The Postgres-only project contains `store-postgres` and no `store-sqlite`.
 - The MySQL-only project contains `store-mysql` and no `store-sqlite`.
-- Each two-store project contains both stores and the adaptor.
+- Each two-store project contains SQLite, the store for its one sqlx engine, and the adaptor. No project contains both `store-postgres` and `store-mysql`.
 - The no-database project contains no `store-*` crate.
 - `rg` of a generator under `crates/sc-runtime` prints nothing.
 - A project named `acme` has packages `acme-types` and `acme-schema`. The row structs are in `acme-schema`. The adaptor depends on `acme-schema`.
