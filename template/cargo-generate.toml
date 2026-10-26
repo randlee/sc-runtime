@@ -2,6 +2,9 @@
 cargo_generate_version = ">=0.23.0"
 exclude = ["AGENTS.md.j2", "CLAUDE.md.j2"]
 
+[hooks]
+post = ["hooks/drop-template-exclude.rhai"]
+
 [placeholders.db]
 type = "string"
 prompt = "Database?"

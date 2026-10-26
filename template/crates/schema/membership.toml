@@ -1,0 +1,9 @@
+# Paired-store table membership for the template schema crate.
+# This file is not an answers-schema property.
+# `widgets` is on both engines. `host_id` exists on only one side of that table.
+# `local_notes` is stored only in SQLite. `remote_audit` is stored only on the remote engine.
+
+shared = ["widgets"]
+sqlite_only = ["local_notes"]
+remote_only = ["remote_audit"]
+column_on_one_side = ["widgets.host_id"]

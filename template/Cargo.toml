@@ -1,12 +1,11 @@
 [workspace]
 resolver = "2"
-members = [
-    "crates/api-types",
-    "crates/store-sqlite",
-    "crates/service",
-    "crates/daemon",
-    "crates/cli",
-]
+members = ["crates/*"]
+# cargo-generate replaces this file with workspace.template.toml, which has
+# no exclude. These crates stay out of the template workspace: daemon's
+# manifest is still a cargo-generate template, and service depends on the
+# unpublished sc-* crates until the checkout patch runs.
+exclude = ["crates/cli", "crates/daemon", "crates/service"]
 
 [workspace.package]
 version = "0.1.0"
