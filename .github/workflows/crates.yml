@@ -15,23 +15,59 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  ci-scope:
+    name: Classify CI scope
+    runs-on: ubuntu-latest
+    outputs:
+      runtime: ${{ steps.scope.outputs.runtime }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: scope
+        shell: bash
+        run: |
+          # Pull requests compare with their base; pushes compare with the
+          # previous head. Unknown ranges exercise runtime.
+          case "${{ github.event_name }}" in
+            pull_request) range_start="${{ github.event.pull_request.base.sha }}" ;;
+            push)         range_start="${{ github.event.before }}" ;;
+            *)            range_start="" ;;
+          esac
+          if [[ -z "$range_start" || "$range_start" =~ ^0+$ ]] || ! git cat-file -e "$range_start^{commit}" 2>/dev/null; then
+            echo "runtime=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python .github/scripts/ci_scope.py "$range_start" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+
   crates:
     name: just lint and just test
+    needs: ci-scope
     runs-on: ubuntu-latest
     env:
       SC_RUNTIME_EPHEMERAL_CI: "1"
     steps:
+      # Documentation-only changes keep this required check name and skip
+      # the crate compile and test. Same gate as atm-core CI.
+      - name: Documentation-only runtime skip
+        if: ${{ needs.ci-scope.outputs.runtime != 'true' }}
+        run: echo "Crate lint and test are intentionally skipped for documentation-only changes."
+
       - name: Checkout
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install Rust
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: dtolnay/rust-toolchain@1.94.1
         with:
           components: rustfmt, clippy
 
       - name: Install just
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"
@@ -39,9 +75,11 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install generation test dependency
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: python3 -m pip install -r requirements-generation.txt
 
       - name: Install cargo-generate
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"
@@ -58,24 +96,30 @@ jobs:
           cargo generate --version | grep -F '0.25.1'
 
       - name: Install sc-compose
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: cargo install sc-compose --version 1.7.0 --locked
 
       - name: Install cargo-deny
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-deny@0.19.4
 
       - name: Install cargo-audit
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-audit@0.22.2
 
       - name: Setup
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just setup
 
       # `just lint` runs the supply-chain recipe (`cargo deny check`, `cargo audit`).
       - name: Lint
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just lint
 
       - name: Test
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just test
