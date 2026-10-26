@@ -399,6 +399,12 @@ pub trait EngineStore: Send + Sync {
     /// The batch must be at most [`MAX_PAIRING_ROWS`] long, and each payload
     /// at most [`MAX_ROW_PAYLOAD_BYTES`].
     ///
+    /// A scheduled copy or host aggregate passes the whole table on every run.
+    /// That sync replaces the destination table (clear-then-fill, or an
+    /// equivalent upsert). It does not insert a second copy beside rows already
+    /// stored. Sprint `b-8` renders that replace on the concrete stores. Until
+    /// then an insert that hits a constraint returns [`StoreCode::Conflict`].
+    ///
     /// # Errors
     ///
     /// Returns [`StoreError`] with [`StoreCode::Query`] when a row cannot be
