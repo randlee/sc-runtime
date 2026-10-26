@@ -295,7 +295,12 @@ async fn serve(
     let drain = control.drain;
     let cancel = control.shutdown.take();
     let (drain_tx, drain_rx) = tokio::sync::watch::channel(false);
-    let router = router::with_request_timeout(router, router::REQUEST_TIMEOUT, drain_rx, drain);
+    let router = router::with_body_limit(router::with_request_timeout(
+        router,
+        router::REQUEST_TIMEOUT,
+        drain_rx,
+        drain,
+    ));
     let (gate_tx, gate_rx) = tokio::sync::oneshot::channel::<()>();
     let served =
         axum::serve(listener, router.into_make_service()).with_graceful_shutdown(async move {

@@ -2002,11 +2002,17 @@ concurrency code; the two-pool arrangement is the whole mechanism.
 are not stated.
 
 `open` takes `OpenConfig { url: String }` and returns `StoreError` with
-`StoreCode` (`Connection`, `Query`, `Migration`) and `message`.
+`StoreCode` (`Connection`, `Query`, `Migration`, `NotFound`, `Conflict`,
+`Unavailable`) and `message`. `StoreCode` is `non_exhaustive`. `Unavailable`
+is retryable. `StoreCode::remediation` returns the recovery text.
 `StoreError` implements `Display` and `std::error::Error`. `Display` includes
-the code. SQLite reads a file path from `url`. Postgres and MySQL read a
-database URL. The adaptor calls `read_rows` and `write_rows` on `EngineStore`.
-`RowRecord.payload` is UTF-8 JSON whose keys are column names. Amended 2026-10-25.
+the code. The engine copies the driver error into `message`, and
+`Error::source` stays empty. SQLite reads a file path from `url`. Postgres
+and MySQL read a database URL. Crates other than the schema crate construct
+the config with `OpenConfig::new`. The adaptor calls `read_rows` and
+`write_rows` on `EngineStore`. Those calls reject more than 10_000 rows or a
+payload over 1 MiB. `RowRecord.payload` is UTF-8 JSON whose keys are column
+names. Amended 2026-10-26.
 How the application chooses that path (a config key, or a default under
 `<instance-root>`) is not stated. `<instance-root>` is the per-application,
 per-user directory resolved by sc-transport, or an explicitly supplied path;

@@ -29,6 +29,15 @@ const MCP: &str = "/mcp";
 /// Maximum time one accepted request may spend in a handler.
 pub(crate) const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
+/// Largest request body the daemon's extractors accept.
+///
+/// This is axum's extractor default of 2 MiB, stated on the runtime so the
+/// limit is an application choice. [`with_body_limit`] applies it before the
+/// server starts. A project route that streams a larger body layers
+/// [`axum::extract::DefaultBodyLimit::disable`] or
+/// [`axum::extract::DefaultBodyLimit::max`] on that route.
+pub(crate) const DEFAULT_REQUEST_BODY_LIMIT: usize = 2_097_152;
+
 const REQUEST_TIMEOUT_BODY: &str = "the handler exceeded its time limit";
 const DRAIN_TIMEOUT_BODY: &str = "shutdown finished waiting for this request";
 
@@ -97,6 +106,14 @@ pub(crate) fn with_runtime_routes(
 /// [`ErrorKind::Unavailable`]. [`ErrorKind::http_status_code`] selects the
 /// HTTP status, which is 503 for that kind. The codes are
 /// `RUNTIME.REQUEST_TIMEOUT` and `RUNTIME.DRAIN_TIMEOUT`.
+///
+/// When `limit` elapses, the middleware returns that 503 and drops the handler
+/// future. Drop cancels the future at its next `.await`. Cancellation is
+/// cooperative: work that is not at an `.await`, or that the handler already
+/// spawned onto another task, can keep running after the client has the
+/// timeout response. This middleware does not detach the handler. A store
+/// transaction that is still open at that `.await` rolls back when its future
+/// is dropped.
 pub(crate) fn with_request_timeout(
     router: axum::Router,
     limit: Duration,
@@ -126,9 +143,24 @@ async fn enforce_deadlines(
     .await
     {
         Ok(Some(response)) => response,
+        // Dropping `handler` with this function cancels it. See [`with_request_timeout`].
         Err(_elapsed) => request_timeout_response(),
         Ok(None) => drain_handler(handler, deadline, drain).await,
     }
+}
+
+/// Sets the application request-body limit on `router`.
+///
+/// Extractors such as `Json`, `String`, and `Bytes` stop at
+/// [`DEFAULT_REQUEST_BODY_LIMIT`]. A route that must stream past that limit
+/// layers [`axum::extract::DefaultBodyLimit::disable`] or a higher
+/// [`axum::extract::DefaultBodyLimit::max`] on itself.
+pub(crate) fn with_body_limit(router: axum::Router) -> axum::Router {
+    apply_body_limit(router, DEFAULT_REQUEST_BODY_LIMIT)
+}
+
+fn apply_body_limit(router: axum::Router, limit: usize) -> axum::Router {
+    router.layer(axum::extract::DefaultBodyLimit::max(limit))
 }
 
 /// Returns the handler response, or `None` when shutdown has started.
@@ -351,6 +383,51 @@ mod tests {
         assert_eq!(body["error"]["kind"], "unavailable");
         assert_eq!(body["error"]["code"], code);
         assert_eq!(body["error"]["message"], message);
+    }
+
+    #[tokio::test]
+    async fn body_over_the_route_limit_is_rejected() {
+        let router = apply_body_limit(
+            axum::Router::new().route(
+                "/echo",
+                axum::routing::post(|body: String| async move { body }),
+            ),
+            32,
+        );
+        let listener = tokio::net::TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 0))
+            .await
+            .expect("bind");
+        let addr = listener.local_addr().expect("addr");
+        tokio::spawn(async move {
+            let _ = axum::serve(listener, router).await;
+        });
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .expect("client");
+        let url = format!("http://{addr}/echo");
+        let mut ready = false;
+        for _ in 0..50 {
+            if client
+                .post(&url)
+                .body("ok")
+                .send()
+                .await
+                .is_ok_and(|response| response.status().is_success())
+            {
+                ready = true;
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+        assert!(ready, "server did not accept");
+        let oversized = client
+            .post(&url)
+            .body("x".repeat(33))
+            .send()
+            .await
+            .expect("oversized");
+        assert_eq!(oversized.status(), reqwest::StatusCode::PAYLOAD_TOO_LARGE);
     }
 
     #[test]
