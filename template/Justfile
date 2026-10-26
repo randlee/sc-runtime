@@ -17,6 +17,7 @@ lint *profile:
 test *layer:
     {% raw %}{{python}}{% endraw %} .sc-lint/bootstrap.py test --config sc-lint.toml {% raw %}{{layer}}{% endraw %}
     {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py observability
+    {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py store-boundaries
 
 upgrade:
     {% raw %}{{python}}{% endraw %} .sc-lint/bootstrap.py upgrade --config sc-lint.toml
