@@ -43,6 +43,7 @@ impl WidgetServer {
     }
 }
 
+#[cfg(not(feature = "general-db"))]
 #[tool_router(router = tool_router)]
 impl WidgetServer {
     /// Creates one widget.
@@ -61,6 +62,48 @@ impl WidgetServer {
         Parameters(body): Parameters<api_types::GetWidget>,
     ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
         service::get_widget(&self.stores, body).await.into_mcp()
+    }
+}
+
+#[cfg(feature = "general-db")]
+#[tool_router(router = tool_router)]
+impl WidgetServer {
+    /// Creates one widget.
+    #[tool(name = "widget_create", description = "Create one widget.")]
+    async fn widget_create(
+        &self,
+        Parameters(body): Parameters<api_types::CreateWidget>,
+    ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
+        service::create_widget(&self.stores, body).await.into_mcp()
+    }
+
+    /// Gets one widget by id.
+    #[tool(name = "widget_get", description = "Get one widget by id.")]
+    async fn widget_get(
+        &self,
+        Parameters(body): Parameters<api_types::GetWidget>,
+    ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
+        service::get_widget(&self.stores, body).await.into_mcp()
+    }
+
+    /// Deletes one widget. Same service call as `delete_row` on `widgets`.
+    #[tool(name = "widget_delete", description = "Delete one widget.")]
+    async fn widget_delete(
+        &self,
+        Parameters(body): Parameters<api_types::DeleteWidget>,
+    ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
+        service::delete_widget(&self.stores, body).await.into_mcp()
+    }
+
+    /// Deletes one row.
+    #[tool(name = "delete_row", description = "Delete one row.")]
+    async fn delete_row(
+        &self,
+        Parameters(body): Parameters<api_types::DeleteRow>,
+    ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
+        service::delete_row(&self.stores, &body.table, &body.id)
+            .await
+            .into_mcp()
     }
 }
 

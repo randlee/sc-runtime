@@ -6,9 +6,30 @@ license.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
+[features]
+{% if db == "none" %}
+default = []
+{% else %}
+default = ["general-db"]
+{% endif %}
+general-db = []
+
 [dependencies]
 api-types = { path = "../api-types" }
+{% if db != "none" %}
+schema = { path = "../schema" }
+{% endif %}
+{% if db == "sqlite" %}
 store-sqlite = { path = "../store-sqlite" }
+{% elsif db == "postgres" %}
+store-postgres = { path = "../store-postgres" }
+{% elsif db == "mysql" %}
+store-mysql = { path = "../store-mysql" }
+{% elsif db == "sqlite-postgres" %}
+store-adaptor = { package = "store-adaptor-sqlite-postgres", path = "../store-adaptor-sqlite-postgres" }
+{% elsif db == "sqlite-mysql" %}
+store-adaptor = { package = "store-adaptor-sqlite-mysql", path = "../store-adaptor-sqlite-mysql" }
+{% endif %}
 sc-command.workspace = true
 sc-observability-types.workspace = true
 serde_json.workspace = true

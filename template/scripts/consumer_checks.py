@@ -46,6 +46,30 @@ def fail(message: str) -> None:
     raise SystemExit(1)
 
 
+def manifest_package_name(crate: Path) -> str:
+    """`[package] name` from a crate manifest."""
+    section = ""
+    for line in (crate / "Cargo.toml").read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            section = stripped
+            continue
+        if section != "[package]":
+            continue
+        if stripped.startswith("name") and "=" in stripped:
+            return stripped.split("=", 1)[1].strip().strip('"')
+    fail(f"{crate / 'Cargo.toml'} has no package name")
+    return ""
+
+
+def cli_package() -> str:
+    return manifest_package_name(Path("crates/cli"))
+
+
+def daemon_package() -> str:
+    return manifest_package_name(Path("crates/daemon"))
+
+
 def cargo_tree(package: str) -> str:
     completed = subprocess.run(
         ["cargo", "tree", "-p", package, "-e", "normal", "--prefix", "none"],
@@ -86,14 +110,15 @@ def workspace_dep_version(text: str, name: str) -> str | None:
 
 
 def server_only_names(crates: Path = Path("crates")) -> set[str]:
-    """Fixed server crates plus every `store-*` directory in the workspace."""
+    """Fixed server crates plus the package name of every server directory."""
     names = set(SERVER_ONLY)
-    if crates.is_dir():
-        names.update(
-            path.name
-            for path in crates.iterdir()
-            if path.is_dir() and path.name.startswith("store-")
-        )
+    if not crates.is_dir():
+        return names
+    for path in crates.iterdir():
+        if not path.is_dir() or not (path / "Cargo.toml").is_file():
+            continue
+        if path.name in {"daemon", "service"} or path.name.startswith("store-"):
+            names.add(manifest_package_name(path))
     return names
 
 
@@ -119,14 +144,14 @@ def build_cli() -> None:
         "cargo build --workspace is the exemption; it is not the shipped agent binary",
         file=sys.stderr,
     )
-    names = package_names(cargo_tree("cli"))
+    names = package_names(cargo_tree(cli_package()))
     found = [name for name in names if name in server_only_names()]
     if found:
         fail("server-only crates in the cli normal tree: " + ", ".join(found))
 
 
 def build_daemon() -> None:
-    names = package_names(cargo_tree("daemon"))
+    names = package_names(cargo_tree(daemon_package()))
     found = [name for name in names if name in {"tempfile", "tempdir"}]
     if found:
         fail("tempfile or tempdir in the daemon normal tree: " + ", ".join(found))

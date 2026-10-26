@@ -1,7 +1,7 @@
 ---
 id: b-8
 phase: b
-status: planned
+status: complete
 closure_type: integration
 target_boundary: generation-layouts
 track: stores

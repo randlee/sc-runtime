@@ -176,7 +176,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/plain"
           printf '%s\n' '[values]' 'db = "sqlite"' 'mcp = true' 'licence = "MIT"' > "$RUNNER_TEMP/values.toml"
-          cargo generate --path template --template-values-file "$RUNNER_TEMP/values.toml" --name widget-app --destination "$RUNNER_TEMP/plain" --init --silent --force --no-workspace
+          cargo generate --path template --template-values-file "$RUNNER_TEMP/values.toml" --name widget-app --destination "$RUNNER_TEMP/plain" --init --silent --allow-commands --force --no-workspace
 
       - name: Apply the checkout patch
         if: ${{ needs.ci-scope.outputs.runtime == 'true' && github.ref_type != 'tag' }}

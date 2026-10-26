@@ -4,7 +4,7 @@
   "title": "Generation answers",
   "type": "object",
   "additionalProperties": false,
-  "x-schema-version": 1,
+  "x-schema-version": 2,
   "required": ["project_name", "db", "mcp"],
   "properties": {
     "project_name": {
@@ -14,10 +14,9 @@
     },
     "db": {
       "type": "string",
-      "enum": ["sqlite", "postgres", "both"],
+      "enum": ["none", "sqlite", "postgres", "mysql", "sqlite-postgres", "sqlite-mysql"],
       "default": "sqlite",
-      "x-role": "database",
-      "x-v01-reserved": ["postgres", "both"]
+      "x-role": "database"
     },
     "mcp": {
       "type": "boolean",
