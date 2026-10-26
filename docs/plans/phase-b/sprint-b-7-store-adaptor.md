@@ -36,33 +36,69 @@ vertical_rationale: The copy pattern and the host-aggregate pattern are one adap
 
 ## Goal
 
-The relationship between the local SQLite store and a remote SQL store lives in an adaptor crate on the generated project. The adaptor depends on `<project>-schema` and on the store crates whose rows it moves ([ADR-RUN-0303](../../architecture.md)). The copy pattern uses the remote schema. The host-aggregate pattern uses a similar schema, and the consumer owns the rollup function. The same pattern is generated the same way for Postgres and for MySQL. This sprint consumes `EngineStore` from `b-4`. It does not define the package-name rule.
+The relationship between the local SQLite store and the remote Postgres or SQL store is defined in the template adaptor. This sprint's `Cargo.toml` depends only on the schema crate from `b-4`. Tests use `EngineStore` doubles. The adaptor calls `read_rows` on the source store and `write_rows` on the destination store. It contains no engine SQL and does not depend on sqlx. `b-8` renders the [ADR-RUN-0303](../../architecture.md) edges from the adaptor to the concrete `store-*` crates the layout contains.
+
+The copy adaptor is a local SQLite database with the remote schema, for faster or offline access. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The same functions serve MySQL when MySQL is the layout's one sqlx engine. The consumer repository defines the rollup from host rows into the Postgres aggregate.
 
 The adaptor moves rows. It starts no timer. The application schedules it, using `sc-cron` when it wants that scheduler. The `sc-runtime` crates do not move rows.
 
+## Adaptor sample
+
+`b-5`, `b-6`, and `b-8` use this sample and do not restate it. It is generic over `EngineStore`. The host-aggregate remote side is the layout's one sqlx engine.
+
+```rust
+pub struct TableFlags {
+    pub sqlite_only: Vec<String>,
+    pub remote_only: Vec<String>,
+    pub column_on_one_side: Vec<String>,
+}
+
+pub trait Rollup {
+    fn rollup(&self, host_rows: &[RowRecord]) -> Vec<RowRecord>;
+}
+
+pub async fn copy_rows<S, D>(source: &S, dest: &D, table: &str) -> Result<(), StoreError>
+where
+    S: EngineStore,
+    D: EngineStore,
+{
+    let rows = source.read_rows(table).await?;
+    dest.write_rows(table, &rows).await
+}
+```
+
+`copy_rows` is the copy function both engines use. `Rollup` is the function the consumer implements. `TableFlags` names a sqlite-only table, a remote-only table, and a column that exists on only one side.
+
 ## Deliverables
 
-1. REQ-RUN-0314: generate the copy adaptor. REQ-RUN-0315: generate the host-aggregate adaptor as one SQLite database for this host and a Postgres database that aggregates many hosts.
-2. REQ-RUN-0316: the consumer repository defines the rollup, and that function maps host rows into the Postgres aggregate. REQ-RUN-0319: flags name tables and columns that exist on only one side, in either direction.
-3. REQ-RUN-0320: a consumer that selects the copy pattern gets the same adaptor implementation as every other consumer that selects it. The same for the host-aggregate pattern.
-4. REQ-RUN-0323 and REQ-RUN-0324: the adaptor moves rows and starts no timer. A schedule is application code. A cron row points at a Rust method or a Python hook, which is the `b-3` contract.
+1. REQ-RUN-0314: the template adaptor contains `copy_rows`. The copy adaptor is a local SQLite database with the remote schema. REQ-RUN-0315: the template adaptor contains the host-aggregate path. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
+2. REQ-RUN-0316: `Rollup` is the consumer-owned function that maps host rows into the Postgres aggregate. REQ-RUN-0319: `TableFlags` names tables and columns that exist on only one side, in either direction.
+3. REQ-RUN-0320: the template holds one copy implementation and one host-aggregate implementation. `b-8` renders that same implementation for every consumer that selects the pattern.
+4. REQ-RUN-0323 and REQ-RUN-0324: the adaptor moves rows through `read_rows` and `write_rows` and starts no timer. A schedule is application code. A cron row points at a Rust method or a Python hook, which is the `b-3` contract.
 5. REQ-RUN-0325: no crate under `crates/` in this repository moves rows between stores.
 6. REQ-RUN-0322: a third adaptor is a file the consumer writes. This sprint does not generate one.
+
+## This sprint does not close
+
+`just new`, the six layouts, and the rendered adaptor's dependency on concrete `store-*` crates are `b-8`. This sprint does not wait for `b-5` or `b-6`.
 
 ## Acceptance criteria
 
 Root: `boundary:store-adaptor`.
 
-- The template adaptor contains the copy implementation and the host-aggregate implementation.
-- The adaptor starts no timer and contains no engine SQL literal.
+- The template adaptor contains `copy_rows` and the host-aggregate path, and its `Cargo.toml` depends on the schema crate and on no `store-*` crate.
+- The adaptor calls `read_rows` and `write_rows`. It starts no timer and contains no engine SQL literal.
+- `SQLX_OFFLINE=true cargo test -p store-adaptor --manifest-path template/Cargo.toml` exits 0 against `EngineStore` doubles, and does not commit `template/Cargo.lock`.
 - `crates/` in this repository contains no store-to-store copy.
 
 ## Required validation
 
-- The adaptor crate contains the copy from one store to the other.
-- The adaptor crate starts no timer.
+- `SQLX_OFFLINE=true cargo test -p store-adaptor --manifest-path template/Cargo.toml` exits 0.
+- `rg -n 'SELECT |INSERT |UPDATE |DELETE |CREATE TABLE' template/crates/store-adaptor` exits 1.
+- `rg -n 'std::thread::sleep|std::thread::sleep_until|tokio::time::sleep|tokio::time::sleep_until|Runtime::block_on|Handle::block_on|futures::executor::block_on' template/crates/store-adaptor` exits 1.
+- `rg -n 'path = \"../store-' template/crates/store-adaptor/Cargo.toml` exits 1.
 - `crates/` contains no store-to-store copy, outbox, or routing policy.
 
 ## Non-goals
 
-No `just new` layout switch (`b-8`). No HTTP, MCP, or CLI API on `sc-cron`. No edit to the rusqlite writer.
+No `just new` layout switch (`b-8`). No HTTP, MCP, or CLI API on `sc-cron`. No edit to the rusqlite writer. No dependency on `store-postgres` or `store-mysql`.

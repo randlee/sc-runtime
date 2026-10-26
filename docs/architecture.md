@@ -1583,18 +1583,22 @@ variable, so two such crates can build in one workspace.
 1. A store MUST be one crate in the generated project bound to exactly one
    sqlx driver:
 
-   | | `store-sqlite` | `store-postgres` |
-   |---|---|---|
-   | sqlx feature | `sqlite` | `postgres` |
-   | URL variable in `sqlx.toml` | `SQLITE_DATABASE_URL` | `POSTGRES_DATABASE_URL` |
-   | Migrations | `migrations/`, embedded with `sqlx::migrate!` | same |
-   | Offline query data | `.sqlx/` checked in, produced by `just db-prepare` | same |
-   | Default pool | read pool of N connections plus a one-connection write pool, WAL on | single pool |
+   | | `store-sqlite` | `store-postgres` | `store-mysql` |
+   |---|---|---|---|
+   | sqlx feature | `sqlite` | `postgres` | `mysql` |
+   | URL variable in `sqlx.toml` | `SQLITE_DATABASE_URL` | `POSTGRES_DATABASE_URL` | `MYSQL_DATABASE_URL` |
+   | Migrations | `migrations/`, embedded with `sqlx::migrate!` | same | same |
+   | Offline query data | `.sqlx/` checked in, produced by `just db-prepare` | same | same |
+   | Default pool | read pool of N connections plus a one-connection write pool, WAL on | single pool | single pool |
+   | Rendered package | `<project>-store-sqlite` | `<project>-store-postgres` | `<project>-store-mysql` |
 
-2. Each store crate MUST expose `open(cfg) -> Result<Store>` and typed query
-   functions.
-3. Only `store-*` crates depend on sqlx. Only the generated `service` crate
-   depends on `store-*` crates and calls store functions.
+2. Each store crate MUST expose `EngineStore`: `open`, `read_rows`, and
+   `write_rows`, as the sprint `b-4` sample states them. `OpenConfig` is
+   `{ url: String }`. `StoreError` is `{ message: String }` and implements
+   `Display` and `std::error::Error`. Amended 2026-10-25.
+3. Only `store-*` crates depend on sqlx. The adaptor depends on the `store-*`
+   crates whose rows it moves. `service` depends on the adaptor. `daemon` and
+   `cli` do not depend on `store-*`. Amended 2026-10-25.
 4. A SQL query is written for one backend. No layer runs one SQL string on
    more than one engine. Stores in one application use the same schema or a
    similar schema, and one shared trait or a different trait per store
@@ -1605,14 +1609,12 @@ variable, so two such crates can build in one workspace.
    A consumer adaptor does, including a local cache
    ([ADR-RUN-0305](architecture.md)). This repository does not contain a
    replication mechanism, an outbox, or a routing policy.
-7. v0.1 generates the SQLite store only. The layouts a new application can
-   use are [REQ-RUN-0326](requirements.md). SQL Server is out of scope
-   because sqlx has no driver for it.
+7. The layouts a new application can use are [REQ-RUN-0326](requirements.md).
+   v0.1 generated the SQLite store only. Sprint `b-8` accepts the six layouts
+   in that requirement. SQL Server is out of scope because sqlx has no driver
+   for it. Amended 2026-10-25.
 
 **OPEN:** the value of N for the SQLite read pool is undecided.
-
-**OPEN:** the error type of `open(cfg) -> Result<Store>` in point 2 is
-undecided ([REQ-RUN-0308](requirements.md)).
 
 ### Consequences
 
@@ -1637,8 +1639,9 @@ measures write contention; it is not part of v0.1.
 
 **Enforced by:** the generated workspace's dependency edges, inspected with
 `cargo metadata` per fixture ([REQ-RUN-0301](requirements.md)): only `store-*` crates depend
-on sqlx and only `service` depends on `store-*`; `arch-qa` review for points
-4 to 6.
+on sqlx; the adaptor depends on the `store-*` crates whose rows it moves;
+`service` depends on the adaptor; `arch-qa` review for points 4 to 6.
+Amended 2026-10-25.
 
 ### Related Documents
 
@@ -1663,9 +1666,9 @@ SC projects pair a local SQLite database with a remote Postgres or SQL database.
 
 ### Decision
 
-1. SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
+1. SQLite and the layout's one sqlx engine meet in an adaptor crate generated into the consumer repository. That engine is Postgres or MySQL. Amended 2026-10-25.
 2. The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
-3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The consumer repository defines the rollup.
+3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The same shape uses MySQL when MySQL is the layout's one sqlx engine. The consumer repository defines the rollup. Amended 2026-10-25.
 4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
 5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
 6. Every consumer repository gets the same generated implementation of a common pattern. Each engine's SQL is in that engine's store crate.
@@ -2034,8 +2037,9 @@ mechanics it uses are recorded in Active
     not change with that confirmation.
 
 The schema version field is `x-schema-version`, an integer at the root of
-`answers.schema.json`. Bump it when a breaking option change ships. The
-shipped value is `1`.
+`answers.schema.json`. Bump it when a breaking option change ships. v0.1
+shipped `1`. Sprint `b-8` ships `2` with the six `db` values in
+[REQ-RUN-0326](requirements.md). Amended 2026-10-25.
 
 Stderr from `--var-file` is one line, `<code> <cause> — <recovery>`, using
 U+2014. Wizard modes may print `[run-wizard]` diagnostics first; the last
@@ -2046,7 +2050,7 @@ inventory is:
 | Failure | Code | Cause | Recovery |
 |---|---|---|---|
 | schema-invalid answers | `GEN.SCHEMA_INVALID` | answers fail `wizard/answers.schema.json` | fix the file; cargo is not called; the destination is not created |
-| reserved database | `GEN.DB_RESERVED` | `db` is `postgres` or `both` | set `db` to `sqlite`; the destination is not created |
+| reserved database | `GEN.DB_RESERVED` | historical: v0.1 refused `db` of `postgres` or `both` | sprint `b-8` removes this check; a `db` value outside the six-value enum fails as `GEN.SCHEMA_INVALID` |
 | invalid project name | `APP.INVALID_NAME` | name fails the project-name `pattern` in `wizard/answers.schema.json` | fix the name to that pattern; the destination is not created |
 | missing sc-compose | `GEN.TOOL_MISSING` | `SC_COMPOSE` unset and `sc-compose` not on `PATH` | set `SC_COMPOSE` or install `sc-compose` on `PATH`; `cargo generate` does not run |
 | bad `SC_COMPOSE` override | `GEN.TOOL_MISSING` | `SC_COMPOSE` does not point at an executable file | set `SC_COMPOSE` to the sc-compose binary; `cargo generate` does not run |
@@ -2297,7 +2301,7 @@ The measured atm-core path is a different mechanism: one rusqlite connection on 
 
 ### Consequences
 
-Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc. The template sqlx store is unchanged. Postgres stays out of this phase.
+Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc. The template sqlx store is unchanged. This sprint does not add a Postgres store. `store-postgres` is sprint `b-5`. `store-mysql` is sprint `b-6`. Amended 2026-10-25.
 
 ### Related Documents
 

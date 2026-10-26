@@ -74,7 +74,7 @@ Add `sc-runtime-db-sqlite` to the forbidden edges of `sc-config`, `sc-transport`
 
 ## Deliverables
 
-1. REQ-RUN-0001: set `[workspace] members` to the glob `crates/*` and implement the types and the writer thread. The glob already admits `crates/sc-cron` when that directory exists, so `b-3` does not edit `Cargo.toml`. Amend success criterion 1 so it names the six library crates in the requirement table.
+1. REQ-RUN-0001: set `[workspace] members` to the glob `crates/*` and implement the types and the writer thread. The requirement already names that glob. This sprint does not edit it again, and `b-3` does not edit `Cargo.toml`.
 2. REQ-RUN-0005: add the boundary manifest and the four forbidden edges.
 3. ADR-RUN-0012: delete `docs/sc-runtime-db/`, `docs/sc-runtime-db-sqlx/`, and `docs/sc-runtime-db-fsqlite/`. Keep `docs/sc-runtime-db-sqlite/` matching the code.
 4. ADR-RUN-0012, NFR-RUN-0005, NFR-RUN-0009: tests for open, one `execute` round-trip, two concurrent `execute` calls with reply-after-commit, a `transaction` body that is not interleaved with another caller's statements, savepoint replay, shutdown join, `QueueFull`, `DeadlineExceeded`, and writer-thread panic. Each test opens the writer on a `tempfile::TempDir` path or on `:memory:`. No test uses a fixed path. Tests do not set process environment variables. A `#[cfg(test)]` constructor may shorten `WRITE_DEADLINE`; production `open` does not. Savepoint replay: when statement B in a concurrent batch A, B, C fails, the batch savepoint rolls back, A and C are replayed one statement at a time and their callers receive `Ok`, B's caller receives the error, and the database contains A's and C's rows. Shutdown: dropping the last `SqliteWriter` joins the writer thread within `SHUTDOWN_JOIN`. Queue full: with the writer held, filling `CHANNEL_CAPACITY` and sending one more call returns `Err(QueueFull)` before `WRITE_DEADLINE`. Deadline: a held writer returns `Err(DeadlineExceeded)` for a job that was accepted and not answered. Panic: a panic on the writer thread after enqueue and before commit makes every enqueued caller receive `Err(ChannelClosed)` and return.
@@ -83,7 +83,7 @@ Add `sc-runtime-db-sqlite` to the forbidden edges of `sc-config`, `sc-transport`
 
 Root: `boundary:sc-runtime-db-sqlite` and [ADR-RUN-0012](../../architecture.md).
 
-- The workspace member glob `crates/*` resolves to the library crates in the REQ-RUN-0001 table, including `sc-runtime-db-sqlite`.
+- At this sprint's close the workspace member glob `crates/*` resolves to `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-runtime-db-sqlite`. `sc-cron` is not a member yet. `b-3` adds that directory and does not edit `Cargo.toml`.
 - `cargo test -p sc-runtime-db-sqlite` exits 0, covering the writer cases in deliverable 4.
 - The new crate's boundary manifest forbids every other workspace crate, and no file under `template/` names the crate.
 

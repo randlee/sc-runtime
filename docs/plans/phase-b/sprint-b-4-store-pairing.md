@@ -13,6 +13,7 @@ requirements:
   - REQ-RUN-0327
   - REQ-RUN-0328
   - REQ-RUN-0330
+  - REQ-RUN-0308
 adrs:
   - ADR-RUN-0301
   - ADR-RUN-0303
@@ -21,6 +22,7 @@ owned_paths:
   - template/crates/store-sqlite/
   - template/crates/schema/
   - template/Cargo.toml
+  - .gitignore
 must_follow: []
 parallel_safe: [b-1, b-2, b-3]
 recommended_agent: arch-ctm
@@ -51,40 +53,74 @@ pub struct StoreError {
     pub message: String,
 }
 
+impl std::fmt::Display for StoreError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
+impl std::error::Error for StoreError {}
+
+pub struct RowRecord {
+    pub table: String,
+    pub payload: Vec<u8>,
+}
+
 pub trait EngineStore: Send + Sync {
     fn open(
         cfg: &OpenConfig,
     ) -> impl std::future::Future<Output = Result<Self, StoreError>> + Send
     where
         Self: Sized;
+
+    fn read_rows(
+        &self,
+        table: &str,
+    ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send;
+
+    fn write_rows(
+        &self,
+        table: &str,
+        rows: &[RowRecord],
+    ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send;
 }
 ```
 
-`OpenConfig.url` is the database string for that engine. SQLite reads a file path from it. Postgres and MySQL read a database URL. `StoreError` is the store's error. This closes the OPEN `cfg` and error type in REQ-RUN-0308 and ADR-RUN-0301 point 2 for the generated stores. The read-pool size N stays OPEN.
+`OpenConfig.url` is the database string for that engine. SQLite reads a file path from it. Postgres and MySQL read a database URL. `StoreError` implements `Display` and `std::error::Error`. `read_rows` and `write_rows` are the row operations the adaptor calls. Each engine implements them with that engine's SQL. This is the closed `cfg` and error type in REQ-RUN-0308 and ADR-RUN-0301 point 2. The read-pool size N stays OPEN.
+
+`store-sqlite` keeps its inherent `open` that takes `OpenConfig { path: PathBuf }` and returns the store error `service` already calls with `err.to_string()`. It re-exports `WidgetRow` from the schema crate. `template/crates/service/src/lib.rs` is not edited in this sprint.
 
 ## Deliverables
 
-1. REQ-RUN-0330: add `template/crates/schema/`. Its package name renders as `<project>-schema`. Move `WidgetRow` out of `store-sqlite` into that crate. The crate contains no SQL literal.
-2. REQ-RUN-0327: the copy pattern generates the same schema on both stores. The host-aggregate pattern generates a similar schema, with tables or columns that exist on only one side.
-3. REQ-RUN-0328: generated stores implement `EngineStore`. Both a shared trait and a trait per store stay legal for code the consumer writes. The generated patterns use `EngineStore` only.
-4. REQ-RUN-0321: SQLite SQL stays in `store-sqlite`. Set `template/Cargo.toml` members to `crates/*`.
-5. REQ-RUN-0308: amend the driver row and success criterion 5 so a direct `sqlx` dependency belongs to each rendered `store-*` crate, and to no other generated crate.
+1. REQ-RUN-0330: add `template/crates/schema/`. In this template workspace the package name is `schema`. `b-8` renders it as `<project>-schema`. Move `WidgetRow` into the schema crate and re-export it from `store-sqlite`. The schema crate contains no SQL literal.
+2. REQ-RUN-0327: the schema crate describes one shared table and one table or column that exists on only one side. Schema-crate tests prove that description. They do not generate a project.
+3. REQ-RUN-0328: `store-sqlite` implements `EngineStore`, including `read_rows` and `write_rows`. A Postgres stub and a MySQL stub in the schema crate's tests implement the same trait. Both a shared trait and a trait per store stay legal for code the consumer writes. The generated patterns use `EngineStore` only.
+4. REQ-RUN-0321: SQLite SQL stays in `store-sqlite`. Set `template/Cargo.toml` members to `crates/*`. Add `template/Cargo.lock` to the root `.gitignore`. Cargo commands in this sprint pass `--manifest-path template/Cargo.toml` and do not commit that lockfile.
+5. REQ-RUN-0308: `store-sqlite` keeps the direct `sqlx` dependency. The schema crate does not gain one. The driver row and success criterion 5 already say a direct `sqlx` dependency belongs to each rendered `store-*` crate and to no other generated crate.
+
+## This sprint does not close
+
+`template/crates/service/src/lib.rs` stays on `OpenConfig { path }` and `store_sqlite::WidgetRow`. `b-8` owns that file and updates the call site. Generated layouts, package renames, and `just new` are `b-8`.
 
 ## Acceptance criteria
 
 Root: `boundary:store-pairing`.
 
 - The schema crate compiles, holds `WidgetRow` and `EngineStore`, and contains no SQL literal.
-- A Postgres stub and a MySQL stub in the schema crate's tests implement `EngineStore`. An engine-incompatible trait fails here.
-- `SQLX_OFFLINE=true cargo build -p store-sqlite` in the template workspace exits 0 with only the crates that exist in this sprint.
+- A Postgres stub and a MySQL stub in the schema crate's tests implement `open`, `read_rows`, and `write_rows`. An engine-incompatible trait fails here.
+- `store-sqlite` still implements `Display` and `std::error::Error` on the error its inherent `open` returns.
+- `SQLX_OFFLINE=true cargo build -p store-sqlite --manifest-path template/Cargo.toml` exits 0 with only the crates that exist in this sprint, and does not commit `template/Cargo.lock`.
 - `template/Cargo.toml` does not name `store-postgres` or `store-mysql`.
+- The schema crate's tests describe one shared table and one one-sided table or column.
 
 ## Required validation
 
-- `SQLX_OFFLINE=true cargo test -p schema` exits 0.
-- `SQLX_OFFLINE=true cargo build -p store-sqlite` exits 0.
-- `rg` of a SQL literal under `template/crates/schema` prints nothing.
+- `SQLX_OFFLINE=true cargo test -p schema --manifest-path template/Cargo.toml` exits 0.
+- `SQLX_OFFLINE=true cargo build -p store-sqlite --manifest-path template/Cargo.toml` exits 0.
+- `rg -n 'SELECT |INSERT |UPDATE |DELETE |CREATE TABLE' template/crates/schema` exits 1.
+- `rg -n 'std::thread::sleep|std::thread::sleep_until|tokio::time::sleep|tokio::time::sleep_until|Runtime::block_on|Handle::block_on|futures::executor::block_on' template/crates/schema template/crates/store-sqlite` exits 1.
+- `git check-ignore -q template/Cargo.lock` exits 0.
 
 ## Non-goals
 
-No Postgres SQL. No MySQL SQL. No adaptor. No change to `crates/sc-runtime-db-sqlite/`. No change to the six generation layouts (`b-8` owns those). No package-name rule for `service`, `daemon`, or `cli` (`b-8` owns REQ-RUN-0329).
+No Postgres SQL. No MySQL SQL. No adaptor. No change to `crates/sc-runtime-db-sqlite/`. No edit to `template/crates/service/`. No change to the six generation layouts (`b-8` owns those). No package-name rule for `service`, `daemon`, or `cli` (`b-8` owns REQ-RUN-0329).

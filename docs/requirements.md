@@ -158,12 +158,14 @@ are not valid Rust until rendered.
 ### Success Criteria
 
 1. Inspect the root `Cargo.toml`: `[workspace] members` is the glob `crates/*`.
-   That glob resolves to exactly the library crates in the table above:
-   `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`,
-   `crates/sc-runtime`, `crates/sc-runtime-db-sqlite`, and `crates/sc-cron`.
-   `cargo metadata --no-deps --format-version 1` lists exactly those packages
-   while `examples/spike/` does not exist, and lists no package whose manifest
-   path is under `template/`. Amended 2026-10-25.
+   A missing directory is not a member. At the close of sprint `b-1` the glob
+   resolves to `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`,
+   `crates/sc-runtime`, and `crates/sc-runtime-db-sqlite`. Sprint `b-3` adds
+   `crates/sc-cron` and does not edit `Cargo.toml`. The member set is then
+   the six crates in the table above.
+   `cargo metadata --no-deps --format-version 1` lists those packages and
+   lists no package whose manifest path is under `template/`. Amended
+   2026-10-25.
 2. `cargo build --workspace` run at the repository root exits 0 and compiles
    no file under `template/`.
 3. Each path in the second table exists at the repository root (with
@@ -1610,10 +1612,12 @@ example keeps the template thin and leaves little to delete.
 defined in `wizard/answers.schema.json` and mirrored as placeholders in
 `template/cargo-generate.toml`.
 
-1. The list of v0.1 options (project name, a string; `db`, a string enum of
-   `sqlite`, `postgres`, `both`; `mcp`, a boolean; the licence, a string
+1. The list of options (project name, a string; `db`, a string enum of
+   `none`, `sqlite`, `postgres`, `mysql`, `sqlite-postgres`, and
+   `sqlite-mysql`; `mcp`, a boolean; the licence, a string
    whose default is `MIT`), their types and the rule
    that the list is closed are owned by [REQ-RUN-0401](requirements.md).
+   `both` is not a value. Amended 2026-10-25.
    This item owns what each option does to the rendered project:
 
    | Option | Effect on the rendered project |
@@ -1628,13 +1632,13 @@ defined in `wizard/answers.schema.json` and mirrored as placeholders in
    licence text of a project that is not MIT licensed is not something this
    template can supply.
 
-2. [REQ-RUN-0326](requirements.md) owns the database layouts. v0.1 has the
-   SQLite store only, so v0.1 accepts `sqlite` and rejects every other
-   layout. A rejected layout fails in `scripts/new_project.py` before
-   `cargo generate` runs. It is accepted once the store crate for that
-   layout exists. [REQ-RUN-0329](requirements.md) names each generated
-   package with the project name. [REQ-RUN-0330](requirements.md) puts row
-   structs in `<project>-schema`.
+2. [REQ-RUN-0326](requirements.md) owns the database layouts. v0.1 shipped
+   the SQLite store only. Sprint `b-8` accepts the six `db` values above.
+   A value outside that enum, including `both`, fails schema validation in
+   `scripts/new_project.py` before `cargo generate` runs.
+   [REQ-RUN-0329](requirements.md) names each generated package with the
+   project name. [REQ-RUN-0330](requirements.md) puts row structs in
+   `<project>-schema`. Amended 2026-10-25.
 3. An option MUST include or exclude whole files through a conditional
    `ignore` list in `template/cargo-generate.toml`. With `mcp` equal to
    `false`, `crates/daemon/src/mcp.rs` is ignored. The `ignore` mechanism
@@ -1654,17 +1658,9 @@ decided ([REQ-RUN-0402](requirements.md) owns the question).
 
 **OPEN:** the defaults of `db` and `mcp` are not decided.
 
-**OPEN:** the mechanism that rejects `db` equal to `postgres` or `both` in
-v0.1 is not decided: the schema lists both values, so the rejection must be
-either an additional schema constraint or a check in the driver. A check in
-the driver would be option knowledge held outside the schema, which
-[REQ-RUN-0401](requirements.md) forbids (its criterion that
-`scripts/new_project.py` holds no option list of its own); choosing that
-branch requires relaxing that criterion for this one check. It also decides
-whether such answers files are schema-invalid or schema-valid but rejected
-([REQ-RUN-0403](requirements.md) classes the invalid fixtures). What plain
-`cargo generate` (without the driver) does when given those values is not
-decided either.
+`both` is outside the enum and fails schema validation
+([REQ-RUN-0403](requirements.md)). The v0.1 reserved-database check is
+removed by sprint `b-8`. Amended 2026-10-25.
 
 **OPEN:** the file names of the `mcp`-off fixture and of the invalid
 `db = postgres` answers file are not decided; only
@@ -1694,9 +1690,9 @@ compilable as Rust.
    project without `crates/daemon/src/mcp.rs`, whose
    `crates/daemon/src/main.rs` contains no `.mcp(` call, in which `just lint`
    and `just test` exit 0.
-4. A unit test runs the driver with an answers file whose `db` is `postgres`
-   and another whose `db` is `both`; each run exits non-zero, does not invoke
-   `cargo generate`, and creates no destination directory.
+4. A unit test runs the driver with an answers file whose `db` is `both`.
+   The run exits non-zero, does not invoke `cargo generate`, and creates no
+   destination directory. `both` fails schema validation. Amended 2026-10-25.
 5. `template/cargo-generate.toml` contains a conditional `ignore` entry for
    `crates/daemon/src/mcp.rs` keyed on `mcp`.
 6. Generating from the fixture whose licence is not `MIT`
@@ -1976,7 +1972,7 @@ It MUST have these properties:
 | Database URL variable | `crates/store-sqlite/sqlx.toml` names `SQLITE_DATABASE_URL` as the variable the `sqlx` macros read, so a second store crate with a different variable can build in the same workspace later |
 | Offline data | `crates/store-sqlite/.sqlx/` is produced by `just db-prepare`. It is checked in to git in this repository as `template/crates/store-sqlite/.sqlx/` and rendered into every generated project, which checks it in with its first commit |
 | Public API | `open(cfg) -> Result<Store>`, which opens both pools and runs the migrations, plus typed async query functions (for the example: insert a widget, fetch a widget) |
-| Callers | only the generated `service` crate depends on `store-sqlite`; REST handlers, MCP tools and the CLI never call it |
+| Callers | the adaptor depends on each `store-*` crate whose rows it moves; `service` depends on the adaptor; `daemon` and `cli` do not depend on a store crate. REST handlers, MCP tools, and the CLI never call a store crate. Amended 2026-10-25 |
 
 The crate MUST NOT contain a write actor, a queue or any other custom
 concurrency code; the two-pool arrangement is the whole mechanism.
@@ -1984,9 +1980,12 @@ concurrency code; the two-pool arrangement is the whole mechanism.
 **OPEN:** the value of N (the read pool size) and whether it is configurable
 are not stated.
 
-**OPEN:** the type of `cfg`, the error type inside `Result<Store>`, and how
-the database file path is chosen (a config key, or a default under
-`<instance-root>`) are not stated. `<instance-root>` is the per-application,
+`open` takes `OpenConfig { url: String }` and returns `StoreError { message: String }`.
+`StoreError` implements `Display` and `std::error::Error`. SQLite reads a
+file path from `url`. Postgres and MySQL read a database URL. The adaptor
+calls `read_rows` and `write_rows` on `EngineStore`. Amended 2026-10-25.
+How the application chooses that path (a config key, or a default under
+`<instance-root>`) is not stated. `<instance-root>` is the per-application,
 per-user directory resolved by sc-transport, or an explicitly supplied path;
 its default location is undecided
 ([REQ-TRN-0002](sc-transport/requirements.md)).
@@ -2006,7 +2005,10 @@ and on a fresh clone without a database.
 ### Success Criteria
 
 1. In a generated project, with `SQLITE_DATABASE_URL` unset,
-   `SQLX_OFFLINE=true cargo build -p store-sqlite` exits 0.
+   `SQLX_OFFLINE=true cargo build -p <project>-store-sqlite` exits 0.
+   The template workspace, before sprint `b-8` renders the package name,
+   builds `-p store-sqlite --manifest-path template/Cargo.toml`. Amended
+   2026-10-25.
 2. A test opens a `Store` on a tempdir database and issues at least 100
    inserts from concurrently running tasks; every insert returns `Ok`, none
    fails with a busy or locked error, and a count query then returns the
@@ -2462,7 +2464,7 @@ The copy adaptor is a local SQLite database with the remote schema, for faster o
 
 ### Requirement Statement
 
-The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
+The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The same shape uses MySQL when MySQL is the layout's one sqlx engine. Amended 2026-10-25.
 
 ### Success Criteria
 
@@ -2474,7 +2476,7 @@ The host-aggregate adaptor is one SQLite database for this host and a Postgres d
 
 ### Requirement Statement
 
-The consumer repository defines the rollup from host rows into the Postgres aggregate.
+The consumer repository defines the rollup from host rows into the Postgres aggregate. The same function shape maps host rows into the MySQL aggregate when MySQL is that engine. Amended 2026-10-25.
 
 ### Success Criteria
 
@@ -2710,7 +2712,7 @@ decided in this document.
 | Option | JSON type | Values the schema lists |
 |---|---|---|
 | project name | string | any non-empty string |
-| `db` | string | `sqlite`, `postgres`, `both` |
+| `db` | string | `none`, `sqlite`, `postgres`, `mysql`, `sqlite-postgres`, `sqlite-mysql` |
 | `mcp` | boolean | `true`, `false` |
 | licence | string | the licence of the generated project's crates; default `MIT` when the answers object does not supply it |
 
@@ -2724,9 +2726,9 @@ SPDX licence expression as Cargo's `license` field takes, or something else),
 and how a project that is not open source states its licence (Cargo offers a
 `license-file` field for non-SPDX licences) are not decided.
 
-What each option does to the rendered project, and the rule that `postgres`
-and `both` are listed in the enum but not accepted in v0.1, are owned by
-[REQ-RUN-0303](requirements.md).
+What each option does to the rendered project is owned by
+[REQ-RUN-0303](requirements.md). Sprint `b-8` accepts the six `db` values.
+`both` is not in the enum. Amended 2026-10-25.
 
 The schema MUST carry a schema version, because it is a published contract:
 the sc-lint project reads the same answers object and the same schema to
@@ -2755,12 +2757,9 @@ kind of schema change requires a new version are not decided.
 **OPEN:** the JSON Schema draft (the `$schema` value) is not decided.  
 **OPEN:** the language and test runner of `tests/unit/` are not decided (the
 driver is Python).  
-**OPEN:** how an answers object with `db` equal to `postgres` or `both` is
-rejected in v0.1 is not decided ([REQ-RUN-0303](requirements.md) owns the
-question): an extra constraint in this schema, or a check in the driver. A
-check in the driver would be option knowledge held outside the schema, which
-the rule above forbids; if that branch is chosen, this item must be amended
-to allow that one check.
+A `db` value outside the six strings, including `both`, fails schema
+validation. Sprint `b-8` removes the v0.1 reserved-database driver check.
+Amended 2026-10-25.
 
 ### Rationale
 
@@ -2775,20 +2774,21 @@ and sc-lint, so the schema is versioned like any other published contract.
    asserts that it is a valid schema under the meta-schema named by its own
    `$schema` value.
 2. The same test asserts that the top-level `type` is `object`, that `db` is
-   a string property whose `enum` is exactly `sqlite`, `postgres`, `both`,
+   a string property whose `enum` is exactly `none`, `sqlite`, `postgres`,
+   `mysql`, `sqlite-postgres`, `sqlite-mysql`,
    that `mcp` is a boolean property, that a string property for the project
    name exists, and that a string property for the licence exists whose
-   default is `MIT` (its key name follows the licence OPEN above).
+   default is `MIT` (its key name follows the licence OPEN above). Amended
+   2026-10-25.
 3. The same test asserts that the top-level `properties` object has exactly
    four keys: `db`, `mcp`, the project-name key and the licence key. Once the
    way the schema version is carried is decided: if it is carried as a
    property, that key is the only permitted fifth key.
 4. The same test asserts that the schema version is present and non-empty.
 5. Inspection: `scripts/new_project.py` contains no list of option names or
-   option defaults of its own; it reads both from the schema. Once the
-   rejection mechanism for `db` equal to `postgres` or `both` is decided: if
-   it is a driver check, that check is the single permitted exception and
-   this criterion is amended to name it.
+   option defaults of its own; it reads both from the schema. Sprint `b-8`
+   removes the v0.1 reserved-database check. The driver holds no extra `db`
+   rejection list. Amended 2026-10-25.
 
 ---
 
@@ -2887,8 +2887,8 @@ There are two classes:
 
 | Class | What the file is | What must refuse it |
 |---|---|---|
-| schema-invalid | Breaks the schema in one way: a missing required key, a value of the wrong type, a `db` value outside the enum, or a key the schema does not define. | schema validation |
-| reserved in v0.1 | A complete answers object whose `db` is `postgres`, and another whose `db` is `both`. Both values are inside the schema's enum, and neither is accepted in v0.1. | the driver's validate step; whether that is schema validation or an extra driver check is undecided (see the OPEN below) |
+| schema-invalid | Breaks the schema in one way: a missing required key, a value of the wrong type, a `db` value outside the enum (`both` is this class), or a key the schema does not define. | schema validation |
+| accepted layout | A complete answers object whose `db` is `postgres`, `mysql`, `sqlite-postgres`, or `sqlite-mysql`. Sprint `b-8` accepts these. v0.1 reserved them. | schema validation accepts the file. Amended 2026-10-25 |
 
 `tests/unit/` MUST contain tests that assert:
 
@@ -2899,9 +2899,9 @@ There are two classes:
   status, it does not run `cargo generate`, and it does not create the
   destination directory.
 
-The test that the driver fails closed on the two reserved-in-v0.1 files is
-owned by [REQ-RUN-0303](requirements.md), which owns the rule that those
-values are not accepted; this item only requires the two files to exist.
+The test that the driver fails closed on `db` equal to `both` is owned by
+[REQ-RUN-0303](requirements.md) criterion 4. `postgres` is an accepted value
+after sprint `b-8`. Amended 2026-10-25.
 
 No clause of this item depends on the unverified `cargo-generate` mechanics
 held in [ADR-RUN-0402](architecture.md): the fail-closed test uses a stub
@@ -2910,12 +2910,8 @@ held in [ADR-RUN-0402](architecture.md): the fail-closed test uses a stub
 **OPEN:** the directory that holds the refused answers files is not decided.  
 **OPEN:** the file name of the `mcp = false` fixture, and the file names of
 the refused answers files, are not decided.  
-**OPEN:** whether the reserved-in-v0.1 files fail schema validation is not
-decided. It depends on how `db` equal to `postgres` or `both` is rejected
-(an extra schema constraint, or a driver check), which
-[REQ-RUN-0303](requirements.md) holds open. Once it is decided: if the
-rejection is a schema constraint, the reserved files join the schema-invalid
-class and criterion 3 covers them.  
+`both` is schema-invalid. `postgres` is accepted by sprint `b-8` and is not
+a refused file. Amended 2026-10-25.  
 **OPEN:** the language and test runner of `tests/unit/` are not decided (the
 driver is Python).
 
@@ -2943,10 +2939,10 @@ finished and is wrong.
    records any call. It asserts a
    non-zero exit status, that the stub recorded no call, and that `<dest>`
    does not exist afterwards.
-5. `ls wizard/fixtures/*.json` lists no schema-invalid file and no
-   reserved-in-v0.1 file.
-6. Outside `wizard/fixtures/`, the repository holds one complete answers
-   file with `db` equal to `"postgres"` and one with `db` equal to `"both"`.
+5. `ls wizard/fixtures/*.json` lists no schema-invalid file.
+6. Outside `wizard/fixtures/`, the repository holds one schema-invalid
+   answers file with `db` equal to `"both"`. A fixture with `db` equal to
+   `"postgres"` validates against the schema. Amended 2026-10-25.
 
 ---
 
