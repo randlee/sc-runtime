@@ -162,11 +162,37 @@ fn workspace_manifests_match_except_the_checkout_exclude() {
     }
     let checkout = std::fs::read_to_string(root.join("Cargo.toml")).expect("checkout manifest");
     let generated = std::fs::read_to_string(generated).expect("generated manifest");
-    assert_eq!(without_checkout_exclude(&checkout), generated);
+    assert_eq!(
+        lines_without_checkout_exclude(&checkout),
+        generated.lines().collect::<Vec<_>>()
+    );
 }
 
-fn without_checkout_exclude(text: &str) -> String {
-    let mut out = String::new();
+#[test]
+fn checkout_exclude_compare_ignores_line_endings() {
+    let checkout = [
+        "[workspace]",
+        "resolver = \"2\"",
+        "members = [\"crates/*\"]",
+        "# cargo-generate replaces this file with workspace.template.toml, which has",
+        "# no exclude.",
+        "exclude = [\"crates/cli\", \"crates/daemon\", \"crates/service\"]",
+        "",
+        "[workspace.package]",
+    ]
+    .join("\r\n");
+    let generated = [
+        "[workspace]",
+        "resolver = \"2\"",
+        "members = [\"crates/*\"]",
+        "",
+        "[workspace.package]",
+    ];
+    assert_eq!(lines_without_checkout_exclude(&checkout), generated);
+}
+
+fn lines_without_checkout_exclude(text: &str) -> Vec<&str> {
+    let mut lines = Vec::new();
     let mut skipping = false;
     for line in text.lines() {
         if line.starts_with("# cargo-generate replaces this file") {
@@ -179,10 +205,9 @@ fn without_checkout_exclude(text: &str) -> String {
             }
             continue;
         }
-        out.push_str(line);
-        out.push('\n');
+        lines.push(line);
     }
-    out
+    lines
 }
 
 #[test]
@@ -241,16 +266,14 @@ impl EngineStub {
 
     fn write_rows(&self, table: &str, rows: &[RowRecord]) -> Result<(), StoreError> {
         check_write_limit(rows)?;
-        let mut guard = self.rows.lock().unwrap_or_else(|err| err.into_inner());
-        for row in rows {
-            if row.table != table {
-                return Err(StoreError::new(
-                    StoreCode::Query,
-                    format!("{} row table does not match {table}", self.engine),
-                ));
-            }
-            guard.push(row.clone());
+        if rows.iter().any(|row| row.table != table) {
+            return Err(StoreError::new(
+                StoreCode::Query,
+                format!("{} row table does not match {table}", self.engine),
+            ));
         }
+        let mut guard = self.rows.lock().unwrap_or_else(|err| err.into_inner());
+        guard.extend(rows.iter().cloned());
         Ok(())
     }
 }
@@ -378,4 +401,47 @@ async fn stub_rejects_an_oversized_write() {
         .await
         .expect_err("limit");
     assert_eq!(err.code, StoreCode::Query);
+}
+
+async fn mismatched_batch_leaves_stub_unchanged<S>(store: &S)
+where
+    S: EngineStore,
+{
+    let kept = RowRecord {
+        table: "widgets".to_owned(),
+        payload: br#"{"id":"kept","name":"bolt"}"#.to_vec(),
+    };
+    store
+        .write_rows("widgets", std::slice::from_ref(&kept))
+        .await
+        .expect("seed");
+    let accepted = RowRecord {
+        table: "widgets".to_owned(),
+        payload: br#"{"id":"new","name":"nut"}"#.to_vec(),
+    };
+    let rejected = RowRecord {
+        table: "other".to_owned(),
+        payload: br#"{"id":"bad","name":"nope"}"#.to_vec(),
+    };
+    let err = store
+        .write_rows("widgets", &[accepted, rejected])
+        .await
+        .expect_err("table mismatch");
+    assert_eq!(err.code, StoreCode::Query);
+    let rows = store.read_rows("widgets").await.expect("read");
+    assert_eq!(rows, vec![kept]);
+    let other = store.read_rows("other").await.expect("other");
+    assert!(other.is_empty());
+}
+
+#[tokio::test]
+async fn stub_write_rejects_a_later_table_mismatch_without_partial_rows() {
+    let postgres = PostgresStub::open(&OpenConfig::new("postgres://paired.example/widgets"))
+        .await
+        .expect("postgres open");
+    let mysql = MysqlStub::open(&OpenConfig::new("mysql://paired.example/widgets"))
+        .await
+        .expect("mysql open");
+    mismatched_batch_leaves_stub_unchanged(&postgres).await;
+    mismatched_batch_leaves_stub_unchanged(&mysql).await;
 }
