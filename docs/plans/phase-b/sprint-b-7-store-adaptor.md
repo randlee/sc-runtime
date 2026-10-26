@@ -1,7 +1,7 @@
 ---
 id: b-7
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: store-adaptor
 track: stores
