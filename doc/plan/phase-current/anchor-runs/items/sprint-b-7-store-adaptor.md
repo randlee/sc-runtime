@@ -22,7 +22,12 @@ requirements:
 adrs:
   - ADR-RUN-0303
   - ADR-RUN-0305
+  - ADR-RUN-0301
   - ADR-RUN-0013
+  - ADR-RUN-0002
+  - ADR-RUN-0007
+  - ADR-RUN-0008
+  - ADR-RUN-0011
 owned_paths:
   - template/crates/store-adaptor/
 must_follow: [b-4]
@@ -74,7 +79,7 @@ where
 ## Deliverables
 
 1. REQ-RUN-0314: the template adaptor contains `copy_rows`. The copy adaptor is a local SQLite database with the remote schema. REQ-RUN-0315: the template adaptor contains the host-aggregate path. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.
-2. REQ-RUN-0316: `Rollup` is the consumer-owned function that maps host rows into the Postgres aggregate. REQ-RUN-0319: `TableFlags` names tables and columns that exist on only one side, in either direction.
+2. REQ-RUN-0316: `Rollup` is the consumer-owned function that maps host rows into the Postgres aggregate. REQ-RUN-0319: `TableFlags` is the struct the adaptor reads. The generation input is `template/crates/schema/membership.toml` from `b-4`, not an answers-schema property. `b-8` checks that a rendered adaptor honors that file.
 3. REQ-RUN-0320: the template holds one copy implementation and one host-aggregate implementation. `b-8` renders that same implementation for every consumer that selects the pattern.
 4. REQ-RUN-0323 and REQ-RUN-0324: the adaptor moves rows through `read_rows` and `write_rows` and starts no timer. A schedule is application code. A cron row points at a Rust method or a Python hook, which is the `b-3` contract.
 5. REQ-RUN-0325: the sc-runtime crates do not move rows between stores. No file under `crates/` moves rows between stores. `copy_rows` lives only in `template/crates/store-adaptor`.
