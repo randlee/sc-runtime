@@ -17,11 +17,44 @@ requirements:
   - NFR-RUN-0006
   - NFR-RUN-0008
   - NFR-RUN-0009
+  - REQ-CFG-0001
+  - REQ-CFG-0002
+  - REQ-CFG-0003
+  - REQ-CFG-0004
+  - NFR-CFG-0001
+  - NFR-CFG-0002
+  - NFR-CFG-0003
   - REQ-TRN-0001
+  - REQ-TRN-0002
   - REQ-TRN-0003
   - REQ-TRN-0004
+  - REQ-TRN-0005
+  - REQ-TRN-0006
+  - NFR-TRN-0001
+  - NFR-TRN-0002
+  - NFR-TRN-0003
+  - NFR-TRN-0004
+  - REQ-CMD-0001
+  - REQ-CMD-0002
+  - REQ-CMD-0003
+  - REQ-CMD-0004
+  - REQ-CMD-0005
+  - REQ-CMD-0006
+  - NFR-CMD-0001
+  - NFR-CMD-0002
+  - NFR-CMD-0003
+  - REQ-RT-0001
+  - REQ-RT-0002
+  - REQ-RT-0003
   - REQ-RT-0004
   - REQ-RT-0005
+  - REQ-RT-0006
+  - REQ-RT-0007
+  - REQ-RT-0008
+  - NFR-RT-0001
+  - NFR-RT-0002
+  - NFR-RT-0003
+  - NFR-RT-0004
 adrs:
   - ADR-RUN-0005
   - ADR-RUN-0007
@@ -103,7 +136,7 @@ Root: `boundary:host-lint-profile` and [ADR-RUN-0011](../../architecture.md).
 ## Required validation
 
 - `just adr-run-0011` exits 0 on this tree. A probed `.block_on(` under `crates/*/src` without a same-line allow fails that command. `yield_now` does not.
-- `cargo xwin check --workspace --exclude sc-runtime-db-sqlite --target x86_64-pc-windows-msvc` exits 0 on macOS and on Linux. Ubuntu evidence is `just lint` in crate CI, which runs the full profile after `just setup`.
+- `cargo xwin check --workspace --exclude sc-runtime-db-sqlite --target x86_64-pc-windows-msvc` exits 0 on macOS and on Linux. Ubuntu evidence is `just lint` in crate CI, which runs the full profile after `just setup`. On commit `1118f8c1fb2cb92cca7a64c00b0d6e4c561edbe9` that step exited 0 on `ubuntu-latest` in [Actions run 40282316408](https://github.com/randlee/sc-runtime/actions/runs/40282316408), job `just lint and just test`, step Lint, after `just setup`. That profile includes `xwin-check` and `xwin-clippy`. macOS evidence is `just lint full` on this worktree.
 
 ## Non-goals
 

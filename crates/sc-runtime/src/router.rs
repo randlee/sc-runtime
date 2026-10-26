@@ -11,7 +11,6 @@ use std::time::Duration;
 
 use axum::Json;
 use axum::extract::Request;
-use axum::http::StatusCode;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
@@ -92,10 +91,12 @@ pub(crate) fn with_runtime_routes(
 
 /// Applies a handler timeout and a shutdown drain bound to the assembled router.
 ///
-/// `shutdown` becomes true when the daemon starts graceful shutdown. Handlers
-/// still running then have `drain` left before this layer returns
-/// [`StatusCode::SERVICE_UNAVAILABLE`]. A handler that exceeds `limit` from
-/// the start of the request gets [`StatusCode::REQUEST_TIMEOUT`].
+/// `shutdown` becomes true when the daemon starts graceful shutdown. A handler
+/// still running then has `drain` left. A handler that exceeds `limit` from
+/// the start of the request is the request-timeout case. Both failures use
+/// [`ErrorKind::Unavailable`]. [`ErrorKind::http_status_code`] selects the
+/// HTTP status, which is 503 for that kind. The codes are
+/// `RUNTIME.REQUEST_TIMEOUT` and `RUNTIME.DRAIN_TIMEOUT`.
 pub(crate) fn with_request_timeout(
     router: axum::Router,
     limit: Duration,
@@ -176,29 +177,17 @@ async fn drain_handler(
 }
 
 fn request_timeout_response() -> Response {
-    // [`ErrorKind`] has no 408. The envelope kind stays `unavailable` and the
-    // HTTP status is set to 408 after serialization.
-    deadline_response(
-        StatusCode::REQUEST_TIMEOUT,
-        CODE_REQUEST_TIMEOUT,
-        REQUEST_TIMEOUT_BODY,
-    )
+    deadline_response(CODE_REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY)
 }
 
 fn drain_timeout_response() -> Response {
-    deadline_response(
-        StatusCode::SERVICE_UNAVAILABLE,
-        CODE_DRAIN_TIMEOUT,
-        DRAIN_TIMEOUT_BODY,
-    )
+    deadline_response(CODE_DRAIN_TIMEOUT, DRAIN_TIMEOUT_BODY)
 }
 
-fn deadline_response(status: StatusCode, code: &'static str, message: &'static str) -> Response {
-    let envelope =
-        Envelope::<()>::failure(OpError::from_code(ErrorKind::Unavailable, code, message));
-    let mut response = envelope.into_response();
-    *response.status_mut() = status;
-    response
+/// Failure envelope whose status comes only from [`ErrorKind::http_status_code`].
+fn deadline_response(code: &'static str, message: &'static str) -> Response {
+    Envelope::<()>::failure(OpError::from_code(ErrorKind::Unavailable, code, message))
+        .into_response()
 }
 
 /// Mounts the rmcp service at `/mcp` as it was given.
@@ -307,11 +296,9 @@ mod tests {
             .send()
             .await
             .expect("slow");
-        assert_eq!(slow.status(), reqwest::StatusCode::REQUEST_TIMEOUT);
+        let status = slow.status();
         let body: serde_json::Value = slow.json().await.expect("envelope");
-        assert_eq!(body["ok"], false);
-        assert_eq!(body["error"]["code"], CODE_REQUEST_TIMEOUT);
-        assert_eq!(body["error"]["message"], REQUEST_TIMEOUT_BODY);
+        assert_unavailable_envelope(&status, &body, CODE_REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY);
         drop(shutdown_tx);
     }
 
@@ -353,11 +340,22 @@ mod tests {
             .send()
             .await
             .expect("slow");
-        assert_eq!(slow.status(), reqwest::StatusCode::SERVICE_UNAVAILABLE);
+        let status = slow.status();
         let body: serde_json::Value = slow.json().await.expect("envelope");
+        assert_unavailable_envelope(&status, &body, CODE_DRAIN_TIMEOUT, DRAIN_TIMEOUT_BODY);
+    }
+
+    fn assert_unavailable_envelope(
+        status: &reqwest::StatusCode,
+        body: &serde_json::Value,
+        code: &str,
+        message: &str,
+    ) {
+        assert_eq!(status.as_u16(), ErrorKind::Unavailable.http_status_code());
         assert_eq!(body["ok"], false);
-        assert_eq!(body["error"]["code"], CODE_DRAIN_TIMEOUT);
-        assert_eq!(body["error"]["message"], DRAIN_TIMEOUT_BODY);
+        assert_eq!(body["error"]["kind"], "unavailable");
+        assert_eq!(body["error"]["code"], code);
+        assert_eq!(body["error"]["message"], message);
     }
 
     #[test]
