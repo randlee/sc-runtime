@@ -9,6 +9,7 @@ wave: 2
 branch: sprint/b-5-store-postgres
 worktree: sprint/b-5-store-postgres
 requirements:
+  - REQ-RUN-0301
   - REQ-RUN-0321
   - REQ-RUN-0328
   - REQ-RUN-0308
@@ -17,6 +18,7 @@ adrs:
   - ADR-RUN-0301
   - ADR-RUN-0303
   - ADR-RUN-0305
+  - ADR-RUN-0012
   - ADR-RUN-0011
   - ADR-RUN-0007
 owned_paths:
@@ -32,7 +34,7 @@ vertical_rationale: One store crate. Its SQL and its EngineStore implementation 
 
 ## Goal
 
-`store-postgres` is the sqlx Postgres store. It implements `EngineStore` from `b-4`. Its SQL is Postgres SQL. It does not contain SQLite SQL or MySQL SQL. It does not edit `template/Cargo.toml` or `template/crates/schema/`.
+`store-postgres` is the sqlx Postgres store. It implements `EngineStore` from `b-4`. Its SQL is Postgres SQL. It does not contain SQLite SQL or MySQL SQL. REQ-RUN-0301 places this crate in the template workspace when the layout's engine is Postgres. ADR-RUN-0012 keeps the template store on sqlx; the rusqlite writer stays in `sc-runtime-db-sqlite`. This sprint does not edit `template/Cargo.toml` or `template/crates/schema/`.
 
 REQ-RUN-0308's offline-data rule applies to this crate: checked-in `.sqlx` data, and the compile proof runs with `SQLX_OFFLINE=true` and no live database. The crate implements `EngineStore::open`, `read_rows`, and `write_rows`. It does not declare adaptor types. Cargo commands pass `--manifest-path template/Cargo.toml` and do not commit `template/Cargo.lock`.
 
@@ -59,3 +61,9 @@ Root: `boundary:store-postgres`.
 ## Non-goals
 
 No MySQL crate edits. No adaptor. No answers-schema edit (`b-8`). No `just new` of a generated project (`b-8`). No rusqlite writer edit.
+
+## Follow-ups
+
+RBQA-F001: the widgets table check and `RowRecord` codec are duplicated from `store-sqlite`. Moving them into `template/crates/schema` is outside this sprint's `owned_paths` (`template/crates/store-postgres/` only). Sprint b-6 is the pairing owner for that move.
+
+EXT-006: `sqlx` stays a direct dependency of this crate. Hoisting the version into `template/Cargo.toml` `[workspace.dependencies]` would edit that manifest, which this sprint does not own. Beads `run-ze5` tracks the hoist. Each engine keeps its own sqlx feature list.

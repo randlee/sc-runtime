@@ -10,6 +10,8 @@ rust-version.workspace = true
 schema = { path = "../schema" }
 futures-util = "0.3.31"
 serde_json.workspace = true
+# Direct pin. Engine features differ per store crate, and this sprint does not
+# edit the workspace manifest. Beads run-ze5 tracks a later workspace hoist.
 sqlx = { version = "0.9.0", default-features = false, features = [
     "runtime-tokio",
     "postgres",

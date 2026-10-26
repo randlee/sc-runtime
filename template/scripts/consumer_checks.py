@@ -4,6 +4,12 @@
 The sc-observability pin lives in the workspace manifest. Consumers may bump
 that version; this script reads it instead of embedding a version literal.
 The durable check is the absence of sc-observability-otlp.
+
+`db-prepare` walks `crates/store-*` directories that contain `sqlx.toml`.
+The database URL variable comes from that file. A missing crate is skipped.
+An unset URL is skipped unless `DB_PREPARE_STRICT=1` or `--require` is set,
+except `SQLITE_DATABASE_URL`, which defaults to a file under `target/` so a
+file-backed engine can prepare without a server.
 """
 
 import os
@@ -12,6 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Store crates are derived from crates/store-* in build_cli. Do not list them
+# here; a later engine would otherwise need another manual edit.
 SERVER_ONLY = (
     "axum",
     "rmcp",
@@ -19,14 +27,14 @@ SERVER_ONLY = (
     "sc-runtime",
     "sc-observability",
     "service",
-    "store-postgres",
-    "store-sqlite",
     "daemon",
     "utoipa",
     "utoipa-axum",
     "schemars",
     "fd-lock",
 )
+
+_URL_VAR = re.compile(r'(?m)^\s*database-url-var\s*=\s*"([^"]+)"\s*$')
 
 
 def fail(message: str) -> None:
@@ -73,6 +81,18 @@ def workspace_dep_version(text: str, name: str) -> str | None:
     return None
 
 
+def server_only_names(crates: Path = Path("crates")) -> set[str]:
+    """Fixed server crates plus every `store-*` directory in the workspace."""
+    names = set(SERVER_ONLY)
+    if crates.is_dir():
+        names.update(
+            path.name
+            for path in crates.iterdir()
+            if path.is_dir() and path.name.startswith("store-")
+        )
+    return names
+
+
 def observability() -> None:
     root = Path("Cargo.toml").read_text(encoding="utf-8")
     daemon = Path("crates/daemon/Cargo.toml").read_text(encoding="utf-8")
@@ -96,7 +116,7 @@ def build_cli() -> None:
         file=sys.stderr,
     )
     names = package_names(cargo_tree("cli"))
-    found = [name for name in names if name in SERVER_ONLY]
+    found = [name for name in names if name in server_only_names()]
     if found:
         fail("server-only crates in the cli normal tree: " + ", ".join(found))
 
@@ -125,42 +145,87 @@ def prepare_crate(package: str, env: dict[str, str]) -> None:
     )
 
 
-def db_prepare() -> None:
-    env = dict(os.environ)
-    # Absolute path so `prepare` can run inside the crate directory. A relative
-    # `sqlite:target/...` URL would point at a different file from that cwd.
-    sqlite_file = (Path("target") / "db-prepare.sqlite").resolve()
-    sqlite_file.parent.mkdir(exist_ok=True)
-    env.setdefault("SQLITE_DATABASE_URL", f"sqlite:{sqlite_file}")
-    run(["cargo", "sqlx", "database", "create"], env)
-    run(
-        [
-            "cargo",
-            "sqlx",
-            "migrate",
-            "run",
-            "--source",
-            "crates/store-sqlite/migrations",
-        ],
-        env,
-    )
-    prepare_crate("store-sqlite", env)
+def store_directories(crates: Path) -> list[Path]:
+    """`crates/store-*` directories that carry their own `sqlx.toml`."""
+    if not crates.is_dir():
+        return []
+    found = [
+        path
+        for path in crates.iterdir()
+        if path.is_dir() and path.name.startswith("store-") and (path / "sqlx.toml").is_file()
+    ]
+    return sorted(found, key=lambda path: path.name)
 
-    postgres = Path("crates/store-postgres")
-    if not postgres.is_dir():
-        return
-    url = env.get("POSTGRES_DATABASE_URL", "").strip()
+
+def database_url_var(sqlx_toml: Path) -> str:
+    text = sqlx_toml.read_text(encoding="utf-8")
+    matched = _URL_VAR.search(text)
+    if matched is None:
+        fail(f"{sqlx_toml} must set database-url-var")
+    assert matched is not None
+    return matched.group(1)
+
+
+def prepare_is_strict(argv: list[str]) -> bool:
+    if "--require" in argv:
+        return True
+    return os.environ.get("DB_PREPARE_STRICT", "").strip() == "1"
+
+
+def sqlite_fallback(var: str, sqlite_file: Path) -> str | None:
+    if var == "SQLITE_DATABASE_URL":
+        return f"sqlite:{sqlite_file}"
+    return None
+
+
+def resolve_prepare_url(var: str, env: dict[str, str], sqlite_file: Path) -> str:
+    url = env.get(var, "").strip()
+    if url:
+        return url
+    return sqlite_fallback(var, sqlite_file) or ""
+
+
+def missing_url_message(crate: Path, var: str) -> str:
+    return (
+        f"db-prepare: {var} is unset; leaving {crate / '.sqlx'} unchanged. "
+        f"Set {var} and rerun `scripts/consumer_checks.py db-prepare`, "
+        "or set DB_PREPARE_STRICT=1 (or pass --require) to fail this skip."
+    )
+
+
+def prepare_store(
+    crate: Path, env: dict[str, str], sqlite_file: Path, strict: bool
+) -> None:
+    var = database_url_var(crate / "sqlx.toml")
+    if var == "SQLITE_DATABASE_URL":
+        sqlite_file.parent.mkdir(exist_ok=True)
+    url = resolve_prepare_url(var, env, sqlite_file)
     if not url:
-        print(
-            "db-prepare: POSTGRES_DATABASE_URL is unset; leaving crates/store-postgres/.sqlx unchanged",
-            file=sys.stderr,
-        )
+        message = missing_url_message(crate, var)
+        if strict:
+            fail(message)
+        print(message, file=sys.stderr)
         return
-    pg_env = dict(env)
-    pg_env["POSTGRES_DATABASE_URL"] = url
-    run(["cargo", "sqlx", "database", "create"], pg_env, postgres)
-    run(["cargo", "sqlx", "migrate", "run"], pg_env, postgres)
-    prepare_crate("store-postgres", pg_env)
+    crate_env = dict(env)
+    crate_env[var] = url
+    # Create, migrate, and prepare inside the crate. An absolute SQLite path
+    # still points at the same file when cargo's cwd is the crate directory.
+    run(["cargo", "sqlx", "database", "create"], crate_env, crate)
+    run(["cargo", "sqlx", "migrate", "run"], crate_env, crate)
+    prepare_crate(crate.name, crate_env)
+
+
+def db_prepare(argv: list[str] | None = None) -> None:
+    argv = sys.argv if argv is None else argv
+    strict = prepare_is_strict(argv)
+    env = dict(os.environ)
+    sqlite_file = (Path("target") / "db-prepare.sqlite").resolve()
+    crates = store_directories(Path("crates"))
+    if not crates:
+        print("db-prepare: no crates/store-* with sqlx.toml", file=sys.stderr)
+        return
+    for crate in crates:
+        prepare_store(crate, env, sqlite_file, strict)
 
 
 def main() -> None:
@@ -172,9 +237,11 @@ def main() -> None:
     elif command == "build-daemon":
         build_daemon()
     elif command == "db-prepare":
-        db_prepare()
+        db_prepare(sys.argv)
     else:
-        fail("usage: consumer_checks.py observability|build-cli|build-daemon|db-prepare")
+        fail(
+            "usage: consumer_checks.py observability|build-cli|build-daemon|db-prepare [--require]"
+        )
 
 
 if __name__ == "__main__":

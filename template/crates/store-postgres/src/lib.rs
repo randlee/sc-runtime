@@ -12,12 +12,19 @@
 //! and `service` points at those.
 //!
 //! Postgres uses one pool of [`POOL_SIZE`] connections. Reads and writes share
-//! it. There is no write actor and no queue.
+//! it. There is no write actor and no queue. TLS settings such as `sslmode`
+//! belong in the database URL. Pool size and acquire timeout are the constants
+//! in this crate.
+//!
+//! Live tests read `POSTGRES_DATABASE_URL` and skip when it is unset.
+//! `REQUIRE_POSTGRES=1` makes those tests panic instead of skipping. A CI job
+//! that provisions Postgres sets that variable. Sibling engine crates copy the
+//! same switch, `REQUIRE_<ENGINE>=1`.
 
 use std::time::Duration;
 
 use futures_util::TryStreamExt;
-use schema::{EngineStore, RowRecord, check_read_limit, check_write_limit};
+use schema::{EngineStore, MAX_ROW_PAYLOAD_BYTES, RowRecord, check_read_limit, check_write_limit};
 use sqlx::postgres::{PgPool, PgPoolOptions};
 
 #[doc(inline)]
@@ -61,6 +68,9 @@ impl EngineStore for Store {
     }
 }
 
+// The table check and RowRecord codec match store-sqlite. They stay in this
+// crate until sprint b-6, the pairing owner, can move them into the schema
+// crate. This sprint's owned path is template/crates/store-postgres/ only.
 /// The one table-name decision for read and write.
 fn known_table(table: &str) -> Result<(), StoreError> {
     if table == WIDGETS {
@@ -84,22 +94,84 @@ fn require_postgres_url(url: &str) -> Result<(), StoreError> {
     }
 }
 
+/// SQLSTATE values that can succeed later with the same inputs.
+///
+/// `40001` is serialization_failure, `40P01` is deadlock_detected, and
+/// `57P03` is cannot_connect_now.
+const TRANSIENT_SQLSTATES: &[&str] = &["40001", "40P01", "57P03"];
+
+fn transient_driver(err: &sqlx::Error) -> bool {
+    matches!(
+        err,
+        sqlx::Error::PoolTimedOut | sqlx::Error::PoolClosed | sqlx::Error::Io(_)
+    ) || err
+        .as_database_error()
+        .and_then(sqlx::error::DatabaseError::code)
+        .is_some_and(|code| TRANSIENT_SQLSTATES.contains(&code.as_ref()))
+}
+
+fn constraint_violation(err: &sqlx::Error) -> bool {
+    err.as_database_error().is_some_and(|db| {
+        db.is_unique_violation() || db.is_foreign_key_violation() || db.is_check_violation()
+    })
+}
+
+fn driver_message(err: &sqlx::Error) -> String {
+    redact_credentials(&err.to_string())
+}
+
+/// Replaces a URL password so a driver message cannot echo credentials.
+fn redact_credentials(message: &str) -> String {
+    let mut rest = message;
+    let mut out = String::new();
+    while let Some(scheme) = rest.find("://") {
+        let split = scheme + 3;
+        out.push_str(&rest[..split]);
+        rest = &rest[split..];
+        let end = rest
+            .find(['/', ' ', '\n', '\r', '\t'])
+            .unwrap_or(rest.len());
+        out.push_str(&redact_authority(&rest[..end]));
+        rest = &rest[end..];
+    }
+    out.push_str(rest);
+    out
+}
+
+fn redact_authority(authority: &str) -> String {
+    let Some(at) = authority.rfind('@') else {
+        return authority.to_owned();
+    };
+    let userinfo = &authority[..at];
+    let Some(colon) = userinfo.find(':') else {
+        return authority.to_owned();
+    };
+    let mut redacted = String::with_capacity(authority.len());
+    redacted.push_str(&userinfo[..colon]);
+    redacted.push_str(":***@");
+    redacted.push_str(&authority[at + 1..]);
+    redacted
+}
+
 fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
     if matches!(err, sqlx::Error::PoolTimedOut) {
         return StoreError::new(StoreCode::Unavailable, "postgres pool acquire timed out");
     }
-    if let Some(db) = err.as_database_error()
-        && (db.is_unique_violation() || db.is_foreign_key_violation() || db.is_check_violation())
-    {
-        return StoreError::new(StoreCode::Conflict, err.to_string());
+    if transient_driver(&err) {
+        return StoreError::new(StoreCode::Unavailable, driver_message(&err));
     }
-    StoreError::new(fallback, err.to_string())
+    if constraint_violation(&err) {
+        return StoreError::new(StoreCode::Conflict, driver_message(&err));
+    }
+    StoreError::new(fallback, driver_message(&err))
 }
 
 /// Opens the database at `config.url` and runs migrations.
 ///
-/// `url` is a `postgres://` or `postgresql://` database URL. Pool size and TLS
-/// stay in that URL's query. A filesystem path is rejected.
+/// `url` is a `postgres://` or `postgresql://` database URL. TLS settings such
+/// as `sslmode` belong in that URL's query. Pool size ([`POOL_SIZE`]) and the
+/// acquire timeout ([`ACQUIRE_TIMEOUT`]) are constants in this consumer-owned
+/// crate, not URL parameters. A filesystem path is rejected.
 ///
 /// # Examples
 ///
@@ -119,7 +191,9 @@ fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
 ///
 /// Returns [`StoreCode::Connection`] when `url` is not a Postgres URL or a
 /// pool cannot be opened, [`StoreCode::Unavailable`] when a pool acquire
-/// times out, and [`StoreCode::Migration`] when a migration fails.
+/// times out, the pool is closed, the driver reports an I/O failure, or
+/// Postgres returns SQLSTATE `40001`, `40P01`, or `57P03`, and
+/// [`StoreCode::Migration`] when a migration fails.
 pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
     require_postgres_url(&config.url)?;
     let pool = PgPoolOptions::new()
@@ -144,7 +218,8 @@ pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
 ///
 /// Returns [`StoreCode::Query`] when the insert fails, [`StoreCode::Conflict`]
 /// when a constraint rejects it, and [`StoreCode::Unavailable`] when the pool
-/// times out.
+/// times out, the pool is closed, the driver reports an I/O failure, or
+/// Postgres returns SQLSTATE `40001`, `40P01`, or `57P03`.
 pub async fn insert_widget(store: &Store, name: &str) -> Result<WidgetRow, StoreError> {
     let row = sqlx::query!(
         "INSERT INTO widgets (id, name) VALUES (gen_random_uuid()::text, $1) RETURNING id, name",
@@ -167,7 +242,9 @@ pub async fn insert_widget(store: &Store, name: &str) -> Result<WidgetRow, Store
 /// # Errors
 ///
 /// Returns [`StoreCode::Query`] when the query fails, and
-/// [`StoreCode::Unavailable`] when the pool times out.
+/// [`StoreCode::Unavailable`] when the pool times out, the pool is closed,
+/// the driver reports an I/O failure, or Postgres returns SQLSTATE `40001`,
+/// `40P01`, or `57P03`.
 pub async fn get_widget(
     store: &Store,
     id: impl AsRef<str>,
@@ -245,6 +322,16 @@ fn record_from_columns(id: String, name: String) -> Result<RowRecord, StoreError
         name,
     })
     .map_err(|err| StoreError::new(StoreCode::Query, err.to_string()))?;
+    // REQ-RUN-0308 / ADR-RUN-0301: read_rows rejects a payload over 1 MiB.
+    if payload.len() > MAX_ROW_PAYLOAD_BYTES {
+        return Err(StoreError::new(
+            StoreCode::Query,
+            format!(
+                "row payload of {} bytes exceeds the limit of {MAX_ROW_PAYLOAD_BYTES}",
+                payload.len()
+            ),
+        ));
+    }
     Ok(RowRecord {
         table: WIDGETS.to_owned(),
         payload,
@@ -366,12 +453,155 @@ mod tests {
         }
     }
 
+    fn postgres_required() -> bool {
+        std::env::var("REQUIRE_POSTGRES")
+            .ok()
+            .is_some_and(|value| value == "1")
+    }
+
+    /// `Ok(true)` runs the live test, `Ok(false)` skips it, and `Err` is the
+    /// panic text when `REQUIRE_POSTGRES=1` and the URL is missing.
+    fn live_database_gate(url: Option<&str>, required: bool) -> Result<bool, &'static str> {
+        let present = url.is_some_and(|value| !value.is_empty());
+        if present {
+            Ok(true)
+        } else if required {
+            Err("REQUIRE_POSTGRES=1 but POSTGRES_DATABASE_URL is unset")
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn enforce_live_database(gate: Result<bool, &'static str>) -> bool {
+        match gate {
+            Ok(run) => run,
+            Err(message) => panic!("{message}"),
+        }
+    }
+
     async fn live_database() -> Option<Ephemeral> {
-        if configured_url().is_none() {
-            eprintln!("skipping: POSTGRES_DATABASE_URL is unset");
+        let url = configured_url();
+        if !enforce_live_database(live_database_gate(url.as_deref(), postgres_required())) {
+            eprintln!(
+                "skipping: POSTGRES_DATABASE_URL is unset; set it to run live tests, or REQUIRE_POSTGRES=1 to fail instead of skipping"
+            );
             return None;
         }
         Ephemeral::create().await
+    }
+
+    fn is_uuid(value: &str) -> bool {
+        let bytes = value.as_bytes();
+        if bytes.len() != 36 {
+            return false;
+        }
+        bytes.iter().enumerate().all(|(index, byte)| match index {
+            8 | 13 | 18 | 23 => *byte == b'-',
+            _ => byte.is_ascii_hexdigit(),
+        })
+    }
+
+    #[derive(Debug)]
+    struct SqlStateError(&'static str);
+
+    impl std::fmt::Display for SqlStateError {
+        fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            formatter.write_str(self.0)
+        }
+    }
+
+    impl std::error::Error for SqlStateError {}
+
+    impl sqlx::error::DatabaseError for SqlStateError {
+        fn message(&self) -> &str {
+            self.0
+        }
+
+        fn code(&self) -> Option<std::borrow::Cow<'_, str>> {
+            Some(std::borrow::Cow::Borrowed(self.0))
+        }
+
+        fn kind(&self) -> sqlx::error::ErrorKind {
+            sqlx::error::ErrorKind::Other
+        }
+
+        fn as_error(&self) -> &(dyn std::error::Error + Send + Sync + 'static) {
+            self
+        }
+
+        fn as_error_mut(&mut self) -> &mut (dyn std::error::Error + Send + Sync + 'static) {
+            self
+        }
+
+        fn into_error(self: Box<Self>) -> Box<dyn std::error::Error + Send + Sync + 'static> {
+            self
+        }
+    }
+
+    #[test]
+    fn read_rows_rejects_payload_over_one_mib() {
+        let name = "n".repeat(MAX_ROW_PAYLOAD_BYTES);
+        let err = record_from_columns("id".to_owned(), name).expect_err("payload");
+        assert_eq!(err.code, StoreCode::Query);
+        assert!(!err.is_retryable());
+        assert!(err.message.contains("exceeds the limit"));
+
+        let record = record_from_columns("abc".to_owned(), "bolt".to_owned()).expect("record");
+        assert!(record.payload.len() <= MAX_ROW_PAYLOAD_BYTES);
+        assert_eq!(record.table, WIDGETS);
+    }
+
+    #[test]
+    fn transient_driver_errors_are_unavailable() {
+        let cases = [
+            ("pool closed", sqlx::Error::PoolClosed),
+            (
+                "io",
+                sqlx::Error::Io(std::io::Error::other("connection reset")),
+            ),
+            ("40001", sqlx::Error::from(SqlStateError("40001"))),
+            ("40P01", sqlx::Error::from(SqlStateError("40P01"))),
+            ("57P03", sqlx::Error::from(SqlStateError("57P03"))),
+        ];
+        for (label, err) in cases {
+            let mapped = from_driver(StoreCode::Query, err);
+            assert_eq!(mapped.code, StoreCode::Unavailable, "{label}");
+            assert!(mapped.is_retryable(), "{label}");
+            assert!(std::error::Error::source(&mapped).is_none(), "{label}");
+        }
+
+        let timed_out = from_driver(StoreCode::Query, sqlx::Error::PoolTimedOut);
+        assert_eq!(timed_out.code, StoreCode::Unavailable);
+        assert!(timed_out.is_retryable());
+        assert_eq!(timed_out.message, "postgres pool acquire timed out");
+    }
+
+    #[test]
+    fn driver_message_redacts_url_credentials() {
+        let err = sqlx::Error::Io(std::io::Error::other(
+            "connect postgres://widget_user:super-secret-password@127.0.0.1:5432/widgets failed",
+        ));
+        let mapped = from_driver(StoreCode::Connection, err);
+        assert!(!mapped.message.contains("super-secret-password"));
+        assert!(mapped.message.contains("widget_user"));
+        assert!(mapped.message.contains("127.0.0.1"));
+        assert!(!mapped.to_string().contains("super-secret-password"));
+    }
+
+    #[test]
+    fn require_postgres_skips_unless_forced() {
+        assert!(!live_database_gate(None, false).expect("skip"));
+        assert!(live_database_gate(Some("postgres://localhost/widgets"), false).expect("present"));
+        assert_eq!(
+            live_database_gate(Some(""), true).expect_err("empty"),
+            "REQUIRE_POSTGRES=1 but POSTGRES_DATABASE_URL is unset"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "REQUIRE_POSTGRES=1 but POSTGRES_DATABASE_URL is unset")]
+    fn require_postgres_panics_when_the_url_is_unset() {
+        enforce_live_database(live_database_gate(None, true));
     }
 
     #[tokio::test]
@@ -397,6 +627,40 @@ mod tests {
             assert!(std::error::Error::source(&err).is_none());
             assert!(!err.is_retryable());
         }
+    }
+
+    #[tokio::test]
+    async fn open_does_not_echo_url_credentials() {
+        let err = open(&OpenConfig::new(
+            "postgres://widget_user:super-secret-password@localhost:not-a-port/widgets",
+        ))
+        .await
+        .expect_err("open");
+        assert_eq!(err.code, StoreCode::Connection);
+        assert!(!err.message.contains("super-secret-password"));
+        assert!(!err.to_string().contains("super-secret-password"));
+        assert!(!err.is_retryable());
+    }
+
+    #[tokio::test]
+    async fn fresh_database_provisions_gen_random_uuid() {
+        let Some(db) = live_database().await else {
+            return;
+        };
+        let store = open(&OpenConfig::new(db.url.clone())).await.expect("open");
+        let installed: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto')",
+        )
+        .fetch_one(&store.pool)
+        .await
+        .expect("pgcrypto");
+        assert!(installed, "migration installs pgcrypto");
+        let row = insert_widget(&store, "bolt").await.expect("insert");
+        assert!(is_uuid(row.id.as_str()), "{}", row.id.as_str());
+        let loaded = get_widget(&store, &row.id).await.expect("get");
+        assert_eq!(loaded.expect("row").name, "bolt");
+        drop(store);
+        db.close().await;
     }
 
     #[tokio::test]
