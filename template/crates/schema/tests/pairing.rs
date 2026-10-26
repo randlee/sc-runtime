@@ -6,32 +6,11 @@ use schema::{
     EngineMembership, EngineStore, Membership, OpenConfig, RowRecord, StoreCode, StoreError,
     WidgetId, WidgetRow, check_read_limit, check_write_limit,
 };
-use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
-struct MembershipFile {
-    #[serde(default)]
-    shared: Vec<String>,
-    #[serde(default)]
-    only_in: BTreeMap<String, EngineFile>,
-}
-
-#[derive(Debug, Deserialize, Default)]
-struct EngineFile {
-    #[serde(default)]
-    tables: Vec<String>,
-    #[serde(default)]
-    columns: Vec<String>,
-}
+mod common;
 
 fn membership_from_toml(text: &str) -> Result<Membership, schema::MembershipError> {
-    let file: MembershipFile = toml::from_str(text).expect("membership toml");
-    let only_in = file
-        .only_in
-        .into_iter()
-        .map(|(engine, side)| (engine, EngineMembership::new(side.tables, side.columns)))
-        .collect();
-    Membership::try_new(file.shared, only_in)
+    common::membership_from_toml(text)
 }
 
 #[test]

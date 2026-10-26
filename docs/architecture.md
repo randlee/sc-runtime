@@ -1625,10 +1625,12 @@ variable, so two such crates can build in one workspace.
    ([REQ-RUN-0327](requirements.md), [REQ-RUN-0328](requirements.md)).
 5. Store crates are template code owned by the project. `sc-runtime` MUST only
    call the project's stores closure and MUST NOT inspect its result.
-6. The sc-runtime crates and the template do not move rows between stores.
-   A consumer adaptor does, including a local cache
-   ([ADR-RUN-0305](architecture.md)). This repository does not contain a
+6. The template adaptor (`template/crates/store-adaptor`), as consumer source,
+   is the one place rows move between stores, including a local cache
+   ([ADR-RUN-0305](architecture.md)). The sc-runtime crates and the framework
+   crates do not move rows between stores. This repository does not contain a
    replication mechanism, an outbox, or a routing policy.
+   Amended 2026-10-25 by [ADR-RUN-0305](architecture.md).
 7. The layouts a new application can use are [REQ-RUN-0326](requirements.md).
    v0.1 generated the SQLite store only. Sprint `b-8` accepts the six layouts
    in that requirement. SQL Server is out of scope because sqlx has no driver

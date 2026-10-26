@@ -6,39 +6,15 @@ use schema::{
     EngineMembership, EngineStore, Membership, OpenConfig, RowRecord, StoreCode, StoreError,
     check_read_limit, check_write_limit,
 };
-use serde::Deserialize;
 use store_adaptor::{Rollup, TableFlags, aggregate_host, copy_rows, copy_shared_rows};
 
-#[derive(Debug, Deserialize)]
-struct MembershipFile {
-    #[serde(default)]
-    shared: Vec<String>,
-    #[serde(default)]
-    only_in: BTreeMap<String, EngineFile>,
-}
-
-#[derive(Debug, Deserialize, Default)]
-struct EngineFile {
-    #[serde(default)]
-    tables: Vec<String>,
-    #[serde(default)]
-    columns: Vec<String>,
-}
-
-fn membership_from_toml(text: &str) -> Result<Membership, schema::MembershipError> {
-    let file: MembershipFile = toml::from_str(text).expect("membership toml");
-    let only_in = file
-        .only_in
-        .into_iter()
-        .map(|(engine, side)| (engine, EngineMembership::new(side.tables, side.columns)))
-        .collect();
-    Membership::try_new(file.shared, only_in)
-}
+#[path = "../../schema/tests/common/mod.rs"]
+mod schema_membership;
 
 fn template_membership() -> Membership {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../schema/membership.toml");
     let text = std::fs::read_to_string(path).expect("membership.toml");
-    membership_from_toml(&text).expect("membership")
+    schema_membership::membership_from_toml(&text).expect("membership")
 }
 
 struct MemoryStore {
@@ -151,7 +127,7 @@ fn row(table: &str, payload: &str) -> RowRecord {
 struct CountRows;
 
 impl Rollup for CountRows {
-    fn rollup(&self, host_rows: &[RowRecord]) -> Vec<RowRecord> {
+    fn rollup(&self, host_rows: &[RowRecord], _one_sided_columns: &[String]) -> Vec<RowRecord> {
         let table = host_rows
             .first()
             .map(|row| row.table.clone())
@@ -160,29 +136,22 @@ impl Rollup for CountRows {
     }
 }
 
-struct DropListed {
-    columns: Vec<String>,
+struct KeepRows;
+
+impl Rollup for KeepRows {
+    fn rollup(&self, host_rows: &[RowRecord], _one_sided_columns: &[String]) -> Vec<RowRecord> {
+        host_rows.to_vec()
+    }
 }
 
-impl Rollup for DropListed {
-    fn rollup(&self, host_rows: &[RowRecord]) -> Vec<RowRecord> {
-        host_rows
-            .iter()
-            .map(|host_row| {
-                let mut text = String::from_utf8(host_row.payload.clone()).expect("utf-8 payload");
-                for column in &self.columns {
-                    let key = column
-                        .split_once('.')
-                        .map(|(_, field)| field)
-                        .unwrap_or(column.as_str());
-                    text = text.replace(&format!(r#","{key}":"h1""#), "");
-                }
-                RowRecord {
-                    table: host_row.table.clone(),
-                    payload: text.into_bytes(),
-                }
-            })
-            .collect()
+struct SeenColumns {
+    seen: Mutex<Vec<String>>,
+}
+
+impl Rollup for SeenColumns {
+    fn rollup(&self, host_rows: &[RowRecord], one_sided_columns: &[String]) -> Vec<RowRecord> {
+        *self.seen.lock().expect("seen") = one_sided_columns.to_vec();
+        host_rows.to_vec()
     }
 }
 
@@ -294,14 +263,14 @@ async fn copy_shared_rows_refuses_one_sided_tables() {
     ]);
     let dest = MemoryStore::with_rows(Vec::new());
 
-    copy_shared_rows(&source, &dest, "widgets", &flags)
+    copy_shared_rows(&source, &dest, "widgets", &flags, &KeepRows)
         .await
         .expect("shared");
     let copied = dest.read_rows("widgets").await.expect("widgets");
     assert_eq!(copied.len(), 1);
 
     for table in ["local_notes", "remote_audit"] {
-        let err = copy_shared_rows(&source, &dest, table, &flags)
+        let err = copy_shared_rows(&source, &dest, table, &flags, &KeepRows)
             .await
             .expect_err(table);
         assert_eq!(err.code, StoreCode::NotFound);
@@ -322,7 +291,7 @@ async fn copy_shared_rows_propagates_store_errors_without_a_partial_write() {
     let flags = TableFlags::from_membership(&Membership::empty(), "mysql");
     let source = MemoryStore::failing_read(StoreCode::NotFound, "unknown table extra");
     let dest = MemoryStore::with_rows(Vec::new());
-    let err = copy_shared_rows(&source, &dest, "extra", &flags)
+    let err = copy_shared_rows(&source, &dest, "extra", &flags, &KeepRows)
         .await
         .expect_err("read");
     assert_eq!(err.code, StoreCode::NotFound);
@@ -331,7 +300,7 @@ async fn copy_shared_rows_propagates_store_errors_without_a_partial_write() {
     let source = MemoryStore::with_rows(vec![row("widgets", r#"{"id":"w1"}"#)]);
     let dest =
         MemoryStore::failing_write(Vec::new(), StoreCode::Unavailable, "pool acquire timed out");
-    let err = copy_rows(&source, &dest, "widgets")
+    let err = copy_shared_rows(&source, &dest, "widgets", &flags, &KeepRows)
         .await
         .expect_err("write");
     assert_eq!(err.code, StoreCode::Unavailable);
@@ -383,25 +352,38 @@ async fn aggregate_host_refuses_one_sided_tables_before_reading() {
 }
 
 #[tokio::test]
-async fn rollup_sees_the_one_sided_column_and_can_drop_it() {
+async fn move_paths_pass_one_sided_columns_to_rollup() {
     let flags = TableFlags::from_membership(&template_membership(), "postgres");
     assert_eq!(flags.column_on_one_side, vec!["widgets.host_id".to_owned()]);
     let host = MemoryStore::with_rows(vec![row(
         "widgets",
         r#"{"id":"w1","name":"bolt","host_id":"h1"}"#,
     )]);
-    let remote = MemoryStore::with_rows(Vec::new());
-    let rollup = DropListed {
-        columns: flags.column_on_one_side.clone(),
+    let rollup = SeenColumns {
+        seen: Mutex::new(Vec::new()),
     };
+
+    let remote = MemoryStore::with_rows(Vec::new());
+    copy_shared_rows(&host, &remote, "widgets", &flags, &rollup)
+        .await
+        .expect("copy");
+    assert_eq!(
+        rollup.seen.lock().expect("seen").as_slice(),
+        flags.column_on_one_side.as_slice()
+    );
+    let copied = remote.read_rows("widgets").await.expect("copied");
+    assert_eq!(copied.len(), 1);
+
+    let remote = MemoryStore::with_rows(Vec::new());
     aggregate_host(&host, &remote, "widgets", &flags, &rollup)
         .await
         .expect("aggregate");
-    let aggregated = remote.read_rows("widgets").await.expect("remote");
     assert_eq!(
-        aggregated,
-        vec![row("widgets", r#"{"id":"w1","name":"bolt"}"#)]
+        rollup.seen.lock().expect("seen").as_slice(),
+        flags.column_on_one_side.as_slice()
     );
+    let aggregated = remote.read_rows("widgets").await.expect("remote");
+    assert_eq!(aggregated, copied);
 }
 
 #[tokio::test]

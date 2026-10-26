@@ -1,6 +1,13 @@
 [template]
 cargo_generate_version = ">=0.23.0"
-exclude = ["AGENTS.md.j2", "CLAUDE.md.j2"]
+exclude = [
+    "AGENTS.md.j2",
+    "CLAUDE.md.j2",
+    # Rust format strings use `{{`, which cargo-generate treats as Liquid.
+    # Copy these files unchanged. b-8 decides which layouts keep the crate.
+    "crates/store-adaptor/src/lib.rs",
+    "crates/store-adaptor/tests/adaptor.rs",
+]
 
 [hooks]
 post = ["hooks/drop-template-exclude.rhai"]
