@@ -10,6 +10,8 @@ const FORBIDDEN: &[&str] = &[
     "sc-command",
     "sc-config",
     "sc-runtime",
+    "sc-runtime-db-sqlite",
+    "sc-cron",
     "hyperlocal",
     "rustls",
     "rustls-webpki",

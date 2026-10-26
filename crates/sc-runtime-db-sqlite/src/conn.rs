@@ -7,6 +7,10 @@ use crate::value::SqlValue;
 /// The writer connection, usable only on the writer thread.
 ///
 /// `WriterConn` is not `Sync`. A `transaction` body is the only caller.
+/// [`Self::execute`] does not return rows. `SELECT`, `INSERT ... RETURNING`,
+/// and `SELECT last_insert_rowid()` are unsupported. Supply the primary key
+/// in the bound parameters, and read committed rows from a separate connection
+/// after [`crate::SqliteWriter::transaction`] returns.
 pub struct WriterConn {
     connection: NonNull<rusqlite::Connection>,
 }

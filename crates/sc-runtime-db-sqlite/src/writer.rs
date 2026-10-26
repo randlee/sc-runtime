@@ -16,6 +16,14 @@ use crate::{CHANNEL_CAPACITY, SHUTDOWN_JOIN, WRITE_DEADLINE};
 ///
 /// Clones share the thread. Dropping the last handle asks the thread to exit
 /// and joins it for up to [`SHUTDOWN_JOIN`].
+///
+/// `open`, `execute`, and `transaction` block the calling thread. From async
+/// code, call them inside `tokio::task::spawn_blocking`. Do not drop the last
+/// handle on a runtime worker: the join busy-waits for up to [`SHUTDOWN_JOIN`].
+/// This crate does not add an async wrapper.
+///
+/// The writer thread is named `sqlite-writer:<file name>`, using the path's
+/// file name. `:memory:` uses that string as the file name.
 #[derive(Clone)]
 #[must_use = "dropping the last handle joins the writer thread"]
 pub struct SqliteWriter {
@@ -23,12 +31,22 @@ pub struct SqliteWriter {
 }
 
 struct Shared {
-    sender: Mutex<Option<SyncSender<Job>>>,
+    /// Taken in `Drop` so the writer thread observes a disconnected job channel.
+    /// `SyncSender` is `Sync`, so the sender is not behind a mutex.
+    sender: Option<SyncSender<Job>>,
+    /// `JoinHandle` is `!Sync`. This mutex exists so the handle can live in a
+    /// `Sync` writer. It does not guard the job sender.
     join: Mutex<Option<JoinHandle<()>>>,
     deadline: Duration,
     queued: Arc<AtomicUsize>,
     /// Set when the writer thread exits. Tests observe it after the last handle drops.
-    #[allow(dead_code)]
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "tests observe this flag after the last handle drops"
+        )
+    )]
     finished: Arc<AtomicBool>,
 }
 
@@ -37,6 +55,11 @@ impl SqliteWriter {
     ///
     /// `:memory:` opens a private in-memory database. A filesystem path creates
     /// the file when it is missing. The parent directory must already exist.
+    ///
+    /// Before the first transaction, the writer sets `foreign_keys = ON`, a
+    /// 5 second `busy_timeout`, and `journal_mode = WAL`. An in-memory database
+    /// stays on SQLite's memory journal. These settings are fixed. `open` does
+    /// not take options.
     ///
     /// # Examples
     ///
@@ -88,9 +111,9 @@ impl SqliteWriter {
         };
         let thread_path = path.to_path_buf();
         let handle = thread::Builder::new()
-            .name("sqlite-writer".to_owned())
+            .name(writer_thread_name(path))
             .spawn(move || batch::writer_thread(thread_path, parts))
-            .map_err(SqliteWriterError::open)?;
+            .map_err(SqliteWriterError::open_io)?;
         match ready_rx.recv_timeout(SHUTDOWN_JOIN) {
             Ok(Ok(())) => {}
             Ok(Err(error)) => {
@@ -99,14 +122,14 @@ impl SqliteWriter {
             }
             Err(_) => {
                 let _ = handle.join();
-                return Err(SqliteWriterError::open(
+                return Err(SqliteWriterError::open_message(
                     "writer thread stopped before the database opened",
                 ));
             }
         }
         Ok(Self {
             shared: Arc::new(Shared {
-                sender: Mutex::new(Some(job_tx)),
+                sender: Some(job_tx),
                 join: Mutex::new(Some(handle)),
                 deadline,
                 queued,
@@ -147,11 +170,30 @@ impl SqliteWriter {
     /// after the outer commit. Dropping the body's savepoint rolls its writes
     /// back when `body` returns an error.
     ///
+    /// The body must use only the [`crate::WriterConn`] it is given. Do not
+    /// capture a [`SqliteWriter`]: `execute` or `transaction` on a captured
+    /// handle waits for this body to finish, and the body is waiting on that
+    /// call, so the caller blocks until [`crate::WRITE_DEADLINE`]. Do not drop
+    /// the last [`SqliteWriter`] from the body. That drop joins the writer
+    /// thread from the writer thread.
+    ///
+    /// `WriterConn::execute` does not return rows. `SELECT`,
+    /// `INSERT ... RETURNING`, and `SELECT last_insert_rowid()` are
+    /// unsupported. Put the new primary key in the bound parameters. Read
+    /// committed rows from a separate connection after this method returns.
+    ///
     /// # Errors
     ///
     /// Returns the same queue, deadline, and channel errors as [`Self::execute`].
     /// An error returned by `body` is returned to this caller after the rest of
     /// the outer batch commits or fails. A panic inside `body` closes the writer.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the reply value is not `T`. The body is the only producer of
+    /// that reply and it boxes `T`, so a mismatch is an invariant breach. A
+    /// disconnected writer is [`SqliteWriterError::ChannelClosed`], not a
+    /// failed downcast.
     pub fn transaction<T, F>(&self, body: F) -> Result<T, SqliteWriterError>
     where
         F: FnOnce(&mut crate::WriterConn) -> Result<T, SqliteWriterError> + Send + 'static,
@@ -168,10 +210,10 @@ impl SqliteWriter {
         };
         self.enqueue(job)?;
         let boxed = batch::wait_reply(&receiver, self.shared.deadline, started)?;
-        match boxed.downcast::<T>() {
-            Ok(value) => Ok(*value),
-            Err(_) => Err(SqliteWriterError::ChannelClosed),
-        }
+        let value = boxed
+            .downcast::<T>()
+            .expect("transaction reply is the type the body returned");
+        Ok(*value)
     }
 
     /// Enqueues a job that panics on the writer thread before commit.
@@ -199,11 +241,7 @@ impl SqliteWriter {
     }
 
     fn enqueue(&self, job: Job) -> Result<(), SqliteWriterError> {
-        let guard = match self.shared.sender.lock() {
-            Ok(guard) => guard,
-            Err(poisoned) => poisoned.into_inner(),
-        };
-        let Some(sender) = guard.as_ref() else {
+        let Some(sender) = self.shared.sender.as_ref() else {
             return Err(SqliteWriterError::ChannelClosed);
         };
         match sender.try_send(job) {
@@ -219,14 +257,9 @@ impl SqliteWriter {
 
 impl Drop for Shared {
     fn drop(&mut self) {
-        match self.sender.get_mut() {
-            Ok(sender) => {
-                sender.take();
-            }
-            Err(poisoned) => {
-                poisoned.into_inner().take();
-            }
-        }
+        // Disconnect the job channel before joining. The sender needs no
+        // mutex. The join mutex exists only because `JoinHandle` is `!Sync`.
+        self.sender.take();
         let handle = match self.join.get_mut() {
             Ok(join) => join.take(),
             Err(poisoned) => poisoned.into_inner().take(),
@@ -235,6 +268,15 @@ impl Drop for Shared {
             join_within(handle, SHUTDOWN_JOIN);
         }
     }
+}
+
+fn writer_thread_name(path: &Path) -> String {
+    let base = path
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .filter(|name| !name.is_empty())
+        .unwrap_or_else(|| "db".to_owned());
+    format!("sqlite-writer:{base}")
 }
 
 fn join_within(handle: JoinHandle<()>, timeout: Duration) {

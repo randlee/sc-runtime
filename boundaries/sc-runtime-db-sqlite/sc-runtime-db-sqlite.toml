@@ -18,7 +18,7 @@ roots = ["SqliteWriter", "WriterConn", "SqlValue", "SqliteWriterError", "CHANNEL
 
 [dependencies]
 allowed_dependents = []
-allowed_dependencies = ["rusqlite", "thiserror"]
+allowed_dependencies = ["rusqlite"]
 # No workspace crate, sqlx, or sc-observability-types. sc-cron is not a member yet.
 forbidden_edges = [
   "sc-runtime-db-sqlite -> sc-config",

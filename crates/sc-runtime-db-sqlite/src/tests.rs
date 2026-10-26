@@ -102,27 +102,52 @@ fn writer_is_send_and_sync() {
 fn error_display_and_source() {
     assert_eq!(
         SqliteWriterError::ChannelClosed.to_string(),
-        "writer channel closed"
+        "DBSQ.CHANNEL_CLOSED: writer channel closed; Reopen the database with SqliteWriter::open. The writer thread has exited."
     );
-    assert_eq!(SqliteWriterError::QueueFull.to_string(), "write queue full");
+    assert_eq!(
+        SqliteWriterError::QueueFull.to_string(),
+        "DBSQ.QUEUE_FULL: write queue full; Retry the call. The job was not accepted."
+    );
     assert_eq!(
         SqliteWriterError::DeadlineExceeded.to_string(),
-        "write deadline exceeded"
+        "DBSQ.DEADLINE_EXCEEDED: write deadline exceeded; Do not retry a non-idempotent write until you check the database. The job was accepted and may already be committed."
     );
-    assert_eq!(
-        SqliteWriterError::Commit {
-            message: "disk full".to_owned(),
-        }
-        .to_string(),
-        "commit failed: disk full"
+    assert_eq!(SqliteWriterError::QueueFull.code(), "DBSQ.QUEUE_FULL");
+    assert!(SqliteWriterError::QueueFull.recovery().contains("Retry"));
+    assert!(
+        SqliteWriterError::DeadlineExceeded
+            .recovery()
+            .contains("may already be committed")
+    );
+    assert!(
+        SqliteWriterError::ChannelClosed
+            .recovery()
+            .contains("Reopen")
     );
     assert!(std::error::Error::source(&SqliteWriterError::QueueFull).is_none());
     let sqlite = SqliteWriterError::sqlite(rusqlite::Error::SqliteFailure(
         rusqlite::ffi::Error::new(1),
         Some("no such table: missing".to_owned()),
     ));
-    assert_eq!(sqlite.to_string(), "sqlite error 1: no such table: missing");
+    assert_eq!(
+        sqlite.to_string(),
+        "DBSQ.SQLITE: sqlite error 1: no such table: missing; Read the SQLite code and the source error. This crate does not retry the statement."
+    );
     assert!(std::error::Error::source(&sqlite).is_some());
+    let commit = SqliteWriterError::commit(rusqlite::Error::SqliteFailure(
+        rusqlite::ffi::Error::new(13),
+        Some("disk full".to_owned()),
+    ));
+    assert_eq!(
+        commit.to_string(),
+        "DBSQ.COMMIT: commit failed: sqlite error 13: disk full; Read the SQLite code and the source error. The commit did not succeed."
+    );
+    assert!(
+        std::error::Error::source(&commit)
+            .and_then(|source| source.downcast_ref::<rusqlite::Error>())
+            .is_some()
+    );
+    assert_eq!(commit.code(), "DBSQ.COMMIT");
 }
 
 #[test]
@@ -131,7 +156,13 @@ fn open_reports_a_missing_parent_directory() {
     let path = dir.path().join("missing-dir").join("db.sqlite");
     let error = SqliteWriter::open(&path).expect_err("missing parent");
     assert!(matches!(error, SqliteWriterError::Open { .. }));
-    assert!(error.to_string().starts_with("open failed:"));
+    assert!(error.to_string().starts_with("DBSQ.OPEN: open failed:"));
+    assert!(error.to_string().contains(error.recovery()));
+    assert!(
+        std::error::Error::source(&error)
+            .and_then(|source| source.downcast_ref::<rusqlite::Error>())
+            .is_some()
+    );
 }
 
 #[test]
@@ -379,4 +410,40 @@ fn writer_panic_closes_every_enqueued_caller() {
     ));
     let follow_up = writer.execute("CREATE TABLE after_panic (n INTEGER)", &[]);
     assert!(matches!(follow_up, Err(SqliteWriterError::ChannelClosed)));
+}
+
+#[test]
+fn open_enforces_foreign_keys_and_wal() {
+    let (dir, writer) = file_writer();
+    let path = dir.path().join("db.sqlite");
+    writer
+        .execute("CREATE TABLE parent (id INTEGER PRIMARY KEY)", &[])
+        .expect("parent");
+    writer
+        .execute(
+            "CREATE TABLE child (id INTEGER PRIMARY KEY, parent_id INTEGER NOT NULL REFERENCES parent(id))",
+            &[],
+        )
+        .expect("child");
+    let error = writer
+        .execute(
+            "INSERT INTO child (id, parent_id) VALUES (?1, ?2)",
+            &[SqlValue::Integer(1), SqlValue::Integer(9)],
+        )
+        .expect_err("foreign key");
+    assert!(matches!(error, SqliteWriterError::Sqlite { .. }), "{error}");
+    let connection = rusqlite::Connection::open(&path).expect("read connection");
+    let mode: String = connection
+        .query_row("PRAGMA journal_mode", [], |row| row.get(0))
+        .expect("journal mode");
+    assert_eq!(mode.to_ascii_lowercase(), "wal");
+}
+
+#[test]
+fn writer_thread_is_named_for_the_database_file() {
+    let (_dir, writer) = file_writer();
+    let name = writer
+        .transaction(|_connection| Ok(std::thread::current().name().unwrap_or_default().to_owned()))
+        .expect("thread name");
+    assert_eq!(name, "sqlite-writer:db.sqlite");
 }

@@ -13,6 +13,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use rusqlite::params_from_iter;
+use rusqlite::types::{ToSql, ToSqlOutput, Value, ValueRef};
 use rusqlite::{Connection, Transaction, TransactionBehavior};
 
 use crate::BATCH_TIME_BUDGET;
@@ -97,15 +98,24 @@ pub(crate) struct WriterParts {
     pub(crate) finished: std::sync::Arc<AtomicBool>,
 }
 
+/// Fixed `busy_timeout`. `open` takes no options, so this stays a crate constant.
+const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
+
 pub(crate) fn writer_thread(path: std::path::PathBuf, parts: WriterParts) {
     let _finish = FinishOnExit(parts.finished);
     let mut connection = match Connection::open(&path) {
         Ok(connection) => connection,
         Err(error) => {
-            let _ = parts.ready.send(Err(SqliteWriterError::open(error)));
+            let _ = parts.ready.send(Err(SqliteWriterError::open_sqlite(error)));
             return;
         }
     };
+    // Pragmas run before the first transaction. `foreign_keys` is a no-op
+    // inside a transaction, and `journal_mode` cannot change there either.
+    if let Err(error) = configure_connection(&connection) {
+        let _ = parts.ready.send(Err(SqliteWriterError::open_sqlite(error)));
+        return;
+    }
     if parts.ready.send(Ok(())).is_err() {
         return;
     }
@@ -159,13 +169,21 @@ fn collect_batch(jobs: &Receiver<Job>, batch: &mut Vec<Job>, queued: &AtomicUsiz
     }
 }
 
+fn configure_connection(connection: &Connection) -> Result<(), rusqlite::Error> {
+    connection.busy_timeout(BUSY_TIMEOUT)?;
+    connection.pragma_update(None, "foreign_keys", "ON")?;
+    // WAL is the journal for a filesystem database. SQLite leaves an
+    // in-memory database on the memory journal; that pragma still succeeds.
+    connection.pragma_update(None, "journal_mode", "WAL")?;
+    Ok(())
+}
+
 fn process_batch(connection: &mut Connection, batch: Vec<Job>) -> bool {
     let mut transaction = match connection.transaction_with_behavior(TransactionBehavior::Immediate)
     {
         Ok(transaction) => transaction,
         Err(error) => {
-            let (code, message) = sqlite_parts(error);
-            fail_batch(batch, code, message);
+            fail_batch(batch, error);
             return false;
         }
     };
@@ -226,12 +244,10 @@ where
     true
 }
 
-fn fail_batch(batch: Vec<Job>, code: i32, message: String) {
+fn fail_batch(batch: Vec<Job>, error: rusqlite::Error) {
+    let error = SqliteWriterError::sqlite(error);
     for job in batch {
-        send_error(
-            reply_of(job),
-            SqliteWriterError::sqlite_parts(code, message.clone()),
-        );
+        send_error(reply_of(job), error.share());
     }
 }
 
@@ -245,25 +261,21 @@ fn reply_of(job: Job) -> Reply {
 }
 
 fn commit_and_reply(transaction: Transaction<'_>, replies: Vec<(Reply, Step)>) {
-    let commit_error = transaction.commit().err().map(|error| error.to_string());
+    let commit_error = transaction.commit().err().map(SqliteWriterError::commit);
     for (reply, step) in replies {
         let step = match &commit_error {
-            Some(message) => apply_commit_failure(step, message),
+            Some(error) => apply_commit_failure(step, error),
             None => step,
         };
         send_step(reply, step);
     }
 }
 
-fn apply_commit_failure(step: Step, message: &str) -> Step {
+fn apply_commit_failure(step: Step, error: &SqliteWriterError) -> Step {
     match step {
-        Step::Rows(Ok(_)) => Step::Rows(Err(SqliteWriterError::Commit {
-            message: message.to_owned(),
-        })),
+        Step::Rows(Ok(_)) => Step::Rows(Err(error.share())),
         Step::Rows(Err(error)) => Step::Rows(Err(error)),
-        Step::Boxed(Ok(_)) => Step::Boxed(Err(SqliteWriterError::Commit {
-            message: message.to_owned(),
-        })),
+        Step::Boxed(Ok(_)) => Step::Boxed(Err(error.share())),
         Step::Boxed(Err(error)) => Step::Boxed(Err(error)),
     }
 }
@@ -281,7 +293,16 @@ fn send_step(reply: Reply, step: Step) {
     match (reply, step) {
         (Reply::Rows(slot), Step::Rows(result)) => slot.send(result),
         (Reply::Value(slot), Step::Boxed(result)) => slot.send(result),
-        (reply, _) => reply.fail_closed(),
+        (Reply::Rows(_), Step::Boxed(_)) => {
+            unreachable!("an execute reply is a row count")
+        }
+        (Reply::Value(_), Step::Rows(_)) => {
+            unreachable!("a transaction reply is a boxed value")
+        }
+        #[cfg(test)]
+        (Reply::Unit(_), _) => {
+            unreachable!("a panic job does not send a step")
+        }
     }
 }
 
@@ -303,15 +324,10 @@ fn run_execute_group(
     let savepoint = match transaction.savepoint() {
         Ok(savepoint) => savepoint,
         Err(error) => {
-            let (code, message) = sqlite_parts(error);
+            let error = SqliteWriterError::sqlite(error);
             return Ok(work
                 .into_iter()
-                .map(|job| {
-                    (
-                        job.reply,
-                        Step::Rows(Err(SqliteWriterError::sqlite_parts(code, message.clone()))),
-                    )
-                })
+                .map(|job| (job.reply, Step::Rows(Err(error.share()))))
                 .collect());
         }
     };
@@ -340,17 +356,10 @@ fn run_execute_group(
             .map(|(job, count)| (job.reply, Step::Rows(Ok(count))))
             .collect()),
         Err(error) => {
-            let message = error.to_string();
+            let error = SqliteWriterError::commit(error);
             Ok(work
                 .into_iter()
-                .map(|job| {
-                    (
-                        job.reply,
-                        Step::Rows(Err(SqliteWriterError::Commit {
-                            message: message.clone(),
-                        })),
-                    )
-                })
+                .map(|job| (job.reply, Step::Rows(Err(error.share()))))
                 .collect())
         }
     }
@@ -389,9 +398,7 @@ fn run_one(
     match executed {
         Ok(Ok(count)) => match savepoint.commit() {
             Ok(()) => Ok(Ok(count)),
-            Err(error) => Ok(Err(SqliteWriterError::Commit {
-                message: error.to_string(),
-            })),
+            Err(error) => Ok(Err(SqliteWriterError::commit(error))),
         },
         Ok(Err(error)) => {
             drop(savepoint);
@@ -421,9 +428,7 @@ fn run_user_transaction(
     match outcome {
         Ok(Ok(value)) => match savepoint.commit() {
             Ok(()) => Ok(Ok(value)),
-            Err(error) => Ok(Err(SqliteWriterError::Commit {
-                message: error.to_string(),
-            })),
+            Err(error) => Ok(Err(SqliteWriterError::commit(error))),
         },
         Ok(Err(error)) => {
             drop(savepoint);
@@ -436,13 +441,18 @@ fn run_user_transaction(
     }
 }
 
-fn sqlite_parts(error: rusqlite::Error) -> (i32, String) {
-    let code = error.sqlite_extended_error_code().unwrap_or(0);
-    let message = match &error {
-        rusqlite::Error::SqliteFailure(_, Some(message)) => message.clone(),
-        other => other.to_string(),
-    };
-    (code, message)
+struct Bound<'a>(&'a SqlValue);
+
+impl ToSql for Bound<'_> {
+    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput<'_>> {
+        match self.0 {
+            SqlValue::Null => Ok(ToSqlOutput::Owned(Value::Null)),
+            SqlValue::Integer(value) => Ok(ToSqlOutput::Owned(Value::Integer(*value))),
+            SqlValue::Real(value) => Ok(ToSqlOutput::Owned(Value::Real(*value))),
+            SqlValue::Text(value) => Ok(ToSqlOutput::Borrowed(ValueRef::Text(value.as_bytes()))),
+            SqlValue::Blob(value) => Ok(ToSqlOutput::Borrowed(ValueRef::Blob(value))),
+        }
+    }
 }
 
 pub(crate) fn execute_sql(
@@ -451,9 +461,19 @@ pub(crate) fn execute_sql(
     params: &[SqlValue],
 ) -> Result<u64, SqliteWriterError> {
     let changed = connection
-        .execute(sql, params_from_iter(params.iter()))
+        .execute(sql, params_from_iter(params.iter().map(Bound)))
         .map_err(SqliteWriterError::sqlite)?;
-    Ok(u64::try_from(changed).unwrap_or(u64::MAX))
+    Ok(rows_changed(changed))
+}
+
+fn rows_changed(changed: usize) -> u64 {
+    const {
+        assert!(
+            usize::BITS <= u64::BITS,
+            "a changed-row count must fit in u64"
+        );
+    }
+    changed as u64
 }
 
 pub(crate) fn wait_reply<T>(

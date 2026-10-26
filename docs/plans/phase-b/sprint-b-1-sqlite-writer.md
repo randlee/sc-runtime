@@ -14,6 +14,7 @@ requirements:
   - REQ-RUN-0308
   - NFR-RUN-0005
   - NFR-RUN-0009
+  - NFR-TRN-0003
   - REQ-DBSQ-0001
   - REQ-DBSQ-0002
   - REQ-DBSQ-0003

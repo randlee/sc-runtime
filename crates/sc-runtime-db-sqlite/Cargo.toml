@@ -11,8 +11,12 @@ description = "One rusqlite connection on one writer thread."
 readme = "README.md"
 
 [dependencies]
-rusqlite = { version = "0.40.2", features = ["bundled"] }
-thiserror = "2"
+# 0.39 resolves libsqlite3-sys 0.37, which sqlx 0.9 sqlite can link
+# (`>=0.30.1, <0.38.0`). 0.40 pulls libsqlite3-sys 0.38 and cannot share a
+# process with template store-sqlite. Default features stay off: `cache` is
+# rusqlite's statement cache, and this crate does not use it. `bundled`
+# builds SQLite here. The resolve fixture proves one libsqlite3-sys.
+rusqlite = { version = "0.39", default-features = false, features = ["bundled"] }
 
 [dev-dependencies]
 tempfile = "3"
