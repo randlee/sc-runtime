@@ -30,7 +30,9 @@ upgrade:
 
 # ADR-RUN-0011 point 1 until sc-lint#640. The full profile step `adr-run-0011`
 # runs this recipe. `{{python}}` is python3 on Unix and python on Windows.
-# A match outside #[cfg(test)] and outside a same-line `allow:` comment fails.
+# A match outside a cfg that requires `test`, and outside a same-line `allow:`
+# comment, fails. `#[cfg(all(test, feature = "test-util"))] mod tests;` exempts
+# the included file.
 adr-run-0011:
     {{python}} scripts/adr_run_0011_grep.py
 

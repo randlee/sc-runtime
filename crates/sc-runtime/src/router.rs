@@ -281,11 +281,7 @@ mod tests {
                     break;
                 }
                 Err(_) => {
-                    let _ = tokio::time::timeout(
-                        Duration::from_millis(10),
-                        std::future::pending::<()>(),
-                    )
-                    .await;
+                    tokio::time::sleep(Duration::from_millis(10)).await;
                 }
             }
         }
@@ -331,8 +327,7 @@ mod tests {
                 ready = true;
                 break;
             }
-            let _ =
-                tokio::time::timeout(Duration::from_millis(10), std::future::pending::<()>()).await;
+            tokio::time::sleep(Duration::from_millis(10)).await;
         }
         assert!(ready, "server did not accept");
         let slow = client

@@ -343,7 +343,7 @@ async fn shutdown_drain_is_bounded() {
         if started.load(Ordering::SeqCst) {
             break;
         }
-        let _ = tokio::time::timeout(Duration::from_millis(10), std::future::pending::<()>()).await;
+        tokio::time::sleep(Duration::from_millis(10)).await;
     }
     assert!(started.load(Ordering::SeqCst), "handler never started");
     let _ = stop_tx.send(());
