@@ -1636,6 +1636,41 @@
             "plan_questions": "run-0fr.1",
             "dev_questions": "run-0fr.2"
           }
+        },
+        {
+          "at": "2026-10-26T00:41:39+00:00",
+          "event": "excluded",
+          "item": "b-4",
+          "reason": "Sprint b-4 pairs the stores. It does not generate the adaptor crate. That generation is sprint b-7.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T00:41:40+00:00",
+          "event": "excluded",
+          "item": "b-5",
+          "reason": "Sprint b-5 fills the Postgres store. It does not generate the adaptor crate. That generation is sprint b-7.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-26T00:41:40+00:00",
+          "event": "excluded",
+          "item": "b-6",
+          "reason": "Sprint b-6 fills the MySQL store. It does not generate the adaptor crate. That generation is sprint b-7.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-4",
+          "reason": "Sprint b-4 pairs the stores. It does not generate the adaptor crate. That generation is sprint b-7."
+        },
+        {
+          "item": "b-5",
+          "reason": "Sprint b-5 fills the Postgres store. It does not generate the adaptor crate. That generation is sprint b-7."
+        },
+        {
+          "item": "b-6",
+          "reason": "Sprint b-6 fills the MySQL store. It does not generate the adaptor crate. That generation is sprint b-7."
         }
       ]
     },

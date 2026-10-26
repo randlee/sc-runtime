@@ -587,6 +587,11 @@ Scope: a bead that adds, removes, or generates a store adaptor
 
 Deterministic check to pair with the development gate: docs/architecture.md contains ADR-RUN-0305.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-4`: Sprint b-4 pairs the stores. It does not generate the adaptor crate. That generation is sprint b-7.
+- `b-5`: Sprint b-5 fills the Postgres store. It does not generate the adaptor crate. That generation is sprint b-7.
+- `b-6`: Sprint b-6 fills the MySQL store. It does not generate the adaptor crate. That generation is sprint b-7.
+
 Beads: anchor `run-0fr`, plan questions `run-0fr.1`, dev questions `run-0fr.2`
 
 ## REQ-RUN-0313
