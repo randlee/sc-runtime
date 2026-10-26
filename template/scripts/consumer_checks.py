@@ -13,7 +13,10 @@ file-backed engine can prepare without a server.
 
 `store-boundaries` rejects cross-engine SQL tokens and blocking calls under
 `crates/store-*`, and fails when the shared codec and redaction functions
-drift. Beads run-brx tracks hoisting those functions into the schema crate.
+drift across the store crates this layout rendered. A layout that omits a
+store crate does not require it: `none` has no `store-sqlite`, and
+`sqlite-mysql` has no `store-postgres`. Beads run-brx tracks hoisting those
+functions into the schema crate.
 """
 
 import os
@@ -270,7 +273,7 @@ _OTHER_ENGINE_SQL = re.compile(r"UUID\(\)|`")
 
 # Driver-agnostic copies. Beads run-brx hoists these into the schema crate.
 # store-sqlite's record_from_columns omits the 1 MiB check; run-brx aligns it,
-# so that copy is not in this set.
+# so that copy is not in this set. Compare only crates the layout rendered.
 _SHARED_FNS = (
     ("known_table", ("store-sqlite", "store-postgres", "store-mysql")),
     ("widget_from_payload", ("store-sqlite", "store-postgres", "store-mysql")),
@@ -455,19 +458,35 @@ def scan_store_tokens(crates: Path) -> None:
                 )
 
 
+def _present_store_crates(crates: Path) -> set[str]:
+    if not crates.is_dir():
+        return set()
+    return {
+        path.name
+        for path in crates.iterdir()
+        if path.is_dir()
+        and path.name.startswith("store-")
+        and (path / "src" / "lib.rs").is_file()
+    }
+
+
 def scan_shared_functions(crates: Path) -> None:
+    present = _present_store_crates(crates)
+    if not present:
+        return
     for name, crate_names in _SHARED_FNS:
+        active = [crate_name for crate_name in crate_names if crate_name in present]
+        if len(active) < 2:
+            continue
         bodies: list[str] = []
-        for crate_name in crate_names:
+        for crate_name in active:
             path = crates / crate_name / "src" / "lib.rs"
-            if not path.is_file():
-                fail(f"store-boundaries: missing {path}")
             bodies.append(canonical_rust(rust_function(path.read_text(encoding="utf-8"), name)))
         first = bodies[0]
-        for crate_name, body in zip(crate_names, bodies, strict=True):
+        for crate_name, body in zip(active, bodies, strict=True):
             if body != first:
                 fail(
-                    f"store-boundaries: fn {name} in {crate_name} drifted from {crate_names[0]}"
+                    f"store-boundaries: fn {name} in {crate_name} drifted from {active[0]}"
                 )
 
 
