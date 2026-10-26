@@ -99,7 +99,7 @@ Add these steps to the full profile, with `exclude_rules` empty and `fail_rules`
 
 The full profile step `adr-run-0011` runs `just adr-run-0011`, which runs `scripts/adr_run_0011_grep.py` with `{{python}}` (`python3` on Unix, `python` on Windows). The recipe lives in the repo-specific section of the `Justfile`, so `sc-lint init --just` does not drop it. Re-apply the `adr-run-0011` profile step with the other maintainer steps after a regenerate.
 
-The scanner searches `crates/` (including `sc-runtime-db-sqlite` once that crate is on the branch) and `template/` for `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, `futures::executor::block_on`, and `.block_on(`. A match outside `#[cfg(test)]` and outside a same-line `allow:` comment fails. `yield_now` is not a match. A call written as `sleep(...)` after a `use` import is not this grep. [ADR-RUN-0011](../../architecture.md) point 5 stays with arch-qa until sc-lint#640. Delete this step when the pinned sc-lint release that closes sc-lint#640 is in `minimum_version`. That deletion is not this sprint.
+The scanner searches `crates/` (including `sc-runtime-db-sqlite` once that crate is on the branch) and `template/` for `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, `futures::executor::block_on`, and `.block_on(`. A match fails unless a `cfg` predicate that requires `test` guards it, the file is reached only by a `mod name;` under such a cfg, or the match line has a same-line `allow:` comment. `#[cfg(test)]` and `#[cfg(all(test, feature = "test-util"))]` require `test`. A `mod tests;` under either cfg exempts `tests.rs` and the modules that file includes; those files do not repeat the cfg. A cfg that can hold with `test` unset, such as `#[cfg(feature = "test-util")]` or `#[cfg(any(test, feature = "test-util"))]`, does not exempt the match. `yield_now` is not a match. A call written as `sleep(...)` after a `use` import is not this grep. [ADR-RUN-0011](../../architecture.md) point 5 stays with arch-qa until sc-lint#640. Delete this step when the pinned sc-lint release that closes sc-lint#640 is in `minimum_version`. That deletion is not this sprint.
 
 Handler deadlines use `tokio::time::timeout_at` on the handler future. A separate timer future whose only job is to dodge the banned names is not an allow.
 
@@ -130,7 +130,7 @@ Root: `boundary:host-lint-profile` and [ADR-RUN-0011](../../architecture.md).
 
 - The new profile exits 0 on the paths this sprint owns: `crates/sc-config`, `crates/sc-transport`, `crates/sc-command`, `crates/sc-runtime`, `sc-lint.toml`, `Justfile`, `.sc-lint/install.json`, and `template/sc-lint.toml`.
 - A violation of ADR-RUN-0011 point 1 under any other path is not this sprint's failure.
-- A non-test `tokio::time::sleep` or `.block_on(` under an owned path fails `adr-run-0011`. `yield_now` does not. A same-line `allow:` is the only exemption outside `#[cfg(test)]`.
+- A `tokio::time::sleep` or `.block_on(` under an owned path fails `adr-run-0011` unless a `cfg` predicate that requires `test` guards it, or the file is reached only by a `mod name;` under that cfg, including `#[cfg(all(test, feature = "test-util"))] mod tests;`. `yield_now` does not. A same-line `allow:` is the exemption on a line that cfg does not cover.
 - Warning fixes land only under the owned paths. A warning in a file `b-4` or `b-8` owns is fixed in that sprint.
 
 ## Required validation

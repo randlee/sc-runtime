@@ -22,8 +22,13 @@ allowed_dependencies = ["tokio", "reqwest", "serde", "serde_json"]
 # Crates.io names are not listed here. sc-lint 0.8.0 exits 3 when a
 # forbidden target is absent from the workspace and from the resolve.
 # sc-observability, sc-observability-types, and sc-observability-otlp are
-# enforced by cargo tree.
-forbidden_edges = ["sc-transport -> sc-runtime-db-sqlite"]
+# enforced by cargo tree. sc-cron is not a workspace member yet.
+forbidden_edges = [
+  "sc-transport -> sc-config",
+  "sc-transport -> sc-command",
+  "sc-transport -> sc-runtime",
+  "sc-transport -> sc-runtime-db-sqlite",
+]
 
 [references]
 scope = "outside_owner_crate"

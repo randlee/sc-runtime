@@ -19,9 +19,15 @@ roots = ["AppName", "load", "Loader", "ConfigError"]
 [dependencies]
 allowed_dependents = []
 allowed_dependencies = ["serde", "serde_json"]
-# crates.io names stay on the cargo tree check. sc-runtime-db-sqlite is a
-# workspace member, so the absent edge is listed here.
-forbidden_edges = ["sc-config -> sc-runtime-db-sqlite"]
+# crates.io names (tokio, sc-observability, sc-observability-otlp,
+# sc-observability-types) stay on the cargo tree check. sc-cron is not a
+# workspace member yet.
+forbidden_edges = [
+  "sc-config -> sc-transport",
+  "sc-config -> sc-command",
+  "sc-config -> sc-runtime",
+  "sc-config -> sc-runtime-db-sqlite",
+]
 
 [references]
 scope = "outside_owner_crate"
