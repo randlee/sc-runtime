@@ -499,7 +499,7 @@ Anchor: A sc-cron schedule is a normal crontab string of five fields: minute, ho
 
 > CronExpr::parse of */5 * * * * succeeds and means every fifth minute. CronExpr::parse of 0 */5 * * * * succeeds and means second 0 of every fifth minute. CronExpr::parse of @hourly succeeds.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 3.
 
 Summary: Normal five-field crontab
 
@@ -508,6 +508,10 @@ Scope: a bead that edits the sc-cron expression parser
 Deterministic check to pair with the development gate: A test expects parsing */5 * * * * to mean every fifth minute.
 
 Beads: anchor `run-8n1`, plan questions `run-8n1.1`, dev questions `run-8n1.2`
+
+Fixtures:
+- pass: A sc-cron schedule is a normal crontab string of five fields: minute, hour, day of month, month, and day of week.
+- fail: A sc-cron schedule is a six-field string with seconds first, and a five-field crontab is invalid.
 
 ## REQ-CRON-0003
 
