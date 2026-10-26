@@ -20,6 +20,7 @@ requirements:
 adrs:
   - ADR-RUN-0305
   - ADR-RUN-0401
+  - ADR-RUN-0002
 owned_paths:
   - wizard/answers.schema.json
   - scripts/new_project.py
@@ -42,11 +43,12 @@ The library crate `sc-runtime` does not generate any of this.
 
 ## Tasks
 
-1. REQ-RUN-0326: `wizard/answers.schema.json` accepts each layout.
+1. REQ-RUN-0326: a new application is created with no database, with SQLite only, with one sqlx SQL engine only, or with SQLite plus one sqlx SQL engine. Postgres only and MySQL only are that one engine. SQLite plus Postgres and SQLite plus MySQL are SQLite plus that one engine. `wizard/answers.schema.json` accepts each of those layouts.
 2. REQ-RUN-0317 and REQ-RUN-0318: `just new` writes the stores, the models, and the adaptor. `crates/sc-runtime` contains no generator.
 3. REQ-RUN-0329 and REQ-RUN-0330: each generated package name is the project name, a hyphen, and its role. Row structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
 4. REQ-RUN-0331: a layout with a store renders general database commands on the CLI, MCP, and HTTP, including `delete row <table> <id>`. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route. A flag removes the general commands from those three surfaces. A no-database layout renders none of them.
 5. REQ-RUN-0503: `just new <dest> --var-file wizard/fixtures/sqlite-mcp.json` exits 0. With no file added, changed, or deleted, `just setup`, then `just lint`, then `just test`, then `just build-cli`, then `just build-daemon` exit 0. `just setup` installs the sc-lint consumer and is not a source edit.
+6. ADR-RUN-0002: sc-runtime is a cargo-generate template plus published library crates. `just new` renders that template into the new repository. The library crate `sc-runtime` does not contain the generator.
 
 ## Required validation
 

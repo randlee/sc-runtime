@@ -50,7 +50,7 @@ vertical_rationale: One new crate. The public types and the writer thread live i
 
 ## Goal
 
-Ship `sc-runtime-db-sqlite` as specified in [architecture.md](../../sc-runtime-db-sqlite/architecture.md). Delete the withdrawn portable-layer docs. Forbid every existing library crate from depending on the new one, and the new one from depending on them. This crate is the rusqlite building block. It is not the trait shared by `store-sqlite`, `store-postgres`, and `store-mysql`. That pairing is sprint `b-4`.
+sc-runtime is a cargo-generate template plus published library crates. This sprint adds the published crate `sc-runtime-db-sqlite`, as specified in [architecture.md](../../sc-runtime-db-sqlite/architecture.md). Delete the withdrawn portable-layer docs. Forbid every existing library crate from depending on the new one, and the new one from depending on them. This crate is the rusqlite building block. It is not the trait shared by `store-sqlite`, `store-postgres`, and `store-mysql`. That pairing is sprint `b-4`.
 
 ## Public types
 
