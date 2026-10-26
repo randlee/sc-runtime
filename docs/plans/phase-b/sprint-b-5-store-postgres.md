@@ -58,6 +58,8 @@ Root: `boundary:store-postgres`.
 - `SQLX_OFFLINE=true cargo build -p store-postgres --manifest-path template/Cargo.toml` exits 0.
 - `rg -n 'std::thread::sleep|std::thread::sleep_until|tokio::time::sleep|tokio::time::sleep_until|Runtime::block_on|Handle::block_on|futures::executor::block_on' template/crates/store-postgres` exits 1.
 
+That offline test skips live SQL when `POSTGRES_DATABASE_URL` is unset. The required live run is the `store-postgres live SQL` job in `.github/workflows/store-postgres.yml`. It sets `REQUIRE_POSTGRES=1` and `POSTGRES_DATABASE_URL` against a Postgres service, so a skip panics, and the job fails if the skip text is printed. The same job migrates that database and runs `cargo sqlx prepare --check`. Local development keeps the skip unless `REQUIRE_POSTGRES=1` is set. `SQLX_OFFLINE=true` stays set for the test compile.
+
 ## Non-goals
 
 No MySQL crate edits. No adaptor. No answers-schema edit (`b-8`). No `just new` of a generated project (`b-8`). No rusqlite writer edit.

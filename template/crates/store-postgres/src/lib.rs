@@ -17,9 +17,11 @@
 //! in this crate.
 //!
 //! Live tests read `POSTGRES_DATABASE_URL` and skip when it is unset.
-//! `REQUIRE_POSTGRES=1` makes those tests panic instead of skipping. A CI job
-//! that provisions Postgres sets that variable. Sibling engine crates copy the
-//! same switch, `REQUIRE_<ENGINE>=1`.
+//! `REQUIRE_POSTGRES=1` makes those tests panic instead of skipping. The
+//! `store-postgres live SQL` job in `.github/workflows/store-postgres.yml`
+//! sets that variable and the URL against a Postgres service, and fails if
+//! the suite skips. Sibling engine crates copy the same switch,
+//! `REQUIRE_<ENGINE>=1`.
 
 use std::time::Duration;
 
@@ -481,6 +483,8 @@ mod tests {
 
     async fn live_database() -> Option<Ephemeral> {
         let url = configured_url();
+        // `.github/workflows/store-postgres.yml` sets REQUIRE_POSTGRES=1.
+        // A missing URL panics there. Local runs without the variable skip.
         if !enforce_live_database(live_database_gate(url.as_deref(), postgres_required())) {
             eprintln!(
                 "skipping: POSTGRES_DATABASE_URL is unset; set it to run live tests, or REQUIRE_POSTGRES=1 to fail instead of skipping"
