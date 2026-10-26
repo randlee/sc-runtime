@@ -42,6 +42,6 @@ Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL
 | b-3 sc-cron | [sprint-b-3](plans/phase-b/sprint-b-3-sc-cron.md) | planned | `sprint/b-3-sc-cron` |
 | b-4 store pairing | [sprint-b-4](plans/phase-b/sprint-b-4-store-pairing.md) | complete | `sprint/b-4-store-pairing` |
 | b-5 store-postgres | [sprint-b-5](plans/phase-b/sprint-b-5-store-postgres.md) | complete | `sprint/b-5-store-postgres` |
-| b-6 store-mysql | [sprint-b-6](plans/phase-b/sprint-b-6-store-mysql.md) | planned | `sprint/b-6-store-mysql` |
+| b-6 store-mysql | [sprint-b-6](plans/phase-b/sprint-b-6-store-mysql.md) | complete | `sprint/b-6-store-mysql` |
 | b-7 store adaptor | [sprint-b-7](plans/phase-b/sprint-b-7-store-adaptor.md) | planned | `sprint/b-7-store-adaptor` |
 | b-8 generation layouts | [sprint-b-8](plans/phase-b/sprint-b-8-generation-layouts.md) | planned | `sprint/b-8-generation-layouts` |

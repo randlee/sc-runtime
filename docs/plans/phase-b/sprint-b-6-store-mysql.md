@@ -1,7 +1,7 @@
 ---
 id: b-6
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: store-mysql
 track: stores

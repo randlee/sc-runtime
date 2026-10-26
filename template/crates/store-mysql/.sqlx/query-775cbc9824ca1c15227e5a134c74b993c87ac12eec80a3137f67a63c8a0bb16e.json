@@ -1,0 +1,26 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT UUID() AS id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "collation": 255,
+          "max_size": 144
+        },
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "775cbc9824ca1c15227e5a134c74b993c87ac12eec80a3137f67a63c8a0bb16e"
+}
