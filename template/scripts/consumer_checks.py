@@ -6,6 +6,7 @@ that version; this script reads it instead of embedding a version literal.
 The durable check is the absence of sc-observability-otlp.
 """
 
+import os
 import re
 import subprocess
 import sys
@@ -18,6 +19,7 @@ SERVER_ONLY = (
     "sc-runtime",
     "sc-observability",
     "service",
+    "store-postgres",
     "store-sqlite",
     "daemon",
     "utoipa",
@@ -106,18 +108,59 @@ def build_daemon() -> None:
         fail("tempfile or tempdir in the daemon normal tree: " + ", ".join(found))
 
 
+def run(command: list[str], env: dict[str, str], cwd: Path | None = None) -> None:
+    completed = subprocess.run(command, env=env, cwd=cwd, check=False)
+    if completed.returncode != 0:
+        where = f" (cwd {cwd})" if cwd is not None else ""
+        fail("db-prepare failed: " + " ".join(command) + where)
+
+
+def prepare_crate(package: str, env: dict[str, str]) -> None:
+    # Prepare inside the crate so `.sqlx` lands next to that crate's Cargo.toml.
+    # `sqlx prepare --workspace` writes one cache at the workspace root instead.
+    run(
+        ["cargo", "sqlx", "prepare", "--", "--all-targets"],
+        env,
+        Path("crates") / package,
+    )
+
+
 def db_prepare() -> None:
-    env = dict(**{key: value for key, value in __import__("os").environ.items()})
-    env.setdefault("SQLITE_DATABASE_URL", "sqlite:target/db-prepare.sqlite")
-    Path("target").mkdir(exist_ok=True)
-    for command in (
-        ["cargo", "sqlx", "database", "create"],
-        ["cargo", "sqlx", "migrate", "run", "--source", "crates/store-sqlite/migrations"],
-        ["cargo", "sqlx", "prepare", "--workspace", "--", "--all-targets"],
-    ):
-        completed = subprocess.run(command, env=env, check=False)
-        if completed.returncode != 0:
-            fail("db-prepare failed: " + " ".join(command))
+    env = dict(os.environ)
+    # Absolute path so `prepare` can run inside the crate directory. A relative
+    # `sqlite:target/...` URL would point at a different file from that cwd.
+    sqlite_file = (Path("target") / "db-prepare.sqlite").resolve()
+    sqlite_file.parent.mkdir(exist_ok=True)
+    env.setdefault("SQLITE_DATABASE_URL", f"sqlite:{sqlite_file}")
+    run(["cargo", "sqlx", "database", "create"], env)
+    run(
+        [
+            "cargo",
+            "sqlx",
+            "migrate",
+            "run",
+            "--source",
+            "crates/store-sqlite/migrations",
+        ],
+        env,
+    )
+    prepare_crate("store-sqlite", env)
+
+    postgres = Path("crates/store-postgres")
+    if not postgres.is_dir():
+        return
+    url = env.get("POSTGRES_DATABASE_URL", "").strip()
+    if not url:
+        print(
+            "db-prepare: POSTGRES_DATABASE_URL is unset; leaving crates/store-postgres/.sqlx unchanged",
+            file=sys.stderr,
+        )
+        return
+    pg_env = dict(env)
+    pg_env["POSTGRES_DATABASE_URL"] = url
+    run(["cargo", "sqlx", "database", "create"], pg_env, postgres)
+    run(["cargo", "sqlx", "migrate", "run"], pg_env, postgres)
+    prepare_crate("store-postgres", pg_env)
 
 
 def main() -> None:

@@ -1,7 +1,7 @@
 ---
 id: b-5
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: store-postgres
 track: stores
