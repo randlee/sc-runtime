@@ -103,7 +103,7 @@ fn os_bytes(text: &OsStr) -> Result<std::borrow::Cow<'_, [u8]>, TransportError> 
     Ok(std::borrow::Cow::Borrowed(text.as_bytes()))
 }
 
-#[cfg(not(unix))]
+#[cfg(windows)]
 fn os_bytes(text: &OsStr) -> Result<std::borrow::Cow<'_, [u8]>, TransportError> {
     match text.to_str() {
         Some(text) => Ok(std::borrow::Cow::Owned(text.as_bytes().to_vec())),
@@ -120,7 +120,7 @@ fn path_from_bytes(bytes: &[u8], _original: &OsStr) -> Result<PathBuf, Transport
     Ok(PathBuf::from(OsStr::from_bytes(bytes)))
 }
 
-#[cfg(not(unix))]
+#[cfg(windows)]
 fn path_from_bytes(bytes: &[u8], original: &OsStr) -> Result<PathBuf, TransportError> {
     match std::str::from_utf8(bytes) {
         Ok(text) => Ok(PathBuf::from(text)),

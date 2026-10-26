@@ -1,7 +1,7 @@
 ---
 id: b-2
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: host-lint-profile
 track: lint

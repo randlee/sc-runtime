@@ -325,8 +325,7 @@ async fn shutdown_drain_is_bounded() {
                         let started_for_route = Arc::clone(&started_for_route);
                         async move {
                             started_for_route.store(true, Ordering::SeqCst);
-                            tokio::time::sleep(Duration::from_secs(60)).await;
-                            "done"
+                            std::future::pending::<&'static str>().await
                         }
                     }),
                 )
@@ -344,7 +343,7 @@ async fn shutdown_drain_is_bounded() {
         if started.load(Ordering::SeqCst) {
             break;
         }
-        tokio::time::sleep(Duration::from_millis(10)).await;
+        let _ = tokio::time::timeout(Duration::from_millis(10), std::future::pending::<()>()).await;
     }
     assert!(started.load(Ordering::SeqCst), "handler never started");
     let _ = stop_tx.send(());

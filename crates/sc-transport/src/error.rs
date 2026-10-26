@@ -347,7 +347,14 @@ impl TransportError {
         }
     }
 
-    #[cfg(all(feature = "server", unix))]
+    #[cfg(feature = "server")]
+    #[cfg_attr(
+        windows,
+        expect(
+            dead_code,
+            reason = "Windows build of the UDS lock error; bind rejects UDS before this constructor runs"
+        )
+    )]
     pub(crate) fn endpoint_busy(endpoint: Endpoint, cause: impl Into<String>) -> Self {
         Self::EndpointBusy {
             code: CODE_ENDPOINT_BUSY,
@@ -356,7 +363,14 @@ impl TransportError {
         }
     }
 
-    #[cfg(all(feature = "server", unix))]
+    #[cfg(feature = "server")]
+    #[cfg_attr(
+        windows,
+        expect(
+            dead_code,
+            reason = "Windows build of the UDS path error; bind rejects UDS before this constructor runs"
+        )
+    )]
     pub(crate) fn not_a_socket(endpoint: Endpoint, cause: impl Into<String>) -> Self {
         Self::NotASocket {
             code: CODE_NOT_A_SOCKET,

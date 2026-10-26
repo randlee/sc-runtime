@@ -350,24 +350,14 @@ async fn bind_tcp(addr: std::net::SocketAddr) -> Result<Listener, TransportError
 }
 
 async fn bind_uds(path: &Path) -> Result<Listener, TransportError> {
-    #[cfg(unix)]
-    {
-        let path = path.to_path_buf();
-        let endpoint = Endpoint::Uds(path.clone());
-        match tokio::task::spawn_blocking(move || bind_uds_blocking(path)).await {
-            Ok(result) => result,
-            Err(err) => Err(TransportError::bind(
-                endpoint,
-                format!("blocking bind task failed: {err}"),
-            )),
-        }
-    }
-    #[cfg(not(unix))]
-    {
-        Err(TransportError::bind(
-            Endpoint::Uds(path.to_path_buf()),
-            "UDS endpoints are not supported on this platform",
-        ))
+    let path = path.to_path_buf();
+    let endpoint = Endpoint::Uds(path.clone());
+    match tokio::task::spawn_blocking(move || bind_uds_blocking(path)).await {
+        Ok(result) => result,
+        Err(err) => Err(TransportError::bind(
+            endpoint,
+            format!("blocking bind task failed: {err}"),
+        )),
     }
 }
 
@@ -409,7 +399,30 @@ fn bind_uds_blocking(path: PathBuf) -> Result<Listener, TransportError> {
     })
 }
 
-#[cfg(unix)]
+#[cfg(windows)]
+fn bind_uds_blocking(path: PathBuf) -> Result<Listener, TransportError> {
+    let endpoint = Endpoint::Uds(path.clone());
+    let lock_path = endpoint_lock_path(&path);
+    let Err(err) = acquire_endpoint_lock(&endpoint, &lock_path) else {
+        return Err(TransportError::bind(
+            endpoint,
+            "UDS endpoints are not supported on this platform",
+        ));
+    };
+    Err(err)
+}
+
+#[cfg(windows)]
+fn acquire_endpoint_lock(endpoint: &Endpoint, lock_path: &Path) -> Result<File, TransportError> {
+    Err(TransportError::bind(
+        endpoint.clone(),
+        format!(
+            "UDS endpoints are not supported on this platform ({})",
+            lock_path.display()
+        ),
+    ))
+}
+
 fn endpoint_lock_path(socket: &Path) -> PathBuf {
     let mut name = socket.as_os_str().to_owned();
     name.push(".lock");

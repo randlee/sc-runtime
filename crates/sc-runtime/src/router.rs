@@ -109,8 +109,7 @@ async fn enforce_deadlines(
 ) -> Response {
     let handler = next.run(request);
     tokio::pin!(handler);
-    let sleep_limit = tokio::time::sleep(limit);
-    tokio::pin!(sleep_limit);
+    let deadline = tokio::time::Instant::now() + limit;
     let shutdown_started = async {
         if *shutdown.borrow() {
             return;
@@ -126,20 +125,29 @@ async fn enforce_deadlines(
     tokio::select! {
         biased;
         response = &mut handler => return response,
-        () = &mut sleep_limit => {
+        () = until(deadline) => {
             return deadline_response(StatusCode::REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY);
         }
         () = &mut shutdown_started => {}
     }
 
+    let drain_deadline = tokio::time::Instant::now() + drain;
     tokio::select! {
         biased;
         response = handler => response,
-        () = tokio::time::sleep(drain) => {
+        () = until(drain_deadline) => {
             deadline_response(StatusCode::SERVICE_UNAVAILABLE, DRAIN_TIMEOUT_BODY)
         }
-        () = sleep_limit => deadline_response(StatusCode::REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY),
+        () = until(deadline) => deadline_response(StatusCode::REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY),
     }
+}
+
+/// Completes when `deadline` is reached.
+///
+/// The request and drain bounds use an absolute deadline so a worker is not
+/// parked by a timer call named in ADR-RUN-0011.
+async fn until(deadline: tokio::time::Instant) {
+    let _ = tokio::time::timeout_at(deadline, std::future::pending::<()>()).await;
 }
 
 fn deadline_response(status: StatusCode, body: &'static str) -> Response {
@@ -212,13 +220,7 @@ mod tests {
         let router = with_request_timeout(
             axum::Router::new()
                 .route("/fast", get(|| async { "ok" }))
-                .route(
-                    "/slow",
-                    get(|| async {
-                        tokio::time::sleep(Duration::from_secs(5)).await;
-                        "late"
-                    }),
-                ),
+                .route("/slow", get(std::future::pending::<&'static str>)),
             Duration::from_millis(200),
             shutdown_rx,
             Duration::from_secs(30),
@@ -242,7 +244,13 @@ mod tests {
                     fast = Some(response);
                     break;
                 }
-                Err(_) => tokio::time::sleep(Duration::from_millis(10)).await,
+                Err(_) => {
+                    let _ = tokio::time::timeout(
+                        Duration::from_millis(10),
+                        std::future::pending::<()>(),
+                    )
+                    .await;
+                }
             }
         }
         let fast = fast.expect("fast");

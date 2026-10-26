@@ -1,0 +1,8 @@
+{
+  "tools": {
+    "cargo": {
+      "cargo-xwin": "0.23.0"
+    },
+    "rustup_targets": ["x86_64-pc-windows-msvc"]
+  }
+}
