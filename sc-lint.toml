@@ -20,13 +20,61 @@ command = ["cargo", "fmt", "--all", "--check"]
 
 [[tool.sc-lint.lint]]
 name = "clippy"
-command = ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
+command = ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings", "-D", "clippy::await_holding_lock"]
+
+[[tool.sc-lint.lint]]
+name = "sc-portability"
+command = ["sc-lint", "lint", "sc-portability", "--root", ".", "--config", "sc-lint.toml"]
+
+[[tool.sc-lint.lint]]
+name = "sc-runtime"
+command = ["sc-lint", "lint", "sc-runtime", "--root", ".", "--config", "sc-lint.toml"]
+
+[[tool.sc-lint.lint]]
+name = "function-length"
+command = ["sc-lint", "lint", "function-length", "--root", ".", "--config", "sc-lint.toml"]
+
+[[tool.sc-lint.lint]]
+name = "identity-literals"
+command = ["sc-lint", "lint", "identity-literals", "--root", ".", "--config", "sc-lint.toml"]
+
+[[tool.sc-lint.lint]]
+name = "compatibility"
+command = ["sc-lint", "compatibility", "check", "--config", "sc-lint.toml"]
+
+# Re-apply after `sc-lint init --just`. The recipe uses {{python}}.
+[[tool.sc-lint.lint]]
+name = "adr-run-0011"
+command = ["just", "adr-run-0011"]
+
+# `sc-runtime-db-sqlite` is excluded until that crate cross-compiles.
+# Later sprints drop the exclude and keep the workspace form:
+#   cargo xwin check --workspace --target x86_64-pc-windows-msvc
+#   cargo xwin clippy --workspace --all-targets --target x86_64-pc-windows-msvc -- -D warnings -D clippy::await_holding_lock
+[[tool.sc-lint.lint]]
+name = "xwin-check"
+command = ["cargo", "xwin", "check", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--target", "x86_64-pc-windows-msvc"]
+
+[[tool.sc-lint.lint]]
+name = "xwin-clippy"
+command = ["cargo", "xwin", "clippy", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--all-targets", "--target", "x86_64-pc-windows-msvc", "--", "-D", "warnings", "-D", "clippy::await_holding_lock"]
 
 [tool.sc-lint.lint_profiles]
 # Fast boundary-only pass while leaf crates land (a-2..a-4).
 gates = ["boundary", "line-counts"]
 # Full maintainer gate once the workspace exists (a-5+).
-full = ["boundary", "line-counts", "fmt", "clippy"]
+full = ["boundary", "line-counts", "fmt", "clippy", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
+
+[tool.sc-lint.analyzers.portability]
+exclude_rules = []
+fail_rules = ["PORT-001", "PORT-002", "PORT-003", "PORT-004", "PORT-005", "PORT-006", "PORT-007", "PORT-008", "PORT-009", "PORT-010"]
+
+[tool.sc-lint.analyzers.runtime]
+exclude_rules = []
+fail_rules = ["SCB-RUNTIME-001", "SCB-RUNTIME-002"]
+
+[identities]
+forbidden_literals = []
 
 # Non-test lines under crates/*/src. Key from sc-lint 0.8.0 line-counts.
 [line_counts]

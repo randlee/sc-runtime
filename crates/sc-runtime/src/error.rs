@@ -370,6 +370,9 @@ fn transport_facts(err: &TransportError) -> String {
         }
         | TransportError::NotASocket {
             endpoint, cause, ..
+        }
+        | TransportError::UnsupportedEndpoint {
+            endpoint, cause, ..
         } => format!("{}: endpoint={endpoint}: {cause}", err.code()),
         // `TransportError` is `non_exhaustive`. Keep the code if a new variant appears.
         _ => format!("{}: {err}", err.code()),

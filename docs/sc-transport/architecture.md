@@ -95,7 +95,8 @@ Variants that carry `cause` return that `TransportCause` from `Error::source`.
 | `ResponseDecode` | The body is not `T` | `TRANSPORT.RESPONSE_DECODE` | `status`, `cause`, `body_preview` | `body_preview` is a lossy UTF-8 prefix of at most 512 bytes. Read `status`, `cause`, and that preview. A body that is `T` is `Ok(T)` at every HTTP status |
 | `TimedOut` | The 2s connect or request timeout elapsed | `TRANSPORT.TIMED_OUT` | `endpoint`, `cause` | v0.1 timeouts are fixed. The extension point is `ClientOptions` above. This is neither `DaemonNotRunning` nor `ResponseDecode` |
 | `Request` | Other client failure, including a directory path and a UDS endpoint on non-Unix | `TRANSPORT.REQUEST` | `endpoint`, `cause` | Correct the endpoint. This is not a down-daemon signal |
-| `Bind` | The listener could not bind, or UDS was requested on non-Unix | `TRANSPORT.BIND` | `endpoint`, `cause` | Free the address or create the parent directory. This crate does not create it |
+| `Bind` | The listener could not bind | `TRANSPORT.BIND` | `endpoint`, `cause` | Free the address or create the parent directory. This crate does not create it |
+| `UnsupportedEndpoint` | UDS was requested on non-Unix | `TRANSPORT.UNSUPPORTED_ENDPOINT` | `endpoint`, `cause` | Use a `tcp:` endpoint. Unix domain sockets are not available on this platform |
 | `EndpointBusy` | Another listener holds the endpoint lock | `TRANSPORT.ENDPOINT_BUSY` | `endpoint`, `cause` | Leave the live socket in place |
 | `NotASocket` | The UDS path exists and is not a socket | `TRANSPORT.NOT_A_SOCKET` | `endpoint`, `cause` | The path is left unchanged |
 

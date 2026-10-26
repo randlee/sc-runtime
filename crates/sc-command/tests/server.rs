@@ -135,16 +135,17 @@ fn success_tool_result_carries_the_envelope() {
     assert_eq!(envelope["ok"], true);
     assert_eq!(envelope["data"]["name"], "sample");
     let response = Envelope::from(Ok::<_, OpError>(sample())).into_response();
-    let body = tokio::runtime::Builder::new_current_thread()
+    let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
-        .expect("runtime")
-        .block_on(async move {
-            let bytes = to_bytes(response.into_body(), usize::MAX)
-                .await
-                .expect("body");
-            serde_json::from_slice::<Value>(&bytes).expect("json")
-        });
+        .expect("runtime");
+    let read_body = async move {
+        let bytes = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("body");
+        serde_json::from_slice::<Value>(&bytes).expect("json")
+    };
+    let body = runtime.block_on(read_body); // allow: test reads the HTTP body
     assert_eq!(envelope, body);
 }
 
@@ -161,16 +162,17 @@ fn failure_tool_result_sets_is_error_and_matches_http() {
         serde_json::to_value(&op_error).expect("error")
     );
     let response = Envelope::from(Err::<Sample, _>(op_error)).into_response();
-    let body = tokio::runtime::Builder::new_current_thread()
+    let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
-        .expect("runtime")
-        .block_on(async move {
-            let bytes = to_bytes(response.into_body(), usize::MAX)
-                .await
-                .expect("body");
-            serde_json::from_slice::<Value>(&bytes).expect("json")
-        });
+        .expect("runtime");
+    let read_body = async move {
+        let bytes = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("body");
+        serde_json::from_slice::<Value>(&bytes).expect("json")
+    };
+    let body = runtime.block_on(read_body); // allow: test reads the HTTP body
     assert_eq!(envelope, body);
 }
 

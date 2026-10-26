@@ -7,7 +7,7 @@ command = ["cargo", "fmt", "--all", "--check"]
 
 [[tool.sc-lint.lint]]
 name = "clippy"
-command = ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
+command = ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings", "-D", "clippy::await_holding_lock"]
 
 [[tool.sc-lint.test]]
 name = "workspace"

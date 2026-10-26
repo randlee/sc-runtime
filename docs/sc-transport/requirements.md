@@ -139,7 +139,8 @@ Pinned by sprint a-3:
 - An override or `TransportConfig.endpoint` that names `uds:<path>` is a
   UDS endpoint on every platform, including Windows. The resolver returns
   it. `Client::new` and `bind` reject a UDS endpoint on non-Unix targets
-  when they are used (`TransportError::Request` and `TransportError::Bind`).
+  when they are used (`TransportError::Request` and
+  `TransportError::UnsupportedEndpoint`).
 
 Whether the project template writes a default TCP port into generated
 configuration stays with [REQ-RUN-0301](../requirements.md). This crate does
@@ -342,7 +343,9 @@ The function and the listener type MUST NOT exist in a build without the
 A bind failure is `TransportError::Bind` (`TRANSPORT.BIND`). The endpoint
 lock already being held is `TransportError::EndpointBusy`
 (`TRANSPORT.ENDPOINT_BUSY`). On a non-Unix target, `bind` of a UDS endpoint
-returns `TransportError::Bind`. The parent directory is not created.
+returns `TransportError::UnsupportedEndpoint`
+(`TRANSPORT.UNSUPPORTED_ENDPOINT`). Recovery tells the caller to use a
+`tcp:` endpoint. The parent directory is not created.
 
 ### Rationale
 

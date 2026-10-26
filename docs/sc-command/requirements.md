@@ -688,10 +688,13 @@ These rules apply to every feature combination, including `server`.
 `sc-observability-types` is an allowed dependency and is not a forbidden
 edge. sc-lint 0.8.0 rejects a forbidden edge whose target is not a workspace
 member, so `forbidden_edges` does not name `sc-observability` or
-`sc-observability-otlp`. `sc-config` and `sc-transport` are workspace members.
-Cargo.toml inspection and `cargo tree` still enforce those sibling edges;
-they are not `forbidden_edges` entries. `allowed_dependents` is `sc-runtime`
-only. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
+`sc-observability-otlp`. `sc-config`, `sc-transport`, `sc-runtime`, and
+`sc-runtime-db-sqlite` are workspace members, so
+`boundaries/sc-command/sc-command.toml` lists those edges under
+`forbidden_edges` ([REQ-RUN-0005](../requirements.md)). `sc-cron` stays off
+that list until it is a workspace member. Cargo.toml inspection and
+`cargo tree` still enforce the sibling edges. `allowed_dependents` is
+`sc-runtime` only. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
 landed. The third-party crates
 `sc-command` may depend on are listed in [NFR-CMD-0001](requirements.md).
 `sc-lint lint sc-boundary` checks inter-crate edges and the public facade
