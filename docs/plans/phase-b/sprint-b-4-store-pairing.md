@@ -48,7 +48,7 @@ The generated common patterns use one shared trait, `EngineStore`, in the templa
 
 ## Pairing contract
 
-The schema crate holds the table description, the row structs, and this trait. `store-sqlite` moves `WidgetRow` into that crate and implements the trait. `b-5` and `b-6` implement the same trait. They do not choose a second shape.
+Row type structs are in the schema crate. The types crate is for non-database types. `template/crates/api-types` gains no row struct. The schema crate holds the table description, the row structs, and this trait. `WidgetRow` is defined there. `store-sqlite` re-exports it and implements the trait. `b-5` and `b-6` implement the same trait. They do not choose a second shape.
 
 ```rust
 pub struct OpenConfig {
@@ -107,7 +107,7 @@ pub trait EngineStore: Send + Sync {
 
 ## Deliverables
 
-1. REQ-RUN-0330: add `template/crates/schema/`. In this template workspace the package name is `schema`. `b-8` renders it as `<project>-schema`. Move `WidgetRow` into the schema crate and re-export it from `store-sqlite`. The schema crate contains no SQL literal. It contains `template/crates/schema/membership.toml`, which names a sqlite-only table, a remote-only table, and a column that exists on only one side. That file is not an answers-schema property.
+1. REQ-RUN-0330: add `template/crates/schema/`. In this template workspace the package name is `schema`. `b-8` renders it as `<project>-schema`. Row type structs are in the schema crate. The types crate is for non-database types. `WidgetRow` is defined in the schema crate and re-exported from `store-sqlite`. The schema crate contains no SQL literal. It contains `template/crates/schema/membership.toml`, which names a sqlite-only table, a remote-only table, and a column that exists on only one side. That file is not an answers-schema property.
 2. REQ-RUN-0327 and NFR-RUN-0002: the schema crate describes one shared table and one table or column that exists on only one side. Schema-crate tests prove that description. They do not generate a project.
 3. REQ-RUN-0328: `store-sqlite` implements `EngineStore`, including `read_rows` and `write_rows`. A Postgres stub and a MySQL stub in the schema crate's tests implement the same trait. Both a shared trait and a trait per store stay legal for code the consumer writes. The generated patterns use `EngineStore` only.
 4. REQ-RUN-0321: SQLite SQL stays in `store-sqlite`. Set `template/Cargo.toml` members to `crates/*`. Add `template/Cargo.lock` to the root `.gitignore`. Cargo commands in this sprint pass `--manifest-path template/Cargo.toml` and do not commit that lockfile.
@@ -115,7 +115,7 @@ pub trait EngineStore: Send + Sync {
 
 ## This sprint does not close
 
-`template/crates/service/src/lib.rs` still calls `OpenConfig { path }` and `store_sqlite::WidgetRow` until `b-8`. This sprint does not edit it, and it does not compile until that call site uses `OpenConfig { url }` and the schema row. Generated layouts, package renames, and `just new` are `b-8`.
+`WidgetRow` has one definition, in the schema crate. `store-sqlite` re-exports it. `template/crates/service/src/lib.rs` still imports that re-export and still builds `OpenConfig { path }` until `b-8` changes the import and the config field. This sprint does not edit that file. It builds `store-sqlite` and the schema crate, not `service`. Generated layouts, package renames, and `just new` are `b-8`.
 
 ## Acceptance criteria
 
