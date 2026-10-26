@@ -22,7 +22,7 @@ allowed_dependencies = ["serde", "serde_json", "sc-observability-types"]
 # sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree
 # enforces those edges. `sc-observability-types` is not a forbidden edge.
 # `axum` and `rmcp` stay out of this table; cargo tree checks the `server` feature.
-forbidden_edges = []
+forbidden_edges = ["sc-command -> sc-runtime-db-sqlite"]
 
 [references]
 scope = "outside_owner_crate"

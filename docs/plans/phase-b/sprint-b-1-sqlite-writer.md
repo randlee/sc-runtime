@@ -1,7 +1,7 @@
 ---
 id: b-1
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-runtime-db-sqlite
 track: writer

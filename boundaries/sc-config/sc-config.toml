@@ -19,9 +19,9 @@ roots = ["AppName", "load", "Loader", "ConfigError"]
 [dependencies]
 allowed_dependents = []
 allowed_dependencies = ["serde", "serde_json"]
-# This lint tree's only workspace member is sc-config, so there is no
-# workspace-member edge to forbid. crates.io names stay on the cargo tree check.
-forbidden_edges = []
+# crates.io names stay on the cargo tree check. sc-runtime-db-sqlite is a
+# workspace member, so the absent edge is listed here.
+forbidden_edges = ["sc-config -> sc-runtime-db-sqlite"]
 
 [references]
 scope = "outside_owner_crate"
