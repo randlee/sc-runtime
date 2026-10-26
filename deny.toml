@@ -30,6 +30,9 @@ allow = [
     "ISC",
     "MIT",
     "Unicode-3.0",
+    # rusqlite's wasm target depends on sqlite-wasm-rs, which depends on
+    # foldhash (Zlib). cargo-deny checks that target. Zlib is OSI-approved.
+    "Zlib",
 ]
 confidence-threshold = 0.8
 

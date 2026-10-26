@@ -23,7 +23,7 @@ allowed_dependencies = ["tokio", "reqwest", "serde", "serde_json"]
 # forbidden target is absent from the workspace and from the resolve.
 # sc-observability, sc-observability-types, and sc-observability-otlp are
 # enforced by cargo tree.
-forbidden_edges = []
+forbidden_edges = ["sc-transport -> sc-runtime-db-sqlite"]
 
 [references]
 scope = "outside_owner_crate"

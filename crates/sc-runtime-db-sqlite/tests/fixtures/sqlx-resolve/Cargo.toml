@@ -1,0 +1,16 @@
+[workspace]
+
+[package]
+name = "sc-runtime-db-sqlite-sqlx-resolve"
+version = "0.0.0"
+edition = "2021"
+publish = false
+license = "MIT"
+description = "Resolve gate: rusqlite 0.39 and sqlx 0.9 sqlite share one libsqlite3-sys."
+
+[dependencies]
+sc-runtime-db-sqlite = { path = "../../.." }
+sqlx = { version = "0.9.0", default-features = false, features = [
+    "runtime-tokio",
+    "sqlite",
+] }

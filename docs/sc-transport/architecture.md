@@ -326,15 +326,16 @@ other at compile time.
 
 **Enforced by:** `cargo tree -p sc-transport -e normal --prefix none`, with
 and without `--features server`, printing no line beginning with
-`sc-config `, `sc-command `, `sc-runtime `, `sc-observability `,
-`sc-observability-types `, or `sc-observability-otlp `
+`sc-config `, `sc-command `, `sc-runtime `, `sc-runtime-db-sqlite `,
+`sc-cron `, `sc-observability `, `sc-observability-types `, or
+`sc-observability-otlp `
 ([NFR-TRN-0003](requirements.md)). The `dependencies` integration test runs
-that check. The boundary manifest's `forbidden_edges` and
-`allowed_dependents` are empty because this lint tree's only workspace
-member is `sc-transport`. sc-lint 0.8.0 exits 3 when a forbidden target is
-absent from the workspace, so those lists stay empty here. That is a
-temporary deviation, not a dropped rule: the cargo-tree test is the gate
-until a-5 has a multi-crate workspace. `axum` is allowed only with the
+that check. The boundary manifest's `forbidden_edges` records the
+workspace-member edges [REQ-RUN-0005](../requirements.md) requires, including
+`sc-transport -> sc-runtime-db-sqlite`. sc-lint 0.8.0 exits 3 when a forbidden
+target is absent from the workspace, so crates.io names and `sc-cron` (until
+it is a member) stay off that list. The cargo-tree test is the gate for those
+names. `axum` is allowed only with the
 `server` feature. The manifest omits it because sc-lint 0.8.0 has no
 feature key. `sc-lint lint sc-boundary --root crates/sc-transport` exits 0.
 That the source never names `Envelope` or `OpError` is checked by the

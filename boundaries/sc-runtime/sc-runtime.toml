@@ -34,7 +34,10 @@ allowed_dependencies = [
 # enforces those edges. sc-observability-types is direct-only: a transitive
 # line through sc-command is allowed, and a direct dependency is rejected by
 # cargo tree rather than a forbidden edge that would also fail that crate.
-forbidden_edges = ["sc-runtime -> sc-config"]
+forbidden_edges = [
+  "sc-runtime -> sc-config",
+  "sc-runtime -> sc-runtime-db-sqlite",
+]
 
 [references]
 scope = "outside_owner_crate"
