@@ -1601,10 +1601,20 @@ variable, so two such crates can build in one workspace.
 
 2. Each store crate MUST expose `EngineStore`: `open`, `read_rows`, and
    `write_rows`, as the sprint `b-4` sample states them. `OpenConfig` is
-   `{ url: String }`. `StoreError` carries `StoreCode` and `message` and
-   implements `Display` and `std::error::Error`. `RowRecord.payload` is UTF-8
-   JSON whose keys are column names. `EngineStore` is static dispatch.
-   Amended 2026-10-25.
+   `{ url: String }`, constructed with `OpenConfig::new` from crates other
+   than the schema crate. SQLite reads a filesystem path from `url`. Postgres
+   and MySQL read a database URL. Engine options stay in that URL's query
+   until a second field is justified. `StoreError` carries `StoreCode` and
+   `message` and implements `Display` and `std::error::Error`. `StoreCode` is
+   `non_exhaustive`. Its known variants are `Connection`, `Query`,
+   `Migration`, `NotFound`, `Conflict`, and `Unavailable`. `Unavailable` is
+   the only retryable variant. `StoreCode::remediation` is the recovery text.
+   The engine copies the driver error into `message`. `Error::source` stays
+   empty so the schema crate does not name a driver type. `RowRecord.payload`
+   is UTF-8 JSON whose keys are column names, using the encoding table in the
+   sprint `b-4` sample. `read_rows` and `write_rows` reject more than 10_000
+   rows or a payload over 1 MiB. `EngineStore` is static dispatch.
+   Amended 2026-10-26.
 3. Only `store-*` crates depend on sqlx. A two-store layout's adaptor depends
    on the `store-*` crates whose rows it moves, and `service` depends on the
    adaptor. A one-store layout has no adaptor, and `service` depends on that
@@ -1662,49 +1672,6 @@ Amended 2026-10-25.
 - [REQ-RT-0003](sc-runtime/requirements.md): `sc-runtime` never inspects `Stores`.
 - [ADR-RUN-0303](architecture.md): the full crate graph of a generated project.
 - [ADR-RUN-0305](architecture.md): the consumer adaptor that moves rows between the two stores.
-
----
-
-## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
-
-**Status:** Active  
-**Decision Date:** 2026-10-25  
-**Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
-**Amends:** [ADR-RUN-0301](architecture.md) points 4 and 6  
-
-### Context
-
-SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. The first phase-b writeup put that pairing behind one `StorageBackend` and one constructor that accepted both `sqlite://` and `postgres://`. A query written for both engines is forbidden by [ADR-RUN-0301](architecture.md) point 4. That writeup was deleted. The pairing itself is the plan.
-
-### Decision
-
-1. SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
-2. The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
-3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The consumer repository defines the rollup.
-4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
-5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
-6. Every consumer repository gets the same generated implementation of a common pattern. Each engine's SQL is in that engine's store crate.
-7. An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
-8. The consuming application schedules synchronization. The adaptor starts no timer.
-9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
-10. Two stores in one application use the same schema or a similar schema.
-11. Two stores in one application use one shared trait or a different trait per store.
-12. A generated package name is the project name, a hyphen, and its role.
-13. Row type structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
-
-### Consequences
-
-[REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md) are this decision. Phase b plans them with the writer, the lint profile, and sc-cron: eight sprints, `b-1` through `b-8`. The adaptor is rendered for a layout that has SQLite and a SQL engine. The rusqlite writer sprint does not replace the template sqlx store.
-
-### Alternatives Considered
-
-- One SQL string executed on both SQLite and Postgres. Rejected. Each engine has its own SQL. A shared trait, or a different trait per engine, is allowed. The schemas are the same or similar.
-- Leaving the pairing for each consumer to invent. Rejected. A common pattern has one generated implementation.
-
-### Related Documents
-
-- [ADR-RUN-0301](architecture.md) points 4 and 6.
-- [REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md).
 
 ---
 

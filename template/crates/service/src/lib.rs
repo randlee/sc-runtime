@@ -55,7 +55,9 @@ impl Stores {
     ///
     /// Returns [`StoreOpenError`] when the database cannot be opened.
     pub async fn open(path: PathBuf) -> Result<Self, StoreOpenError> {
-        let sqlite = store_sqlite::open(&store_sqlite::OpenConfig { path })
+        // ADR-RUN-0301: `OpenConfig.url` is this filesystem path.
+        let url = path.to_string_lossy().into_owned();
+        let sqlite = store_sqlite::open(&store_sqlite::OpenConfig::new(url))
             .await
             .map_err(|err| StoreOpenError {
                 code: "STORE.OPEN",

@@ -1,9 +1,16 @@
-//! Table membership for two stores that share a schema, or a similar one.
+//! Engine-keyed table membership for paired stores.
+//!
+//! [`EngineStore`](crate::EngineStore) does not read this module. A project
+//! whose engines share one schema uses [`Membership::empty`] and can delete
+//! `membership.toml` plus this module. The adaptor in sprint b-7 is the first
+//! runtime consumer (ADR-RUN-0305 point 5). Until then the `toml` crate
+//! parses the file only in tests, so a generated project does not take a
+//! runtime parser dependency.
 
-use serde::Deserialize;
+use std::collections::BTreeMap;
 
-/// Failure reading the paired-store membership description.
-#[derive(Debug)]
+/// Failure in a paired-store membership description.
+#[derive(Debug, PartialEq, Eq)]
 pub struct MembershipError {
     message: String,
 }
@@ -24,132 +31,145 @@ impl MembershipError {
     }
 }
 
-#[derive(Debug, Deserialize)]
-struct MembershipFile {
-    shared: Vec<String>,
-    sqlite_only: Vec<String>,
-    remote_only: Vec<String>,
-    column_on_one_side: Vec<String>,
+/// Tables and columns that exist on one named engine and not on every engine.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EngineMembership {
+    tables: Vec<String>,
+    columns: Vec<String>,
 }
 
-/// Tables and columns that are shared, or that exist on only one engine.
+impl EngineMembership {
+    /// Builds one engine's one-sided names.
+    ///
+    /// Empty `tables` and empty `columns` are valid. [`Membership::try_new`]
+    /// checks the names.
+    #[must_use]
+    pub fn new(tables: Vec<String>, columns: Vec<String>) -> Self {
+        Self { tables, columns }
+    }
+
+    /// Tables stored on this engine and not listed as shared.
+    #[must_use]
+    pub fn tables(&self) -> &[String] {
+        &self.tables
+    }
+
+    /// Columns stored on this engine only, written as `table.column`.
+    #[must_use]
+    pub fn columns(&self) -> &[String] {
+        &self.columns
+    }
+}
+
+/// Tables shared by every engine, plus tables and columns that exist on only
+/// some engines.
 ///
-/// Loaded from `membership.toml`. That file is not an answers-schema property.
+/// Keys of [`Membership::only_in`] are engine names (`sqlite`, `postgres`,
+/// `mysql`), not a fixed sqlite/remote pair. An empty description is valid
+/// when every engine stores the same tables and columns.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Membership {
     shared: Vec<String>,
-    sqlite_only: Vec<String>,
-    remote_only: Vec<String>,
-    column_on_one_side: Vec<String>,
+    only_in: BTreeMap<String, EngineMembership>,
 }
 
 impl Membership {
-    /// Parses the membership description from `text`.
+    /// A description with no shared tables and no one-sided names.
+    #[must_use]
+    pub fn empty() -> Self {
+        Self {
+            shared: Vec::new(),
+            only_in: BTreeMap::new(),
+        }
+    }
+
+    /// Builds a description from already-split names.
     ///
     /// # Errors
     ///
-    /// Returns [`MembershipError`] when `text` is not the membership document,
-    /// or when it does not name a shared table, a SQLite-only table, a
-    /// remote-only table, and a column that exists on only one side.
-    pub fn parse(text: &str) -> Result<Self, MembershipError> {
-        let file: MembershipFile = toml::from_str(text)
-            .map_err(|err| MembershipError::new(format!("membership document: {err}")))?;
-        let membership = Self {
-            shared: file.shared,
-            sqlite_only: file.sqlite_only,
-            remote_only: file.remote_only,
-            column_on_one_side: file.column_on_one_side,
-        };
+    /// Returns [`MembershipError`] when a name is empty or dotted, a table is
+    /// both shared and one-sided, or a column is not `table.column` on a
+    /// table that engine stores.
+    pub fn try_new(
+        shared: Vec<String>,
+        only_in: BTreeMap<String, EngineMembership>,
+    ) -> Result<Self, MembershipError> {
+        let membership = Self { shared, only_in };
         membership.check()?;
         Ok(membership)
     }
 
-    /// Loads the description shipped with this crate.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`MembershipError`] when the shipped document is invalid.
-    pub fn bundled() -> Result<Self, MembershipError> {
-        Self::parse(include_str!("../membership.toml"))
-    }
-
-    /// Tables that exist on both engines.
+    /// Tables that exist on every engine.
     #[must_use]
     pub fn shared(&self) -> &[String] {
         &self.shared
     }
 
-    /// Tables that exist only in SQLite.
+    /// One-sided tables and columns, keyed by engine name.
     #[must_use]
-    pub fn sqlite_only(&self) -> &[String] {
-        &self.sqlite_only
+    pub fn only_in(&self) -> &BTreeMap<String, EngineMembership> {
+        &self.only_in
     }
 
-    /// Tables that exist only on the remote engine.
-    #[must_use]
-    pub fn remote_only(&self) -> &[String] {
-        &self.remote_only
-    }
-
-    /// Columns that exist on only one side, written as `table.column`.
-    #[must_use]
-    pub fn column_on_one_side(&self) -> &[String] {
-        &self.column_on_one_side
+    /// Engine names that declare a one-sided table or column.
+    pub fn engines(&self) -> impl Iterator<Item = &str> {
+        self.only_in.keys().map(String::as_str)
     }
 
     fn check(&self) -> Result<(), MembershipError> {
-        require_names("shared", &self.shared)?;
-        require_names("sqlite_only", &self.sqlite_only)?;
-        require_names("remote_only", &self.remote_only)?;
-        if self.column_on_one_side.is_empty() {
-            return Err(MembershipError::new("column_on_one_side names no column"));
-        }
-        let mut seen = Vec::new();
-        for name in self
-            .shared
-            .iter()
-            .chain(self.sqlite_only.iter())
-            .chain(self.remote_only.iter())
-        {
-            if seen.contains(name) {
+        check_names("shared", &self.shared)?;
+        for (engine, side) in &self.only_in {
+            if engine.is_empty() || engine.contains('.') {
                 return Err(MembershipError::new(format!(
-                    "table {name} is listed more than once"
+                    "engine name {engine:?} is empty or dotted"
                 )));
             }
-            seen.push(name.clone());
-        }
-        for column in &self.column_on_one_side {
-            let Some((table, field)) = column.split_once('.') else {
-                return Err(MembershipError::new(format!(
-                    "column {column} is not table.column"
-                )));
-            };
-            if table.is_empty() || field.is_empty() || field.contains('.') {
-                return Err(MembershipError::new(format!(
-                    "column {column} is not table.column"
-                )));
+            check_names(&format!("only_in.{engine}.tables"), side.tables())?;
+            for table in side.tables() {
+                if self.shared.iter().any(|name| name == table) {
+                    return Err(MembershipError::new(format!(
+                        "table {table} is shared and listed under {engine}"
+                    )));
+                }
             }
-            if !seen.iter().any(|name| name == table) {
-                return Err(MembershipError::new(format!(
-                    "column {column} names an unknown table"
-                )));
+            for column in side.columns() {
+                let Some((table, field)) = column.split_once('.') else {
+                    return Err(MembershipError::new(format!(
+                        "column {column} is not table.column"
+                    )));
+                };
+                if table.is_empty() || field.is_empty() || field.contains('.') {
+                    return Err(MembershipError::new(format!(
+                        "column {column} is not table.column"
+                    )));
+                }
+                let on_engine = self.shared.iter().any(|name| name == table)
+                    || side.tables().iter().any(|name| name == table);
+                if !on_engine {
+                    return Err(MembershipError::new(format!(
+                        "column {column} names a table {engine} does not store"
+                    )));
+                }
             }
         }
         Ok(())
     }
 }
 
-fn require_names(label: &str, names: &[String]) -> Result<(), MembershipError> {
-    if names.is_empty() {
-        return Err(MembershipError::new(format!("{label} names no table")));
-    }
-    if names
-        .iter()
-        .any(|name| name.is_empty() || name.contains('.'))
-    {
-        return Err(MembershipError::new(format!(
-            "{label} contains an empty or dotted name"
-        )));
+fn check_names(label: &str, names: &[String]) -> Result<(), MembershipError> {
+    let mut seen = Vec::new();
+    for name in names {
+        if name.is_empty() || name.contains('.') {
+            return Err(MembershipError::new(format!(
+                "{label} contains an empty or dotted name"
+            )));
+        }
+        if seen.contains(name) {
+            return Err(MembershipError::new(format!(
+                "{label} lists {name} more than once"
+            )));
+        }
+        seen.push(name.clone());
     }
     Ok(())
 }

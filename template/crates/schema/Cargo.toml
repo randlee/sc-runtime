@@ -9,7 +9,9 @@ description = "Row types and the shared store trait for paired database engines.
 
 [dependencies]
 serde = { workspace = true }
-toml = "0.8"
 
 [dev-dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt"] }
+toml = { workspace = true }

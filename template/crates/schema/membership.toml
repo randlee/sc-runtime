@@ -1,9 +1,20 @@
 # Paired-store table membership for the template schema crate.
 # This file is not an answers-schema property.
-# `widgets` is on both engines. `host_id` exists on only one side of that table.
-# `local_notes` is stored only in SQLite. `remote_audit` is stored only on the remote engine.
+# `widgets` is on every engine. `widgets.host_id` exists only on SQLite.
+# `local_notes` is stored only in SQLite.
+# `remote_audit` is stored on the layout's sqlx engine (Postgres or MySQL) and not on SQLite.
+# Keys are engine names. An empty `only_in` map means the engines share one schema.
 
 shared = ["widgets"]
-sqlite_only = ["local_notes"]
-remote_only = ["remote_audit"]
-column_on_one_side = ["widgets.host_id"]
+
+[only_in.sqlite]
+tables = ["local_notes"]
+columns = ["widgets.host_id"]
+
+[only_in.postgres]
+tables = ["remote_audit"]
+columns = []
+
+[only_in.mysql]
+tables = ["remote_audit"]
+columns = []
