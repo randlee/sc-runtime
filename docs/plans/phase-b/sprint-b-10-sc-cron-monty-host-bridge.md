@@ -103,7 +103,12 @@ variant. `render_template`'s `Err` takes that same path. `Ok` resumes:
 
 ```rust
 monty::ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
-    let rendered = crate::monty_host::render_template(template, context)?;
+    // Positional: render_template(template: str, context: dict). Wrong arity or
+    // types → denied FeedDone with RunOutcome::Failed (no new CronError variant).
+    let template = call.arg(0)?.as_str().ok_or("render_template: arg0 must be str")?;
+    let context_obj = call.arg(1)?.as_dict().ok_or("render_template: arg1 must be dict")?;
+    let context = monty_host::monty_dict_to_json(context_obj)?;
+    let rendered = crate::monty_host::render_template(template, &context)?;
     call.resume(
         monty_types::ExtFunctionResult::Return(monty_types::MontyObject::string(rendered)),
         monty_types::PrintWriter::Disabled,

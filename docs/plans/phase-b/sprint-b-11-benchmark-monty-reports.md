@@ -19,7 +19,6 @@ owned_paths:
   - .claude/skills/benchmark-run/
   - site/reports/benchmark-monty/
   - scripts/benchmark/
-  - Justfile
   - crates/sc-cron/tests/sc_compose_bench.rs
   - docs/sc-cron/benchmark-monty.md
 must_follow: [b-10]
@@ -70,11 +69,14 @@ not run it.
 review, publish. First consumer is this campaign. The skill lists later
 campaigns by directory name; it does not add a second runner in this sprint.
 
+Recipes live in `scripts/benchmark/justfile` (owned here). The root `Justfile`
+stays with sprint `b-2`. Invoke with `just --justfile scripts/benchmark/justfile …`.
+
 | Recipe | Does |
 |---|---|
-| `just benchmark-monty` | `scripts/benchmark/monty_compose_campaign.py` runs `SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench --release -- --ignored --nocapture` |
-| `just benchmark-monty-show` | prints the latest campaign HTML path and the index path |
-| `just benchmark-monty-publish` | refreshes `site/reports/benchmark-monty/index.html` from `*.campaign.json` and leaves that directory as the only publish staging area |
+| `just --justfile scripts/benchmark/justfile benchmark-monty` | `scripts/benchmark/monty_compose_campaign.py` runs `SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench --release -- --ignored --nocapture` |
+| `just --justfile scripts/benchmark/justfile benchmark-monty-show` | prints the latest campaign HTML path and the index path |
+| `just --justfile scripts/benchmark/justfile benchmark-monty-publish` | refreshes `site/reports/benchmark-monty/index.html` from `*.campaign.json` and leaves that directory as the only publish staging area |
 
 `SC_BENCH_HOST_LABEL` overrides the host label. Default is the machine
 hostname. The runner records git SHA, `rustc` version, case id, ms/run, and
@@ -121,15 +123,15 @@ not edit `hooks-sc-compose.md`.
 
 1. `REQ-CRON-0003` / ADR-RUN-0013 (the `b-10` host-bridge sentence): the `production_bridge` case in `sc_compose_bench` and in the campaign JSON.
 2. `NFR-RUN-0005`: TempDir in the harness; default `cargo test -p sc-cron` does not run the ignored bench; the bench does not set process environment variables except reading `SC_CRON_BENCH` and `SC_BENCH_HOST_LABEL`.
-3. The skill, the three `just` recipes, the runner, `index.html`, and `baselines.json`.
+3. The skill, `scripts/benchmark/justfile` (three recipes), the runner, `index.html`, and `baselines.json`.
 4. `docs/sc-cron/benchmark-monty.md`.
 
 ## Acceptance criteria
 
-- Root `adr:ADR-RUN-0013`: after `b-10`, `just benchmark-monty` writes a campaign JSON whose `production_bridge` case ran through `execute_feed` (not `feed_start`) and whose render path is `sc-compose` with no `python3` child. The JSON records git SHA and rustc version.
+- Root `adr:ADR-RUN-0013`: after `b-10`, `just --justfile scripts/benchmark/justfile benchmark-monty` writes a campaign JSON whose `production_bridge` case ran through `execute_feed` (not `feed_start`) and whose render path is `sc-compose` with no `python3` child. The JSON records git SHA and rustc version.
 - Root `req:NFR-RUN-0005`: the harness uses `tempfile::TempDir`; `cargo test -p sc-cron` exits 0 without `SC_CRON_BENCH`; the ignored test is not part of default CI.
-- Root `req:NFR-RUN-0005`: `just benchmark-monty-publish` rewrites only `site/reports/benchmark-monty/index.html` from the campaign files, and the index links each campaign and shows the `baselines.json` floor.
-- The skill's four steps name these recipes and the output directory. `docs/sc-cron/benchmark-monty.md` links the skill and the index.
+- Root `req:NFR-RUN-0005`: `just --justfile scripts/benchmark/justfile benchmark-monty-publish` rewrites only `site/reports/benchmark-monty/index.html` from the campaign files, and the index links each campaign and shows the `baselines.json` floor.
+- Root `adr:ADR-RUN-0013`: the skill's four steps name `scripts/benchmark/justfile` recipes and `site/reports/benchmark-monty/`. `docs/sc-cron/benchmark-monty.md` links the skill and the index.
 
 ## Required validation
 

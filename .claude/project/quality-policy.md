@@ -113,7 +113,9 @@ One convention for every phase. Everything is lower case.
 | Phase plan | `docs/plans/phase-<phase>/phase-<phase>-plan.md` | `phase-bc-plan.md` |
 | Sprint doc | `docs/plans/phase-<phase>/sprint-<phase>-<n>-<slug>.md` | `sprint-bc-4-task-ledger-writer.md` |
 | Plan branch | `plan/phase-<phase>`, PR to `develop` | `plan/phase-bc` |
+| Plan amendment branch | `plan/phase-<phase>-<slug>`, PR to `develop` | `plan/phase-b-monty-extension` |
 | Phase branch | `integrate/phase-<phase>`, cut from `develop` | `integrate/phase-bc` |
+| Phase track branch | `integrate/phase-<phase>-<track>`, cut from the phase branch; sprint PRs target it | `integrate/phase-b-monty` |
 | Sprint branch | `sprint/<phase>-<n>-<slug>` | `sprint/bc-4-task-ledger-writer` |
 | Fix layer | `fix/<phase>-<n>-<slug>`; phase-level: `fix/<phase>-<slug>` | `fix/bc-4-qa1` |
 

@@ -5,8 +5,7 @@ does not gate phase close.
 
 ## Track A — Phase close on `integrate/phase-b`
 
-Waves 1–3 (`b-1` through `b-9`). Critical path 3. Width 4. Sprint count 9.
-See the wave table in [phase-b-plan.md](phase-b-plan.md).
+Waves 1–3 (`b-1` through `b-9`). Metrics: [phase-b-plan.md](phase-b-plan.md) wave table.
 
 **Trigger:** `integrate/phase-b` contains the landed stack (sc-compose
 reference **#73**, then phase-close **#72**, bottom first) and CI on that
@@ -37,19 +36,8 @@ later extension PR targets `develop`.
 | `b-10` | [sprint-b-10-sc-cron-monty-host-bridge.md](sprint-b-10-sc-cron-monty-host-bridge.md) | 4 | `render_template` resumed inside `monty_run::execute_feed` |
 | `b-11` | [sprint-b-11-benchmark-monty-reports.md](sprint-b-11-benchmark-monty-reports.md) | 5 | campaign publish, including the `production_bridge` case |
 
-Extension critical path 2 (`b-10` → `b-11`). Extension width 1. Combined
-sprint count 11.
-
-`b-11` `must_follow` `b-10` because the campaign case `production_bridge`
-calls the ext fn `render_template` that only `b-10` implements. Their
-`owned_paths` do not overlap. A lab-only publisher beside `b-10` would be a
-thin sprint: the lab harness is already the **#73** bench, and the production
-case would still wait on `b-10`. That split does not raise width.
-
-Track B does not lengthen Track A's critical path. Gluing the extension onto
-the cron track is `b-1` → `b-3` → `b-9` → `b-10` → `b-11` (length 5). Waves
-4–5 are why that chain is longer than three, and they stay off
-`integrate/phase-b`.
+Extension metrics and the `b-10` → `b-11` edge rationale: [phase-b-plan.md](phase-b-plan.md).
+Track B does not gate Track A and stays off `integrate/phase-b`.
 
 ## gh stack on Track A
 
