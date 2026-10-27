@@ -100,4 +100,4 @@ Root: `boundary:sc-cron` and [ADR-RUN-0013](../../architecture.md).
 
 ## Non-goals
 
-No beads CLI client. No Postgres store. No store-adaptor generator. No HTTP, MCP, or CLI API on this crate. No edit to `sc-lint.toml`. No edit to `Cargo.toml` or `crates/sc-runtime-db-sqlite/`. `Cargo.lock` changes only to record `sc-cron`.
+No beads CLI client. No Postgres store. No store-adaptor generator. No HTTP, MCP, or CLI API on this crate. No edit to `sc-lint.toml` except the xwin exclude: `sc-cron` bundles SQLite the same way `sc-runtime-db-sqlite` does, and this toolchain's Windows cross check has no `llvm-lib`, so both crates are excluded from `xwin-check` and `xwin-clippy`. No edit to `Cargo.toml` or `crates/sc-runtime-db-sqlite/`. `Cargo.lock` changes only to record `sc-cron`.
