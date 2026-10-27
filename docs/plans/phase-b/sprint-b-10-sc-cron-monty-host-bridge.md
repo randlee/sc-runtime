@@ -95,27 +95,41 @@ Production passes `compose_program = "sc-compose"`. The missing-binary test
 passes a name that is not installed. No `std::env::set_var` and no PATH
 rewrite (`NFR-RUN-0005`).
 
-Progress loop inside `execute_feed` (after taking the session's repl by value):
+Progress loop inside `execute_feed` (repl taken by value; state is
+`ReplProgress`, not a single `match` on `feed_start`):
 
 ```rust
-// feed_start consumes the repl; on Complete, put repl back in the session.
-match repl.feed_start(snippet, &inputs)? {
-    monty::ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
-        // Positional render_template(template: str, context: dict).
-        let template_ref = call.args.arg(0).ok_or("render_template: missing arg0")?;
-        let template = template_ref.as_str().ok_or("render_template: arg0 must be str")?;
-        let context_ref = call.args.arg(1).ok_or("render_template: missing arg1")?;
-        let context = monty_host::monty_value_to_json(context_ref)?; // pairs() on dicts; inverse of json_to_monty
-        let rendered = monty_host::render_template(template, &context, compose_program)?;
-        call.resume(
-            monty_types::ExtFunctionResult::Return(monty_types::MontyObject::string(rendered)),
-            monty_types::PrintWriter::Disabled,
-        )?
-    }
-    monty::ReplProgress::Complete { repl, value } => { /* parse value; store repl in session */ }
-    // Any other FunctionCall name, OsCall, or unknown progress → FeedDone Failed, session None
+let mut progress = match repl.feed_start(snippet, &inputs, monty_types::PrintWriter::Disabled) {
+    Ok(p) => p,
+    Err(_) => return FeedDone { session: None, result: FeedResult::Outcome(failed(...)) },
+};
+loop {
+    progress = match progress {
+        monty::ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
+            let template_ref = call.args.arg(0).ok_or_else(|| denied(...))?;
+            let template = template_ref.as_str().ok_or_else(|| denied(...))?;
+            let context_ref = call.args.arg(1).ok_or_else(|| denied(...))?;
+            let context = monty_host::monty_value_to_json(context_ref)?;
+            let rendered = monty_host::render_template(template, &context, compose_program)?;
+            call.resume(
+                monty_types::ExtFunctionResult::Return(monty_types::MontyObject::string(rendered)),
+                monty_types::PrintWriter::Disabled,
+            )? // Ok(next ReplProgress) — stay in loop (second render_template is allowed)
+        }
+        monty::ReplProgress::Complete { repl, value } => {
+            // Only success exit: parse value with today's stop/tick rules; store repl in session
+            break;
+        }
+        monty::ReplProgress::FunctionCall(_) | monty::ReplProgress::OsCall(_) => {
+            return FeedDone { session: None, result: FeedResult::Outcome(failed(...)) };
+        }
+        _ => return FeedDone { session: None, result: FeedResult::Outcome(failed(...)) },
+    };
 }
 ```
+
+Do not use `?` to return from `execute_feed` (which returns `FeedDone`). Map
+`ReplStartError` and denied paths to `FeedDone` with `session: None`.
 
 Wrong arity, non-str template, or a context value `monty_value_to_json` cannot
 represent → denied `FeedDone` with `RunOutcome::Failed` (no new `CronError`
@@ -144,14 +158,15 @@ No new `CronError` variant.
 |---|---|
 | Inside `render_template`, the configured compose program cannot be started (missing binary) | `RunOutcome::Failed` whose detail is `CronError::HookFailed(...).recorded()`; repl dropped. Feeds that never call `render_template` still run when the binary is absent. |
 | CLI starts and exits non-zero, or Monty raises | `RunOutcome::Failed` (no `HookFailed`); repl dropped |
-| After the CLI returns, host-measured elapsed time exceeds the row's remaining budget | `RunOutcome::TimedOut`; same checkpoint rule as `b-9`. Outcome is recorded only after `Command` returns. |
-| Monty feed-time-limit while the VM is executing (not suspended on host) | `RunOutcome::TimedOut` as today |
+| After the CLI returns, host-measured elapsed time exceeds the row's remaining budget | `RunOutcome::TimedOut`; repl dropped after the feed returns. Outcome is recorded only after `Command` returns (VM clock was paused during the call). |
+| Monty feed-time-limit while the VM is executing (not suspended on host) | `RunOutcome::TimedOut` from Monty's feed-time-limit error, as in `b-9` |
 
 Monty's `ResourceTracker` pauses `max_feed_duration` while suspended on a host
 `FunctionCall`; CLI wall time is **not** on the VM feed clock. The host times
 the child with `Instant`. If the child never exits, the blocking-pool thread
 stays occupied (same accepted stall as a Monty hook that never reaches another
-checkpoint); there is no second kill while the child is alive.
+checkpoint); there is no second kill and no outcome recorded while the child
+is alive.
 
 ### Dependency (`REQ-CRON-0001`, `REQ-RUN-0005`)
 
@@ -169,7 +184,14 @@ On the `b-9` text of point 4, add: under feature `monty`, a hook may call the
 host function `render_template(template, context)`; sc-cron resumes it by
 spawning `sc-compose` on `PATH` against a temp root the hook cannot choose;
 `OsCall` and any other function name fail the feed; the tick does not start
-CPython. Add a consequence naming sprint `b-10`.
+CPython. **Replace** the `b-9` Monty timeout sentence for time inside
+`render_template`: `ResourceTracker` pauses `max_feed_duration` while the feed
+is suspended on that host call; the host times the child with `Instant`; if the
+child returns after the row's remaining budget, the outcome is
+`RunOutcome::TimedOut` and the repl is dropped when that feed returns; a child
+that never exits is the accepted blocking-pool stall with no second kill and
+no outcome while it is alive (this is **not** a Monty feed-time-limit error).
+Add a consequence naming sprint `b-10`.
 
 `REQ-CRON-0003` gains one sentence for that call. Amend the `b-9` sentence that
 `HookFailed` is only a failure to **start** the hook: a missing compose binary
@@ -185,7 +207,7 @@ standalone lab `MontyRepl::feed_start` in the bench is not the production path.
 2. `REQ-CRON-0005`: the error table above, still seven variants.
 3. `REQ-CRON-0001` and `REQ-RUN-0005`: no workspace dependency, no boundary-manifest edit, no `Cargo.lock` edit.
 4. `NFR-RUN-0005`: the bridge test uses `tempfile::TempDir`, injects the compose program name (not PATH mutation), and does not call `std::env::set_var`.
-5. ADR-RUN-0013 point 4, the new consequence, the `REQ-CRON-0003` sentence, and the hooks note.
+5. ADR-RUN-0013 point 4 (including the `render_template` host-timeout sentence above), the new consequence, the `REQ-CRON-0003` sentence, and the hooks note.
 
 ## Acceptance criteria
 
@@ -194,7 +216,7 @@ Root: `boundary:sc-cron` and ADR-RUN-0013 as amended here.
 - `cargo test -p sc-cron --features monty --test monty_host_bridge` on Rust 1.96.1 **must execute** (not skip): success path with real `sc-compose` on `PATH` (`render` with `--root`, `--mode file`, `--file`, `--var-file`, stdout body, `--output` omitted); deny paths for another function name and for `OsCall`; non-zero CLI → `Failed` without `HookFailed`. When `sc-compose` is absent, those cases **fail** the test. A separate case uses a non-installed program name for the missing-binary path → `HookFailed` and no repl. Skips are not an acceptance outcome.
 - `cargo test -p sc-cron` with the default features does not compile the `monty` crates. `cargo tree -p sc-cron -e normal --prefix none` prints no crate whose name starts with `monty`.
 - `boundaries/sc-cron/sc-cron.toml` has no `monty`, `monty-types`, or `sc-compose` entry added by this sprint.
-- `docs/architecture.md` point 4 names `render_template` and the `sc-compose` spawn. `docs/sc-cron/requirements.md` has the new `REQ-CRON-0003` sentence. `docs/sc-cron/hooks-sc-compose.md` calls `execute_feed` the production path.
+- `docs/architecture.md` point 4 names `render_template`, the `sc-compose` spawn, and the host-timeout rule for time inside `render_template`. `docs/sc-cron/requirements.md` has the new `REQ-CRON-0003` sentence. `docs/sc-cron/hooks-sc-compose.md` calls `execute_feed` the production path.
 - `rg -n 'std::thread::sleep|tokio::time::sleep|block_on' crates/sc-cron/src` exits 1.
 
 ## Required validation

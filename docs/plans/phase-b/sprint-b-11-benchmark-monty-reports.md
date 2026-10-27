@@ -131,7 +131,7 @@ not edit `hooks-sc-compose.md`.
 
 ## Acceptance criteria
 
-- Root `adr:ADR-RUN-0013`: after `b-10`, `just --justfile scripts/benchmark/justfile benchmark-monty` writes a campaign JSON whose `production_bridge` case ran through `execute_feed` (not `feed_start`) and whose render path is `sc-compose` with no `python3` child. The JSON records git SHA and rustc version.
+- Root `adr:ADR-RUN-0013`: after `b-10`, `just --justfile scripts/benchmark/justfile benchmark-monty` writes a campaign JSON whose `production_bridge` case calls **`execute_feed` only** (the bench source must not call `feed_start`; `feed_start` inside `execute_feed` is allowed) and whose render path is `sc-compose` with no `python3` child. The JSON records git SHA and rustc version.
 - Root `req:NFR-RUN-0005`: the harness uses `tempfile::TempDir`; `cargo test -p sc-cron` exits 0 without `SC_CRON_BENCH`; the ignored test is not part of default CI.
 - Root `req:NFR-RUN-0005`: `just --justfile scripts/benchmark/justfile benchmark-monty-publish` rewrites only `site/reports/benchmark-monty/index.html` from the campaign files, and the index links each campaign and shows the `baselines.json` floor.
 - Root `adr:ADR-RUN-0013`: the skill's four steps name `scripts/benchmark/justfile` recipes and `site/reports/benchmark-monty/`. `docs/sc-cron/benchmark-monty.md` links the skill and the index.
