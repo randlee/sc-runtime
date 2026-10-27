@@ -1,0 +1,6 @@
+{
+  "project_name": "widget-sqlite-postgres",
+  "db": "sqlite-postgres",
+  "mcp": true,
+  "licence": "MIT"
+}

@@ -9,13 +9,10 @@ use schema::{
 
 mod common;
 
-fn membership_from_toml(text: &str) -> Result<Membership, schema::MembershipError> {
-    common::membership_from_toml(text)
-}
-
 #[test]
 fn membership_describes_shared_and_engine_sided_names() {
-    let membership = membership_from_toml(include_str!("../membership.toml")).expect("membership");
+    let membership =
+        common::membership_from_toml(include_str!("../membership.toml")).expect("membership");
     assert_eq!(membership.shared(), &["widgets".to_owned()]);
     let sqlite = membership.only_in().get("sqlite").expect("sqlite side");
     assert_eq!(sqlite.tables(), &["local_notes".to_owned()]);
@@ -34,7 +31,7 @@ fn empty_membership_is_valid_and_shared_schema_needs_no_file() {
     let membership = Membership::empty();
     assert!(membership.shared().is_empty());
     assert!(membership.only_in().is_empty());
-    let parsed = membership_from_toml("shared = []\n").expect("empty document");
+    let parsed = common::membership_from_toml("shared = []\n").expect("empty document");
     assert_eq!(parsed, Membership::empty());
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     assert!(

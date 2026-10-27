@@ -2042,10 +2042,12 @@ mechanics it uses are recorded in Active
 6. The driver MUST be the Python script `scripts/new_project.py`, exposed as
    `just new <dest>`. Its steps, in order: run the wizard unless `--var-file`
    is given; validate the answers against the schema; write `values.toml`;
-   run `cargo generate`; run `sc-compose`; run `just setup`, `just lint`,
+   run `cargo generate` with `--allow-commands` so the post hook in
+   [ADR-RUN-0402](architecture.md) can prefix package names, then `cargo fmt --all`
+   in the generated project; run `sc-compose`; run `just setup`, `just lint`,
    `just test`, `just build-cli`, and `just build-daemon` in the generated
    project. Sprint a-6 implements the `--var-file` path. The wizard UI is a
-   later sprint.
+   later sprint. Amended 2026-10-26.
 7. The driver MUST support three entry modes that all produce the same answers
    JSON: the interactive wizard; `--prefill <json>` (agent-written guesses
    merged into the wizard for human review); `--var-file <answers.json>`
@@ -2102,8 +2104,9 @@ diagnostics and ends with the driver's inventory line.
 
 Each job uses an existing tool (`cargo-generate`, `sc-compose`, Wyvern) and
 this repository writes no render engine. Plain `cargo generate` on `template/`
-still works without Wyvern or the driver, using the placeholders' own prompts
-and defaults. Python is a prerequisite for the driver; a Rust binary can
+still works without Wyvern or the driver when it is passed `--allow-commands`.
+The post hook needs `python3` on `PATH`. Placeholders still supply prompts and
+defaults. Amended 2026-10-26. Python is a prerequisite for the driver; a Rust binary can
 replace it later. The schema is also consumed by the sc-lint project, so it is
 a published contract.
 
@@ -2151,8 +2154,9 @@ failing before `cargo generate` runs); the fixture matrix in
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
+**Amended:** 2026-10-26 by sprint b-8. The post hook, `hooks/prefix_packages.py`, and `--allow-commands` are part of the generate command.  
 **Source:** sc-runtime design, 2026-09-19: the design describes these `cargo-generate` behaviours and marks them as unverified, to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0401 so that it holds only accepted decisions  
-**Acceptance:** made Active, or amended, by sprint a-1
+**Acceptance:** made Active, or amended, by sprint a-1. Amended again 2026-10-26.
 
 ### Context
 
@@ -2174,12 +2178,27 @@ cargo-generate 0.25.1. That is the pinned version.
    `cargo-generate.toml`, which copies them byte-for-byte without Liquid
    rendering.
 4. The driver writes the validated answers as a `[values]` TOML file and runs
-   `cargo generate --path template --template-values-file values.toml --name <project> --silent`.
+   `cargo generate --path template --template-values-file values.toml --name <project> --silent --allow-commands`.
    That command runs with no prompt, including when a value is an `array`.
+   `--allow-commands` is required. Without it, cargo-generate refuses the
+   post hook in point 6. Plain `cargo generate` passes `--allow-commands` too.
+   Amended 2026-10-26.
 5. `cargo-generate` is pinned to the version recorded by sprint a-1, in the
    driver's tool check and in CI.
+6. `template/cargo-generate.toml` `[hooks] post` runs
+   `hooks/drop-template-exclude.rhai` after Liquid. The hook replaces the
+   checkout `Cargo.toml` with `workspace.template.toml`, runs
+   `python3 hooks/prefix_packages.py <project> . <db>`, and deletes the hook
+   files. The script prefixes every generated package name with the project
+   name (`<project>-<role>`) and, for a two-store layout, installs that
+   layout's adaptor manifest and `engine.rs` inside `crates/store-adaptor`.
+   Package naming stays [ADR-RUN-0305](architecture.md) point 12. This point
+   records the hook. The driver does not rewrite lines inside a `Cargo.toml`.
+   The same `cargo generate` step then runs `cargo fmt --all` in the generated
+   project so a removed Liquid line does not fail rustfmt. Amended 2026-10-26.
 
-All five points are verified by sprint a-1. The evidence rows are defined in
+Points 1 to 4 were verified by sprint a-1. Point 6 is the b-8 amendment. The
+evidence rows for points 1 to 4 are defined in
 [REQ-RUN-0102](requirements.md). The right-hand column below is a non-normative
 summary of those rows:
 
@@ -2198,6 +2217,12 @@ The right-hand column summarises the rows; the rows in
 Sprint a-1 proved V3a, V3b, V4a, and V4b on cargo-generate 0.25.1
 (`cargo generate --version` prints `cargo generate-generate 0.25.1`). That is
 the pin for the driver tool check and for CI.
+
+Plain `cargo generate` on `template/` still builds a workspace without Wyvern
+and without the driver. It must pass `--allow-commands`, and `python3` must
+be on `PATH`, because the post hook prefixes package names. A two-store value
+of `db` also makes that hook install one `crates/store-adaptor` directory.
+Amended 2026-10-26.
 
 An array `default` is accepted only when `choices` is also set. Working
 syntax, copied from `examples/spike/generate-scratch/template/cargo-generate.toml`:
@@ -2232,10 +2257,12 @@ Two `cargo generate --path <template> --template-values-file <file> --name spike
 
 ### Alternatives Considered
 
-- A `cargo-generate` hook script (its Rhai scripting) that deletes unwanted
-  files after rendering. Held as the fallback if conditional `ignore` does
-  not work; not the first choice because it is script code this repository
-  would maintain where a declarative list exists.
+- A `cargo-generate` hook script was held as the fallback if conditional
+  `ignore` did not work. Sprint b-8 uses the hook for a different job:
+  prefixing package names, and installing the two-store adaptor manifest,
+  which conditional `ignore` cannot do without rewriting lines inside a
+  manifest. Conditional `ignore` remains the way whole files are included or
+  excluded. Amended 2026-10-26.
 - Passing each option with `--define` on the command line. Rejected as the
   first choice because a values file written from the validated answers
   carries `array` values and keeps the command line fixed.

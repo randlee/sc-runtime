@@ -70,22 +70,18 @@ async fn main() -> ExitCode {
             );
         }
     };
-    let database = match daemon::database_path(&config, &transport_name) {
-        Ok(path) => path,
+    let targets = match daemon::store_targets(&config, &transport_name) {
+        Ok(targets) => targets,
         Err(err) => {
             return startup_exit(
                 err.code(),
                 err,
-                "set an absolute database path or a writable instance root",
+                "set database configuration or a writable instance root",
             );
         }
     };
     let result = sc_runtime::Daemon::builder(&transport_name, &config.daemon)
-        .stores(move || async move {
-            service::Stores::open(database)
-                .await
-                .map_err(daemon::map_store_open)
-        })
+        .stores(move || async move { daemon::open_stores(targets).await })
         .routes(daemon::routes::router)
         {% if mcp %}.mcp(daemon::mcp::service){% endif %}
         .run()

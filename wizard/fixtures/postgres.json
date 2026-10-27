@@ -1,5 +1,5 @@
 {
-  "project_name": "widget-app",
+  "project_name": "widget-postgres",
   "db": "postgres",
   "mcp": true,
   "licence": "MIT"

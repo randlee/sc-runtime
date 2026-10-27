@@ -107,6 +107,77 @@ async fn exercise() {
         "send a non-empty name"
     );
 
+    let names = tool_names(&fixture).await;
+    #[cfg(feature = "general-db")]
+    {
+        for required in ["widget_create", "widget_get", "widget_delete", "delete_row"] {
+            assert!(
+                names.iter().any(|name| name == required),
+                "missing {required} in {names:?}"
+            );
+        }
+        let missing_id = "missing-widget-id";
+        let rest_delete = rest(
+            &fixture,
+            api_types::WIDGET_DELETE_PATH,
+            json!({ "id": missing_id }),
+        )
+        .await;
+        let rest_row = rest(
+            &fixture,
+            api_types::DELETE_ROW_PATH,
+            json!({ "table": "widgets", "id": missing_id }),
+        )
+        .await;
+        let mcp_delete = mcp_call(&fixture, "widget_delete", json!({ "id": missing_id })).await;
+        let mcp_row = mcp_call(
+            &fixture,
+            "delete_row",
+            json!({ "table": "widgets", "id": missing_id }),
+        )
+        .await;
+        let cli_delete = cli_json(
+            &endpoint,
+            &[
+                "widget".into(),
+                "delete".into(),
+                "--id".into(),
+                missing_id.into(),
+            ],
+        )
+        .await;
+        let cli_row = cli_json(
+            &endpoint,
+            &[
+                "delete".into(),
+                "row".into(),
+                "widgets".into(),
+                missing_id.into(),
+            ],
+        )
+        .await;
+        assert_eq!(rest_delete["error"]["code"], "ROW.NOT_FOUND");
+        assert_eq!(rest_delete, mcp_delete);
+        assert_eq!(rest_delete, cli_delete);
+        assert_eq!(rest_row, mcp_row);
+        assert_eq!(rest_row, cli_row);
+        assert_eq!(rest_delete["error"]["code"], rest_row["error"]["code"]);
+        assert_eq!(rest_delete["error"]["kind"], rest_row["error"]["kind"]);
+        assert_eq!(
+            rest_delete["error"]["details"],
+            rest_row["error"]["details"]
+        );
+    }
+    #[cfg(not(feature = "general-db"))]
+    {
+        let mut listed = names;
+        listed.sort();
+        assert_eq!(
+            listed,
+            vec!["widget_create".to_owned(), "widget_get".to_owned()]
+        );
+    }
+
     fixture.shutdown().await.expect("shutdown");
 }
 
@@ -125,14 +196,7 @@ fn fixture_config() -> DaemonConfig {
     }
 }
 
-async fn open_temp() -> Result<service::Stores, sc_runtime::RuntimeError> {
-    let dir = tempfile::tempdir().expect("db dir");
-    let stores = service::Stores::open(dir.path().join("widgets.db"))
-        .await
-        .map_err(daemon::map_store_open)?;
-    std::mem::forget(dir);
-    Ok(stores)
-}
+include!("open/{{db}}.rs");
 
 async fn rest(fixture: &DaemonFixture, path: &str, body: Value) -> Value {
     fixture.client().post(path, &body).await.expect("rest")
@@ -146,7 +210,41 @@ async fn cli_json(endpoint: &str, tail: &[String]) -> Value {
     serde_json::from_str(&text).expect("cli json")
 }
 
+async fn tool_names(fixture: &DaemonFixture) -> Vec<String> {
+    let body = mcp_rpc(
+        fixture,
+        json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/list",
+            "params": {}
+        }),
+    )
+    .await;
+    body["result"]["tools"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|tool| tool.get("name").and_then(Value::as_str))
+        .map(str::to_owned)
+        .collect()
+}
+
 async fn mcp_call(fixture: &DaemonFixture, name: &str, arguments: Value) -> Value {
+    let body = mcp_rpc(
+        fixture,
+        json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": { "name": name, "arguments": arguments }
+        }),
+    )
+    .await;
+    find_envelope(&body).cloned().expect("envelope")
+}
+
+async fn mcp_rpc(fixture: &DaemonFixture, payload: Value) -> Value {
     let endpoint = fixture.endpoint();
     let mut builder = reqwest::Client::builder();
     let url = match endpoint {
@@ -171,18 +269,12 @@ async fn mcp_call(fixture: &DaemonFixture, name: &str, arguments: Value) -> Valu
         .post(url)
         .header("accept", "application/json, text/event-stream")
         .header("content-type", "application/json")
-        .json(&json!({
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "tools/call",
-            "params": { "name": name, "arguments": arguments }
-        }))
+        .json(&payload)
         .send()
         .await
         .expect("mcp");
     assert!(response.status().is_success(), "{}", response.status());
-    let body: Value = response.json().await.expect("mcp json");
-    find_envelope(&body).cloned().expect("envelope")
+    response.json().await.expect("mcp json")
 }
 
 fn find_envelope(value: &Value) -> Option<&Value> {
