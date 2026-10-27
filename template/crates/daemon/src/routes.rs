@@ -121,9 +121,7 @@ fn request_id_value(headers: &axum::http::HeaderMap) -> String {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "general-db")]
-    use api_types::{DELETE_ROW_PATH, WIDGET_DELETE_PATH};
-    use api_types::{WIDGET_CREATE_PATH, WIDGET_GET_PATH};
+    use api_types::{DELETE_ROW_PATH, WIDGET_CREATE_PATH, WIDGET_DELETE_PATH, WIDGET_GET_PATH};
 
     use super::*;
 
@@ -151,5 +149,23 @@ mod tests {
                 "delete row path missing from {paths:?}"
             );
         }
+    }
+
+    #[cfg(not(feature = "general-db"))]
+    #[test]
+    fn openapi_paths_omit_general_delete() {
+        let router = openapi_router();
+        let spec = router.get_openapi();
+        let paths: Vec<&str> = spec.paths.paths.keys().map(String::as_str).collect();
+        assert!(
+            !paths.contains(&WIDGET_DELETE_PATH),
+            "widget delete still registered: {paths:?}"
+        );
+        assert!(
+            !paths.contains(&DELETE_ROW_PATH),
+            "delete row still registered: {paths:?}"
+        );
+        assert!(paths.contains(&WIDGET_CREATE_PATH), "{paths:?}");
+        assert!(paths.contains(&WIDGET_GET_PATH), "{paths:?}");
     }
 }
