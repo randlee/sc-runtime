@@ -234,9 +234,21 @@ where
         result: Result<crate::monty_run::FeedDone, JoinError>,
         guard: Option<MontyFeedGuard>,
     ) {
-        use crate::monty_run::{FeedResult, MontyPhase};
-        let done = match result {
-            Ok(done) => done,
+        let Some((done, guard)) = self.monty_feed_from_join(index, result, guard).await else {
+            return;
+        };
+        self.apply_monty_feed_done(index, done, guard).await;
+    }
+
+    #[cfg(feature = "monty")]
+    async fn monty_feed_from_join(
+        &mut self,
+        index: usize,
+        result: Result<crate::monty_run::FeedDone, JoinError>,
+        guard: Option<MontyFeedGuard>,
+    ) -> Option<(crate::monty_run::FeedDone, Option<MontyFeedGuard>)> {
+        match result {
+            Ok(done) => Some((done, guard)),
             Err(error) if error.is_panic() => {
                 let message = panic_message(error);
                 if let Some(slot) = self.slots.get(index) {
@@ -249,16 +261,26 @@ where
                 }
                 self.forget_repl(index);
                 drop(guard);
-                return;
+                None
             }
             Err(error) => {
                 if let Some(slot) = self.slots.get(index) {
                     log(&slot.schedule, "cancelled", &error.to_string());
                 }
                 drop(guard);
-                return;
+                None
             }
-        };
+        }
+    }
+
+    #[cfg(feature = "monty")]
+    async fn apply_monty_feed_done(
+        &mut self,
+        index: usize,
+        done: crate::monty_run::FeedDone,
+        guard: Option<MontyFeedGuard>,
+    ) {
+        use crate::monty_run::{FeedResult, MontyPhase};
         let Some(slot) = self.slots.get(index) else {
             drop(done.session);
             drop(guard);
@@ -272,11 +294,7 @@ where
                 drop(done.session);
                 self.disable(&schedule, &reason).await;
                 drop(guard);
-                if matches!(queued, Queued::Replace(_)) {
-                    self.settle_queued(index).await;
-                } else {
-                    self.slots.remove(index);
-                }
+                self.remove_or_settle_monty_slot(index, &queued).await;
             }
             FeedResult::Delete(reason) => {
                 drop(done.session);
@@ -284,11 +302,7 @@ where
                     self.rebuild_later();
                 }
                 drop(guard);
-                if matches!(queued, Queued::Replace(_)) {
-                    self.settle_queued(index).await;
-                } else {
-                    self.slots.remove(index);
-                }
+                self.remove_or_settle_monty_slot(index, &queued).await;
             }
             FeedResult::Continue if interrupt => {
                 drop(done.session);
@@ -316,6 +330,15 @@ where
                     self.settle_queued(index).await;
                 }
             }
+        }
+    }
+
+    #[cfg(feature = "monty")]
+    async fn remove_or_settle_monty_slot(&mut self, index: usize, queued: &Queued) {
+        if matches!(queued, Queued::Replace(_)) {
+            self.settle_queued(index).await;
+        } else {
+            self.slots.remove(index);
         }
     }
 

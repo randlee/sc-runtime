@@ -20,18 +20,11 @@ use chrono::{DateTime, Utc};
 use tokio::sync::{oneshot, watch};
 use tokio::task::JoinHandle;
 
-use crate::clock::sleep_until_monotonic;
-#[cfg(feature = "monty")]
-use crate::clock::wall_after;
-use crate::coord::{NameInFlightGuard, RunCoord};
-#[cfg(feature = "monty")]
-use crate::hook::{HookCall, HookEvent, request};
+use crate::coord::RunCoord;
 use crate::limits::encode_payload;
-use crate::worker::{
-    DEFAULT_RELOAD_POLL, EXHAUSTED, MIN_RELOAD_POLL, Report, Worker, resolve, run_target,
-};
+use crate::worker::{DEFAULT_RELOAD_POLL, EXHAUSTED, MIN_RELOAD_POLL, Report, Worker};
 use crate::{
-    Clock, CronError, Generation, HookTarget, JitterSource, Job, NewSchedule, RunOutcome, Schedule,
+    Clock, CronError, Generation, JitterSource, Job, NewSchedule, RunOutcome, Schedule,
     ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp,
     jitter,
 };
@@ -558,125 +551,7 @@ where
     /// The store's errors on the first read; later store failures are logged
     /// and do not stop the other runs.
     pub async fn run_due(&self, job: Arc<dyn Job>) -> Result<Vec<DueRun>, CronError> {
-        let core = Arc::clone(&self.core);
-        let rows = blocking(move || core.store.list_active()).await?;
-        let now = self.core.clock.now();
-        let mut runs = Vec::new();
-        for row in rows {
-            if !row.enabled || row.next_run_at.is_none_or(|at| at.as_datetime() > now) {
-                continue;
-            }
-            if consumed_last_occurrence(&row) {
-                if !last_outcome_refused(&row) {
-                    end_recorded_final(self, &row).await;
-                }
-                continue;
-            }
-            let monty = matches!(row.spec.hook, HookTarget::Monty { .. });
-            if monty && self.coord.name_in_flight(&row.spec.name) {
-                continue;
-            }
-            let name_guard = if monty {
-                match NameInFlightGuard::try_insert(&self.coord.names, &row.spec.name) {
-                    Some(guard) => Some(guard),
-                    None => continue,
-                }
-            } else {
-                None
-            };
-            let next = row.spec.expr.next_run(row.jitter, now);
-            if let Some(next_at) = next {
-                let core = Arc::clone(&self.core);
-                let (id, generation) = (row.id, row.generation);
-                let stamp = Timestamp::from_datetime(next_at);
-                match blocking(move || core.store.set_next(id, generation, stamp)).await {
-                    Ok(true) => {}
-                    Ok(false) => {
-                        tracing::warn!(subsystem = "sc_cron", action = "fenced",
-                            schedule = %row.id, name = %row.spec.name,
-                            "the schedule changed before launch; skipped");
-                        drop(name_guard);
-                        continue;
-                    }
-                    Err(error) => {
-                        tracing::error!(subsystem = "sc_cron", action = "set_next_failed",
-                        schedule = %row.id, code = error.code(), %error,
-                        "next run not stored: {error}")
-                    }
-                }
-            }
-            let monotonic = self.core.clock.monotonic_now();
-            let deadline = monotonic
-                .checked_add(row.spec.timeout.get())
-                .unwrap_or(monotonic);
-            let clock = Arc::clone(&self.core.clock);
-            tracing::info!(subsystem = "sc_cron", action = "launched", schedule = %row.id,
-                name = %row.spec.name, "run started");
-            #[cfg(feature = "monty")]
-            if monty {
-                let coord = Arc::clone(&self.coord);
-                let core = Arc::clone(&self.core);
-                let schedule = row.clone();
-                let name_guard = name_guard;
-                let feed_guard = crate::coord::MontyFeedGuard::enter(&self.coord.feeds);
-                let handle = tokio::spawn(async move {
-                    let _name = name_guard;
-                    let (report, feed_guard) =
-                        run_monty_due(coord, clock, schedule.clone(), deadline, feed_guard).await;
-                    let recorded = record_due(core, &schedule, report, next).await;
-                    drop(feed_guard);
-                    recorded
-                });
-                runs.push((row, next, DueTask::monty(handle)));
-                continue;
-            }
-            drop(name_guard);
-            let target = resolve(&job, &row);
-            let schedule = row.clone();
-            let handle = tokio::spawn(async move {
-                let target = match target {
-                    Ok(target) => target,
-                    Err(outcome) => return Report::Ran(outcome),
-                };
-                let run = run_target(target, Arc::clone(&clock), &schedule, deadline);
-                tokio::select! {
-                    report = run => report,
-                    () = sleep_until_monotonic(clock.as_ref(), deadline) => Report::Ran(RunOutcome::TimedOut),
-                }
-            });
-            runs.push((row, next, DueTask::abortable(handle)));
-        }
-        let mut done = Vec::with_capacity(runs.len());
-        for (row, next, mut task) in runs {
-            match &mut task {
-                DueTask::Abortable(handle) => {
-                    let report = handle.as_mut().expect("run").await.unwrap_or_else(|error| {
-                        Report::Ran(RunOutcome::Failed(format!(
-                            "job panicked or was cancelled: {error}"
-                        )))
-                    });
-                    handle.take();
-                    done.push(self.finish_due(&row, report, next).await);
-                }
-                #[cfg(feature = "monty")]
-                DueTask::Monty(handle) => {
-                    let recorded =
-                        handle
-                            .as_mut()
-                            .expect("monty run")
-                            .await
-                            .unwrap_or_else(|error| DueRun {
-                                name: row.spec.name.clone(),
-                                outcome: RunOutcome::Failed(format!(
-                                    "job panicked or was cancelled: {error}"
-                                )),
-                            });
-                    handle.take();
-                    done.push(recorded);
-                }
-            }
-        }
-        Ok(done)
+        run_due::drive(self, job).await
     }
 
     /// Records one run of [`Scheduler::run_due`].
@@ -685,7 +560,7 @@ where
     /// hook ran. A stop-check disable only disables. A run with no further
     /// occurrence ends the schedule. A refused follow-up write after a
     /// successful record is a partial write: the outcome stays recorded.
-    async fn finish_due(
+    pub(super) async fn finish_due(
         &self,
         row: &Schedule,
         report: Report,
@@ -695,166 +570,8 @@ where
     }
 }
 
-/// One run [`Scheduler::run_due`] started.
-///
-/// Rust and Python abort when the future is dropped. A Monty feed is forgotten
-/// so the interpreter runs to its next checkpoint and the spawned task records
-/// the outcome.
-enum DueTask {
-    Abortable(Option<JoinHandle<Report>>),
-    #[cfg(feature = "monty")]
-    Monty(Option<JoinHandle<DueRun>>),
-}
-
-impl DueTask {
-    fn abortable(handle: JoinHandle<Report>) -> Self {
-        Self::Abortable(Some(handle))
-    }
-
-    #[cfg(feature = "monty")]
-    fn monty(handle: JoinHandle<DueRun>) -> Self {
-        Self::Monty(Some(handle))
-    }
-}
-
-impl Drop for DueTask {
-    fn drop(&mut self) {
-        match self {
-            Self::Abortable(handle) => {
-                if let Some(handle) = handle.take() {
-                    handle.abort();
-                }
-            }
-            #[cfg(feature = "monty")]
-            Self::Monty(handle) => {
-                // Drop detaches without abort; the feed task records the outcome.
-                handle.take();
-            }
-        }
-    }
-}
-
-#[cfg(feature = "monty")]
-async fn run_monty_due<C: Clock + 'static>(
-    coord: Arc<RunCoord>,
-    clock: Arc<C>,
-    schedule: Schedule,
-    deadline: std::time::Instant,
-    stop_guard: crate::coord::MontyFeedGuard,
-) -> (Report, crate::coord::MontyFeedGuard) {
-    use crate::monty_run::{FeedResult, MontyPhase};
-    let HookTarget::Monty { source } = schedule.spec.hook.clone() else {
-        return (
-            Report::Ran(RunOutcome::Failed(
-                "resolve: monty path used for another hook".into(),
-            )),
-            stop_guard,
-        );
-    };
-    let generation = schedule.generation;
-    let session = coord.take_repl(&schedule.spec.name);
-    let stop = feed_once(
-        session,
-        source.clone(),
-        MontyPhase::Stop,
-        generation,
-        clock.as_ref(),
-        &schedule,
-        deadline,
-    )
-    .await;
-    match stop.result {
-        FeedResult::Disable(reason) => {
-            drop(stop.session);
-            (Report::Disable(reason), stop_guard)
-        }
-        FeedResult::Delete(reason) => {
-            drop(stop.session);
-            (Report::Delete(reason), stop_guard)
-        }
-        FeedResult::Outcome(outcome) => {
-            if matches!(outcome, RunOutcome::Ok)
-                && let Some(session) = stop.session
-            {
-                coord.store_repl(schedule.spec.name.clone(), session);
-            }
-            (Report::Ran(outcome), stop_guard)
-        }
-        FeedResult::Continue => {
-            drop(stop_guard);
-            let tick_guard = crate::coord::MontyFeedGuard::enter(&coord.feeds);
-            let tick = feed_once(
-                stop.session,
-                source,
-                MontyPhase::Tick,
-                generation,
-                clock.as_ref(),
-                &schedule,
-                deadline,
-            )
-            .await;
-            let report = match tick.result {
-                FeedResult::Outcome(outcome) => {
-                    if matches!(outcome, RunOutcome::Ok)
-                        && let Some(session) = tick.session
-                    {
-                        coord.store_repl(schedule.spec.name.clone(), session);
-                    }
-                    Report::Ran(outcome)
-                }
-                FeedResult::Disable(reason) => Report::Disable(reason),
-                FeedResult::Delete(reason) => Report::Delete(reason),
-                FeedResult::Continue => {
-                    Report::Ran(RunOutcome::Failed("tick returned a stop action".into()))
-                }
-            };
-            (report, tick_guard)
-        }
-    }
-}
-
-#[cfg(feature = "monty")]
-async fn feed_once<C: Clock + ?Sized>(
-    session: Option<crate::monty_run::MontySession>,
-    source: String,
-    phase: crate::monty_run::MontyPhase,
-    generation: Generation,
-    clock: &C,
-    schedule: &Schedule,
-    deadline: std::time::Instant,
-) -> crate::monty_run::FeedDone {
-    let left = deadline.saturating_duration_since(clock.monotonic_now());
-    let stamp = Timestamp::from_datetime(wall_after(clock.now(), left));
-    let event = match phase {
-        crate::monty_run::MontyPhase::Stop => HookEvent::Stop,
-        crate::monty_run::MontyPhase::Tick => HookEvent::Tick,
-    };
-    let call = HookCall {
-        event,
-        schedule: &schedule.spec.name,
-        payload: &schedule.spec.payload,
-        timeout: schedule.spec.timeout,
-        deadline,
-    };
-    let hook = request(&call, stamp);
-    match tokio::task::spawn_blocking(move || {
-        crate::monty_run::execute_feed(session, &source, phase, generation, left, &hook)
-    })
-    .await
-    {
-        Ok(done) => done,
-        Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
-        Err(error) => crate::monty_run::FeedDone {
-            session: None,
-            result: crate::monty_run::FeedResult::Outcome(RunOutcome::Failed(format!(
-                "feed task failed: {error}"
-            ))),
-        },
-    }
-}
-
 /// Runs `operation` on the blocking pool, mapping a panic to a store error.
-async fn blocking<T: Send + 'static>(
+pub(super) async fn blocking<T: Send + 'static>(
     operation: impl FnOnce() -> Result<T, CronError> + Send + 'static,
 ) -> Result<T, CronError> {
     tokio::task::spawn_blocking(operation)
