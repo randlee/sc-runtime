@@ -326,7 +326,7 @@ where
     ///
     /// # Errors
     ///
-    /// [`CronError::InvalidSpec`] if no active schedule has this name, or the
+    /// [`CronError::NotFound`] if no active schedule has this name, or the
     /// store's errors.
     pub fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<(), CronError> {
         self.core.set_enabled(name, enabled)
