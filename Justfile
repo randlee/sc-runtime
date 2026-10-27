@@ -46,14 +46,3 @@ test-generation:
 
 new dest *args:
     {{python}} scripts/new_project.py {{dest}} {{args}}
-
-# Monty compose benchmark campaigns. See .claude/skills/benchmark-run/SKILL.md.
-# Default CI does not run these recipes.
-benchmark-monty:
-    {{python}} scripts/benchmark/monty_compose_campaign.py
-
-benchmark-monty-show:
-    {{python}} scripts/benchmark/monty_compose_campaign.py --show
-
-benchmark-monty-publish:
-    {{python}} scripts/benchmark/monty_compose_campaign.py --publish
