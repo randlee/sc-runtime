@@ -59,7 +59,7 @@ This sprint copies `crates/sc-cron` after beads-cache sprint b-8 merges (`sprint
 
 beads-cache sprint b-9 edits comments, provenance, and tests, and does not bump the version. It does not hold this port. Maturin and PyO3 bindings stay out of this port.
 
-`must_follow` is `b-1` because that sprint lands the `crates/*` membership glob and owns `Cargo.lock` in wave 1. This sprint does not edit `Cargo.toml` or the host boundary manifests. It updates `Cargo.lock` only to record `sc-cron`. No later sprint in this phase waits on this one.
+`must_follow` is `b-1` because that sprint lands the `crates/*` membership glob and owns `Cargo.lock` in wave 1. This sprint does not edit `Cargo.toml` or the host boundary manifests. It updates `Cargo.lock` only to record `sc-cron`. Sprint **b-9** (`must_follow` `b-3`) consumes this port's `HookTarget` (`Rust` and `Python { module }`) and the schedule table at `SCHEMA_VERSION` 3 (`hook_kind`, `hook_module`); see [sprint-b-9-sc-cron-monty-hooks.md](sprint-b-9-sc-cron-monty-hooks.md).
 
 ## Goal
 

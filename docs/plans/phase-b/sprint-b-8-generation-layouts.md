@@ -69,7 +69,7 @@ owned_paths:
   - template/crates/store-adaptor-sqlite-mysql/
   - tests/unit/
 must_follow: [b-5, b-6, b-7]
-parallel_safe: []
+parallel_safe: [b-9]
 recommended_agent: arch-ctm
 recommended_model: terra
 vertical_rationale: Each application chooses one sqlx SQL engine, Postgres or MySQL. Both engines are layouts in this sprint so the answers schema is written once.
