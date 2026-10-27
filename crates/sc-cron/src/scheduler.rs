@@ -549,8 +549,9 @@ where
     /// is for a caller
     /// that drives the table from an outside scheduler instead of a worker:
     /// never run it beside a worker on the same rows. Dropping the returned
-    /// future (a caller stopped by a signal) aborts every run it started, as
-    /// a stopped worker does, so no run is left detached.
+    /// future aborts Rust and Python runs it started; a Monty feed keeps
+    /// running on the blocking pool until it returns and the spawned task
+    /// records the outcome.
     ///
     /// # Errors
     ///
@@ -617,10 +618,11 @@ where
                 let core = Arc::clone(&self.core);
                 let schedule = row.clone();
                 let name_guard = name_guard;
+                let feed_guard = crate::coord::MontyFeedGuard::enter(&self.coord.feeds);
                 let handle = tokio::spawn(async move {
                     let _name = name_guard;
                     let (report, feed_guard) =
-                        run_monty_due(coord, clock, schedule.clone(), deadline).await;
+                        run_monty_due(coord, clock, schedule.clone(), deadline, feed_guard).await;
                     let recorded = record_due(core, &schedule, report, next).await;
                     drop(feed_guard);
                     recorded
@@ -725,11 +727,8 @@ impl Drop for DueTask {
             }
             #[cfg(feature = "monty")]
             Self::Monty(handle) => {
-                if let Some(handle) = handle.take() {
-                    // Detach without abort. `JoinHandle`'s drop would also
-                    // detach; forgetting makes the "do not abort" choice obvious.
-                    std::mem::forget(handle);
-                }
+                // Drop detaches without abort; the feed task records the outcome.
+                handle.take();
             }
         }
     }
@@ -741,6 +740,7 @@ async fn run_monty_due<C: Clock + 'static>(
     clock: Arc<C>,
     schedule: Schedule,
     deadline: std::time::Instant,
+    stop_guard: crate::coord::MontyFeedGuard,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::{FeedResult, MontyPhase};
     let HookTarget::Monty { source } = schedule.spec.hook.clone() else {
@@ -748,12 +748,11 @@ async fn run_monty_due<C: Clock + 'static>(
             Report::Ran(RunOutcome::Failed(
                 "resolve: monty path used for another hook".into(),
             )),
-            crate::coord::MontyFeedGuard::enter(&coord.feeds),
+            stop_guard,
         );
     };
     let generation = schedule.generation;
     let session = coord.take_repl(&schedule.spec.name);
-    let stop_guard = crate::coord::MontyFeedGuard::enter(&coord.feeds);
     let stop = feed_once(
         session,
         source.clone(),
@@ -782,8 +781,8 @@ async fn run_monty_due<C: Clock + 'static>(
             (Report::Ran(outcome), stop_guard)
         }
         FeedResult::Continue => {
-            let tick_guard = crate::coord::MontyFeedGuard::enter(&coord.feeds);
             drop(stop_guard);
+            let tick_guard = crate::coord::MontyFeedGuard::enter(&coord.feeds);
             let tick = feed_once(
                 stop.session,
                 source,

@@ -68,19 +68,23 @@ pub(crate) fn execute_feed(
     {
         session = None;
     }
+    let mut call_budget = budget;
     let mut session = match session {
         Some(session) => session,
-        None => match compile(source, generation, budget) {
-            Ok(session) => session,
-            Err(done) => return done,
-        },
+        None => {
+            let compile_started = std::time::Instant::now();
+            let compiled = match compile(source, generation, feed_budget(budget)) {
+                Ok(session) => session,
+                Err(done) => return done,
+            };
+            call_budget = budget.saturating_sub(compile_started.elapsed());
+            compiled
+        }
     };
-    let budget = if budget.is_zero() {
-        Duration::from_nanos(1)
-    } else {
-        budget
-    };
-    session.repl.tracker_mut().set_max_feed_duration(budget);
+    session
+        .repl
+        .tracker_mut()
+        .set_max_feed_duration(feed_budget(call_budget));
     let mut args = CallArgs::new();
     args.push_arg(json_to_monty(hook));
     let function = match phase {
@@ -119,16 +123,19 @@ pub(crate) fn execute_feed(
     }
 }
 
+fn feed_budget(budget: Duration) -> Duration {
+    if budget.is_zero() {
+        Duration::from_nanos(1)
+    } else {
+        budget
+    }
+}
+
 fn compile(
     source: &str,
     generation: Generation,
     budget: Duration,
 ) -> Result<MontySession, FeedDone> {
-    let budget = if budget.is_zero() {
-        Duration::from_nanos(1)
-    } else {
-        budget
-    };
     let limits = ResourceLimits::default().max_feed_duration(budget);
     let mut repl = MontyRepl::new(
         "sc-cron-hook",

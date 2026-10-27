@@ -39,7 +39,7 @@ where
             } else {
                 self.nearest_abortable_deadline()
             };
-            let handle_deadline = self
+            let shutdown_at = self
                 .handle_deadline
                 .filter(|_| monty_busy && !siblings_aborted);
             let clock = Arc::clone(&self.clock);
@@ -51,7 +51,11 @@ where
                 () = sleep_until_monotonic(clock.as_ref(), nearest.unwrap_or(Instant::now())), if nearest.is_some() => {
                     self.abort_due_abortable().await;
                 }
-                () = tokio::time::sleep_until(handle_deadline.unwrap_or_else(tokio::time::Instant::now)), if handle_deadline.is_some() => {
+                () = async {
+                    if let Some(deadline) = shutdown_at {
+                        wait_shutdown_deadline(deadline).await;
+                    }
+                }, if shutdown_at.is_some() => {
                     siblings_aborted = true;
                     self.abort_all_abortable().await;
                 }
@@ -383,6 +387,18 @@ pub(super) async fn finished(slots: &mut [Slot]) -> (usize, Finished, Option<Mon
         Poll::Pending
     })
     .await
+}
+
+/// Waits until a handle deadline from [`WorkerHandle::shutdown`]. Uses the
+/// tokio clock so manual test clocks do not stall real shutdown timeouts.
+async fn wait_shutdown_deadline(deadline: tokio::time::Instant) {
+    use std::time::Duration;
+    use tokio::time::MissedTickBehavior;
+    let mut tick = tokio::time::interval(Duration::from_millis(5));
+    tick.set_missed_tick_behavior(MissedTickBehavior::Skip);
+    while tokio::time::Instant::now() < deadline {
+        tick.tick().await;
+    }
 }
 
 pub(super) fn panic_message(error: JoinError) -> String {
