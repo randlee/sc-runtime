@@ -109,10 +109,10 @@ One `MontyRepl` (crate `monty`) per schedule name **while a feed is not running 
 
 **Shared coordination (no lock held across `.await`).** The worker and `WorkerHandle` share:
 
-- `monty_feeds_outstanding`: `Arc<std::sync::atomic::AtomicUsize>` (increment before spawning each Monty join; decrement in a `MontyFeedGuard` drop after the feed returns and outcome write or skip completes, including panic paths).
+- `monty_feeds_outstanding`: `Arc<std::sync::atomic::AtomicUsize>` (increment before spawning each Monty join; decrement in a `MontyFeedGuard` owned by the worker task around each Monty join, whose `Drop` runs when the join finishes, panics, or is dropped—treat a panicked join as the feed having returned for refcount purposes).
 - Per-name in-flight marks for `run_due`: `Arc<std::sync::Mutex<HashSet<ScheduleName>>>`. Publish and clear through a `NameInFlightGuard` whose `Drop` removes the name even on panic. Hold the mutex only for set insert/remove; never across an `.await`.
 
-**Worker (Monty vs port paths).** Rust and Python keep the port's cooperative cancel, `Worker::merge` slot drop (`InFlight`'s `Drop` aborts the join), `Worker::drain` that **joins every in-flight task concurrently** (not one-at-a-time) and applies deadline abort with `TimedOut` on cancellation when **`monty_feeds_outstanding == 0`**, `WorkerHandle::shutdown` worker-task abort at the handle deadline **only** when **`monty_feeds_outstanding == 0`**, and `Scheduler::run_due`'s parent deadline select with `DueTask` abort on drop.
+**Worker (Monty vs port paths).** b-3 keeps per-slot in-flight only and a sequential `Worker::drain`. b-9 adds the shared per-name set above and **replaces** drain with concurrent join-all-at-shutdown. Rust and Python keep the port's cooperative cancel, `Worker::merge` slot drop (`InFlight`'s `Drop` aborts the join), `Worker::drain` that **joins every in-flight task concurrently** (not one-at-a-time) and applies deadline abort with `TimedOut` on cancellation when **`monty_feeds_outstanding == 0`**, `WorkerHandle::shutdown` worker-task abort at the handle deadline **only** when **`monty_feeds_outstanding == 0`**, and `Scheduler::run_due`'s parent deadline select with `DueTask` abort on drop.
 
 For **Monty**:
 
@@ -189,7 +189,7 @@ Add a consequence: sprint `b-9` adds feature `monty` and `HookTarget::Monty`. be
 
 ## Deliverables
 
-1. `REQ-CRON-0003`: `HookTarget::Monty { source }` beside `Rust` and `Python { module }`, with the `cron_stop` / `cron_tick` entry contract, stop-then-tick gating, and the JSON sample above; Monty integration in the worker (`expire`, `wake`, `merge`, `InFlight`, `drain`), `WorkerHandle::shutdown`, and `Scheduler::run_due`. No beads types.
+1. `REQ-CRON-0003`: `#[non_exhaustive]` `HookTarget` with `HookTarget::monty(source)` beside `HookTarget::python` and `Rust`, plus `HookTarget::Monty { source }` persistence shape, with the `cron_stop` / `cron_tick` entry contract, stop-then-tick gating, and the JSON sample above; Monty integration in the worker (`expire`, `wake`, `merge`, `InFlight`, `drain`), `WorkerHandle::shutdown`, and `Scheduler::run_due`. No beads types.
 2. `REQ-CRON-0004`: persist Monty rows with `hook_kind = monty` and capped `hook_source`; bump `SCHEMA_VERSION` to 4; open every file at user_version 1–3 through the version-4 rebuild path; do not migrate the consumer's other tables.
 3. `REQ-CRON-0001`: feature `monty` linking crates.io `monty` and `monty-types` only. The default build does not link them. No new workspace crate. No dependency on another workspace crate.
 4. `REQ-CRON-0003` and ADR-RUN-0013 point 4: amended point 4 text in `docs/architecture.md` (trusted Monty, repl lifecycle, checkpoint timeout, no monty-pool/fs/runtime); the new ADR consequence; the one `REQ-CRON-0003` sentence in `docs/sc-cron/requirements.md` and `docs/sc-cron/architecture.md`; `HookTarget` enum and Monty lifecycle prose in `docs/sc-cron/architecture.md` matching Decisions.
@@ -210,7 +210,7 @@ Root: `boundary:sc-cron` and ADR-RUN-0013 as amended by this sprint.
 - `docs/architecture.md` point 4 names Rust, Python, and Monty under feature `monty` **and** replaces the two-field hook JSON sentence with the **`sc-cron.hook.v1`** object (required `protocol`, `event`, `schedule`, `payload`, `deadline`; no beads, bd-cache, or ATM field); point 6 lists `NotFound` (`NOT_FOUND`) and `HookFailed` (`HOOK_FAILED`) with the full seven-variant set.
 - `docs/sc-cron/architecture.md` shows `HookTarget::Monty { source }`, documents the repl and checkpoint-timeout lifecycle, and lists `NotFound` and `HookFailed` on `CronError`.
 - `docs/sc-cron/requirements.md` includes the third-target sentence on `REQ-CRON-0003`.
-- `HookTarget::monty` rejects over-length source; `CronError` exposes all seven stable codes in tests; a panic while a `MontyFeedGuard` or `NameInFlightGuard` is live still decrements the refcount or clears the per-name mark (drop-guard tests).
+- `HookTarget` is `#[non_exhaustive]`; `HookTarget::monty` rejects over-length source; `CronError` exposes all seven stable codes in tests; a panic while a `MontyFeedGuard` or `NameInFlightGuard` is live still decrements the refcount or clears the per-name mark (drop-guard tests); a Monty feed task that panics still lets `WorkerHandle::shutdown` complete once the join ends (refcount zero).
 - `DueTask::drop` on a Monty `run_due` future forgets without abort; on Rust/Python it aborts as today.
 
 ## Required validation
