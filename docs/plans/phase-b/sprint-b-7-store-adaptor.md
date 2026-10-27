@@ -1,7 +1,7 @@
 ---
 id: b-7
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: store-adaptor
 track: stores
@@ -19,6 +19,10 @@ requirements:
   - REQ-RUN-0323
   - REQ-RUN-0324
   - REQ-RUN-0325
+  - NFR-RUN-0002
+  - NFR-RUN-0005
+  - NFR-RUN-0008
+  - NFR-RUN-0009
 adrs:
   - ADR-RUN-0303
   - ADR-RUN-0305
@@ -34,7 +38,7 @@ must_follow: [b-4]
 parallel_safe: [b-5, b-6]
 recommended_agent: arch-ctm
 recommended_model: terra
-vertical_rationale: The copy pattern and the host-aggregate pattern are one adaptor crate. Splitting them would let each pattern invent its own sync shape.
+vertical_rationale: The copy pattern and the host-aggregate pattern are one adaptor crate. Splitting them would let each pattern invent its own sync shape. The adaptor is template consumer store wiring under ADR-RUN-0002 point 6, not a crate under crates/.
 ---
 
 # Sprint b-7 — store adaptor
@@ -49,6 +53,8 @@ The copy adaptor is a local SQLite database with the remote schema, for faster o
 
 The template adaptor moves rows between the local store and the remote store. It starts no timer. The application schedules it, using `sc-cron` when it wants that scheduler. The sc-runtime crates do not move rows between stores. No file under `crates/` moves rows between stores. The template adaptor is not one of those crates.
 
+ADR-RUN-0002 point 6: this adaptor is consumer-owned store wiring, so it stays in the template. It cannot live in a crate under `crates/`. ADR-RUN-0305 point 9 and ADR-RUN-0301 point 6 forbid the sc-runtime crates and the framework crates from moving rows, and the adaptor must name the layout's concrete store crates, which `b-8` renders into the project. This sprint does not move that code into `crates/`.
+
 ## Adaptor sample
 
 `b-5`, `b-6`, and `b-8` use this sample and do not restate it. It is generic over `EngineStore`. The host-aggregate remote side is the layout's one sqlx engine.
@@ -61,7 +67,7 @@ pub struct TableFlags {
 }
 
 pub trait Rollup {
-    fn rollup(&self, host_rows: &[RowRecord]) -> Vec<RowRecord>;
+    fn rollup(&self, host_rows: &[RowRecord], one_sided_columns: &[String]) -> Vec<RowRecord>;
 }
 
 pub async fn copy_rows<S, D>(source: &S, dest: &D, table: &str) -> Result<(), StoreError>
@@ -74,7 +80,9 @@ where
 }
 ```
 
-`copy_rows` is the copy function both engines use. `Rollup` is the function the consumer implements. `TableFlags` names a sqlite-only table, a remote-only table, and a column that exists on only one side.
+`copy_rows` is the copy function both engines use. `Rollup` is the function the consumer implements. `copy_shared_rows` and `aggregate_host` both call it with `column_on_one_side`, so one consumer function decides whether a one-sided column is dropped. `Rollup` is total. Aggregation that can fail is a third adaptor the consumer writes. `TableFlags` names a sqlite-only table, a remote-only table, and a column that exists on only one side. An unmatched `remote_engine` key contributes empty one-sided lists by design. `b-8` renders that key as a generated constant.
+
+Each call moves one whole table, bounded by 10_000 rows and a 1 MiB payload. A repeated call replaces that table on the destination. This sprint does not clear or upsert. `b-8` renders `write_rows` to match that replace. Until then a destination that inserts can return `Conflict` on the second scheduled run.
 
 ## Deliverables
 
@@ -84,10 +92,11 @@ where
 4. REQ-RUN-0323 and REQ-RUN-0324: the adaptor moves rows through `read_rows` and `write_rows` and starts no timer. A schedule is application code. A cron row points at a Rust method or a Python hook, which is the `b-3` contract.
 5. REQ-RUN-0325: the sc-runtime crates do not move rows between stores. No file under `crates/` moves rows between stores. `copy_rows` lives only in `template/crates/store-adaptor`.
 6. REQ-RUN-0322: a third adaptor is a file the consumer writes. This sprint does not generate one.
+7. NFR-RUN-0002: `copy_rows`, `copy_shared_rows`, and `aggregate_host` are async and do not call the sleep or `block_on` names. NFR-RUN-0005: tests use in-memory `EngineStore` doubles, write no fixed path, and bind no port. NFR-RUN-0008: `template/crates/store-adaptor/src/lib.rs` stays within the 1000 source-line limit. NFR-RUN-0009: fallible public functions return `StoreError`. Production code does not unwrap on caller input.
 
 ## This sprint does not close
 
-`just new`, the six layouts, and the rendered adaptor's dependency on concrete `store-*` crates are `b-8`. This sprint does not wait for `b-5` or `b-6`.
+`just new`, the six layouts, and the rendered adaptor's dependency on concrete `store-*` crates are `b-8`. This sprint does not wait for `b-5` or `b-6`. `b-8` renders `EngineStore::write_rows` so a repeated copy or host aggregate replaces the destination table. `b-8` also renders the remote engine key passed to `TableFlags::from_membership` as a generated constant.
 
 ## Acceptance criteria
 

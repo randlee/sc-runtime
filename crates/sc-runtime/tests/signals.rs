@@ -88,7 +88,7 @@ fn child_daemon_main() {
         .enable_all()
         .build()
         .expect("child runtime");
-    let ok = runtime.block_on(serve_child());
+    let ok = runtime.block_on(serve_child()); // allow: child process entry
     std::process::exit(if ok { 0 } else { 1 });
 }
 

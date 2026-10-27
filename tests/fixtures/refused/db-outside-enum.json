@@ -1,6 +1,6 @@
 {
   "project_name": "widget-app",
-  "db": "mysql",
+  "db": "sqlserver",
   "mcp": true,
   "licence": "MIT"
 }

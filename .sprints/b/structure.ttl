@@ -2,7 +2,8 @@
 
 # triage:order is the sprint sequence number.
 # b-1 and b-2 share wave 1. b-3 follows b-1. b-4 follows b-2.
-# b-5 and b-6 follow b-4 and share wave 3. b-7 follows both. b-8 follows b-7.
+# b-5 and b-6 follow b-4 and share wave 2. b-7 follows both. b-8 follows b-7.
+# b-9 follows b-3 and shares wave 3 with b-8.
 
 triage:PhaseB a triage:Phase .
 
@@ -60,3 +61,10 @@ triage:b-8 a triage:Sprint ;
   triage:branch "sprint/b-8-generation-layouts" ;
   triage:criteria "docs/plans/phase-b/sprint-b-8-generation-layouts.md" ;
   triage:follows triage:b-7 .
+
+triage:b-9 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 9 ;
+  triage:branch "sprint/b-9-sc-cron-monty-hooks" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-9-sc-cron-monty-hooks.md" ;
+  triage:follows triage:b-3 .

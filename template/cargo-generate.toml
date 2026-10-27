@@ -1,12 +1,18 @@
 [template]
 cargo_generate_version = ">=0.23.0"
-exclude = ["AGENTS.md.j2", "CLAUDE.md.j2"]
+exclude = [
+    "AGENTS.md.j2",
+    "CLAUDE.md.j2",
+]
+
+[hooks]
+post = ["hooks/drop-template-exclude.rhai"]
 
 [placeholders.db]
 type = "string"
 prompt = "Database?"
 default = "sqlite"
-choices = ["sqlite"]
+choices = ["none", "sqlite", "postgres", "mysql", "sqlite-postgres", "sqlite-mysql"]
 
 [placeholders.mcp]
 type = "bool"
@@ -22,4 +28,134 @@ default = "MIT"
 ignore = [
     "crates/daemon/src/mcp.rs",
     "crates/cli/tests/widget_mcp.rs",
+]
+
+[conditional.'db == "none"']
+ignore = [
+    "crates/schema",
+    "crates/store-sqlite",
+    "crates/store-postgres",
+    "crates/store-mysql",
+    "crates/store-adaptor",
+    "crates/store-adaptor-sqlite-postgres",
+    "crates/store-adaptor-sqlite-mysql",
+    "crates/service/src/layouts/sqlite.rs",
+    "crates/service/src/layouts/postgres.rs",
+    "crates/service/src/layouts/mysql.rs",
+    "crates/service/src/layouts/sqlite-postgres.rs",
+    "crates/service/src/layouts/sqlite-mysql.rs",
+    "crates/daemon/src/open/sqlite.rs",
+    "crates/daemon/src/open/postgres.rs",
+    "crates/daemon/src/open/mysql.rs",
+    "crates/daemon/src/open/sqlite-postgres.rs",
+    "crates/daemon/src/open/sqlite-mysql.rs",
+    "crates/cli/tests/open/sqlite.rs",
+]
+
+[conditional.'db == "sqlite"']
+ignore = [
+    "crates/store-postgres",
+    "crates/store-mysql",
+    "crates/store-adaptor",
+    "crates/store-adaptor-sqlite-postgres",
+    "crates/store-adaptor-sqlite-mysql",
+    "crates/service/src/layouts/none.rs",
+    "crates/service/src/layouts/postgres.rs",
+    "crates/service/src/layouts/mysql.rs",
+    "crates/service/src/layouts/sqlite-postgres.rs",
+    "crates/service/src/layouts/sqlite-mysql.rs",
+    "crates/daemon/src/open/none.rs",
+    "crates/daemon/src/open/postgres.rs",
+    "crates/daemon/src/open/mysql.rs",
+    "crates/daemon/src/open/sqlite-postgres.rs",
+    "crates/daemon/src/open/sqlite-mysql.rs",
+    "crates/cli/tests/open/none.rs",
+]
+
+[conditional.'db == "postgres"']
+ignore = [
+    "crates/store-sqlite",
+    "crates/store-mysql",
+    "crates/store-adaptor",
+    "crates/store-adaptor-sqlite-postgres",
+    "crates/store-adaptor-sqlite-mysql",
+    "crates/cli/tests/widget.rs",
+    "crates/cli/tests/widget_mcp.rs",
+    "crates/cli/tests/open",
+    "crates/service/src/layouts/none.rs",
+    "crates/service/src/layouts/sqlite.rs",
+    "crates/service/src/layouts/mysql.rs",
+    "crates/service/src/layouts/sqlite-postgres.rs",
+    "crates/service/src/layouts/sqlite-mysql.rs",
+    "crates/daemon/src/open/none.rs",
+    "crates/daemon/src/open/sqlite.rs",
+    "crates/daemon/src/open/mysql.rs",
+    "crates/daemon/src/open/sqlite-postgres.rs",
+    "crates/daemon/src/open/sqlite-mysql.rs",
+]
+
+[conditional.'db == "mysql"']
+ignore = [
+    "crates/store-sqlite",
+    "crates/store-postgres",
+    "crates/store-adaptor",
+    "crates/store-adaptor-sqlite-postgres",
+    "crates/store-adaptor-sqlite-mysql",
+    "crates/cli/tests/widget.rs",
+    "crates/cli/tests/widget_mcp.rs",
+    "crates/cli/tests/open",
+    "crates/service/src/layouts/none.rs",
+    "crates/service/src/layouts/sqlite.rs",
+    "crates/service/src/layouts/postgres.rs",
+    "crates/service/src/layouts/sqlite-postgres.rs",
+    "crates/service/src/layouts/sqlite-mysql.rs",
+    "crates/daemon/src/open/none.rs",
+    "crates/daemon/src/open/sqlite.rs",
+    "crates/daemon/src/open/postgres.rs",
+    "crates/daemon/src/open/sqlite-postgres.rs",
+    "crates/daemon/src/open/sqlite-mysql.rs",
+]
+
+[conditional.'db == "sqlite-postgres"']
+ignore = [
+    "crates/store-mysql",
+    "crates/store-adaptor-sqlite-postgres",
+    "crates/store-adaptor-sqlite-mysql",
+    "crates/store-adaptor/Cargo.sqlite-mysql.toml",
+    "crates/store-adaptor/src/engines/sqlite-mysql.rs",
+    "crates/cli/tests/widget.rs",
+    "crates/cli/tests/widget_mcp.rs",
+    "crates/cli/tests/open",
+    "crates/service/src/layouts/none.rs",
+    "crates/service/src/layouts/sqlite.rs",
+    "crates/service/src/layouts/postgres.rs",
+    "crates/service/src/layouts/mysql.rs",
+    "crates/service/src/layouts/sqlite-mysql.rs",
+    "crates/daemon/src/open/none.rs",
+    "crates/daemon/src/open/sqlite.rs",
+    "crates/daemon/src/open/postgres.rs",
+    "crates/daemon/src/open/mysql.rs",
+    "crates/daemon/src/open/sqlite-mysql.rs",
+]
+
+[conditional.'db == "sqlite-mysql"']
+ignore = [
+    "crates/store-postgres",
+    "crates/store-adaptor-sqlite-postgres",
+    "crates/store-adaptor-sqlite-mysql",
+    "crates/store-adaptor/Cargo.sqlite-postgres.toml",
+    "crates/store-adaptor/src/engines/sqlite-postgres.rs",
+    "crates/cli/tests/widget.rs",
+    "crates/cli/tests/widget_mcp.rs",
+    "crates/cli/tests/open",
+    "crates/service/src/layouts/none.rs",
+    "crates/service/src/layouts/sqlite.rs",
+    "crates/service/src/layouts/postgres.rs",
+    "crates/service/src/layouts/mysql.rs",
+    "crates/service/src/layouts/sqlite-postgres.rs",
+    "crates/daemon/src/open/none.rs",
+    "crates/daemon/src/open/sqlite.rs",
+    "crates/daemon/src/open/postgres.rs",
+    "crates/daemon/src/open/mysql.rs",
+    "crates/daemon/src/open/sqlite-postgres.rs",
 ]

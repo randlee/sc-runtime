@@ -133,6 +133,22 @@ jobs:
           just build-cli
           just build-daemon
 
+      - name: Workspace check
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        working-directory: ${{ runner.temp }}/app
+        run: SQLX_OFFLINE=true cargo check --workspace
+
+      # REQ-RUN-0331 success criterion 2. Store layouts default the flag on, so
+      # this sqlite-mcp job is the one that compiles CLI, MCP, and HTTP with it off.
+      - name: Store layout general-db disable
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' && matrix.fixture == 'sqlite-mcp.json' }}
+        working-directory: ${{ runner.temp }}/app
+        run: |
+          set -euo pipefail
+          SQLX_OFFLINE=true cargo test -p widget-app-cli --no-default-features --lib general_db_off_omits_delete_commands
+          SQLX_OFFLINE=true cargo test -p widget-app-daemon --no-default-features --lib openapi_paths_omit_general_delete
+          SQLX_OFFLINE=true cargo test -p widget-app-cli --no-default-features --test widget_mcp
+
   plain-cargo-generate:
     name: plain cargo generate
     needs: ci-scope
@@ -176,7 +192,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/plain"
           printf '%s\n' '[values]' 'db = "sqlite"' 'mcp = true' 'licence = "MIT"' > "$RUNNER_TEMP/values.toml"
-          cargo generate --path template --template-values-file "$RUNNER_TEMP/values.toml" --name widget-app --destination "$RUNNER_TEMP/plain" --init --silent --force --no-workspace
+          cargo generate --path template --template-values-file "$RUNNER_TEMP/values.toml" --name widget-app --destination "$RUNNER_TEMP/plain" --init --silent --allow-commands --force --no-workspace
 
       - name: Apply the checkout patch
         if: ${{ needs.ci-scope.outputs.runtime == 'true' && github.ref_type != 'tag' }}

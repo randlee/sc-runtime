@@ -316,7 +316,7 @@ fn child_honours_sc_endpoint() {
             .enable_all()
             .build()
             .expect("child runtime");
-        let ok = runtime.block_on(async {
+        let child = async {
             let root = std::path::PathBuf::from(std::env::var("SC_RUNTIME_SC8_DIR").expect("dir"));
             let endpoint = std::env::var("SC_ENDPOINT").expect("endpoint");
             let sync_sock =
@@ -332,7 +332,8 @@ fn child_honours_sc_endpoint() {
             });
             common::announce_serving(&endpoint, &sync_sock).await;
             matches!(serve.await, Ok(Ok(())))
-        });
+        };
+        let ok = runtime.block_on(child); // allow: child process entry
         std::process::exit(if ok { 0 } else { 1 });
     }
 }

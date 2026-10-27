@@ -97,14 +97,16 @@ exactly one listener. `TransportConfig` is `#[non_exhaustive]` and has no
 ## Crate graph
 
 This section mirrors [REQ-RUN-0005](requirements.md), which owns the
-workspace-internal edges and the forbidden edges of the four library crates.
+workspace-internal edges and the forbidden edges.
 
 | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
 |---|---|---|
-| `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
-| `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-| `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+| `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+| `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
+| `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
+| `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
@@ -427,15 +429,17 @@ as its own selection.
 
 ### Decision
 
-1. Workspace-internal edges and forbidden edges of the four library crates.
+1. Workspace-internal edges and forbidden edges.
    This table mirrors [REQ-RUN-0005](requirements.md), which owns it:
 
    | Crate | Workspace crates it depends on | Forbidden edges (`forbidden_edges`) |
    |---|---|---|
-   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
-   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
-   | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+   | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
+   | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
+   | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
+   | `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is an allowed dependency of `sc-command` only.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
@@ -1597,10 +1601,20 @@ variable, so two such crates can build in one workspace.
 
 2. Each store crate MUST expose `EngineStore`: `open`, `read_rows`, and
    `write_rows`, as the sprint `b-4` sample states them. `OpenConfig` is
-   `{ url: String }`. `StoreError` carries `StoreCode` and `message` and
-   implements `Display` and `std::error::Error`. `RowRecord.payload` is UTF-8
-   JSON whose keys are column names. `EngineStore` is static dispatch.
-   Amended 2026-10-25.
+   `{ url: String }`, constructed with `OpenConfig::new` from crates other
+   than the schema crate. SQLite reads a filesystem path from `url`. Postgres
+   and MySQL read a database URL. Engine options stay in that URL's query
+   until a second field is justified. `StoreError` carries `StoreCode` and
+   `message` and implements `Display` and `std::error::Error`. `StoreCode` is
+   `non_exhaustive`. Its known variants are `Connection`, `Query`,
+   `Migration`, `NotFound`, `Conflict`, and `Unavailable`. `Unavailable` is
+   the only retryable variant. `StoreCode::remediation` is the recovery text.
+   The engine copies the driver error into `message`. `Error::source` stays
+   empty so the schema crate does not name a driver type. `RowRecord.payload`
+   is UTF-8 JSON whose keys are column names, using the encoding table in the
+   sprint `b-4` sample. `read_rows` and `write_rows` reject more than 10_000
+   rows or a payload over 1 MiB. `EngineStore` is static dispatch.
+   Amended 2026-10-26.
 3. Only `store-*` crates depend on sqlx. A two-store layout's adaptor depends
    on the `store-*` crates whose rows it moves, and `service` depends on the
    adaptor. A one-store layout has no adaptor, and `service` depends on that
@@ -1611,10 +1625,12 @@ variable, so two such crates can build in one workspace.
    ([REQ-RUN-0327](requirements.md), [REQ-RUN-0328](requirements.md)).
 5. Store crates are template code owned by the project. `sc-runtime` MUST only
    call the project's stores closure and MUST NOT inspect its result.
-6. The sc-runtime crates and the template do not move rows between stores.
-   A consumer adaptor does, including a local cache
-   ([ADR-RUN-0305](architecture.md)). This repository does not contain a
+6. The template adaptor (`template/crates/store-adaptor`), as consumer source,
+   is the one place rows move between stores, including a local cache
+   ([ADR-RUN-0305](architecture.md)). The sc-runtime crates and the framework
+   crates do not move rows between stores. This repository does not contain a
    replication mechanism, an outbox, or a routing policy.
+   Amended 2026-10-25 by [ADR-RUN-0305](architecture.md).
 7. The layouts a new application can use are [REQ-RUN-0326](requirements.md).
    v0.1 generated the SQLite store only. Sprint `b-8` accepts the six layouts
    in that requirement. SQL Server is out of scope because sqlx has no driver
@@ -1658,49 +1674,6 @@ Amended 2026-10-25.
 - [REQ-RT-0003](sc-runtime/requirements.md): `sc-runtime` never inspects `Stores`.
 - [ADR-RUN-0303](architecture.md): the full crate graph of a generated project.
 - [ADR-RUN-0305](architecture.md): the consumer adaptor that moves rows between the two stores.
-
----
-
-## ADR-RUN-0305: SQLite and Postgres meet in a generated consumer adaptor
-
-**Status:** Active  
-**Decision Date:** 2026-10-25  
-**Source:** Owner, 2026-10-25. The storage plan is a generated adaptor in the consumer repository.  
-**Amends:** [ADR-RUN-0301](architecture.md) points 4 and 6  
-
-### Context
-
-SC projects pair a local SQLite database with a remote Postgres or SQL database. The local database is a cache. A cache moves rows between the two stores. The first phase-b writeup put that pairing behind one `StorageBackend` and one constructor that accepted both `sqlite://` and `postgres://`. A query written for both engines is forbidden by [ADR-RUN-0301](architecture.md) point 4. That writeup was deleted. The pairing itself is the plan.
-
-### Decision
-
-1. SQLite and Postgres meet in an adaptor crate generated into the consumer repository.
-2. The copy adaptor is a local SQLite database with the remote schema, for faster or offline access.
-3. The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts. The consumer repository defines the rollup.
-4. `just new` (`scripts/new_project.py`) generates the adaptor and its models. The library crate `sc-runtime` does not.
-5. Generation flags name tables and columns that exist on only one of the two stores. Skipping a table is allowed in either direction.
-6. Every consumer repository gets the same generated implementation of a common pattern. Each engine's SQL is in that engine's store crate.
-7. An adaptor that is neither the copy pattern nor the host-aggregate pattern is written by the consumer from the store building blocks.
-8. The consuming application schedules synchronization. The adaptor starts no timer.
-9. The consumer adaptor moves rows between the stores. The sc-runtime crates do not.
-10. Two stores in one application use the same schema or a similar schema.
-11. Two stores in one application use one shared trait or a different trait per store.
-12. A generated package name is the project name, a hyphen, and its role.
-13. Row type structs are in `<project>-schema`. `<project>-types` is for non-database types. The adaptor depends on `<project>-schema`.
-
-### Consequences
-
-[REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md) are this decision. Phase b plans them with the writer, the lint profile, and sc-cron: eight sprints, `b-1` through `b-8`. The adaptor is rendered for a layout that has SQLite and a SQL engine. The rusqlite writer sprint does not replace the template sqlx store.
-
-### Alternatives Considered
-
-- One SQL string executed on both SQLite and Postgres. Rejected. Each engine has its own SQL. A shared trait, or a different trait per engine, is allowed. The schemas are the same or similar.
-- Leaving the pairing for each consumer to invent. Rejected. A common pattern has one generated implementation.
-
-### Related Documents
-
-- [ADR-RUN-0301](architecture.md) points 4 and 6.
-- [REQ-RUN-0313](requirements.md) through [REQ-RUN-0330](requirements.md).
 
 ---
 
@@ -2069,10 +2042,12 @@ mechanics it uses are recorded in Active
 6. The driver MUST be the Python script `scripts/new_project.py`, exposed as
    `just new <dest>`. Its steps, in order: run the wizard unless `--var-file`
    is given; validate the answers against the schema; write `values.toml`;
-   run `cargo generate`; run `sc-compose`; run `just setup`, `just lint`,
+   run `cargo generate` with `--allow-commands` so the post hook in
+   [ADR-RUN-0402](architecture.md) can prefix package names, then `cargo fmt --all`
+   in the generated project; run `sc-compose`; run `just setup`, `just lint`,
    `just test`, `just build-cli`, and `just build-daemon` in the generated
    project. Sprint a-6 implements the `--var-file` path. The wizard UI is a
-   later sprint.
+   later sprint. Amended 2026-10-26.
 7. The driver MUST support three entry modes that all produce the same answers
    JSON: the interactive wizard; `--prefill <json>` (agent-written guesses
    merged into the wizard for human review); `--var-file <answers.json>`
@@ -2129,8 +2104,9 @@ diagnostics and ends with the driver's inventory line.
 
 Each job uses an existing tool (`cargo-generate`, `sc-compose`, Wyvern) and
 this repository writes no render engine. Plain `cargo generate` on `template/`
-still works without Wyvern or the driver, using the placeholders' own prompts
-and defaults. Python is a prerequisite for the driver; a Rust binary can
+still works without Wyvern or the driver when it is passed `--allow-commands`.
+The post hook needs `python3` on `PATH`. Placeholders still supply prompts and
+defaults. Amended 2026-10-26. Python is a prerequisite for the driver; a Rust binary can
 replace it later. The schema is also consumed by the sc-lint project, so it is
 a published contract.
 
@@ -2178,8 +2154,9 @@ failing before `cargo generate` runs); the fixture matrix in
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
+**Amended:** 2026-10-26 by sprint b-8. The post hook, `hooks/prefix_packages.py`, and `--allow-commands` are part of the generate command.  
 **Source:** sc-runtime design, 2026-09-19: the design describes these `cargo-generate` behaviours and marks them as unverified, to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0401 so that it holds only accepted decisions  
-**Acceptance:** made Active, or amended, by sprint a-1
+**Acceptance:** made Active, or amended, by sprint a-1. Amended again 2026-10-26.
 
 ### Context
 
@@ -2201,12 +2178,27 @@ cargo-generate 0.25.1. That is the pinned version.
    `cargo-generate.toml`, which copies them byte-for-byte without Liquid
    rendering.
 4. The driver writes the validated answers as a `[values]` TOML file and runs
-   `cargo generate --path template --template-values-file values.toml --name <project> --silent`.
+   `cargo generate --path template --template-values-file values.toml --name <project> --silent --allow-commands`.
    That command runs with no prompt, including when a value is an `array`.
+   `--allow-commands` is required. Without it, cargo-generate refuses the
+   post hook in point 6. Plain `cargo generate` passes `--allow-commands` too.
+   Amended 2026-10-26.
 5. `cargo-generate` is pinned to the version recorded by sprint a-1, in the
    driver's tool check and in CI.
+6. `template/cargo-generate.toml` `[hooks] post` runs
+   `hooks/drop-template-exclude.rhai` after Liquid. The hook replaces the
+   checkout `Cargo.toml` with `workspace.template.toml`, runs
+   `python3 hooks/prefix_packages.py <project> . <db>`, and deletes the hook
+   files. The script prefixes every generated package name with the project
+   name (`<project>-<role>`) and, for a two-store layout, installs that
+   layout's adaptor manifest and `engine.rs` inside `crates/store-adaptor`.
+   Package naming stays [ADR-RUN-0305](architecture.md) point 12. This point
+   records the hook. The driver does not rewrite lines inside a `Cargo.toml`.
+   The same `cargo generate` step then runs `cargo fmt --all` in the generated
+   project so a removed Liquid line does not fail rustfmt. Amended 2026-10-26.
 
-All five points are verified by sprint a-1. The evidence rows are defined in
+Points 1 to 4 were verified by sprint a-1. Point 6 is the b-8 amendment. The
+evidence rows for points 1 to 4 are defined in
 [REQ-RUN-0102](requirements.md). The right-hand column below is a non-normative
 summary of those rows:
 
@@ -2225,6 +2217,12 @@ The right-hand column summarises the rows; the rows in
 Sprint a-1 proved V3a, V3b, V4a, and V4b on cargo-generate 0.25.1
 (`cargo generate --version` prints `cargo generate-generate 0.25.1`). That is
 the pin for the driver tool check and for CI.
+
+Plain `cargo generate` on `template/` still builds a workspace without Wyvern
+and without the driver. It must pass `--allow-commands`, and `python3` must
+be on `PATH`, because the post hook prefixes package names. A two-store value
+of `db` also makes that hook install one `crates/store-adaptor` directory.
+Amended 2026-10-26.
 
 An array `default` is accepted only when `choices` is also set. Working
 syntax, copied from `examples/spike/generate-scratch/template/cargo-generate.toml`:
@@ -2259,10 +2257,12 @@ Two `cargo generate --path <template> --template-values-file <file> --name spike
 
 ### Alternatives Considered
 
-- A `cargo-generate` hook script (its Rhai scripting) that deletes unwanted
-  files after rendering. Held as the fallback if conditional `ignore` does
-  not work; not the first choice because it is script code this repository
-  would maintain where a declarative list exists.
+- A `cargo-generate` hook script was held as the fallback if conditional
+  `ignore` did not work. Sprint b-8 uses the hook for a different job:
+  prefixing package names, and installing the two-store adaptor manifest,
+  which conditional `ignore` cannot do without rewriting lines inside a
+  manifest. Conditional `ignore` remains the way whole files are included or
+  excluded. Amended 2026-10-26.
 - Passing each option with `--define` on the command line. Rejected as the
   first choice because a values file written from the validated answers
   carries `array` values and keeps the command line fixed.
@@ -2310,7 +2310,7 @@ option excludes is absent from the rendered project) and of
 1. Production code under `crates/` and `template/` MUST NOT call `std::thread::sleep`, `std::thread::sleep_until`, `tokio::time::sleep`, `tokio::time::sleep_until`, `Runtime::block_on`, `Handle::block_on`, or `futures::executor::block_on`.
 2. Production code MUST NOT hold a `std::sync::Mutex` guard across `.await`.
 3. `yield_now` is legal. It is how the rusqlite writer fills its batch budget.
-4. Until [sc-lint#640](https://github.com/randlee/sc-lint/issues/640) is in the pinned `sc-lint` and this repo's `minimum_version` requires that release, `just lint` greps `crates/` and `template/` for the calls in point 1. A match outside `#[cfg(test)]` and outside a same-line allow comment fails the build. The grep is removed when those rules replace it.
+4. Until [sc-lint#640](https://github.com/randlee/sc-lint/issues/640) is in the pinned `sc-lint` and this repo's `minimum_version` requires that release, `just lint` greps `crates/` and `template/` for the calls in point 1. A match fails unless a `cfg` predicate that requires `test` guards it, the file is reached only by a `mod name;` under such a cfg, or the match line has a same-line allow comment. `#[cfg(test)]` and `#[cfg(all(test, feature = "test-util"))]` require `test`. A `mod name;` under either cfg exempts the included module file and the modules that file includes. A cfg that can hold with `test` unset does not exempt the match. The grep is removed when those rules replace it.
 5. The grep does not satisfy point 2. Review of a `std::sync::Mutex` guard held across `.await` is mandatory on every change that adds a lock or an `.await`. `arch-qa` performs that review.
 6. A local allow is legal only where a corner case must break the practice, and the reason is written on the allow. That case is usually test code. The production path, including the hot path, follows points 1 and 2. A profile-wide or file-wide exclusion is not that allow.
 
@@ -2378,14 +2378,14 @@ The expression parser on that branch refuses a five-field string. A normal cront
 1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The template does not depend on it unless a later generation flag says so. `sc-runtime` does not start it.
 2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
 3. Configuration is one SQLite table in its own database file. That path is not the application `store-sqlite` file. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`. Amended 2026-10-25.
-4. The hook target is either a Rust function the consumer supplies or a Python module. The Python invocation is `python3 <module> <hook-name>` with one JSON object on stdin, the same process shape as atm-core. The hook names are `cron.tick` and `cron.stop`. The JSON carries the schedule name and the row's payload. It does not carry ATM team or phase fields.
+4. The hook target is a Rust function, a Python module, or trusted in-process Monty source under feature `monty`. Monty source is embedding-chosen text, not a cache file, and does not use `monty-pool`, `monty-fs`, or `monty-runtime`. The hook names are `cron.tick` and `cron.stop`. Python and Monty receive the `sc-cron.hook.v1` JSON object with required `protocol`, `event`, `schedule`, `payload`, and `deadline` members; it has no beads, bd-cache, or ATM field. One Monty REPL is retained per schedule name and is not dropped or replaced until the feed inside it returns. The worker gates stop then tick: a `disable` or `delete` answer skips `cron_tick`, and a `continue` answer plus a queued replace, external delete, external disable, or shutdown skips `cron_tick` and writes no outcome. `monty_feeds_outstanding` counts feeds whose outcome write has not finished. Shutdown drains every in-flight join at once and does not abort a Monty join. When that count is above zero at the handle deadline, in-flight Rust or Python joins are aborted and recorded `TimedOut`; the worker task is aborted only when the count is zero. `run_due` publishes a per-name in-flight mark before it spawns a Monty feed. Monty timeout is `max_feed_duration`, observed only at interpreter checkpoints, with `max_memory` unset. A stack overflow or allocator abort from this trusted in-process code is accepted, the same class of risk as a Rust `Job`. The crate ships no HTTP, MCP, or CLI API.
 5. A cache-sync adaptor lives in the consumer repo. It exposes the sync methods. A schedule row points at one of those methods, in Rust or in Python. `sc-cron` only fires the row. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
-6. `CronError` is the crate's one error enum. Variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `Store`, and `Fenced`, with the stable codes already on the beads-cache crate. `BadExpression`'s recovery text names the five-field form.
+6. `CronError` is the crate's one error enum. Its variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`. `BadExpression`'s recovery text names the five-field form.
 7. beads-cache remains a SQLite-only consumer. Its scheduled hook syncs through beads to Dolt. Postgres and the copy or host-plus-aggregate adaptors are other consumers' hooks, not part of this crate. After this crate is published, beads-cache depends on it from crates.io instead of carrying its own copy. That dependency change is beads-cache's work.
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-25.
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-9` adds `HookTarget::Monty` behind feature `monty`; beads-cache does not gain this target. sc-cron has no row cap, global in-flight lock, or two-row mutex. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-26.
 
 ### Related Documents
 

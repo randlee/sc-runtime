@@ -26,9 +26,11 @@ db-prepare:
     {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py db-prepare
 
 build-cli:
-    cargo build -p cli --release
+    cargo build -p {{project-name}}-cli --release
+    cargo tree -p {{project-name}}-cli -e normal --prefix none
     {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py build-cli
 
 build-daemon:
-    cargo build -p daemon --release
+    cargo build -p {{project-name}}-daemon --release
+    cargo tree -p {{project-name}}-daemon -e normal --prefix none
     {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py build-daemon

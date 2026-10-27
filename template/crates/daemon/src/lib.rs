@@ -18,18 +18,7 @@ use serde::Deserialize;
 /// Generated application name. cargo-generate fills this from `--name`.
 pub const APP_NAME: &str = "{{project-name}}";
 
-/// Application configuration loaded before [`sc_runtime::Daemon::builder`].
-#[derive(Debug, Deserialize)]
-pub struct AppConfig {
-    /// SQLite file. A relative path is joined to the instance root.
-    pub database: PathBuf,
-    /// Plain logging values. Example choice: console on, file off.
-    #[serde(default)]
-    pub logging: sc_observability::LogSettings,
-    /// Endpoint fields passed through to the daemon builder.
-    #[serde(flatten)]
-    pub daemon: DaemonConfig,
-}
+include!("open/{{db}}.rs");
 
 /// Resolves the instance root from configuration or the transport default.
 ///
@@ -43,20 +32,6 @@ pub fn instance_root(config: &AppConfig, app: &AppName) -> Result<PathBuf, Trans
         return Ok(root.clone());
     }
     sc_transport::instance_root(app)
-}
-
-/// Resolves the database path from configuration or the transport instance root.
-///
-/// This does not invent an endpoint or a TCP port.
-///
-/// # Errors
-///
-/// Returns the transport error when the instance root cannot be resolved.
-pub fn database_path(config: &AppConfig, app: &AppName) -> Result<PathBuf, TransportError> {
-    if config.database.is_absolute() {
-        return Ok(config.database.clone());
-    }
-    Ok(instance_root(config, app)?.join(&config.database))
 }
 
 /// Maps a service store-open error into [`sc_runtime::RuntimeError::StoresFailed`].

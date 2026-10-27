@@ -325,8 +325,7 @@ async fn shutdown_drain_is_bounded() {
                         let started_for_route = Arc::clone(&started_for_route);
                         async move {
                             started_for_route.store(true, Ordering::SeqCst);
-                            tokio::time::sleep(Duration::from_secs(60)).await;
-                            "done"
+                            std::future::pending::<&'static str>().await
                         }
                     }),
                 )
