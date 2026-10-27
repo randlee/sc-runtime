@@ -14,7 +14,7 @@ this skill is how an operator produces the next campaign.
 
 | Campaign | Command | Published under |
 |----------|---------|-----------------|
-| Monty compose hooks | `just benchmark-monty` | `site/reports/benchmark-monty/` |
+| Monty compose hooks | `just --justfile scripts/benchmark/justfile benchmark-monty` | `site/reports/benchmark-monty/` |
 
 Underlying harness: `crates/sc-cron/tests/sc_compose_bench.rs`. Interpretation
 notes: `docs/sc-cron/hooks-sc-compose.md`.
@@ -50,7 +50,7 @@ is also compiling the workspace.
 ## 2. Run
 
 ```sh
-just benchmark-monty
+just --justfile scripts/benchmark/justfile benchmark-monty
 ```
 
 The recipe runs release `sc_compose_bench` with `SC_CRON_BENCH=1` on Rust
@@ -71,7 +71,7 @@ no campaign. Fix the cause and run again.
 ## 3. Review
 
 ```sh
-just benchmark-monty-show
+just --justfile scripts/benchmark/justfile benchmark-monty-show
 ```
 
 The command rebuilds `index.html` from the campaign JSON, prints the newest
@@ -95,12 +95,12 @@ refuses to run when the index already has other staged files. It does not
 commit.
 
 ```sh
-just benchmark-monty-publish
+just --justfile scripts/benchmark/justfile benchmark-monty-publish
 git commit -m "evidence(benchmark-monty): <campaign-id> <host-label>"
 git push
 ```
 
-`just benchmark-monty-publish` regenerates the index and checks that the
+`just --justfile scripts/benchmark/justfile benchmark-monty-publish` regenerates the index and checks that the
 checked-in `index.html` matches the campaign JSON. Do not amend or delete an
 older campaign to make a result look better. Changing a floor in
 `baselines.json` requires the new floor, the campaigns that justify it, and a
@@ -115,7 +115,7 @@ rationale in the same commit. Existing campaign JSON stays immutable.
 - `INCOMPLETE`: publish it. The reason is in the campaign JSON. Run a new
   campaign after the harness or environment is fixed.
 - A stale `index.html` is unsafe to push. Stop and rerun
-  `just benchmark-monty-publish` so the index matches the JSON.
+  `just --justfile scripts/benchmark/justfile benchmark-monty-publish` so the index matches the JSON.
 
 ## Extending
 
