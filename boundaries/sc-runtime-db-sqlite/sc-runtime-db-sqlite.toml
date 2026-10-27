@@ -25,6 +25,7 @@ forbidden_edges = [
   "sc-runtime-db-sqlite -> sc-transport",
   "sc-runtime-db-sqlite -> sc-command",
   "sc-runtime-db-sqlite -> sc-runtime",
+  "sc-runtime-db-sqlite -> sc-cron",
 ]
 
 [references]

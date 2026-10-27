@@ -27,6 +27,7 @@ forbidden_edges = [
   "sc-config -> sc-command",
   "sc-config -> sc-runtime",
   "sc-config -> sc-runtime-db-sqlite",
+  "sc-config -> sc-cron",
 ]
 
 [references]
