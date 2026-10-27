@@ -27,8 +27,6 @@ allowed_dependencies = [
   "chrono",
   "cron",
   "getrandom",
-  "monty",
-  "monty-types",
   "process-wrap",
   "rusqlite",
   "serde_json",

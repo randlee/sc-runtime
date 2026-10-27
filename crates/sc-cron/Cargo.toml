@@ -46,10 +46,6 @@ monty-types = { version = "1.4.0", optional = true }
 # Self-reference so a plain `cargo test` builds the integration tests with
 # `test-utils`; no `required-features` gate silently skips them.
 sc-cron = { version = "0.1.0", path = ".", features = ["test-utils"] }
-# Puts the optional crates in cargo metadata so the boundary inventory can
-# name them. Not a normal edge: a default build does not link them.
-monty = "1.4.0"
-monty-types = "1.4.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util", "time"] }
 
 # Two processes share one database file, so the test runs a copy of itself as

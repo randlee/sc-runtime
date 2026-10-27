@@ -90,7 +90,11 @@ paths = ["crates/*/src/**/*.rs", "template/**/*.rs"]
 
 [[tool.sc-lint.test]]
 name = "workspace"
-command = ["cargo", "test", "--workspace"]
+command = ["cargo", "test", "--workspace", "--exclude", "sc-cron"]
+
+[[tool.sc-lint.test]]
+name = "sc-cron-default"
+command = ["cargo", "test", "-p", "sc-cron"]
 
 [[tool.sc-lint.test]]
 name = "sc-config"
