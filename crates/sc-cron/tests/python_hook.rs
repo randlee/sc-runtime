@@ -347,7 +347,7 @@ async fn a_python_row_written_before_schema_4_still_runs() {
             if current.last_outcome.is_some() {
                 return current;
             }
-            tokio::time::sleep(Duration::from_millis(20)).await;
+            tokio::time::sleep(Duration::from_millis(20)).await; // allow: test polls subprocess output after clock advance
         }
     })
     .await

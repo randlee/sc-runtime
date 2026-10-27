@@ -192,7 +192,7 @@ async fn wait_run_count(
             if run_count(fixture, schedule, needle) >= count {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(20)).await;
+            tokio::time::sleep(Duration::from_millis(20)).await; // allow: monty feed runs on the blocking pool in real time
         }
     })
     .await;
@@ -295,7 +295,7 @@ async fn an_external_delete_during_stop_skips_the_tick_and_writes_no_outcome() {
         .await
         .expect("stop");
     // The hold returns continue; the worker must not record Ok or TimedOut.
-    tokio::time::sleep(Duration::from_millis(300)).await;
+    tokio::time::sleep(Duration::from_millis(300)).await; // allow: monty feed runs on the blocking pool in real time
     shutdown(worker).await;
     let row = fixture.row(&schedule);
     assert!(row.last_outcome.is_none(), "{:?}", row.last_outcome);
@@ -314,7 +314,7 @@ async fn an_external_disable_during_stop_skips_the_tick() {
         .set_enabled_async(&schedule.spec.name, false)
         .await
         .expect("disable");
-    tokio::time::sleep(Duration::from_millis(300)).await;
+    tokio::time::sleep(Duration::from_millis(300)).await; // allow: monty feed runs on the blocking pool in real time
     shutdown(worker).await;
     let row = fixture.row(&schedule);
     assert!(row.last_outcome.is_none(), "{:?}", row.last_outcome);
@@ -351,7 +351,7 @@ async fn a_handle_deadline_aborts_rust_siblings_and_waits_for_monty() {
             .shutdown(tokio::time::Instant::now() + Duration::from_millis(300))
             .await
     });
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    tokio::time::sleep(Duration::from_millis(500)).await; // allow: monty feed runs on the blocking pool in real time
     assert!(
         fixture.row(&slow).last_outcome.is_none(),
         "monty is not timed out at the handle deadline: {:?}",
@@ -390,7 +390,7 @@ async fn two_monty_feeds_and_one_rust_run_at_handle_deadline() {
             .shutdown(tokio::time::Instant::now() + Duration::from_millis(300))
             .await
     });
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    tokio::time::sleep(Duration::from_millis(500)).await; // allow: monty feed runs on the blocking pool in real time
     assert!(
         fixture.row(&monty_long).last_outcome.is_none(),
         "handle deadline must not time out the second monty feed early: {:?}",
@@ -420,7 +420,7 @@ async fn a_monty_only_shutdown_does_not_time_out_until_the_feed_returns() {
             .shutdown(tokio::time::Instant::now() + Duration::from_millis(250))
             .await
     });
-    tokio::time::sleep(Duration::from_millis(400)).await;
+    tokio::time::sleep(Duration::from_millis(400)).await; // allow: monty feed runs on the blocking pool in real time
     assert!(fixture.row(&schedule).last_outcome.is_none());
     let stopped = handle.await.expect("shutdown task");
     assert!(!stopped);
@@ -437,7 +437,7 @@ async fn dropping_run_due_does_not_abort_the_feed_or_start_a_second_one() {
     fixture.clock.advance(chrono::Duration::seconds(60));
     let scheduler = fixture.scheduler.clone();
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
-    tokio::time::sleep(Duration::from_millis(100)).await;
+    tokio::time::sleep(Duration::from_millis(100)).await; // allow: monty feed runs on the blocking pool in real time
     let due = fixture.clock.now();
     fixture
         .store
@@ -469,7 +469,7 @@ async fn an_awaited_run_due_records_timed_out_only_after_the_feed_returns() {
     let scheduler = fixture.scheduler.clone();
     let id = schedule.id;
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
-    tokio::time::sleep(Duration::from_millis(200)).await;
+    tokio::time::sleep(Duration::from_millis(200)).await; // allow: monty feed runs on the blocking pool in real time
     assert!(fixture.row(&schedule).last_outcome.is_none());
     let done = running.await.expect("join").expect("run_due");
     assert_eq!(done.len(), 1);
@@ -508,7 +508,7 @@ async fn a_disable_answer_skips_the_tick_and_drops_the_repl() {
             if disables >= 2 {
                 return;
             }
-            tokio::time::sleep(Duration::from_millis(20)).await;
+            tokio::time::sleep(Duration::from_millis(20)).await; // allow: monty feed runs on the blocking pool in real time
         }
     })
     .await;
