@@ -2,6 +2,7 @@
 
 **Status:** Planning record for bead `run-zif.3` (parent `run-zif`).  
 **Date:** 2026-10-26  
+**Consumer:** Phase-b planning and sprint QA only. Retire this file after b-9 implementation merges and `docs/sc-cron/requirements.md` plus ADR-RUN-0013 are the sole traceability source for Monty and error variants.  
 **Sources:** beads-cache `docs/sc-cron/requirements.md` (`REQ-CRON-0001` through `REQ-CRON-0018`, including `0014` and `0015`) and `crates/sc-cron/src/error.rs` on beads-cache `integrate/phase-b`. sc-runtime `docs/sc-cron/requirements.md` (`REQ-CRON-0001` through `REQ-CRON-0005`), `docs/sc-cron/architecture.md`, and [ADR-RUN-0013](../../architecture.md). Sprint b-3 (PR #68, bead `run-9ny`) implements the shorter contract. This file does not amend that PR.
 
 Marks:
