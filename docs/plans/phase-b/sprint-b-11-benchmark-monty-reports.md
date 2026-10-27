@@ -137,7 +137,7 @@ not edit `hooks-sc-compose.md`.
 
 - `cargo test -p sc-cron` exits 0 (bench stays ignored; default features do not link `monty`).
 - `python3 scripts/benchmark/monty_compose_campaign.py --index-only` exits 0 against a fixture `*.campaign.json` and refreshes the index without running cargo. The script grows that flag in this sprint.
-- `just benchmark-monty` is not invoked by `just test` or by CI.
+- Root `just test` and CI do not invoke `just --justfile scripts/benchmark/justfile benchmark-monty`.
 - `sc-lint lint sc-boundary --root . --config sc-lint.toml` exits 0. This sprint does not edit `boundaries/`.
 
 ## Non-goals
