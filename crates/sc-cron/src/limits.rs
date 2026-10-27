@@ -25,6 +25,12 @@ pub const MAX_EXPR_LEN: usize = 256;
 /// Largest payload, in bytes of its compact JSON encoding.
 pub const MAX_PAYLOAD_BYTES: usize = 64 * 1024;
 
+/// Largest trusted Monty hook source, in UTF-8 bytes.
+///
+/// This intentionally matches [`MAX_PAYLOAD_BYTES`]: both values are loaded
+/// with every active schedule row, and neither should dominate reload memory.
+pub const MAX_HOOK_SOURCE_BYTES: usize = MAX_PAYLOAD_BYTES;
+
 /// Longest run timeout.
 pub const MAX_TIMEOUT: Duration = Duration::from_hours(24);
 

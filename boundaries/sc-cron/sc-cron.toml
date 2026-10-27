@@ -5,7 +5,7 @@ name = "sc-cron"
 
 [public]
 facade = "CronError, CronExpr, HookTarget, Job, RunOutcome, ScheduleSpec, Scheduler, SqliteScheduleStore, StopDecision, ScheduleStore"
-notes = "HookTarget is Rust or Python { module }. StopDecision is Continue, Disable, Delete. sqlx is absent and is checked with cargo tree."
+notes = "HookTarget is Rust, Python { module }, or Monty { source }. StopDecision is Continue, Disable, Delete. sqlx is absent and is checked with cargo tree. monty and monty-types are optional and off unless feature monty is enabled."
 
 [implementation]
 type = "library"

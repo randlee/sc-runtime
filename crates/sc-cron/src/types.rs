@@ -19,7 +19,7 @@ use std::time::Duration;
 /// Longest stored Python module path, in bytes.
 const MAX_MODULE_LEN: usize = 1024;
 
-use crate::limits::{MAX_NAME_LEN, MAX_TIMEOUT};
+use crate::limits::{MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_TIMEOUT};
 use crate::{CronError, CronExpr, Timestamp};
 
 /// Stable row id of one schedule; kept when an ended name is started again.
@@ -182,10 +182,12 @@ impl RunTimeout {
 ///
 /// `Rust` calls the [`Job`](crate::Job) passed to
 /// [`Scheduler::spawn_worker`](crate::Scheduler::spawn_worker). `Python`
-/// runs `python3 <module> cron.tick` or `python3 <module> cron.stop` and
-/// writes one JSON object, carrying the schedule name and the row payload,
-/// to the child's stdin.
+/// and [`HookTarget::Monty`] run `cron.stop` and `cron.tick` with the
+/// [`sc-cron.hook.v1`](crate::hook::HOOK_PROTOCOL) JSON object (required
+/// `protocol`, `event`, `schedule`, `payload`, and `deadline`). Python
+/// writes it to the child's stdin; Monty passes it as the hook argument.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum HookTarget {
     /// Call the worker's in-process job.
     Rust,
@@ -193,6 +195,14 @@ pub enum HookTarget {
     Python {
         /// Path of the Python file.
         module: PathBuf,
+    },
+    /// Trusted source executed by the optional in-process Monty interpreter.
+    ///
+    /// The source is program text, not a filesystem path. It must define
+    /// `cron_stop(hook)` and `cron_tick(hook)` when the feature is enabled.
+    Monty {
+        /// Trusted Python-compatible hook program text.
+        source: String,
     },
 }
 
@@ -232,26 +242,54 @@ impl HookTarget {
         })
     }
 
-    /// The stored kind and module text.
-    pub(crate) fn stored(&self) -> (&'static str, &str) {
+    /// Builds a trusted in-process Monty target from source text.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::InvalidSpec`] if `source` exceeds
+    /// [`MAX_HOOK_SOURCE_BYTES`](crate::MAX_HOOK_SOURCE_BYTES).
+    pub fn monty(source: impl Into<String>) -> Result<Self, CronError> {
+        let source = source.into();
+        if source.len() > MAX_HOOK_SOURCE_BYTES {
+            return Err(CronError::InvalidSpec(format!(
+                "Monty source is {} bytes; the limit is {MAX_HOOK_SOURCE_BYTES}",
+                source.len()
+            )));
+        }
+        Ok(Self::Monty { source })
+    }
+
+    /// The stored kind, module text and source text.
+    pub(crate) fn stored(&self) -> (&'static str, &str, &str) {
         match self {
-            Self::Rust => ("rust", ""),
-            Self::Python { module } => ("python", module.to_str().unwrap_or("")),
+            Self::Rust => ("rust", "", ""),
+            Self::Python { module } => ("python", module.to_str().unwrap_or(""), ""),
+            Self::Monty { source } => ("monty", "", source),
         }
     }
 
-    /// Reads a stored kind and module text.
-    pub(crate) fn from_stored(kind: &str, module: &str) -> Result<Self, String> {
+    /// Reads a stored kind, module text and source text.
+    pub(crate) fn from_stored(kind: &str, module: &str, source: &str) -> Result<Self, String> {
         match HookKind::parse(kind)? {
-            HookKind::Rust => Ok(Self::Rust),
+            HookKind::Rust if module.is_empty() && source.is_empty() => Ok(Self::Rust),
+            HookKind::Rust => Err("rust hook has module or source text".to_owned()),
             HookKind::Python if module.is_empty() => {
                 Err("python hook has an empty module".to_owned())
             }
+            HookKind::Python if !source.is_empty() => Err("python hook has source text".to_owned()),
             HookKind::Python if module.len() > MAX_MODULE_LEN => {
                 Err(format!("module path is longer than {MAX_MODULE_LEN} bytes"))
             }
             HookKind::Python => Ok(Self::Python {
                 module: PathBuf::from(module),
+            }),
+            HookKind::Monty if !module.is_empty() => Err("monty hook has a module path".to_owned()),
+            HookKind::Monty if source.len() > MAX_HOOK_SOURCE_BYTES => Err(format!(
+                "Monty source is {} bytes; the limit is {MAX_HOOK_SOURCE_BYTES}",
+                source.len()
+            )),
+            HookKind::Monty => Ok(Self::Monty {
+                source: source.to_owned(),
             }),
         }
     }
@@ -261,6 +299,7 @@ impl HookTarget {
 enum HookKind {
     Rust,
     Python,
+    Monty,
 }
 
 impl HookKind {
@@ -268,6 +307,7 @@ impl HookKind {
         match kind {
             "rust" => Ok(Self::Rust),
             "python" => Ok(Self::Python),
+            "monty" => Ok(Self::Monty),
             other => Err(format!("unknown hook kind {other:?}")),
         }
     }
@@ -342,6 +382,14 @@ impl ScheduleSpec {
         payload: serde_json::Value,
         hook: HookTarget,
     ) -> Result<Self, CronError> {
+        if let HookTarget::Monty { source } = &hook
+            && source.len() > MAX_HOOK_SOURCE_BYTES
+        {
+            return Err(CronError::InvalidSpec(format!(
+                "Monty source is {} bytes; the limit is {MAX_HOOK_SOURCE_BYTES}",
+                source.len()
+            )));
+        }
         let spec = Self {
             name: ScheduleName::new(name)?,
             expr: CronExpr::parse(expr)?,
@@ -590,5 +638,21 @@ mod tests {
             "failed: boom"
         );
         assert_eq!(RunOutcome::TimedOut.to_string(), "timed_out");
+    }
+
+    #[test]
+    fn monty_rejects_source_over_the_cap_and_the_variant_stays_matchable() {
+        let over = "x".repeat(crate::MAX_HOOK_SOURCE_BYTES + 1);
+        assert!(matches!(
+            HookTarget::monty(over),
+            Err(CronError::InvalidSpec(_))
+        ));
+        let hook = HookTarget::monty("pass").expect("short source");
+        assert!(matches!(hook, HookTarget::Monty { ref source } if source == "pass"));
+        // `HookTarget` is `#[non_exhaustive]`; a wildcard keeps this match compiling
+        // when a later variant is added.
+        match hook {
+            HookTarget::Rust | HookTarget::Python { .. } | HookTarget::Monty { .. } => {}
+        }
     }
 }

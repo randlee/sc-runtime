@@ -20,14 +20,16 @@ A six-field string is seconds first: `second minute hour day-of-month month day-
 
 One table, created by the crate. Columns cover the schedule name, the cron string, the timeout, a JSON payload, and the hook target. The rest of the database belongs to the consumer. The connection is not `SqliteWriter`.
 
-The number of active schedules is not capped. Each row's name, expression, timeout, module path, and payload are capped in the crate. A caller that accepts schedules from untrusted input caps how many rows it inserts.
+The number of active schedules is not capped. Each row's name, expression, timeout, module path, source, and payload are capped in the crate. A caller that accepts schedules from untrusted input caps how many rows it inserts.
 
 ## Hook
 
 ```rust
+#[non_exhaustive]
 pub enum HookTarget {
     Rust,
     Python { module: std::path::PathBuf },
+    Monty { source: String },
 }
 
 pub struct ScheduleSpec {
@@ -39,7 +41,9 @@ pub struct ScheduleSpec {
 }
 ```
 
-`Rust` calls the consumer's `Job` in process. `Python` runs `python3 <module> <hook-name>` and writes one JSON object to the child's stdin. The hook name is `cron.tick` for a run and `cron.stop` before a run. The object carries the schedule name and the row's payload.
+`Rust` calls the consumer's `Job` in process. `Python` runs `python3 <module> <hook-name>`. `Monty` is trusted embedding-chosen source, not a cache path, and is available only with feature `monty`; it uses neither `monty-pool`, `monty-fs`, nor `monty-runtime`. Python and Monty receive a `sc-cron.hook.v1` object containing `protocol`, `event`, `schedule`, `payload`, and a microsecond UTC `deadline`; it has no beads, bd-cache, or ATM field.
+
+Monty source defines `cron_stop(hook)` and `cron_tick(hook)`. One REPL is retained per schedule name while no feed is active, so module state survives ticks. The worker always calls stop before tick; `disable` or `delete` skips tick, and an external replacement, disable, delete, or shutdown after a continuing stop check skips tick and drops the REPL. A REPL is never dropped or replaced before its feed returns. Monty feed time uses `ResourceLimits::max_feed_duration`; it is observed at interpreter checkpoints, has no memory limit, and is not aborted by worker shutdown. This is trusted in-process code: stack-overflow and allocator-abort risks are accepted just as they are for a Rust `Job`.
 
 ```rust
 #[async_trait::async_trait]
@@ -72,7 +76,7 @@ A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule
 
 ## Error
 
-`CronError` is `#[non_exhaustive]` and implements `Display` and `std::error::Error`. Variants: `BadExpression(String)`, `InvalidSpec(String)`, `AlreadyActive(ScheduleName)`, `Store(StoreError)`, `Fenced { id, generation }`. Codes: `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `STORE_FAILED`, `FENCED`. `StoreError` is this crate's error for the schedule table. It is not the schema crate's `StoreError`. It wraps `rusqlite::Error` through `Error::source` and uses the code `STORE_FAILED`. The `BadExpression` recovery text tells the caller to use a five-field string, a six-field seconds-first string, or `@hourly` through `@yearly`.
+`CronError` is `#[non_exhaustive]` and implements `Display` and `std::error::Error`. Variants: `BadExpression(String)`, `InvalidSpec(String)`, `AlreadyActive(ScheduleName)`, `NotFound(ScheduleName)`, `HookFailed(String)`, `Store(StoreError)`, `Fenced { id, generation }`. Codes: `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, `FENCED`. `StoreError` is this crate's error for the schedule table. It is not the schema crate's `StoreError`. It wraps `rusqlite::Error` through `Error::source` and uses the code `STORE_FAILED`. The `BadExpression` recovery text tells the caller to use a five-field string, a six-field seconds-first string, or `@hourly` through `@yearly`.
 
 `Scheduler::open` takes the path of the schedule database. That file is not the application's `store-sqlite` file.
 

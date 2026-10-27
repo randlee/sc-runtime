@@ -13,22 +13,24 @@
 //! an executor thread.
 
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
 
 use chrono::{DateTime, Utc};
 use tokio::sync::{oneshot, watch};
 use tokio::task::JoinHandle;
 
-use crate::clock::sleep_until_monotonic;
+use crate::coord::RunCoord;
 use crate::limits::encode_payload;
-use crate::worker::{
-    DEFAULT_RELOAD_POLL, EXHAUSTED, MIN_RELOAD_POLL, Report, Worker, resolve, run_target,
-};
+use crate::worker::{DEFAULT_RELOAD_POLL, EXHAUSTED, MIN_RELOAD_POLL, Report, Worker};
 use crate::{
     Clock, CronError, Generation, JitterSource, Job, NewSchedule, RunOutcome, Schedule, ScheduleId,
     ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp, jitter,
 };
+
+mod run_due;
+
+use run_due::record_due;
 
 /// What the worker does with occurrences that came due while it could not run them.
 ///
@@ -96,7 +98,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
 
     fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<(), CronError> {
         if !self.store.set_enabled(name, enabled)? {
-            return Err(CronError::missing(name));
+            return Err(CronError::NotFound(name.clone()));
         }
         self.signal_reload();
         Ok(())
@@ -144,7 +146,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
             .cloned()
             .or(first);
         Ok(match missing {
-            Some(name) => CronError::missing(&name),
+            Some(name) => CronError::NotFound(name),
             None => CronError::InvalidSpec("an empty list of schedules changed nothing".into()),
         })
     }
@@ -187,6 +189,24 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource> {
     policy: MissedTickPolicy,
     reload_poll: Duration,
     worker_live: Arc<AtomicBool>,
+    coord: Arc<RunCoord>,
+}
+
+impl<S, C, J> Clone for Scheduler<S, C, J>
+where
+    S: ScheduleStore,
+    C: Clock,
+    J: JitterSource,
+{
+    fn clone(&self) -> Self {
+        Self {
+            core: Arc::clone(&self.core),
+            policy: self.policy,
+            reload_poll: self.reload_poll,
+            worker_live: Arc::clone(&self.worker_live),
+            coord: Arc::clone(&self.coord),
+        }
+    }
 }
 
 impl<S, C, J> Scheduler<S, C, J>
@@ -210,6 +230,7 @@ where
             policy: MissedTickPolicy::default(),
             reload_poll: DEFAULT_RELOAD_POLL,
             worker_live: Arc::new(AtomicBool::new(false)),
+            coord: Arc::new(RunCoord::new()),
         }
     }
 
@@ -326,7 +347,7 @@ where
     ///
     /// # Errors
     ///
-    /// [`CronError::InvalidSpec`] if no active schedule has this name, or the
+    /// [`CronError::NotFound`] if no active schedule has this name, or the
     /// store's errors.
     pub fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<(), CronError> {
         self.core.set_enabled(name, enabled)
@@ -359,7 +380,7 @@ where
     ///
     /// # Errors
     ///
-    /// [`CronError::InvalidSpec`] naming a listed schedule that is not active,
+    /// [`CronError::NotFound`] naming a listed schedule that is not active,
     /// with nothing changed, or the store's errors.
     pub fn set_enabled_many(&self, flags: &[(ScheduleName, bool)]) -> Result<(), CronError> {
         self.core.set_enabled_many(flags)
@@ -396,7 +417,7 @@ where
     /// # Errors
     ///
     /// As [`Scheduler::start`] for the spec; [`CronError::InvalidSpec`] if
-    /// `flags` names `spec`'s schedule; [`CronError::InvalidSpec`] naming a
+    /// `flags` names `spec`'s schedule; [`CronError::NotFound`] naming a
     /// listed schedule that is not active, with nothing written; or the
     /// store's errors.
     pub fn replace_and_set_enabled(
@@ -470,6 +491,7 @@ where
             Arc::clone(&self.core.clock),
             job,
             self.policy,
+            Arc::clone(&self.coord),
             self.reload_poll,
             shutdown_rx,
         );
@@ -480,6 +502,7 @@ where
         WorkerHandle {
             shutdown: Some(shutdown),
             task: Some(task),
+            feeds: Arc::clone(&self.coord.feeds),
         }
     }
 }
@@ -518,80 +541,16 @@ where
     /// is for a caller
     /// that drives the table from an outside scheduler instead of a worker:
     /// never run it beside a worker on the same rows. Dropping the returned
-    /// future (a caller stopped by a signal) aborts every run it started, as
-    /// a stopped worker does, so no run is left detached.
+    /// future aborts Rust and Python runs it started; a Monty feed keeps
+    /// running on the blocking pool until it returns and the spawned task
+    /// records the outcome.
     ///
     /// # Errors
     ///
     /// The store's errors on the first read; later store failures are logged
     /// and do not stop the other runs.
     pub async fn run_due(&self, job: Arc<dyn Job>) -> Result<Vec<DueRun>, CronError> {
-        let core = Arc::clone(&self.core);
-        let rows = blocking(move || core.store.list_active()).await?;
-        let now = self.core.clock.now();
-        let mut runs = Vec::new();
-        for row in rows {
-            if !row.enabled || row.next_run_at.is_none_or(|at| at.as_datetime() > now) {
-                continue;
-            }
-            if consumed_last_occurrence(&row) {
-                if !last_outcome_refused(&row) {
-                    end_recorded_final(self, &row).await;
-                }
-                continue;
-            }
-            let next = row.spec.expr.next_run(row.jitter, now);
-            if let Some(next_at) = next {
-                let core = Arc::clone(&self.core);
-                let (id, generation) = (row.id, row.generation);
-                let stamp = Timestamp::from_datetime(next_at);
-                match blocking(move || core.store.set_next(id, generation, stamp)).await {
-                    Ok(true) => {}
-                    Ok(false) => {
-                        tracing::warn!(subsystem = "sc_cron", action = "fenced",
-                            schedule = %row.id, name = %row.spec.name,
-                            "the schedule changed before launch; skipped");
-                        continue;
-                    }
-                    Err(error) => {
-                        tracing::error!(subsystem = "sc_cron", action = "set_next_failed",
-                        schedule = %row.id, code = error.code(), %error,
-                        "next run not stored: {error}")
-                    }
-                }
-            }
-            let monotonic = self.core.clock.monotonic_now();
-            let deadline = monotonic
-                .checked_add(row.spec.timeout.get())
-                .unwrap_or(monotonic);
-            let clock = Arc::clone(&self.core.clock);
-            let target = resolve(&job, &row);
-            let schedule = row.clone();
-            tracing::info!(subsystem = "sc_cron", action = "launched", schedule = %row.id,
-                name = %row.spec.name, "run started");
-            let handle = tokio::spawn(async move {
-                let target = match target {
-                    Ok(target) => target,
-                    Err(outcome) => return Report::Ran(outcome),
-                };
-                let run = run_target(target, Arc::clone(&clock), &schedule, deadline);
-                tokio::select! {
-                    report = run => report,
-                    () = sleep_until_monotonic(clock.as_ref(), deadline) => Report::Ran(RunOutcome::TimedOut),
-                }
-            });
-            runs.push((row, next, DueTask(handle)));
-        }
-        let mut done = Vec::with_capacity(runs.len());
-        for (row, next, mut task) in runs {
-            let report = (&mut task.0).await.unwrap_or_else(|error| {
-                Report::Ran(RunOutcome::Failed(format!(
-                    "job panicked or was cancelled: {error}"
-                )))
-            });
-            done.push(self.finish_due(&row, report, next).await);
-        }
-        Ok(done)
+        run_due::drive(self, job).await
     }
 
     /// Records one run of [`Scheduler::run_due`].
@@ -600,154 +559,18 @@ where
     /// hook ran. A stop-check disable only disables. A run with no further
     /// occurrence ends the schedule. A refused follow-up write after a
     /// successful record is a partial write: the outcome stays recorded.
-    async fn finish_due(
+    pub(super) async fn finish_due(
         &self,
         row: &Schedule,
         report: Report,
         next: Option<DateTime<Utc>>,
     ) -> DueRun {
-        let (id, generation) = (row.id, row.generation);
-        let at = Timestamp::from_datetime(self.core.clock.now());
-        let core = Arc::clone(&self.core);
-        let outcome = match &report {
-            Report::Ran(outcome) => outcome.clone(),
-            Report::Disable(reason) | Report::Delete(reason) => RunOutcome::Refused(reason.clone()),
-        };
-        let recorded = outcome.clone();
-        let result = blocking(move || match report {
-            Report::Disable(reason) => {
-                core.store
-                    .disable(id, generation, at, &reason)
-                    .map(|wrote| {
-                        if wrote {
-                            Finish::Recorded
-                        } else {
-                            Finish::Fenced
-                        }
-                    })
-            }
-            Report::Delete(reason) => {
-                core.signal_reload();
-                core.store.stop(id, generation, at, &reason).map(|wrote| {
-                    if wrote {
-                        Finish::Recorded
-                    } else {
-                        Finish::Fenced
-                    }
-                })
-            }
-            Report::Ran(outcome) => {
-                if !core.store.record_run(id, generation, at, &outcome)? {
-                    return Ok(Finish::Fenced);
-                }
-                let follow_up = match next {
-                    Some(next) => {
-                        core.store
-                            .set_next(id, generation, Timestamp::from_datetime(next))
-                    }
-                    None => core.store.stop(id, generation, at, EXHAUSTED),
-                };
-                Ok(follow_up_finish(follow_up))
-            }
-        })
-        .await;
-        match result {
-            Ok(Finish::Recorded) => tracing::info!(subsystem = "sc_cron", action = "recorded",
-                schedule = %id, name = %row.spec.name, outcome = %recorded, "run recorded"),
-            Ok(Finish::Fenced) => tracing::warn!(subsystem = "sc_cron", action = "fenced",
-                schedule = %id, name = %row.spec.name,
-                "the schedule changed during its run; nothing recorded"),
-            Ok(Finish::Partial) => tracing::warn!(subsystem = "sc_cron", action = "partial_write",
-                schedule = %id, name = %row.spec.name, outcome = %recorded,
-                "run recorded; a follow-up write was refused"),
-            Ok(Finish::FollowUp(error)) => tracing::error!(
-                subsystem = "sc_cron", action = "partial_write",
-                schedule = %id, name = %row.spec.name, outcome = %recorded,
-                code = error.code(), %error,
-                "run recorded; a follow-up write failed: {error}"),
-            Err(error) => tracing::error!(subsystem = "sc_cron", action = "record_failed",
-                schedule = %id, code = error.code(), %error, "run outcome not recorded: {error}"),
-        }
-        DueRun {
-            name: row.spec.name.clone(),
-            outcome: recorded,
-        }
-    }
-}
-
-/// The stored next run is an occurrence already recorded, and the expression
-/// has nothing after that record.
-fn consumed_last_occurrence(row: &Schedule) -> bool {
-    match (row.next_run_at, row.last_run_at) {
-        (Some(next), Some(last)) if next.as_datetime() <= last.as_datetime() => row
-            .spec
-            .expr
-            .next_run(row.jitter, last.as_datetime())
-            .is_none(),
-        _ => false,
-    }
-}
-
-/// A stop-check disable records [`RunOutcome::Refused`]. Re-enabling that row
-/// must not run the occurrence again and must not end it.
-fn last_outcome_refused(row: &Schedule) -> bool {
-    matches!(row.last_outcome, Some(RunOutcome::Refused(_)))
-}
-
-/// Ends a final run whose record committed and whose `stop` did not.
-async fn end_recorded_final<S, C, J>(scheduler: &Scheduler<S, C, J>, row: &Schedule)
-where
-    S: ScheduleStore + 'static,
-    C: Clock + 'static,
-    J: JitterSource + 'static,
-{
-    let (id, generation) = (row.id, row.generation);
-    let at = Timestamp::from_datetime(scheduler.core.clock.now());
-    let core = Arc::clone(&scheduler.core);
-    match blocking(move || core.store.stop(id, generation, at, EXHAUSTED)).await {
-        Ok(true) => tracing::info!(subsystem = "sc_cron", action = "stopped",
-            schedule = %id, name = %row.spec.name,
-            "schedule ended; its last occurrence was already recorded"),
-        Ok(false) => tracing::warn!(subsystem = "sc_cron", action = "fenced",
-            schedule = %id, name = %row.spec.name,
-            "the schedule changed before it could be ended"),
-        Err(error) => tracing::error!(subsystem = "sc_cron", action = "stop_failed",
-            schedule = %id, code = error.code(), %error, "schedule not ended: {error}"),
-    }
-}
-
-/// How [`Scheduler::finish_due`] left the row.
-enum Finish {
-    Recorded,
-    Fenced,
-    /// The outcome was written; a later `set_next` or `stop` was refused.
-    Partial,
-    /// The outcome was written; a later `set_next` or `stop` failed.
-    FollowUp(CronError),
-}
-
-/// Classifies a follow-up `set_next` or `stop` after `record_run` committed.
-fn follow_up_finish(result: Result<bool, CronError>) -> Finish {
-    match result {
-        Ok(true) => Finish::Recorded,
-        Ok(false) => Finish::Partial,
-        Err(error) => Finish::FollowUp(error),
-    }
-}
-
-/// One run [`Scheduler::run_due`] started, aborted when dropped: as the
-/// worker's in-flight runs, a run is never left detached by a dropped caller.
-struct DueTask(tokio::task::JoinHandle<Report>);
-
-impl Drop for DueTask {
-    fn drop(&mut self) {
-        // Aborting a finished task is a no-op.
-        self.0.abort();
+        record_due(Arc::clone(&self.core), row, report, next).await
     }
 }
 
 /// Runs `operation` on the blocking pool, mapping a panic to a store error.
-async fn blocking<T: Send + 'static>(
+pub(super) async fn blocking<T: Send + 'static>(
     operation: impl FnOnce() -> Result<T, CronError> + Send + 'static,
 ) -> Result<T, CronError> {
     tokio::task::spawn_blocking(operation)
@@ -786,8 +609,9 @@ impl Drop for LiveGuard {
 /// process exits first.
 #[derive(Debug)]
 pub struct WorkerHandle {
-    shutdown: Option<oneshot::Sender<()>>,
+    shutdown: Option<oneshot::Sender<Option<tokio::time::Instant>>>,
     task: Option<JoinHandle<()>>,
+    feeds: Arc<AtomicUsize>,
 }
 
 impl WorkerHandle {
@@ -795,12 +619,15 @@ impl WorkerHandle {
     ///
     /// The worker stops launching runs, then waits for each in-flight run
     /// until that run's own deadline, recording its outcome. If `deadline`
-    /// passes first, the worker and its runs are aborted and record nothing.
-    /// Returns whether the worker finished before `deadline`.
+    /// passes while no Monty feed is outstanding, the worker task is aborted
+    /// and records nothing. While a Monty feed is outstanding the worker is
+    /// not aborted: Rust and Python siblings are recorded `TimedOut`, and the
+    /// Monty feed runs until it returns. Returns whether the worker finished
+    /// before `deadline`.
     pub async fn shutdown(mut self, deadline: tokio::time::Instant) -> bool {
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
-            let _ = shutdown.send(());
+            let _ = shutdown.send(Some(deadline));
         }
         let Some(mut task) = self.task.take() else {
             return true;
@@ -808,13 +635,21 @@ impl WorkerHandle {
         if tokio::time::timeout_at(deadline, &mut task).await.is_ok() {
             return true;
         }
-        tracing::error!(
+        if self.feeds.load(Ordering::Acquire) == 0 {
+            tracing::error!(
+                subsystem = "sc_cron",
+                action = "shutdown_deadline",
+                "worker did not stop before the shutdown deadline; aborting"
+            );
+            task.abort();
+            let _ = task.await;
+            return false;
+        }
+        tracing::warn!(
             subsystem = "sc_cron",
             action = "shutdown_deadline",
-            "worker did not stop before the shutdown deadline; aborting"
+            "shutdown deadline passed during a Monty feed; waiting for the feed"
         );
-        task.abort();
-        // The task was just aborted; its result is cancellation.
         let _ = task.await;
         false
     }
@@ -830,7 +665,7 @@ impl Drop for WorkerHandle {
     fn drop(&mut self) {
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
-            let _ = shutdown.send(());
+            let _ = shutdown.send(None);
         }
     }
 }
