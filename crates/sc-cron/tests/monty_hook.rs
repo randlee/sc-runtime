@@ -371,16 +371,8 @@ async fn a_handle_deadline_aborts_rust_siblings_and_waits_for_monty() {
 #[tokio::test]
 async fn two_monty_feeds_and_one_rust_run_at_handle_deadline() {
     let fixture = Fixture::new();
-    let monty_short = fixture.start(spec(
-        "monty-short",
-        TIME_LIMIT,
-        Duration::from_millis(400),
-    ));
-    let monty_long = fixture.start(spec(
-        "monty-long",
-        TIME_LIMIT,
-        Duration::from_secs(5),
-    ));
+    let monty_short = fixture.start(spec("monty-short", TIME_LIMIT, Duration::from_millis(400)));
+    let monty_long = fixture.start(spec("monty-long", TIME_LIMIT, Duration::from_secs(5)));
     let rust = fixture.start(fixture.spec("rust"));
     let worker = fixture.worker(Arc::new(Hang)).await;
     fixture.step(60).await;
