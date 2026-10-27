@@ -176,6 +176,31 @@ async fn exercise() {
             listed,
             vec!["widget_create".to_owned(), "widget_get".to_owned()]
         );
+        assert!(
+            cli::parse(&[
+                "delete".into(),
+                "row".into(),
+                "widgets".into(),
+                "missing-widget-id".into(),
+            ])
+            .is_err(),
+            "delete row is registered"
+        );
+        assert!(
+            cli::parse(&[
+                "widget".into(),
+                "delete".into(),
+                "--id".into(),
+                "missing-widget-id".into(),
+            ])
+            .is_err(),
+            "widget delete is registered"
+        );
+        let router = daemon::routes::openapi_router();
+        let spec = router.get_openapi();
+        let paths: Vec<&str> = spec.paths.paths.keys().map(String::as_str).collect();
+        assert!(!paths.contains(&api_types::WIDGET_DELETE_PATH), "{paths:?}");
+        assert!(!paths.contains(&api_types::DELETE_ROW_PATH), "{paths:?}");
     }
 
     fixture.shutdown().await.expect("shutdown");

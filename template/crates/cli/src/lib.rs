@@ -692,6 +692,28 @@ mod tests {
         assert!(error.cause.contains("is missing"));
     }
 
+    #[cfg(not(feature = "general-db"))]
+    #[test]
+    fn general_db_off_omits_delete_commands() {
+        let row = parse(&[
+            "delete".into(),
+            "row".into(),
+            "widgets".into(),
+            "widget-1".into(),
+        ]);
+        assert!(row.is_err(), "delete row is registered with general-db off");
+        let widget = parse(&[
+            "widget".into(),
+            "delete".into(),
+            "--id".into(),
+            "widget-1".into(),
+        ]);
+        assert!(
+            widget.is_err(),
+            "widget delete is registered with general-db off"
+        );
+    }
+
     #[test]
     fn exec_io_error_names_the_path() {
         let path = PathBuf::from("missing-daemon");

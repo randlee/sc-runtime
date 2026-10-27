@@ -138,6 +138,17 @@ jobs:
         working-directory: ${{ runner.temp }}/app
         run: SQLX_OFFLINE=true cargo check --workspace
 
+      # REQ-RUN-0331 success criterion 2. Store layouts default the flag on, so
+      # this sqlite-mcp job is the one that compiles CLI, MCP, and HTTP with it off.
+      - name: Store layout general-db disable
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' && matrix.fixture == 'sqlite-mcp.json' }}
+        working-directory: ${{ runner.temp }}/app
+        run: |
+          set -euo pipefail
+          SQLX_OFFLINE=true cargo test -p widget-app-cli --no-default-features --lib general_db_off_omits_delete_commands
+          SQLX_OFFLINE=true cargo test -p widget-app-daemon --no-default-features --lib openapi_paths_omit_general_delete
+          SQLX_OFFLINE=true cargo test -p widget-app-cli --no-default-features --test widget_mcp
+
   plain-cargo-generate:
     name: plain cargo generate
     needs: ci-scope
