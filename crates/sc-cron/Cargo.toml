@@ -57,3 +57,9 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util", "
 [[test]]
 name = "two_process"
 harness = false
+
+# Monty integration tests link the interpreter. The default `cargo test` skips
+# this target; `cargo test -p sc-cron --features monty` builds it.
+[[test]]
+name = "monty_hook"
+required-features = ["monty"]
