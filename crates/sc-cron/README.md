@@ -29,8 +29,9 @@ other workspace crate.
   and on again without rewriting its row; a disabled schedule never fires.
 - **Python hook target.** A row whose hook is `Python { module }` runs
   `python3 <module> cron.stop` and `python3 <module> cron.tick` from a
-  temporary directory, with one JSON object on stdin. The object carries the
-  schedule name and the row payload. Every hook is killed, with everything
+  temporary directory, with one JSON object on stdin. The object is
+  `sc-cron.hook.v1` with `protocol`, `event`, `schedule`, `payload`, and
+  `deadline`. Every hook is killed, with everything
   it started, at the schedule's timeout capped by the time left before the
   run's deadline, and its output is capped. A `Rust` row calls the job
   passed to `Scheduler::spawn_worker`.

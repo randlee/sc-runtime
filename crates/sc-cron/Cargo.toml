@@ -10,6 +10,7 @@ authors.workspace = true
 homepage.workspace = true
 readme = "README.md"
 documentation = "https://docs.rs/sc-cron"
+publish = false
 keywords = ["cron", "scheduler", "sqlite", "tokio"]
 categories = ["date-and-time", "asynchronous"]
 

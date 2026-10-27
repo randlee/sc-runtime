@@ -25,6 +25,11 @@ Phase A uses **crates + GitHub release only** (`channels: {}` in consumer
 input). Homebrew, npm, PyPI, scoop, and winget are out of scope until added
 to the consumer input and re-installed.
 
+**Phase B hold:** `integrate/phase-b` does not retag `v0.1.0`, does not publish,
+and keeps `sc-cron` and `sc-runtime-db-sqlite` out of the consumer input
+(`publish = false` on those crates). Merge to `develop` does not trigger a
+crates.io release of the new workspace members.
+
 `release_binaries` is empty. Phase A ships no release binaries. The single
 linux `release_targets` row (`x86_64-unknown-linux-gnu`, `ubuntu-latest`,
 `tar.gz`) is the row [ADR-RUN-0002](../architecture.md) names for the

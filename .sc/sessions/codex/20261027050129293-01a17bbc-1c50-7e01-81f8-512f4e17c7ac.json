@@ -1,0 +1,15 @@
+{
+  "cwd": "/Users/randlee/github/sc-runtime-worktrees/sprint/b-9-sc-cron-monty-hooks",
+  "launch_id": "codex-01a17bbc-1c50-7e01-81f8-512f4e17c7ac",
+  "launcher": "global-codex-session-start-hook",
+  "mode": "unknown",
+  "model": "gpt-5.6-terra",
+  "native_session_id": "01a17bbc-1c50-7e01-81f8-512f4e17c7ac",
+  "project_dir": "/Users/randlee/github/sc-runtime-worktrees/sprint/b-9-sc-cron-monty-hooks",
+  "source": "startup",
+  "started_at": "2026-10-27T05:01:29.293670Z",
+  "status": "started",
+  "tool": "codex",
+  "transcript_path": "/Users/randlee/.codex/sessions/2026/10/26/rollout-2026-10-26T22-01-28-01a17bbc-1c50-7e01-81f8-512f4e17c7ac.jsonl",
+  "updated_at": "2026-10-27T05:01:29.293670Z"
+}
