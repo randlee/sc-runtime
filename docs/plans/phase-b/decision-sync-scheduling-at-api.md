@@ -34,7 +34,7 @@ The scheduler primitives those commands already use:
 - one run in flight per schedule name (`REQ-CRON-0006`)
 - generation fencing so a replaced row's old run cannot write (`REQ-CRON-0007`)
 
-`REQ-CRON-0006` is per schedule name, inside one scheduler. `REQ-BDC-0722` is one lease for every sync run in the cache file, across processes, whichever row is enabled. The crosswalk keeps them apart: [sc-cron-req-crosswalk.md](sc-cron-req-crosswalk.md).
+`REQ-CRON-0006` is per schedule name, inside one scheduler: if a tick is due while that name's previous run is still in flight, sc-cron skips the new tick. `REQ-BDC-0722` is one lease for every sync run in the cache file, across processes, whichever row is enabled. They are different mechanisms (in-process per-name skip vs cross-process sync lease); do not merge them into one requirement.
 
 ## Owner ruling: no slot restriction (2026-10-26)
 

@@ -79,16 +79,28 @@ is on the stack except on denied paths below (`b-9`). Host work runs on the
 same blocking-pool thread as the feed (ADR-RUN-0007, ADR-RUN-0011): no
 `block_on`, no sleep, no mutex held across `.await`.
 
-Named values for the snippet bind `render_template` via
-`MontyObject::function` and `__hook` via the existing `json_to_monty` value.
+Named values for the snippet bind **`render_template`** (reserved host
+binding; hook authors call this bare name) via `MontyObject::function` and
+`__hook` via the existing `json_to_monty` value. No other ext fn names are
+registered in this sprint.
 
 ```rust
-// crates/sc-cron/src/monty_host.rs — program name is injectable for tests.
+// crates/sc-cron/src/monty_host.rs — crate-private; program name injectable for tests.
+pub(crate) enum ComposeHostError {
+    ProgramNotFound { program: String },
+    SpawnFailed { program: String, detail: String },
+    NonZeroExit { status: i32, stderr: String },
+}
+
+impl ComposeHostError {
+    pub(crate) fn recovery(&self) -> &'static str { /* see error table */ }
+}
+
 pub(crate) fn render_template(
     template: &str,
     context: &serde_json::Value,
     compose_program: &str,
-) -> Result<String, String>;
+) -> Result<String, ComposeHostError>;
 ```
 
 Production passes `compose_program = "sc-compose"`. The missing-binary test
@@ -154,12 +166,16 @@ and any other function name fail the feed.
 
 No new `CronError` variant.
 
-| Condition | Result |
-|---|---|
-| Inside `render_template`, the configured compose program cannot be started (missing binary) | `RunOutcome::Failed` whose detail is `CronError::HookFailed(...).recorded()`; repl dropped. Feeds that never call `render_template` still run when the binary is absent. |
-| CLI starts and exits non-zero, or Monty raises | `RunOutcome::Failed` (no `HookFailed`); repl dropped |
-| After the CLI returns, host-measured elapsed time exceeds the row's remaining budget | `RunOutcome::TimedOut`; repl dropped after the feed returns. Outcome is recorded only after `Command` returns (VM clock was paused during the call). |
-| Monty feed-time-limit while the VM is executing (not suspended on host) | `RunOutcome::TimedOut` from Monty's feed-time-limit error, as in `b-9` |
+| Condition | `RunOutcome` / detail | Operator `recovery()` (maps to existing `CronError::recovery()` text where applicable) |
+|---|---|---|
+| Configured compose program not found (`ProgramNotFound`) | `Failed` — detail names the program (not `HookFailed`) | Install `sc-compose` on PATH or fix the injected program name in tests. |
+| Spawn or I/O error starting the child (`SpawnFailed`) | `Failed` | Check permissions and disk space for temp roots under `tempfile::TempDir`. |
+| CLI exits non-zero (`NonZeroExit`) | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
+| Monty raises or denied host call (wrong arity/type/name) | `Failed` | Fix hook source; only `render_template` is allowlisted. |
+| After CLI returns, host `Instant` exceeds row budget | `TimedOut` | Reduce compose work or raise row deadline; VM clock was paused during the host call. |
+| Monty feed-time-limit while VM executing (not on host suspend) | `TimedOut` | Same as `b-9` checkpoint path. |
+
+Feeds that never call `render_template` still run when the compose binary is absent.
 
 Monty's `ResourceTracker` pauses `max_feed_duration` while suspended on a host
 `FunctionCall`; CLI wall time is **not** on the VM feed clock. The host times
@@ -171,12 +187,19 @@ is alive.
 ### Dependency (`REQ-CRON-0001`, `REQ-RUN-0005`)
 
 Feature `monty` stays optional. No new workspace crate and no dependency on
-another workspace crate. Do not add `monty`, `monty-types`, or `sc-compose` to
-`boundaries/sc-cron` `allowed_dependencies`: sc-lint rejects non-workspace
-names there (observed on the `b-9` close). `Cargo.toml` and `Cargo.lock` stay
-as `b-9` left them. Default CI (Rust 1.94.1) does not enable `monty` and does
-not gain an unconditional Monty dev-dependency. Bridge tests are
-`cfg(feature = "monty")` and run on Rust 1.96.1.
+another workspace crate. Reuse the existing **`tempfile`** dependency (already
+on `sc-cron` for Python hooks); do not add a second copy under `monty` only.
+Do not add `monty`, `monty-types`, or `sc-compose` to `boundaries/sc-cron`
+`allowed_dependencies`. `Cargo.toml` / `Cargo.lock` change only if `tempfile`
+is not already present (it is on the integrated tree). Default CI (Rust 1.94.1)
+does not enable `monty`. Bridge tests are `cfg(feature = "monty")` on Rust
+1.96.1.
+
+**Testing layout (`REQ-RUN-0005`, boundary):** inject/deny/resume unit tests
+live in `crates/sc-cron/src/monty_host.rs` under
+`#[cfg(all(test, feature = "monty"))]`. `crates/sc-cron/tests/monty_host_bridge.rs`
+exercises only the public **`Scheduler`** / `execute_feed` path end-to-end; it
+does not import `monty_host` directly.
 
 ## ADR-RUN-0013 amendment
 
@@ -193,13 +216,12 @@ that never exits is the accepted blocking-pool stall with no second kill and
 no outcome while it is alive (this is **not** a Monty feed-time-limit error).
 Add a consequence naming sprint `b-10`.
 
-`REQ-CRON-0003` gains one sentence for that call. Amend the `b-9` sentence that
-`HookFailed` is only a failure to **start** the hook: a missing compose binary
-during `render_template` is after the hook has started and still uses
-`HookFailed` in the recorded detail. `docs/sc-cron/architecture.md` shows the
-signature above. `docs/sc-cron/hooks-sc-compose.md` states that production
-ships in `execute_feed` (which may call `feed_start` internally) and that the
-standalone lab `MontyRepl::feed_start` in the bench is not the production path.
+`REQ-CRON-0003` gains one sentence for that call. A missing compose program
+during `render_template` records `RunOutcome::Failed` naming the program (not
+`HookFailed`). `docs/sc-cron/architecture.md` shows the signature and error
+table above. `docs/sc-cron/hooks-sc-compose.md` states that production ships in
+`execute_feed` (which may call `feed_start` internally) and that the standalone
+lab `MontyRepl::feed_start` in the bench is not the production path.
 
 ## Deliverables
 
@@ -213,7 +235,7 @@ standalone lab `MontyRepl::feed_start` in the bench is not the production path.
 
 Root: `boundary:sc-cron` and ADR-RUN-0013 as amended here.
 
-- `cargo test -p sc-cron --features monty --test monty_host_bridge` on Rust 1.96.1 **must execute** (not skip): success path with real `sc-compose` on `PATH` (`render` with `--root`, `--mode file`, `--file`, `--var-file`, stdout body, `--output` omitted); deny paths for another function name and for `OsCall`; non-zero CLI → `Failed` without `HookFailed`. When `sc-compose` is absent, those cases **fail** the test. A separate case uses a non-installed program name for the missing-binary path → `HookFailed` and no repl. Skips are not an acceptance outcome.
+- `cargo test -p sc-cron --features monty --test monty_host_bridge` on Rust 1.96.1 **must execute** (not skip): success path with real `sc-compose` on `PATH` (`render` with `--root`, `--mode file`, `--file`, `--var-file`, stdout body, `--output` omitted); deny paths for another function name and for `OsCall`; non-zero CLI → `Failed`. When `sc-compose` is absent, those cases **fail** the test. A separate case uses a non-installed program name → `Failed` detail names that program and repl is dropped. Skips are not an acceptance outcome.
 - `cargo test -p sc-cron` with the default features does not compile the `monty` crates. `cargo tree -p sc-cron -e normal --prefix none` prints no crate whose name starts with `monty`.
 - `boundaries/sc-cron/sc-cron.toml` has no `monty`, `monty-types`, or `sc-compose` entry added by this sprint.
 - `docs/architecture.md` point 4 names `render_template`, the `sc-compose` spawn, and the host-timeout rule for time inside `render_template`. `docs/sc-cron/requirements.md` has the new `REQ-CRON-0003` sentence. `docs/sc-cron/hooks-sc-compose.md` calls `execute_feed` the production path.
