@@ -130,10 +130,8 @@ impl CliRenderFixtures {
 }
 
 fn sc_compose_cli_render_once() {
-    let rendered = CliRenderFixtures::shared().render_string_template(
-        TEMPLATE,
-        &serde_json::json!({"name": "bench"}),
-    );
+    let rendered = CliRenderFixtures::shared()
+        .render_string_template(TEMPLATE, &serde_json::json!({"name": "bench"}));
     assert_eq!(rendered, "Hello bench");
 }
 
@@ -142,9 +140,8 @@ fn fixture_module() -> PathBuf {
 }
 
 fn python_render_once() {
-    let script = format!(
-        "import sc_compose; sc_compose.render_template({TEMPLATE:?}, {{'name': 'bench'}})"
-    );
+    let script =
+        format!("import sc_compose; sc_compose.render_template({TEMPLATE:?}, {{'name': 'bench'}})");
     let status = Command::new("python3")
         .args(["-c", &script])
         .status()
@@ -518,13 +515,10 @@ fn bench_sc_compose_hook_paths() {
         },
     };
 
-    let render_script = format!(
-        "import sc_compose; sc_compose.render_template({TEMPLATE:?}, {{'name': 'bench'}})"
-    );
+    let render_script =
+        format!("import sc_compose; sc_compose.render_template({TEMPLATE:?}, {{'name': 'bench'}})");
 
-    eprintln!(
-        "--- sc-compose hook benchmarks ({TIMED_ITERS} timed + 1 warmup each) ---"
-    );
+    eprintln!("--- sc-compose hook benchmarks ({TIMED_ITERS} timed + 1 warmup each) ---");
 
     let mut cases: Vec<BenchCase> = Vec::new();
 
@@ -615,7 +609,10 @@ fn bench_sc_compose_hook_paths() {
             Some(fix.render_command()),
             true,
         );
-        log_result("monty_host_bridge + sc-compose CLI (target pattern)", &result);
+        log_result(
+            "monty_host_bridge + sc-compose CLI (target pattern)",
+            &result,
+        );
         cases.push(BenchCase {
             id: "monty",
             label: "monty_host_bridge + sc-compose CLI",
