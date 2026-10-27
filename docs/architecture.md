@@ -179,6 +179,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0304 | CLI commands are two pure functions, tested without a daemon | Deferred — architecture reopened |
 | ADR-RUN-0305 | SQLite and Postgres meet in a generated consumer adaptor | Active |
 | ADR-RUN-0306 | General database commands ship on CLI, MCP, and HTTP | Active |
+| ADR-RUN-0307 | write_rows upserts one row identity | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
 
@@ -1603,9 +1604,8 @@ variable, so two such crates can build in one workspace.
    pairing. The generated implementation stays in the store crate. `EngineStore`
    is not a published workspace trait. Where a store exposes it, the methods
    are `open`, `read_rows`, and `write_rows`, as the sprint `b-4` sample states
-   them. `write_rows` upserts each row identity and does not clear the table.
-   Distinct identities accumulate. A second copy of the same identities
-   replaces those rows and does not return `Conflict`. `OpenConfig`
+   them. `write_rows` replaces the named table: it clears the rows, then
+   inserts the batch, so a second copy does not return `Conflict`. `OpenConfig`
    carries `target: StoreTarget`. `StoreTarget` is `SqlitePath(PathBuf)`,
    `PostgresUrl(String)`, or `MysqlUrl(String)`, constructed with
    `OpenConfig::sqlite`, `OpenConfig::postgres`, or `OpenConfig::mysql`. A
@@ -1681,6 +1681,44 @@ Amended 2026-10-25.
 - [REQ-RT-0003](sc-runtime/requirements.md): `sc-runtime` never inspects `Stores`.
 - [ADR-RUN-0303](architecture.md): the full crate graph of a generated project.
 - [ADR-RUN-0305](architecture.md): the consumer adaptor that moves rows between the two stores.
+
+---
+
+## ADR-RUN-0307: write_rows upserts one row identity
+
+**Status:** Active  
+**Decision Date:** 2026-10-27  
+**Source:** arch-qa ARCH-002, 2026-10-27. The upsert contract is recorded here so the earlier sentence stays intact.  
+**Amends:** [ADR-RUN-0301](architecture.md) point 2  
+
+### Context
+
+[ADR-RUN-0301](architecture.md) point 2 says `write_rows` replaces the named
+table: it clears the rows, then inserts the batch, so a second copy does not
+return `Conflict`. The generated stores upsert one row identity and do not
+clear the table. Writing that contract into the Active sentence of point 2
+is not how an ADR changes. A later ADR names the decision it amends.
+
+### Decision
+
+1. `write_rows` upserts one row identity and does not clear the table.
+   Distinct identities accumulate, so `abc` and `ABC` both remain. A second
+   write of the same identity replaces that row and does not return
+   `Conflict`.
+2. This decision amends the `write_rows` sentence of
+   [ADR-RUN-0301](architecture.md) point 2. The rest of that point stays as
+   written, including optional `EngineStore`, `StoreTarget`, `StoreCode`, and
+   `TableName`.
+
+### Consequences
+
+Distinct identities stay in the destination table. A second write of the same
+identity replaces that row and does not return `Conflict`. The template
+stores follow this contract. They do not clear the table before the write.
+
+### Related Documents
+
+- [ADR-RUN-0301](architecture.md) point 2, the `write_rows` sentence this decision amends.
 
 ---
 

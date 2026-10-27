@@ -395,9 +395,9 @@ async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), Stor
         let id = widget.id.as_str();
         let name = widget.name.as_str();
         check_column_limits(id, name)?;
-        // Upsert this identity only. Deleting the table would drop a distinct
-        // id such as `abc` when a later call writes `ABC`. The same id still
-        // replaces, so a second copy does not conflict on insert.
+        // ADR-RUN-0307: upsert this identity only. Deleting the table would drop
+        // a distinct id such as `abc` when a later call writes `ABC`. The same
+        // id still replaces, so a second copy does not conflict on insert.
         sqlx::query(
             "INSERT INTO widgets (id, name) VALUES (?, ?) AS new \
              ON DUPLICATE KEY UPDATE name = new.name",

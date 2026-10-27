@@ -197,11 +197,11 @@ pub trait Rollup {
 /// rows up. [`copy_shared_rows`] applies membership, calls [`Rollup`], and
 /// then writes.
 ///
-/// A second call writes the table again. The replace contract lives on
-/// [`EngineStore::write_rows`]: that call upserts each row identity and does
-/// not clear the destination. A second copy of the same identities does not
-/// return [`StoreCode::Conflict`]. Identities that this call does not write
-/// stay in the table.
+/// A second call writes the table again. The replace contract is ADR-RUN-0307
+/// on [`EngineStore::write_rows`]: that call upserts each row identity and
+/// does not clear the destination. A second copy of the same identities does
+/// not return [`StoreCode::Conflict`]. Identities that this call does not
+/// write stay in the table.
 /// The batch is bounded by [`schema::MAX_PAIRING_ROWS`] and
 /// [`schema::MAX_ROW_PAYLOAD_BYTES`].
 ///
@@ -289,7 +289,8 @@ where
 /// whole table, passes the rows and `flags.column_on_one_side` to `rollup`,
 /// and writes what `rollup` returns. The same [`Rollup`] is the owner
 /// [`aggregate_host`] uses. A repeated call replaces each copied identity, as
-/// [`copy_rows`] states. This function does not clear the destination.
+/// [`copy_rows`] states (ADR-RUN-0307). This function does not clear the
+/// destination.
 ///
 /// # Errors
 ///
@@ -345,8 +346,9 @@ where
 /// `flags.column_on_one_side`, and the returned rows are written to `remote`.
 /// A repeated call replaces each copied identity on `remote`, as [`copy_rows`]
 /// states. This function does not clear `remote`. The store upserts those
-/// identities, so a second copy does not conflict on insert. The batch is
-/// bounded by [`schema::MAX_PAIRING_ROWS`] and [`schema::MAX_ROW_PAYLOAD_BYTES`].
+/// identities (ADR-RUN-0307), so a second copy does not conflict on insert.
+/// The batch is bounded by [`schema::MAX_PAIRING_ROWS`] and
+/// [`schema::MAX_ROW_PAYLOAD_BYTES`].
 ///
 /// # Errors
 ///

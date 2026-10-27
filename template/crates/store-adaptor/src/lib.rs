@@ -36,9 +36,9 @@
 //! A repeated call replaces each copied row identity on the destination. It
 //! does not insert a second copy of those identities, and it does not keep a
 //! watermark. [`schema::EngineStore::write_rows`] upserts the batch and leaves
-//! every other identity in the table, so a second scheduled run does not
-//! return [`schema::StoreCode::Conflict`]. A watermark, or aggregation that
-//! can fail, is a third adaptor the consumer writes.
+//! every other identity in the table (ADR-RUN-0307), so a second scheduled run
+//! does not return [`schema::StoreCode::Conflict`]. A watermark, or
+//! aggregation that can fail, is a third adaptor the consumer writes.
 //!
 //! The crate depends on the schema crate. It does not depend on sqlx or on a
 //! `store-*` crate, and it contains no engine SQL.

@@ -514,6 +514,7 @@ pub trait EngineStore: Send + Sync {
     /// The batch must be at most [`MAX_PAIRING_ROWS`] long, and each payload
     /// at most [`MAX_ROW_PAYLOAD_BYTES`].
     ///
+    /// ADR-RUN-0307 amends the `write_rows` sentence in ADR-RUN-0301 point 2.
     /// A scheduled copy or host aggregate writes the rows it read. Distinct
     /// identities accumulate: the store does not clear `table`. An identity
     /// already stored is replaced, so a second copy of those rows does not
