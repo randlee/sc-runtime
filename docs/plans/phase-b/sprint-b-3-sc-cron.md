@@ -1,7 +1,7 @@
 ---
 id: b-3
 phase: b
-status: planned
+status: in_review
 closure_type: boundary
 target_boundary: sc-cron
 track: cron
@@ -50,7 +50,7 @@ vertical_rationale: One ported crate. The expression parser and the scheduler li
 
 ## Blocker
 
-This sprint copies `crates/sc-cron` after beads-cache sprint b-8 merges (`sprint/b-8-tick-python`, deliverable 6, REQ-CRON-0016, ADR-CRON-0009). At the start of the sprint, record the merged commit. If that tree drifts from the signatures in [architecture.md](../../sc-cron/architecture.md), re-review the sprint before the copy lands.
+This sprint copies `crates/sc-cron` after beads-cache sprint b-8 merges (`sprint/b-8-tick-python`, deliverable 6, REQ-CRON-0016, ADR-CRON-0009). The port source is beads-cache `integrate/phase-b` commit `d5fbed94f6c3b7fa9e5a562787964a5e6f298423`, the same commit recorded in [architecture.md](../../sc-cron/architecture.md). If that tree drifts from the signatures in that architecture file, re-review the sprint before the copy lands.
 
 - Each schedule row chooses a Rust job or a Python module, so both can sit in the one table.
 - `StopDecision::Stop` is removed. `Delete` replaces it.
@@ -100,4 +100,4 @@ Root: `boundary:sc-cron` and [ADR-RUN-0013](../../architecture.md).
 
 ## Non-goals
 
-No beads CLI client. No Postgres store. No store-adaptor generator. No HTTP, MCP, or CLI API on this crate. No edit to `sc-lint.toml`. No edit to `Cargo.toml` or `crates/sc-runtime-db-sqlite/`. `Cargo.lock` changes only to record `sc-cron`.
+No beads CLI client. No Postgres store. No store-adaptor generator. No HTTP, MCP, or CLI API on this crate. No edit to `sc-lint.toml` except the xwin exclude: `sc-cron` bundles SQLite the same way `sc-runtime-db-sqlite` does, and this toolchain's Windows cross check has no `llvm-lib`, so both crates are excluded from `xwin-check` and `xwin-clippy`. No edit to `Cargo.toml` or `crates/sc-runtime-db-sqlite/`. `Cargo.lock` changes only to record `sc-cron`.

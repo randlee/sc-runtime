@@ -47,17 +47,19 @@ command = ["sc-lint", "compatibility", "check", "--config", "sc-lint.toml"]
 name = "adr-run-0011"
 command = ["just", "adr-run-0011"]
 
-# `sc-runtime-db-sqlite` is excluded until that crate cross-compiles.
-# Later sprints drop the exclude and keep the workspace form:
+# Bundled SQLite does not cross-compile on this xwin toolchain: cc-rs looks
+# for `llvm-lib` and it is not on PATH. `sc-runtime-db-sqlite` and `sc-cron`
+# both enable rusqlite's `bundled` feature, so both stay out of the Windows
+# cross check until that link exists. Later sprints drop the excludes:
 #   cargo xwin check --workspace --target x86_64-pc-windows-msvc
 #   cargo xwin clippy --workspace --all-targets --target x86_64-pc-windows-msvc -- -D warnings -D clippy::await_holding_lock
 [[tool.sc-lint.lint]]
 name = "xwin-check"
-command = ["cargo", "xwin", "check", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--target", "x86_64-pc-windows-msvc"]
+command = ["cargo", "xwin", "check", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--exclude", "sc-cron", "--target", "x86_64-pc-windows-msvc"]
 
 [[tool.sc-lint.lint]]
 name = "xwin-clippy"
-command = ["cargo", "xwin", "clippy", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--all-targets", "--target", "x86_64-pc-windows-msvc", "--", "-D", "warnings", "-D", "clippy::await_holding_lock"]
+command = ["cargo", "xwin", "clippy", "--workspace", "--exclude", "sc-runtime-db-sqlite", "--exclude", "sc-cron", "--all-targets", "--target", "x86_64-pc-windows-msvc", "--", "-D", "warnings", "-D", "clippy::await_holding_lock"]
 
 [tool.sc-lint.lint_profiles]
 # Fast boundary-only pass while leaf crates land (a-2..a-4).

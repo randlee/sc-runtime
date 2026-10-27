@@ -11,6 +11,8 @@ by `sc-lint lint sc-boundary` ([REQ-RUN-0005](../docs/requirements.md)).
 | `sc-transport` | a-3 |
 | `sc-command` | a-4 |
 | `sc-runtime` | a-5 |
+| `sc-runtime-db-sqlite` | b-1 |
+| `sc-cron` | b-3 |
 
 Manifest format and forbidden edges are normative in `docs/requirements.md`
 (REQ-RUN-0005) and `docs/architecture.md`.

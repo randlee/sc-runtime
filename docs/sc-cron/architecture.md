@@ -2,6 +2,8 @@
 
 **Status:** Active as of 2026-10-25. Binding decision: [ADR-RUN-0013](../architecture.md). Sprint `b-3` ports beads-cache `crates/sc-cron` and applies the expression rule below.
 
+Port source: beads-cache `integrate/phase-b` commit `d5fbed94f6c3b7fa9e5a562787964a5e6f298423`.
+
 ## What this crate is
 
 An optional drop-in scheduler. The consumer adds one SQLite table. A row is a cron string plus a hook. The crate fires that hook. A richer start/stop API is something the consumer may build on top.
@@ -17,6 +19,8 @@ A six-field string is seconds first: `second minute hour day-of-month month day-
 ## Configuration table
 
 One table, created by the crate. Columns cover the schedule name, the cron string, the timeout, a JSON payload, and the hook target. The rest of the database belongs to the consumer. The connection is not `SqliteWriter`.
+
+The number of active schedules is not capped. Each row's name, expression, timeout, module path, and payload are capped in the crate. A caller that accepts schedules from untrusted input caps how many rows it inserts.
 
 ## Hook
 

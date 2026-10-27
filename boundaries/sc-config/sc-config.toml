@@ -20,13 +20,14 @@ roots = ["AppName", "load", "Loader", "ConfigError"]
 allowed_dependents = []
 allowed_dependencies = ["serde", "serde_json"]
 # crates.io names (tokio, sc-observability, sc-observability-otlp,
-# sc-observability-types) stay on the cargo tree check. sc-cron is not a
-# workspace member yet.
+# sc-observability-types) stay on the cargo tree check. sc-cron is a
+# workspace member; the forbidden edge below keeps this crate off it.
 forbidden_edges = [
   "sc-config -> sc-transport",
   "sc-config -> sc-command",
   "sc-config -> sc-runtime",
   "sc-config -> sc-runtime-db-sqlite",
+  "sc-config -> sc-cron",
 ]
 
 [references]
