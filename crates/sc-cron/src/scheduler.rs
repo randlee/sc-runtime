@@ -24,14 +24,13 @@ use crate::coord::RunCoord;
 use crate::limits::encode_payload;
 use crate::worker::{DEFAULT_RELOAD_POLL, EXHAUSTED, MIN_RELOAD_POLL, Report, Worker};
 use crate::{
-    Clock, CronError, Generation, JitterSource, Job, NewSchedule, RunOutcome, Schedule,
-    ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp,
-    jitter,
+    Clock, CronError, Generation, JitterSource, Job, NewSchedule, RunOutcome, Schedule, ScheduleId,
+    ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp, jitter,
 };
 
 mod run_due;
 
-use run_due::{consumed_last_occurrence, end_recorded_final, last_outcome_refused, record_due};
+use run_due::record_due;
 
 /// What the worker does with occurrences that came due while it could not run them.
 ///
