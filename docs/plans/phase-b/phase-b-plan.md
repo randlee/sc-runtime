@@ -28,7 +28,7 @@ Waves 1–3 close on `integrate/phase-b`. Waves 4–5 are the Monty host bridge 
 | generation layouts | `b-8` | `just new`, the six layouts, package names, the rendered store edges, and the database command surface | `b-5`, `b-6`, and `b-7`, for the store crates and the adaptor |
 | `sc-cron` (Monty hooks) | `b-9` | `HookTarget::Monty`, feature `monty`, schedule-table schema 4, and the sc-cron doc amendments | `b-3` (merged on `develop`) |
 | `sc-cron` (Monty host bridge) | `b-10` | `render_template` resumed inside `monty_run::execute_feed`; `sc-compose` on `PATH` | `b-9`, for `HookTarget::Monty` and `execute_feed`. Branch `integrate/phase-b-monty` |
-| benchmark Monty reports | `b-11` | benchmark-run skill, `site/reports/benchmark-monty/`, campaign case `production_bridge` | `b-10`, for the ext fn `render_template` |
+| benchmark platform and Monty reports | `b-11` | benchmark-run skill, multi-subsystem layout (`scripts/benchmark/<subsystem>/`, `site/reports/benchmark-<subsystem>/`), HTML code examples, publish-preflight `benchmark-pass` gate, first subsystem `monty` with campaign case `production_bridge` | `b-10`, for the ext fn `render_template` |
 
 ## Sprint index
 
@@ -58,6 +58,8 @@ Waves 1–3 close on `integrate/phase-b`. Waves 4–5 are the Monty host bridge 
 
 Phase-close critical path 3 (`b-4` → `b-5` → `b-8`, and `b-1` → `b-3` → `b-9`). Width 4 (wave 2). Sprint count for that close: 9 (merged to `develop`).
 
+b-11 also owns the **publish preflight gate**: `release/publish-preflight.toml` runs `benchmark-gate` for every registered benchmark subsystem, so a binary publish requires a passing benchmark (this replaces the earlier "campaign is manual only" rule; publishing a report to `site/reports/` stays an operator step). Campaign and index HTML must carry code examples (hook snippet, `feed_start`/resume loop, `sc-compose` argv), not only timing tables. Details: [sprint-b-11-benchmark-monty-reports.md](sprint-b-11-benchmark-monty-reports.md).
+
 Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Combined sprint count 11.
 
 `b-10` and `b-11` are not one wave. Their `owned_paths` are disjoint, so the `must_follow` edge is not a shared file. `b-11` consumes `render_template` from `b-10`. A lab-only publisher in wave 4 would be a thin sprint and would not remove that edge. The cron chain `b-1` → `b-3` → `b-9` → `b-10` → `b-11` is length 5 because waves 4–5 sit after the Monty target. Those waves are not on the phase-close critical path. [phase-b-integration-close.md](phase-b-integration-close.md) records that split.
@@ -74,7 +76,20 @@ Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Combined sprint co
 
 REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../../requirements.md) and [architecture.md](../../architecture.md).
 
-`b-9` and `b-10` are governed by [REQ-CRON-0001](../../sc-cron/requirements.md) through [REQ-CRON-0005](../../sc-cron/requirements.md) and [ADR-RUN-0013](../../architecture.md). `b-11` is governed by REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0005, REQ-RUN-0005, and NFR-RUN-0005 (not REQ-CRON-0002 or REQ-CRON-0004). On this branch, `REQ-CRON-0003` is still the Rust-or-Python sentence from `b-3`. The Monty sentence is the `b-9` amendment on `integrate/phase-b`. The `render_template` sentence is a `b-10` deliverable.
+`b-9` and `b-10` are governed by [REQ-CRON-0001](../../sc-cron/requirements.md) through [REQ-CRON-0005](../../sc-cron/requirements.md) and [ADR-RUN-0013](../../architecture.md). `b-11` is governed by REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0005, REQ-RUN-0005, and NFR-RUN-0005 (not REQ-CRON-0002 or REQ-CRON-0004). `REQ-CRON-0003` on `develop` already carries the Monty sentence (`b-9` landed). The `render_template` sentence is a `b-10` deliverable.
+
+## Planned amendment: schedule row limit (stub)
+
+Plan-only until an implementation sprint is scheduled by the owner. Not assigned to `b-9` (landed), `b-10`, or `b-11` (frozen paths and non-goals). Source: [decision-sync-scheduling-at-api.md](decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
+
+| Field | Value |
+|---|---|
+| Boundary | `sc-cron` (`crates/sc-cron`, `docs/sc-cron`, ADR-RUN-0013 consequence sentence) |
+| Amends | `b-3` / `b-9` scheduler surface; `REQ-CRON-0003` / `REQ-CRON-0004` text gains the limit sentence |
+| Behavior | optional embedder-supplied limit on schedule rows (enabled + disabled); app default about 10 comes from the consuming app's sc-config JSON; sc-cron never reads sc-config; library default is unlimited |
+| Enforcement | in the insert transaction; over-limit new name → existing `CronError::InvalidSpec` (no new variant); replace does not change the count; lowering the limit never deletes rows |
+| Not included | any BDC sync or lease logic (beads-cache only); an sc-config dependency; a global in-flight lock |
+| Open | sprint id and wave; final type and constructor names for the limit parameter |
 
 ## Out of this phase
 

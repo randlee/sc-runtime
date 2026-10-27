@@ -1,5 +1,7 @@
 # Agent charter — Track A only (phase B close)
 
+**Status (2026-10-27): complete.** `develop` is at `a448385` with waves 1–3 merged. This charter is historical; the prerequisites below are satisfied.
+
 **Owner bead:** `run-7sg`  
 **Human name:** Phase B close agent (Track A)
 
