@@ -5,13 +5,16 @@
 //! error is the only timeout; other exceptions fail the run. A source that
 //! does not compile, or that lacks `cron_stop` or `cron_tick`, is
 //! [`CronError::HookFailed`] and leaves no repl.
+//!
+//! Host extension functions come from [`crate::monty_host`]. That map is empty
+//! until the b-10 bridge registers `render_template`.
 
 use std::time::Duration;
 
 use monty::MontyRepl;
 use monty_types::{
-    CallArgs, CompileOptions, ExcType, MontyException, MontyObject, NamedValues, PrintWriter,
-    ResourceLimits, ResourceTracker,
+    CallArgs, CompileOptions, ExcType, MontyException, MontyObject, PrintWriter, ResourceLimits,
+    ResourceTracker,
 };
 use serde_json::Value;
 
@@ -142,7 +145,15 @@ fn compile(
         ResourceTracker::new(limits),
         CompileOptions::default(),
     );
-    if let Err(error) = repl.feed_run(source, NamedValues::new(), PrintWriter::Disabled) {
+    tracing::trace!(
+        planned = ?crate::monty_host::planned_allowlist(),
+        "monty host extensions are not registered yet"
+    );
+    if let Err(error) = repl.feed_run(
+        source,
+        crate::monty_host::extensions(),
+        PrintWriter::Disabled,
+    ) {
         return Err(from_exception(error, "compile"));
     }
     if !repl.has_function(STOP_FN) || !repl.has_function(TICK_FN) {

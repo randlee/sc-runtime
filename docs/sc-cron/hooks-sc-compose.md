@@ -68,10 +68,22 @@ the Python reference hook.
 
 ## Benchmarks
 
-Latest numbers (regenerated each bench run):
-[sc-compose-hook-comparison.report.html](sc-compose-hook-comparison.report.html).
+Operator procedure: [`.claude/skills/benchmark-run/SKILL.md`](../../.claude/skills/benchmark-run/SKILL.md).
 
-Optional tests (not run in default CI):
+```bash
+just benchmark-monty
+just benchmark-monty-show
+just benchmark-monty-publish
+```
+
+The harness writes gitignored sidecars next to this note
+(`sc-compose-hook-comparison.report.html` and `.report.json`). The publisher
+copies them into immutable campaign files under
+[`site/reports/benchmark-monty/`](../../site/reports/benchmark-monty/). Default
+CI does not run the benchmark. The `production_bridge` case stays skipped
+until `monty_host` registers `render_template`.
+
+Optional direct harness invocation (same measurement, no site publish):
 
 ```bash
 # Requires sc_compose importable and feature monty for the Monty lab case.
@@ -87,7 +99,8 @@ path uses the same render script—add interpreter + sc-cron child overhead on t
 | `cpython_hook` | Full `PythonHook::invoke` path (subprocess + module import) |
 | `python_render_only` | Same render work, no sc-cron wrapper |
 | `sc_compose_cli_only` | Rust `sc-compose render` only (what the host bridge should call) |
-| `monty_host_bridge + sc-compose CLI` | Monty VM + host resume → CLI (target pattern; not wired in sc-cron yet) |
+| `monty_host_bridge + sc-compose CLI` | Lab Monty repl + host resume → CLI (not the production feed) |
+| `production_bridge` | Production `monty_host` path; skipped until b-10 registers `render_template` |
 
 Read the generated report for your machine. Typical outcome (release, string
 template): **Monty + host CLI ≈ bare CLI** (Monty overhead is small); **Python

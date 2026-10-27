@@ -2,7 +2,7 @@
 //! Skips when `import sc_compose` is unavailable.
 
 #![cfg(unix)]
-#![expect(clippy::expect_used, reason = "integration test")]
+#![allow(clippy::expect_used, reason = "integration test")]
 
 mod common;
 
