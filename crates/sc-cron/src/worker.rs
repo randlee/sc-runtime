@@ -180,7 +180,7 @@ pub(crate) fn resolve(
                 tracing::warn!(subsystem = "sc_cron", action = "resolve_failed",
                     schedule = %schedule.id, name = %schedule.spec.name, code = error.code(), %error,
                     "no target for this run: {error}");
-                Err(RunOutcome::Failed(format!("resolve: {error}")))
+                Err(RunOutcome::Failed(format!("resolve: {}", error.recorded())))
             }
         },
     }
@@ -386,6 +386,8 @@ where
         operation: impl FnOnce(&S) -> Result<T, CronError> + Send + 'static,
     ) -> Result<T, CronError> {
         let store = Arc::clone(&self.store);
+        // Not cancelled: shutdown waits out the current statement. Lock waits
+        // inside it are bounded by the store's SQLite busy timeout.
         tokio::task::spawn_blocking(move || operation(store.as_ref()))
             .await
             .map_err(|error| {

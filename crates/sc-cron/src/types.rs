@@ -167,9 +167,8 @@ impl RunTimeout {
             )));
         }
         // `millis` is at most MAX_TIMEOUT in ms, far below u64::MAX.
-        Ok(Self(Duration::from_millis(
-            u64::try_from(millis).unwrap_or(u64::MAX),
-        )))
+        let millis = u64::try_from(millis).expect("timeout millis fits in u64 after the max check");
+        Ok(Self(Duration::from_millis(millis)))
     }
 
     /// Returns the timeout.
@@ -243,12 +242,32 @@ impl HookTarget {
 
     /// Reads a stored kind and module text.
     pub(crate) fn from_stored(kind: &str, module: &str) -> Result<Self, String> {
-        match kind {
-            "rust" => Ok(Self::Rust),
-            "python" if !module.is_empty() => Ok(Self::Python {
+        match HookKind::parse(kind)? {
+            HookKind::Rust => Ok(Self::Rust),
+            HookKind::Python if module.is_empty() => {
+                Err("python hook has an empty module".to_owned())
+            }
+            HookKind::Python if module.len() > MAX_MODULE_LEN => {
+                Err(format!("module path is longer than {MAX_MODULE_LEN} bytes"))
+            }
+            HookKind::Python => Ok(Self::Python {
                 module: PathBuf::from(module),
             }),
-            "python" => Err("python hook has an empty module".to_owned()),
+        }
+    }
+}
+
+/// Stored hook kind. The database column stays text; this is the only parser.
+enum HookKind {
+    Rust,
+    Python,
+}
+
+impl HookKind {
+    fn parse(kind: &str) -> Result<Self, String> {
+        match kind {
+            "rust" => Ok(Self::Rust),
+            "python" => Ok(Self::Python),
             other => Err(format!("unknown hook kind {other:?}")),
         }
     }
@@ -442,14 +461,38 @@ pub enum RunOutcome {
     TimedOut,
 }
 
+impl RunOutcome {
+    /// The text stored in `last_outcome`. [`Display`] uses the same text.
+    #[must_use]
+    pub(crate) fn to_stored(&self) -> String {
+        match self {
+            Self::Ok => "ok".to_owned(),
+            Self::Refused(message) => format!("refused: {message}"),
+            Self::Failed(message) => format!("failed: {message}"),
+            Self::TimedOut => "timed_out".to_owned(),
+        }
+    }
+
+    /// Inverse of [`RunOutcome::to_stored`].
+    #[must_use]
+    pub(crate) fn from_stored(text: &str) -> Option<Self> {
+        match text {
+            "ok" => Some(Self::Ok),
+            "timed_out" => Some(Self::TimedOut),
+            _ => text
+                .strip_prefix("refused: ")
+                .map(|message| Self::Refused(message.to_owned()))
+                .or_else(|| {
+                    text.strip_prefix("failed: ")
+                        .map(|message| Self::Failed(message.to_owned()))
+                }),
+        }
+    }
+}
+
 impl fmt::Display for RunOutcome {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Ok => f.write_str("ok"),
-            Self::Refused(message) => write!(f, "refused: {message}"),
-            Self::Failed(message) => write!(f, "failed: {message}"),
-            Self::TimedOut => f.write_str("timed_out"),
-        }
+        f.write_str(&self.to_stored())
     }
 }
 

@@ -669,19 +669,9 @@ fn select_one(connection: &Connection, id: i64) -> Result<Option<Schedule>, Cron
         .transpose()
 }
 
-/// Decodes `last_outcome` text written by `RunOutcome`'s `Display`.
+/// Decodes `last_outcome` text written by [`RunOutcome::to_stored`].
 fn decode_outcome(text: &str) -> Option<RunOutcome> {
-    match text {
-        "ok" => Some(RunOutcome::Ok),
-        "timed_out" => Some(RunOutcome::TimedOut),
-        _ => text
-            .strip_prefix("refused: ")
-            .map(|message| RunOutcome::Refused(message.to_owned()))
-            .or_else(|| {
-                text.strip_prefix("failed: ")
-                    .map(|message| RunOutcome::Failed(message.to_owned()))
-            }),
-    }
+    RunOutcome::from_stored(text)
 }
 
 /// One row as stored, before typed decoding.

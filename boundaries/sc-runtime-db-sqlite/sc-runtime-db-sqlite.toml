@@ -19,7 +19,7 @@ roots = ["SqliteWriter", "WriterConn", "SqlValue", "SqliteWriterError", "CHANNEL
 [dependencies]
 allowed_dependents = []
 allowed_dependencies = ["rusqlite"]
-# No workspace crate, sqlx, or sc-observability-types. sc-cron is not a member yet.
+# No workspace crate, sqlx, or sc-observability-types. sc-cron is a workspace member; the forbidden edge below keeps this crate off it.
 forbidden_edges = [
   "sc-runtime-db-sqlite -> sc-config",
   "sc-runtime-db-sqlite -> sc-transport",

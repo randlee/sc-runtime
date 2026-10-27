@@ -55,10 +55,14 @@ pub trait ScheduleStore: Send + Sync {
 
     /// Returns every active schedule, oldest `created_at` first.
     ///
+    /// A corrupt row is skipped and reported by the store; the other
+    /// schedules are still returned. [`ScheduleStore::get`] still fails when
+    /// the one row it reads is corrupt.
+    ///
     /// # Errors
     ///
-    /// [`CronError::Store`] if storage fails or any row does not decode; a
-    /// corrupt row is reported, never skipped.
+    /// [`CronError::Store`] if storage fails for any reason other than a
+    /// corrupt row.
     fn list_active(&self) -> Result<Vec<Schedule>, CronError>;
 
     /// Records a finished run's time and outcome.

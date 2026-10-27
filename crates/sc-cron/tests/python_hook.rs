@@ -198,8 +198,9 @@ async fn an_interpreter_that_cannot_start_is_a_hook_failure() {
         .invoke(&clock, &call(&clock, &schedule, &payload, 20, 20))
         .await
         .expect_err("cannot start");
-    assert!(matches!(error, CronError::HookFailed(_)), "{error}");
-    assert_eq!(error.code(), "HOOK_FAILED");
+    assert!(matches!(error, CronError::InvalidSpec(_)), "{error}");
+    assert_eq!(error.code(), "INVALID_SPEC");
+    assert!(error.to_string().contains("hook could not run"), "{error}");
 }
 
 /// The run's deadline kills the hook, and everything the hook started: the

@@ -96,7 +96,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
 
     fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<(), CronError> {
         if !self.store.set_enabled(name, enabled)? {
-            return Err(CronError::NotFound(name.clone()));
+            return Err(CronError::missing(name));
         }
         self.signal_reload();
         Ok(())
@@ -130,7 +130,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
         Ok(written)
     }
 
-    /// The `NotFound` of the first of `names` with no active schedule, after
+    /// The invalid-spec error for the first of `names` with no active schedule, after
     /// a store call refused the list for one; a name gone by the time of this
     /// read is reported as the first name.
     fn first_missing<'n>(
@@ -144,7 +144,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
             .cloned()
             .or(first);
         Ok(match missing {
-            Some(name) => CronError::NotFound(name),
+            Some(name) => CronError::missing(&name),
             None => CronError::InvalidSpec("an empty list of schedules changed nothing".into()),
         })
     }
@@ -326,7 +326,7 @@ where
     ///
     /// # Errors
     ///
-    /// [`CronError::NotFound`] if no active schedule has this name, or the
+    /// [`CronError::InvalidSpec`] if no active schedule has this name, or the
     /// store's errors.
     pub fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<(), CronError> {
         self.core.set_enabled(name, enabled)
@@ -359,7 +359,7 @@ where
     ///
     /// # Errors
     ///
-    /// [`CronError::NotFound`] naming a listed schedule that is not active,
+    /// [`CronError::InvalidSpec`] naming a listed schedule that is not active,
     /// with nothing changed, or the store's errors.
     pub fn set_enabled_many(&self, flags: &[(ScheduleName, bool)]) -> Result<(), CronError> {
         self.core.set_enabled_many(flags)
@@ -396,7 +396,7 @@ where
     /// # Errors
     ///
     /// As [`Scheduler::start`] for the spec; [`CronError::InvalidSpec`] if
-    /// `flags` names `spec`'s schedule; [`CronError::NotFound`] naming a
+    /// `flags` names `spec`'s schedule; [`CronError::InvalidSpec`] naming a
     /// listed schedule that is not active, with nothing written; or the
     /// store's errors.
     pub fn replace_and_set_enabled(
@@ -503,18 +503,20 @@ where
     /// Runs every enabled schedule that is due now, once, and waits for them.
     ///
     /// A schedule is due when its stored next run is at or before the
-    /// clock's now. Each due run uses the row's stored hook and `job` for a
-    /// Rust row, stop-checked and run exactly as the worker does, under its
-    /// own deadline (the
+    /// clock's now and that occurrence was not already recorded. Each due
+    /// run uses the row's stored hook and `job` for a Rust row, stop-checked
+    /// and run exactly as the worker does, under its own deadline (the
     /// timeout from its start, on the clock's monotonic timeline; a run past
-    /// it is [`RunOutcome::TimedOut`]). Every run is recorded with its
-    /// generation, its next run is stored, and a schedule with no further
-    /// occurrence is ended, as the worker does. A schedule that is not due
-    /// is left untouched. This is for a caller that drives the table from an
-    /// outside scheduler instead of a worker: never run it beside a worker on
-    /// the same rows. Dropping the returned future (a caller stopped by a
-    /// signal) aborts every run it started, as a stopped worker does, so no
-    /// run is left detached.
+    /// it is [`RunOutcome::TimedOut`]). The following occurrence is stored
+    /// before the hook runs. A finished run is recorded with its generation,
+    /// and a schedule with no further occurrence is ended after a run that
+    /// was not a stop-check disable, as the worker does. A stop check that
+    /// disables the row leaves it active and disabled and does not end it.
+    /// A schedule that is not due is left untouched. This is for a caller
+    /// that drives the table from an outside scheduler instead of a worker:
+    /// never run it beside a worker on the same rows. Dropping the returned
+    /// future (a caller stopped by a signal) aborts every run it started, as
+    /// a stopped worker does, so no run is left detached.
     ///
     /// # Errors
     ///
@@ -528,6 +530,29 @@ where
         for row in rows {
             if !row.enabled || row.next_run_at.is_none_or(|at| at.as_datetime() > now) {
                 continue;
+            }
+            if consumed_last_occurrence(&row) {
+                continue;
+            }
+            let next = row.spec.expr.next_run(row.jitter, now);
+            if let Some(next_at) = next {
+                let core = Arc::clone(&self.core);
+                let (id, generation) = (row.id, row.generation);
+                let stamp = Timestamp::from_datetime(next_at);
+                match blocking(move || core.store.set_next(id, generation, stamp)).await {
+                    Ok(true) => {}
+                    Ok(false) => {
+                        tracing::warn!(subsystem = "sc_cron", action = "fenced",
+                            schedule = %row.id, name = %row.spec.name,
+                            "the schedule changed before launch; skipped");
+                        continue;
+                    }
+                    Err(error) => {
+                        tracing::error!(subsystem = "sc_cron", action = "set_next_failed",
+                        schedule = %row.id, code = error.code(), %error,
+                        "next run not stored: {error}")
+                    }
+                }
             }
             let monotonic = self.core.clock.monotonic_now();
             let deadline = monotonic
@@ -549,56 +574,97 @@ where
                     () = sleep_until_monotonic(clock.as_ref(), deadline) => Report::Ran(RunOutcome::TimedOut),
                 }
             });
-            runs.push((row, DueTask(handle)));
+            runs.push((row, next, DueTask(handle)));
         }
         let mut done = Vec::with_capacity(runs.len());
-        for (row, mut task) in runs {
+        for (row, next, mut task) in runs {
             let report = (&mut task.0).await.unwrap_or_else(|error| {
                 Report::Ran(RunOutcome::Failed(format!(
                     "job panicked or was cancelled: {error}"
                 )))
             });
-            done.push(self.finish_due(&row, report).await);
+            done.push(self.finish_due(&row, report, next).await);
         }
         Ok(done)
     }
 
-    /// Records one run of [`Scheduler::run_due`] and stores its next run.
-    async fn finish_due(&self, row: &Schedule, report: Report) -> DueRun {
+    /// Records one run of [`Scheduler::run_due`].
+    ///
+    /// The following occurrence, when there is one, was stored before the
+    /// hook ran. A stop-check disable only disables. A run with no further
+    /// occurrence ends the schedule. A refused follow-up write after a
+    /// successful record is a partial write: the outcome stays recorded.
+    async fn finish_due(
+        &self,
+        row: &Schedule,
+        report: Report,
+        next: Option<DateTime<Utc>>,
+    ) -> DueRun {
         let (id, generation) = (row.id, row.generation);
         let at = Timestamp::from_datetime(self.core.clock.now());
-        let next = row.spec.expr.next_run(row.jitter, at.as_datetime());
         let core = Arc::clone(&self.core);
         let outcome = match &report {
             Report::Ran(outcome) => outcome.clone(),
             Report::Disable(reason) | Report::Delete(reason) => RunOutcome::Refused(reason.clone()),
         };
         let recorded = outcome.clone();
-        let result = blocking(move || {
-            let written = match report {
-                Report::Ran(outcome) => core.store.record_run(id, generation, at, &outcome)?,
-                Report::Disable(reason) => core.store.disable(id, generation, at, &reason)?,
-                Report::Delete(reason) => {
-                    core.signal_reload();
-                    return core.store.stop(id, generation, at, &reason);
-                }
-            };
-            if !written {
-                return Ok(false);
+        let result = blocking(move || match report {
+            Report::Disable(reason) => {
+                core.store
+                    .disable(id, generation, at, &reason)
+                    .map(|wrote| {
+                        if wrote {
+                            Finish::Recorded
+                        } else {
+                            Finish::Fenced
+                        }
+                    })
             }
-            match next {
-                Some(next) => core
-                    .store
-                    .set_next(id, generation, Timestamp::from_datetime(next)),
-                None => core.store.stop(id, generation, at, EXHAUSTED),
+            Report::Delete(reason) => {
+                core.signal_reload();
+                core.store.stop(id, generation, at, &reason).map(|wrote| {
+                    if wrote {
+                        Finish::Recorded
+                    } else {
+                        Finish::Fenced
+                    }
+                })
+            }
+            Report::Ran(outcome) => {
+                if !core.store.record_run(id, generation, at, &outcome)? {
+                    return Ok(Finish::Fenced);
+                }
+                match next {
+                    Some(next) => {
+                        let stored =
+                            core.store
+                                .set_next(id, generation, Timestamp::from_datetime(next))?;
+                        Ok(if stored {
+                            Finish::Recorded
+                        } else {
+                            Finish::Partial
+                        })
+                    }
+                    None => core.store.stop(id, generation, at, EXHAUSTED).map(|wrote| {
+                        if wrote {
+                            Finish::Recorded
+                        } else {
+                            Finish::Partial
+                        }
+                    }),
+                }
             }
         })
         .await;
         match result {
-            Ok(true) => tracing::info!(subsystem = "sc_cron", action = "recorded",
+            Ok(Finish::Recorded) => tracing::info!(subsystem = "sc_cron", action = "recorded",
                 schedule = %id, name = %row.spec.name, outcome = %recorded, "run recorded"),
-            Ok(false) => tracing::warn!(subsystem = "sc_cron", action = "fenced",
-                schedule = %id, name = %row.spec.name, "the schedule changed during its run; nothing recorded"),
+            Ok(Finish::Fenced) => tracing::warn!(subsystem = "sc_cron", action = "fenced",
+                schedule = %id, name = %row.spec.name,
+                "the schedule changed during its run; nothing recorded"),
+            Ok(Finish::Partial) => tracing::warn!(subsystem = "sc_cron", action = "partial_write",
+                schedule = %id, name = %row.spec.name, outcome = %recorded,
+                "run recorded; a follow-up write was refused"),
             Err(error) => tracing::error!(subsystem = "sc_cron", action = "record_failed",
                 schedule = %id, code = error.code(), %error, "run outcome not recorded: {error}"),
         }
@@ -607,6 +673,27 @@ where
             outcome: recorded,
         }
     }
+}
+
+/// The stored next run is the occurrence already recorded, and the expression
+/// has nothing after it. Re-enabling that row must not run the occurrence again.
+fn consumed_last_occurrence(row: &Schedule) -> bool {
+    match (row.next_run_at, row.last_run_at) {
+        (Some(next), Some(last)) if next.as_datetime() <= last.as_datetime() => row
+            .spec
+            .expr
+            .next_run(row.jitter, last.as_datetime())
+            .is_none(),
+        _ => false,
+    }
+}
+
+/// How [`Scheduler::finish_due`] left the row.
+enum Finish {
+    Recorded,
+    Fenced,
+    /// The outcome was written; a later `set_next` or `stop` was refused.
+    Partial,
 }
 
 /// One run [`Scheduler::run_due`] started, aborted when dropped: as the
@@ -654,7 +741,8 @@ impl Drop for LiveGuard {
 
 /// Owner of a running worker; await [`WorkerHandle::shutdown`] to stop it.
 ///
-/// Dropping the handle signals the worker to stop, but the worker then
+/// Call [`WorkerHandle::shutdown`] before the handle is dropped. Dropping
+/// the handle signals the worker to stop and does not wait. The worker then
 /// drains its in-flight runs detached, and their outcomes are lost if the
 /// process exits first.
 #[derive(Debug)]

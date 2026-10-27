@@ -15,8 +15,8 @@ mod common;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use common::{Fixture, ScriptedJob, shutdown};
-use sc_cron::{HookTarget, RunOutcome};
+use common::{Fixture, ScriptedJob, StopScript, shutdown, ts};
+use sc_cron::{HookTarget, RunOutcome, ScheduleSpec, StopDecision};
 
 /// A stored Python path that cannot be started: the run is recorded `Failed`
 /// and the row stays active and enabled.
@@ -96,6 +96,62 @@ async fn run_due_runs_what_is_due_and_skips_what_is_not() {
     let untouched = fixture.row(&later);
     assert_eq!(untouched.last_outcome, None);
     assert_eq!(untouched.next_run_at, later.next_run_at);
+}
+
+/// A stop check that disables records the refusal, leaves the row active,
+/// and does not run that occurrence again when the row is enabled.
+#[tokio::test]
+async fn run_due_disable_does_not_replay_or_end_the_schedule() {
+    let fixture = Fixture::new();
+    let job = Arc::new(ScriptedJob::new());
+    job.then_stop(StopScript::Decide(StopDecision::Disable("quiet".into())));
+    let due = fixture.start(fixture.spec("due"));
+    fixture.clock.advance(chrono::Duration::seconds(60));
+    let runs = fixture
+        .scheduler
+        .run_due(job.clone())
+        .await
+        .expect("run due");
+    assert_eq!(runs.len(), 1, "{runs:?}");
+    assert_eq!(runs[0].outcome, RunOutcome::Refused("quiet".into()));
+    assert_eq!(job.runs(), 0);
+    let row = fixture.row(&due);
+    assert!(row.is_active() && !row.enabled, "{row:?}");
+    assert_eq!(row.stop_reason, None);
+    assert_eq!(row.next_run_at, Some(ts("2026-10-19T00:02:00Z")));
+    fixture
+        .scheduler
+        .set_enabled(&due.spec.name, true)
+        .expect("enable");
+    let again = fixture.scheduler.run_due(job).await.expect("again");
+    assert!(again.is_empty(), "{again:?}");
+
+    let once = Fixture::new();
+    let job = Arc::new(ScriptedJob::new());
+    job.then_stop(StopScript::Decide(StopDecision::Disable("quiet".into())));
+    let finite = once.start(
+        ScheduleSpec::new(
+            "finite",
+            "0 0 1 20 10 * 2026",
+            std::time::Duration::from_secs(20),
+            serde_json::json!({}),
+        )
+        .expect("spec"),
+    );
+    once.clock.advance(chrono::Duration::seconds(25 * 60 * 60));
+    let runs = once.scheduler.run_due(job.clone()).await.expect("run due");
+    assert_eq!(runs.len(), 1, "{runs:?}");
+    assert_eq!(job.runs(), 0);
+    let row = once.row(&finite);
+    assert!(row.is_active() && !row.enabled, "{row:?}");
+    assert_eq!(row.stop_reason, None);
+    once.scheduler
+        .set_enabled(&finite.spec.name, true)
+        .expect("enable");
+    let again = once.scheduler.run_due(job).await.expect("again");
+    assert!(again.is_empty(), "{again:?}");
+    let row = once.row(&finite);
+    assert!(row.is_active() && row.enabled, "{row:?}");
 }
 
 #[cfg(unix)]

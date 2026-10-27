@@ -20,6 +20,8 @@ A six-field string is seconds first: `second minute hour day-of-month month day-
 
 One table, created by the crate. Columns cover the schedule name, the cron string, the timeout, a JSON payload, and the hook target. The rest of the database belongs to the consumer. The connection is not `SqliteWriter`.
 
+The number of active schedules is not capped. Each row's name, expression, timeout, module path, and payload are capped in the crate. A caller that accepts schedules from untrusted input caps how many rows it inserts.
+
 ## Hook
 
 ```rust

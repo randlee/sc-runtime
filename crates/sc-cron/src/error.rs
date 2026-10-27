@@ -25,10 +25,6 @@ pub enum CronError {
     InvalidSpec(String),
     /// A schedule with this name is already active.
     AlreadyActive(ScheduleName),
-    /// No active schedule has this name (REQ-CRON-0014).
-    NotFound(ScheduleName),
-    /// A Python hook could not be run to a result (REQ-CRON-0013).
-    HookFailed(String),
     /// The schedule store failed.
     Store(StoreError),
     /// `(id, generation)` no longer names the active schedule.
@@ -44,18 +40,33 @@ impl CronError {
     /// Returns the stable machine-readable code for this error.
     ///
     /// One of `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`,
-    /// `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, `FENCED`.
+    /// `STORE_FAILED`, `FENCED` (ADR-RUN-0013 point 6).
     #[must_use]
     pub const fn code(&self) -> &'static str {
         match self {
             Self::BadExpression(_) => "BAD_EXPRESSION",
             Self::InvalidSpec(_) => "INVALID_SPEC",
             Self::AlreadyActive(_) => "ALREADY_ACTIVE",
-            Self::NotFound(_) => "NOT_FOUND",
-            Self::HookFailed(_) => "HOOK_FAILED",
             Self::Store(_) => "STORE_FAILED",
             Self::Fenced { .. } => "FENCED",
         }
+    }
+
+    /// No active schedule has this name. The approved variant is
+    /// [`CronError::InvalidSpec`] (ADR-RUN-0013 point 6).
+    pub(crate) fn missing(name: &ScheduleName) -> Self {
+        Self::InvalidSpec(format!("no active schedule is named {name}"))
+    }
+
+    /// A Python hook could not be started. The approved variant is
+    /// [`CronError::InvalidSpec`] (ADR-RUN-0013 point 6).
+    pub(crate) fn hook_failed(detail: impl fmt::Display) -> Self {
+        Self::InvalidSpec(format!("hook could not run: {detail}"))
+    }
+
+    /// Stable code plus display text, for a stored [`crate::RunOutcome::Failed`].
+    pub(crate) fn recorded(&self) -> String {
+        format!("{}: {self}", self.code())
     }
 
     /// Returns what a caller can do about this error.
@@ -68,8 +79,6 @@ impl CronError {
             }
             Self::InvalidSpec(_) => "correct the named field; see the limits in sc_cron's docs",
             Self::AlreadyActive(_) => "stop the active schedule first, or choose another name",
-            Self::NotFound(_) => "start the schedule first, or name an active schedule",
-            Self::HookFailed(_) => "check that python3 can run the module",
             Self::Store(error) => error.kind().recovery(),
             Self::Fenced { .. } => "re-read the schedule and act on its current generation",
         }
@@ -82,8 +91,6 @@ impl fmt::Display for CronError {
             Self::BadExpression(message) => write!(f, "invalid cron expression: {message}"),
             Self::InvalidSpec(message) => write!(f, "invalid schedule: {message}"),
             Self::AlreadyActive(name) => write!(f, "schedule {name} is already active"),
-            Self::NotFound(name) => write!(f, "no active schedule is named {name}"),
-            Self::HookFailed(message) => write!(f, "hook could not run: {message}"),
             Self::Store(error) => write!(f, "schedule store failed: {error}"),
             Self::Fenced { id, generation } => write!(
                 f,
@@ -226,9 +233,7 @@ mod tests {
         let cases = [
             (CronError::BadExpression(String::new()), "BAD_EXPRESSION"),
             (CronError::InvalidSpec(String::new()), "INVALID_SPEC"),
-            (CronError::AlreadyActive(name.clone()), "ALREADY_ACTIVE"),
-            (CronError::NotFound(name), "NOT_FOUND"),
-            (CronError::HookFailed(String::new()), "HOOK_FAILED"),
+            (CronError::AlreadyActive(name), "ALREADY_ACTIVE"),
             (
                 CronError::Store(StoreError::new(StoreErrorKind::Busy, "x")),
                 "STORE_FAILED",

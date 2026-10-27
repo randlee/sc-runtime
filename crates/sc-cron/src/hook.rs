@@ -211,7 +211,7 @@ impl PythonHook {
     ///
     /// # Errors
     ///
-    /// [`CronError::HookFailed`] if the temporary directory cannot be made or
+    /// [`CronError::InvalidSpec`] if the temporary directory cannot be made or
     /// the interpreter cannot be started. A hook that starts and fails is
     /// not an error here: it is the [`HookOutput`].
     pub async fn invoke<C: Clock + ?Sized>(
@@ -239,7 +239,7 @@ impl PythonHook {
     ) -> Result<HookOutput, CronError> {
         let input = request(call, deadline).to_string();
         let cwd = TempCwd::new()
-            .map_err(|error| CronError::HookFailed(format!("no temporary directory: {error}")))?;
+            .map_err(|error| CronError::hook_failed(format!("no temporary directory: {error}")))?;
         let spec = ChildSpec {
             program: &self.program,
             args: vec![self.module.clone().into(), call.event.as_str().into()],
@@ -250,7 +250,7 @@ impl PythonHook {
         let captured = supervise(&spec, MAX_HOOK_OUTPUT_BYTES, expiry)
             .await
             .map_err(|error| {
-                CronError::HookFailed(format!(
+                CronError::hook_failed(format!(
                     "{} {} {}: {error}",
                     self.program.display(),
                     self.module.display(),
@@ -433,7 +433,12 @@ pub(crate) async fn stop_step<C: Clock + ?Sized>(
 fn stop_outcome(result: Result<HookOutput, CronError>) -> Step {
     let output = match result {
         Ok(output) => output,
-        Err(error) => return Step::Skip(RunOutcome::Failed(format!("stop check: {error}"))),
+        Err(error) => {
+            return Step::Skip(RunOutcome::Failed(format!(
+                "stop check: {}",
+                error.recorded()
+            )));
+        }
     };
     match output.stop_decision() {
         Ok(StopDecision::Continue) => Step::Run,
@@ -455,7 +460,7 @@ pub(crate) async fn tick_outcome<C: Clock + ?Sized>(
 /// What the `cron.tick` hook's result means.
 fn tick_result(result: Result<HookOutput, CronError>) -> RunOutcome {
     match result {
-        Err(error) => RunOutcome::Failed(error.to_string()),
+        Err(error) => RunOutcome::Failed(error.recorded()),
         Ok(output) => output.run_outcome(),
     }
 }
@@ -533,7 +538,7 @@ mod tests {
 
     #[test]
     fn a_hook_that_cannot_start_skips_the_stop_check_and_fails_the_tick() {
-        let error = || Err(CronError::HookFailed("no interpreter".into()));
+        let error = || Err(CronError::hook_failed("no interpreter"));
         assert!(matches!(
             stop_outcome(error()),
             Step::Skip(RunOutcome::Failed(why)) if why.starts_with("stop check: ")
