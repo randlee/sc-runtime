@@ -92,7 +92,7 @@ impl EngineStore for Store {
 // store-boundaries` fails if these copies drift.
 /// The one table-name decision for read and write.
 fn known_table(table: &TableName) -> Result<(), StoreError> {
-    if table == WIDGETS {
+    if table.as_str() == WIDGETS {
         Ok(())
     } else {
         Err(StoreError::new(
