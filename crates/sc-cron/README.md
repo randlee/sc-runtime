@@ -29,8 +29,9 @@ other workspace crate.
   and on again without rewriting its row; a disabled schedule never fires.
 - **Python hook target.** A row whose hook is `Python { module }` runs
   `python3 <module> cron.stop` and `python3 <module> cron.tick` from a
-  temporary directory, with one JSON object on stdin. The object carries the
-  schedule name and the row payload. Every hook is killed, with everything
+  temporary directory, with one JSON object on stdin. The object is
+  `sc-cron.hook.v1` with `protocol`, `event`, `schedule`, `payload`, and
+  `deadline`. Every hook is killed, with everything
   it started, at the schedule's timeout capped by the time left before the
   run's deadline, and its output is capped. A `Rust` row calls the job
   passed to `Scheduler::spawn_worker`.
@@ -107,11 +108,13 @@ Runtime notes:
 | Feature | Enables |
 |---|---|
 | `test-utils` | `ManualClock` (a deterministic clock whose parks tell a test the worker has settled) and `SeqJitter` (a scripted jitter source) |
+| `monty` | Trusted in-process Monty source hooks (`HookTarget::Monty`); requires **Rust 1.96.1** to build. Feeds run on the blocking pool in wall time. |
 
 ## Links
 
 - Repository: <https://github.com/randlee/sc-runtime>
 - Architecture: [`docs/sc-cron/architecture.md`](../../docs/sc-cron/architecture.md)
 - Requirements: [`docs/sc-cron/requirements.md`](../../docs/sc-cron/requirements.md)
+- sc-compose hooks: [`docs/sc-cron/hooks-sc-compose.md`](../../docs/sc-cron/hooks-sc-compose.md)
 
-MSRV: Rust 1.94.1 (edition 2024). License: MIT.
+MSRV: Rust 1.94.1 (edition 2024) for the default build; enable `monty` only on Rust 1.96.1 or newer. License: MIT.

@@ -9,6 +9,7 @@ repository.workspace = true
 rust-version.workspace = true
 description = "One rusqlite connection on one writer thread."
 readme = "README.md"
+publish = false
 
 [dependencies]
 # 0.39 resolves libsqlite3-sys 0.37, which sqlx 0.9 sqlite can link
