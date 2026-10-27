@@ -512,7 +512,10 @@ where
     /// and a schedule with no further occurrence is ended after a run that
     /// was not a stop-check disable, as the worker does. A stop check that
     /// disables the row leaves it active and disabled and does not end it.
-    /// A schedule that is not due is left untouched. This is for a caller
+    /// A final run whose ending write did not commit is ended on a later
+    /// call, without running the hook again; a re-enabled stop-check disable
+    /// is left as it is. A schedule that is not due is left untouched. This
+    /// is for a caller
     /// that drives the table from an outside scheduler instead of a worker:
     /// never run it beside a worker on the same rows. Dropping the returned
     /// future (a caller stopped by a signal) aborts every run it started, as
@@ -532,6 +535,9 @@ where
                 continue;
             }
             if consumed_last_occurrence(&row) {
+                if !last_outcome_refused(&row) {
+                    end_recorded_final(self, &row).await;
+                }
                 continue;
             }
             let next = row.spec.expr.next_run(row.jitter, now);
@@ -634,25 +640,14 @@ where
                 if !core.store.record_run(id, generation, at, &outcome)? {
                     return Ok(Finish::Fenced);
                 }
-                match next {
+                let follow_up = match next {
                     Some(next) => {
-                        let stored =
-                            core.store
-                                .set_next(id, generation, Timestamp::from_datetime(next))?;
-                        Ok(if stored {
-                            Finish::Recorded
-                        } else {
-                            Finish::Partial
-                        })
+                        core.store
+                            .set_next(id, generation, Timestamp::from_datetime(next))
                     }
-                    None => core.store.stop(id, generation, at, EXHAUSTED).map(|wrote| {
-                        if wrote {
-                            Finish::Recorded
-                        } else {
-                            Finish::Partial
-                        }
-                    }),
-                }
+                    None => core.store.stop(id, generation, at, EXHAUSTED),
+                };
+                Ok(follow_up_finish(follow_up))
             }
         })
         .await;
@@ -665,6 +660,11 @@ where
             Ok(Finish::Partial) => tracing::warn!(subsystem = "sc_cron", action = "partial_write",
                 schedule = %id, name = %row.spec.name, outcome = %recorded,
                 "run recorded; a follow-up write was refused"),
+            Ok(Finish::FollowUp(error)) => tracing::error!(
+                subsystem = "sc_cron", action = "partial_write",
+                schedule = %id, name = %row.spec.name, outcome = %recorded,
+                code = error.code(), %error,
+                "run recorded; a follow-up write failed: {error}"),
             Err(error) => tracing::error!(subsystem = "sc_cron", action = "record_failed",
                 schedule = %id, code = error.code(), %error, "run outcome not recorded: {error}"),
         }
@@ -675,8 +675,8 @@ where
     }
 }
 
-/// The stored next run is the occurrence already recorded, and the expression
-/// has nothing after it. Re-enabling that row must not run the occurrence again.
+/// The stored next run is an occurrence already recorded, and the expression
+/// has nothing after that record.
 fn consumed_last_occurrence(row: &Schedule) -> bool {
     match (row.next_run_at, row.last_run_at) {
         (Some(next), Some(last)) if next.as_datetime() <= last.as_datetime() => row
@@ -688,12 +688,51 @@ fn consumed_last_occurrence(row: &Schedule) -> bool {
     }
 }
 
+/// A stop-check disable records [`RunOutcome::Refused`]. Re-enabling that row
+/// must not run the occurrence again and must not end it.
+fn last_outcome_refused(row: &Schedule) -> bool {
+    matches!(row.last_outcome, Some(RunOutcome::Refused(_)))
+}
+
+/// Ends a final run whose record committed and whose `stop` did not.
+async fn end_recorded_final<S, C, J>(scheduler: &Scheduler<S, C, J>, row: &Schedule)
+where
+    S: ScheduleStore + 'static,
+    C: Clock + 'static,
+    J: JitterSource + 'static,
+{
+    let (id, generation) = (row.id, row.generation);
+    let at = Timestamp::from_datetime(scheduler.core.clock.now());
+    let core = Arc::clone(&scheduler.core);
+    match blocking(move || core.store.stop(id, generation, at, EXHAUSTED)).await {
+        Ok(true) => tracing::info!(subsystem = "sc_cron", action = "stopped",
+            schedule = %id, name = %row.spec.name,
+            "schedule ended; its last occurrence was already recorded"),
+        Ok(false) => tracing::warn!(subsystem = "sc_cron", action = "fenced",
+            schedule = %id, name = %row.spec.name,
+            "the schedule changed before it could be ended"),
+        Err(error) => tracing::error!(subsystem = "sc_cron", action = "stop_failed",
+            schedule = %id, code = error.code(), %error, "schedule not ended: {error}"),
+    }
+}
+
 /// How [`Scheduler::finish_due`] left the row.
 enum Finish {
     Recorded,
     Fenced,
     /// The outcome was written; a later `set_next` or `stop` was refused.
     Partial,
+    /// The outcome was written; a later `set_next` or `stop` failed.
+    FollowUp(CronError),
+}
+
+/// Classifies a follow-up `set_next` or `stop` after `record_run` committed.
+fn follow_up_finish(result: Result<bool, CronError>) -> Finish {
+    match result {
+        Ok(true) => Finish::Recorded,
+        Ok(false) => Finish::Partial,
+        Err(error) => Finish::FollowUp(error),
+    }
 }
 
 /// One run [`Scheduler::run_due`] started, aborted when dropped: as the

@@ -154,6 +154,46 @@ async fn run_due_disable_does_not_replay_or_end_the_schedule() {
     assert!(row.is_active() && row.enabled, "{row:?}");
 }
 
+/// A final run whose ending write failed stays active. The next `run_due`
+/// ends it and does not run the hook again.
+#[tokio::test]
+async fn run_due_ends_a_recorded_final_run_whose_stop_did_not_commit() {
+    let fixture = Fixture::new();
+    let job = Arc::new(ScriptedJob::new());
+    let finite = fixture.start(
+        ScheduleSpec::new(
+            "finite",
+            "0 0 1 20 10 * 2026",
+            std::time::Duration::from_secs(20),
+            serde_json::json!({}),
+        )
+        .expect("spec"),
+    );
+    fixture
+        .clock
+        .advance(chrono::Duration::seconds(25 * 60 * 60));
+    fixture.store.fail_next_stop();
+    let runs = fixture
+        .scheduler
+        .run_due(job.clone())
+        .await
+        .expect("run due");
+    assert_eq!(runs.len(), 1, "{runs:?}");
+    assert_eq!(runs[0].outcome, RunOutcome::Ok);
+    assert_eq!(job.runs(), 1);
+    let row = fixture.row(&finite);
+    assert!(row.is_active() && row.enabled, "{row:?}");
+    assert_eq!(row.last_outcome, Some(RunOutcome::Ok));
+    assert_eq!(row.stop_reason, None);
+
+    let again = fixture.scheduler.run_due(job.clone()).await.expect("again");
+    assert!(again.is_empty(), "{again:?}");
+    assert_eq!(job.runs(), 1, "the recorded occurrence is not run again");
+    let row = fixture.row(&finite);
+    assert!(!row.is_active(), "{row:?}");
+    assert_eq!(row.stop_reason.as_deref(), Some("no future occurrence"));
+}
+
 #[cfg(unix)]
 mod python {
     use super::*;
