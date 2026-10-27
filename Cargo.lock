@@ -2153,6 +2153,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "tokio",
+ "tracing",
  "utoipa",
  "utoipa-axum",
 ]

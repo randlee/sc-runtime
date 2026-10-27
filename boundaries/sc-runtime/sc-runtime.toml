@@ -28,6 +28,7 @@ allowed_dependencies = [
   "utoipa-axum",
   "serde",
   "rmcp",
+  "tracing",
 ]
 # sqlx, sc-observability, and sc-observability-otlp are not workspace members.
 # sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree

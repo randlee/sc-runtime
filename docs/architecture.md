@@ -1599,22 +1599,28 @@ variable, so two such crates can build in one workspace.
    | Default pool | read pool of N connections plus a one-connection write pool, WAL on | single pool | single pool |
    | Rendered package | `<project>-store-sqlite` | `<project>-store-postgres` | `<project>-store-mysql` |
 
-2. Each store crate MUST expose `EngineStore`: `open`, `read_rows`, and
-   `write_rows`, as the sprint `b-4` sample states them. `OpenConfig` is
-   `{ url: String }`, constructed with `OpenConfig::new` from crates other
-   than the schema crate. SQLite reads a filesystem path from `url`. Postgres
-   and MySQL read a database URL. Engine options stay in that URL's query
-   until a second field is justified. `StoreError` carries `StoreCode` and
-   `message` and implements `Display` and `std::error::Error`. `StoreCode` is
-   `non_exhaustive`. Its known variants are `Connection`, `Query`,
-   `Migration`, `NotFound`, `Conflict`, and `Unavailable`. `Unavailable` is
-   the only retryable variant. `StoreCode::remediation` is the recovery text.
-   The engine copies the driver error into `message`. `Error::source` stays
-   empty so the schema crate does not name a driver type. `RowRecord.payload`
-   is UTF-8 JSON whose keys are column names, using the encoding table in the
-   sprint `b-4` sample. `read_rows` and `write_rows` reject more than 10_000
-   rows or a payload over 1 MiB. `EngineStore` is static dispatch.
-   Amended 2026-10-26.
+2. On a one-store layout, `EngineStore` is optional example code for a later
+   pairing. The generated implementation stays in the store crate. `EngineStore`
+   is not a published workspace trait. Where a store exposes it, the methods
+   are `open`, `read_rows`, and `write_rows`, as the sprint `b-4` sample states
+   them. `write_rows` replaces the named table: it clears the rows, then
+   inserts the batch, so a second copy does not return `Conflict`. `OpenConfig`
+   carries `target: StoreTarget`. `StoreTarget` is `SqlitePath(PathBuf)`,
+   `PostgresUrl(String)`, or `MysqlUrl(String)`, constructed with
+   `OpenConfig::sqlite`, `OpenConfig::postgres`, or `OpenConfig::mysql`. A
+   store's `open` accepts only its own variant. Engine options stay in a URL's
+   query until a second field is justified. `StoreError` carries `StoreCode`
+   and `message` and implements `Display` and `std::error::Error`. `StoreCode`
+   is `non_exhaustive`. Its known variants are `Connection`, `Query`,
+   `Migration`, `NotFound`, `Conflict`, `Unavailable`, and `Membership`.
+   `Unavailable` is the only retryable variant. `StoreCode::remediation` is the
+   recovery text. `Membership` names `membership.toml` and the engine, table,
+   and column rule. The engine copies the driver error into `message`.
+   `Error::source` stays empty so the schema crate does not name a driver type.
+   `RowRecord.table` is `TableName`. `RowRecord.payload` is UTF-8 JSON whose
+   keys are column names, using the encoding table in the sprint `b-4` sample.
+   `read_rows` and `write_rows` reject more than 10_000 rows or a payload over
+   1 MiB. `EngineStore` is static dispatch. Amended 2026-10-27.
 3. Only `store-*` crates depend on sqlx. A two-store layout's adaptor depends
    on the `store-*` crates whose rows it moves, and `service` depends on the
    adaptor. A one-store layout has no adaptor, and `service` depends on that

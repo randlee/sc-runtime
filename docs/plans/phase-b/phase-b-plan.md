@@ -1,3 +1,44 @@
+---
+requirements:
+  - REQ-RUN-0001
+  - REQ-RUN-0004
+  - REQ-RUN-0005
+  - REQ-RUN-0201
+  - REQ-RUN-0301
+  - REQ-RUN-0302
+  - REQ-RUN-0303
+  - REQ-RUN-0308
+  - REQ-RUN-0313
+  - REQ-RUN-0314
+  - REQ-RUN-0315
+  - REQ-RUN-0316
+  - REQ-RUN-0317
+  - REQ-RUN-0318
+  - REQ-RUN-0319
+  - REQ-RUN-0320
+  - REQ-RUN-0321
+  - REQ-RUN-0322
+  - REQ-RUN-0323
+  - REQ-RUN-0324
+  - REQ-RUN-0325
+  - REQ-RUN-0326
+  - REQ-RUN-0327
+  - REQ-RUN-0328
+  - REQ-RUN-0329
+  - REQ-RUN-0330
+  - REQ-RUN-0331
+  - REQ-RUN-0401
+  - REQ-RUN-0402
+  - REQ-RUN-0403
+  - REQ-RUN-0503
+  - REQ-RUN-0701
+  - NFR-RUN-0001
+  - NFR-RUN-0002
+  - NFR-RUN-0005
+  - NFR-RUN-0008
+  - NFR-RUN-0009
+---
+
 # Phase b — stores, adaptor, writer, cron, and lint
 
 ## Phase id
@@ -74,7 +115,7 @@ Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Row-limit path 1 (
 ## Requirements and ADRs
 
 - [REQ-RUN-0001](../../requirements.md), [REQ-RUN-0004](../../requirements.md), [REQ-RUN-0005](../../requirements.md), [REQ-RUN-0201](../../requirements.md), [REQ-RUN-0301](../../requirements.md), [REQ-RUN-0302](../../requirements.md), [REQ-RUN-0303](../../requirements.md), [REQ-RUN-0304](../../requirements.md), [REQ-RUN-0306](../../requirements.md), [REQ-RUN-0307](../../requirements.md), [REQ-RUN-0308](../../requirements.md), [REQ-RUN-0313](../../requirements.md) through [REQ-RUN-0331](../../requirements.md), [REQ-RUN-0401](../../requirements.md), [REQ-RUN-0402](../../requirements.md), [REQ-RUN-0403](../../requirements.md), [REQ-RUN-0501](../../requirements.md), [REQ-RUN-0503](../../requirements.md), [REQ-RUN-0701](../../requirements.md), [NFR-RUN-0001](../../requirements.md), [NFR-RUN-0002](../../requirements.md), [NFR-RUN-0004](../../requirements.md), [NFR-RUN-0005](../../requirements.md), [NFR-RUN-0006](../../requirements.md), [NFR-RUN-0008](../../requirements.md), [NFR-RUN-0009](../../requirements.md).
-- [ADR-RUN-0001](../../architecture.md), [ADR-RUN-0002](../../architecture.md), [ADR-RUN-0003](../../architecture.md), [ADR-RUN-0004](../../architecture.md), [ADR-RUN-0005](../../architecture.md), [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0007](../../architecture.md), [ADR-RUN-0008](../../architecture.md), [ADR-RUN-0011](../../architecture.md), [ADR-RUN-0012](../../architecture.md), [ADR-RUN-0013](../../architecture.md), [ADR-RUN-0014](../../architecture.md), [ADR-RUN-0015](../../architecture.md), [ADR-RUN-0201](../../architecture.md), [ADR-RUN-0202](../../architecture.md), [ADR-RUN-0301](../../architecture.md), [ADR-RUN-0302](../../architecture.md), [ADR-RUN-0303](../../architecture.md), [ADR-RUN-0305](../../architecture.md), [ADR-RUN-0306](../../architecture.md), [ADR-RUN-0401](../../architecture.md), [ADR-RUN-0402](../../architecture.md).
+- [ADR-RUN-0001](../../architecture.md), [ADR-RUN-0002](../../architecture.md), [ADR-RUN-0003](../../architecture.md), [ADR-RUN-0004](../../architecture.md), [ADR-RUN-0005](../../architecture.md), [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0007](../../architecture.md), [ADR-RUN-0008](../../architecture.md), [ADR-RUN-0009](../../architecture.md), [ADR-RUN-0011](../../architecture.md), [ADR-RUN-0012](../../architecture.md), [ADR-RUN-0013](../../architecture.md), [ADR-RUN-0014](../../architecture.md), [ADR-RUN-0015](../../architecture.md), [ADR-RUN-0201](../../architecture.md), [ADR-RUN-0202](../../architecture.md), [ADR-RUN-0301](../../architecture.md), [ADR-RUN-0302](../../architecture.md), [ADR-RUN-0303](../../architecture.md), [ADR-RUN-0305](../../architecture.md), [ADR-RUN-0306](../../architecture.md), [ADR-RUN-0401](../../architecture.md), [ADR-RUN-0402](../../architecture.md), [ADR-RT-0001](../../sc-runtime/architecture.md), [ADR-RT-0002](../../sc-runtime/architecture.md), [ADR-RT-0003](../../sc-runtime/architecture.md), [ADR-RT-0004](../../sc-runtime/architecture.md), [ADR-TRN-0001](../../sc-transport/architecture.md), [ADR-TRN-0002](../../sc-transport/architecture.md), [ADR-TRN-0003](../../sc-transport/architecture.md), [ADR-TRN-0004](../../sc-transport/architecture.md), [ADR-TRN-0005](../../sc-transport/architecture.md), [ADR-TRN-0006](../../sc-transport/architecture.md), [ADR-CMD-0001](../../sc-command/architecture.md), [ADR-CMD-0002](../../sc-command/architecture.md), [ADR-CMD-0003](../../sc-command/architecture.md).
 - Acceptance for the writer contract roots at [ADR-RUN-0012](../../architecture.md) and [docs/sc-runtime-db-sqlite/architecture.md](../../sc-runtime-db-sqlite/architecture.md).
 
 REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../../requirements.md) and [architecture.md](../../architecture.md).

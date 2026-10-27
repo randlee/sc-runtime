@@ -11,6 +11,7 @@ fn store_code_name(code: schema::StoreCode) -> &'static str {
         schema::StoreCode::NotFound => "STORE.NOT_FOUND",
         schema::StoreCode::Conflict => "STORE.CONFLICT",
         schema::StoreCode::Unavailable => "STORE.UNAVAILABLE",
+        schema::StoreCode::Membership => "STORE.MEMBERSHIP",
         _ => "STORE.QUERY",
     }
 }
@@ -20,7 +21,9 @@ fn store_kind(code: schema::StoreCode) -> ErrorKind {
         schema::StoreCode::NotFound => ErrorKind::NotFound,
         schema::StoreCode::Conflict => ErrorKind::Conflict,
         schema::StoreCode::Unavailable | schema::StoreCode::Connection => ErrorKind::Unavailable,
-        schema::StoreCode::Query | schema::StoreCode::Migration => ErrorKind::Internal,
+        schema::StoreCode::Query
+        | schema::StoreCode::Migration
+        | schema::StoreCode::Membership => ErrorKind::Internal,
         _ => ErrorKind::Internal,
     }
 }

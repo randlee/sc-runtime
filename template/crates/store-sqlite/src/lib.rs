@@ -1,7 +1,8 @@
 //! SQLite store for the example widget operation.
 //!
-//! [`OpenConfig::url`] is a filesystem path for this engine. Postgres and
-//! MySQL read a database URL from the same field on their own stores. This
+//! [`schema::StoreTarget::SqlitePath`] is a filesystem path for this engine.
+//! Postgres and MySQL take a database URL in their own [`schema::StoreTarget`]
+//! variants. This
 //! crate does not re-export [`EngineStore`] or [`RowRecord`]: the adaptor
 //! imports those from the schema crate. It re-exports the open config, the
 //! error, and [`WidgetRow`] because a one-store `service` depends on this
@@ -16,11 +17,10 @@
 //! maximum is 1. Every `INSERT`, `UPDATE`, and `DELETE` uses that write pool.
 //! There is no write actor and no queue.
 
-use std::path::PathBuf;
 use std::time::Duration;
 
 use futures_util::TryStreamExt;
-use schema::{EngineStore, RowRecord, check_read_limit, check_write_limit};
+use schema::{EngineStore, RowRecord, StoreTarget, TableName, check_read_limit, check_write_limit};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqlitePoolOptions};
 
 #[doc(inline)]
@@ -51,14 +51,14 @@ impl EngineStore for Store {
 
     fn read_rows(
         &self,
-        table: &str,
+        table: &TableName,
     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send {
         read_table_rows(self, table)
     }
 
     fn write_rows(
         &self,
-        table: &str,
+        table: &TableName,
         rows: &[RowRecord],
     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send {
         write_table_rows(self, table, rows)
@@ -66,8 +66,8 @@ impl EngineStore for Store {
 }
 
 /// The one table-name decision for read and write.
-fn known_table(table: &str) -> Result<(), StoreError> {
-    if table == WIDGETS {
+fn known_table(table: &TableName) -> Result<(), StoreError> {
+    if table.as_str() == WIDGETS {
         Ok(())
     } else {
         Err(StoreError::new(
@@ -89,11 +89,10 @@ fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
     StoreError::new(fallback, err.to_string())
 }
 
-/// Opens the database at `config.url`, enables WAL, and runs migrations.
+/// Opens the database at the SQLite path in `config`, enables WAL, and runs migrations.
 ///
-/// `url` is a filesystem path for SQLite. The parent directory is created when
-/// it is missing. Postgres and MySQL stores read a database URL from the same
-/// field.
+/// The parent directory is created when it is missing. A Postgres or MySQL
+/// URL is rejected.
 ///
 /// # Errors
 ///
@@ -101,7 +100,13 @@ fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
 /// [`StoreCode::Unavailable`] when a pool acquire times out, and
 /// [`StoreCode::Migration`] when a migration fails.
 pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
-    let path = PathBuf::from(&config.url);
+    let StoreTarget::SqlitePath(path) = &config.target else {
+        return Err(StoreError::new(
+            StoreCode::Connection,
+            "sqlite OpenConfig must be a filesystem path, not a database URL",
+        ));
+    };
+    let path = path.clone();
     if let Some(parent) = path.parent()
         && !parent.as_os_str().is_empty()
     {
@@ -181,12 +186,13 @@ pub async fn get_widget(
     }))
 }
 
-async fn read_table_rows(store: &Store, table: &str) -> Result<Vec<RowRecord>, StoreError> {
+async fn read_table_rows(store: &Store, table: &TableName) -> Result<Vec<RowRecord>, StoreError> {
     known_table(table)?;
     read_widget_rows(store).await
 }
 
 async fn read_widget_rows(store: &Store) -> Result<Vec<RowRecord>, StoreError> {
+    let widgets = TableName::widgets();
     let mut fetched = sqlx::query!("SELECT id, name FROM widgets").fetch(&store.read);
     let mut rows = Vec::new();
     while let Some(row) = fetched
@@ -194,7 +200,7 @@ async fn read_widget_rows(store: &Store) -> Result<Vec<RowRecord>, StoreError> {
         .await
         .map_err(|err| from_driver(StoreCode::Query, err))?
     {
-        check_read_limit(WIDGETS, rows.len() + 1)?;
+        check_read_limit(&widgets, rows.len() + 1)?;
         rows.push(record_from_columns(row.id, row.name)?);
     }
     Ok(rows)
@@ -202,7 +208,7 @@ async fn read_widget_rows(store: &Store) -> Result<Vec<RowRecord>, StoreError> {
 
 async fn write_table_rows(
     store: &Store,
-    table: &str,
+    table: &TableName,
     rows: &[RowRecord],
 ) -> Result<(), StoreError> {
     known_table(table)?;
@@ -216,6 +222,10 @@ async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), Stor
         .begin()
         .await
         .map_err(|err| from_driver(StoreCode::Connection, err))?;
+    sqlx::query("DELETE FROM widgets")
+        .execute(&mut *tx)
+        .await
+        .map_err(|err| from_driver(StoreCode::Query, err))?;
     for row in rows {
         if row.table != WIDGETS {
             return Err(StoreError::new(
@@ -244,9 +254,23 @@ fn record_from_columns(id: String, name: String) -> Result<RowRecord, StoreError
     })
     .map_err(|err| StoreError::new(StoreCode::Query, err.to_string()))?;
     Ok(RowRecord {
-        table: WIDGETS.to_owned(),
+        table: TableName::widgets(),
         payload,
     })
+}
+
+/// Checks that the read pool can run a statement.
+///
+/// # Errors
+///
+/// Returns [`StoreCode::Query`] when the probe statement fails, and
+/// [`StoreCode::Unavailable`] when the read pool times out.
+pub async fn probe(store: &Store) -> Result<(), StoreError> {
+    sqlx::query("SELECT 1")
+        .fetch_optional(&store.read)
+        .await
+        .map_err(|err| from_driver(StoreCode::Query, err))?;
+    Ok(())
 }
 
 fn widget_from_payload(payload: &[u8]) -> Result<WidgetRow, StoreError> {
@@ -293,7 +317,7 @@ mod tests {
 
     async fn empty() -> (tempfile::TempDir, Store) {
         let dir = tempfile::tempdir().expect("temp dir");
-        let store = open(&OpenConfig::new(db_url(dir.path())))
+        let store = open(&OpenConfig::sqlite(db_url(dir.path())))
             .await
             .expect("open");
         (dir, store)
@@ -327,15 +351,18 @@ mod tests {
     #[tokio::test]
     async fn engine_store_round_trips_widget_rows() {
         let (dir, _) = empty().await;
-        let store = <Store as EngineStore>::open(&OpenConfig::new(db_url(dir.path())))
+        let store = <Store as EngineStore>::open(&OpenConfig::sqlite(db_url(dir.path())))
             .await
             .expect("trait open");
         let written = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: br#"{"id":"abc","name":"bolt"}"#.to_vec(),
         };
-        store.write_rows(WIDGETS, &[written]).await.expect("write");
-        let rows = store.read_rows(WIDGETS).await.expect("read");
+        store
+            .write_rows(&TableName::widgets(), &[written])
+            .await
+            .expect("write");
+        let rows = store.read_rows(&TableName::widgets()).await.expect("read");
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].table, WIDGETS);
         let payload: serde_json::Value =
@@ -352,52 +379,60 @@ mod tests {
     async fn failed_write_rolls_back() {
         let (_dir, store) = empty().await;
         let good = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: br#"{"id":"abc","name":"bolt"}"#.to_vec(),
         };
         let bad = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: b"not-json".to_vec(),
         };
         let err = store
-            .write_rows(WIDGETS, &[good, bad])
+            .write_rows(&TableName::widgets(), &[good, bad])
             .await
             .expect_err("bad payload");
         assert_eq!(err.code, StoreCode::Query);
         assert!(err.to_string().starts_with("Query:"));
         assert!(std::error::Error::source(&err).is_none());
         assert!(!err.is_retryable());
-        let rows = store.read_rows(WIDGETS).await.expect("read");
+        let rows = store.read_rows(&TableName::widgets()).await.expect("read");
         assert!(rows.is_empty());
     }
 
     #[tokio::test]
-    async fn duplicate_id_is_a_conflict() {
+    async fn second_write_replaces_rows() {
         let (_dir, store) = empty().await;
         let row = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: br#"{"id":"abc","name":"bolt"}"#.to_vec(),
         };
         store
-            .write_rows(WIDGETS, std::slice::from_ref(&row))
+            .write_rows(&TableName::widgets(), std::slice::from_ref(&row))
             .await
             .expect("first");
-        let err = store
-            .write_rows(WIDGETS, &[row])
+        let replaced = RowRecord {
+            table: TableName::widgets(),
+            payload: br#"{"id":"abc","name":"nut"}"#.to_vec(),
+        };
+        store
+            .write_rows(&TableName::widgets(), std::slice::from_ref(&replaced))
             .await
-            .expect_err("duplicate");
-        assert_eq!(err.code, StoreCode::Conflict);
-        assert!(!err.is_retryable());
-        assert!(!err.remediation().is_empty());
+            .expect("replace");
+        let rows = store.read_rows(&TableName::widgets()).await.expect("read");
+        assert_eq!(rows.len(), 1);
+        let payload: serde_json::Value = serde_json::from_slice(&rows[0].payload).expect("json");
+        assert_eq!(payload["name"], "nut");
     }
 
     #[tokio::test]
     async fn unknown_table_is_not_found() {
         let (_dir, store) = empty().await;
-        let err = store.read_rows("missing").await.expect_err("missing");
+        let err = store
+            .read_rows(&TableName::new("missing").expect("table"))
+            .await
+            .expect_err("missing");
         assert_eq!(err.code, StoreCode::NotFound);
         let err = store
-            .write_rows("missing", &[])
+            .write_rows(&TableName::new("missing").expect("table"), &[])
             .await
             .expect_err("missing write");
         assert_eq!(err.code, StoreCode::NotFound);
@@ -408,24 +443,24 @@ mod tests {
         let (_dir, store) = empty().await;
         let too_many = vec![
             RowRecord {
-                table: WIDGETS.to_owned(),
+                table: TableName::widgets(),
                 payload: br#"{"id":"abc","name":"bolt"}"#.to_vec(),
             };
             MAX_PAIRING_ROWS + 1
         ];
         let err = store
-            .write_rows(WIDGETS, &too_many)
+            .write_rows(&TableName::widgets(), &too_many)
             .await
             .expect_err("batch");
         assert_eq!(err.code, StoreCode::Query);
         assert_eq!(count_widgets(&store).await.expect("count"), 0);
 
         let huge = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: vec![b'x'; MAX_ROW_PAYLOAD_BYTES + 1],
         };
         let err = store
-            .write_rows(WIDGETS, &[huge])
+            .write_rows(&TableName::widgets(), &[huge])
             .await
             .expect_err("payload");
         assert_eq!(err.code, StoreCode::Query);
@@ -437,7 +472,7 @@ mod tests {
         let dir = tempfile::tempdir().expect("temp dir");
         let blocker = dir.path().join("not-a-directory");
         std::fs::write(&blocker, b"x").expect("blocker");
-        let err = open(&OpenConfig::new(
+        let err = open(&OpenConfig::sqlite(
             blocker.join("widgets.db").to_string_lossy().into_owned(),
         ))
         .await

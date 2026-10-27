@@ -19,10 +19,11 @@ impl Rollup for CopyRollup {
 /// # Errors
 ///
 /// Returns [`schema::StoreError`] when `membership.toml` is not a valid
-/// description. The code is [`schema::StoreCode::Query`]. Call
-/// [`schema::StoreError::remediation`] for what to do next.
+/// description or [`REMOTE_ENGINE`] is not a membership key. The code is
+/// [`schema::StoreCode::Membership`]. Call [`schema::StoreError::remediation`]
+/// for the engine, table, and column rule.
 pub fn layout_flags() -> Result<TableFlags, schema::StoreError> {
     let membership =
         membership_toml::membership_from_toml(include_str!("../../schema/membership.toml"))?;
-    Ok(TableFlags::from_membership(&membership, REMOTE_ENGINE))
+    TableFlags::from_membership(&membership, REMOTE_ENGINE)
 }

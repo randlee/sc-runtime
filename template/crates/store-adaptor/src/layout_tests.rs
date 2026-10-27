@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod layout_tests {
-    use schema::RowRecord;
+    use schema::{RowRecord, TableName};
 
     use crate::Rollup;
 
@@ -16,7 +16,7 @@ mod layout_tests {
             crate::REMOTE_ENGINE
         );
         let rows = [RowRecord {
-            table: "widgets".to_owned(),
+            table: TableName::widgets(),
             payload: br#"{"id":"w1"}"#.to_vec(),
         }];
         assert_eq!(

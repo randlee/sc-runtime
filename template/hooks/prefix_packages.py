@@ -15,33 +15,62 @@ import shutil
 import sys
 from pathlib import Path
 
-# Old package name -> (generated role, rust lib name).
-ROLES: dict[str, tuple[str, str]] = {
-    "api-types": ("types", "api_types"),
-    "schema": ("schema", "schema"),
-    "store-sqlite": ("store-sqlite", "store_sqlite"),
-    "store-postgres": ("store-postgres", "store_postgres"),
-    "store-mysql": ("store-mysql", "store_mysql"),
-    "store-adaptor": ("store-adaptor", "store_adaptor"),
-    "store-adaptor-sqlite-postgres": ("store-adaptor", "store_adaptor"),
-    "store-adaptor-sqlite-mysql": ("store-adaptor", "store_adaptor"),
-    "service": ("service", "service"),
-    "daemon": ("daemon", "daemon"),
-    "cli": ("cli", "cli"),
-}
-
 _NAME = re.compile(r'^(\s*name\s*=\s*)"([^"]+)"(\s*)$')
 _PACKAGE = re.compile(r'package\s*=\s*"([^"]+)"')
 _DEP_HEADER = re.compile(r"^\[(dev-dependencies|build-dependencies|dependencies)\]$")
 
 
-def mapping(project: str) -> dict[str, str]:
-    return {old: f"{project}-{role}" for old, (role, _lib) in ROLES.items()}
+def roles_from(dest: Path) -> dict[str, tuple[str, str]]:
+    """Map each rendered crate directory to `(package role, rust lib name)`.
+
+    `api-types` becomes the `types` role with lib name `api_types`. A
+    `store-adaptor-*` sidecar collapses to `store-adaptor`. Every other
+    directory keeps its name as the role. The lib name is `[lib] name` when
+    the manifest already has one, otherwise hyphens become underscores.
+    """
+    crates = dest / "crates"
+    found: dict[str, tuple[str, str]] = {}
+    if not crates.is_dir():
+        return found
+    for path in sorted(crates.iterdir()):
+        manifest = path / "Cargo.toml"
+        if not path.is_dir() or not manifest.is_file():
+            continue
+        directory = path.name
+        if directory == "api-types":
+            found[directory] = ("types", "api_types")
+            continue
+        if directory.startswith("store-adaptor-"):
+            found[directory] = ("store-adaptor", "store_adaptor")
+            continue
+        found[directory] = (directory, _lib_name(manifest, directory))
+    return found
 
 
-def rewrite(text: str, project: str, crate_dir: Path) -> str:
+def _lib_name(manifest: Path, directory: str) -> str:
+    text = manifest.read_text(encoding="utf-8")
+    in_lib = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped == "[lib]":
+            in_lib = True
+            continue
+        if in_lib and stripped.startswith("[") and stripped.endswith("]"):
+            break
+        if in_lib:
+            matched = _NAME.match(line)
+            if matched:
+                return matched.group(2)
+    return directory.replace("-", "_")
+
+
+def mapping(project: str, dest: Path) -> dict[str, str]:
+    return {old: f"{project}-{role}" for old, (role, _lib) in roles_from(dest).items()}
+
+
+def rewrite(text: str, project: str, crate_dir: Path, roles: dict[str, tuple[str, str]]) -> str:
     """Return `text` with this crate's package name and dependency packages prefixed."""
-    names = mapping(project)
+    names = {old: f"{project}-{role}" for old, (role, _lib) in roles.items()}
     lines = text.splitlines()
     section = ""
     renamed_from: str | None = None
@@ -67,7 +96,7 @@ def rewrite(text: str, project: str, crate_dir: Path) -> str:
         rendered += "\n"
     if renamed_from is None:
         return rendered
-    return _ensure_lib_name(rendered, ROLES[renamed_from][1], crate_dir)
+    return _ensure_lib_name(rendered, roles[renamed_from][1], crate_dir)
 
 
 def _rewrite_dep(line: str, names: dict[str, str]) -> str:
@@ -118,11 +147,12 @@ def _ensure_lib_name(text: str, lib_name: str, crate_dir: Path) -> str:
 
 
 def prefix_tree(project: str, dest: Path) -> None:
+    roles = roles_from(dest)
     for path in sorted(dest.rglob("Cargo.toml")):
         if "target" in path.parts:
             continue
         original = path.read_text(encoding="utf-8")
-        updated = rewrite(original, project, path.parent)
+        updated = rewrite(original, project, path.parent, roles)
         if updated != original:
             path.write_text(updated, encoding="utf-8")
 

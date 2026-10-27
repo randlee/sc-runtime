@@ -4,7 +4,7 @@ use std::sync::Mutex;
 
 use schema::{
     EngineMembership, EngineStore, Membership, OpenConfig, RowRecord, StoreCode, StoreError,
-    WidgetId, WidgetRow, check_read_limit, check_write_limit,
+    TableName, WidgetId, WidgetRow, check_read_limit, check_write_limit,
 };
 
 mod common;
@@ -95,21 +95,22 @@ fn payload_encoding_round_trips_through_the_stub() {
 #[test]
 fn pairing_limits_reject_unbounded_batches() {
     let row = RowRecord {
-        table: "widgets".to_owned(),
+        table: TableName::widgets(),
         payload: br#"{"id":"w1","name":"bolt"}"#.to_vec(),
     };
     let too_many = vec![row; schema::MAX_PAIRING_ROWS + 1];
     let err = check_write_limit(&too_many).expect_err("rows");
     assert_eq!(err.code, StoreCode::Query);
     let huge = RowRecord {
-        table: "widgets".to_owned(),
+        table: TableName::widgets(),
         payload: vec![b'x'; schema::MAX_ROW_PAYLOAD_BYTES + 1],
     };
     let err = check_write_limit(std::slice::from_ref(&huge)).expect_err("bytes");
     assert_eq!(err.code, StoreCode::Query);
-    let err = check_read_limit("widgets", schema::MAX_PAIRING_ROWS + 1).expect_err("read");
+    let widgets = TableName::widgets();
+    let err = check_read_limit(&widgets, schema::MAX_PAIRING_ROWS + 1).expect_err("read");
     assert_eq!(err.code, StoreCode::Query);
-    assert!(check_read_limit("widgets", schema::MAX_PAIRING_ROWS).is_ok());
+    assert!(check_read_limit(&widgets, schema::MAX_PAIRING_ROWS).is_ok());
 }
 
 #[test]
@@ -214,7 +215,8 @@ struct EngineStub {
 
 impl EngineStub {
     fn open(engine: &'static str, cfg: &OpenConfig) -> Result<Self, StoreError> {
-        if cfg.url.is_empty() {
+        let url = cfg.target_text();
+        if url.is_empty() {
             return Err(StoreError::new(
                 StoreCode::Connection,
                 format!("{engine} url is empty"),
@@ -222,27 +224,27 @@ impl EngineStub {
         }
         Ok(Self {
             engine,
-            url: cfg.url.clone(),
+            url,
             rows: Mutex::new(Vec::new()),
         })
     }
 
-    fn read_rows(&self, table: &str) -> Result<Vec<RowRecord>, StoreError> {
+    fn read_rows(&self, table: &TableName) -> Result<Vec<RowRecord>, StoreError> {
         let rows: Vec<RowRecord> = self
             .rows
             .lock()
             .unwrap_or_else(|err| err.into_inner())
             .iter()
-            .filter(|row| row.table == table)
+            .filter(|row| &row.table == table)
             .cloned()
             .collect();
         check_read_limit(table, rows.len())?;
         Ok(rows)
     }
 
-    fn write_rows(&self, table: &str, rows: &[RowRecord]) -> Result<(), StoreError> {
+    fn write_rows(&self, table: &TableName, rows: &[RowRecord]) -> Result<(), StoreError> {
         check_write_limit(rows)?;
-        if rows.iter().any(|row| row.table != table) {
+        if rows.iter().any(|row| &row.table != table) {
             return Err(StoreError::new(
                 StoreCode::Query,
                 format!("{} row table does not match {table}", self.engine),
@@ -270,7 +272,7 @@ impl EngineStore for PostgresStub {
 
     fn read_rows(
         &self,
-        table: &str,
+        table: &TableName,
     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send {
         let rows = self.0.read_rows(table);
         async move { rows }
@@ -278,7 +280,7 @@ impl EngineStore for PostgresStub {
 
     fn write_rows(
         &self,
-        table: &str,
+        table: &TableName,
         rows: &[RowRecord],
     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send {
         let written = self.0.write_rows(table, rows);
@@ -296,7 +298,7 @@ impl EngineStore for MysqlStub {
 
     fn read_rows(
         &self,
-        table: &str,
+        table: &TableName,
     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send {
         let rows = self.0.read_rows(table);
         async move { rows }
@@ -304,7 +306,7 @@ impl EngineStore for MysqlStub {
 
     fn write_rows(
         &self,
-        table: &str,
+        table: &TableName,
         rows: &[RowRecord],
     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send {
         let written = self.0.write_rows(table, rows);
@@ -323,12 +325,12 @@ impl MysqlOnly for MysqlStub {
     }
 }
 
-async fn round_trip<S>(store: &S, table: &str, payload: Vec<u8>)
+async fn round_trip<S>(store: &S, table: &TableName, payload: Vec<u8>)
 where
     S: EngineStore,
 {
     let row = RowRecord {
-        table: table.to_owned(),
+        table: table.clone(),
         payload,
     };
     store
@@ -341,21 +343,22 @@ where
 
 #[tokio::test]
 async fn postgres_and_mysql_stubs_implement_engine_store() {
-    let postgres = PostgresStub::open(&OpenConfig::new("postgres://paired.example/widgets"))
+    let postgres = PostgresStub::open(&OpenConfig::postgres("postgres://paired.example/widgets"))
         .await
         .expect("postgres open");
-    let mysql = MysqlStub::open(&OpenConfig::new("mysql://paired.example/widgets"))
+    let mysql = MysqlStub::open(&OpenConfig::mysql("mysql://paired.example/widgets"))
         .await
         .expect("mysql open");
-    round_trip(&postgres, "widgets", pairing_payload()).await;
-    round_trip(&mysql, "widgets", br#"{"id":"w1","name":"bolt"}"#.to_vec()).await;
+    let widgets = TableName::widgets();
+    round_trip(&postgres, &widgets, pairing_payload()).await;
+    round_trip(&mysql, &widgets, br#"{"id":"w1","name":"bolt"}"#.to_vec()).await;
     assert_eq!(mysql.engine(), "mysql");
     assert_eq!(postgres.0.url, "postgres://paired.example/widgets");
 }
 
 #[tokio::test]
 async fn stub_open_rejects_an_empty_url() {
-    let err = PostgresStub::open(&OpenConfig::new(String::new()))
+    let err = PostgresStub::open(&OpenConfig::postgres(String::new()))
         .await
         .expect_err("empty url");
     assert_eq!(err.code, StoreCode::Connection);
@@ -365,15 +368,15 @@ async fn stub_open_rejects_an_empty_url() {
 
 #[tokio::test]
 async fn stub_rejects_an_oversized_write() {
-    let store = PostgresStub::open(&OpenConfig::new("postgres://paired.example/widgets"))
+    let store = PostgresStub::open(&OpenConfig::postgres("postgres://paired.example/widgets"))
         .await
         .expect("open");
     let row = RowRecord {
-        table: "widgets".to_owned(),
+        table: TableName::widgets(),
         payload: vec![b'x'; schema::MAX_ROW_PAYLOAD_BYTES + 1],
     };
     let err = store
-        .write_rows("widgets", &[row])
+        .write_rows(&TableName::widgets(), &[row])
         .await
         .expect_err("limit");
     assert_eq!(err.code, StoreCode::Query);
@@ -384,38 +387,41 @@ where
     S: EngineStore,
 {
     let kept = RowRecord {
-        table: "widgets".to_owned(),
+        table: TableName::widgets(),
         payload: br#"{"id":"kept","name":"bolt"}"#.to_vec(),
     };
     store
-        .write_rows("widgets", std::slice::from_ref(&kept))
+        .write_rows(&TableName::widgets(), std::slice::from_ref(&kept))
         .await
         .expect("seed");
     let accepted = RowRecord {
-        table: "widgets".to_owned(),
+        table: TableName::widgets(),
         payload: br#"{"id":"new","name":"nut"}"#.to_vec(),
     };
     let rejected = RowRecord {
-        table: "other".to_owned(),
+        table: TableName::new("other").expect("table"),
         payload: br#"{"id":"bad","name":"nope"}"#.to_vec(),
     };
     let err = store
-        .write_rows("widgets", &[accepted, rejected])
+        .write_rows(&TableName::widgets(), &[accepted, rejected])
         .await
         .expect_err("table mismatch");
     assert_eq!(err.code, StoreCode::Query);
-    let rows = store.read_rows("widgets").await.expect("read");
+    let rows = store.read_rows(&TableName::widgets()).await.expect("read");
     assert_eq!(rows, vec![kept]);
-    let other = store.read_rows("other").await.expect("other");
+    let other = store
+        .read_rows(&TableName::new("other").expect("table"))
+        .await
+        .expect("other");
     assert!(other.is_empty());
 }
 
 #[tokio::test]
 async fn stub_write_rejects_a_later_table_mismatch_without_partial_rows() {
-    let postgres = PostgresStub::open(&OpenConfig::new("postgres://paired.example/widgets"))
+    let postgres = PostgresStub::open(&OpenConfig::postgres("postgres://paired.example/widgets"))
         .await
         .expect("postgres open");
-    let mysql = MysqlStub::open(&OpenConfig::new("mysql://paired.example/widgets"))
+    let mysql = MysqlStub::open(&OpenConfig::mysql("mysql://paired.example/widgets"))
         .await
         .expect("mysql open");
     mismatched_batch_leaves_stub_unchanged(&postgres).await;

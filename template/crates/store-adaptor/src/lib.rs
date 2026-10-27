@@ -21,9 +21,9 @@
 //! schema crate's `membership.toml`, not an answers-schema property. That file
 //! names a sqlite-only table, a remote-only table, and a column that exists on
 //! only one side. [`TableFlags::from_membership`] takes the remote engine as a
-//! string. A key membership does not list, including a typo, contributes empty
-//! one-sided lists by design. Sprint `b-8` renders that key as a generated
-//! constant.
+//! string. A name that is not `postgres`, `mysql`, or an engine key in the
+//! file fails closed with [`schema::StoreCode::Membership`]. Sprint `b-8`
+//! renders the layout key as a generated constant.
 //!
 //! Both patterns move one whole table on each call. [`copy_rows`] writes the
 //! source rows unchanged. [`copy_shared_rows`] and [`aggregate_host`] pass
@@ -35,11 +35,10 @@
 //!
 //! A repeated call replaces that table on the destination. It does not insert
 //! a second copy beside rows already stored, and it does not keep a watermark.
-//! This crate does not clear or upsert. Sprint `b-8` renders
-//! [`schema::EngineStore::write_rows`] to match that replace. Until then a
-//! destination that inserts can return [`schema::StoreCode::Conflict`] on the
-//! second scheduled run. A watermark, or aggregation that can fail, is a
-//! third adaptor the consumer writes.
+//! [`schema::EngineStore::write_rows`] clears the table and then inserts the
+//! batch, so a second scheduled run does not return
+//! [`schema::StoreCode::Conflict`]. A watermark, or aggregation that can fail,
+//! is a third adaptor the consumer writes.
 //!
 //! The crate depends on the schema crate. It does not depend on sqlx or on a
 //! `store-*` crate, and it contains no engine SQL.
@@ -47,7 +46,7 @@
 //! # Examples
 //!
 //! ```
-//! use schema::{EngineStore, OpenConfig, RowRecord, StoreError};
+//! use schema::{EngineStore, OpenConfig, RowRecord, StoreError, TableName};
 //! use store_adaptor::{Rollup, TableFlags, aggregate_host, copy_shared_rows};
 //!
 //! # struct Memory {
@@ -64,14 +63,14 @@
 //! #
 //! #     fn read_rows(
 //! #         &self,
-//! #         table: &str,
+//! #         table: &schema::TableName,
 //! #     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send {
 //! #         let rows = self
 //! #             .rows
 //! #             .lock()
 //! #             .expect("rows")
 //! #             .iter()
-//! #             .filter(|row| row.table == table)
+//! #             .filter(|row| &row.table == table)
 //! #             .cloned()
 //! #             .collect();
 //! #         async move { Ok(rows) }
@@ -79,13 +78,13 @@
 //! #
 //! #     fn write_rows(
 //! #         &self,
-//! #         table: &str,
+//! #         table: &schema::TableName,
 //! #         rows: &[RowRecord],
 //! #     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send {
 //! #         let copied: Vec<_> = rows
 //! #             .iter()
 //! #             .map(|row| RowRecord {
-//! #                 table: table.to_owned(),
+//! #                 table: table.clone(),
 //! #                 payload: row.payload.clone(),
 //! #             })
 //! #             .collect();
@@ -108,7 +107,7 @@
 //! #         payload.extend_from_slice(count.as_bytes());
 //! #         payload.push(b'}');
 //! #         vec![RowRecord {
-//! #             table: "widgets".to_owned(),
+//! #             table: TableName::widgets(),
 //! #             payload,
 //! #         }]
 //! #     }
@@ -123,15 +122,15 @@
 //! };
 //! let local = Memory {
 //!     rows: std::sync::Mutex::new(vec![RowRecord {
-//!         table: "widgets".to_owned(),
+//!         table: TableName::widgets(),
 //!         payload: br#"{"id":"w1","name":"bolt"}"#.to_vec(),
 //!     }]),
 //! };
 //! let remote = Memory {
 //!     rows: std::sync::Mutex::new(Vec::new()),
 //! };
-//! copy_shared_rows(&local, &remote, "widgets", &flags, &CountHost).await?;
-//! aggregate_host(&local, &remote, "widgets", &flags, &CountHost).await?;
+//! copy_shared_rows(&local, &remote, &schema::TableName::widgets(), &flags, &CountHost).await?;
+//! aggregate_host(&local, &remote, &schema::TableName::widgets(), &flags, &CountHost).await?;
 //! # Ok(())
 //! # }
 //! ```

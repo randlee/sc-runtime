@@ -6,4 +6,5 @@ pub use store_mysql::Store as MysqlStore;
 pub use store_mysql::open as open_mysql;
 /// SQLite store this adaptor reads and writes.
 pub use store_sqlite::Store as SqliteStore;
-pub use store_sqlite::{get_widget, insert_widget, open as open_sqlite};
+pub use store_sqlite::{get_widget, insert_widget, open as open_sqlite, probe as probe_sqlite};
+pub use store_mysql::probe as probe_mysql;

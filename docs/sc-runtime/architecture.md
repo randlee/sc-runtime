@@ -24,7 +24,7 @@ The edge `sc-runtime` → `sc-config` is absent
 ([ADR-RUN-0003](../architecture.md), [NFR-RT-0003](requirements.md)).
 [NFR-RT-0003](requirements.md) owns this crate's allowed-dependency list:
 `sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`, `utoipa-axum`,
-`utoipa`, `serde`, `rmcp`, and optional `tempfile` behind `test-util`.
+`utoipa`, `serde`, `rmcp`, `tracing`, and optional `tempfile` behind `test-util`.
 Everything it receives from the project (config, stores, router, MCP service)
 it passes through untouched.
 

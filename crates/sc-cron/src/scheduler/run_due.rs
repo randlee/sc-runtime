@@ -5,12 +5,19 @@ use std::sync::Arc;
 use chrono::{DateTime, Utc};
 
 use super::*;
-use crate::clock::{sleep_until_monotonic, wall_after};
-use crate::coord::{NameInFlightGuard, RunCoord};
+use crate::CronError;
+#[cfg(feature = "monty")]
+use crate::Generation;
+use crate::HookTarget;
+use crate::clock::sleep_until_monotonic;
+#[cfg(feature = "monty")]
+use crate::clock::wall_after;
+use crate::coord::NameInFlightGuard;
+#[cfg(feature = "monty")]
+use crate::coord::RunCoord;
 #[cfg(feature = "monty")]
 use crate::hook::{HookCall, HookEvent, request};
 use crate::worker::{resolve, run_target};
-use crate::{Generation, HookTarget};
 
 pub(super) async fn record_due<S, C, J>(
     core: Arc<Core<S, C, J>>,
@@ -168,7 +175,7 @@ where
             runs.push(launched);
         }
     }
-    Ok(collect_runs(scheduler, runs).await)
+    collect_runs(scheduler, runs).await
 }
 
 async fn launch_row<S, C, J>(
@@ -309,7 +316,10 @@ where
     (row, next, DueTask::monty(handle))
 }
 
-async fn collect_runs<S, C, J>(scheduler: &Scheduler<S, C, J>, runs: Vec<Launched>) -> Vec<DueRun>
+async fn collect_runs<S, C, J>(
+    scheduler: &Scheduler<S, C, J>,
+    runs: Vec<Launched>,
+) -> Result<Vec<DueRun>, CronError>
 where
     S: ScheduleStore + 'static,
     C: Clock + 'static,
@@ -318,33 +328,33 @@ where
     let mut done = Vec::with_capacity(runs.len());
     for (row, next, mut task) in runs {
         match &mut task {
-            DueTask::Abortable(handle) => {
-                let report = handle.as_mut().expect("run").await.unwrap_or_else(|error| {
+            DueTask::Abortable(slot) => {
+                let Some(handle) = slot.as_mut() else {
+                    return Err(CronError::HookFailed("due run has no task".to_owned()));
+                };
+                let report = handle.await.unwrap_or_else(|error| {
                     Report::Ran(RunOutcome::Failed(format!(
                         "job panicked or was cancelled: {error}"
                     )))
                 });
-                handle.take();
+                slot.take();
                 done.push(scheduler.finish_due(&row, report, next).await);
             }
             #[cfg(feature = "monty")]
-            DueTask::Monty(handle) => {
-                let recorded = handle
-                    .as_mut()
-                    .expect("monty run")
-                    .await
-                    .unwrap_or_else(|error| DueRun {
-                        name: row.spec.name.clone(),
-                        outcome: RunOutcome::Failed(format!(
-                            "job panicked or was cancelled: {error}"
-                        )),
-                    });
-                handle.take();
+            DueTask::Monty(slot) => {
+                let Some(handle) = slot.as_mut() else {
+                    return Err(CronError::HookFailed("due run has no task".to_owned()));
+                };
+                let recorded = handle.await.unwrap_or_else(|error| DueRun {
+                    name: row.spec.name.clone(),
+                    outcome: RunOutcome::Failed(format!("job panicked or was cancelled: {error}")),
+                });
+                slot.take();
                 done.push(recorded);
             }
         }
     }
-    done
+    Ok(done)
 }
 
 /// One run [`Scheduler::run_due`] started.

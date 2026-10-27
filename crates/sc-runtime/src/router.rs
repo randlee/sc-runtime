@@ -7,7 +7,10 @@
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
+
+use tracing::Instrument;
 
 use axum::Json;
 use axum::extract::Request;
@@ -24,7 +27,13 @@ use crate::error::RuntimeError;
 
 const HEALTH: &str = "/health";
 const OPENAPI: &str = "/openapi.json";
+const METRICS: &str = "/metrics";
 const MCP: &str = "/mcp";
+const REQUEST_ID: &str = "x-request-id";
+
+static REQUESTS: AtomicU64 = AtomicU64::new(0);
+static SERVER_ERRORS: AtomicU64 = AtomicU64::new(0);
+static REQUEST_IDS: AtomicU64 = AtomicU64::new(1);
 
 /// Maximum time one accepted request may spend in a handler.
 pub(crate) const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
@@ -66,6 +75,71 @@ async fn health() -> Envelope<HealthBody> {
     Envelope::success(HealthBody { status: "ok" })
 }
 
+#[derive(Debug, Serialize)]
+struct MetricsBody {
+    requests: u64,
+    server_errors: u64,
+}
+
+async fn metrics() -> Json<MetricsBody> {
+    Json(MetricsBody {
+        requests: REQUESTS.load(Ordering::Relaxed),
+        server_errors: SERVER_ERRORS.load(Ordering::Relaxed),
+    })
+}
+
+fn accepted_request_id(value: &str) -> bool {
+    (1..=128).contains(&value.len())
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_')
+}
+
+fn request_id_from(request: &Request) -> String {
+    request
+        .headers()
+        .get(REQUEST_ID)
+        .and_then(|value| value.to_str().ok())
+        .filter(|value| accepted_request_id(value))
+        .map(str::to_owned)
+        .unwrap_or_else(|| {
+            let tick = REQUEST_IDS.fetch_add(1, Ordering::Relaxed);
+            format!("req-{tick}")
+        })
+}
+
+async fn stamp_request_id(mut request: Request, next: Next) -> Response {
+    let id = request_id_from(&request);
+    if let Ok(value) = axum::http::HeaderValue::from_str(&id) {
+        request.headers_mut().insert(REQUEST_ID, value);
+    }
+    let span = tracing::info_span!("http_request", request_id = %id);
+    let mut response = next.run(request).instrument(span).await;
+    if let Ok(value) = axum::http::HeaderValue::from_str(&id) {
+        response.headers_mut().insert(REQUEST_ID, value);
+    }
+    response
+}
+
+async fn count_request(request: Request, next: Next) -> Response {
+    let response = next.run(request).await;
+    REQUESTS.fetch_add(1, Ordering::Relaxed);
+    if response.status().is_server_error() {
+        SERVER_ERRORS.fetch_add(1, Ordering::Relaxed);
+    }
+    response
+}
+
+/// Outermost request-id layer. Project middleware sees the same header.
+pub(crate) fn with_request_id(router: axum::Router) -> axum::Router {
+    router.layer(axum::middleware::from_fn(stamp_request_id))
+}
+
+/// Counts completed requests and HTTP 5xx responses for `GET /metrics`.
+pub(crate) fn with_request_metrics(router: axum::Router) -> axum::Router {
+    router.layer(axum::middleware::from_fn(count_request))
+}
+
 /// Merges the project router with the document route and the liveness route.
 ///
 /// The OpenAPI document is the one `split_for_parts` returns. It is served at
@@ -95,7 +169,8 @@ pub(crate) fn with_runtime_routes(
                 async move { Json(api.as_ref().clone()) }
             }),
         )
-        .route(HEALTH, get(health)))
+        .route(HEALTH, get(health))
+        .route(METRICS, get(metrics)))
 }
 
 /// Applies a handler timeout and a shutdown drain bound to the assembled router.
@@ -244,7 +319,7 @@ fn reserved_conflict(
 }
 
 fn reserved_paths(check_mcp: bool) -> impl Iterator<Item = &'static str> {
-    [HEALTH, OPENAPI]
+    [HEALTH, OPENAPI, METRICS]
         .into_iter()
         .chain(check_mcp.then_some(MCP))
 }
@@ -435,5 +510,57 @@ mod tests {
         let openapi = OpenApiRouter::new().route(HEALTH, get(|| async { "nope" }));
         let err = with_runtime_routes(openapi, false).expect_err("overlap");
         assert_eq!(err.code(), "RUNTIME.ROUTE_CONFLICT");
+    }
+
+    #[tokio::test]
+    async fn health_reuses_request_id_and_metrics_count() {
+        let router = with_request_id(with_request_metrics(
+            axum::Router::new()
+                .route(HEALTH, get(health))
+                .route(METRICS, get(metrics)),
+        ));
+        let listener = tokio::net::TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 0))
+            .await
+            .expect("bind");
+        let addr = listener.local_addr().expect("addr");
+        tokio::spawn(async move {
+            let _ = axum::serve(listener, router).await;
+        });
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .expect("client");
+        let health_url = format!("http://{addr}{HEALTH}");
+        let mut health_response = None;
+        for _ in 0..50 {
+            match client
+                .get(&health_url)
+                .header(REQUEST_ID, "cli-1")
+                .send()
+                .await
+            {
+                Ok(response) => {
+                    health_response = Some(response);
+                    break;
+                }
+                Err(_) => tokio::time::sleep(Duration::from_millis(10)).await,
+            }
+        }
+        let health_response = health_response.expect("health");
+        assert_eq!(
+            health_response
+                .headers()
+                .get(REQUEST_ID)
+                .and_then(|value| value.to_str().ok()),
+            Some("cli-1")
+        );
+        let metrics = client
+            .get(format!("http://{addr}{METRICS}"))
+            .send()
+            .await
+            .expect("metrics");
+        let body: serde_json::Value = metrics.json().await.expect("metrics json");
+        let requests = body["requests"].as_u64().expect("requests");
+        assert!(requests >= 1, "{body}");
     }
 }

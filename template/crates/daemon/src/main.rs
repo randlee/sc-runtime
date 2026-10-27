@@ -1,7 +1,8 @@
 //! Daemon process. Loads config, starts logging, then builds the daemon.
 //!
 //! Early failures print one stderr line, `<code> <cause> — <recovery>`, before
-//! logging exists. `/health` does not check the widget database.
+//! logging exists. `/health` does not check the widget database. `GET /ready`
+//! does.
 
 use std::path::PathBuf;
 use std::process::ExitCode;
