@@ -420,9 +420,11 @@ wait
             }
 
             fn spec(&self) -> ChildSpec<'_> {
+                // `/bin/sh` is the executed file. Executing the script itself
+                // races on Linux: a just-written file returns ETXTBSY.
                 ChildSpec {
-                    program: &self.script,
-                    args: vec![self.dir.path().into()],
+                    program: Path::new("/bin/sh"),
+                    args: vec![self.script.clone().into(), self.dir.path().into()],
                     cwd: self.dir.path(),
                     input: b"",
                     env: ChildEnv::Inherit,
@@ -505,8 +507,8 @@ wait
             .expect("script");
             fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).expect("chmod");
             let spec = ChildSpec {
-                program: &script,
-                args: vec![tree.dir.path().into()],
+                program: Path::new("/bin/sh"),
+                args: vec![script.into(), tree.dir.path().into()],
                 cwd: tree.dir.path(),
                 input: b"",
                 env: ChildEnv::Inherit,
@@ -557,8 +559,8 @@ wait
             .expect("script");
             fs::set_permissions(&script, fs::Permissions::from_mode(0o755)).expect("chmod");
             let spec = ChildSpec {
-                program: &script,
-                args: vec![tree.dir.path().into()],
+                program: Path::new("/bin/sh"),
+                args: vec![script.into(), tree.dir.path().into()],
                 cwd: tree.dir.path(),
                 input: b"",
                 env: ChildEnv::Inherit,
