@@ -107,11 +107,13 @@ Runtime notes:
 | Feature | Enables |
 |---|---|
 | `test-utils` | `ManualClock` (a deterministic clock whose parks tell a test the worker has settled) and `SeqJitter` (a scripted jitter source) |
+| `monty` | Trusted in-process Monty source hooks (`HookTarget::Monty`); requires **Rust 1.96.1** to build. Feeds run on the blocking pool in wall time. |
 
 ## Links
 
 - Repository: <https://github.com/randlee/sc-runtime>
 - Architecture: [`docs/sc-cron/architecture.md`](../../docs/sc-cron/architecture.md)
 - Requirements: [`docs/sc-cron/requirements.md`](../../docs/sc-cron/requirements.md)
+- sc-compose hooks: [`docs/sc-cron/hooks-sc-compose.md`](../../docs/sc-cron/hooks-sc-compose.md)
 
-MSRV: Rust 1.94.1 (edition 2024). License: MIT.
+MSRV: Rust 1.94.1 (edition 2024) for the default build; enable `monty` only on Rust 1.96.1 or newer. License: MIT.
