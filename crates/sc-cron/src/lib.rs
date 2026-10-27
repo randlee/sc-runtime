@@ -93,12 +93,15 @@
 #![warn(unreachable_pub)]
 
 mod clock;
+mod coord;
 mod error;
 mod expr;
 mod hook;
 mod jitter;
 mod job;
 mod limits;
+#[cfg(feature = "monty")]
+mod monty_run;
 pub mod process;
 mod scheduler;
 mod sqlite;
@@ -129,7 +132,9 @@ pub use jitter::{JitterSource, SystemJitter};
 #[doc(inline)]
 pub use job::Job;
 #[doc(inline)]
-pub use limits::{MAX_EXPR_LEN, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, MAX_TIMEOUT};
+pub use limits::{
+    MAX_EXPR_LEN, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, MAX_TIMEOUT,
+};
 #[doc(inline)]
 pub use scheduler::{DueRun, MissedTickPolicy, Scheduler, WorkerHandle};
 #[doc(inline)]

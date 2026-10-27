@@ -239,7 +239,7 @@ impl PythonHook {
     ) -> Result<HookOutput, CronError> {
         let input = request(call, deadline).to_string();
         let cwd = TempCwd::new()
-            .map_err(|error| CronError::hook_failed(format!("no temporary directory: {error}")))?;
+            .map_err(|error| CronError::HookFailed(format!("no temporary directory: {error}")))?;
         let spec = ChildSpec {
             program: &self.program,
             args: vec![self.module.clone().into(), call.event.as_str().into()],
@@ -250,7 +250,7 @@ impl PythonHook {
         let captured = supervise(&spec, MAX_HOOK_OUTPUT_BYTES, expiry)
             .await
             .map_err(|error| {
-                CronError::hook_failed(format!(
+                CronError::HookFailed(format!(
                     "{} {} {}: {error}",
                     self.program.display(),
                     self.module.display(),
@@ -392,8 +392,8 @@ pub fn kill_budget(timeout: Duration, deadline: Instant, now: Instant) -> Durati
     timeout.min(deadline.saturating_duration_since(now))
 }
 
-/// The JSON object a hook reads on stdin.
-fn request(call: &HookCall<'_>, deadline: Timestamp) -> Value {
+/// The JSON object a hook reads: Python on stdin, Monty as the function argument.
+pub(crate) fn request(call: &HookCall<'_>, deadline: Timestamp) -> Value {
     json!({
         "protocol": HOOK_PROTOCOL,
         "event": call.event.as_str(),
@@ -538,7 +538,7 @@ mod tests {
 
     #[test]
     fn a_hook_that_cannot_start_skips_the_stop_check_and_fails_the_tick() {
-        let error = || Err(CronError::hook_failed("no interpreter"));
+        let error = || Err(CronError::HookFailed("no interpreter".to_owned()));
         assert!(matches!(
             stop_outcome(error()),
             Step::Skip(RunOutcome::Failed(why)) if why.starts_with("stop check: ")

@@ -76,10 +76,10 @@ fn set_enabled_names_a_schedule_that_is_not_active_as_not_found() {
     let fixture = Fixture::new();
     let missing = fixture.scheduler.set_enabled(&name("nobody"), false);
     assert!(
-        matches!(missing, Err(CronError::InvalidSpec(ref text)) if text.contains("nobody")),
+        matches!(missing, Err(CronError::NotFound(ref schedule)) if schedule.as_str() == "nobody"),
         "{missing:?}"
     );
-    assert_eq!(missing.expect_err("missing").code(), "INVALID_SPEC");
+    assert_eq!(missing.expect_err("missing").code(), "NOT_FOUND");
 
     let schedule = fixture.start(fixture.spec("ended"));
     fixture
@@ -88,7 +88,7 @@ fn set_enabled_names_a_schedule_that_is_not_active_as_not_found() {
         .expect("stop");
     let ended = fixture.scheduler.set_enabled(&schedule.spec.name, false);
     assert!(
-        matches!(ended, Err(CronError::InvalidSpec(ref text)) if text.contains("ended")),
+        matches!(ended, Err(CronError::NotFound(ref name)) if name.as_str() == "ended"),
         "{ended:?}"
     );
     assert!(fixture.row(&schedule).enabled, "an ended row is untouched");
@@ -310,7 +310,7 @@ fn set_enabled_many_flips_every_listed_row_or_none() {
         .scheduler
         .set_enabled_many(&[(name("a"), true), (name("nobody"), true)]);
     assert!(
-        matches!(&missing, Err(CronError::InvalidSpec(text)) if text.contains("nobody")),
+        matches!(&missing, Err(CronError::NotFound(schedule)) if schedule.as_str() == "nobody"),
         "{missing:?}"
     );
     assert!(!fixture.row(&a).enabled, "nothing changed");
@@ -348,7 +348,7 @@ fn replace_and_set_enabled_writes_the_row_with_its_flag_and_the_listed_flags() {
         &[(name("nobody"), false)],
     );
     assert!(
-        matches!(missing, Err(CronError::InvalidSpec(_))),
+        matches!(missing, Err(CronError::NotFound(_))),
         "{missing:?}"
     );
     assert_eq!(fixture.row(&replaced), replaced, "nothing changed");

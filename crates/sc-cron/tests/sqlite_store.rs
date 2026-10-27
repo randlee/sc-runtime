@@ -15,8 +15,9 @@ use std::time::Duration;
 
 use rusqlite::Connection;
 use sc_cron::{
-    CronError, Generation, MAX_PAYLOAD_BYTES, NewSchedule, RunOutcome, SCHEMA_VERSION, ScheduleId,
-    ScheduleName, ScheduleSpec, ScheduleStore, SqliteScheduleStore, StoreErrorKind, Timestamp,
+    CronError, Generation, HookTarget, MAX_HOOK_SOURCE_BYTES, MAX_PAYLOAD_BYTES, NewSchedule,
+    RunOutcome, SCHEMA_VERSION, ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore,
+    SqliteScheduleStore, StoreErrorKind, Timestamp,
 };
 use tempfile::TempDir;
 
@@ -76,6 +77,46 @@ fn writes_a_schedule_without_constructing_sqlite_writer() {
     let again = store.get(created.id).expect("get").expect("row");
     assert_eq!(again.spec.expr.as_str(), "*/5 * * * *");
     assert_eq!(again.spec.payload["name"], "nightly");
+}
+
+#[test]
+fn a_monty_row_round_trips_and_the_table_rejects_invalid_hook_kinds() {
+    let h = Harness::new();
+    let source = "def cron_stop(hook): return {'action': 'continue'}\ndef cron_tick(hook): pass";
+    let spec = ScheduleSpec::with_hook(
+        "monty",
+        "*/5 * * * *",
+        Duration::from_secs(30),
+        serde_json::json!({"scope": "a"}),
+        HookTarget::monty(source).expect("monty target"),
+    )
+    .expect("spec");
+    let row = h
+        .store
+        .create(
+            &NewSchedule {
+                spec,
+                jitter: Duration::ZERO,
+                next_run_at: stamp(20),
+            },
+            stamp(3),
+        )
+        .expect("create");
+    assert_eq!(
+        row.spec.hook,
+        HookTarget::Monty {
+            source: source.to_owned()
+        }
+    );
+    assert_eq!(h.store.get(row.id).expect("get").expect("row"), row);
+    assert_check_violation(
+        h.sql().execute(
+            "UPDATE sc_cron_schedule SET hook_kind = 'other' WHERE id = ?1",
+            [i64::try_from(row.id.get()).expect("sqlite id")],
+        ),
+        "unknown hook kind",
+    );
+    assert!(HookTarget::monty("x".repeat(MAX_HOOK_SOURCE_BYTES + 1)).is_err());
 }
 
 fn store_kind(result: Result<impl std::fmt::Debug, CronError>) -> StoreErrorKind {
@@ -619,12 +660,109 @@ fn a_version_1_file_gains_the_enabled_column_with_every_schedule_enabled() {
         .query_row("PRAGMA user_version", [], |row| row.get(0))
         .expect("version");
     assert_eq!(version, SCHEMA_VERSION);
+    let source_column: i64 = Connection::open(&path)
+        .expect("connection")
+        .query_row(
+            "SELECT COUNT(*) FROM pragma_table_info('sc_cron_schedule') WHERE name = 'hook_source'",
+            [],
+            |row| row.get(0),
+        )
+        .expect("hook_source column");
+    assert_eq!(
+        source_column, 1,
+        "a version 1 file rebuilds through schema 4"
+    );
     // Opening again is a plain open, and the column now works.
     let store = SqliteScheduleStore::open(&path).expect("reopen");
     assert!(
         store
             .set_enabled(&schedule_name("kept"), false)
             .expect("disable")
+    );
+}
+
+/// The version 3 table: hook kind is rust or python, and there is no `hook_source`.
+const SCHEMA_V3: &str = "CREATE TABLE sc_cron_schedule (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    generation   INTEGER NOT NULL CHECK (generation BETWEEN 1 AND 4294967295),
+    name         TEXT    NOT NULL UNIQUE CHECK (length(CAST(name AS BLOB)) BETWEEN 1 AND 128),
+    expr         TEXT    NOT NULL CHECK (length(CAST(expr AS BLOB)) <= 256),
+    timeout_ms   INTEGER NOT NULL CHECK (timeout_ms > 0),
+    jitter_ms    INTEGER NOT NULL CHECK (jitter_ms >= 0),
+    payload      TEXT    NOT NULL CHECK (length(CAST(payload AS BLOB)) <= 65536),
+    created_at   TEXT    NOT NULL,
+    next_run_at  TEXT,
+    last_run_at  TEXT,
+    last_outcome TEXT,
+    ended_at     TEXT,
+    stop_reason  TEXT,
+    enabled      INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
+    hook_kind    TEXT    NOT NULL DEFAULT 'rust' CHECK (hook_kind IN ('rust', 'python')),
+    hook_module  TEXT    NOT NULL DEFAULT '',
+    CHECK ((ended_at IS NULL) = (next_run_at IS NOT NULL)),
+    CHECK ((ended_at IS NULL) = (stop_reason IS NULL))
+);
+CREATE TABLE consumer_notes (id INTEGER PRIMARY KEY, body TEXT NOT NULL);";
+
+#[test]
+fn a_version_3_file_gains_hook_source_and_leaves_other_tables_alone() {
+    let root = tempfile::tempdir().expect("tempdir");
+    let path = root.path().join("cron.db");
+    {
+        let old = Connection::open(&path).expect("connection");
+        old.execute_batch(SCHEMA_V3).expect("v3 schema");
+        old.execute(
+            "INSERT INTO sc_cron_schedule
+                (generation, name, expr, timeout_ms, jitter_ms, payload, created_at, next_run_at,
+                 enabled, hook_kind, hook_module)
+             VALUES (2, 'py', '0 * * * * *', 20000, 0, '{}',
+                     '2026-10-19T00:00:00.000000Z', '2026-10-19T00:01:00.000000Z',
+                     1, 'python', '/tmp/hook.py')",
+            [],
+        )
+        .expect("python row");
+        old.execute("INSERT INTO consumer_notes (body) VALUES ('leave me')", [])
+            .expect("other table");
+        old.pragma_update(None, "user_version", 3).expect("v3");
+    }
+
+    let store = SqliteScheduleStore::open(&path).expect("upgrade");
+    let row = store.list_active().expect("list");
+    assert_eq!(row.len(), 1);
+    assert!(matches!(
+        &row[0].spec.hook,
+        HookTarget::Python { module } if module.as_os_str() == "/tmp/hook.py"
+    ));
+    let created = store
+        .create(&new_schedule("after"), stamp(4))
+        .expect("insert after upgrade");
+    assert_eq!(
+        created.id.get(),
+        2,
+        "explicit ids in the rebuild keep the sequence"
+    );
+    drop(store);
+
+    let conn = Connection::open(&path).expect("connection");
+    let version: i64 = conn
+        .query_row("PRAGMA user_version", [], |row| row.get(0))
+        .expect("version");
+    assert_eq!(version, SCHEMA_VERSION);
+    let source_column: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM pragma_table_info('sc_cron_schedule') WHERE name = 'hook_source'",
+            [],
+            |row| row.get(0),
+        )
+        .expect("column");
+    assert_eq!(source_column, 1);
+    let note: String = conn
+        .query_row("SELECT body FROM consumer_notes", [], |row| row.get(0))
+        .expect("other table survived");
+    assert_eq!(note, "leave me");
+    assert_check_violation(
+        conn.execute("UPDATE sc_cron_schedule SET hook_kind = 'other'", []),
+        "hook kind outside rust|python|monty",
     );
 }
 

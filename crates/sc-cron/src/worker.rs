@@ -37,6 +37,7 @@
 use std::future::poll_fn;
 use std::pin::Pin;
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
 use std::task::Poll;
 use std::time::{Duration, Instant};
 
@@ -45,6 +46,9 @@ use tokio::sync::{oneshot, watch};
 use tokio::task::{JoinError, JoinHandle};
 
 use crate::clock::{sleep_until_monotonic, wall_after};
+use crate::coord::{MontyFeedGuard, RunCoord};
+#[cfg(feature = "monty")]
+use crate::hook::request;
 use crate::hook::{ResolvedTarget, Step, stop_step, tick_outcome};
 use crate::{
     Clock, CronError, HookCall, HookEvent, HookTarget, Job, MissedTickPolicy, PythonHook,
@@ -81,20 +85,60 @@ pub(crate) enum Report {
     Ran(RunOutcome),
 }
 
-/// One run in flight.
-struct InFlight {
-    handle: JoinHandle<Report>,
-    /// On the clock's monotonic timeline.
-    deadline: Instant,
+/// The join a slot holds. Monty joins are not aborted when the slot drops.
+enum RunHandle {
+    Abortable(JoinHandle<Report>),
+    #[cfg(feature = "monty")]
+    Monty(JoinHandle<crate::monty_run::FeedDone>),
 }
 
-/// Dropping a run cancels it, wherever it is held; aborting a finished task
-/// is a no-op. So a dropped slot, a reload that removes a slot and an
-/// aborted worker all cancel their runs.
+/// One run in flight.
+struct InFlight {
+    handle: Option<RunHandle>,
+    /// On the clock's monotonic timeline. Ignored while `is_monty` is set:
+    /// that run is not woken or expired from this instant.
+    deadline: Instant,
+    guard: Option<MontyFeedGuard>,
+}
+
+impl InFlight {
+    fn is_monty(&self) -> bool {
+        #[cfg(feature = "monty")]
+        {
+            matches!(self.handle, Some(RunHandle::Monty(_)))
+        }
+        #[cfg(not(feature = "monty"))]
+        {
+            false
+        }
+    }
+
+    fn abort_if_cooperative(&mut self) {
+        if let Some(RunHandle::Abortable(handle)) = self.handle.as_ref() {
+            handle.abort();
+        }
+    }
+}
+
+/// Dropping a Rust or Python run cancels it. A Monty run is detached instead,
+/// so a dropped slot does not abort the interpreter. The feed guard still
+/// drops, which is what lets shutdown proceed after a panic.
 impl Drop for InFlight {
     fn drop(&mut self) {
-        self.handle.abort();
+        if let Some(RunHandle::Abortable(handle)) = self.handle.take() {
+            handle.abort();
+        }
     }
+}
+
+/// A row change that arrived while a Monty feed was still inside this slot.
+#[cfg_attr(not(feature = "monty"), allow(dead_code))]
+#[derive(Clone, Debug)]
+enum Queued {
+    None,
+    Replace(Box<Schedule>),
+    Disable,
+    Delete,
 }
 
 /// One active schedule as the worker tracks it.
@@ -102,6 +146,7 @@ struct Slot {
     schedule: Schedule,
     next: Option<DateTime<Utc>>,
     run: Option<InFlight>,
+    queued: Queued,
 }
 
 /// Backoff for a failed reload, or for a failed stop or disable write: 1 s
@@ -142,7 +187,11 @@ pub(crate) struct Worker<S, C> {
     clock: Arc<C>,
     job: Arc<dyn Job>,
     policy: MissedTickPolicy,
-    shutdown: oneshot::Receiver<()>,
+    coord: Arc<RunCoord>,
+    shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
+    /// Tokio instant from [`crate::WorkerHandle::shutdown`]. `None` when the
+    /// handle was dropped, which stops the worker without a handle deadline.
+    handle_deadline: Option<tokio::time::Instant>,
     stopping: bool,
     slots: Vec<Slot>,
     reload_wanted: bool,
@@ -183,6 +232,15 @@ pub(crate) fn resolve(
                 Err(RunOutcome::Failed(format!("resolve: {}", error.recorded())))
             }
         },
+        HookTarget::Monty { .. } => {
+            let error = CronError::HookFailed(
+                "Monty hooks require sc-cron's optional `monty` feature".to_owned(),
+            );
+            tracing::warn!(subsystem = "sc_cron", action = "resolve_failed",
+                schedule = %schedule.id, name = %schedule.spec.name, code = error.code(), %error,
+                "no target for this run: {error}");
+            Err(RunOutcome::Failed(format!("resolve: {}", error.recorded())))
+        }
     }
 }
 
@@ -231,15 +289,18 @@ where
         clock: Arc<C>,
         job: Arc<dyn Job>,
         policy: MissedTickPolicy,
+        coord: Arc<RunCoord>,
         reload_poll: Duration,
-        shutdown: oneshot::Receiver<()>,
+        shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
     ) -> Self {
         Self {
             store,
             clock,
             job,
             policy,
+            coord,
             shutdown,
+            handle_deadline: None,
             stopping: false,
             slots: Vec::new(),
             reload_wanted: true,
@@ -253,13 +314,20 @@ where
     }
 
     /// Returns whether shutdown was requested, without waiting.
+    fn note_stop(&mut self, deadline: Option<tokio::time::Instant>) {
+        self.stopping = true;
+        if deadline.is_some() {
+            self.handle_deadline = deadline;
+        }
+    }
+
     fn stop_requested(&mut self) -> bool {
         if !self.stopping {
-            // A sent value and a dropped handle both mean stop.
-            self.stopping = !matches!(
-                self.shutdown.try_recv(),
-                Err(oneshot::error::TryRecvError::Empty)
-            );
+            match self.shutdown.try_recv() {
+                Ok(deadline) => self.note_stop(deadline),
+                Err(oneshot::error::TryRecvError::Closed) => self.stopping = true,
+                Err(oneshot::error::TryRecvError::Empty) => {}
+            }
         }
         self.stopping
     }
@@ -290,14 +358,17 @@ where
             let clock = Arc::clone(&self.clock);
             tokio::select! {
                 biased;
-                _ = &mut self.shutdown => break,
+                message = &mut self.shutdown => {
+                    self.note_stop(message.ok().flatten());
+                    break;
+                }
                 changed = reload.changed(), if reload_open => {
                     // A dropped scheduler cannot signal again; keep ticking.
                     reload_open = changed.is_ok();
                     self.reload_wanted |= reload_open;
                 }
-                (index, result) = finished(&mut self.slots) => {
-                    self.complete(index, result).await;
+                (index, finished, guard) = finished(&mut self.slots) => {
+                    self.on_finished(index, finished, guard).await;
                 }
                 () = clock.sleep_until(wake) => {}
             }
@@ -312,6 +383,7 @@ where
             let deadline = slot
                 .run
                 .as_ref()
+                .filter(|run| !run.is_monty())
                 .map(|run| wall_after(now, run.deadline.saturating_duration_since(monotonic)));
             slot.next.into_iter().chain(deadline)
         });
@@ -427,32 +499,54 @@ where
     /// cancelled by dropping its slot.
     async fn merge(&mut self, rows: Vec<Schedule>) {
         let mut previous = std::mem::take(&mut self.slots);
-        // A disabled schedule gets no slot, so it never fires and its stored
-        // next run is left alone (REQ-CRON-0014).
-        for schedule in rows
-            .into_iter()
-            .filter(|schedule| schedule.is_active() && schedule.enabled)
-        {
-            let kept = previous.iter().position(|slot| {
+        for schedule in rows.into_iter().filter(|schedule| schedule.is_active()) {
+            if let Some(index) = previous.iter().position(|slot| {
                 slot.schedule.id == schedule.id && slot.schedule.generation == schedule.generation
-            });
-            if let Some(index) = kept {
-                self.slots.push(previous.swap_remove(index));
-            } else if !self.stop_requested()
+            }) {
+                let mut slot = previous.swap_remove(index);
+                if schedule.enabled {
+                    self.slots.push(slot);
+                } else if slot.run.as_ref().is_some_and(InFlight::is_monty) {
+                    slot.queued = Queued::Disable;
+                    self.slots.push(slot);
+                } else if slot.run.is_some() {
+                    log(&slot.schedule, "cancelled", "schedule disabled");
+                }
+                continue;
+            }
+            if let Some(index) = previous.iter().position(|slot| {
+                slot.schedule.spec.name == schedule.spec.name
+                    && slot.run.as_ref().is_some_and(InFlight::is_monty)
+            }) {
+                let mut slot = previous.swap_remove(index);
+                slot.queued = if schedule.enabled {
+                    Queued::Replace(Box::new(schedule))
+                } else {
+                    Queued::Disable
+                };
+                self.slots.push(slot);
+                continue;
+            }
+            if schedule.enabled
+                && !self.stop_requested()
                 && let Some(slot) = self.new_slot(schedule).await
             {
                 self.slots.push(slot);
             }
         }
-        for slot in previous {
-            if slot.run.is_some() {
+        for mut slot in previous {
+            if slot.run.as_ref().is_some_and(InFlight::is_monty) {
+                if matches!(slot.queued, Queued::None) {
+                    slot.queued = Queued::Delete;
+                }
+                self.slots.push(slot);
+            } else if slot.run.is_some() {
                 log(
                     &slot.schedule,
                     "cancelled",
                     "schedule ended, disabled or restarted",
                 );
             }
-            // Dropping the slot aborts its run, which records nothing.
         }
     }
 
@@ -484,6 +578,7 @@ where
             schedule,
             next,
             run: None,
+            queued: Queued::None,
         })
     }
 
@@ -501,18 +596,14 @@ where
             let expired = slot
                 .run
                 .as_ref()
-                .is_some_and(|run| run.deadline <= monotonic);
+                .is_some_and(|run| !run.is_monty() && run.deadline <= monotonic);
             let run = if expired { slot.run.take() } else { None };
-            let Some(mut run) = run else {
+            let Some(run) = run else {
                 index += 1;
                 continue;
             };
             log(&slot.schedule, "timed_out", "run deadline passed");
-            run.handle.abort();
-            let result = match (&mut run.handle).await {
-                Err(error) if error.is_cancelled() => Ok(Report::Ran(RunOutcome::TimedOut)),
-                other => other,
-            };
+            let result = await_aborted(run).await;
             if !self.complete(index, result).await {
                 index += 1;
             }
@@ -529,6 +620,20 @@ where
             let Some(slot) = self.slots.get_mut(index) else {
                 return;
             };
+            if self.coord.name_in_flight(&slot.schedule.spec.name) {
+                // The stored next run stays due. Park a second out so this
+                // loop does not spin until `run_due` records and clears the mark.
+                if slot.next.is_some_and(|next| next <= now) {
+                    slot.next = Some(now + chrono::Duration::seconds(1));
+                }
+                log(
+                    &slot.schedule,
+                    "skipped_in_flight",
+                    "run_due still holds this name",
+                );
+                index += 1;
+                continue;
+            }
             let Some(due) = slot.next.filter(|next| *next <= now) else {
                 index += 1;
                 continue;
@@ -583,6 +688,14 @@ where
     }
 
     fn launch(&mut self, index: usize) {
+        #[cfg(feature = "monty")]
+        if matches!(
+            self.slots.get(index).map(|slot| &slot.schedule.spec.hook),
+            Some(HookTarget::Monty { .. })
+        ) {
+            self.launch_monty(index);
+            return;
+        }
         let monotonic = self.clock.monotonic_now();
         let Some(slot) = self.slots.get_mut(index) else {
             return;
@@ -599,7 +712,11 @@ where
             Err(outcome) => tokio::spawn(async move { Report::Ran(outcome) }),
         };
         log(&slot.schedule, "launched", "run started");
-        slot.run = Some(InFlight { handle, deadline });
+        slot.run = Some(InFlight {
+            handle: Some(RunHandle::Abortable(handle)),
+            deadline,
+            guard: None,
+        });
     }
 
     /// Records a finished run. Returns whether the slot was removed.
@@ -736,44 +853,363 @@ where
         self.reload_wanted = true;
     }
 
-    /// Waits for every in-flight run up to its own deadline, recording each.
+    /// Joins every in-flight run at once.
+    ///
+    /// Rust and Python still abort at their own monotonic deadline when no
+    /// Monty feed is outstanding. A handle deadline aborts those siblings,
+    /// and records `TimedOut`, only while a Monty feed is still outstanding.
+    /// Monty joins are not aborted.
     async fn drain(&mut self) {
+        let mut siblings_aborted = false;
+        loop {
+            if !self.slots.iter().any(|slot| slot.run.is_some()) {
+                return;
+            }
+            let monty_busy = self.coord.feeds.load(Ordering::Acquire) > 0;
+            let nearest = if monty_busy {
+                None
+            } else {
+                self.nearest_abortable_deadline()
+            };
+            let handle_deadline = self
+                .handle_deadline
+                .filter(|_| monty_busy && !siblings_aborted);
+            let clock = Arc::clone(&self.clock);
+            tokio::select! {
+                biased;
+                (index, finished, guard) = finished(&mut self.slots) => {
+                    self.on_finished(index, finished, guard).await;
+                }
+                () = sleep_until_monotonic(clock.as_ref(), nearest.unwrap_or(Instant::now())), if nearest.is_some() => {
+                    self.abort_due_abortable().await;
+                }
+                () = tokio::time::sleep_until(handle_deadline.unwrap_or_else(tokio::time::Instant::now)), if handle_deadline.is_some() => {
+                    siblings_aborted = true;
+                    self.abort_all_abortable().await;
+                }
+            }
+        }
+    }
+
+    fn nearest_abortable_deadline(&self) -> Option<Instant> {
+        self.slots
+            .iter()
+            .filter_map(|slot| {
+                slot.run
+                    .as_ref()
+                    .filter(|run| !run.is_monty())
+                    .map(|run| run.deadline)
+            })
+            .min()
+    }
+
+    async fn abort_due_abortable(&mut self) {
+        let monotonic = self.clock.monotonic_now();
         let mut index = 0;
         while index < self.slots.len() {
-            let Some(slot) = self.slots.get_mut(index) else {
-                return;
-            };
-            let Some(mut run) = slot.run.take() else {
+            let due = self.slots.get(index).is_some_and(|slot| {
+                slot.run
+                    .as_ref()
+                    .is_some_and(|run| !run.is_monty() && run.deadline <= monotonic)
+            });
+            if !due {
+                index += 1;
+                continue;
+            }
+            let Some(run) = self.slots[index].run.take() else {
                 index += 1;
                 continue;
             };
-            let clock = Arc::clone(&self.clock);
-            let deadline = run.deadline;
-            let result = tokio::select! {
-                result = &mut run.handle => result,
-                () = sleep_until_monotonic(clock.as_ref(), deadline) => {
-                    run.handle.abort();
-                    match (&mut run.handle).await {
-                        Err(error) if error.is_cancelled() => Ok(Report::Ran(RunOutcome::TimedOut)),
-                        other => other,
-                    }
-                }
-            };
+            log(
+                &self.slots[index].schedule,
+                "timed_out",
+                "run deadline passed",
+            );
+            let result = await_aborted(run).await;
             if !self.complete(index, result).await {
                 index += 1;
             }
         }
     }
+
+    async fn abort_all_abortable(&mut self) {
+        let mut index = 0;
+        while index < self.slots.len() {
+            let abortable = self
+                .slots
+                .get(index)
+                .is_some_and(|slot| slot.run.as_ref().is_some_and(|run| !run.is_monty()));
+            if !abortable {
+                index += 1;
+                continue;
+            }
+            let Some(run) = self.slots[index].run.take() else {
+                index += 1;
+                continue;
+            };
+            log(
+                &self.slots[index].schedule,
+                "timed_out",
+                "shutdown deadline passed while a Monty feed is in flight",
+            );
+            let result = await_aborted(run).await;
+            if !self.complete(index, result).await {
+                index += 1;
+            }
+        }
+    }
+
+    async fn on_finished(
+        &mut self,
+        index: usize,
+        finished: Finished,
+        guard: Option<MontyFeedGuard>,
+    ) {
+        if let Some(slot) = self.slots.get_mut(index) {
+            slot.run = None;
+        }
+        match finished {
+            Finished::Report(result) => {
+                drop(guard);
+                self.complete(index, result).await;
+            }
+            #[cfg(feature = "monty")]
+            Finished::Monty(result) => self.finish_monty(index, result, guard).await,
+        }
+    }
+
+    #[cfg(feature = "monty")]
+    fn launch_monty(&mut self, index: usize) {
+        let name = self
+            .slots
+            .get(index)
+            .map(|slot| slot.schedule.spec.name.clone());
+        let session = name.as_ref().and_then(|name| self.coord.take_repl(name));
+        let guard = MontyFeedGuard::enter(&self.coord.feeds);
+        self.spawn_feed(index, crate::monty_run::MontyPhase::Stop, session, guard);
+    }
+
+    #[cfg(feature = "monty")]
+    fn spawn_feed(
+        &mut self,
+        index: usize,
+        phase: crate::monty_run::MontyPhase,
+        session: Option<crate::monty_run::MontySession>,
+        guard: MontyFeedGuard,
+    ) {
+        let Some(slot) = self.slots.get(index) else {
+            drop(guard);
+            return;
+        };
+        let HookTarget::Monty { source } = &slot.schedule.spec.hook else {
+            drop(guard);
+            return;
+        };
+        let source = source.clone();
+        let generation = slot.schedule.generation;
+        let schedule = slot.schedule.clone();
+        let clock = Arc::clone(&self.clock);
+        let monotonic = self.clock.monotonic_now();
+        let deadline = monotonic
+            .checked_add(schedule.spec.timeout.get())
+            .unwrap_or(monotonic);
+        let handle = tokio::spawn(async move {
+            let left = deadline.saturating_duration_since(clock.monotonic_now());
+            let stamp = Timestamp::from_datetime(wall_after(clock.now(), left));
+            let event = match phase {
+                crate::monty_run::MontyPhase::Stop => HookEvent::Stop,
+                crate::monty_run::MontyPhase::Tick => HookEvent::Tick,
+            };
+            let call = HookCall {
+                event,
+                schedule: &schedule.spec.name,
+                payload: &schedule.spec.payload,
+                timeout: schedule.spec.timeout,
+                deadline,
+            };
+            let hook = request(&call, stamp);
+            match tokio::task::spawn_blocking(move || {
+                crate::monty_run::execute_feed(session, &source, phase, generation, left, &hook)
+            })
+            .await
+            {
+                Ok(done) => done,
+                Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
+                Err(error) => crate::monty_run::FeedDone {
+                    session: None,
+                    result: crate::monty_run::FeedResult::Outcome(RunOutcome::Failed(format!(
+                        "feed task failed: {error}"
+                    ))),
+                },
+            }
+        });
+        let Some(slot) = self.slots.get_mut(index) else {
+            drop(guard);
+            return;
+        };
+        log(&slot.schedule, "launched", "monty feed started");
+        slot.run = Some(InFlight {
+            handle: Some(RunHandle::Monty(handle)),
+            deadline,
+            guard: Some(guard),
+        });
+    }
+
+    #[cfg(feature = "monty")]
+    async fn finish_monty(
+        &mut self,
+        index: usize,
+        result: Result<crate::monty_run::FeedDone, JoinError>,
+        guard: Option<MontyFeedGuard>,
+    ) {
+        use crate::monty_run::{FeedResult, MontyPhase};
+        let done = match result {
+            Ok(done) => done,
+            Err(error) if error.is_panic() => {
+                let message = panic_message(error);
+                if let Some(slot) = self.slots.get(index) {
+                    let schedule = slot.schedule.clone();
+                    self.record(
+                        &schedule,
+                        RunOutcome::Failed(format!("job panicked: {message}")),
+                    )
+                    .await;
+                }
+                self.forget_repl(index);
+                drop(guard);
+                return;
+            }
+            Err(error) => {
+                if let Some(slot) = self.slots.get(index) {
+                    log(&slot.schedule, "cancelled", &error.to_string());
+                }
+                drop(guard);
+                return;
+            }
+        };
+        let Some(slot) = self.slots.get(index) else {
+            drop(done.session);
+            drop(guard);
+            return;
+        };
+        let schedule = slot.schedule.clone();
+        let queued = slot.queued.clone();
+        let interrupt = self.stopping || !matches!(queued, Queued::None);
+        match done.result {
+            FeedResult::Disable(reason) => {
+                self.slots.remove(index);
+                drop(done.session);
+                self.disable(&schedule, &reason).await;
+                drop(guard);
+            }
+            FeedResult::Delete(reason) => {
+                self.slots.remove(index);
+                drop(done.session);
+                if !self.end(&schedule, &reason).await {
+                    self.rebuild_later();
+                }
+                drop(guard);
+            }
+            FeedResult::Continue if interrupt => {
+                drop(done.session);
+                drop(guard);
+                self.settle_queued(index).await;
+            }
+            FeedResult::Continue => {
+                let tick_guard = MontyFeedGuard::enter(&self.coord.feeds);
+                drop(guard);
+                self.spawn_feed(index, MontyPhase::Tick, done.session, tick_guard);
+            }
+            FeedResult::Outcome(outcome) => {
+                let keep = matches!(outcome, RunOutcome::Ok) && !interrupt;
+                self.record(&schedule, outcome).await;
+                if keep {
+                    if let Some(session) = done.session {
+                        self.coord.store_repl(schedule.spec.name.clone(), session);
+                    }
+                } else {
+                    self.coord.drop_repl(&schedule.spec.name);
+                    drop(done.session);
+                }
+                drop(guard);
+                if interrupt {
+                    self.settle_queued(index).await;
+                }
+            }
+        }
+    }
+
+    #[cfg(feature = "monty")]
+    fn forget_repl(&mut self, index: usize) {
+        if let Some(slot) = self.slots.get(index) {
+            self.coord.drop_repl(&slot.schedule.spec.name);
+        }
+    }
+
+    #[cfg(feature = "monty")]
+    async fn settle_queued(&mut self, index: usize) {
+        let Some(slot) = self.slots.get_mut(index) else {
+            return;
+        };
+        let queued = std::mem::replace(&mut slot.queued, Queued::None);
+        match queued {
+            Queued::Replace(schedule) => {
+                let schedule = *schedule;
+                self.slots.remove(index);
+                if !self.stop_requested()
+                    && let Some(slot) = self.new_slot(schedule).await
+                {
+                    self.slots.push(slot);
+                }
+            }
+            Queued::None | Queued::Disable | Queued::Delete => {
+                self.slots.remove(index);
+            }
+        }
+    }
 }
 
-/// Resolves when any slot's run finishes, with that slot's index.
-async fn finished(slots: &mut [Slot]) -> (usize, Result<Report, JoinError>) {
+enum Finished {
+    Report(Result<Report, JoinError>),
+    #[cfg(feature = "monty")]
+    Monty(Result<crate::monty_run::FeedDone, JoinError>),
+}
+
+/// Aborts a cooperative run and reads `TimedOut` from that cancellation.
+async fn await_aborted(mut run: InFlight) -> Result<Report, JoinError> {
+    run.abort_if_cooperative();
+    match run.handle.take() {
+        Some(RunHandle::Abortable(mut handle)) => match (&mut handle).await {
+            Err(error) if error.is_cancelled() => Ok(Report::Ran(RunOutcome::TimedOut)),
+            other => other,
+        },
+        _ => Ok(Report::Ran(RunOutcome::TimedOut)),
+    }
+}
+
+/// Resolves when any slot's run finishes. The feed guard is taken out so the
+/// caller can drop it after the outcome write.
+async fn finished(slots: &mut [Slot]) -> (usize, Finished, Option<MontyFeedGuard>) {
     poll_fn(|context| {
         for (index, slot) in slots.iter_mut().enumerate() {
-            if let Some(run) = &mut slot.run
-                && let Poll::Ready(result) = Pin::new(&mut run.handle).poll(context)
-            {
-                return Poll::Ready((index, result));
+            let Some(run) = slot.run.as_mut() else {
+                continue;
+            };
+            let ready = match run.handle.as_mut() {
+                Some(RunHandle::Abortable(handle)) => match Pin::new(handle).poll(context) {
+                    Poll::Ready(result) => Some(Finished::Report(result)),
+                    Poll::Pending => None,
+                },
+                #[cfg(feature = "monty")]
+                Some(RunHandle::Monty(handle)) => match Pin::new(handle).poll(context) {
+                    Poll::Ready(result) => Some(Finished::Monty(result)),
+                    Poll::Pending => None,
+                },
+                None => None,
+            };
+            if let Some(finished) = ready {
+                let guard = run.guard.take();
+                return Poll::Ready((index, finished, guard));
             }
         }
         Poll::Pending

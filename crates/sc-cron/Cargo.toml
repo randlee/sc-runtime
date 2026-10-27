@@ -17,6 +17,9 @@ categories = ["date-and-time", "asynchronous"]
 # Deterministic `ManualClock` and `SeqJitter` for tests of this crate and of
 # its callers.
 test-utils = []
+# In-process trusted hooks. Off by default, so a normal build does not link
+# the interpreter. `monty-types` is direct because the feed uses its limits.
+monty = ["dep:monty", "dep:monty-types"]
 
 [dependencies]
 async-trait = "0.1"
@@ -36,11 +39,17 @@ tracing = "0.1"
 # reaches grandchildren too; wraps the safe parts of the platform calls so
 # this crate keeps `forbid(unsafe_code)`.
 process-wrap = { version = "10", default-features = false, features = ["tokio1", "kill-on-drop", "process-group", "job-object"] }
+monty = { version = "1.4.0", optional = true }
+monty-types = { version = "1.4.0", optional = true }
 
 [dev-dependencies]
 # Self-reference so a plain `cargo test` builds the integration tests with
 # `test-utils`; no `required-features` gate silently skips them.
 sc-cron = { version = "0.1.0", path = ".", features = ["test-utils"] }
+# Puts the optional crates in cargo metadata so the boundary inventory can
+# name them. Not a normal edge: a default build does not link them.
+monty = "1.4.0"
+monty-types = "1.4.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util", "time"] }
 
 # Two processes share one database file, so the test runs a copy of itself as

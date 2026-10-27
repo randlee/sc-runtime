@@ -39,8 +39,8 @@ other workspace crate.
   writes over a restarted schedule.
 - **Stores read no clock.** Every instant is a `Timestamp` argument.
   `SqliteScheduleStore` is the rusqlite implementation (SQLite bundled), on a
-  database file of its own (`PRAGMA user_version` = `SCHEMA_VERSION`, 2; a
-  version 1 file gains the `enabled` column when opened).
+  database file of its own (`PRAGMA user_version` = `SCHEMA_VERSION`, 4; a
+  version 1, 2, or 3 file is rebuilt to that schema when opened).
   `list_active` skips a row that does not decode, with a `tracing` warning,
   so the other schedules keep running; `get` on that row still returns the
   `Corrupt` error.

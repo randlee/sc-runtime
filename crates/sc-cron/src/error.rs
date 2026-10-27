@@ -58,16 +58,6 @@ impl CronError {
         }
     }
 
-    /// No active schedule has this name.
-    pub(crate) fn missing(name: &ScheduleName) -> Self {
-        Self::NotFound(name.clone())
-    }
-
-    /// A hook could not be started.
-    pub(crate) fn hook_failed(detail: impl fmt::Display) -> Self {
-        Self::HookFailed(detail.to_string())
-    }
-
     /// Stable code plus display text, for a stored [`crate::RunOutcome::Failed`].
     pub(crate) fn recorded(&self) -> String {
         format!("{}: {self}", self.code())
@@ -84,7 +74,9 @@ impl CronError {
             Self::InvalidSpec(_) => "correct the named field; see the limits in sc_cron's docs",
             Self::AlreadyActive(_) => "stop the active schedule first, or choose another name",
             Self::NotFound(_) => "start a schedule with this name or pick an active one",
-            Self::HookFailed(_) => "fix the hook source, enable feature monty, or use another target",
+            Self::HookFailed(_) => {
+                "fix the hook source, enable feature monty, or use another target"
+            }
             Self::Store(error) => error.kind().recovery(),
             Self::Fenced { .. } => "re-read the schedule and act on its current generation",
         }
