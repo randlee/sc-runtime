@@ -66,6 +66,13 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      # sc-cron Monty hooks (`monty` 1.4) require rustc 1.96; workspace MSRV stays 1.94.1.
+      - name: Install Rust 1.96 for sc-cron Monty
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        uses: dtolnay/rust-toolchain@1.96
+        with:
+          components: clippy
+
       - name: Install just
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: |

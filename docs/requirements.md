@@ -357,6 +357,8 @@ sc-runtime design names only the recipe.
 3. `cargo test -p sc-transport --features server` and
    `cargo test -p sc-command --features server`.
 4. The generator contract tests under `tests/unit/`.
+5. `cargo test -p sc-cron --features monty` on **rustc 1.96** (the `monty`
+   1.4 crates require 1.96; workspace MSRV stays 1.94.1 for the other crates).
 
 `lint` and `test` are the standard SC base command names; they MUST NOT be
 renamed or aliased to other primary names.
@@ -373,8 +375,10 @@ A workflow file under `.github/workflows/` (the crate CI workflow) MUST run
 
 `just lint` with no profile runs the sc-lint 0.8.0 full profile through
 `.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the
-`boundary` lint), line-counts, `cargo fmt --all -- --check`, and
-`cargo clippy --workspace --all-targets -- -D warnings`. `just lint gates`
+`boundary` lint), line-counts, `cargo fmt --all -- --check`,
+`cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and
+`cargo clippy -p sc-cron --all-targets --features monty -- -D warnings` on
+**rustc 1.96**. `just lint gates`
 is the early profile of boundary plus line-counts. The line-counts key is
 `[line_counts] max_production_lines` and its value is `1000` for non-test
 files under `crates/*/src`. `template/**/*.rs` is not configured in this
