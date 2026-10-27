@@ -35,7 +35,9 @@ vertical_rationale: One crate. b-3 lands `HookTarget` (Rust and Python `{ module
 
 # Sprint b-9 — Monty hook target for sc-cron
 
-Plan for bead `run-zif.1` (parent `run-zif`). This document is the plan. It contains no crate change. Implementation starts only after this plan is accepted. Sprint b-3 (`run-9ny`, PR #68) is merged on `integrate/phase-b`; this sprint extends that tree.
+Sprint **b-9** landed on `integrate/phase-b` (Monty target, schema 4, feature
+`monty`). This copy is the index the Monty extension (`b-10`, `b-11`) follows.
+Sprint b-3 (`run-9ny`, PR #68) is the port base.
 
 ## Slot
 

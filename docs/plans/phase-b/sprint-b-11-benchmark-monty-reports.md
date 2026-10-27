@@ -10,7 +10,10 @@ branch: sprint/b-11-benchmark-monty-reports
 worktree: sprint/b-11-benchmark-monty-reports
 integration_branch: integrate/phase-b-monty
 requirements:
+  - REQ-CRON-0001
   - REQ-CRON-0003
+  - REQ-CRON-0005
+  - REQ-RUN-0005
   - NFR-RUN-0005
 adrs:
   - ADR-RUN-0013
@@ -90,7 +93,7 @@ RSS notes into `{timestamp}-{host}.campaign.json`.
 | `python_render_only` | same render, no sc-cron wrapper |
 | `sc_compose_cli_only` | `sc-compose render` with no Monty |
 | `monty_host_bridge` | lab `MontyRepl::feed_start` plus host resume to the CLI |
-| `production_bridge` | `cron_tick` through `execute_feed` calling `render_template` |
+| `production_bridge` | `cron_tick` through `execute_feed` calling `render_template` (the bench must not call `feed_start` itself; `execute_feed` may use `feed_start` internally) |
 
 `production_bridge` is skipped, and the campaign JSON records the skip, when
 the `b-10` path is absent. A publish that claims a `production_bridge` sample
@@ -142,6 +145,7 @@ not edit `hooks-sc-compose.md`.
 
 ## Non-goals
 
-No new `CronError` variant. No boundary-manifest edit. No edit to
+No new `CronError` variant (`REQ-CRON-0005`). No workspace crate dependency on
+sc-cron (`REQ-CRON-0001`). No boundary-manifest edit (`REQ-RUN-0005`). No edit to
 `monty_run.rs`, `monty_host.rs`, `hooks-sc-compose.md`, or `docs/architecture.md`.
 No default-CI benchmark. No second campaign runner.

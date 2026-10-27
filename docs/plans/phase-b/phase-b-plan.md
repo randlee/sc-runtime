@@ -74,7 +74,7 @@ Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Combined sprint co
 
 REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../../requirements.md) and [architecture.md](../../architecture.md).
 
-`b-9`, `b-10`, and `b-11` are governed by [REQ-CRON-0001](../../sc-cron/requirements.md) through [REQ-CRON-0005](../../sc-cron/requirements.md) and [ADR-RUN-0013](../../architecture.md). On this branch, `REQ-CRON-0003` is still the Rust-or-Python sentence from `b-3`. The Monty sentence is the `b-9` amendment on `integrate/phase-b`. The `render_template` sentence is a `b-10` deliverable.
+`b-9` and `b-10` are governed by [REQ-CRON-0001](../../sc-cron/requirements.md) through [REQ-CRON-0005](../../sc-cron/requirements.md) and [ADR-RUN-0013](../../architecture.md). `b-11` is governed by REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0005, REQ-RUN-0005, and NFR-RUN-0005 (not REQ-CRON-0002 or REQ-CRON-0004). On this branch, `REQ-CRON-0003` is still the Rust-or-Python sentence from `b-3`. The Monty sentence is the `b-9` amendment on `integrate/phase-b`. The `render_template` sentence is a `b-10` deliverable.
 
 ## Out of this phase
 
