@@ -172,7 +172,7 @@ fn python_hook_once() {
         .build()
         .expect("runtime");
     runtime
-        .block_on(hook.invoke(&clock, &call))
+        .block_on(hook.invoke(&clock, &call)) // allow: bench drives PythonHook on a local runtime
         .expect("invoke");
 }
 
