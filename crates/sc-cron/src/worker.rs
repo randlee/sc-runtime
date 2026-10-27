@@ -383,7 +383,11 @@ where
                 .as_ref()
                 .filter(|run| !run.is_monty())
                 .map(|run| wall_after(now, run.deadline.saturating_duration_since(monotonic)));
-            slot.next.into_iter().chain(deadline)
+            let next = slot
+                .next
+                .into_iter()
+                .filter(|_| !self.coord.name_in_flight(&slot.schedule.spec.name));
+            next.chain(deadline)
         });
         slots
             .chain(self.retry.due)
@@ -619,11 +623,6 @@ where
                 return;
             };
             if self.coord.name_in_flight(&slot.schedule.spec.name) {
-                // The stored next run stays due. Park a second out so this
-                // loop does not spin until `run_due` records and clears the mark.
-                if slot.next.is_some_and(|next| next <= now) {
-                    slot.next = Some(now + chrono::Duration::seconds(1));
-                }
                 log(
                     &slot.schedule,
                     "skipped_in_flight",

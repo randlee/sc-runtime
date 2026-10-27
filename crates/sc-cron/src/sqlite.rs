@@ -8,9 +8,10 @@
 //! schema and version [`SCHEMA_VERSION`]. A file at version 1, which lacks the
 //! `enabled` column, gains it in place with every schedule enabled
 //! (REQ-CRON-0014), then gains the hook columns. A file at version 2 gains
-//! the hook columns, defaulting every row to a Rust hook. A file at any
-//! other version, or one that already holds
-//! other tables, is refused with [`StoreErrorKind::SchemaMismatch`].
+//! the hook columns, defaulting every row to a Rust hook. A file at version 3
+//! gains `hook_source` and the three-way `hook_kind` check in a rebuild step.
+//! Any other `user_version`, or a file that already holds unrelated tables, is
+//! refused with [`StoreErrorKind::SchemaMismatch`].
 //!
 //! `create` runs as one immediate transaction, so the active-name check and
 //! the write cannot interleave with another writer; so do `set_enabled_many`

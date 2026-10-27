@@ -369,6 +369,55 @@ async fn a_handle_deadline_aborts_rust_siblings_and_waits_for_monty() {
 }
 
 #[tokio::test]
+async fn two_monty_feeds_and_one_rust_run_at_handle_deadline() {
+    let fixture = Fixture::new();
+    let monty_short = fixture.start(spec(
+        "monty-short",
+        TIME_LIMIT,
+        Duration::from_millis(400),
+    ));
+    let monty_long = fixture.start(spec(
+        "monty-long",
+        TIME_LIMIT,
+        Duration::from_secs(5),
+    ));
+    let rust = fixture.start(fixture.spec("rust"));
+    let worker = fixture.worker(Arc::new(Hang)).await;
+    fixture.step(60).await;
+    fixture
+        .store
+        .wait_recorded(&monty_short, RunOutcome::TimedOut)
+        .await;
+    assert!(
+        fixture.row(&monty_long).last_outcome.is_none(),
+        "second monty feed still running: {:?}",
+        fixture.row(&monty_long).last_outcome
+    );
+    let handle = tokio::spawn(async move {
+        worker
+            .shutdown(tokio::time::Instant::now() + Duration::from_millis(300))
+            .await
+    });
+    tokio::time::sleep(Duration::from_millis(500)).await;
+    assert!(
+        fixture.row(&monty_long).last_outcome.is_none(),
+        "handle deadline must not time out the second monty feed early: {:?}",
+        fixture.row(&monty_long).last_outcome
+    );
+    assert_eq!(
+        fixture.row(&rust).last_outcome,
+        Some(RunOutcome::TimedOut),
+        "rust sibling aborted at handle deadline"
+    );
+    let stopped = handle.await.expect("shutdown task");
+    assert!(!stopped, "worker waits out remaining monty feeds");
+    assert_eq!(
+        fixture.row(&monty_long).last_outcome,
+        Some(RunOutcome::TimedOut)
+    );
+}
+
+#[tokio::test]
 async fn a_monty_only_shutdown_does_not_time_out_until_the_feed_returns() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("slow", TIME_LIMIT, Duration::from_secs(2)));

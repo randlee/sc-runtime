@@ -182,9 +182,10 @@ impl RunTimeout {
 ///
 /// `Rust` calls the [`Job`](crate::Job) passed to
 /// [`Scheduler::spawn_worker`](crate::Scheduler::spawn_worker). `Python`
-/// runs `python3 <module> cron.tick` or `python3 <module> cron.stop` and
-/// writes one JSON object, carrying the schedule name and the row payload,
-/// to the child's stdin.
+/// and [`HookTarget::Monty`] run `cron.stop` and `cron.tick` with the
+/// [`sc-cron.hook.v1`](crate::hook::HOOK_PROTOCOL) JSON object (required
+/// `protocol`, `event`, `schedule`, `payload`, and `deadline`). Python
+/// writes it to the child's stdin; Monty passes it as the hook argument.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum HookTarget {

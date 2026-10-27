@@ -269,18 +269,26 @@ where
         let interrupt = self.stopping || !matches!(queued, Queued::None);
         match done.result {
             FeedResult::Disable(reason) => {
-                self.slots.remove(index);
                 drop(done.session);
                 self.disable(&schedule, &reason).await;
                 drop(guard);
+                if matches!(queued, Queued::Replace(_)) {
+                    self.settle_queued(index).await;
+                } else {
+                    self.slots.remove(index);
+                }
             }
             FeedResult::Delete(reason) => {
-                self.slots.remove(index);
                 drop(done.session);
                 if !self.end(&schedule, &reason).await {
                     self.rebuild_later();
                 }
                 drop(guard);
+                if matches!(queued, Queued::Replace(_)) {
+                    self.settle_queued(index).await;
+                } else {
+                    self.slots.remove(index);
+                }
             }
             FeedResult::Continue if interrupt => {
                 drop(done.session);
