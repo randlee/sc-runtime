@@ -16,10 +16,13 @@ const NAME_BLANK_CAUSE: &str = "name is empty or only whitespace";
 const STORE_RECOVERY: &str = "check the database path, permissions, and free disk; a pool acquire timeout means the store is saturated";
 const WIDGETS: &str = "widgets";
 
-/// Text of one widget row after the layout has read it.
+/// One widget row after the layout has parsed it.
+///
+/// The id and name are parsed once at the store boundary. Callers do not
+/// parse them again.
 struct RowText {
-    id: String,
-    name: String,
+    id: WidgetId,
+    name: WidgetName,
 }
 
 /// What a layout did with one widget row.
@@ -41,8 +44,8 @@ enum Remove {
 pub struct StoreOpenError {
     /// Stable code. v0.1 uses `STORE.OPEN`.
     pub code: &'static str,
-    /// What happened.
-    pub cause: &'static str,
+    /// What happened. This is the store error's message.
+    pub cause: String,
     /// How to recover.
     pub recovery: &'static str,
     /// Store detail.
@@ -78,7 +81,7 @@ pub async fn create_widget(stores: &Stores, input: CreateWidget) -> Result<Widge
         ));
     }
     let row = stores.insert_widget_row(name).await?;
-    stored_widget(&row.id, &row.name)
+    Ok(stored_widget(row))
 }
 
 /// Gets a widget by id.
@@ -90,7 +93,7 @@ pub async fn create_widget(stores: &Stores, input: CreateWidget) -> Result<Widge
 pub async fn get_widget(stores: &Stores, input: GetWidget) -> Result<Widget, OpError> {
     let row = stores.fetch_widget_row(input.id.as_str()).await?;
     match row {
-        Some(row) => stored_widget(&row.id, &row.name),
+        Some(row) => Ok(stored_widget(row)),
         None => Err(widget_error(
             ErrorKind::NotFound,
             NOT_FOUND,
@@ -152,24 +155,11 @@ fn missing_row() -> OpError {
     )
 }
 
-fn stored_widget(id: &str, name: &str) -> Result<Widget, OpError> {
-    let id = WidgetId::parse(id).map_err(|_| {
-        widget_error(
-            ErrorKind::Internal,
-            "STORE.QUERY",
-            "the stored id is not a widget id",
-            STORE_RECOVERY,
-        )
-    })?;
-    let name = WidgetName::parse(name).map_err(|_| {
-        widget_error(
-            ErrorKind::Internal,
-            "STORE.QUERY",
-            "the stored name is longer than the widget name limit",
-            STORE_RECOVERY,
-        )
-    })?;
-    Ok(Widget { id, name })
+fn stored_widget(row: RowText) -> Widget {
+    Widget {
+        id: row.id,
+        name: row.name,
+    }
 }
 
 fn widget_error(kind: ErrorKind, code: &'static str, cause: &str, action: &str) -> OpError {

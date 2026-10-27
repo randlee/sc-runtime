@@ -408,16 +408,29 @@ async fn empty_host_still_writes_the_rollup() {
 }
 
 #[test]
-fn manifest_depends_on_the_schema_crate_and_not_on_an_engine() {
+fn manifest_depends_on_schema_and_only_layout_stores() {
     let manifest = include_str!("../Cargo.toml");
     let runtime = manifest
         .split("[dev-dependencies]")
         .next()
         .expect("dependencies");
-    assert!(runtime.contains("schema"));
-    assert!(!manifest.contains("sqlx"));
-    assert!(!manifest.contains("../store-"));
-    assert!(!runtime.contains("store-postgres"));
-    assert!(!runtime.contains("store-mysql"));
-    assert!(!runtime.contains("store-sqlite"));
+    assert!(runtime.contains("schema"), "{runtime}");
+    assert!(!manifest.contains("sqlx"), "{manifest}");
+    let stores: Vec<_> = ["store-sqlite", "store-postgres", "store-mysql"]
+        .into_iter()
+        .filter(|name| {
+            runtime.lines().any(|line| {
+                let line = line.trim_start();
+                line.starts_with(&format!("{name} =")) || line.starts_with(&format!("{name}="))
+            })
+        })
+        .collect();
+    // The checkout crate names no store. A rendered layout depends on SQLite
+    // and one remote store.
+    assert!(
+        stores.is_empty()
+            || stores == ["store-sqlite", "store-postgres"]
+            || stores == ["store-sqlite", "store-mysql"],
+        "{stores:?}\n{runtime}"
+    );
 }

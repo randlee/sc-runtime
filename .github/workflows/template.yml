@@ -133,6 +133,11 @@ jobs:
           just build-cli
           just build-daemon
 
+      - name: Workspace check
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        working-directory: ${{ runner.temp }}/app
+        run: SQLX_OFFLINE=true cargo check --workspace
+
   plain-cargo-generate:
     name: plain cargo generate
     needs: ci-scope

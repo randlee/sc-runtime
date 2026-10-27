@@ -58,8 +58,9 @@ SQLite only, Postgres only, MySQL only, SQLite plus Postgres, or SQLite plus
 MySQL. No project contains both `store-postgres` and `store-mysql`.
 
 Package names in the generated project are `<project>-<role>`. The directory
-`api-types` becomes `<project>-types`. Both adaptor variants become
-`<project>-store-adaptor`. Rust crate names stay the role (`api_types`,
+`api-types` becomes `<project>-types`. A two-store layout's one adaptor
+directory is `crates/store-adaptor`, and its package is `<project>-store-adaptor`.
+Rust crate names stay the role (`api_types`,
 `store_sqlite`, `store_adaptor`, and the rest) so existing `use` paths keep
 working. A cargo-generate post hook runs `python3 hooks/prefix_packages.py`
 after Liquid. `cargo generate` needs `--allow-commands` or that hook is

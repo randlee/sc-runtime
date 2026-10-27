@@ -1,67 +1,73 @@
 include!("common.rs");
+include!("store_map.rs");
 
 use std::path::PathBuf;
 
-use schema::{OpenConfig, WidgetRow};
-use store_adaptor::Rollup;
+use schema::WidgetRow;
 
 /// SQLite plus MySQL. Service depends on the adaptor, not on the store crates.
 #[derive(Debug, Clone)]
 pub struct Stores {
     sqlite: store_adaptor::SqliteStore,
-    remote: Option<store_adaptor::MysqlStore>,
+    remote: store_adaptor::MysqlStore,
+    flags: store_adaptor::TableFlags,
 }
 
 impl Stores {
-    /// Opens SQLite at `path` and MySQL when `path` is a MySQL URL.
+    /// Opens SQLite at `sqlite` and MySQL at `remote`.
     ///
-    /// Constructs `OpenConfig { url }` for each store that opens. The row
-    /// struct comes from the schema crate. Membership for the copy pattern is
-    /// read before the stores are returned.
+    /// `sqlite` is a filesystem path. `remote` is a MySQL URL. Each value
+    /// becomes its own `OpenConfig { url }`. This function does not read a
+    /// `mysql://` prefix to choose an engine, and it does not open SQLite
+    /// with the remote URL.
     ///
     /// # Errors
     ///
-    /// Returns [`StoreOpenError`] when a database cannot be opened or
-    /// membership rejects the shared `widgets` table.
-    pub async fn open(path: PathBuf) -> Result<Self, StoreOpenError> {
-        let url = path.to_string_lossy().into_owned();
-        let flags = store_adaptor::layout_flags().map_err(|detail| StoreOpenError {
-            code: "STORE.OPEN",
-            cause: "membership.toml could not be read",
-            recovery: "fix crates/schema/membership.toml",
-            detail,
-        })?;
-        flags.ensure_shared_table("widgets").map_err(open_error)?;
-        let _ = store_adaptor::CopyRollup.rollup(&[], &flags.column_on_one_side);
-        let config = OpenConfig::new(url.clone());
-        let sqlite = store_adaptor::open_sqlite(&config)
+    /// Returns [`StoreOpenError`] when membership rejects `widgets` or either
+    /// database cannot be opened.
+    pub async fn open(sqlite: PathBuf, remote: String) -> Result<Self, StoreOpenError> {
+        let flags = store_adaptor::layout_flags().map_err(membership_error)?;
+        flags
+            .ensure_shared_table("widgets")
+            .map_err(membership_error)?;
+        let sqlite_url = sqlite.to_string_lossy().into_owned();
+        let sqlite = store_adaptor::open_sqlite(&schema::OpenConfig::new(sqlite_url))
             .await
             .map_err(open_error)?;
-        let remote = if url.starts_with("mysql://") {
-            Some(
-                store_adaptor::open_mysql(&config)
-                    .await
-                    .map_err(open_error)?,
-            )
-        } else {
-            None
-        };
-        Ok(Self { sqlite, remote })
+        let remote = store_adaptor::open_mysql(&schema::OpenConfig::new(remote))
+            .await
+            .map_err(open_error)?;
+        Ok(Self {
+            sqlite,
+            remote,
+            flags,
+        })
     }
 
     async fn insert_widget_row(&self, name: &str) -> Result<RowText, OpError> {
-        let _remote = self.remote.as_ref();
         let row: WidgetRow = store_adaptor::insert_widget(&self.sqlite, name)
             .await
             .map_err(store_query)?;
-        Ok(text_row(row))
+        store_adaptor::copy_shared_rows(
+            &self.sqlite,
+            &self.remote,
+            "widgets",
+            &self.flags,
+            &store_adaptor::CopyRollup,
+        )
+        .await
+        .map_err(store_query)?;
+        text_row(row)
     }
 
     async fn fetch_widget_row(&self, id: &str) -> Result<Option<RowText>, OpError> {
-        Ok(store_adaptor::get_widget(&self.sqlite, id)
+        match store_adaptor::get_widget(&self.sqlite, id)
             .await
             .map_err(store_query)?
-            .map(text_row))
+        {
+            Some(row) => Ok(Some(text_row(row)?)),
+            None => Ok(None),
+        }
     }
 
     async fn remove_widget_row(&self, id: &str) -> Result<Remove, OpError> {
@@ -73,31 +79,4 @@ impl Stores {
         }
         Ok(Remove::Unsupported)
     }
-}
-
-fn text_row(row: WidgetRow) -> RowText {
-    RowText {
-        id: row.id.to_string(),
-        name: row.name,
-    }
-}
-
-fn open_error(err: schema::StoreError) -> StoreOpenError {
-    StoreOpenError {
-        code: "STORE.OPEN",
-        cause: "the widget database did not open",
-        recovery: "check the database path or URL, credentials, and free disk",
-        detail: err.to_string(),
-    }
-}
-
-fn store_query(err: schema::StoreError) -> OpError {
-    let cause = err.to_string();
-    OpError::new(
-        sc_command::ErrorKind::Internal,
-        sc_observability_types::ErrorCode::new_static("STORE.QUERY"),
-        cause.clone(),
-    )
-    .with_suggestion(STORE_RECOVERY)
-    .with_details(serde_json::json!({ "cause": cause }))
 }

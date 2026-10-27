@@ -25,11 +25,14 @@ store-sqlite = { path = "../store-sqlite" }
 store-postgres = { path = "../store-postgres" }
 {% elsif db == "mysql" %}
 store-mysql = { path = "../store-mysql" }
-{% elsif db == "sqlite-postgres" %}
-store-adaptor = { package = "store-adaptor-sqlite-postgres", path = "../store-adaptor-sqlite-postgres" }
-{% elsif db == "sqlite-mysql" %}
-store-adaptor = { package = "store-adaptor-sqlite-mysql", path = "../store-adaptor-sqlite-mysql" }
+{% elsif db == "sqlite-postgres" or db == "sqlite-mysql" %}
+store-adaptor = { path = "../store-adaptor" }
 {% endif %}
 sc-command.workspace = true
 sc-observability-types.workspace = true
 serde_json.workspace = true
+
+[dev-dependencies]
+{% if db == "none" %}
+tokio = { workspace = true, features = ["macros", "rt"] }
+{% endif %}

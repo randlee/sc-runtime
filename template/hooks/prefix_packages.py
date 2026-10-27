@@ -11,6 +11,7 @@ and dependency keys stay the role. The package name becomes `<project>-<role>`.
 from __future__ import annotations
 
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -88,9 +89,8 @@ def _rewrite_dep(line: str, names: dict[str, str]) -> str:
         updated = body.replace("{", '{ package = "%s",' % names[dep_key], 1)
     if updated == body:
         return line
-    spacer = "" if rest.startswith(" ") or rest.startswith("\t") else " "
     # Keep a single space around `=`.
-    return f"{indent}{dep_key} ={spacer}{updated.lstrip()}"
+    return f"{indent}{dep_key} = {updated.lstrip()}"
 
 
 def _ensure_lib_name(text: str, lib_name: str, crate_dir: Path) -> str:
@@ -127,14 +127,68 @@ def prefix_tree(project: str, dest: Path) -> None:
             path.write_text(updated, encoding="utf-8")
 
 
+_LAYOUT_MANIFESTS = {
+    "sqlite-postgres": "Cargo.sqlite-postgres.toml",
+    "sqlite-mysql": "Cargo.sqlite-mysql.toml",
+}
+
+_RENDERED_LIB = """#[path = "../../schema/tests/common/membership_toml.rs"]
+mod membership_toml;
+
+include!("shared.rs");
+include!("membership.rs");
+include!("engine.rs");
+include!("layout_tests.rs");
+"""
+
+
+def prepare_adaptor(dest: Path, db: str) -> None:
+    """Install one `crates/store-adaptor` for a two-store layout.
+
+    One-store and no-database layouts ignore that directory, so this returns
+    without looking for it. A two-store layout replaces the checkout manifest
+    with the engine manifest, writes `engine.rs` from the selected engine
+    file, and deletes the other engine file. The rendered `lib.rs` is the
+    same text for Postgres and MySQL.
+    """
+    manifest_name = _LAYOUT_MANIFESTS.get(db)
+    if manifest_name is None:
+        return
+    crate = dest / "crates" / "store-adaptor"
+    if not crate.is_dir():
+        print("prefix_packages: missing crates/store-adaptor", file=sys.stderr)
+        raise SystemExit(1)
+    source = crate / manifest_name
+    engine_src = crate / "src" / "engines" / f"{db}.rs"
+    if not source.is_file() or not engine_src.is_file():
+        print("prefix_packages: adaptor layout files are missing", file=sys.stderr)
+        raise SystemExit(1)
+    (crate / "Cargo.toml").write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    for name in _LAYOUT_MANIFESTS.values():
+        (crate / name).unlink(missing_ok=True)
+    (crate / "src" / "engine.rs").write_text(
+        engine_src.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    engines = crate / "src" / "engines"
+    if engines.is_dir():
+        shutil.rmtree(engines)
+    (crate / "src" / "lib.rs").write_text(_RENDERED_LIB, encoding="utf-8")
+    for sidecar in ("store-adaptor-sqlite-postgres", "store-adaptor-sqlite-mysql"):
+        path = dest / "crates" / sidecar
+        if path.exists():
+            shutil.rmtree(path)
+
+
 def main(argv: list[str]) -> None:
-    if len(argv) != 3:
-        print("usage: prefix_packages.py PROJECT DEST", file=sys.stderr)
+    if len(argv) != 4:
+        print("usage: prefix_packages.py PROJECT DEST DB", file=sys.stderr)
         raise SystemExit(2)
-    project, dest = argv[1], Path(argv[2])
+    project, dest, db = argv[1], Path(argv[2]), argv[3]
     if not project or not dest.is_dir():
         print("prefix_packages: project and destination are required", file=sys.stderr)
         raise SystemExit(1)
+    prepare_adaptor(dest, db)
     prefix_tree(project, dest)
 
 

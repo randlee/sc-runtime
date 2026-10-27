@@ -5,7 +5,9 @@
 file::delete("Cargo.toml");
 file::rename("workspace.template.toml", "Cargo.toml");
 let project = variable::get("project-name");
-system::command("python3", ["hooks/prefix_packages.py", project, "."]);
+let db = variable::get("db");
+// Success with empty stdout returns (), and a non-zero exit throws.
+system::command("python3", ["hooks/prefix_packages.py", project, ".", db]);
 file::delete("hooks/prefix_packages.py");
 file::delete("hooks/drop-template-exclude.rhai");
 file::delete("hooks");

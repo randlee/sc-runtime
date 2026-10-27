@@ -3,8 +3,6 @@
 import contextlib
 import importlib.util
 import io
-import shutil
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,46 +11,19 @@ ROOT = Path(__file__).resolve().parents[3]
 TEMPLATE_CRATES = ROOT / "template" / "crates"
 STORES = ("store-sqlite", "store-postgres", "store-mysql")
 
-# Functions each store crate is expected to define when that crate is rendered.
 _FUNCTIONS = {
     "store-sqlite": ("known_table", "widget_from_payload"),
-    "store-postgres": (
-        "known_table",
-        "widget_from_payload",
-        "redact_credentials",
-        "redact_authority",
-        "record_from_columns",
-    ),
-    "store-mysql": (
-        "known_table",
-        "widget_from_payload",
-        "redact_credentials",
-        "redact_authority",
-        "record_from_columns",
-    ),
+    "store-postgres": ("known_table", "widget_from_payload"),
+    "store-mysql": ("known_table", "widget_from_payload"),
 }
 
 
-def drop_template_bytecode() -> None:
-    """Remove bytecode cargo-generate would try to render as template text."""
-    cache = ROOT / "template" / "scripts" / "__pycache__"
-    if cache.is_dir():
-        shutil.rmtree(cache)
-
-
-def checks():
-    """Load the template script without writing bytecode beside it."""
-    path = ROOT / "template" / "scripts" / "consumer_checks.py"
-    previous = sys.dont_write_bytecode
-    sys.dont_write_bytecode = True
-    try:
-        spec = importlib.util.spec_from_file_location("consumer_checks", path)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        return module
-    finally:
-        sys.dont_write_bytecode = previous
-        drop_template_bytecode()
+def scanner():
+    path = Path(__file__).with_name("store_boundaries.py")
+    spec = importlib.util.spec_from_file_location("store_boundaries", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def link_stores(dest: Path, names: tuple[str, ...]) -> Path:
@@ -76,7 +47,7 @@ def matching_bodies(crate: str, body: str = "let ok = 1;") -> dict[str, str]:
 
 class StoreBoundaryLayoutTests(unittest.TestCase):
     def setUp(self):
-        self.checks = checks()
+        self.checks = scanner()
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
@@ -126,14 +97,14 @@ class StoreBoundaryLayoutTests(unittest.TestCase):
         crates = self.root / "crates"
         write_lib(crates, "store-postgres", matching_bodies("store-postgres"))
         mysql = matching_bodies("store-mysql")
-        mysql["record_from_columns"] = "let drifted = 2;"
+        mysql["known_table"] = "let drifted = 2;"
         write_lib(crates, "store-mysql", mysql)
         stderr = io.StringIO()
         with contextlib.redirect_stderr(stderr):
             with self.assertRaises(SystemExit):
                 self.checks.store_boundaries(crates)
         self.assertIn(
-            "fn record_from_columns in store-mysql drifted from store-postgres",
+            "fn known_table in store-mysql drifted from store-postgres",
             stderr.getvalue(),
         )
         self.assertNotIn("missing", stderr.getvalue())

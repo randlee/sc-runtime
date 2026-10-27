@@ -241,9 +241,17 @@ class WizardContractTests(unittest.TestCase):
         self.assertNotIn("reserved_database", source)
         self.assertIn("def entry_answers", source)
         self.assertIn("--allow-commands", source)
-        left = (ROOT / "template/crates/store-adaptor-sqlite-postgres/src/lib.rs").read_bytes()
-        right = (ROOT / "template/crates/store-adaptor-sqlite-mysql/src/lib.rs").read_bytes()
-        self.assertEqual(left, right)
+        postgres = (
+            ROOT / "template/crates/store-adaptor-sqlite-postgres/src/lib.rs"
+        ).read_text(encoding="utf-8")
+        mysql = (
+            ROOT / "template/crates/store-adaptor-sqlite-mysql/src/lib.rs"
+        ).read_text(encoding="utf-8")
+        shared = 'include!("../../store-adaptor/src/membership.rs");'
+        self.assertIn(shared, postgres)
+        self.assertIn(shared, mysql)
+        self.assertNotIn("fn membership_from_toml", postgres)
+        self.assertNotIn("fn membership_from_toml", mysql)
 
 
 if __name__ == "__main__":
