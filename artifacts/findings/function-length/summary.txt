@@ -1,5 +1,0 @@
-function-length gate passed
-advisory: crates/sc-cron/src/monty_run.rs:54-124: execute_feed (71 code lines)
-advisory: crates/sc-cron/src/process.rs:215-288: supervise (70 code lines)
-advisory: crates/sc-cron/src/scheduler/run_due.rs:15-89: record_due (75 code lines)
-advisory: crates/sc-cron/src/sqlite.rs:237-315: init_schema (79 code lines)
