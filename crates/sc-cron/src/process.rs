@@ -277,36 +277,7 @@ pub async fn supervise(
         }
         Some(status)
     } else {
-        if let Err(error) = tree.child.start_kill() {
-            tracing::debug!(subsystem = "sc_cron", action = "child_kill", %error,
-                "kill at expiry found nothing to kill: {error}");
-        }
-        // The group is dead; this reaps it, for at most REAP_AFTER_KILL of
-        // wall-clock time (a thread's timer, not tokio's: a paused or
-        // manual tokio clock must not cut the reap short).
-        let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
-        let timer = std::thread::Builder::new()
-            .name("sc-cron-reap-bound".to_owned())
-            .spawn(move || {
-                std::thread::park_timeout(REAP_AFTER_KILL);
-                let _ = bound.send(());
-            });
-        let bounded = async {
-            if timer.is_ok() {
-                let _ = bounded.await;
-            } else {
-                std::future::pending::<()>().await;
-            }
-        };
-        tokio::select! {
-            biased;
-            _ = tree.child.wait() => tree.reaped = true,
-            () = bounded => {
-                tracing::warn!(subsystem = "sc_cron", action = "child_reap",
-                    after_ms = u64::try_from(REAP_AFTER_KILL.as_millis()).unwrap_or(u64::MAX),
-                    "a killed child's group was not reaped in time; it is left (killed again on drop)");
-            }
-        }
+        reap_killed(&mut tree).await;
         None
     };
     Ok(Captured {
@@ -314,6 +285,41 @@ pub async fn supervise(
         stdout: out,
         stderr: err,
     })
+}
+
+/// After a kill at expiry, reap the group for at most [`REAP_AFTER_KILL`].
+///
+/// The bound is a thread timer, not tokio's: a paused or manual tokio clock
+/// must not cut the reap short. A group that is not reaped in time is logged
+/// and left; drop kills it again.
+async fn reap_killed(tree: &mut Tree) {
+    if let Err(error) = tree.child.start_kill() {
+        tracing::debug!(subsystem = "sc_cron", action = "child_kill", %error,
+            "kill at expiry found nothing to kill: {error}");
+    }
+    let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
+    let timer = std::thread::Builder::new()
+        .name("sc-cron-reap-bound".to_owned())
+        .spawn(move || {
+            std::thread::park_timeout(REAP_AFTER_KILL);
+            let _ = bound.send(());
+        });
+    let bounded = async {
+        if timer.is_ok() {
+            let _ = bounded.await;
+        } else {
+            std::future::pending::<()>().await;
+        }
+    };
+    tokio::select! {
+        biased;
+        _ = tree.child.wait() => tree.reaped = true,
+        () = bounded => {
+            tracing::warn!(subsystem = "sc_cron", action = "child_reap",
+                after_ms = u64::try_from(REAP_AFTER_KILL.as_millis()).unwrap_or(u64::MAX),
+                "a killed child's group was not reaped in time; it is left (killed again on drop)");
+        }
+    }
 }
 
 /// Writes `input` to the child and closes its stdin.
