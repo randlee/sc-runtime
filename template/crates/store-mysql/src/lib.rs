@@ -384,10 +384,6 @@ async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), Stor
         .begin()
         .await
         .map_err(|err| from_driver(StoreCode::Connection, err))?;
-    sqlx::query("DELETE FROM widgets")
-        .execute(&mut *tx)
-        .await
-        .map_err(|err| from_driver(StoreCode::Query, err))?;
     for row in rows {
         if row.table != WIDGETS {
             return Err(StoreError::new(
@@ -399,10 +395,18 @@ async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), Stor
         let id = widget.id.as_str();
         let name = widget.name.as_str();
         check_column_limits(id, name)?;
-        sqlx::query!("INSERT INTO widgets (id, name) VALUES (?, ?)", id, name)
-            .execute(&mut *tx)
-            .await
-            .map_err(|err| from_driver(StoreCode::Query, err))?;
+        // Upsert this identity only. Deleting the table would drop a distinct
+        // id such as `abc` when a later call writes `ABC`. The same id still
+        // replaces, so a second copy does not conflict on insert.
+        sqlx::query(
+            "INSERT INTO widgets (id, name) VALUES (?, ?) AS new \
+             ON DUPLICATE KEY UPDATE name = new.name",
+        )
+        .bind(id)
+        .bind(name)
+        .execute(&mut *tx)
+        .await
+        .map_err(|err| from_driver(StoreCode::Query, err))?;
     }
     tx.commit()
         .await

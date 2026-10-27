@@ -514,12 +514,12 @@ pub trait EngineStore: Send + Sync {
     /// The batch must be at most [`MAX_PAIRING_ROWS`] long, and each payload
     /// at most [`MAX_ROW_PAYLOAD_BYTES`].
     ///
-    /// A scheduled copy or host aggregate passes the whole table on every run.
-    /// That sync replaces the destination table: the store clears `table`, then
-    /// inserts `rows`. A second call with the same ids does not return
-    /// [`StoreCode::Conflict`]. A constraint other than that replacement, such
-    /// as a check that the new row itself fails, still returns
-    /// [`StoreCode::Conflict`].
+    /// A scheduled copy or host aggregate writes the rows it read. Distinct
+    /// identities accumulate: the store does not clear `table`. An identity
+    /// already stored is replaced, so a second copy of those rows does not
+    /// return [`StoreCode::Conflict`]. Identities absent from the batch stay.
+    /// A constraint other than that replacement, such as a check that the new
+    /// row itself fails, still returns [`StoreCode::Conflict`].
     ///
     /// # Errors
     ///

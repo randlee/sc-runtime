@@ -198,9 +198,10 @@ pub trait Rollup {
 /// then writes.
 ///
 /// A second call writes the table again. The replace contract lives on
-/// [`EngineStore::write_rows`], which sprint `b-8` renders. This function
-/// does not clear the destination and does not upsert. A destination that
-/// inserts can return [`StoreCode::Conflict`] when the rows are already there.
+/// [`EngineStore::write_rows`]: that call upserts each row identity and does
+/// not clear the destination. A second copy of the same identities does not
+/// return [`StoreCode::Conflict`]. Identities that this call does not write
+/// stay in the table.
 /// The batch is bounded by [`schema::MAX_PAIRING_ROWS`] and
 /// [`schema::MAX_ROW_PAYLOAD_BYTES`].
 ///
@@ -287,7 +288,7 @@ where
 /// One-sided tables stay where membership put them. The function reads the
 /// whole table, passes the rows and `flags.column_on_one_side` to `rollup`,
 /// and writes what `rollup` returns. The same [`Rollup`] is the owner
-/// [`aggregate_host`] uses. A repeated call is a replace of that table, as
+/// [`aggregate_host`] uses. A repeated call replaces each copied identity, as
 /// [`copy_rows`] states. This function does not clear the destination.
 ///
 /// # Errors
@@ -342,16 +343,18 @@ where
 /// Sqlite-only and remote-only tables are not aggregated. A shared table is
 /// read whole from the host. `rollup` receives those rows and
 /// `flags.column_on_one_side`, and the returned rows are written to `remote`.
-/// A repeated call replaces that table on `remote`, as [`copy_rows`] states.
-/// This function does not clear `remote` and does not upsert. The batch is
+/// A repeated call replaces each copied identity on `remote`, as [`copy_rows`]
+/// states. This function does not clear `remote`. The store upserts those
+/// identities, so a second copy does not conflict on insert. The batch is
 /// bounded by [`schema::MAX_PAIRING_ROWS`] and [`schema::MAX_ROW_PAYLOAD_BYTES`].
 ///
 /// # Errors
 ///
 /// Returns [`StoreCode::NotFound`] when `table` is sqlite-only or remote-only,
 /// before either store is called. Otherwise returns the host read error or the
-/// remote write error, including [`StoreCode::Conflict`] when `remote` inserts
-/// and the rows are already present. [`Rollup::rollup`] does not fail.
+/// remote write error, including [`StoreCode::Conflict`] when a constraint
+/// other than replacement of an existing identity rejects a row.
+/// [`Rollup::rollup`] does not fail.
 ///
 /// # Examples
 ///

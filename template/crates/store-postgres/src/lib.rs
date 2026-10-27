@@ -306,10 +306,6 @@ async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), Stor
         .begin()
         .await
         .map_err(|err| from_driver(StoreCode::Connection, err))?;
-    sqlx::query("DELETE FROM widgets")
-        .execute(&mut *tx)
-        .await
-        .map_err(|err| from_driver(StoreCode::Query, err))?;
     for row in rows {
         if row.table != WIDGETS {
             return Err(StoreError::new(
@@ -320,10 +316,18 @@ async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), Stor
         let widget = widget_from_payload(&row.payload)?;
         let id = widget.id.as_str();
         let name = widget.name.as_str();
-        sqlx::query!("INSERT INTO widgets (id, name) VALUES ($1, $2)", id, name)
-            .execute(&mut *tx)
-            .await
-            .map_err(|err| from_driver(StoreCode::Query, err))?;
+        // Upsert this identity only. Deleting the table would drop a distinct
+        // id such as `abc` when a later call writes `ABC`. The same id still
+        // replaces, so a second copy does not conflict on insert.
+        sqlx::query(
+            "INSERT INTO widgets (id, name) VALUES ($1, $2) \
+             ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name",
+        )
+        .bind(id)
+        .bind(name)
+        .execute(&mut *tx)
+        .await
+        .map_err(|err| from_driver(StoreCode::Query, err))?;
     }
     tx.commit()
         .await
@@ -756,6 +760,19 @@ mod tests {
             serde_json::from_slice(&rows[0].payload).expect("json object");
         assert_eq!(payload["id"], "abc");
         assert_eq!(payload["name"], "bolt");
+        let loaded = get_widget(&store, WidgetId::from_column("abc"))
+            .await
+            .expect("get");
+        assert_eq!(loaded.expect("row").id.as_str(), "abc");
+        let upper = RowRecord {
+            table: TableName::widgets(),
+            payload: br#"{"id":"ABC","name":"nut"}"#.to_vec(),
+        };
+        store
+            .write_rows(&TableName::widgets(), &[upper])
+            .await
+            .expect("case-distinct id");
+        assert_eq!(count_widgets(&store).await.expect("count"), 2);
         let loaded = get_widget(&store, WidgetId::from_column("abc"))
             .await
             .expect("get");

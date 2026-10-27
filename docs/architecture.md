@@ -1603,8 +1603,9 @@ variable, so two such crates can build in one workspace.
    pairing. The generated implementation stays in the store crate. `EngineStore`
    is not a published workspace trait. Where a store exposes it, the methods
    are `open`, `read_rows`, and `write_rows`, as the sprint `b-4` sample states
-   them. `write_rows` replaces the named table: it clears the rows, then
-   inserts the batch, so a second copy does not return `Conflict`. `OpenConfig`
+   them. `write_rows` upserts each row identity and does not clear the table.
+   Distinct identities accumulate. A second copy of the same identities
+   replaces those rows and does not return `Conflict`. `OpenConfig`
    carries `target: StoreTarget`. `StoreTarget` is `SqlitePath(PathBuf)`,
    `PostgresUrl(String)`, or `MysqlUrl(String)`, constructed with
    `OpenConfig::sqlite`, `OpenConfig::postgres`, or `OpenConfig::mysql`. A
