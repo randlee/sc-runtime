@@ -8,7 +8,9 @@ Entry state is the workspace at tag `v0.1.0`: four library crates, template `sto
 
 ## Objective
 
-Plan and build the storage phase as one phase. One chain is the rusqlite writer, then the sc-cron port. The other chain is the lint profile and the store pairing in wave 1, the two engine crates and the adaptor in wave 2, and the generation integration sprint in wave 3. `b-4` stays parallel with `b-3`.
+Plan and build the storage phase as one phase. One chain is the rusqlite writer, then the sc-cron port, then Monty hooks. The other chain is the lint profile and the store pairing in wave 1, the two engine crates and the adaptor in wave 2, and the generation integration sprint in wave 3. `b-4` stays parallel with `b-3`. `b-8` stays parallel with `b-9`.
+
+Waves 1–3 close on `integrate/phase-b`. Waves 4–5 are the Monty host bridge and the benchmark publisher on `integrate/phase-b-monty`, cut from `integrate/phase-b` and run in parallel with phase-end review. They do not gate that review. Coordination is [phase-b-integration-close.md](phase-b-integration-close.md).
 
 `just new` creates an application with no database, SQLite only, Postgres only, MySQL only, SQLite plus Postgres, or SQLite plus MySQL. Each generated package is named `<project>-<role>`, including the store crates and the adaptor. `<project>-schema` holds the tables, the columns, and the row structs. `<project>-types` holds non-database types. The adaptor depends on `<project>-schema`. Paired stores use the same schema or a similar schema, and one shared trait or a trait per store. Generated stores implement `EngineStore`, whose `read_rows` and `write_rows` are what the adaptor calls. Each engine's SQL stays in that engine's crate. The adaptor is generated for a two-store layout. `store-sqlite` stays the sqlx store it is. The rusqlite writer is a separate building block. `sc-cron` is the scheduler the application uses. The lint profile is the one every crate in this phase runs.
 
@@ -24,6 +26,9 @@ Plan and build the storage phase as one phase. One chain is the rusqlite writer,
 | `store-mysql` | `b-6` | `template/crates/store-mysql` | `b-4`, for the `EngineStore` trait |
 | store adaptor | `b-7` | `template/crates/store-adaptor`, tested against `EngineStore` doubles | `b-4`, for `EngineStore` including `read_rows` and `write_rows` |
 | generation layouts | `b-8` | `just new`, the six layouts, package names, the rendered store edges, and the database command surface | `b-5`, `b-6`, and `b-7`, for the store crates and the adaptor |
+| `sc-cron` (Monty hooks) | `b-9` | `HookTarget::Monty`, feature `monty`, schedule-table schema 4, and the sc-cron doc amendments | `b-3` (merged on `integrate/phase-b`) |
+| `sc-cron` (Monty host bridge) | `b-10` | `render_template` resumed inside `monty_run::execute_feed`; `sc-compose` on `PATH` | `b-9`, for `HookTarget::Monty` and `execute_feed`. Branch `integrate/phase-b-monty` |
+| benchmark Monty reports | `b-11` | benchmark-run skill, `site/reports/benchmark-monty/`, campaign case `production_bridge` | `b-10`, for the ext fn `render_template` |
 
 ## Sprint index
 
@@ -37,16 +42,25 @@ Plan and build the storage phase as one phase. One chain is the rusqlite writer,
 | `b-6` | [sprint-b-6-store-mysql.md](sprint-b-6-store-mysql.md) | `boundary` | stores | 2 |
 | `b-7` | [sprint-b-7-store-adaptor.md](sprint-b-7-store-adaptor.md) | `boundary` | stores | 2 |
 | `b-8` | [sprint-b-8-generation-layouts.md](sprint-b-8-generation-layouts.md) | `integration` | stores | 3 |
+| `b-9` | [sprint-b-9-sc-cron-monty-hooks.md](sprint-b-9-sc-cron-monty-hooks.md) | `boundary` | cron | 3 |
+| `b-10` | [sprint-b-10-sc-cron-monty-host-bridge.md](sprint-b-10-sc-cron-monty-host-bridge.md) | `boundary` | cron-monty | 4 |
+| `b-11` | [sprint-b-11-benchmark-monty-reports.md](sprint-b-11-benchmark-monty-reports.md) | `integration` | cron-monty | 5 |
 
 ## Wave table
 
-| Wave | Sprints |
-|---|---|
-| 1 | `b-1`, `b-2`, `b-4` |
-| 2 | `b-3`, `b-5`, `b-6`, `b-7` |
-| 3 | `b-8` |
+| Wave | Sprints | Branch |
+|---|---|---|
+| 1 | `b-1`, `b-2`, `b-4` | `integrate/phase-b` |
+| 2 | `b-3`, `b-5`, `b-6`, `b-7` | `integrate/phase-b` |
+| 3 | `b-8`, `b-9` | `integrate/phase-b` |
+| 4 | `b-10` | `integrate/phase-b-monty` |
+| 5 | `b-11` | `integrate/phase-b-monty` |
 
-Critical path 3 (`b-4` → `b-5` → `b-8`). Width 4. Sprint count 8.
+Phase-close critical path 3 (`b-4` → `b-5` → `b-8`, and `b-1` → `b-3` → `b-9`). Width 4 (wave 2). Sprint count for that close: 9.
+
+Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Combined sprint count 11.
+
+`b-10` and `b-11` are not one wave. Their `owned_paths` are disjoint, so the `must_follow` edge is not a shared file. `b-11` consumes `render_template` from `b-10`. A lab-only publisher in wave 4 would be a thin sprint and would not remove that edge. The cron chain `b-1` → `b-3` → `b-9` → `b-10` → `b-11` is length 5 because waves 4–5 sit after the Monty target. Those waves are not on the phase-close critical path. [phase-b-integration-close.md](phase-b-integration-close.md) records that split.
 
 `b-5` and `b-6` are the same wave so Postgres and MySQL are built against one pairing, not one after the other has hardened a two-engine assumption. `b-7` is in that wave because its `Cargo.toml` depends only on the schema crate. It calls `read_rows` and `write_rows` on `EngineStore` doubles and does not wait for either engine crate. `b-8` renders the adaptor's edges to the concrete stores that layout contains.
 
@@ -60,10 +74,13 @@ Critical path 3 (`b-4` → `b-5` → `b-8`). Width 4. Sprint count 8.
 
 REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../../requirements.md) and [architecture.md](../../architecture.md).
 
+`b-9`, `b-10`, and `b-11` are governed by [REQ-CRON-0001](../../sc-cron/requirements.md) through [REQ-CRON-0005](../../sc-cron/requirements.md) and [ADR-RUN-0013](../../architecture.md). On this branch, `REQ-CRON-0003` is still the Rust-or-Python sentence from `b-3`. The Monty sentence is the `b-9` amendment on `integrate/phase-b`. The `render_template` sentence is a `b-10` deliverable.
+
 ## Out of this phase
 
 - Implementing sc-lint-runtime rules or raising `minimum_version`. That work is [sc-lint#640](https://github.com/randlee/sc-lint/issues/640).
 - SQL Server. sqlx has no driver for it.
 - A checkpoint that re-runs every earlier sprint. `b-8` is the generation integration sprint for the six layouts.
+- Treating `b-11` as a second phase-wide integration checkpoint. It closes the Monty campaign only. `b-8` still closes the six layouts.
 
 The old narrative at `docs/plan/phase-B/phase-B-plan.md` is a pointer to this file.
