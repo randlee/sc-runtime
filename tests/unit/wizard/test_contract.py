@@ -209,13 +209,15 @@ class WizardContractTests(unittest.TestCase):
         hits = [path for path in (ROOT / "template").rglob("*") if path.name in banned]
         self.assertEqual(hits, [])
 
-    def test_cargo_generate_db_choices_are_sqlite_only(self):
+    def test_cargo_generate_db_choices_match_the_schema(self):
         schema = json.loads((WIZARD / "answers.schema.json").read_text(encoding="utf-8"))
         cargo = tomllib.loads((ROOT / "template" / "cargo-generate.toml").read_text(encoding="utf-8"))
-        self.assertEqual(cargo["placeholders"]["db"]["choices"], ["sqlite"])
+        choices = ["none", "sqlite", "postgres", "mysql", "sqlite-postgres", "sqlite-mysql"]
+        self.assertEqual(cargo["placeholders"]["db"]["choices"], choices)
+        self.assertEqual(schema["properties"]["db"]["enum"], choices)
         self.assertEqual(cargo["placeholders"]["db"]["default"], schema["properties"]["db"]["default"])
-        self.assertEqual(schema["properties"]["db"]["enum"], ["sqlite", "postgres", "both"])
-        self.assertEqual(schema["properties"]["db"]["x-v01-reserved"], ["postgres", "both"])
+        self.assertNotIn("x-v01-reserved", json.dumps(schema))
+        self.assertEqual(schema["x-schema-version"], 2)
 
     def test_just_new_forwards_arguments(self):
         text = (ROOT / "Justfile").read_text(encoding="utf-8")
@@ -233,40 +235,23 @@ class WizardContractTests(unittest.TestCase):
         self.assertIn(("unit", "generation"), module.SUITES)
         self.assertIn(("integration", "generation"), module.SUITES)
 
-    def test_generation_suite_is_byte_identical_to_a6(self):
-        baseline = a6_git_ref()
-        completed = self.run_bounded(
-            [
-                "git",
-                "diff",
-                "--name-only",
-                baseline,
-                "--",
-                "tests/unit/generation",
-                "tests/integration/generation",
-            ]
-        )
-        self.assertEqual(completed.returncode, 0, completed.stderr)
-        self.assertEqual(completed.stdout, "")
-
-    def test_driver_diff_is_entry_mode_only(self):
-        baseline = a6_git_ref()
-        old = self.run_bounded(
-            ["git", "show", f"{baseline}:scripts/new_project.py"],
-            check_output=True,
-        )
-        new = (ROOT / "scripts" / "new_project.py").read_text(encoding="utf-8")
-        old_preamble, old_functions = split_functions(old)
-        new_preamble, new_functions = split_functions(new)
-        self.assertEqual(new_preamble, old_preamble)
-        self.assertEqual(set(new_functions) - set(old_functions), {NEW_ENTRY_FUNCTION})
-        for name, body in old_functions.items():
-            if name in ENTRY_MODE_FUNCTIONS:
-                continue
-            self.assertEqual(new_functions[name], body, name)
-        self.assertIn("--prefill", new_functions["parse_args"])
-        self.assertIn("--var-file", new_functions["parse_args"])
-        self.assertIn("entry_answers", new_functions["main"])
+    def test_driver_drops_the_reserved_database_failure(self):
+        source = (ROOT / "scripts" / "new_project.py").read_text(encoding="utf-8")
+        self.assertNotIn("GEN.DB_RESERVED", source)
+        self.assertNotIn("reserved_database", source)
+        self.assertIn("def entry_answers", source)
+        self.assertIn("--allow-commands", source)
+        postgres = (
+            ROOT / "template/crates/store-adaptor-sqlite-postgres/src/lib.rs"
+        ).read_text(encoding="utf-8")
+        mysql = (
+            ROOT / "template/crates/store-adaptor-sqlite-mysql/src/lib.rs"
+        ).read_text(encoding="utf-8")
+        shared = 'include!("../../store-adaptor/src/membership.rs");'
+        self.assertIn(shared, postgres)
+        self.assertIn(shared, mysql)
+        self.assertNotIn("fn membership_from_toml", postgres)
+        self.assertNotIn("fn membership_from_toml", mysql)
 
 
 if __name__ == "__main__":

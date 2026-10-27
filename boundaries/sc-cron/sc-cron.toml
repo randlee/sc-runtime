@@ -1,0 +1,58 @@
+boundary_id = "BOUNDARY-sc-cron"
+owner_package = "sc-cron"
+owner_crate_path = "sc_cron"
+name = "sc-cron"
+
+[public]
+facade = "CronError, CronExpr, HookTarget, Job, RunOutcome, ScheduleSpec, Scheduler, SqliteScheduleStore, StopDecision, ScheduleStore"
+notes = "HookTarget is Rust, Python { module }, or Monty { source }. StopDecision is Continue, Disable, Delete. sqlx is absent and is checked with cargo tree. monty and monty-types are optional and off unless feature monty is enabled."
+
+[implementation]
+type = "library"
+module = "sc_cron"
+visibility = "public"
+constructor = "public"
+
+[composition]
+roots = ["CronError", "CronExpr", "HookTarget", "Job", "RunOutcome", "ScheduleSpec", "Scheduler", "SqliteScheduleStore", "StopDecision", "ScheduleStore"]
+
+[dependencies]
+allowed_dependents = []
+# The integration tests enable `test-utils` through a dev-dependency on this
+# crate. That edge is not a runtime dependent.
+allowed_dev_dependents = ["sc-cron"]
+allowed_dev_dependencies = ["sc-cron"]
+allowed_dependencies = [
+  "async-trait",
+  "chrono",
+  "cron",
+  "getrandom",
+  "process-wrap",
+  "rusqlite",
+  "serde_json",
+  "tempfile",
+  "tokio",
+  "tracing",
+]
+forbidden_edges = [
+  "sc-cron -> sc-config",
+  "sc-cron -> sc-transport",
+  "sc-cron -> sc-command",
+  "sc-cron -> sc-runtime",
+  "sc-cron -> sc-runtime-db-sqlite",
+]
+
+[references]
+scope = "outside_owner_crate"
+forbidden = []
+
+[testing]
+allowed_test_double_paths = []
+forbidden_test_bypasses = []
+
+[enforcement]
+lint_rules = []
+review_gates = []
+
+[status]
+state = "concrete_landed"

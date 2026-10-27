@@ -4,7 +4,7 @@ owner_crate_path = "sc_transport"
 name = "sc-transport"
 
 [public]
-facade = "AppName, Client, TransportConfig, Endpoint, CODE_BIND, CODE_DAEMON_NOT_RUNNING, CODE_ENDPOINT_BUSY, CODE_INSTANCE_ROOT, CODE_INVALID_ENDPOINT, CODE_INVALID_NAME, CODE_MISSING_TCP_PORT, CODE_NOT_A_SOCKET, CODE_REQUEST, CODE_RESPONSE_DECODE, CODE_TIMED_OUT, TransportCause, TransportError, instance_root, resolve_endpoint, resolve_endpoint_from_env, bind, Listener"
+facade = "AppName, Client, TransportConfig, Endpoint, CODE_BIND, CODE_DAEMON_NOT_RUNNING, CODE_ENDPOINT_BUSY, CODE_INSTANCE_ROOT, CODE_INVALID_ENDPOINT, CODE_INVALID_NAME, CODE_MISSING_TCP_PORT, CODE_NOT_A_SOCKET, CODE_REQUEST, CODE_RESPONSE_DECODE, CODE_TIMED_OUT, CODE_UNSUPPORTED_ENDPOINT, TransportCause, TransportError, instance_root, resolve_endpoint, resolve_endpoint_from_env, bind, Listener"
 notes = "server items bind and Listener exist only with the server feature. Listener Io and Addr are doc(hidden) associated types and are not facade items. v0.1 allowed dependent is sc-runtime, named once that package is a workspace member. axum is allowed only behind server; this manifest omits it because sc-lint 0.8.0 has no feature key."
 
 [implementation]
@@ -14,7 +14,7 @@ visibility = "public"
 constructor = "public"
 
 [composition]
-roots = ["AppName", "Client", "TransportConfig", "Endpoint", "CODE_BIND", "CODE_DAEMON_NOT_RUNNING", "CODE_ENDPOINT_BUSY", "CODE_INSTANCE_ROOT", "CODE_INVALID_ENDPOINT", "CODE_INVALID_NAME", "CODE_MISSING_TCP_PORT", "CODE_NOT_A_SOCKET", "CODE_REQUEST", "CODE_RESPONSE_DECODE", "CODE_TIMED_OUT", "TransportCause", "TransportError", "instance_root", "resolve_endpoint", "resolve_endpoint_from_env", "bind", "Listener"]
+roots = ["AppName", "Client", "TransportConfig", "Endpoint", "CODE_BIND", "CODE_DAEMON_NOT_RUNNING", "CODE_ENDPOINT_BUSY", "CODE_INSTANCE_ROOT", "CODE_INVALID_ENDPOINT", "CODE_INVALID_NAME", "CODE_MISSING_TCP_PORT", "CODE_NOT_A_SOCKET", "CODE_REQUEST", "CODE_RESPONSE_DECODE", "CODE_TIMED_OUT", "CODE_UNSUPPORTED_ENDPOINT", "TransportCause", "TransportError", "instance_root", "resolve_endpoint", "resolve_endpoint_from_env", "bind", "Listener"]
 
 [dependencies]
 allowed_dependents = ["sc-runtime"]
@@ -22,8 +22,14 @@ allowed_dependencies = ["tokio", "reqwest", "serde", "serde_json"]
 # Crates.io names are not listed here. sc-lint 0.8.0 exits 3 when a
 # forbidden target is absent from the workspace and from the resolve.
 # sc-observability, sc-observability-types, and sc-observability-otlp are
-# enforced by cargo tree.
-forbidden_edges = []
+# enforced by cargo tree. sc-cron is a workspace member; the forbidden edge below keeps this crate off it.
+forbidden_edges = [
+  "sc-transport -> sc-config",
+  "sc-transport -> sc-command",
+  "sc-transport -> sc-runtime",
+  "sc-transport -> sc-runtime-db-sqlite",
+  "sc-transport -> sc-cron",
+]
 
 [references]
 scope = "outside_owner_crate"

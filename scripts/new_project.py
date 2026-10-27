@@ -32,10 +32,6 @@ INVENTORY = {
         "answers fail wizard/answers.schema.json",
         "fix the file; cargo is not called; the destination is not created",
     ),
-    "GEN.DB_RESERVED": (
-        "db is postgres or both",
-        "set db to sqlite; the destination is not created",
-    ),
     "APP.INVALID_NAME": (
         "name fails the project-name pattern in wizard/answers.schema.json",
         "fix the name to that pattern; the destination is not created",
@@ -93,27 +89,6 @@ def name_pattern(schema: dict) -> re.Pattern[str]:
     return re.compile(pattern)
 
 
-def reserved_database(schema: dict, answers: dict) -> bool:
-    properties = schema.get("properties")
-    if not isinstance(properties, dict):
-        return False
-    for spec in properties.values():
-        if not isinstance(spec, dict):
-            continue
-        reserved = spec.get("x-v01-reserved")
-        if not isinstance(reserved, list):
-            continue
-        role = spec.get("x-role")
-        key = next(
-            (name for name, value in properties.items() if value is spec),
-            None,
-        )
-        if role != "database" or key is None:
-            continue
-        return answers.get(key) in reserved
-    return False
-
-
 def apply_defaults(schema: dict, answers: dict) -> dict:
     filled = dict(answers)
     properties = schema.get("properties")
@@ -153,8 +128,6 @@ def validate(schema: dict, answers: object) -> dict:
         fail("APP.INVALID_NAME")
     if not schema_accepts(schema, answers):
         fail("GEN.SCHEMA_INVALID")
-    if reserved_database(schema, answers):
-        fail("GEN.DB_RESERVED")
     return apply_defaults(schema, answers)
 
 
@@ -295,6 +268,7 @@ def cargo_generate(root: Path, dest: Path, name: str, values: Path) -> None:
             str(dest),
             "--init",
             "--silent",
+            "--allow-commands",
             "--force",
             "--no-workspace",
         ],
@@ -473,7 +447,6 @@ def entry_answers(prefill: Path | None) -> Path:
     code = lines[-1].split(" ", 1)[0] if lines else ""
     known = {
         "GEN.SCHEMA_INVALID",
-        "GEN.DB_RESERVED",
         "APP.INVALID_NAME",
         "GEN.TOOL_MISSING",
         "GEN.DEST_CONFLICT",

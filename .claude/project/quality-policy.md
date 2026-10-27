@@ -56,10 +56,15 @@ their own prompts.
 
 ## Validation Policy
 
-No repository-wide phase-end artifact command is configured yet. An
-implementation phase must add its authoritative command here before phase-end
-QA can pass. Reviewer assignments may provide narrower commands for earlier
-rounds.
+**Phase B implementation (waves 1–3, `integrate/phase-b` → `develop`):**
+phase-end artifact command is `just lint && just test` on the integration PR
+head commit. `quality-mgr` treats GitHub Actions check **`just lint and just
+test`** on that commit as the delegated execution proof; the enforcer must not
+report PASS until that job is `SUCCESS`.
+
+Later phases replace or extend this section when their integration PR opens.
+Sprint-level QA may use narrower commands; phase-end QA requires the block
+above for Phase B close.
 
 ## Repository layout (reviewer expectations)
 

@@ -7,14 +7,15 @@
 //!
 //! Startup is an explicit serving handshake: the daemon thread signals the
 //! caller only after `GET /health` succeeds on that same runtime. Drop and
-//! [`shutdown`](DaemonFixture::shutdown) join the daemon thread with a deadline
-//! and detach it if the deadline expires, so a stuck `run` fails the test
-//! instead of hanging it.
+//! [`shutdown`](DaemonFixture::shutdown) join the daemon thread until `run`
+//! returns. They do not detach it. [`shutdown`](DaemonFixture::shutdown)
+//! returns [`RuntimeError`] when `run` fails, the thread panics, or a
+//! successful join misses its deadline.
 
 use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::thread::JoinHandle;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use rmcp::transport::streamable_http_server::StreamableHttpService;
 use sc_transport::{AppName, Client, Endpoint};
@@ -43,9 +44,9 @@ type Serving = Result<Endpoint, RuntimeError>;
 
 /// A daemon started through the production builder on a private instance root.
 ///
-/// Drop stops the daemon and waits until `run` returns, or until the shutdown
-/// deadline expires. [`shutdown`](Self::shutdown) does the same and returns the
-/// `run` result.
+/// Drop stops the daemon and joins `run` until it returns. It does not panic
+/// and it does not detach the daemon thread. [`shutdown`](Self::shutdown) does
+/// the same and returns the `run` result.
 pub struct DaemonFixture {
     client: Client,
     endpoint: Endpoint,
@@ -145,13 +146,15 @@ impl DaemonFixture {
 
     /// Stops the daemon and waits until the listener has closed.
     ///
-    /// The wait is bounded. On timeout the daemon thread is detached and this
-    /// returns an error so the test fails instead of blocking.
+    /// The wait joins the daemon thread. A successful `run` that misses the
+    /// shutdown deadline still finishes that join, then returns an error. The
+    /// thread is not detached.
     ///
     /// # Errors
     ///
     /// Returns the error from `run`, a serve failure when the daemon thread
-    /// panicked, or a serve failure when the thread misses the shutdown deadline.
+    /// panicked, or a serve failure when a successful `run` misses the shutdown
+    /// deadline.
     pub async fn shutdown(mut self) -> Result<(), RuntimeError> {
         self.signal_stop();
         self.join().await
@@ -180,15 +183,9 @@ impl Drop for DaemonFixture {
         let Some(thread) = self.thread.take() else {
             return;
         };
-        let failed = matches!(
-            join_bounded(thread, SHUTDOWN_BUDGET),
-            Err(JoinFault::TimedOut | JoinFault::WaiterSpawn(_))
-        );
-        if failed && !std::thread::panicking() {
-            panic!(
-                "DaemonFixture did not exit within {SHUTDOWN_BUDGET:?} after shutdown; the daemon thread was detached so the test can fail"
-            );
-        }
+        // `JoinHandle`'s destructor detaches. Join on this thread instead, and
+        // do not panic: the listener is closed only after `run` returns.
+        join_quietly(thread);
     }
 }
 
@@ -261,67 +258,73 @@ async fn stop_and_join(
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 enum JoinFault {
     Panicked,
     TimedOut,
-    Disconnected,
-    WaiterSpawn(std::io::Error),
 }
 
 impl JoinFault {
     fn into_error(self) -> RuntimeError {
         let cause = match self {
             Self::Panicked => "daemon thread panicked".to_owned(),
-            Self::TimedOut => format!(
-                "daemon thread did not exit within {SHUTDOWN_BUDGET:?} after shutdown; detached so the test can fail"
-            ),
-            Self::Disconnected => "daemon join waiter disconnected".to_owned(),
-            Self::WaiterSpawn(err) => {
-                format!("daemon join waiter did not start: {err}; detached so the test can fail")
+            Self::TimedOut => {
+                format!("daemon thread did not exit within {SHUTDOWN_BUDGET:?} after shutdown")
             }
         };
         RuntimeError::serve_failed(cause)
     }
 }
 
-/// Joins `thread` until `budget` elapses.
+/// Owns a daemon thread until [`join_quietly`] has run.
 ///
-/// On timeout the waiter thread is detached while it is still blocked in
-/// `join`. That is the test-only escape hatch: a stuck daemon cannot be killed
-/// safely, and dropping the waiter keeps this call from waiting forever.
+/// Dropping a [`JoinHandle`] detaches the thread. This guard joins instead.
+struct JoinGuard {
+    thread: Option<JoinHandle<Result<(), RuntimeError>>>,
+}
+
+impl JoinGuard {
+    fn new(thread: JoinHandle<Result<(), RuntimeError>>) -> Self {
+        Self {
+            thread: Some(thread),
+        }
+    }
+
+    /// Joins the thread. A successful `run` that exceeds `budget` is
+    /// [`JoinFault::TimedOut`] after the thread has stopped.
+    fn join_within(mut self, budget: Duration) -> Result<Result<(), RuntimeError>, JoinFault> {
+        let Some(thread) = self.thread.take() else {
+            return Ok(Ok(()));
+        };
+        let started = Instant::now();
+        let outcome = thread.join();
+        let late = started.elapsed() >= budget;
+        match outcome {
+            Err(_) => Err(JoinFault::Panicked),
+            Ok(Err(err)) => Ok(Err(err)),
+            Ok(Ok(())) if late => Err(JoinFault::TimedOut),
+            Ok(Ok(())) => Ok(Ok(())),
+        }
+    }
+}
+
+impl Drop for JoinGuard {
+    fn drop(&mut self) {
+        if let Some(thread) = self.thread.take() {
+            join_quietly(thread);
+        }
+    }
+}
+
+fn join_quietly(thread: JoinHandle<Result<(), RuntimeError>>) {
+    let _ = thread.join();
+}
+
 fn join_bounded(
     thread: JoinHandle<Result<(), RuntimeError>>,
     budget: Duration,
 ) -> Result<Result<(), RuntimeError>, JoinFault> {
-    let (tx, rx) = std::sync::mpsc::sync_channel(1);
-    let waiter = match std::thread::Builder::new()
-        .name("daemon-fixture-join".to_owned())
-        .spawn(move || {
-            let outcome = thread.join();
-            let _ = tx.send(outcome);
-        }) {
-        Ok(waiter) => waiter,
-        // Dropping the closure drops `thread` and detaches the daemon thread.
-        Err(err) => return Err(JoinFault::WaiterSpawn(err)),
-    };
-    match rx.recv_timeout(budget) {
-        Ok(Ok(result)) => {
-            let _ = waiter.join();
-            Ok(result)
-        }
-        Ok(Err(_)) => {
-            let _ = waiter.join();
-            Err(JoinFault::Panicked)
-        }
-        Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
-            drop(waiter);
-            Err(JoinFault::TimedOut)
-        }
-        Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
-            let _ = waiter.join();
-            Err(JoinFault::Disconnected)
-        }
-    }
+    JoinGuard::new(thread).join_within(budget)
 }
 
 async fn join_bounded_async(
@@ -367,7 +370,7 @@ where
             return Err(err);
         }
     };
-    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx))
+    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx)) // allow: NFR-RUN-0002 fixture thread
 }
 
 async fn run_until_stopped<S, FStores, Fut, FRoutes>(
@@ -465,5 +468,102 @@ fn exited_early(result: Result<Result<(), RuntimeError>, tokio::task::JoinError>
     match task_result(result) {
         Ok(()) => RuntimeError::serve_failed("daemon exited before it was ready"),
         Err(err) => err,
+    }
+}
+
+#[cfg(test)]
+mod join_tests {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::{Arc, mpsc};
+    use std::thread::JoinHandle;
+    use std::time::Duration;
+
+    use super::{JoinFault, JoinGuard, RuntimeError, join_bounded};
+
+    #[test]
+    fn late_success_is_a_timeout_after_the_thread_stops() {
+        let (finished, release, thread) = held_thread(Ok(()));
+        let joiner = std::thread::spawn(move || join_bounded(thread, Duration::ZERO));
+        assert!(
+            !joiner_finished_while_held(&joiner),
+            "join must not return before the daemon thread stops"
+        );
+        release.send(()).expect("release held thread");
+        let result = joiner.join().expect("join the joiner");
+        assert!(finished.load(Ordering::SeqCst));
+        assert!(matches!(result, Err(JoinFault::TimedOut)));
+    }
+
+    #[test]
+    fn late_run_error_is_returned_after_the_thread_stops() {
+        let error = RuntimeError::serve_failed("run failed");
+        let (finished, release, thread) = held_thread(Err(error.clone()));
+        let joiner = std::thread::spawn(move || join_bounded(thread, Duration::ZERO));
+        assert!(!joiner_finished_while_held(&joiner));
+        release.send(()).expect("release held thread");
+        let result = joiner.join().expect("join the joiner");
+        assert!(finished.load(Ordering::SeqCst));
+        assert_eq!(result, Ok(Err(error)));
+    }
+
+    #[test]
+    fn dropping_the_join_guard_waits_until_the_thread_stops() {
+        let (finished, release, thread) = held_thread(Ok(()));
+        let dropper = std::thread::spawn(move || drop(JoinGuard::new(thread)));
+        assert!(
+            !joiner_finished_while_held(&dropper),
+            "drop must not detach the daemon thread"
+        );
+        release.send(()).expect("release held thread");
+        dropper.join().expect("join the dropper");
+        assert!(finished.load(Ordering::SeqCst));
+    }
+
+    #[test]
+    fn join_within_budget_returns_the_thread_result() {
+        let thread = std::thread::spawn(|| Ok(()));
+        let result = join_bounded(thread, Duration::from_secs(10));
+        assert_eq!(result, Ok(Ok(())));
+    }
+
+    #[test]
+    fn a_panicked_thread_is_a_join_fault() {
+        let thread = std::thread::spawn(|| -> Result<(), RuntimeError> {
+            panic!("daemon thread failed");
+        });
+        let result = join_bounded(thread, Duration::from_secs(10));
+        assert!(matches!(result, Err(JoinFault::Panicked)));
+    }
+
+    fn held_thread(
+        result: Result<(), RuntimeError>,
+    ) -> (
+        Arc<AtomicBool>,
+        mpsc::Sender<()>,
+        JoinHandle<Result<(), RuntimeError>>,
+    ) {
+        let (entered_tx, entered_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let finished = Arc::new(AtomicBool::new(false));
+        let flag = Arc::clone(&finished);
+        let thread = std::thread::spawn(move || {
+            entered_tx
+                .send(())
+                .expect("signal that the thread is waiting");
+            release_rx
+                .recv()
+                .expect("wait until the test releases the thread");
+            flag.store(true, Ordering::SeqCst);
+            result
+        });
+        entered_rx
+            .recv()
+            .expect("daemon thread is waiting for release");
+        (finished, release_tx, thread)
+    }
+
+    fn joiner_finished_while_held<T>(joiner: &JoinHandle<T>) -> bool {
+        std::thread::sleep(Duration::from_millis(50));
+        joiner.is_finished()
     }
 }
