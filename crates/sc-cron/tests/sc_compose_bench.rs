@@ -267,12 +267,12 @@ fn rusage_max_rss_bytes(who: libc::c_int) -> Option<u64> {
     let usage = unsafe { usage.assume_init() };
     #[cfg(target_os = "macos")]
     {
-        return Some(usage.ru_maxrss as u64);
+        Some(usage.ru_maxrss as u64)
     }
     #[cfg(not(target_os = "macos"))]
     {
         // Linux reports kilobytes.
-        return Some(usage.ru_maxrss as u64 * 1024);
+        Some(usage.ru_maxrss as u64 * 1024)
     }
 }
 
@@ -335,7 +335,8 @@ fn write_html_report(ctx: &ReportContext, cases: &[BenchCase]) {
     for case in cases {
         if case.skipped {
             rows.push_str(&format!(
-                "<tr><td><strong>{}</strong><p class=\"strategy\">{}</p></td><td colspan=\"4\" class=\"muted\">Skipped: {}</td></tr>\n",
+                "<tr id=\"{}\"><td><strong>{}</strong><p class=\"strategy\">{}</p></td><td colspan=\"4\" class=\"muted\">Skipped: {}</td></tr>\n",
+                html_escape(case.id),
                 html_escape(case.label),
                 html_escape(case.strategy),
                 html_escape(case.skip_reason.unwrap_or("unknown")),
@@ -364,7 +365,8 @@ fn write_html_report(ctx: &ReportContext, cases: &[BenchCase]) {
             (None, None) => "<span class=\"muted\">Not measured</span>".to_string(),
         };
         rows.push_str(&format!(
-            "<tr><td><strong>{}</strong><p class=\"strategy\">{}</p></td><td class=\"num\">{:.3} ms</td><td class=\"num\">{}</td><td class=\"num\">{} + {} warmup</td><td>{rss_cell}</td></tr>\n",
+            "<tr id=\"{}\"><td><strong>{}</strong><p class=\"strategy\">{}</p></td><td class=\"num\">{:.3} ms</td><td class=\"num\">{}</td><td class=\"num\">{} + {} warmup</td><td>{rss_cell}</td></tr>\n",
+            html_escape(case.id),
             html_escape(case.label),
             html_escape(case.strategy),
             r.per_run.as_secs_f64() * 1000.0,
