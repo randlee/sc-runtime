@@ -257,9 +257,7 @@ mod tests {
             "stop: {:?}",
             stop.result
         );
-        let tick_deadline = Instant::now()
-            .checked_add(budget)
-            .expect("tick deadline");
+        let tick_deadline = Instant::now().checked_add(budget).expect("tick deadline");
         crate::monty_run::execute_feed_with_compose_program(
             stop.session,
             source,
