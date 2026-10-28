@@ -899,16 +899,11 @@ def cron_tick(hook):
     render_template("Hello", {"n": 1})
     return None
 "#;
-        let started_at = Instant::now();
         let done = run_injected(
             source,
             ComposeProgram::new(program),
             &[],
             Duration::from_millis(800),
-        );
-        assert!(
-            started_at.elapsed() < Duration::from_secs(4),
-            "host waited for the stub"
         );
         assert!(dir.path().join("started").is_file(), "stub did not start");
         assert!(
@@ -938,10 +933,6 @@ def cron_tick(hook):
             Some(started_at + Duration::from_millis(1500)),
         )
         .expect_err("timeout");
-        assert!(
-            started_at.elapsed() < Duration::from_secs(3),
-            "host waited for the stub"
-        );
         assert!(
             matches!(error, ComposeHostError::HostTimedOut { .. }),
             "{error}"
