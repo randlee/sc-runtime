@@ -11,7 +11,7 @@ use std::process::{Command, ExitStatus, Stdio};
 use std::sync::mpsc;
 use std::thread;
 
-use crate::monty_host::{ComposeHostError, stderr_text};
+use crate::monty_compose_common::{ComposeHostError, stderr_text};
 
 /// Spawns `program` and waits until it exits.
 ///

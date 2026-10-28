@@ -433,7 +433,7 @@ async fn dropping_run_due_does_not_abort_the_feed_or_start_a_second_one() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
     fixture.clock.advance(chrono::Duration::seconds(60));
-    let scheduler = fixture.scheduler.clone();
+    let scheduler = fixture.scheduler.share();
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
     tokio::time::sleep(Duration::from_millis(100)).await; // allow: monty feed runs on the blocking pool in real time
     let due = fixture.clock.now();
@@ -464,7 +464,7 @@ async fn an_awaited_run_due_records_timed_out_only_after_the_feed_returns() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("slow", TIME_LIMIT, Duration::from_secs(1)));
     fixture.clock.advance(chrono::Duration::seconds(60));
-    let scheduler = fixture.scheduler.clone();
+    let scheduler = fixture.scheduler.share();
     let id = schedule.id;
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
     tokio::time::sleep(Duration::from_millis(200)).await; // allow: monty feed runs on the blocking pool in real time
