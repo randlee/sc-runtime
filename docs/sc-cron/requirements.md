@@ -4,7 +4,7 @@
 
 ## REQ-CRON-0001: Workspace member
 
-`crates/sc-cron` is a workspace member, ported from beads-cache `crates/sc-cron` at `develop`. It depends on no other workspace crate. The template does not name it. `sc-runtime` does not name it.
+`crates/sc-cron` is a workspace member, ported from beads-cache `crates/sc-cron` at `develop`. It depends on no other workspace crate. The template does not name it, and `sc-runtime` does not name it. Here "name" means a Cargo or other manifest dependency. Documented wiring may reference the crate in comments and schema descriptions.
 
 ## REQ-CRON-0002: Normal crontab strings
 

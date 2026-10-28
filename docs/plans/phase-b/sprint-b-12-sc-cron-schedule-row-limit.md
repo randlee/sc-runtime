@@ -41,7 +41,7 @@ vertical_rationale: One optional limit parameter on the existing scheduler and s
 
 # Sprint b-12 — embedder-supplied schedule row limit
 
-Plan only until the sprint branch opens. Implements [ADR-RUN-0014](../../architecture.md) and the [owner ruling](decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
+Implements [ADR-RUN-0014](../../architecture.md) and the [owner ruling](decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
 
 PR target: **`integrate/phase-b-monty`**. Phase-end QA on that integration branch; **`develop`** receives the integration PR after phase-end PASS and green CI.
 
@@ -67,6 +67,8 @@ The embedder can pass an optional maximum schedule row count when opening the sc
 
 1. **`template/config/cron.schema.json`**: key **`cron.max_schedule_rows`**, integer or JSON null, default **`10`**. **`0`** or **`null`** means unlimited. A missing key stays **`10`**. The schema allows the other keys in `config/default.json`. cargo-generate `exclude` copies a file without Liquid rendering and does not omit it. This schema is on `[template] ignore`, so a generated project does not contain it. Generated projects carry the key in `config/default.json`.
 2. **Generated daemon wiring:** wherever the layout opens `Scheduler` (new module or existing startup path when sc-cron is enabled for the layout), read config → map **`0`** or JSON **`null`** to `None`, a missing key to **`10`**, else `Some(NonZeroUsize::new(n))` → pass into `ScheduleLimits`. If no layout enables sc-cron yet, add the schema key and document the wiring contract in `docs/sc-cron/` for the next layout that adds cron.
+
+Template `Cargo.toml` files do not depend on `sc-cron`. Under [REQ-CRON-0001](../../sc-cron/requirements.md), "name" means that Cargo or manifest dependency. Comments in `template/crates/daemon/src/cron.rs` and the description in `template/config/cron.schema.json` may name `sc-cron` and `sc_cron` as documented wiring.
 
 sc-cron crate does **not** depend on `sc-config`.
 
