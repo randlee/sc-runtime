@@ -26,7 +26,7 @@ owned_paths:
   - docs/sc-cron/requirements.md
   - docs/sc-cron/architecture.md
   - template/answers.schema.json
-  - template/crates/daemon/src/cron.rs
+  - template/cargo-generate.toml
 must_follow: [b-9]
 parallel_safe: [b-10, b-11]
 recommended_agent: rust-developer
@@ -61,7 +61,7 @@ The embedder can pass an optional maximum schedule row count when opening the sc
 ## Generated template
 
 1. **`template/answers.schema.json`**: key **`cron.max_schedule_rows`**, type integer, default **`10`**, description that **`0`** means unlimited.
-2. **`template/crates/daemon/src/cron.rs`** (or the file that opens the scheduler): read config → map **`0` or absent unlimited sentinel** to `None`, else `Some(NonZeroUsize::new(n))` → pass into `ScheduleLimits`.
+2. **Generated daemon wiring:** wherever the layout opens `Scheduler` (new module or existing startup path when sc-cron is enabled for the layout), read config → map **`0`** to `None`, else `Some(NonZeroUsize::new(n))` → pass into `ScheduleLimits`. If no layout enables sc-cron yet, add the schema key and document the wiring contract in `docs/sc-cron/` for the next layout that adds cron.
 
 sc-cron crate does **not** depend on `sc-config`.
 
