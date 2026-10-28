@@ -1,8 +1,8 @@
 //! Monty host functions for the `sc-compose` CLI.
 //!
 //! Production registers [`render_template`] (string-template sugar) and
-//! [`sc_compose_run`] (any allowlisted subcommand). Tests pass another
-//! [`ComposeProgram`]. The feed does not start CPython.
+//! [`sc_compose_run`] (subcommand `render` only, same temp-root staging).
+//! Tests pass another [`ComposeProgram`]. The feed does not start CPython.
 
 use std::fmt;
 use std::time::Instant;
@@ -103,33 +103,28 @@ pub(crate) fn render_template(
     crate::monty_compose::run_compose_child(program, root, host_deadline)
 }
 
-/// Subcommands exposed through [`sc_compose_run`]. Kept in sync with `sc-compose --help`.
-pub(crate) const SC_COMPOSE_SUBCOMMANDS: &[&str] = &[
-    "bead",
-    "examples",
-    "extract",
-    "frontmatter-init",
-    "help",
-    "init",
-    "lint",
-    "observability-health",
-    "render",
-    "reports",
-    "resolve",
-    "template-init",
-    "templates",
-    "validate",
-    "verify",
-];
+/// The only [`sc_compose_run`] subcommand production feeds spawn.
+pub(crate) const SC_COMPOSE_RENDER: &str = "render";
 
 #[must_use]
 pub(crate) fn sc_compose_subcommand_allowed(subcommand: &str) -> bool {
-    SC_COMPOSE_SUBCOMMANDS.contains(&subcommand)
+    subcommand == SC_COMPOSE_RENDER
 }
 
-/// Runs `sc-compose <subcommand> …` with hook-supplied argv tail.
+/// Runs `sc-compose render` in a crate-owned temp root.
 ///
-/// Non-zero exit is returned in [`crate::monty_compose::ComposeRunResult`].
+/// `args` is a template string and an optional JSON context string, the same
+/// files [`render_template`] stages. A `--root` pair is ignored. Any other
+/// subcommand (`bead`, `init`, `extract`, and the rest of `sc-compose --help`)
+/// or a CLI flag is [`ComposeHostError::SubcommandDenied`]. A non-zero child
+/// exit fails the same way as [`render_template`].
+///
+/// # Errors
+///
+/// [`ComposeHostError::SubcommandDenied`] when `subcommand` is not `render` or
+/// `args` contain a CLI flag. [`ComposeHostError::ContextEncodeFailed`] when
+/// the optional context is not JSON. The same errors as [`render_template`]
+/// when staging or the child fails.
 pub(crate) fn sc_compose_run(
     subcommand: &str,
     args: &[String],
@@ -141,11 +136,59 @@ pub(crate) fn sc_compose_run(
             subcommand: subcommand.to_owned(),
         });
     }
-    let program = compose_program.as_str();
-    let mut argv = Vec::with_capacity(1 + args.len());
-    argv.push(subcommand.to_owned());
-    argv.extend_from_slice(args);
-    crate::monty_compose::run_compose_argv(program, None, &argv, host_deadline)
+    let staged = strip_hook_chosen_root(args);
+    let (template, context) = staged_render_inputs(compose_program.as_str(), &staged)?;
+    let stdout = render_template(&template, &context, compose_program, host_deadline)?;
+    Ok(crate::monty_compose::ComposeRunResult {
+        stdout,
+        stderr: String::new(),
+        exit_code: Some(0),
+    })
+}
+
+/// Drops a hook-supplied `--root` flag and the path that follows it.
+fn strip_hook_chosen_root(args: &[String]) -> Vec<String> {
+    let mut staged = Vec::with_capacity(args.len());
+    let mut skip_value = false;
+    for arg in args {
+        if skip_value {
+            skip_value = false;
+            continue;
+        }
+        if arg == "--root" || arg.starts_with("--root=") {
+            skip_value = arg == "--root";
+            continue;
+        }
+        staged.push(arg.clone());
+    }
+    staged
+}
+
+fn staged_render_inputs(
+    program: &str,
+    args: &[String],
+) -> Result<(String, Value), ComposeHostError> {
+    if let Some(flag) = args.iter().find(|arg| arg.starts_with('-')) {
+        return Err(ComposeHostError::SubcommandDenied {
+            subcommand: flag.clone(),
+        });
+    }
+    if args.len() > 2 {
+        return Err(ComposeHostError::SubcommandDenied {
+            subcommand: args[2].clone(),
+        });
+    }
+    let template = args.first().cloned().unwrap_or_default();
+    let context = match args.get(1) {
+        None => Value::Object(Map::new()),
+        Some(raw) => {
+            serde_json::from_str(raw).map_err(|source| ComposeHostError::ContextEncodeFailed {
+                program: program.to_owned(),
+                source,
+            })?
+        }
+    };
+    Ok((template, context))
 }
 
 #[must_use]
@@ -244,7 +287,7 @@ mod tests {
 
     use super::{
         ComposeHostError, ComposeProgram, host_budget_exhausted, json_to_monty,
-        monty_value_to_json, render_template,
+        monty_value_to_json, render_template, sc_compose_run,
     };
     use crate::monty_compose_common::stderr_text;
     use crate::monty_run::{ComposeInjection, FeedResult, MontyPhase};
@@ -714,6 +757,89 @@ def cron_tick(hook):
             done.result
         );
         assert!(done.session.is_some());
+    }
+
+    #[test]
+    fn sc_compose_run_denies_bead_init_and_extract_without_spawning() {
+        for subcommand in ["bead", "init", "extract"] {
+            let error = sc_compose_run(
+                subcommand,
+                &["--root".to_owned(), "/tmp".to_owned()],
+                ComposeProgram::new("sc-cron-missing-compose-b10"),
+                None,
+            )
+            .expect_err(subcommand);
+            assert_eq!(error.code(), "COMPOSE_SUBCOMMAND", "{subcommand}: {error}");
+            assert!(error.to_string().contains(subcommand), "{error}");
+            assert!(
+                !error.to_string().contains("sc-cron-missing-compose-b10"),
+                "{error}"
+            );
+        }
+    }
+
+    #[test]
+    fn sc_compose_run_render_rejects_a_remaining_cli_flag() {
+        let error = sc_compose_run(
+            "render",
+            &[
+                "--root".to_owned(),
+                "/tmp/evil".to_owned(),
+                "--file".to_owned(),
+                "/etc/passwd".to_owned(),
+            ],
+            ComposeProgram::new("sc-cron-missing-compose-b10"),
+            None,
+        )
+        .expect_err("flag");
+        assert_eq!(error.code(), "COMPOSE_SUBCOMMAND");
+        assert!(
+            !error.to_string().contains("sc-cron-missing-compose-b10"),
+            "{error}"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn sc_compose_run_render_stages_the_same_temp_root_as_render_template() {
+        let dir = tempfile::TempDir::new().expect("dir");
+        let script = linked_fixture(dir.path(), "compose-stub", "compose_record_argv.sh");
+        let program = script.to_str().expect("utf8 path");
+        let result = sc_compose_run(
+            "render",
+            &[
+                "--root".to_owned(),
+                "/tmp/hook-chosen".to_owned(),
+                "Hello {{ name }}".to_owned(),
+                r#"{"name":"cron"}"#.to_owned(),
+            ],
+            ComposeProgram::new(program),
+            None,
+        )
+        .expect("staged render");
+        assert_eq!(result.exit_code, Some(0));
+        assert_eq!(result.stdout, "rendered");
+        let argv = std::fs::read_to_string(dir.path().join("argv.txt")).expect("argv");
+        let staged_root = argv
+            .lines()
+            .skip_while(|line| *line != "--root")
+            .nth(1)
+            .expect("staged --root");
+        assert_ne!(staged_root, "/tmp/hook-chosen");
+        assert!(staged_root.starts_with('/'), "{staged_root}");
+        assert!(!argv.contains("hook-chosen"), "{argv}");
+        for flag in [
+            "render",
+            "--root",
+            "--mode",
+            "file",
+            "--file",
+            "t.j2",
+            "--var-file",
+            "v.json",
+        ] {
+            assert!(argv.contains(flag), "{argv}");
+        }
     }
 
     #[test]

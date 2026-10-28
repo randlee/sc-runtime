@@ -89,7 +89,7 @@ const EXAMPLE_CLI_ARGV: &str =
     "sc-compose render --root <temp> --mode file --file t.j2 --var-file <temp>/v.json";
 const EXAMPLE_COMPOSE_RUN: &str = r#"def cron_tick(hook):
     # Only render is allowed. The host stages a temp root and ignores --root.
-    result = sc_compose_run("render", ["--mode", "file", "--file", "t.j2", "--var-file", "v.json"])
+    result = sc_compose_run("render", [hook["payload"]["template"], '{"name": "bench"}'])
     if result["exit_code"] not in (0, None):
         raise RuntimeError(result["stderr"])
     return render_template(hook["payload"]["template"], hook["payload"]["context"])

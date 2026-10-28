@@ -290,8 +290,9 @@ pub(crate) fn execute_feed(
 /// [`crate::Scheduler`] calls [`execute_feed`], which always passes
 /// [`ComposeInjection::production`]. This function is crate-private so an
 /// embedder cannot select the program. Extra host names are registered only
-/// for this call; production registers `render_template` alone. Names that
-/// are not identifiers, or that are `render_template` or `__hook`, are ignored.
+/// for this call. Production registers `__hook`, `render_template`, and
+/// `sc_compose_run`. Names that are not identifiers, or that are those
+/// reserved bindings, are ignored.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn execute_feed_with_compose_program(
     mut session: Option<MontySession>,
@@ -796,6 +797,18 @@ mod tests {
             }
             other => panic!("expected Failed for not-runnable error, got {other:?}"),
         }
+    }
+
+    /// Production feeds register exactly the ADR host functions.
+    #[cfg(feature = "monty")]
+    #[test]
+    fn production_snippet_inputs_registers_exactly_the_adr_host_functions() {
+        let inputs = super::snippet_inputs(&serde_json::json!({}), &[]);
+        let names: Vec<&str> = inputs.iter().map(|(name, _)| name).collect();
+        assert_eq!(
+            names.as_slice(),
+            ["__hook", "render_template", "sc_compose_run"]
+        );
     }
 
     #[test]

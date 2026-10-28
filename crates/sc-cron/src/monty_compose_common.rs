@@ -125,7 +125,7 @@ impl ComposeHostError {
                 "Reduce compose work or raise the row deadline; the compose group was stopped at the host budget."
             }
             Self::SubcommandDenied { .. } => {
-                "Use a top-level `sc-compose` subcommand from `sc_compose_run`; run `sc-compose --help`."
+                "Call `sc_compose_run` with subcommand `render` only. `bead`, `init`, and `extract` are denied."
             }
         }
     }
