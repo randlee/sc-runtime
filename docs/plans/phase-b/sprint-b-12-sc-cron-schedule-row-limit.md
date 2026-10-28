@@ -17,6 +17,7 @@ requirements:
   - REQ-CRON-0005
   - NFR-CRON-0001
   - REQ-RUN-0005
+  - NFR-RUN-0005
   - NFR-RUN-0009
 adrs:
   - ADR-RUN-0002
@@ -31,8 +32,6 @@ owned_paths:
   - crates/sc-cron/src/sqlite.rs
   - crates/sc-cron/src/limits.rs
   - crates/sc-cron/tests/row_limit.rs
-  - docs/sc-cron/requirements.md
-  - docs/sc-cron/architecture.md
   - template/config/cron.schema.json
   - template/cargo-generate.toml
 must_follow: [b-9]
@@ -50,7 +49,14 @@ PR target: **`integrate/phase-b-monty`**. Phase-end QA on that integration branc
 
 ## Relations
 
-`must_follow` **`b-9`** (scheduler and store on `develop`, merged before this branch). **`parallel_safe`** with **`b-10`** and **`b-11`**: this sprint edits `Scheduler` / schedule store only; it does not touch `monty_host`, `sc-compose`, or `scripts/benchmark/`. Cut the sprint worktree from **`integrate/phase-b-monty`** (same integration line as Monty sprints).
+`must_follow` **`b-9`** (scheduler and store on `develop`, merged before this branch). **`parallel_safe`** with **`b-10`** and **`b-11`**: `owned_paths` here do not intersect theirs. This sprint edits `Scheduler`, schedule store, and template cron config only; it does not touch `monty_host`, `monty_run`, `sc-compose`, or `scripts/benchmark/`. Cut the sprint worktree from **`integrate/phase-b-monty`** (same integration line as Monty sprints).
+
+**Shared files (`b-10` owns the file; this sprint edits named slices only):**
+
+- `crates/sc-cron/src/lib.rs` — re-exports for `ScheduleLimits` and store open signatures only.
+- `docs/sc-cron/requirements.md` — row-limit sentences under [REQ-CRON-0003](../../sc-cron/requirements.md) / REQ-CRON-0004 only.
+- `docs/sc-cron/architecture.md` — row-limit, `ScheduleLimits`, and template wiring sections only (not Monty host-bridge text).
+- `docs/architecture.md` — [ADR-RUN-0014](../../architecture.md) row-limit summary cross-link only (not ADR-RUN-0013 / Monty bridge sections owned by `b-10`).
 
 ## Goal
 
@@ -77,12 +83,14 @@ sc-cron crate does **not** depend on `sc-config`.
 
 ## Docs
 
+Slice edits only on the shared files listed under Relations (Monty and host-bridge prose stays with **`b-10`**):
+
 - **`docs/sc-cron/requirements.md`**: one sentence under REQ-CRON-0003 / REQ-CRON-0004 for optional embedder row limit.
 - **`docs/sc-cron/architecture.md`**: cross-link ADR-RUN-0014 (already summarized; align with implementation).
 
 ## Tests
 
-- `crates/sc-cron/tests/row_limit.rs`: at limit, new name → `InvalidSpec`; replace existing name ok; delete then add ok; unlimited (`None`) unchanged behavior.
+- `crates/sc-cron/tests/row_limit.rs`: at limit, new name → `InvalidSpec`; replace existing name ok; delete then add ok; unlimited (`None`) unchanged behavior. Tests use `tempfile::TempDir` per [NFR-RUN-0005](../../requirements.md).
 
 ## This sprint does not close
 
