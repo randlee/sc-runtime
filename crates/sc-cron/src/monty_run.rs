@@ -312,7 +312,11 @@ pub(crate) fn execute_feed_with_compose_program(
     let repl = *repl;
     let mut progress = match repl.feed_start(
         phase_snippet(phase),
-        snippet_inputs(hook, #[cfg(test)] extra_host_fns),
+        snippet_inputs(
+            hook,
+            #[cfg(test)]
+            extra_host_fns,
+        ),
         PrintWriter::Disabled,
     ) {
         Ok(progress) => progress,
