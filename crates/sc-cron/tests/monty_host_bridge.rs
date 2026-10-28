@@ -52,8 +52,6 @@ fn failed(runs: &[sc_cron::DueRun]) -> String {
 #[tokio::test]
 async fn render_template_returns_sc_compose_stdout() {
     let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-compose-b10
-# sc-cron-test-host-fn: compose_file
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
@@ -82,7 +80,6 @@ def cron_tick(hook):
 #[tokio::test]
 async fn another_host_function_fails_the_feed() {
     let source = r#"
-# sc-cron-test-host-fn: compose_file
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
@@ -103,7 +100,6 @@ def cron_tick(hook):
 #[tokio::test]
 async fn an_undefined_name_names_itself() {
     let source = r#"
-# sc-cron-test-host-fn: not_defined
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
@@ -159,7 +155,6 @@ def cron_tick(hook):
 #[tokio::test]
 async fn a_tick_that_does_not_render_is_ok() {
     let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-compose-b10
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 

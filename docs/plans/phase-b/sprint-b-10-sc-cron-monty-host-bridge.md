@@ -70,6 +70,10 @@ start CPython.
 
 ## Contract (monty 1.4.0)
 
+The shipped `render_template` / `ComposeHostError` contract lives in
+`docs/sc-cron/architecture.md` (`ComposeProgram`, seven variants). The sketch
+below is the planning contract.
+
 `MontyRepl::call_function` cannot resume host functions on monty 1.4.0; only
 `feed_start` yields `ReplProgress`. Production therefore **replaces** the
 `call_function` path inside `execute_feed` with `feed_start` on a one-line
