@@ -484,6 +484,13 @@ mod tests {
     use super::run_compose_child;
     use crate::monty_compose_common::ComposeHostError;
 
+    const HOST_DEADLINE_BUDGET: Duration = Duration::from_millis(1500);
+    /// Upper slack for post-deadline kill/reap in [`budget_expired`]: two held
+    /// pipes, each joined for at most [`crate::process::REAP_AFTER_KILL`].
+    const HOST_TIMED_OUT_ELAPSED_SLACK: Duration = crate::process::REAP_AFTER_KILL
+        .saturating_mul(2)
+        .saturating_add(Duration::from_secs(1));
+
     #[test]
     fn a_grandchild_holding_a_pipe_cannot_stall_past_the_host_deadline() {
         let dir = tempfile::TempDir::new().expect("dir");
@@ -493,16 +500,21 @@ mod tests {
         symlink(fixture, &link).expect("symlink");
         let program = link.to_str().expect("utf8 path");
         let started = Instant::now();
-        let deadline = started + Duration::from_millis(1500);
+        let deadline = started + HOST_DEADLINE_BUDGET;
         let error = run_compose_child(program, dir.path(), Some(deadline)).expect_err("held pipe");
         let elapsed = started.elapsed();
+        let max_elapsed = HOST_DEADLINE_BUDGET.saturating_add(HOST_TIMED_OUT_ELAPSED_SLACK);
         assert!(
             matches!(error, ComposeHostError::HostTimedOut { .. }),
             "{error}"
         );
         assert!(
-            (Duration::from_millis(1000)..Duration::from_secs(30)).contains(&elapsed),
-            "pipe drain ran for {elapsed:?}"
+            elapsed >= HOST_DEADLINE_BUDGET.saturating_sub(Duration::from_millis(500)),
+            "pipe drain finished too early at {elapsed:?}"
+        );
+        assert!(
+            elapsed <= max_elapsed,
+            "pipe drain ran for {elapsed:?}, expected at most {max_elapsed:?}"
         );
         assert!(
             dir.path().join("child.pid").is_file(),
