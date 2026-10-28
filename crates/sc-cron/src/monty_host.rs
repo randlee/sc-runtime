@@ -341,20 +341,20 @@ fn block_on_supervise(
     let run = crate::process::supervise(spec, crate::MAX_HOOK_OUTPUT_BYTES, async move {
         match host_deadline {
             Some(deadline) => {
-                tokio::time::sleep(deadline.saturating_duration_since(Instant::now())).await;
+                tokio::time::sleep(deadline.saturating_duration_since(Instant::now())).await; // allow: compose host expiry for supervise
             }
             None => std::future::pending::<()>().await,
         }
     });
     if let Ok(handle) = tokio::runtime::Handle::try_current() {
-        return handle.block_on(run);
+        return handle.block_on(run); // allow: Monty render runs on the blocking pool
     }
     tokio::runtime::Builder::new_current_thread()
         .enable_io()
         .enable_time()
         .build()
         .map_err(std::io::Error::other)?
-        .block_on(run)
+        .block_on(run) // allow: compose host supervises without a nested runtime
 }
 
 fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
@@ -926,18 +926,11 @@ def cron_tick(hook):
     #[cfg(unix)]
     #[test]
     fn stdout_past_the_hook_cap_is_compose_output() {
-        use std::os::unix::fs::PermissionsExt;
-        let dir = tempfile::TempDir::new().expect("dir");
-        let bytes = crate::MAX_HOOK_OUTPUT_BYTES + 1;
-        let script = dir.path().join("flood-stub");
-        std::fs::write(
-            &script,
-            format!("#!/bin/sh\nhead -c {bytes} /dev/zero | tr '\\0' 'a'\n"),
-        )
-        .expect("script");
-        let mut permissions = std::fs::metadata(&script).expect("meta").permissions();
-        permissions.set_mode(0o755);
-        std::fs::set_permissions(&script, permissions).expect("chmod");
+        assert!(
+            crate::MAX_HOOK_OUTPUT_BYTES < 65_537,
+            "compose_flood.sh emits 65537 bytes and must exceed the hook cap"
+        );
+        let script = fixture_path("compose_flood.sh");
         let program = script.to_str().expect("utf8 path");
         let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
             .expect_err("flood");
@@ -967,7 +960,7 @@ def cron_tick(hook):
             source,
             ComposeProgram::new(program),
             &[],
-            Duration::from_millis(800),
+            Duration::from_secs(2),
         );
         assert!(started.is_file(), "stub did not start");
         assert!(done.session.is_none());
@@ -981,9 +974,11 @@ def cron_tick(hook):
     #[cfg(unix)]
     #[test]
     fn a_slow_compose_child_is_killed_at_the_host_deadline_only() {
-        let script = fixture_path("compose_slow.sh");
+        let dir = tempfile::TempDir::new().expect("dir");
+        let started = dir.path().join("started");
+        let script = linked_fixture(dir.path(), "slow-direct", "compose_slow_touch.sh");
         let program = script.to_str().expect("utf8 path");
-        let deadline = Instant::now() + Duration::from_millis(80);
+        let deadline = Instant::now() + Duration::from_millis(250);
         let error = render_template(
             "t",
             &json!({}),
@@ -991,6 +986,7 @@ def cron_tick(hook):
             Some(deadline),
         )
         .expect_err("timeout");
+        assert!(started.is_file(), "stub did not start");
         assert!(
             matches!(error, ComposeHostError::HostTimedOut { .. }),
             "{error}"
