@@ -166,8 +166,12 @@ impl RunTimeout {
                 MAX_TIMEOUT.as_secs()
             )));
         }
-        // `millis` is at most MAX_TIMEOUT in ms, far below u64::MAX.
-        let millis = u64::try_from(millis).expect("timeout millis fits in u64 after the max check");
+        let millis = u64::try_from(millis).map_err(|_| {
+            CronError::InvalidSpec(format!(
+                "timeout {timeout:?} is outside 1 ms..={} s",
+                MAX_TIMEOUT.as_secs()
+            ))
+        })?;
         Ok(Self(Duration::from_millis(millis)))
     }
 

@@ -916,6 +916,7 @@ the following.
 | `utoipa-axum` and `utoipa` | the routes closure returns `utoipa_axum::OpenApiRouter`, and the OpenAPI document is a `utoipa` type |
 | `serde` | `DaemonConfig` MUST implement `Deserialize`, because the project loads it as `cfg.daemon` through `sc-config` |
 | `rmcp` | `.mcp(...)` accepts the concrete `StreamableHttpService` and mounts it as given. This crate does not wrap that type and does not re-export it |
+| `tracing` | the request-id span on the assembled router, including `/health`, `/openapi.json`, `/metrics`, and optional `/mcp` |
 
 - The edge `sc-runtime -> sc-config` is absent. `sc-runtime` MUST NOT depend
   on `sc-config` and MUST NOT load configuration
@@ -953,7 +954,7 @@ would reject one.
    `features = ["server"]` and `sc-command` with `features = ["server"]`.
 2. Every entry under `[dependencies]` in `crates/sc-runtime/Cargo.toml` is
    one of: `sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`,
-   `utoipa-axum`, `utoipa`, `serde`, `rmcp`, or optional `tempfile` enabled
+   `utoipa-axum`, `utoipa`, `serde`, `rmcp`, `tracing`, or optional `tempfile` enabled
    only by `test-util`. A search of `crates/sc-runtime/src` finds at least one
    `sc_command` use. The criterion fails when that use is absent.
    `cargo tree -p sc-runtime -e normal --prefix none` prints no `tempfile` or

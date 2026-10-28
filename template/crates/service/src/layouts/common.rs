@@ -70,6 +70,18 @@ impl std::error::Error for StoreOpenError {}
 ///
 /// Returns `WIDGET.NAME_BLANK` when `name` is empty or only whitespace, and an
 /// internal error when the insert fails.
+/// Checks that this process can reach its stores.
+///
+/// The no-database layout has no engine to contact and returns [`Ok`].
+/// Every other layout runs a probe statement on each store it opened.
+///
+/// # Errors
+///
+/// Returns the store's mapped [`OpError`] when a probe fails.
+pub async fn ready(stores: &Stores) -> Result<(), OpError> {
+    stores.check_connectivity().await
+}
+
 pub async fn create_widget(stores: &Stores, input: CreateWidget) -> Result<Widget, OpError> {
     let name = input.name.as_str();
     if name.trim().is_empty() {

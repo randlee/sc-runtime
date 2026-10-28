@@ -21,10 +21,13 @@ impl Stores {
     ///
     /// Returns [`StoreOpenError`] when the database cannot be opened.
     pub async fn open(path: PathBuf) -> Result<Self, StoreOpenError> {
-        let url = path.to_string_lossy().into_owned();
-        let config = schema::OpenConfig::new(url);
+        let config = schema::OpenConfig::sqlite(path);
         let sqlite = store_sqlite::open(&config).await.map_err(open_error)?;
         Ok(Self { sqlite })
+    }
+
+    async fn check_connectivity(&self) -> Result<(), OpError> {
+        store_sqlite::probe(&self.sqlite).await.map_err(store_query)
     }
 
     async fn insert_widget_row(&self, name: &str) -> Result<RowText, OpError> {

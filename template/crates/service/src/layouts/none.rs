@@ -34,6 +34,11 @@ impl Stores {
         }
     }
 
+    async fn check_connectivity(&self) -> Result<(), OpError> {
+        let _ = self;
+        Ok(())
+    }
+
     async fn insert_widget_row(&self, name: &str) -> Result<RowText, OpError> {
         let mut rows = self.rows.lock().unwrap_or_else(|err| err.into_inner());
         rows.next_id = rows.next_id.saturating_add(1);

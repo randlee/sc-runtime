@@ -71,11 +71,15 @@ Implement the types in [docs/sc-cron/architecture.md](../../sc-cron/architecture
 
 Fallible public functions return `CronError`, the crate's one error enum. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `Store`, and `Fenced`, with the codes in [ADR-RUN-0013](../../architecture.md) point 6.
 
+> Superseded for the landed crate by sprint b-9 and [ADR-RUN-0013](../../architecture.md). This paragraph records the five-variant plan this sprint was written against. The landed `CronError` also has `NotFound` and `HookFailed`.
+
 ## Deliverables
 
 1. REQ-RUN-0001, REQ-CRON-0001: copy the crate into `crates/sc-cron`. The `crates/*` glob from `b-1` admits the directory. This sprint does not edit `Cargo.toml`. It updates `Cargo.lock` only to record `sc-cron`. After that update the glob resolves to the six library crates in the REQ-RUN-0001 table.
 2. REQ-CRON-0002: a sc-cron schedule is a normal crontab string of five fields: minute, hour, day of month, month, and day of week. `*/5 * * * *` means every fifth minute. A six-field seconds-first string stays parseable only as the ADR-RUN-0013 point 2 compatibility note. A normal schedule string remains five fields, minute first.
 3. REQ-CRON-0003: a `Rust` row calls `Job`. A `Python` row runs `python3 <module> cron.tick` or `python3 <module> cron.stop` and writes one JSON object to stdin. The object includes the schedule name and the row payload. It does not include ATM team or phase fields. The crate exposes no HTTP route, MCP tool, or binary.
+
+   > Superseded for the landed hook object by sprint b-9. This sentence records the b-3 plan. The landed object is `sc-cron.hook.v1` with required `protocol`, `event`, `schedule`, `payload`, and `deadline`.
 4. REQ-CRON-0004: the crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The crate does not migrate the consumer's other tables.
 5. REQ-RUN-0005: add `boundaries/sc-cron/sc-cron.toml` with `allowed_dependents = []` and forbidden edges to every other workspace crate. The crate exists at this sprint's close, so add `sc-cron` to the forbidden edges of `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-runtime-db-sqlite`, and add `sc-runtime-db-sqlite` to the forbidden edges of `sc-cron`. Those manifest lines are the only edits to the `b-1` files.
 6. NFR-RUN-0005: tests open the schedule file under a `tempfile::TempDir`. They do not set process environment variables.

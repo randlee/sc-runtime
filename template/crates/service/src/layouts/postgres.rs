@@ -20,9 +20,15 @@ impl Stores {
     ///
     /// Returns [`StoreOpenError`] when the database cannot be opened.
     pub async fn open(url: String) -> Result<Self, StoreOpenError> {
-        let config = schema::OpenConfig::new(url);
+        let config = schema::OpenConfig::postgres(url);
         let postgres = store_postgres::open(&config).await.map_err(open_error)?;
         Ok(Self { postgres })
+    }
+
+    async fn check_connectivity(&self) -> Result<(), OpError> {
+        store_postgres::probe(&self.postgres)
+            .await
+            .map_err(store_query)
     }
 
     async fn insert_widget_row(&self, name: &str) -> Result<RowText, OpError> {

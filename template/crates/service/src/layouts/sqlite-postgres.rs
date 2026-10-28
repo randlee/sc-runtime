@@ -30,11 +30,10 @@ impl Stores {
         flags
             .ensure_shared_table("widgets")
             .map_err(membership_error)?;
-        let sqlite_url = sqlite.to_string_lossy().into_owned();
-        let sqlite = store_adaptor::open_sqlite(&schema::OpenConfig::new(sqlite_url))
+        let sqlite = store_adaptor::open_sqlite(&schema::OpenConfig::sqlite(sqlite))
             .await
             .map_err(open_error)?;
-        let remote = store_adaptor::open_postgres(&schema::OpenConfig::new(remote))
+        let remote = store_adaptor::open_postgres(&schema::OpenConfig::postgres(remote))
             .await
             .map_err(open_error)?;
         Ok(Self {
@@ -44,6 +43,15 @@ impl Stores {
         })
     }
 
+    async fn check_connectivity(&self) -> Result<(), OpError> {
+        store_adaptor::probe_sqlite(&self.sqlite)
+            .await
+            .map_err(store_query)?;
+        store_adaptor::probe_postgres(&self.remote)
+            .await
+            .map_err(store_query)
+    }
+
     async fn insert_widget_row(&self, name: &str) -> Result<RowText, OpError> {
         let row: WidgetRow = store_adaptor::insert_widget(&self.sqlite, name)
             .await
@@ -51,7 +59,7 @@ impl Stores {
         store_adaptor::copy_shared_rows(
             &self.sqlite,
             &self.remote,
-            "widgets",
+            &schema::TableName::widgets(),
             &self.flags,
             &store_adaptor::CopyRollup,
         )

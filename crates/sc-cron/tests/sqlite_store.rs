@@ -708,6 +708,8 @@ CREATE TABLE consumer_notes (id INTEGER PRIMARY KEY, body TEXT NOT NULL);";
 fn a_version_3_file_gains_hook_source_and_leaves_other_tables_alone() {
     let root = tempfile::tempdir().expect("tempdir");
     let path = root.path().join("cron.db");
+    let hook = root.path().join("hook.py");
+    let hook_text = hook.to_string_lossy().into_owned();
     {
         let old = Connection::open(&path).expect("connection");
         old.execute_batch(SCHEMA_V3).expect("v3 schema");
@@ -717,8 +719,8 @@ fn a_version_3_file_gains_hook_source_and_leaves_other_tables_alone() {
                  enabled, hook_kind, hook_module)
              VALUES (2, 'py', '0 * * * * *', 20000, 0, '{}',
                      '2026-10-19T00:00:00.000000Z', '2026-10-19T00:01:00.000000Z',
-                     1, 'python', '/tmp/hook.py')",
-            [],
+                     1, 'python', ?1)",
+            [&hook_text],
         )
         .expect("python row");
         old.execute("INSERT INTO consumer_notes (body) VALUES ('leave me')", [])
@@ -731,7 +733,7 @@ fn a_version_3_file_gains_hook_source_and_leaves_other_tables_alone() {
     assert_eq!(row.len(), 1);
     assert!(matches!(
         &row[0].spec.hook,
-        HookTarget::Python { module } if module.as_os_str() == "/tmp/hook.py"
+        HookTarget::Python { module } if module.as_os_str() == hook.as_os_str()
     ));
     let created = store
         .create(&new_schedule("after"), stamp(4))

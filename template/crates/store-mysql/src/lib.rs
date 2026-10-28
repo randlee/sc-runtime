@@ -1,6 +1,6 @@
 //! MySQL store for the example widget operation.
 //!
-//! [`OpenConfig::url`] is a `mysql://` database URL. This crate does not
+//! [`schema::StoreTarget::MysqlUrl`] is a `mysql://` database URL. This crate does not
 //! re-export [`EngineStore`] or [`RowRecord`]: the adaptor imports those from
 //! the schema crate. It re-exports the open config, the error, and
 //! [`WidgetRow`] because a one-store `service` depends on this crate and not
@@ -27,7 +27,10 @@
 use std::time::Duration;
 
 use futures_util::TryStreamExt;
-use schema::{EngineStore, MAX_ROW_PAYLOAD_BYTES, RowRecord, check_read_limit, check_write_limit};
+use schema::{
+    EngineStore, MAX_ROW_PAYLOAD_BYTES, RowRecord, StoreTarget, TableName, check_read_limit,
+    check_write_limit,
+};
 use sqlx::mysql::{MySqlPool, MySqlPoolOptions};
 
 #[doc(inline)]
@@ -69,14 +72,14 @@ impl EngineStore for Store {
 
     fn read_rows(
         &self,
-        table: &str,
+        table: &TableName,
     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send {
         read_table_rows(self, table)
     }
 
     fn write_rows(
         &self,
-        table: &str,
+        table: &TableName,
         rows: &[RowRecord],
     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send {
         write_table_rows(self, table, rows)
@@ -88,8 +91,8 @@ impl EngineStore for Store {
 // sprint cannot edit template/crates/schema. `consumer_checks.py
 // store-boundaries` fails if these copies drift.
 /// The one table-name decision for read and write.
-fn known_table(table: &str) -> Result<(), StoreError> {
-    if table == WIDGETS {
+fn known_table(table: &TableName) -> Result<(), StoreError> {
+    if table.as_str() == WIDGETS {
         Ok(())
     } else {
         Err(StoreError::new(
@@ -235,7 +238,7 @@ fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
 /// use store_mysql::{OpenConfig, open};
 ///
 /// # async fn demo() -> Result<(), store_mysql::StoreError> {
-/// let store = open(&OpenConfig::new("mysql://localhost/widgets")).await?;
+/// let store = open(&OpenConfig::mysql("mysql://localhost/widgets")).await?;
 /// let row = store_mysql::insert_widget(&store, "bolt").await?;
 /// let loaded = store_mysql::get_widget(&store, &row.id).await?;
 /// assert!(loaded.is_some());
@@ -251,11 +254,17 @@ fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
 /// SQLSTATE `40001`, `08S01`, or `08004` (or error number 1040, 1205, 1213,
 /// 2006, or 2013), and [`StoreCode::Migration`] when a migration fails.
 pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
-    require_mysql_url(&config.url)?;
+    let StoreTarget::MysqlUrl(url) = &config.target else {
+        return Err(StoreError::new(
+            StoreCode::Connection,
+            "mysql OpenConfig must be a mysql:// database URL",
+        ));
+    };
+    require_mysql_url(url)?;
     let pool = MySqlPoolOptions::new()
         .max_connections(POOL_SIZE)
         .acquire_timeout(ACQUIRE_TIMEOUT)
-        .connect(&config.url)
+        .connect(url)
         .await
         .map_err(|err| from_driver(StoreCode::Connection, err))?;
     sqlx::migrate!("./migrations")
@@ -340,7 +349,7 @@ pub async fn get_widget(
     }))
 }
 
-async fn read_table_rows(store: &Store, table: &str) -> Result<Vec<RowRecord>, StoreError> {
+async fn read_table_rows(store: &Store, table: &TableName) -> Result<Vec<RowRecord>, StoreError> {
     known_table(table)?;
     read_widget_rows(store).await
 }
@@ -353,7 +362,7 @@ async fn read_widget_rows(store: &Store) -> Result<Vec<RowRecord>, StoreError> {
         .await
         .map_err(|err| from_driver(StoreCode::Query, err))?
     {
-        check_read_limit(WIDGETS, rows.len() + 1)?;
+        check_read_limit(&TableName::widgets(), rows.len() + 1)?;
         rows.push(record_from_columns(row.id, row.name)?);
     }
     Ok(rows)
@@ -361,7 +370,7 @@ async fn read_widget_rows(store: &Store) -> Result<Vec<RowRecord>, StoreError> {
 
 async fn write_table_rows(
     store: &Store,
-    table: &str,
+    table: &TableName,
     rows: &[RowRecord],
 ) -> Result<(), StoreError> {
     known_table(table)?;
@@ -386,10 +395,18 @@ async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), Stor
         let id = widget.id.as_str();
         let name = widget.name.as_str();
         check_column_limits(id, name)?;
-        sqlx::query!("INSERT INTO widgets (id, name) VALUES (?, ?)", id, name)
-            .execute(&mut *tx)
-            .await
-            .map_err(|err| from_driver(StoreCode::Query, err))?;
+        // ADR-RUN-0307: upsert this identity only. Deleting the table would drop
+        // a distinct id such as `abc` when a later call writes `ABC`. The same
+        // id still replaces, so a second copy does not conflict on insert.
+        sqlx::query(
+            "INSERT INTO widgets (id, name) VALUES (?, ?) AS new \
+             ON DUPLICATE KEY UPDATE name = new.name",
+        )
+        .bind(id)
+        .bind(name)
+        .execute(&mut *tx)
+        .await
+        .map_err(|err| from_driver(StoreCode::Query, err))?;
     }
     tx.commit()
         .await
@@ -414,9 +431,23 @@ fn record_from_columns(id: String, name: String) -> Result<RowRecord, StoreError
         ));
     }
     Ok(RowRecord {
-        table: WIDGETS.to_owned(),
+        table: TableName::widgets(),
         payload,
     })
+}
+
+/// Checks that the pool can run a statement.
+///
+/// # Errors
+///
+/// Returns [`StoreCode::Query`] when the probe statement fails, and
+/// [`StoreCode::Unavailable`] when the pool times out.
+pub async fn probe(store: &Store) -> Result<(), StoreError> {
+    sqlx::query("SELECT 1")
+        .fetch_optional(&store.pool)
+        .await
+        .map_err(|err| from_driver(StoreCode::Query, err))?;
+    Ok(())
 }
 
 fn widget_from_payload(payload: &[u8]) -> Result<WidgetRow, StoreError> {
@@ -719,7 +750,7 @@ mod tests {
     #[tokio::test]
     async fn open_rejects_a_non_mysql_url() {
         for url in ["widgets.db", "", "postgres://localhost/widgets"] {
-            let err = open(&OpenConfig::new(url)).await.expect_err("open");
+            let err = open(&OpenConfig::mysql(url)).await.expect_err("open");
             assert_eq!(err.code, StoreCode::Connection);
             assert!(err.to_string().starts_with("Connection:"));
             assert!(std::error::Error::source(&err).is_none());
@@ -729,7 +760,7 @@ mod tests {
 
     #[tokio::test]
     async fn open_failure_uses_connection_code() {
-        let err = open(&OpenConfig::new("mysql://localhost:not-a-port/widgets"))
+        let err = open(&OpenConfig::mysql("mysql://localhost:not-a-port/widgets"))
             .await
             .expect_err("open");
         assert_eq!(err.code, StoreCode::Connection);
@@ -740,7 +771,7 @@ mod tests {
 
     #[tokio::test]
     async fn open_does_not_echo_url_credentials() {
-        let err = open(&OpenConfig::new(
+        let err = open(&OpenConfig::mysql(
             "mysql://widget_user:super-secret-password@localhost:not-a-port/widgets",
         ))
         .await
@@ -756,7 +787,7 @@ mod tests {
         let Some(db) = live_database().await else {
             return;
         };
-        let store = open(&OpenConfig::new(db.url())).await.expect("open");
+        let store = open(&OpenConfig::mysql(db.url())).await.expect("open");
         let row = insert_widget(&store, "bolt").await.expect("insert");
         assert!(is_uuid(row.id.as_str()), "{}", row.id.as_str());
         let loaded = get_widget(&store, &row.id).await.expect("get");
@@ -770,7 +801,7 @@ mod tests {
         let Some(db) = live_database().await else {
             return;
         };
-        let store = open(&OpenConfig::new(db.url())).await.expect("open");
+        let store = open(&OpenConfig::mysql(db.url())).await.expect("open");
         assert_eq!(count_widgets(&store).await.expect("count"), 0);
         drop(store);
         db.close().await;
@@ -781,7 +812,7 @@ mod tests {
         let Some(db) = live_database().await else {
             return;
         };
-        let store = open(&OpenConfig::new(db.url())).await.expect("open");
+        let store = open(&OpenConfig::mysql(db.url())).await.expect("open");
         let mut tasks = Vec::new();
         for index in 0..100 {
             let store = store.clone();
@@ -803,15 +834,18 @@ mod tests {
         let Some(db) = live_database().await else {
             return;
         };
-        let store = <Store as EngineStore>::open(&OpenConfig::new(db.url()))
+        let store = <Store as EngineStore>::open(&OpenConfig::mysql(db.url()))
             .await
             .expect("trait open");
         let written = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: br#"{"id":"abc","name":"bolt"}"#.to_vec(),
         };
-        store.write_rows(WIDGETS, &[written]).await.expect("write");
-        let rows = store.read_rows(WIDGETS).await.expect("read");
+        store
+            .write_rows(&TableName::widgets(), &[written])
+            .await
+            .expect("write");
+        let rows = store.read_rows(&TableName::widgets()).await.expect("read");
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].table, WIDGETS);
         let payload: serde_json::Value =
@@ -819,11 +853,11 @@ mod tests {
         assert_eq!(payload["id"], "abc");
         assert_eq!(payload["name"], "bolt");
         let upper = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: br#"{"id":"ABC","name":"nut"}"#.to_vec(),
         };
         store
-            .write_rows(WIDGETS, &[upper])
+            .write_rows(&TableName::widgets(), &[upper])
             .await
             .expect("case-distinct id");
         assert_eq!(count_widgets(&store).await.expect("count"), 2);
@@ -840,50 +874,55 @@ mod tests {
         let Some(db) = live_database().await else {
             return;
         };
-        let store = open(&OpenConfig::new(db.url())).await.expect("open");
+        let store = open(&OpenConfig::mysql(db.url())).await.expect("open");
         let good = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: br#"{"id":"abc","name":"bolt"}"#.to_vec(),
         };
         let bad = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: b"not-json".to_vec(),
         };
         let err = store
-            .write_rows(WIDGETS, &[good, bad])
+            .write_rows(&TableName::widgets(), &[good, bad])
             .await
             .expect_err("bad payload");
         assert_eq!(err.code, StoreCode::Query);
         assert!(err.to_string().starts_with("Query:"));
         assert!(std::error::Error::source(&err).is_none());
         assert!(!err.is_retryable());
-        let rows = store.read_rows(WIDGETS).await.expect("read");
+        let rows = store.read_rows(&TableName::widgets()).await.expect("read");
         assert!(rows.is_empty());
         drop(store);
         db.close().await;
     }
 
     #[tokio::test]
-    async fn duplicate_id_is_a_conflict() {
+    async fn second_write_replaces_rows() {
         let Some(db) = live_database().await else {
             return;
         };
-        let store = open(&OpenConfig::new(db.url())).await.expect("open");
+        let store = open(&OpenConfig::mysql(db.url())).await.expect("open");
         let row = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: br#"{"id":"abc","name":"bolt"}"#.to_vec(),
         };
         store
-            .write_rows(WIDGETS, std::slice::from_ref(&row))
+            .write_rows(&TableName::widgets(), std::slice::from_ref(&row))
             .await
             .expect("first");
-        let err = store
-            .write_rows(WIDGETS, &[row])
+        let replaced = RowRecord {
+            table: TableName::widgets(),
+            payload: br#"{"id":"abc","name":"nut"}"#.to_vec(),
+        };
+        store
+            .write_rows(&TableName::widgets(), std::slice::from_ref(&replaced))
             .await
-            .expect_err("duplicate");
-        assert_eq!(err.code, StoreCode::Conflict);
-        assert!(!err.is_retryable());
-        assert!(!err.remediation().is_empty());
+            .expect("replace");
+        let rows = store.read_rows(&TableName::widgets()).await.expect("read");
+        assert_eq!(rows.len(), 1);
+        let payload: serde_json::Value = serde_json::from_slice(&rows[0].payload).expect("json");
+        assert_eq!(payload["name"], "nut");
         drop(store);
         db.close().await;
     }
@@ -893,11 +932,14 @@ mod tests {
         let Some(db) = live_database().await else {
             return;
         };
-        let store = open(&OpenConfig::new(db.url())).await.expect("open");
-        let err = store.read_rows("missing").await.expect_err("missing");
+        let store = open(&OpenConfig::mysql(db.url())).await.expect("open");
+        let err = store
+            .read_rows(&TableName::new("missing").expect("table"))
+            .await
+            .expect_err("missing");
         assert_eq!(err.code, StoreCode::NotFound);
         let err = store
-            .write_rows("missing", &[])
+            .write_rows(&TableName::new("missing").expect("table"), &[])
             .await
             .expect_err("missing write");
         assert_eq!(err.code, StoreCode::NotFound);
@@ -910,27 +952,27 @@ mod tests {
         let Some(db) = live_database().await else {
             return;
         };
-        let store = open(&OpenConfig::new(db.url())).await.expect("open");
+        let store = open(&OpenConfig::mysql(db.url())).await.expect("open");
         let too_many = vec![
             RowRecord {
-                table: WIDGETS.to_owned(),
+                table: TableName::widgets(),
                 payload: br#"{"id":"abc","name":"bolt"}"#.to_vec(),
             };
             MAX_PAIRING_ROWS + 1
         ];
         let err = store
-            .write_rows(WIDGETS, &too_many)
+            .write_rows(&TableName::widgets(), &too_many)
             .await
             .expect_err("batch");
         assert_eq!(err.code, StoreCode::Query);
         assert_eq!(count_widgets(&store).await.expect("count"), 0);
 
         let huge = RowRecord {
-            table: WIDGETS.to_owned(),
+            table: TableName::widgets(),
             payload: vec![b'x'; MAX_ROW_PAYLOAD_BYTES + 1],
         };
         let err = store
-            .write_rows(WIDGETS, &[huge])
+            .write_rows(&TableName::widgets(), &[huge])
             .await
             .expect_err("payload");
         assert_eq!(err.code, StoreCode::Query);

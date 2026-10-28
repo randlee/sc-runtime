@@ -4,7 +4,7 @@
 
 ## REQ-DBSQ-0001: Workspace member
 
-`crates/sc-runtime-db-sqlite` is a workspace member. It depends on `rusqlite` with the `bundled` feature and on no other workspace crate.
+`crates/sc-runtime-db-sqlite` is a workspace member. This item owns its third-party dependencies: `rusqlite` with the `bundled` feature, and no other dependency. It depends on no other workspace crate. [REQ-RUN-0005](../requirements.md) point 4 points here.
 
 ## REQ-DBSQ-0002: Public items
 

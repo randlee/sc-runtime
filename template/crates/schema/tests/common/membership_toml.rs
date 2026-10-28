@@ -11,13 +11,13 @@ use schema::{EngineMembership, Membership, StoreCode, StoreError};
 ///
 /// # Errors
 ///
-/// Returns [`StoreCode::Query`] when `text` is not the membership document
-/// or the document is not a valid [`Membership`]. Call
-/// [`StoreError::remediation`] for what to do next.
+/// Returns [`StoreCode::Membership`] when `text` is not the membership document
+/// or the document is not a valid [`Membership`]. The remediation names
+/// `membership.toml` and the engine, table, and column rule.
 pub(crate) fn membership_from_toml(text: &str) -> Result<Membership, StoreError> {
     let file: MembershipFile = toml::from_str(text).map_err(|err| {
         StoreError::new(
-            StoreCode::Query,
+            StoreCode::Membership,
             format!("membership.toml is not valid TOML: {err}"),
         )
     })?;
@@ -27,7 +27,7 @@ pub(crate) fn membership_from_toml(text: &str) -> Result<Membership, StoreError>
         .map(|(engine, side)| (engine, EngineMembership::new(side.tables, side.columns)))
         .collect();
     Membership::try_new(file.shared, only_in)
-        .map_err(|err| StoreError::new(StoreCode::Query, err.to_string()))
+        .map_err(|err| StoreError::new(StoreCode::Membership, format!("membership.toml: {err}")))
 }
 
 #[derive(Debug, serde::Deserialize)]

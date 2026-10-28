@@ -1,8 +1,8 @@
 //! REST adapters. Each handler calls the service and returns its envelope.
 //!
 //! sc-runtime mounts `/health`. That route reports process liveness only. It
-//! does not check the widget database. This template has no store-backed
-//! readiness route.
+//! does not check the widget database. `GET /ready` is this project's
+//! readiness route: it probes store connectivity and is not liveness.
 
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -23,6 +23,7 @@ use utoipa_axum::routes;
 /// routes are registered when the `general-db` feature is on.
 pub fn openapi_router() -> OpenApiRouter<Stores> {
     let router = OpenApiRouter::new()
+        .routes(routes!(ready_route))
         .routes(routes!(create_widget_route))
         .routes(routes!(get_widget_route));
     #[cfg(feature = "general-db")]
@@ -33,10 +34,26 @@ pub fn openapi_router() -> OpenApiRouter<Stores> {
 }
 
 /// Project router. OpenAPI and `/health` are mounted by sc-runtime.
+///
+/// `GET /ready` stays on this router so it can read [`Stores`].
 pub fn router(stores: Stores) -> OpenApiRouter {
     openapi_router()
         .route_layer(middleware::from_fn(request_id))
         .with_state(stores)
+}
+
+#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+struct ReadyBody {
+    status: &'static str,
+}
+
+#[utoipa::path(
+    get,
+    path = "/ready",
+    responses((status = 200, description = "Stores are reachable", body = ReadyBody))
+)]
+async fn ready_route(State(stores): State<Stores>) -> Envelope<ReadyBody> {
+    Envelope::from(service::ready(&stores).await.map(|()| ReadyBody { status: "ready" }))
 }
 
 #[utoipa::path(
@@ -138,6 +155,7 @@ mod tests {
             paths.contains(&WIDGET_GET_PATH),
             "get path missing from {paths:?}"
         );
+        assert!(paths.contains(&"/ready"), "ready path missing from {paths:?}");
         #[cfg(feature = "general-db")]
         {
             assert!(
@@ -167,5 +185,6 @@ mod tests {
         );
         assert!(paths.contains(&WIDGET_CREATE_PATH), "{paths:?}");
         assert!(paths.contains(&WIDGET_GET_PATH), "{paths:?}");
+        assert!(paths.contains(&"/ready"), "{paths:?}");
     }
 }

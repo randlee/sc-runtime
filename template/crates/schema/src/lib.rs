@@ -20,7 +20,7 @@
 //! # Examples
 //!
 //! ```
-//! use schema::{EngineStore, OpenConfig, RowRecord, StoreError};
+//! use schema::{EngineStore, OpenConfig, RowRecord, StoreError, TableName};
 //!
 //! struct MemoryStore {
 //!     rows: Vec<RowRecord>,
@@ -30,18 +30,18 @@
 //!     fn open(
 //!         cfg: &OpenConfig,
 //!     ) -> impl std::future::Future<Output = Result<Self, StoreError>> + Send {
-//!         let _ = cfg.url.clone();
+//!         let _ = cfg;
 //!         async move { Ok(Self { rows: Vec::new() }) }
 //!     }
 //!
 //!     fn read_rows(
 //!         &self,
-//!         table: &str,
+//!         table: &TableName,
 //!     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send {
 //!         let rows = self
 //!             .rows
 //!             .iter()
-//!             .filter(|row| row.table == table)
+//!             .filter(|row| &row.table == table)
 //!             .cloned()
 //!             .collect();
 //!         async move { Ok(rows) }
@@ -49,7 +49,7 @@
 //!
 //!     fn write_rows(
 //!         &self,
-//!         table: &str,
+//!         table: &TableName,
 //!         rows: &[RowRecord],
 //!     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send {
 //!         let _ = (table, rows);
@@ -72,6 +72,8 @@
 //! }
 //! ```
 
+use std::path::PathBuf;
+
 mod membership;
 
 pub use membership::{EngineMembership, Membership, MembershipError};
@@ -84,36 +86,79 @@ pub const MAX_ROW_PAYLOAD_BYTES: usize = 1024 * 1024;
 
 /// How to open one engine's database.
 ///
-/// ADR-RUN-0301 fixes this as one public `url` string. Engines do not grow a
-/// second config type in this phase.
+/// The target keeps a SQLite filesystem path distinct from a Postgres URL and
+/// a MySQL URL. A path cannot be passed to Postgres or MySQL without choosing
+/// that engine's constructor, and a database URL cannot be passed to SQLite
+/// without [`OpenConfig::sqlite`].
 ///
-/// * SQLite reads a filesystem path from `url` (for example `widgets.db`).
+/// * [`StoreTarget::SqlitePath`] is a filesystem path (for example `widgets.db`).
 ///   This template does not parse a `sqlite:` URL.
-/// * Postgres reads a database URL (`postgres://` or `postgresql://`).
-/// * MySQL reads a database URL (`mysql://`).
+/// * [`StoreTarget::PostgresUrl`] is a `postgres://` or `postgresql://` URL.
+/// * [`StoreTarget::MysqlUrl`] is a `mysql://` URL.
 ///
 /// Pool size, TLS, and other engine options belong in that URL's query until
-/// a second field is justified. Do not put a filesystem path in a Postgres or
-/// MySQL config, or a database URL in the SQLite config.
+/// a second field is justified.
 ///
 /// The struct is [`non_exhaustive`]. Crates other than this one construct it
-/// with [`OpenConfig::new`], which sets `url`.
+/// with [`OpenConfig::sqlite`], [`OpenConfig::postgres`], or [`OpenConfig::mysql`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct OpenConfig {
-    /// Connection target. A filesystem path for SQLite, a database URL for
-    /// Postgres and MySQL.
-    pub url: String,
+    /// Connection target. The variant is the engine shape.
+    pub target: StoreTarget,
+}
+
+/// Filesystem path or database URL for one engine.
+///
+/// SQLite, Postgres, and MySQL do not share one string shape.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum StoreTarget {
+    /// Filesystem path. Not a database URL.
+    SqlitePath(PathBuf),
+    /// `postgres://` or `postgresql://` database URL.
+    PostgresUrl(String),
+    /// `mysql://` database URL.
+    MysqlUrl(String),
 }
 
 impl OpenConfig {
-    /// Builds a config whose `url` is `target`.
-    ///
-    /// `target` is a filesystem path for SQLite and a database URL for
-    /// Postgres and MySQL.
+    /// SQLite config for a filesystem `path`.
     #[must_use]
-    pub fn new(target: impl Into<String>) -> Self {
-        Self { url: target.into() }
+    pub fn sqlite(path: impl Into<PathBuf>) -> Self {
+        Self {
+            target: StoreTarget::SqlitePath(path.into()),
+        }
+    }
+
+    /// Postgres config for a database `url`.
+    ///
+    /// The store rejects a value that is not `postgres://` or `postgresql://`
+    /// when it opens.
+    #[must_use]
+    pub fn postgres(url: impl Into<String>) -> Self {
+        Self {
+            target: StoreTarget::PostgresUrl(url.into()),
+        }
+    }
+
+    /// MySQL config for a database `url`.
+    ///
+    /// The store rejects a value that is not `mysql://` when it opens.
+    #[must_use]
+    pub fn mysql(url: impl Into<String>) -> Self {
+        Self {
+            target: StoreTarget::MysqlUrl(url.into()),
+        }
+    }
+
+    /// Path or URL text, for logs and messages.
+    #[must_use]
+    pub fn target_text(&self) -> String {
+        match &self.target {
+            StoreTarget::SqlitePath(path) => path.display().to_string(),
+            StoreTarget::PostgresUrl(url) | StoreTarget::MysqlUrl(url) => url.clone(),
+        }
     }
 }
 
@@ -137,6 +182,8 @@ pub enum StoreCode {
     Conflict,
     /// The pool or engine was temporarily unavailable. This variant is retryable.
     Unavailable,
+    /// `membership.toml` failed to parse or broke the engine, table, or column rule.
+    Membership,
 }
 
 impl StoreCode {
@@ -161,6 +208,9 @@ impl StoreCode {
             }
             Self::Unavailable => {
                 "retry after a short wait; the pool or engine was temporarily unavailable"
+            }
+            Self::Membership => {
+                "edit membership.toml: engine keys are sqlite, postgres, or mysql; tables are bare names; columns are table.column"
             }
         }
     }
@@ -229,6 +279,71 @@ impl std::fmt::Display for StoreError {
 
 impl std::error::Error for StoreError {}
 
+/// Identity of one store table.
+///
+/// This is not a column (`table.column`), a connection URL, or a filesystem
+/// path. [`EngineStore`] and [`RowRecord`] pass this type so a table name is
+/// not a bare [`String`].
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct TableName(String);
+
+impl TableName {
+    /// Wraps `name` when it is a single table identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreCode::NotFound`] when `name` is empty or contains `.`.
+    /// A dotted name is a column, written `table.column` in membership.
+    pub fn new(name: impl AsRef<str>) -> Result<Self, StoreError> {
+        let name = name.as_ref();
+        if name.is_empty() || name.contains('.') {
+            return Err(StoreError::new(
+                StoreCode::NotFound,
+                format!(
+                    "table name {name:?} must be one identifier, not a column or an empty name"
+                ),
+            ));
+        }
+        Ok(Self(name.to_owned()))
+    }
+
+    /// The generated `widgets` table.
+    #[must_use]
+    pub fn widgets() -> Self {
+        Self("widgets".to_owned())
+    }
+
+    /// Table name text.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl AsRef<str> for TableName {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl PartialEq<str> for TableName {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<&str> for TableName {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
+    }
+}
+
+impl std::fmt::Display for TableName {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(self.as_str())
+    }
+}
+
 /// One row moving between stores.
 ///
 /// # Payload encoding
@@ -253,7 +368,7 @@ impl std::error::Error for StoreError {}
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RowRecord {
     /// Table this row belongs to.
-    pub table: String,
+    pub table: TableName,
     /// UTF-8 JSON object. Keys are column names. See the encoding table above.
     pub payload: Vec<u8>,
 }
@@ -350,7 +465,7 @@ pub fn check_write_limit(rows: &[RowRecord]) -> Result<(), StoreError> {
 /// # Errors
 ///
 /// Returns [`StoreCode::Query`] when `rows` is greater than [`MAX_PAIRING_ROWS`].
-pub fn check_read_limit(table: &str, rows: usize) -> Result<(), StoreError> {
+pub fn check_read_limit(table: &TableName, rows: usize) -> Result<(), StoreError> {
     if rows > MAX_PAIRING_ROWS {
         return Err(StoreError::new(
             StoreCode::Query,
@@ -391,7 +506,7 @@ pub trait EngineStore: Send + Sync {
     /// or the table is over the row limit.
     fn read_rows(
         &self,
-        table: &str,
+        table: &TableName,
     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send;
 
     /// Writes `rows` into `table`.
@@ -399,11 +514,13 @@ pub trait EngineStore: Send + Sync {
     /// The batch must be at most [`MAX_PAIRING_ROWS`] long, and each payload
     /// at most [`MAX_ROW_PAYLOAD_BYTES`].
     ///
-    /// A scheduled copy or host aggregate passes the whole table on every run.
-    /// That sync replaces the destination table (clear-then-fill, or an
-    /// equivalent upsert). It does not insert a second copy beside rows already
-    /// stored. Sprint `b-8` renders that replace on the concrete stores. Until
-    /// then an insert that hits a constraint returns [`StoreCode::Conflict`].
+    /// ADR-RUN-0307 amends the `write_rows` sentence in ADR-RUN-0301 point 2.
+    /// A scheduled copy or host aggregate writes the rows it read. Distinct
+    /// identities accumulate: the store does not clear `table`. An identity
+    /// already stored is replaced, so a second copy of those rows does not
+    /// return [`StoreCode::Conflict`]. Identities absent from the batch stay.
+    /// A constraint other than that replacement, such as a check that the new
+    /// row itself fails, still returns [`StoreCode::Conflict`].
     ///
     /// # Errors
     ///
@@ -413,7 +530,7 @@ pub trait EngineStore: Send + Sync {
     /// does not store `table`.
     fn write_rows(
         &self,
-        table: &str,
+        table: &TableName,
         rows: &[RowRecord],
     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send;
 }

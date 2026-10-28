@@ -4,6 +4,7 @@ use std::ffi::OsStr;
 use std::fmt;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use api_types::{CreateWidget, GetWidget, WidgetId, WidgetName};
 #[cfg(feature = "general-db")]
@@ -577,8 +578,14 @@ async fn post_widget(
     body: &impl Serialize,
 ) -> Result<Value, TransportError> {
     let endpoint = resolve(endpoint_flag)?;
-    let client = Client::new(endpoint)?;
+    let client = Client::new(endpoint)?.with_header("x-request-id", &correlation_id())?;
     client.post(path, body).await
+}
+
+fn correlation_id() -> String {
+    static NEXT: AtomicU64 = AtomicU64::new(1);
+    let tick = NEXT.fetch_add(1, Ordering::Relaxed);
+    format!("cli-{tick}")
 }
 
 fn resolve(endpoint_flag: Option<&str>) -> Result<Endpoint, TransportError> {

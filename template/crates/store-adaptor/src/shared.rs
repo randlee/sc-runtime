@@ -1,4 +1,6 @@
-use schema::{EngineStore, Membership, RowRecord, StoreCode, StoreError};
+use std::collections::BTreeSet;
+
+use schema::{EngineStore, Membership, RowRecord, StoreCode, StoreError, TableName};
 
 /// Tables and columns that exist on only one of the two stores.
 ///
@@ -27,13 +29,20 @@ pub struct TableFlags {
 impl TableFlags {
     /// Flags for SQLite paired with `remote_engine`.
     ///
-    /// `remote_engine` is the layout's one sqlx engine, `postgres` or `mysql`.
-    /// A key [`schema::Membership`] does not list contributes empty lists by
-    /// design, including a typo, so the caller must pass the layout's engine
-    /// name. Sprint `b-8` renders that key as a generated constant. Columns
+    /// `remote_engine` is the layout's one sqlx engine, `postgres` or `mysql`,
+    /// or another engine key the membership file names. A typo or any name
+    /// that is not one of those keys fails closed. A known engine that the
+    /// file does not list under `only_in` contributes empty one-sided lists.
+    /// Sprint `b-8` renders the layout key as a generated constant. Columns
     /// are the SQLite columns followed by that remote engine's columns,
     /// without duplicates. The copy and host-aggregate paths read
     /// `column_on_one_side` and pass it to [`Rollup`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreCode::Membership`] when `remote_engine` is not a
+    /// membership key. The message names the valid keys. Call
+    /// [`StoreError::remediation`] for the `membership.toml` rule.
     ///
     /// # Examples
     ///
@@ -53,13 +62,24 @@ impl TableFlags {
     ///     EngineMembership::new(vec!["remote_audit".to_owned()], Vec::new()),
     /// );
     /// let membership = Membership::try_new(vec!["widgets".to_owned()], only_in).expect("membership");
-    /// let flags = TableFlags::from_membership(&membership, "postgres");
+    /// let flags = TableFlags::from_membership(&membership, "postgres").expect("flags");
     /// assert_eq!(flags.sqlite_only, vec!["local_notes".to_owned()]);
     /// assert_eq!(flags.remote_only, vec!["remote_audit".to_owned()]);
     /// assert_eq!(flags.column_on_one_side, vec!["widgets.host_id".to_owned()]);
     /// ```
-    #[must_use]
-    pub fn from_membership(membership: &Membership, remote_engine: &str) -> Self {
+    pub fn from_membership(
+        membership: &Membership,
+        remote_engine: &str,
+    ) -> Result<Self, StoreError> {
+        if !remote_key_allowed(membership, remote_engine) {
+            return Err(StoreError::new(
+                StoreCode::Membership,
+                format!(
+                    "remote engine {remote_engine:?} is not a membership key; valid keys are {}",
+                    valid_remote_keys(membership)
+                ),
+            ));
+        }
         let sqlite_only = side_tables(membership, "sqlite");
         let remote_only = side_tables(membership, remote_engine);
         let mut column_on_one_side = side_columns(membership, "sqlite");
@@ -67,11 +87,11 @@ impl TableFlags {
             &mut column_on_one_side,
             &side_columns(membership, remote_engine),
         );
-        Self {
+        Ok(Self {
             sqlite_only,
             remote_only,
             column_on_one_side,
-        }
+        })
     }
 
     /// Rejects a table that membership stores on only one side.
@@ -85,7 +105,8 @@ impl TableFlags {
     /// remote-only. The message names which side stores it. Call
     /// [`StoreError::remediation`] for what to do next: choose a table both
     /// stores share.
-    pub fn ensure_shared_table(&self, table: &str) -> Result<(), StoreError> {
+    pub fn ensure_shared_table(&self, table: impl AsRef<str>) -> Result<(), StoreError> {
+        let table = table.as_ref();
         if lists(&self.sqlite_only, table) {
             return Err(StoreError::new(
                 StoreCode::NotFound,
@@ -117,10 +138,13 @@ impl TableFlags {
 /// host. Aggregation that can fail, and a watermark, are a third adaptor the
 /// consumer writes. The trait stays synchronous. The adaptor does not await it.
 ///
+/// This trait is open for extension. A generated project implements it, and a
+/// later consumer may implement it too. It is not sealed.
+///
 /// # Examples
 ///
 /// ```
-/// use schema::RowRecord;
+/// use schema::{RowRecord, TableName};
 /// use store_adaptor::Rollup;
 ///
 /// struct CountRows;
@@ -134,7 +158,7 @@ impl TableFlags {
 ///         let table = host_rows
 ///             .first()
 ///             .map(|row| row.table.clone())
-///             .unwrap_or_else(|| "widgets".to_owned());
+///             .unwrap_or_else(TableName::widgets);
 ///         let count = host_rows.len().to_string();
 ///         let mut payload = vec![b'{'];
 ///         payload.extend_from_slice(b"\"rows\":");
@@ -145,7 +169,7 @@ impl TableFlags {
 /// }
 ///
 /// let rows = [RowRecord {
-///     table: "widgets".to_owned(),
+///     table: TableName::widgets(),
 ///     payload: br#"{"id":"w1"}"#.to_vec(),
 /// }];
 /// let rolled = CountRows.rollup(&rows, &["widgets.host_id".to_owned()]);
@@ -173,10 +197,11 @@ pub trait Rollup {
 /// rows up. [`copy_shared_rows`] applies membership, calls [`Rollup`], and
 /// then writes.
 ///
-/// A second call writes the table again. The replace contract lives on
-/// [`EngineStore::write_rows`], which sprint `b-8` renders. This function
-/// does not clear the destination and does not upsert. A destination that
-/// inserts can return [`StoreCode::Conflict`] when the rows are already there.
+/// A second call writes the table again. The replace contract is ADR-RUN-0307
+/// on [`EngineStore::write_rows`]: that call upserts each row identity and
+/// does not clear the destination. A second copy of the same identities does
+/// not return [`StoreCode::Conflict`]. Identities that this call does not
+/// write stay in the table.
 /// The batch is bounded by [`schema::MAX_PAIRING_ROWS`] and
 /// [`schema::MAX_ROW_PAYLOAD_BYTES`].
 ///
@@ -190,7 +215,7 @@ pub trait Rollup {
 /// # Examples
 ///
 /// ```
-/// use schema::{EngineStore, OpenConfig, RowRecord, StoreError};
+/// use schema::{EngineStore, OpenConfig, RowRecord, StoreError, TableName};
 /// use store_adaptor::copy_rows;
 ///
 /// # struct Memory {
@@ -207,14 +232,14 @@ pub trait Rollup {
 /// #
 /// #     fn read_rows(
 /// #         &self,
-/// #         table: &str,
+/// #         table: &TableName,
 /// #     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send {
 /// #         let rows = self
 /// #             .rows
 /// #             .lock()
 /// #             .expect("rows")
 /// #             .iter()
-/// #             .filter(|row| row.table == table)
+/// #             .filter(|row| &row.table == table)
 /// #             .cloned()
 /// #             .collect();
 /// #         async move { Ok(rows) }
@@ -222,7 +247,7 @@ pub trait Rollup {
 /// #
 /// #     fn write_rows(
 /// #         &self,
-/// #         table: &str,
+/// #         table: &TableName,
 /// #         rows: &[RowRecord],
 /// #     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send {
 /// #         let _ = table;
@@ -235,20 +260,20 @@ pub trait Rollup {
 /// # async fn main() -> Result<(), StoreError> {
 /// let source = Memory {
 ///     rows: std::sync::Mutex::new(vec![RowRecord {
-///         table: "widgets".to_owned(),
+///         table: TableName::widgets(),
 ///         payload: br#"{"id":"w1","name":"bolt"}"#.to_vec(),
 ///     }]),
 /// };
 /// let dest = Memory {
 ///     rows: std::sync::Mutex::new(Vec::new()),
 /// };
-/// copy_rows(&source, &dest, "widgets").await?;
-/// # let copied = dest.read_rows("widgets").await?;
+/// copy_rows(&source, &dest, &TableName::widgets()).await?;
+/// # let copied = dest.read_rows(&TableName::widgets()).await?;
 /// # assert_eq!(copied.len(), 1);
 /// # Ok(())
 /// # }
 /// ```
-pub async fn copy_rows<S, D>(source: &S, dest: &D, table: &str) -> Result<(), StoreError>
+pub async fn copy_rows<S, D>(source: &S, dest: &D, table: &TableName) -> Result<(), StoreError>
 where
     S: EngineStore,
     D: EngineStore,
@@ -263,8 +288,9 @@ where
 /// One-sided tables stay where membership put them. The function reads the
 /// whole table, passes the rows and `flags.column_on_one_side` to `rollup`,
 /// and writes what `rollup` returns. The same [`Rollup`] is the owner
-/// [`aggregate_host`] uses. A repeated call is a replace of that table, as
-/// [`copy_rows`] states. This function does not clear the destination.
+/// [`aggregate_host`] uses. A repeated call replaces each copied identity, as
+/// [`copy_rows`] states (ADR-RUN-0307). This function does not clear the
+/// destination.
 ///
 /// # Errors
 ///
@@ -292,7 +318,7 @@ where
 pub async fn copy_shared_rows<S, D, U>(
     source: &S,
     dest: &D,
-    table: &str,
+    table: &TableName,
     flags: &TableFlags,
     rollup: &U,
 ) -> Result<(), StoreError>
@@ -318,21 +344,24 @@ where
 /// Sqlite-only and remote-only tables are not aggregated. A shared table is
 /// read whole from the host. `rollup` receives those rows and
 /// `flags.column_on_one_side`, and the returned rows are written to `remote`.
-/// A repeated call replaces that table on `remote`, as [`copy_rows`] states.
-/// This function does not clear `remote` and does not upsert. The batch is
-/// bounded by [`schema::MAX_PAIRING_ROWS`] and [`schema::MAX_ROW_PAYLOAD_BYTES`].
+/// A repeated call replaces each copied identity on `remote`, as [`copy_rows`]
+/// states. This function does not clear `remote`. The store upserts those
+/// identities (ADR-RUN-0307), so a second copy does not conflict on insert.
+/// The batch is bounded by [`schema::MAX_PAIRING_ROWS`] and
+/// [`schema::MAX_ROW_PAYLOAD_BYTES`].
 ///
 /// # Errors
 ///
 /// Returns [`StoreCode::NotFound`] when `table` is sqlite-only or remote-only,
 /// before either store is called. Otherwise returns the host read error or the
-/// remote write error, including [`StoreCode::Conflict`] when `remote` inserts
-/// and the rows are already present. [`Rollup::rollup`] does not fail.
+/// remote write error, including [`StoreCode::Conflict`] when a constraint
+/// other than replacement of an existing identity rejects a row.
+/// [`Rollup::rollup`] does not fail.
 ///
 /// # Examples
 ///
 /// ```
-/// use schema::RowRecord;
+/// use schema::{RowRecord, TableName};
 /// use store_adaptor::Rollup;
 ///
 /// struct Identity;
@@ -348,7 +377,7 @@ where
 /// }
 ///
 /// let host_rows = [RowRecord {
-///     table: "widgets".to_owned(),
+///     table: TableName::widgets(),
 ///     payload: br#"{"id":"w1","host_id":"h1"}"#.to_vec(),
 /// }];
 /// assert_eq!(Identity.rollup(&host_rows, &[]), host_rows);
@@ -356,7 +385,7 @@ where
 pub async fn aggregate_host<H, R, U>(
     host: &H,
     remote: &R,
-    table: &str,
+    table: &TableName,
     flags: &TableFlags,
     rollup: &U,
 ) -> Result<(), StoreError>
@@ -393,6 +422,25 @@ fn push_unique(names: &mut Vec<String>, extra: &[String]) {
             names.push(name.clone());
         }
     }
+}
+
+fn remote_key_allowed(membership: &Membership, remote_engine: &str) -> bool {
+    if remote_engine == "sqlite" {
+        return false;
+    }
+    remote_engine == "postgres"
+        || remote_engine == "mysql"
+        || membership.engines().any(|engine| engine == remote_engine)
+}
+
+fn valid_remote_keys(membership: &Membership) -> String {
+    let mut keys = BTreeSet::from(["postgres", "mysql"]);
+    for engine in membership.engines() {
+        if engine != "sqlite" {
+            keys.insert(engine);
+        }
+    }
+    keys.into_iter().collect::<Vec<_>>().join(", ")
 }
 
 fn lists(names: &[String], table: &str) -> bool {

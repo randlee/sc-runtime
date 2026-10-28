@@ -52,6 +52,35 @@ pub(crate) enum TransportStep {
 /// );
 /// assert_eq!(err.code(), "STORE.OPEN");
 /// ```
+/// I/O failure retained for [`std::error::Error::source`].
+///
+/// [`std::io::Error`] is not [`Clone`] or [`PartialEq`]. This wrapper shares
+/// one error and compares kind, OS code, and display text.
+#[derive(Debug, Clone)]
+pub struct IoCause(std::sync::Arc<std::io::Error>);
+
+impl PartialEq for IoCause {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.kind() == other.0.kind()
+            && self.0.raw_os_error() == other.0.raw_os_error()
+            && self.0.to_string() == other.0.to_string()
+    }
+}
+
+impl Eq for IoCause {}
+
+impl std::error::Error for IoCause {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(self.0.as_ref())
+    }
+}
+
+impl std::fmt::Display for IoCause {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(formatter)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum RuntimeError {
@@ -132,6 +161,8 @@ pub enum RuntimeError {
         remediation: String,
         /// Serve text.
         cause: Option<String>,
+        /// The `axum::serve` or signal-install I/O error, when this failure came from one.
+        io: Option<IoCause>,
     },
     /// The project's router already defines a reserved runtime path.
     #[non_exhaustive]
@@ -224,12 +255,25 @@ impl RuntimeError {
         }
     }
 
+    #[cfg(feature = "test-util")]
     pub(crate) fn serve_failed(cause: impl Into<String>) -> Self {
         Self::ServeFailed {
             code: CODE_SERVE_FAILED,
             message: "serving the router failed".to_owned(),
             remediation: "read the cause and start the daemon again".to_owned(),
             cause: Some(cause.into()),
+            io: None,
+        }
+    }
+
+    pub(crate) fn serve_failed_io(err: std::io::Error) -> Self {
+        let cause = err.to_string();
+        Self::ServeFailed {
+            code: CODE_SERVE_FAILED,
+            message: "serving the router failed".to_owned(),
+            remediation: "read the cause and start the daemon again".to_owned(),
+            cause: Some(cause),
+            io: Some(IoCause(std::sync::Arc::new(err))),
         }
     }
 
@@ -238,7 +282,7 @@ impl RuntimeError {
         Self::RouteConflict {
             code: CODE_ROUTE_CONFLICT,
             message: format!("the project router already defines reserved path {path}"),
-            remediation: "remove GET /health, GET /openapi.json, or /mcp from the project router"
+            remediation: "remove GET /health, GET /openapi.json, GET /metrics, or /mcp from the project router"
                 .to_owned(),
             cause: Some(path),
         }
@@ -397,6 +441,9 @@ impl fmt::Display for RuntimeError {
 
 impl std::error::Error for RuntimeError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        if let Self::ServeFailed { io: Some(io), .. } = self {
+            return Some(io.0.as_ref());
+        }
         self.transport()
             .map(|err| err as &(dyn std::error::Error + 'static))
     }
@@ -434,6 +481,18 @@ mod tests {
         assert_eq!(_message, "the store did not open");
         assert_eq!(_remediation, "check the database path");
         assert_eq!(_cause.as_deref(), Some("disk full"));
+    }
+
+    #[test]
+    fn serve_failed_io_preserves_source() {
+        let err = RuntimeError::serve_failed_io(std::io::Error::new(
+            std::io::ErrorKind::ConnectionRefused,
+            "listener closed",
+        ));
+        let source = std::error::Error::source(&err).expect("io source");
+        let io = source.downcast_ref::<std::io::Error>().expect("io::Error");
+        assert_eq!(io.kind(), std::io::ErrorKind::ConnectionRefused);
+        assert!(err.to_string().contains("listener closed"));
     }
 
     #[test]

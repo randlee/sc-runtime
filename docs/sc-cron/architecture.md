@@ -54,7 +54,7 @@ pub trait Job: Send + Sync {
 
 pub struct CronExpr;
 
-pub struct Scheduler;
+pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource>;
 
 pub enum RunOutcome {
     Ok,
@@ -71,6 +71,18 @@ pub enum StopDecision {
 ```
 
 `CronExpr::parse` accepts the schedule strings above. `Scheduler` opens the one schedule table. `StopDecision` is `Continue`, `Disable(String)`, and `Delete(String)`. `Stop` is not a variant. The port copies this enum from beads-cache after sprint b-8 removes the `Stop` alias.
+
+`ScheduleStore` stays an open seam. The landed scheduler is generic:
+
+```rust
+pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource>;
+```
+
+`SqliteScheduleStore` is the production store. The crosswalk retains this seam with the copy (REQ-CRON-0009). The public module `process` and `PythonHook` also stay public. They are the retained REQ-CRON-0018 supervisor port (`ChildSpec`, `supervise`, and the related supervisor types). That surface is not an sc-runtime HTTP route, MCP tool, or product API.
+
+## Public exports
+
+The crate-root exports, also listed on `boundaries/sc-cron/sc-cron.toml`, are the contract: `Clock`, `CronError`, `CronExpr`, `DEFAULT_RELOAD_POLL`, `DueRun`, `Generation`, `HOOK_PROTOCOL`, `HookCall`, `HookEvent`, `HookOutput`, `HookStatus`, `HookTarget`, `is_identifier`, `JitterSource`, `Job`, `kill_budget`, `ManualClock`, `MAX_EXPR_LEN`, `MAX_HOOK_OUTPUT_BYTES`, `MAX_HOOK_SOURCE_BYTES`, `MAX_NAME_LEN`, `MAX_PAYLOAD_BYTES`, `MAX_TIMEOUT`, `MissedTickPolicy`, `NewSchedule`, `process`, `PythonHook`, `RunOutcome`, `RunTimeout`, `Schedule`, `ScheduleId`, `ScheduleName`, `ScheduleSpec`, `ScheduleStore`, `Scheduler`, `SCHEMA_VERSION`, `SeqJitter`, `SqliteScheduleStore`, `StopDecision`, `StoreError`, `StoreErrorKind`, `SystemClock`, `SystemJitter`, `Timestamp`, and `WorkerHandle`. `ManualClock` and `SeqJitter` need feature `test-utils`.
 
 A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule row points at one of them. This crate does not know whether that method talks to beads or to Postgres.
 

@@ -248,7 +248,12 @@ where
     let root = resolve_root(app, config)?;
     let endpoint = resolve_endpoint(app, config, &root)?;
     let signals = shutdown::install(control.listen_for_signals).await?;
-    let lock = lock::acquire(&root)?;
+    let root_for_lock = root.clone();
+    let lock = tokio::task::spawn_blocking(move || lock::acquire(&root_for_lock))
+        .await
+        .map_err(|err| {
+            RuntimeError::instance_failed(format!("instance lock task failed: {err}"))
+        })??;
     let stores = match stores_fn().await {
         Ok(stores) => stores,
         Err(err) => {
@@ -295,12 +300,16 @@ async fn serve(
     let drain = control.drain;
     let cancel = control.shutdown.take();
     let (drain_tx, drain_rx) = tokio::sync::watch::channel(false);
-    let router = router::with_body_limit(router::with_request_timeout(
-        router,
-        router::REQUEST_TIMEOUT,
-        drain_rx,
-        drain,
-    ));
+    let metrics = router::RequestMetrics::new();
+    let router = router::with_request_tracking(
+        router::with_body_limit(router::with_request_timeout(
+            router,
+            router::REQUEST_TIMEOUT,
+            drain_rx,
+            drain,
+        )),
+        metrics,
+    );
     let (gate_tx, gate_rx) = tokio::sync::oneshot::channel::<()>();
     let served =
         axum::serve(listener, router.into_make_service()).with_graceful_shutdown(async move {
@@ -335,7 +344,7 @@ fn finish_serve<F>(
 ) -> Result<(), RuntimeError> {
     drop(served);
     drop(lock);
-    result.map_err(|err| RuntimeError::serve_failed(err.to_string()))
+    result.map_err(RuntimeError::serve_failed_io)
 }
 
 fn resolve_root(app: &AppName, config: &DaemonConfig) -> Result<PathBuf, RuntimeError> {

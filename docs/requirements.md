@@ -471,8 +471,10 @@ for the other edges, and sprint a-5 for this absent edge.
    `allowed_dependencies` MUST equal the row above plus that list:
    [NFR-CFG-0002](sc-config/requirements.md) for `sc-config`,
    [NFR-TRN-0001](sc-transport/requirements.md) for `sc-transport`,
-   [NFR-CMD-0001](sc-command/requirements.md) for `sc-command`, and
-   [NFR-RT-0003](sc-runtime/requirements.md) for `sc-runtime`.
+   [NFR-CMD-0001](sc-command/requirements.md) for `sc-command`,
+   [NFR-RT-0003](sc-runtime/requirements.md) for `sc-runtime`,
+   [NFR-CRON-0001](sc-cron/requirements.md) for `sc-cron`, and
+   [REQ-DBSQ-0001](sc-runtime-db-sqlite/requirements.md) for `sc-runtime-db-sqlite`.
 5. The manifest format has no key for cargo features, so `sc-lint-boundary`
    enforces only the inter-crate edges and the public facade list. The three
    kinds of rule are enforced as follows:
@@ -509,8 +511,11 @@ built in parallel without touching each other.
 ### Success Criteria
 
 1. `boundaries/sc-config/`, `boundaries/sc-transport/`,
-   `boundaries/sc-command/` and `boundaries/sc-runtime/` each exist and
-   contain at least one `.toml` file.
+   `boundaries/sc-command/`, `boundaries/sc-runtime/`,
+   `boundaries/sc-runtime-db-sqlite/`, and `boundaries/sc-cron/` each exist
+   and contain at least one `.toml` file. The six workspace members are
+   `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`,
+   `sc-runtime-db-sqlite`, and `sc-cron`.
 2. Each manifest's `forbidden_edges` lists `"<owner> -> <target>"` strings
    only when `<target>` is a workspace member of that crate's lint tree at
    the sprint that creates the manifest (the inter-crate forbidden edges
@@ -531,7 +536,8 @@ built in parallel without touching each other.
 4. Negative check: adding `sc-transport` as a dependency of `sc-command` in a
    scratch branch makes `just lint` exit non-zero with a boundary violation
    naming that edge.
-5. For each of the four crates,
+5. For each of the six workspace members `sc-config`, `sc-transport`,
+   `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`,
    `cargo tree -p <crate> -e normal --prefix none` prints no line beginning
    with `<name> ` (the name followed by a space) for any `<name>` in that
    crate's "Forbidden edges" cell. For `sc-transport` and `sc-command` the
