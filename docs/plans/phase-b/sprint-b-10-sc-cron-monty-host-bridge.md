@@ -199,12 +199,14 @@ No new `CronError` variant.
 | Context JSON encode (`ContextEncodeFailed`) | `COMPOSE_CONTEXT` | `Failed` | Fix the template context; it could not be encoded as JSON. |
 | Program cannot be executed (`ProgramNotRunnable`) | `COMPOSE_NOT_RUNNABLE` | `Failed` | Check that the compose program is executable and allowed to start. |
 | Stdout is not UTF-8 (`OutputNotUtf8`) | `COMPOSE_OUTPUT` | `Failed` | Fix the compose program so its stdout is UTF-8. |
+| Stdout longer than the hook output cap (`OutputTooLarge`) | `COMPOSE_OUTPUT` | `Failed` | Shrink the rendered output. |
 | CLI exits non-zero (`NonZeroExit`) | `COMPOSE_EXIT` | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
 | Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` is allowlisted. |
 | Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
 | `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
-| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
+| `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
+| Host deadline while the child runs, or the child returns after that deadline (`HostTimedOut`) |  | `TimedOut`, session dropped, spawned child killed | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
 | Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
 
 Feeds that never call `render_template` still run when the compose binary is absent.
@@ -212,7 +214,7 @@ Feeds that never call `render_template` still run when the compose binary is abs
 Monty's `ResourceTracker` pauses `max_feed_duration` while suspended on a host
 `FunctionCall`; CLI wall time is **not** on the VM feed clock. The host times
 the child with `Instant` and kills the child and its process group when that
-deadline is reached. The feed then records `TimedOut` and drops the repl.
+deadline is reached. The feed then records bare `RunOutcome::TimedOut` (no code token in the stored outcome) and drops the repl.
 Stdout past the hook output cap is `COMPOSE_OUTPUT`.
 
 ### Dependency (`REQ-CRON-0001`, `REQ-RUN-0005`)
