@@ -11,10 +11,10 @@
       "additionalProperties": false,
       "properties": {
         "max_schedule_rows": {
-          "type": "integer",
-          "minimum": 0,
+          "description": "Maximum schedule rows, enabled and disabled. JSON null or 0 means unlimited (None passed to sc-cron). A missing key defaults to 10.",
           "default": 10,
-          "description": "Maximum schedule rows, enabled and disabled. 0 means unlimited."
+          "type": ["integer", "null"],
+          "minimum": 0
         }
       }
     }

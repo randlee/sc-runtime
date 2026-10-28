@@ -18,6 +18,7 @@ adrs:
   - ADR-RUN-0013
   - ADR-RUN-0014
   - ADR-RUN-0007
+  - ADR-RUN-0011
 owned_paths:
   - crates/sc-cron/src/scheduler.rs
   - crates/sc-cron/src/sqlite.rs
@@ -60,8 +61,8 @@ The embedder can pass an optional maximum schedule row count when opening the sc
 
 ## Generated template
 
-1. **`template/answers.schema.json`**: key **`cron.max_schedule_rows`**, type integer, default **`10`**, description that **`0`** means unlimited.
-2. **Generated daemon wiring:** wherever the layout opens `Scheduler` (new module or existing startup path when sc-cron is enabled for the layout), read config → map **`0`** to `None`, else `Some(NonZeroUsize::new(n))` → pass into `ScheduleLimits`. If no layout enables sc-cron yet, add the schema key and document the wiring contract in `docs/sc-cron/` for the next layout that adds cron.
+1. **`template/answers.schema.json`**: key **`cron.max_schedule_rows`**, integer or JSON null, default **`10`**. **`0`** or **`null`** means unlimited. A missing key stays **`10`**.
+2. **Generated daemon wiring:** wherever the layout opens `Scheduler` (new module or existing startup path when sc-cron is enabled for the layout), read config → map **`0`** or JSON **`null`** to `None`, a missing key to **`10`**, else `Some(NonZeroUsize::new(n))` → pass into `ScheduleLimits`. If no layout enables sc-cron yet, add the schema key and document the wiring contract in `docs/sc-cron/` for the next layout that adds cron.
 
 sc-cron crate does **not** depend on `sc-config`.
 
@@ -83,5 +84,5 @@ sc-cron crate does **not** depend on `sc-config`.
 ## Acceptance
 
 1. ADR-RUN-0014 behavior is implemented and tested.
-2. Template default **10** and **`0` → unlimited** are documented in schema and wired in generated daemon cron setup.
+2. Template default **10**, **`0` → unlimited**, and JSON **`null` → unlimited** are documented in schema and wired in generated daemon cron setup.
 3. `just lint && just test` for the touched crates.

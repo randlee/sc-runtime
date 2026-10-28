@@ -22,7 +22,7 @@ One table, created by the crate. Columns cover the schedule name, the cron strin
 
 The number of schedule rows is not capped unless the embedder passes [`ScheduleLimits`](../../crates/sc-cron/src/limits.rs) ([ADR-RUN-0014](../architecture.md)). `max_schedule_rows: None` is the library default and means unlimited. The count is every row that has not ended, enabled and disabled together. Replacing a name that is already counted does not change the count. Ending a row (`Scheduler::stop`, including a stop-check delete) frees a slot in that same store transaction. A new name over the limit is `CronError::InvalidSpec`; the detail names the limit and the current count. There is no new `CronError` variant. Lowering the limit does not delete rows. Each row's name, expression, timeout, module path, source, and payload are capped in the crate. sc-cron does not depend on sc-config.
 
-Generated applications ship sc-config key `cron.max_schedule_rows` (integer, default `10`, `0` means unlimited) in `template/answers.schema.json` and `template/config/default.json`. The daemon reads it into `cron::CronConfig` on every layout. No layout opens `Scheduler` yet. The layout that does maps the integer and opens the scheduler:
+Generated applications ship sc-config key `cron.max_schedule_rows` (integer or JSON null, default `10` when the key is absent, `0` or `null` means unlimited) in `template/answers.schema.json` and `template/config/default.json`. The daemon reads it into `cron::CronConfig` on every layout. No layout opens `Scheduler` yet. The layout that does maps the value and opens the scheduler:
 
 ```rust
 let limits = sc_cron::ScheduleLimits {
@@ -31,7 +31,7 @@ let limits = sc_cron::ScheduleLimits {
 let scheduler = sc_cron::Scheduler::open(cron_db, limits, clock, jitter)?;
 ```
 
-`CronConfig::row_limit` maps `0` to `None` and any other value to `Some(NonZeroUsize)`. `ScheduleLimits::from_config_rows` is the same mapping for an embedder that does not use the generated daemon.
+`CronConfig::row_limit` maps JSON `null` and `0` to `None` and any positive value to `Some(NonZeroUsize)`. A missing key stays the default `10`. `ScheduleLimits::from_config_rows` is the same integer mapping for an embedder that does not use the generated daemon. sc-cron does not read sc-config.
 
 ## Hook
 
