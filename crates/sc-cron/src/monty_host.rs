@@ -4,10 +4,13 @@
 //! on a private temp root the hook cannot choose, then returns the child's
 //! stdout. Tests pass another [`ComposeProgram`]. It does not start CPython.
 
+use std::ffi::OsString;
 use std::fmt;
-use std::io::{ErrorKind, Read};
-use std::process::{Command, Stdio};
+use std::io::ErrorKind;
+use std::path::Path;
 use std::time::Instant;
+
+use crate::process::{ChildEnv, ChildSpec};
 
 use monty_types::{MontyObject, ObjectRef};
 use serde_json::{Map, Number, Value};
@@ -284,108 +287,74 @@ pub(crate) fn render_template(
     run_compose_child(program, root, host_deadline)
 }
 
-/// Waits on the compose CLI child, killing only that [`std::process::Child`] at `host_deadline`.
+/// Waits on the compose CLI child and kills its process group at `host_deadline`.
 fn run_compose_child(
     program: &str,
-    root: &std::path::Path,
+    root: &Path,
     host_deadline: Option<Instant>,
 ) -> Result<String, ComposeHostError> {
-    let mut child = Command::new(program)
-        .current_dir(root)
-        .arg("render")
-        .arg("--root")
-        .arg(root)
-        .args(["--mode", "file", "--file", "t.j2", "--var-file", "v.json"])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|error| spawn_error(program, error))?;
-    let stdout = child.stdout.take().expect("stdout");
-    let stderr = child.stderr.take().expect("stderr");
-    let stdout_cap = crate::hook::MAX_HOOK_OUTPUT_BYTES;
-    let stdout_handle = std::thread::spawn(move || drain_capped(stdout, stdout_cap));
-    let stderr_handle = std::thread::spawn(move || drain_capped(stderr, stdout_cap).bytes);
-
-    loop {
-        if host_budget_exhausted(host_deadline) {
-            let _ = child.kill();
-            let _ = child.wait();
-            let _ = stdout_handle.join();
-            let _ = stderr_handle.join();
-            return Err(ComposeHostError::HostTimedOut {
-                program: program.to_owned(),
-            });
-        }
-        match child.try_wait() {
-            Ok(Some(status)) => {
-                let drained = stdout_handle.join().unwrap_or(Drained {
-                    bytes: Vec::new(),
-                    over_cap: false,
-                });
-                let stderr = stderr_handle.join().unwrap_or_default();
-                if !status.success() {
-                    return Err(ComposeHostError::NonZeroExit {
-                        status: status.code(),
-                        stderr: stderr_text(&stderr),
-                    });
-                }
-                if drained.over_cap {
-                    return Err(ComposeHostError::OutputTooLarge {
-                        program: program.to_owned(),
-                    });
-                }
-                return String::from_utf8(drained.bytes).map_err(|_| {
-                    ComposeHostError::OutputNotUtf8 {
-                        program: program.to_owned(),
-                    }
-                });
-            }
-            Ok(None) => std::thread::yield_now(),
-            Err(source) => {
-                let _ = child.kill();
-                let _ = child.wait();
-                let _ = stdout_handle.join();
-                let _ = stderr_handle.join();
-                return Err(ComposeHostError::ProgramNotRunnable {
-                    program: program.to_owned(),
-                    source,
-                });
-            }
-        }
+    let spec = ChildSpec {
+        program: Path::new(program),
+        args: render_args(root),
+        cwd: root,
+        input: b"",
+        env: ChildEnv::Inherit,
+    };
+    let captured =
+        block_on_supervise(&spec, host_deadline).map_err(|error| spawn_error(program, error))?;
+    let Some(status) = captured.status else {
+        return Err(ComposeHostError::HostTimedOut {
+            program: program.to_owned(),
+        });
+    };
+    if !status.success() {
+        return Err(ComposeHostError::NonZeroExit {
+            status: status.code(),
+            stderr: stderr_text(&captured.stderr.bytes),
+        });
     }
+    if captured.stdout.truncated {
+        return Err(ComposeHostError::OutputTooLarge {
+            program: program.to_owned(),
+        });
+    }
+    String::from_utf8(captured.stdout.bytes).map_err(|_| ComposeHostError::OutputNotUtf8 {
+        program: program.to_owned(),
+    })
 }
 
-struct Drained {
-    bytes: Vec<u8>,
-    over_cap: bool,
+fn render_args(root: &Path) -> Vec<OsString> {
+    let mut args = Vec::with_capacity(8);
+    args.push(OsString::from("render"));
+    args.push(OsString::from("--root"));
+    args.push(root.as_os_str().to_owned());
+    for arg in ["--mode", "file", "--file", "t.j2", "--var-file", "v.json"] {
+        args.push(OsString::from(arg));
+    }
+    args
 }
 
-fn drain_capped(mut reader: impl Read, cap: usize) -> Drained {
-    let mut kept = Vec::new();
-    let mut over_cap = false;
-    let mut chunk = [0u8; 4096];
-    loop {
-        let read = match reader.read(&mut chunk) {
-            Ok(0) => break,
-            Ok(n) => n,
-            Err(_) => break,
-        };
-        if kept.len() >= cap {
-            over_cap = true;
-            continue;
+fn block_on_supervise(
+    spec: &ChildSpec<'_>,
+    host_deadline: Option<Instant>,
+) -> std::io::Result<crate::process::Captured> {
+    let run = crate::process::supervise(spec, crate::MAX_HOOK_OUTPUT_BYTES, async move {
+        match host_deadline {
+            Some(deadline) => {
+                tokio::time::sleep(deadline.saturating_duration_since(Instant::now())).await;
+            }
+            None => std::future::pending::<()>().await,
         }
-        let room = cap - kept.len();
-        if read > room {
-            kept.extend_from_slice(&chunk[..room]);
-            over_cap = true;
-        } else {
-            kept.extend_from_slice(&chunk[..read]);
-        }
+    });
+    if let Ok(handle) = tokio::runtime::Handle::try_current() {
+        return handle.block_on(run);
     }
-    Drained {
-        bytes: kept,
-        over_cap,
-    }
+    tokio::runtime::Builder::new_current_thread()
+        .enable_io()
+        .enable_time()
+        .build()
+        .map_err(std::io::Error::other)?
+        .block_on(run)
 }
 
 fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
@@ -409,18 +378,8 @@ fn spawn_error(program: &str, source: std::io::Error) -> ComposeHostError {
 }
 
 fn stderr_text(bytes: &[u8]) -> String {
-    const CAP: usize = 512;
     let text = String::from_utf8_lossy(bytes);
-    let trimmed = text.trim();
-    if trimmed.len() <= CAP {
-        return trimmed.to_owned();
-    }
-    let mut end = CAP;
-    while !trimmed.is_char_boundary(end) {
-        end -= 1;
-    }
-    let shown = trimmed.get(..end).unwrap_or_default();
-    format!("{shown}…")
+    crate::hook::stderr_in_message(&text).to_owned()
 }
 
 /// Converts a JSON value into the Monty object passed as `__hook` or a context.
@@ -637,15 +596,14 @@ mod tests {
     }
 
     #[test]
-    fn stderr_text_stops_on_a_char_boundary_without_slicing() {
-        let mut bytes = vec![b'a'; 1023];
+    fn stderr_text_uses_the_hook_message_cap() {
+        let mut bytes = vec![b'a'; 511];
         bytes.extend("é".as_bytes());
         bytes.extend(b"zzzz");
         let text = super::stderr_text(&bytes);
-        assert!(text.ends_with('…'), "{text}");
-        assert_eq!(text.chars().next_back(), Some('…'));
-        assert!(text.is_char_boundary(text.len()));
+        assert_eq!(text, "a".repeat(511));
         assert!(!text.contains('é'), "{text}");
+        assert!(text.len() <= 512, "{text}");
     }
 
     #[test]
@@ -856,28 +814,30 @@ def cron_tick(hook):
         assert!(!rendered.contains("INFO"), "{rendered:?}");
     }
 
+    /// A checked-in fixture under `tests/fixtures/`. Mode 0755 in git.
     #[cfg(unix)]
-    fn executable_script(dir: &std::path::Path, name: &str, body: &str) -> std::path::PathBuf {
-        use std::os::unix::fs::PermissionsExt;
-        let path = dir.join(name);
-        std::fs::write(&path, body).expect("script");
-        let mut permissions = std::fs::metadata(&path).expect("meta").permissions();
-        permissions.set_mode(0o755);
-        std::fs::set_permissions(&path, permissions).expect("chmod");
-        path
+    fn fixture_path(name: &str) -> std::path::PathBuf {
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures")
+            .join(name)
+    }
+
+    /// Symlink `fixture` into `dir` as `link_name`.
+    ///
+    /// The exec path is the link, so the fixture can write side files beside
+    /// `$0`. The fixture inode is not written by the test.
+    #[cfg(unix)]
+    fn linked_fixture(dir: &std::path::Path, link_name: &str, fixture: &str) -> std::path::PathBuf {
+        let link = dir.join(link_name);
+        std::os::unix::fs::symlink(fixture_path(fixture), &link).expect("link fixture");
+        link
     }
 
     #[cfg(unix)]
     #[test]
     fn an_injected_program_sees_the_render_argv_and_can_resume_twice() {
         let dir = tempfile::TempDir::new().expect("dir");
-        let log = dir.path().join("argv.txt");
-        let log_quoted = format!("'{}'", log.display().to_string().replace('\'', "'\\''"));
-        let script = executable_script(
-            dir.path(),
-            "compose-stub",
-            &format!("#!/bin/sh\nprintf '%s\\n' \"$@\" > {log_quoted}\nprintf 'rendered'\n"),
-        );
+        let script = linked_fixture(dir.path(), "compose-stub", "compose_record_argv.sh");
         let program = script.to_str().expect("utf8 path");
         let rendered = render_template(
             "ignored",
@@ -887,7 +847,7 @@ def cron_tick(hook):
         )
         .expect("stub");
         assert_eq!(rendered, "rendered");
-        let argv = std::fs::read_to_string(&log).expect("argv");
+        let argv = std::fs::read_to_string(dir.path().join("argv.txt")).expect("argv");
         for flag in [
             "render",
             "--root",
@@ -931,11 +891,7 @@ def cron_tick(hook):
     #[test]
     fn a_non_zero_stub_and_a_program_that_cannot_start_map_to_the_error_table() {
         let dir = tempfile::TempDir::new().expect("dir");
-        let script = executable_script(
-            dir.path(),
-            "fail-stub",
-            "#!/bin/sh\nprintf 'no-template\\n' >&2\nexit 7\n",
-        );
+        let script = fixture_path("compose_fail.sh");
         let program = script.to_str().expect("utf8 path");
         let error =
             render_template("t", &json!({}), ComposeProgram::new(program), None).expect_err("exit");
@@ -969,15 +925,30 @@ def cron_tick(hook):
 
     #[cfg(unix)]
     #[test]
+    #[cfg(unix)]
+    #[test]
+    fn stdout_past_the_hook_cap_is_compose_output() {
+        let dir = tempfile::TempDir::new().expect("dir");
+        let bytes = crate::MAX_HOOK_OUTPUT_BYTES + 1;
+        let script = executable_script(
+            dir.path(),
+            "flood-stub",
+            &format!("#!/bin/sh\nhead -c {bytes} /dev/zero | tr '\\0' 'a'\n"),
+        );
+        let program = script.to_str().expect("utf8 path");
+        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
+            .expect_err("flood");
+        assert!(
+            matches!(error, ComposeHostError::OutputTooLarge { .. }),
+            "{error}"
+        );
+        assert_eq!(error.code(), "COMPOSE_OUTPUT");
+    }
+
     fn a_stub_that_outlasts_the_row_budget_is_timed_out_and_drops_the_session() {
         let dir = tempfile::TempDir::new().expect("dir");
         let started = dir.path().join("started");
-        let started_quoted = format!("'{}'", started.display().to_string().replace('\'', "'\\''"));
-        let script = executable_script(
-            dir.path(),
-            "slow-stub",
-            &format!("#!/bin/sh\ntouch {started_quoted}\nsleep 5\nprintf 'rendered'\n"),
-        );
+        let script = linked_fixture(dir.path(), "slow-stub", "compose_slow_touch.sh");
         let program = script.to_str().expect("utf8 path");
         let source = r#"
 def cron_stop(hook):
@@ -1005,12 +976,7 @@ def cron_tick(hook):
     #[cfg(unix)]
     #[test]
     fn a_slow_compose_child_is_killed_at_the_host_deadline_only() {
-        let dir = tempfile::TempDir::new().expect("dir");
-        let script = executable_script(
-            dir.path(),
-            "slow-direct",
-            "#!/bin/sh\nsleep 2\nprintf 'rendered'\n",
-        );
+        let script = fixture_path("compose_slow.sh");
         let program = script.to_str().expect("utf8 path");
         let deadline = Instant::now() + Duration::from_millis(80);
         let error = render_template(

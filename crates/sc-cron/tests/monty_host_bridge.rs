@@ -30,11 +30,13 @@ fn spec(name: &str, source: &str, payload: serde_json::Value) -> ScheduleSpec {
 
 async fn due(fixture: &Fixture) -> Vec<sc_cron::DueRun> {
     fixture.clock.advance(chrono::Duration::seconds(60));
-    fixture
-        .scheduler
-        .run_due(idle_job())
-        .await
-        .expect("run_due")
+    match tokio::time::timeout(common::WAIT, fixture.scheduler.run_due(idle_job())).await {
+        Ok(result) => result.expect("run_due"),
+        Err(_elapsed) => panic!(
+            "run_due did not finish within {:?}; sc-compose may be hung",
+            common::WAIT
+        ),
+    }
 }
 
 fn one(runs: &[sc_cron::DueRun]) -> &RunOutcome {
