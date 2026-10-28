@@ -12,11 +12,11 @@ A schedule uses a normal crontab string of five fields: minute, hour, day of mon
 
 ## REQ-CRON-0003: Rust, Python, or Monty hook
 
-A schedule row names the in-process `Job`, a Python module, or a third target, `Monty { source }`, when the crate is built with feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`; it has no beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. A consumer may build one that inserts rows. The embedder may pass an optional maximum number of schedule rows when it opens the scheduler; this crate does not read sc-config.
+A schedule row names the in-process `Job`, a Python module, or a third target, `Monty { source }`, when the crate is built with feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`; it has no beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. A consumer may build one that inserts rows. The embedder may pass an optional maximum number of schedule rows when it opens the scheduler; this crate does not read sc-config. Writers that share one schedule database must open it with the same maximum.
 
 ## REQ-CRON-0004: One configuration table
 
-The crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`.
+The crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
 
 ## REQ-CRON-0005: One error enum
 

@@ -42,6 +42,11 @@ pub const MAX_TIMEOUT: Duration = Duration::from_hours(24);
 /// its sc-config integer with [`ScheduleLimits::from_config_rows`]. `0` in
 /// that integer means unlimited. This crate never reads sc-config.
 ///
+/// Every writer that opens one schedule database must pass the same
+/// `ScheduleLimits`. The value stays in the process that opened the store
+/// and is not written into the file. A writer opened with a different
+/// value, including unlimited, does not enforce another writer's cap.
+///
 /// The count is every row that has not ended, enabled and disabled together.
 /// Replacing a name that is already in that count does not change it. Ending
 /// a row frees a slot. A lower limit does not delete rows that are already
