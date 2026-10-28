@@ -1,8 +1,8 @@
 //! Host function `render_template` for a Monty cron feed.
 //!
-//! The feed stays inside Monty. This module spawns the `sc-compose` program
-//! (or a test-injected program name) on a private temp root the hook cannot
-//! choose, then returns the child's stdout. It does not start CPython.
+//! The feed stays inside Monty. This module spawns [`ComposeProgram::SC_COMPOSE`]
+//! on a private temp root the hook cannot choose, then returns the child's
+//! stdout. Tests pass another [`ComposeProgram`]. It does not start CPython.
 
 use std::fmt;
 use std::io::ErrorKind;
@@ -12,7 +12,43 @@ use std::time::Instant;
 use monty_types::{MontyObject, ObjectRef};
 use serde_json::{Map, Number, Value};
 
+/// Program name or path spawned for one `render_template` call.
+///
+/// Production uses [`Self::SC_COMPOSE`]. A test may pass another name. This is
+/// not an embedder setting: [`crate::Scheduler`](crate::Scheduler) never
+/// accepts a program.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct ComposeProgram<'a>(&'a str);
+
+impl ComposeProgram<'static> {
+    /// The program production feeds spawn on `PATH`.
+    pub(crate) const SC_COMPOSE: Self = Self::new("sc-compose");
+}
+
+impl<'a> ComposeProgram<'a> {
+    /// Wraps a program name or path. The hook source cannot supply this.
+    #[must_use]
+    pub(crate) const fn new(program: &'a str) -> Self {
+        Self(program)
+    }
+
+    /// Returns the program name or path.
+    #[must_use]
+    pub(crate) const fn as_str(self) -> &'a str {
+        self.0
+    }
+}
+
+impl fmt::Display for ComposeProgram<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.0)
+    }
+}
+
 /// How `render_template` failed before the feed records [`crate::RunOutcome::Failed`].
+///
+/// These variants are not [`crate::CronError`] variants. The feed stores
+/// [`crate::RunOutcome::Failed`].
 #[derive(Debug)]
 pub(crate) enum ComposeHostError {
     /// `compose_program` was not found on `PATH` (or the injected path).
@@ -20,23 +56,62 @@ pub(crate) enum ComposeHostError {
         /// Program name or path that could not be started.
         program: String,
     },
-    /// The temp root or the child process could not be created.
-    SpawnFailed {
+    /// The temp root could not be created.
+    TempRootFailed {
+        /// Program name or path that would have been spawned.
+        program: String,
+        /// Filesystem error from `tempfile`.
+        source: std::io::Error,
+    },
+    /// Writing the template or the context file failed.
+    StageFailed {
+        /// Program name or path that would have been spawned.
+        program: String,
+        /// Filesystem error from the temp root.
+        source: std::io::Error,
+    },
+    /// The context value could not be encoded as JSON.
+    ContextEncodeFailed {
+        /// Program name or path that would have been spawned.
+        program: String,
+        /// Serializer error.
+        source: serde_json::Error,
+    },
+    /// The program was found but could not be executed.
+    ProgramNotRunnable {
         /// Program name or path passed to the process spawn.
         program: String,
-        /// Operating-system or JSON detail.
-        detail: String,
+        /// Spawn error other than not-found.
+        source: std::io::Error,
+    },
+    /// The child exited zero and stdout was not UTF-8.
+    OutputNotUtf8 {
+        /// Program name or path that produced the stdout.
+        program: String,
     },
     /// The child ran and exited non-zero.
     NonZeroExit {
-        /// Exit status, or `-1` when the process was ended by a signal.
-        status: i32,
+        /// Exit status, or `None` when the process was ended by a signal.
+        status: Option<i32>,
         /// Capped stderr text from the child.
         stderr: String,
     },
 }
 
 impl ComposeHostError {
+    /// Stable token stored in the `RunOutcome::Failed` detail.
+    #[must_use]
+    pub(crate) const fn code(&self) -> &'static str {
+        match self {
+            Self::ProgramNotFound { .. } => "COMPOSE_NOT_FOUND",
+            Self::TempRootFailed { .. } | Self::StageFailed { .. } => "COMPOSE_SPAWN",
+            Self::ContextEncodeFailed { .. } => "COMPOSE_CONTEXT",
+            Self::ProgramNotRunnable { .. } => "COMPOSE_NOT_RUNNABLE",
+            Self::OutputNotUtf8 { .. } => "COMPOSE_OUTPUT",
+            Self::NonZeroExit { .. } => "COMPOSE_EXIT",
+        }
+    }
+
     /// Returns what an operator can do about this failure.
     #[must_use]
     pub(crate) const fn recovery(&self) -> &'static str {
@@ -44,9 +119,16 @@ impl ComposeHostError {
             Self::ProgramNotFound { .. } => {
                 "Install `sc-compose` on PATH or fix the injected program name in tests."
             }
-            Self::SpawnFailed { .. } => {
+            Self::TempRootFailed { .. } | Self::StageFailed { .. } => {
                 "Check permissions and disk space for temp roots under `tempfile::TempDir`."
             }
+            Self::ContextEncodeFailed { .. } => {
+                "Fix the template context; it could not be encoded as JSON."
+            }
+            Self::ProgramNotRunnable { .. } => {
+                "Check that the compose program is executable and allowed to start."
+            }
+            Self::OutputNotUtf8 { .. } => "Fix the compose program so its stdout is UTF-8.",
             Self::NonZeroExit { .. } => {
                 "Fix template/context or run `sc-compose render` manually with the logged stderr."
             }
@@ -60,20 +142,54 @@ impl fmt::Display for ComposeHostError {
             Self::ProgramNotFound { program } => {
                 write!(formatter, "compose program not found: {program}")
             }
-            Self::SpawnFailed { program, detail } => {
+            Self::TempRootFailed { program, source } => {
                 write!(
                     formatter,
-                    "compose program {program} failed to start: {detail}"
+                    "compose program {program} temp root failed: {source}"
                 )
             }
-            Self::NonZeroExit { status, stderr } => {
-                write!(formatter, "compose exited {status}: {stderr}")
+            Self::StageFailed { program, source } => {
+                write!(
+                    formatter,
+                    "compose program {program} failed to stage files: {source}"
+                )
             }
+            Self::ContextEncodeFailed { program, source } => {
+                write!(
+                    formatter,
+                    "compose program {program} context could not be encoded: {source}"
+                )
+            }
+            Self::ProgramNotRunnable { program, source } => {
+                write!(
+                    formatter,
+                    "compose program {program} could not be executed: {source}"
+                )
+            }
+            Self::OutputNotUtf8 { program } => {
+                write!(formatter, "compose program {program} stdout was not utf-8")
+            }
+            Self::NonZeroExit { status, stderr } => match status {
+                Some(status) => write!(formatter, "compose exited {status}: {stderr}"),
+                None => write!(formatter, "compose exited from a signal: {stderr}"),
+            },
         }
     }
 }
 
-impl std::error::Error for ComposeHostError {}
+impl std::error::Error for ComposeHostError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::TempRootFailed { source, .. }
+            | Self::StageFailed { source, .. }
+            | Self::ProgramNotRunnable { source, .. } => Some(source),
+            Self::ContextEncodeFailed { source, .. } => Some(source),
+            Self::ProgramNotFound { .. }
+            | Self::OutputNotUtf8 { .. }
+            | Self::NonZeroExit { .. } => None,
+        }
+    }
+}
 
 /// A Monty value `monty_value_to_json` will not represent.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -97,68 +213,71 @@ pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
 ///
 /// The child is `compose_program render --root <temp> --mode file --file t.j2 --var-file v.json`.
 /// Stdout is the rendered string. The temp directory is removed when this
-/// function returns. The hook does not choose the root.
+/// function returns. The hook does not choose the root or the program.
 ///
 /// # Errors
 ///
 /// [`ComposeHostError::ProgramNotFound`] when the program cannot be found,
-/// [`ComposeHostError::SpawnFailed`] when the temp root or the process cannot
-/// be created, and [`ComposeHostError::NonZeroExit`] when the child exits
-/// non-zero.
+/// [`ComposeHostError::TempRootFailed`] or [`ComposeHostError::StageFailed`]
+/// when the temp root cannot be prepared, [`ComposeHostError::ContextEncodeFailed`]
+/// when `context` cannot be encoded, [`ComposeHostError::ProgramNotRunnable`]
+/// when the process cannot be started, [`ComposeHostError::OutputNotUtf8`] when
+/// stdout is not UTF-8, and [`ComposeHostError::NonZeroExit`] when the child
+/// exits non-zero.
 pub(crate) fn render_template(
     template: &str,
     context: &Value,
-    compose_program: &str,
+    compose_program: ComposeProgram<'_>,
 ) -> Result<String, ComposeHostError> {
-    let dir = tempfile::TempDir::new().map_err(|error| ComposeHostError::SpawnFailed {
-        program: compose_program.to_owned(),
-        detail: error.to_string(),
+    let program = compose_program.as_str();
+    let dir = tempfile::TempDir::new().map_err(|source| ComposeHostError::TempRootFailed {
+        program: program.to_owned(),
+        source,
     })?;
     let root = dir.path();
-    std::fs::write(root.join("t.j2"), template).map_err(|error| ComposeHostError::SpawnFailed {
-        program: compose_program.to_owned(),
-        detail: error.to_string(),
-    })?;
+    std::fs::write(root.join("t.j2"), template).map_err(|source| stage_failed(program, source))?;
     let context_bytes =
-        serde_json::to_vec(context).map_err(|error| ComposeHostError::SpawnFailed {
-            program: compose_program.to_owned(),
-            detail: error.to_string(),
+        serde_json::to_vec(context).map_err(|source| ComposeHostError::ContextEncodeFailed {
+            program: program.to_owned(),
+            source,
         })?;
-    std::fs::write(root.join("v.json"), context_bytes).map_err(|error| {
-        ComposeHostError::SpawnFailed {
-            program: compose_program.to_owned(),
-            detail: error.to_string(),
-        }
-    })?;
-    let output = Command::new(compose_program)
+    std::fs::write(root.join("v.json"), context_bytes)
+        .map_err(|source| stage_failed(program, source))?;
+    let output = Command::new(program)
         .current_dir(root)
         .arg("render")
         .arg("--root")
         .arg(root)
         .args(["--mode", "file", "--file", "t.j2", "--var-file", "v.json"])
         .output()
-        .map_err(|error| spawn_error(compose_program, error))?;
+        .map_err(|error| spawn_error(program, error))?;
     if !output.status.success() {
         return Err(ComposeHostError::NonZeroExit {
-            status: output.status.code().unwrap_or(-1),
+            status: output.status.code(),
             stderr: stderr_text(&output.stderr),
         });
     }
-    String::from_utf8(output.stdout).map_err(|_| ComposeHostError::SpawnFailed {
-        program: compose_program.to_owned(),
-        detail: "stdout was not utf-8".to_owned(),
+    String::from_utf8(output.stdout).map_err(|_| ComposeHostError::OutputNotUtf8 {
+        program: program.to_owned(),
     })
 }
 
-fn spawn_error(program: &str, error: std::io::Error) -> ComposeHostError {
-    if error.kind() == ErrorKind::NotFound {
+fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
+    ComposeHostError::StageFailed {
+        program: program.to_owned(),
+        source,
+    }
+}
+
+fn spawn_error(program: &str, source: std::io::Error) -> ComposeHostError {
+    if source.kind() == ErrorKind::NotFound {
         ComposeHostError::ProgramNotFound {
             program: program.to_owned(),
         }
     } else {
-        ComposeHostError::SpawnFailed {
+        ComposeHostError::ProgramNotRunnable {
             program: program.to_owned(),
-            detail: error.to_string(),
+            source,
         }
     }
 }
@@ -242,15 +361,16 @@ pub(crate) fn monty_value_to_json(value: ObjectRef<'_>) -> Result<Value, MontyJs
 
 #[cfg(all(test, feature = "monty"))]
 mod tests {
+    use std::error::Error;
     use std::time::{Duration, Instant};
 
     use serde_json::{Value, json};
 
     use super::{
-        ComposeHostError, host_budget_exhausted, json_to_monty, monty_value_to_json,
-        render_template,
+        ComposeHostError, ComposeProgram, host_budget_exhausted, json_to_monty,
+        monty_value_to_json, render_template,
     };
-    use crate::monty_run::{FeedResult, MontyPhase};
+    use crate::monty_run::{ComposeInjection, FeedResult, MontyPhase};
     use crate::{Generation, RunOutcome};
 
     fn hook() -> Value {
@@ -258,29 +378,47 @@ mod tests {
     }
 
     fn run_tick(source: &str) -> crate::monty_run::FeedDone {
+        run_injected(
+            source,
+            ComposeProgram::SC_COMPOSE,
+            &[],
+            Duration::from_secs(20),
+        )
+    }
+
+    fn run_injected(
+        source: &str,
+        program: ComposeProgram<'_>,
+        extra_host_fns: &[&str],
+        budget: Duration,
+    ) -> crate::monty_run::FeedDone {
         let generation = Generation::new(1).expect("generation");
-        let budget = Duration::from_secs(20);
         let payload = hook();
-        let stop = crate::monty_run::execute_feed(
+        let stop = crate::monty_run::execute_feed_with_compose_program(
             None,
             source,
             MontyPhase::Stop,
             generation,
-            budget,
+            Duration::from_secs(20),
             &payload,
+            ComposeInjection::production(),
         );
         assert!(
             matches!(stop.result, FeedResult::Continue),
             "stop: {:?}",
             stop.result
         );
-        crate::monty_run::execute_feed(
+        crate::monty_run::execute_feed_with_compose_program(
             stop.session,
             source,
             MontyPhase::Tick,
             generation,
             budget,
             &payload,
+            ComposeInjection {
+                program,
+                extra_host_fns,
+            },
         )
     }
 
@@ -300,22 +438,74 @@ mod tests {
             missing.recovery(),
             "Install `sc-compose` on PATH or fix the injected program name in tests."
         );
+        assert_eq!(missing.code(), "COMPOSE_NOT_FOUND");
+        assert!(missing.source().is_none());
         assert!(missing.to_string().contains("sc-cron-missing-compose-b10"));
+        let root = ComposeHostError::TempRootFailed {
+            program: "sc-compose".to_owned(),
+            source: std::io::Error::other("disk"),
+        };
         assert_eq!(
-            ComposeHostError::SpawnFailed {
-                program: "sc-compose".to_owned(),
-                detail: "disk".to_owned(),
-            }
-            .recovery(),
+            root.recovery(),
             "Check permissions and disk space for temp roots under `tempfile::TempDir`."
         );
+        assert_eq!(root.code(), "COMPOSE_SPAWN");
+        assert_eq!(
+            root.source().map(ToString::to_string).as_deref(),
+            Some("disk")
+        );
+        assert_eq!(
+            ComposeHostError::StageFailed {
+                program: "sc-compose".to_owned(),
+                source: std::io::Error::other("disk"),
+            }
+            .recovery(),
+            root.recovery()
+        );
+        let encode = ComposeHostError::ContextEncodeFailed {
+            program: "sc-compose".to_owned(),
+            source: serde_json::from_str::<Value>("{").expect_err("json"),
+        };
+        assert_eq!(
+            encode.recovery(),
+            "Fix the template context; it could not be encoded as JSON."
+        );
+        assert!(encode.source().is_some());
+        assert_eq!(encode.code(), "COMPOSE_CONTEXT");
+        let runnable = ComposeHostError::ProgramNotRunnable {
+            program: "sc-compose".to_owned(),
+            source: std::io::Error::other("permission"),
+        };
+        assert_eq!(
+            runnable.recovery(),
+            "Check that the compose program is executable and allowed to start."
+        );
+        assert!(runnable.source().is_some());
+        assert!(!runnable.recovery().contains("disk"));
+        let utf8 = ComposeHostError::OutputNotUtf8 {
+            program: "sc-compose".to_owned(),
+        };
+        assert_eq!(
+            utf8.recovery(),
+            "Fix the compose program so its stdout is UTF-8."
+        );
+        assert!(utf8.source().is_none());
+        assert!(!utf8.recovery().contains("disk"));
         assert_eq!(
             ComposeHostError::NonZeroExit {
-                status: 2,
+                status: Some(2),
                 stderr: "syntax".to_owned(),
             }
             .recovery(),
             "Fix template/context or run `sc-compose render` manually with the logged stderr."
+        );
+        assert!(
+            ComposeHostError::NonZeroExit {
+                status: None,
+                stderr: String::new(),
+            }
+            .to_string()
+            .contains("signal")
         );
     }
 
@@ -358,14 +548,17 @@ mod tests {
 
     #[test]
     fn a_missing_program_names_itself_and_does_not_spawn_on_a_bad_call() {
-        let error = render_template("Hello", &json!({}), "sc-cron-missing-compose-b10")
-            .expect_err("missing");
+        let error = render_template(
+            "Hello",
+            &json!({}),
+            ComposeProgram::new("sc-cron-missing-compose-b10"),
+        )
+        .expect_err("missing");
         assert!(
             matches!(error, ComposeHostError::ProgramNotFound { ref program } if program == "sc-cron-missing-compose-b10")
         );
 
         let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-should-not-run
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
@@ -373,7 +566,12 @@ def cron_tick(hook):
     render_template("only-one-arg")
     return None
 "#;
-        let done = run_tick(source);
+        let done = run_injected(
+            source,
+            ComposeProgram::new("sc-cron-missing-should-not-run"),
+            &[],
+            Duration::from_secs(20),
+        );
         assert!(done.session.is_none());
         let detail = failed_detail(done);
         assert!(detail.contains("allowlisted"), "{detail}");
@@ -411,7 +609,6 @@ def cron_tick(hook):
     #[test]
     fn another_host_function_and_an_os_call_are_denied() {
         let other = r#"
-# sc-cron-test-host-fn: compose_file
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
@@ -419,7 +616,12 @@ def cron_tick(hook):
     compose_file("t.j2", {})
     return None
 "#;
-        let detail = failed_detail(run_tick(other));
+        let detail = failed_detail(run_injected(
+            other,
+            ComposeProgram::SC_COMPOSE,
+            &["compose_file"],
+            Duration::from_secs(20),
+        ));
         assert!(detail.contains("compose_file"), "{detail}");
         assert!(detail.contains("allowlisted"), "{detail}");
 
@@ -438,14 +640,18 @@ def cron_tick(hook):
     #[test]
     fn a_tick_that_never_renders_still_runs_when_the_program_is_missing() {
         let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-compose-b10
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
 def cron_tick(hook):
     return None
 "#;
-        let done = run_tick(source);
+        let done = run_injected(
+            source,
+            ComposeProgram::new("sc-cron-missing-compose-b10"),
+            &[],
+            Duration::from_secs(20),
+        );
         assert!(matches!(done.result, FeedResult::Outcome(RunOutcome::Ok)));
         assert!(done.session.is_some());
     }
@@ -453,7 +659,6 @@ def cron_tick(hook):
     #[test]
     fn a_missing_program_on_the_feed_drops_the_repl() {
         let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-compose-b10
 n = 0
 
 def cron_stop(hook):
@@ -467,22 +672,28 @@ def cron_tick(hook):
     render_template("Hello {{ name }}", {"name": "cron"})
     return None
 "#;
-        let first = run_tick(source);
+        let program = ComposeProgram::new("sc-cron-missing-compose-b10");
+        let first = run_injected(source, program, &[], Duration::from_secs(20));
         assert!(first.session.is_none());
         let detail = failed_detail(first);
+        assert!(detail.contains("COMPOSE_NOT_FOUND"), "{detail}");
         assert!(detail.contains("sc-cron-missing-compose-b10"), "{detail}");
         assert!(!detail.contains("HOOK_FAILED"), "{detail}");
         assert!(!detail.contains("repl kept"), "{detail}");
 
         let generation = Generation::new(1).expect("generation");
         let payload = hook();
-        let second = crate::monty_run::execute_feed(
+        let second = crate::monty_run::execute_feed_with_compose_program(
             None,
             source,
             MontyPhase::Tick,
             generation,
             Duration::from_secs(20),
             &payload,
+            ComposeInjection {
+                program,
+                extra_host_fns: &[],
+            },
         );
         let detail = failed_detail(second);
         assert!(detail.contains("sc-cron-missing-compose-b10"), "{detail}");
@@ -491,8 +702,12 @@ def cron_tick(hook):
 
     #[test]
     fn sc_compose_renders_the_template_stdout() {
-        let rendered = render_template("Hello {{ name }}", &json!({"name": "cron"}), "sc-compose")
-            .expect("sc-compose");
+        let rendered = render_template(
+            "Hello {{ name }}",
+            &json!({"name": "cron"}),
+            ComposeProgram::SC_COMPOSE,
+        )
+        .expect("sc-compose");
         assert!(
             rendered == "Hello cron\n" || rendered == "Hello cron",
             "{rendered:?}"
@@ -523,7 +738,8 @@ def cron_tick(hook):
             &format!("#!/bin/sh\nprintf '%s\\n' \"$@\" > {log_quoted}\nprintf 'rendered'\n"),
         );
         let program = script.to_str().expect("utf8 path");
-        let rendered = render_template("ignored", &json!({"n": 1}), program).expect("stub");
+        let rendered = render_template("ignored", &json!({"n": 1}), ComposeProgram::new(program))
+            .expect("stub");
         assert_eq!(rendered, "rendered");
         let argv = std::fs::read_to_string(&log).expect("argv");
         for flag in [
@@ -540,21 +756,24 @@ def cron_tick(hook):
         }
         assert!(!argv.contains("--output"), "{argv}");
 
-        let source = format!(
-            r#"
-# sc-cron-test-compose-program: {program}
+        let source = r#"
+# sc-cron-test-compose-program: sc-cron-missing-should-not-run
 def cron_stop(hook):
-    return {{"action": "continue", "reason": "ok"}}
+    return {"action": "continue", "reason": "ok"}
 
 def cron_tick(hook):
-    a = render_template("one", {{"n": 1}})
-    b = render_template("two", {{"n": 2}})
+    a = render_template("one", {"n": 1})
+    b = render_template("two", {"n": 2})
     if a != "rendered" or b != "rendered":
         raise RuntimeError(a + "|" + b)
     return None
-"#
+"#;
+        let done = run_injected(
+            source,
+            ComposeProgram::new(program),
+            &[],
+            Duration::from_secs(20),
         );
-        let done = run_tick(&source);
         assert!(
             matches!(done.result, FeedResult::Outcome(RunOutcome::Ok)),
             "{:?}",
@@ -573,10 +792,11 @@ def cron_tick(hook):
             "#!/bin/sh\nprintf 'no-template\\n' >&2\nexit 7\n",
         );
         let program = script.to_str().expect("utf8 path");
-        let error = render_template("t", &json!({}), program).expect_err("exit");
+        let error =
+            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("exit");
         match error {
             ComposeHostError::NonZeroExit { status, stderr } => {
-                assert_eq!(status, 7);
+                assert_eq!(status, Some(7));
                 assert!(stderr.contains("no-template"), "{stderr}");
             }
             other => panic!("expected non-zero, got {other}"),
@@ -592,10 +812,111 @@ def cron_tick(hook):
             std::fs::set_permissions(&blocked, permissions).expect("chmod");
         }
         let program = blocked.to_str().expect("utf8 path");
-        let error = render_template("t", &json!({}), program).expect_err("spawn");
+        let error =
+            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("spawn");
         assert!(
-            matches!(error, ComposeHostError::SpawnFailed { .. }),
+            matches!(error, ComposeHostError::ProgramNotRunnable { .. }),
             "{error}"
         );
+        assert!(error.source().is_some());
+        assert_eq!(error.code(), "COMPOSE_NOT_RUNNABLE");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_stub_that_outlasts_the_row_budget_is_timed_out_and_drops_the_session() {
+        let dir = tempfile::TempDir::new().expect("dir");
+        let started = dir.path().join("started");
+        let started_quoted = format!("'{}'", started.display().to_string().replace('\'', "'\\''"));
+        let script = executable_script(
+            dir.path(),
+            "slow-stub",
+            &format!("#!/bin/sh\ntouch {started_quoted}\nsleep 0.6\nprintf 'rendered'\n"),
+        );
+        let program = script.to_str().expect("utf8 path");
+        let source = r#"
+# sc-cron-test-compose-program: sc-cron-missing-should-not-run
+def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    render_template("Hello", {"n": 1})
+    return None
+"#;
+        let done = run_injected(
+            source,
+            ComposeProgram::new(program),
+            &[],
+            Duration::from_millis(150),
+        );
+        assert!(started.is_file(), "stub did not start");
+        assert!(done.session.is_none());
+        assert!(
+            matches!(done.result, FeedResult::Outcome(RunOutcome::TimedOut)),
+            "{:?}",
+            done.result
+        );
+    }
+
+    #[test]
+    fn a_missing_program_is_failed_not_timed_out() {
+        let source = r#"
+def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    render_template("Hello", {"n": 1})
+    return None
+"#;
+        let done = run_injected(
+            source,
+            ComposeProgram::new("sc-cron-missing-compose-b10"),
+            &[],
+            Duration::from_secs(5),
+        );
+        assert!(done.session.is_none());
+        let detail = failed_detail(done);
+        assert!(detail.contains("COMPOSE_NOT_FOUND"), "{detail}");
+        assert!(detail.contains("sc-cron-missing-compose-b10"), "{detail}");
+        assert!(!detail.contains("HOOK_FAILED"), "{detail}");
+    }
+
+    #[test]
+    fn hook_source_cannot_select_the_program_or_an_extra_host_function() {
+        let source = r#"
+# sc-cron-test-compose-program: sc-cron-missing-compose-b10
+# sc-cron-test-host-fn: compose_file
+def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    x = not_defined
+    return x
+"#;
+        let generation = Generation::new(1).expect("generation");
+        let payload = hook();
+        let stop = crate::monty_run::execute_feed(
+            None,
+            source,
+            MontyPhase::Stop,
+            generation,
+            Duration::from_secs(20),
+            &payload,
+        );
+        assert!(matches!(stop.result, FeedResult::Continue));
+        let done = crate::monty_run::execute_feed(
+            stop.session,
+            source,
+            MontyPhase::Tick,
+            generation,
+            Duration::from_secs(20),
+            &payload,
+        );
+        let detail = failed_detail(done);
+        assert!(detail.contains("not_defined"), "{detail}");
+        assert!(detail.contains("HOST_UNDEFINED"), "{detail}");
+        assert!(!detail.contains("host function"), "{detail}");
+        assert!(!detail.contains("sc-cron-missing-compose-b10"), "{detail}");
+        assert!(!detail.contains("allowlisted"), "{detail}");
     }
 }

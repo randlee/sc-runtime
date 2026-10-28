@@ -46,3 +46,4 @@ Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL
 | b-7 store adaptor | [sprint-b-7](plans/phase-b/sprint-b-7-store-adaptor.md) | complete | `sprint/b-7-store-adaptor` |
 | b-8 generation layouts | [sprint-b-8](plans/phase-b/sprint-b-8-generation-layouts.md) | complete | `sprint/b-8-generation-layouts` |
 | b-9 sc-cron Monty hooks | [sprint-b-9](plans/phase-b/sprint-b-9-sc-cron-monty-hooks.md) | complete | `sprint/b-9-sc-cron-monty-hooks` |
+| b-10 sc-cron Monty host bridge | [sprint-b-10](plans/phase-b/sprint-b-10-sc-cron-monty-host-bridge.md) | complete | `sprint/b-10-sc-cron-monty-host-bridge` |

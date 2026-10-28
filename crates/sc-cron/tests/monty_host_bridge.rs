@@ -1,8 +1,11 @@
 //! Monty `render_template` through [`sc_cron::Scheduler::run_due`].
 //!
-//! These tests call the public scheduler. They do not import the host module.
-//! A missing program name is a comment in the hook source, read only when
-//! feature `test-utils` is on; the tests do not change `PATH` or the environment.
+//! These tests call the public scheduler. They do not import the host module
+//! and they do not change `PATH` or the environment. Production always spawns
+//! `sc-compose` and registers only `render_template`. A comment in the hook
+//! source cannot select a program or another host function. Crate-private
+//! injection of those values lives in `monty_host`'s unit tests
+//! (`execute_feed_with_compose_program`).
 
 #![allow(clippy::expect_used)]
 
@@ -49,6 +52,8 @@ fn failed(runs: &[sc_cron::DueRun]) -> String {
 #[tokio::test]
 async fn render_template_returns_sc_compose_stdout() {
     let source = r#"
+# sc-cron-test-compose-program: sc-cron-missing-compose-b10
+# sc-cron-test-host-fn: compose_file
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
@@ -89,7 +94,29 @@ def cron_tick(hook):
     fixture.start(spec("sync", source, json!({})));
     let detail = failed(&due(&fixture).await);
     assert!(detail.contains("compose_file"), "{detail}");
+    assert!(detail.contains("HOST_DENIED"), "{detail}");
+    assert!(detail.contains("host function"), "{detail}");
     assert!(detail.contains("allowlisted"), "{detail}");
+    assert!(!detail.contains("HOOK_FAILED"), "{detail}");
+}
+
+#[tokio::test]
+async fn an_undefined_name_names_itself() {
+    let source = r#"
+# sc-cron-test-host-fn: not_defined
+def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    x = not_defined
+    return x
+"#;
+    let fixture = Fixture::new();
+    fixture.start(spec("sync", source, json!({})));
+    let detail = failed(&due(&fixture).await);
+    assert!(detail.contains("not_defined"), "{detail}");
+    assert!(detail.contains("HOST_UNDEFINED"), "{detail}");
+    assert!(!detail.contains("allowlisted"), "{detail}");
     assert!(!detail.contains("HOOK_FAILED"), "{detail}");
 }
 
@@ -107,6 +134,7 @@ def cron_tick(hook):
     fixture.start(spec("sync", source, json!({})));
     let detail = failed(&due(&fixture).await);
     assert!(detail.contains("os call"), "{detail}");
+    assert!(detail.contains("open"), "{detail}");
     assert!(detail.contains("allowlisted"), "{detail}");
 }
 
@@ -123,40 +151,13 @@ def cron_tick(hook):
     let fixture = Fixture::new();
     fixture.start(spec("sync", source, json!({})));
     let detail = failed(&due(&fixture).await);
+    assert!(detail.contains("COMPOSE_EXIT"), "{detail}");
     assert!(detail.contains("compose exited"), "{detail}");
     assert!(!detail.contains("HOOK_FAILED"), "{detail}");
 }
 
 #[tokio::test]
-async fn a_missing_compose_program_is_failed_and_drops_the_repl() {
-    let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-compose-b10
-n = 0
-
-def cron_stop(hook):
-    return {"action": "continue", "reason": "ok"}
-
-def cron_tick(hook):
-    global n
-    n = n + 1
-    if n > 1:
-        raise RuntimeError("repl kept")
-    render_template("Hello {{ name }}", {"name": "cron"})
-    return None
-"#;
-    let fixture = Fixture::new();
-    fixture.start(spec("sync", source, json!({})));
-    let first = failed(&due(&fixture).await);
-    assert!(first.contains("sc-cron-missing-compose-b10"), "{first}");
-    assert!(!first.contains("HOOK_FAILED"), "{first}");
-    assert!(!first.contains("repl kept"), "{first}");
-    let second = failed(&due(&fixture).await);
-    assert!(second.contains("sc-cron-missing-compose-b10"), "{second}");
-    assert!(!second.contains("repl kept"), "{second}");
-}
-
-#[tokio::test]
-async fn a_tick_that_does_not_render_runs_without_the_compose_program() {
+async fn a_tick_that_does_not_render_is_ok() {
     let source = r#"
 # sc-cron-test-compose-program: sc-cron-missing-compose-b10
 def cron_stop(hook):
