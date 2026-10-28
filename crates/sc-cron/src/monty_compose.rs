@@ -210,33 +210,10 @@ fn poll_child(child: Arc<Mutex<GroupChild>>, stop: &AtomicBool) -> std::io::Resu
     }
 }
 
-/// Kills the compose group and reaps the leader for at most [`crate::process::REAP_AFTER_KILL`].
 fn kill_and_reap(child: &Mutex<GroupChild>) -> std::io::Result<ExitStatus> {
-    {
-        let mut guard = child.lock().unwrap_or_else(|error| error.into_inner());
-        let _ = guard.start_kill();
-    }
-    let deadline = Instant::now() + crate::process::REAP_AFTER_KILL;
-    loop {
-        let polled = {
-            let mut guard = child.lock().unwrap_or_else(|error| error.into_inner());
-            guard.try_wait()
-        };
-        match polled {
-            Ok(Some(status)) => return Ok(status),
-            Ok(None) if Instant::now() >= deadline => {
-                tracing::warn!(
-                    "a killed compose child was not reaped in time; it is left (killed again on drop)"
-                );
-                return Err(std::io::Error::new(
-                    ErrorKind::TimedOut,
-                    "compose child was not reaped after kill",
-                ));
-            }
-            Ok(None) => thread::park_timeout(COMPOSE_POLL),
-            Err(error) => return Err(error),
-        }
-    }
+    let mut guard = child.lock().unwrap_or_else(|error| error.into_inner());
+    let _ = guard.start_kill();
+    guard.wait()
 }
 
 enum Waited {
