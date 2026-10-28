@@ -10,6 +10,8 @@
     table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
     th, td { border: 1px solid #cbd5e1; padding: 0.45rem; text-align: left; vertical-align: top; }
     .muted { color: #64748b; }
+    pre { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.75rem; overflow-x: auto; }
+    code { font-family: ui-monospace, Menlo, monospace; font-size: 0.85em; }
   </style>
 </head>
 <body>
@@ -25,10 +27,48 @@
   </p>
   <h2>Campaigns</h2>
   <table>
-    <thead><tr><th>Campaign</th><th>Host</th><th>Git</th><th>Status</th><th>Report</th></tr></thead>
+    <thead><tr><th>Campaign</th><th>Host</th><th>Git</th><th>Status</th><th>rustc</th><th>Report</th></tr></thead>
     <tbody>
-<tr><td colspan="5" class="muted">No published campaigns yet.</td></tr>
+<tr><td><a href="20261028T230213Z-Mac.campaign.json">20261028T230213Z-Mac</a></td><td>Mac</td><td><code>2a1fffb4003c</code></td><td>MEASURED</td><td>rustc 1.96.1 (31fca3adb 2026-06-26)</td><td><a href="20261028T230213Z-Mac.html">20261028T230213Z-Mac.html</a></td></tr>
     </tbody>
   </table>
+  <h2>Baseline floors</h2>
+  <p class="muted">From <code>scripts/benchmark/monty/baselines.json</code>. <code>none</code> means the case is measured and does not fail the campaign.</p>
+  <table>
+    <thead><tr><th>Case</th><th>max_ms_per_run</th></tr></thead>
+    <tbody>
+<tr><td><code>cli</code></td><td>none</td></tr>
+<tr><td><code>monty</code></td><td>none</td></tr>
+<tr><td><code>production_bridge</code></td><td>none</td></tr>
+<tr><td><code>py_hook</code></td><td>none</td></tr>
+<tr><td><code>py_render</code></td><td>none</td></tr>
+    </tbody>
+  </table>
+  <h2>Code examples</h2>
+  <p class="muted">Copied from each campaign JSON (<code>examples.hook_source</code>, <code>examples.resume_loop</code>, <code>examples.cli_argv</code>).</p>
+<h3>20261028T230213Z-Mac</h3>
+<h3>Hook snippet</h3>
+<pre><code>def cron_stop(hook):
+    return {&quot;action&quot;: &quot;continue&quot;, &quot;reason&quot;: &quot;ok&quot;}
+
+def cron_tick(hook):
+    return render_template(hook[&quot;payload&quot;][&quot;template&quot;], hook[&quot;payload&quot;][&quot;context&quot;])
+</code></pre>
+<h3>feed_start / resume loop</h3>
+<pre><code>let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;
+loop {
+    progress = match progress {
+        ReplProgress::FunctionCall(call) if call.function_name == &quot;render_template&quot; =&gt; {
+            let template = call.args.arg(0)?.as_str()?;
+            let rendered = run_sc_compose(template, context); // host spawns the CLI
+            call.resume(ExtFunctionResult::Return(MontyObject::string(rendered)),
+                        PrintWriter::Disabled)?
+        }
+        ReplProgress::Complete { .. } =&gt; break,
+        _ =&gt; return Err(denied()),
+    };
+}</code></pre>
+<h3>sc-compose CLI argv</h3>
+<pre><code>sc-compose render --root &lt;temp&gt; --mode file --file t.j2 --var-file &lt;temp&gt;/v.json</code></pre>
 </body>
 </html>
