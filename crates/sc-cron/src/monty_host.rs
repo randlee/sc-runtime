@@ -77,13 +77,14 @@ pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
 /// when `context` cannot be encoded, [`ComposeHostError::ProgramNotRunnable`]
 /// when the process cannot be started, [`ComposeHostError::OutputNotUtf8`] when
 /// stdout is not UTF-8, [`ComposeHostError::OutputTooLarge`] when stdout
-/// exceeds the hook output cap, and [`ComposeHostError::NonZeroExit`]
-/// when the child exits non-zero. The caller records a timeout after this
-/// function returns when the host clock is past the row budget.
+/// exceeds the hook output cap, [`ComposeHostError::HostTimedOut`] when the
+/// host budget expires while waiting on the compose group, and
+/// [`ComposeHostError::NonZeroExit`] when the child exits non-zero.
 pub(crate) fn render_template(
     template: &str,
     context: &Value,
     compose_program: ComposeProgram<'_>,
+    host_deadline: Option<Instant>,
 ) -> Result<String, ComposeHostError> {
     let program = compose_program.as_str();
     let dir = tempfile::TempDir::new().map_err(|source| ComposeHostError::TempRootFailed {
@@ -99,7 +100,7 @@ pub(crate) fn render_template(
         })?;
     std::fs::write(root.join("v.json"), context_bytes)
         .map_err(|source| stage_failed(program, source))?;
-    crate::monty_compose::run_compose_child(program, root)
+    crate::monty_compose::run_compose_child(program, root, host_deadline)
 }
 
 fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
@@ -175,6 +176,8 @@ pub(crate) fn monty_value_to_json(value: ObjectRef<'_>) -> Result<Value, MontyJs
 #[cfg(all(test, feature = "monty"))]
 mod tests {
     use std::error::Error;
+    use std::sync::mpsc;
+    use std::thread;
     use std::time::{Duration, Instant};
 
     use serde_json::{Value, json};
@@ -200,7 +203,35 @@ mod tests {
         )
     }
 
+    const STOP_BUDGET: Duration = Duration::from_secs(20);
+    const INJECTED_GUARD_SLACK: Duration = Duration::from_secs(5);
+
     fn run_injected(
+        source: &str,
+        program: ComposeProgram<'_>,
+        extra_host_fns: &[&str],
+        budget: Duration,
+    ) -> crate::monty_run::FeedDone {
+        let outer = STOP_BUDGET
+            .saturating_add(budget)
+            .saturating_add(INJECTED_GUARD_SLACK);
+        let (tx, rx) = mpsc::sync_channel(1);
+        thread::scope(|scope| {
+            scope.spawn(|| {
+                let _ = tx.send(run_injected_on_thread(
+                    source,
+                    program,
+                    extra_host_fns,
+                    budget,
+                ));
+            });
+            rx.recv_timeout(outer).unwrap_or_else(|_| {
+                panic!("run_injected did not finish within {outer:?} (stop+tick guard)");
+            })
+        })
+    }
+
+    fn run_injected_on_thread(
         source: &str,
         program: ComposeProgram<'_>,
         extra_host_fns: &[&str],
@@ -208,20 +239,25 @@ mod tests {
     ) -> crate::monty_run::FeedDone {
         let generation = Generation::new(1).expect("generation");
         let payload = hook();
+        let stop_deadline = Instant::now()
+            .checked_add(STOP_BUDGET)
+            .expect("stop deadline");
         let stop = crate::monty_run::execute_feed_with_compose_program(
             None,
             source,
             MontyPhase::Stop,
             generation,
-            Duration::from_secs(20),
+            STOP_BUDGET,
             &payload,
             ComposeInjection::production(),
+            stop_deadline,
         );
         assert!(
             matches!(stop.result, FeedResult::Continue),
             "stop: {:?}",
             stop.result
         );
+        let tick_deadline = Instant::now().checked_add(budget).expect("tick deadline");
         crate::monty_run::execute_feed_with_compose_program(
             stop.session,
             source,
@@ -233,6 +269,7 @@ mod tests {
                 program,
                 extra_host_fns,
             },
+            tick_deadline,
         )
     }
 
@@ -377,6 +414,7 @@ mod tests {
             "Hello",
             &json!({}),
             ComposeProgram::new("sc-cron-missing-compose-b10"),
+            None,
         )
         .expect_err("missing");
         assert!(
@@ -508,6 +546,9 @@ def cron_tick(hook):
 
         let generation = Generation::new(1).expect("generation");
         let payload = hook();
+        let run_deadline = Instant::now()
+            .checked_add(Duration::from_secs(20))
+            .expect("run deadline");
         let second = crate::monty_run::execute_feed_with_compose_program(
             None,
             source,
@@ -519,6 +560,7 @@ def cron_tick(hook):
                 program,
                 extra_host_fns: &[],
             },
+            run_deadline,
         );
         let detail = failed_detail(second);
         assert!(detail.contains("sc-cron-missing-compose-b10"), "{detail}");
@@ -531,6 +573,7 @@ def cron_tick(hook):
             "Hello {{ name }}",
             &json!({"name": "cron"}),
             ComposeProgram::SC_COMPOSE,
+            None,
         )
         .expect("sc-compose");
         assert!(
@@ -565,8 +608,13 @@ def cron_tick(hook):
         let dir = tempfile::TempDir::new().expect("dir");
         let script = linked_fixture(dir.path(), "compose-stub", "compose_record_argv.sh");
         let program = script.to_str().expect("utf8 path");
-        let rendered = render_template("ignored", &json!({"n": 1}), ComposeProgram::new(program))
-            .expect("stub");
+        let rendered = render_template(
+            "ignored",
+            &json!({"n": 1}),
+            ComposeProgram::new(program),
+            None,
+        )
+        .expect("stub");
         assert_eq!(rendered, "rendered");
         let argv = std::fs::read_to_string(dir.path().join("argv.txt")).expect("argv");
         for flag in [
@@ -615,7 +663,7 @@ def cron_tick(hook):
         let script = fixture_path("compose_fail.sh");
         let program = script.to_str().expect("utf8 path");
         let error =
-            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("exit");
+            render_template("t", &json!({}), ComposeProgram::new(program), None).expect_err("exit");
         match error {
             ComposeHostError::NonZeroExit { status, stderr } => {
                 assert_eq!(status, Some(7));
@@ -634,8 +682,8 @@ def cron_tick(hook):
             std::fs::set_permissions(&blocked, permissions).expect("chmod");
         }
         let program = blocked.to_str().expect("utf8 path");
-        let error =
-            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("spawn");
+        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
+            .expect_err("spawn");
         assert!(
             matches!(error, ComposeHostError::ProgramNotRunnable { .. }),
             "{error}"
@@ -649,8 +697,8 @@ def cron_tick(hook):
     fn stdout_past_the_hook_cap_is_compose_output() {
         let script = fixture_path("compose_flood.sh");
         let program = script.to_str().expect("utf8 path");
-        let error =
-            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("flood");
+        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
+            .expect_err("flood");
         assert!(
             matches!(error, ComposeHostError::OutputTooLarge { .. }),
             "{error}"
@@ -723,6 +771,9 @@ def cron_tick(hook):
 "#;
         let generation = Generation::new(1).expect("generation");
         let payload = hook();
+        let stop_deadline = Instant::now()
+            .checked_add(Duration::from_secs(20))
+            .expect("stop deadline");
         let stop = crate::monty_run::execute_feed(
             None,
             source,
@@ -730,8 +781,12 @@ def cron_tick(hook):
             generation,
             Duration::from_secs(20),
             &payload,
+            stop_deadline,
         );
         assert!(matches!(stop.result, FeedResult::Continue));
+        let tick_deadline = Instant::now()
+            .checked_add(Duration::from_secs(20))
+            .expect("tick deadline");
         let done = crate::monty_run::execute_feed(
             stop.session,
             source,
@@ -739,6 +794,7 @@ def cron_tick(hook):
             generation,
             Duration::from_secs(20),
             &payload,
+            tick_deadline,
         );
         let detail = failed_detail(done);
         assert!(detail.contains("not_defined"), "{detail}");

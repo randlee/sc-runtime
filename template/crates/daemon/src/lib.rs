@@ -7,6 +7,7 @@
 {% if mcp %}
 pub mod mcp;
 {% endif %}
+pub mod cron;
 pub mod routes;
 
 use std::path::PathBuf;

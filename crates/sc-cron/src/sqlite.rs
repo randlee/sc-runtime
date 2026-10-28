@@ -13,16 +13,17 @@
 //! Any other `user_version`, or a file that already holds unrelated tables, is
 //! refused with [`StoreErrorKind::SchemaMismatch`].
 //!
-//! `create` runs as one immediate transaction, so the active-name check and
-//! the write cannot interleave with another writer; so do `set_enabled_many`
-//! and `replace_and_set_enabled`, which change several rows at once
-//! (REQ-CRON-0017). Run-state writes are
+//! `create` runs as one immediate transaction, so the active-name check, the
+//! embedder row-limit check, and the write cannot interleave with another
+//! writer; so do `set_enabled_many` and `replace_and_set_enabled`, which
+//! change several rows at once (REQ-CRON-0017). Run-state writes are
 //! guarded by `id`, `generation` and `ended_at IS NULL`. Table CHECKs keep
 //! `next_run_at` set exactly while a schedule is active and `stop_reason`
 //! set exactly once it has ended, and repeat the size limits. Timestamps
 //! become text only here, in the fixed-width form [`Timestamp`] displays.
 
 use std::collections::HashSet;
+use std::num::NonZeroUsize;
 use std::path::Path;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
@@ -32,7 +33,8 @@ use rusqlite::{
 };
 
 use crate::limits::{
-    MAX_EXPR_LEN, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, encode_payload,
+    MAX_EXPR_LEN, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, ScheduleLimits,
+    encode_payload,
 };
 use crate::{
     CronError, CronExpr, Generation, HookTarget, NewSchedule, RunOutcome, RunTimeout, Schedule,
@@ -131,9 +133,9 @@ const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 /// # Examples
 ///
 /// ```
-/// use sc_cron::{ScheduleStore, SqliteScheduleStore};
+/// use sc_cron::{ScheduleLimits, ScheduleStore, SqliteScheduleStore};
 ///
-/// let store = SqliteScheduleStore::open_in_memory()?;
+/// let store = SqliteScheduleStore::open_in_memory(ScheduleLimits::default())?;
 /// assert!(store.list_active()?.is_empty());
 /// # Ok::<(), sc_cron::CronError>(())
 /// ```
@@ -146,17 +148,24 @@ pub struct SqliteScheduleStore {
     // Row ids already warned about as corrupt, so a bad row is reported once
     // per store rather than on every worker reload.
     warned: Mutex<HashSet<i64>>,
+    /// Embedder row ceiling. `None` does not enforce a count (ADR-RUN-0014).
+    limits: ScheduleLimits,
 }
 
 impl SqliteScheduleStore {
     /// Opens or creates the sc-cron database at `path`.
+    ///
+    /// `limits` is enforced in the same transaction as an insert of a new
+    /// name. [`ScheduleLimits::default`] does not cap the table. The value
+    /// stays in this process and is not written to the database. Every
+    /// writer of this file must pass the same `limits`.
     ///
     /// # Errors
     ///
     /// [`CronError::Store`]: [`StoreErrorKind::Unavailable`] if the file
     /// cannot be opened, [`StoreErrorKind::SchemaMismatch`] if it holds an
     /// unknown schema version or another store's tables.
-    pub fn open(path: impl AsRef<Path>) -> Result<Self, CronError> {
+    pub fn open(path: impl AsRef<Path>, limits: ScheduleLimits) -> Result<Self, CronError> {
         let connection = Connection::open(path.as_ref())
             .map_err(|error| store_error("failed to open database", error))?;
         connection
@@ -165,28 +174,39 @@ impl SqliteScheduleStore {
         connection
             .pragma_update(None, "journal_mode", "WAL")
             .map_err(|error| store_error("failed to enable WAL", error))?;
-        Self::with_connection(connection)
+        Self::with_connection(connection, limits)
     }
 
     /// Opens a private in-memory database, for tests and ephemeral use.
     ///
+    /// `limits` is the same ceiling [`SqliteScheduleStore::open`] stores.
+    ///
     /// # Errors
     ///
     /// [`CronError::Store`] if SQLite cannot allocate the database.
-    pub fn open_in_memory() -> Result<Self, CronError> {
+    pub fn open_in_memory(limits: ScheduleLimits) -> Result<Self, CronError> {
         let connection = Connection::open_in_memory()
             .map_err(|error| store_error("failed to open database", error))?;
         connection
             .busy_timeout(BUSY_TIMEOUT)
             .map_err(|error| store_error("failed to set busy timeout", error))?;
-        Self::with_connection(connection)
+        Self::with_connection(connection, limits)
     }
 
-    fn with_connection(mut connection: Connection) -> Result<Self, CronError> {
+    /// Returns the row ceiling this store was opened with.
+    pub fn limits(&self) -> ScheduleLimits {
+        self.limits
+    }
+
+    fn with_connection(
+        mut connection: Connection,
+        limits: ScheduleLimits,
+    ) -> Result<Self, CronError> {
         init_schema(&mut connection)?;
         Ok(Self {
             connection: Mutex::new(connection),
             warned: Mutex::new(HashSet::new()),
+            limits,
         })
     }
 
@@ -315,6 +335,10 @@ fn init_schema(connection: &mut Connection) -> Result<(), CronError> {
 }
 
 impl ScheduleStore for SqliteScheduleStore {
+    fn limits(&self) -> ScheduleLimits {
+        self.limits
+    }
+
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         let columns = Columns::new(schedule, created_at)?;
         let mut connection = self.lock();
@@ -340,10 +364,14 @@ impl ScheduleStore for SqliteScheduleStore {
                 return Err(CronError::AlreadyActive(schedule.spec.name.clone()));
             }
             Some((id, generation, false)) => {
+                reserve_new_row(self.limits, &transaction)?;
                 columns.rewrite(&transaction, id, generation, true)?;
                 id
             }
-            None => columns.insert(&transaction, schedule.spec.name.as_str(), true)?,
+            None => {
+                reserve_new_row(self.limits, &transaction)?;
+                columns.insert(&transaction, schedule.spec.name.as_str(), true)?
+            }
         };
         let row = select_one(&transaction, id)?.ok_or_else(|| {
             StoreError::new(
@@ -524,20 +552,35 @@ impl ScheduleStore for SqliteScheduleStore {
             .map_err(|error| store_error("failed to begin transaction", error))?;
         let existing = transaction
             .query_row(
-                "SELECT id, generation FROM sc_cron_schedule WHERE name = ?1",
+                "SELECT id, generation, ended_at IS NULL FROM sc_cron_schedule WHERE name = ?1",
                 [name.as_str()],
-                |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)),
+                |row| {
+                    Ok((
+                        row.get::<_, i64>(0)?,
+                        row.get::<_, i64>(1)?,
+                        row.get::<_, bool>(2)?,
+                    ))
+                },
             )
             .optional()
             .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?;
-        // Active or ended, the row is rewritten in place with its flag; a
-        // new name is inserted with it. No write sets another flag first.
+        // An active name is rewritten in place and does not change the row
+        // count. An ended name or a new name claims a slot. No write sets
+        // another flag first.
         let id = match existing {
-            Some((id, generation)) => {
+            Some((id, generation, true)) => {
                 columns.rewrite(&transaction, id, generation, enabled)?;
                 id
             }
-            None => columns.insert(&transaction, name.as_str(), enabled)?,
+            Some((id, generation, false)) => {
+                reserve_new_row(self.limits, &transaction)?;
+                columns.rewrite(&transaction, id, generation, enabled)?;
+                id
+            }
+            None => {
+                reserve_new_row(self.limits, &transaction)?;
+                columns.insert(&transaction, name.as_str(), enabled)?
+            }
         };
         if !set_flags(&transaction, flags)? {
             return Ok(None);
@@ -552,6 +595,49 @@ impl ScheduleStore for SqliteScheduleStore {
             .commit()
             .map_err(|error| store_error("failed to commit", error))?;
         Ok(Some(row))
+    }
+}
+
+/// Rejects a write that would add a non-ended row past `limits`.
+///
+/// Enabled and disabled rows both count. An ended row does not. The check
+/// runs in the caller's immediate transaction, before the insert, so two
+/// writers that enforce the same ceiling cannot both pass it (ADR-RUN-0014).
+/// The ceiling is the [`ScheduleLimits`] this process opened with. It is not
+/// stored in the database. A finite cap is always compared; a cap above
+/// [`i64::MAX`] is not treated as unlimited.
+fn reserve_new_row(limits: ScheduleLimits, transaction: &Transaction<'_>) -> Result<(), CronError> {
+    let Some(limit) = limits.max_schedule_rows else {
+        return Ok(());
+    };
+    let count: i64 = transaction
+        .query_row(
+            "SELECT COUNT(*) FROM sc_cron_schedule WHERE ended_at IS NULL",
+            [],
+            |row| row.get(0),
+        )
+        .map_err(|error| store_error(&format!("failed to count {TABLE}"), error))?;
+    if row_count_reached(count, limit) {
+        return Err(CronError::InvalidSpec(format!(
+            "schedule row limit is {limit}; current row count is {count}"
+        )));
+    }
+    Ok(())
+}
+
+/// Whether `count` is at or above the finite cap `limit`.
+///
+/// `count` is SQLite `COUNT(*)`, a signed integer. It is widened to `u64`
+/// and then compared as `usize` against `limit`. A cap that does not fit in
+/// `i64` stays a cap. A count that does not fit in `u64` or `usize` is
+/// already past every finite cap this process can name.
+fn row_count_reached(count: i64, limit: NonZeroUsize) -> bool {
+    let Ok(count) = u64::try_from(count) else {
+        return true;
+    };
+    match usize::try_from(count) {
+        Ok(count) => count >= limit.get(),
+        Err(_) => true,
     }
 }
 
@@ -874,6 +960,29 @@ mod tests {
         assert_eq!(kind_of(ffi::SQLITE_FULL), StoreErrorKind::Unavailable);
         assert_eq!(kind_of(ffi::SQLITE_READONLY), StoreErrorKind::Unavailable);
         assert_eq!(kind_of(ffi::SQLITE_CONSTRAINT), StoreErrorKind::Other);
+    }
+
+    #[test]
+    fn a_finite_cap_above_i64_max_is_compared() {
+        let above = u64::try_from(i64::MAX).expect("i64::MAX") + 1;
+        let Some(cap) = usize::try_from(above).ok().and_then(NonZeroUsize::new) else {
+            // A 32-bit `usize` cannot name a cap above `i64::MAX`. A count
+            // that does not fit in `usize` is still at every finite cap.
+            let cap = NonZeroUsize::new(1).expect("one");
+            assert!(row_count_reached(i64::MAX, cap));
+            return;
+        };
+        assert!(
+            !row_count_reached(i64::MAX, cap),
+            "i64::MAX rows are under a larger finite cap"
+        );
+        assert!(
+            row_count_reached(-1, cap),
+            "a count that does not fit in u64 is not an unlimited bypass"
+        );
+        let ten = NonZeroUsize::new(10).expect("ten");
+        assert!(row_count_reached(10, ten));
+        assert!(!row_count_reached(9, ten));
     }
 
     #[test]

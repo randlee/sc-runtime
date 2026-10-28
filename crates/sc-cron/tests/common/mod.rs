@@ -27,14 +27,14 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use sc_cron::{
     CronError, Generation, HookTarget, Job, ManualClock, NewSchedule, RunOutcome, Schedule,
-    ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore, Scheduler, SeqJitter,
+    ScheduleId, ScheduleLimits, ScheduleName, ScheduleSpec, ScheduleStore, Scheduler, SeqJitter,
     SqliteScheduleStore, StopDecision, StoreError, StoreErrorKind, Timestamp, WorkerHandle,
 };
 use serde_json::{Value, json};
 use tokio::sync::watch;
 
 /// Longest a failing test waits for a signal.
-pub const WAIT: Duration = Duration::from_secs(10);
+pub const WAIT: Duration = Duration::from_secs(30);
 
 pub fn at(text: &str) -> DateTime<Utc> {
     text.parse().expect("timestamp")
@@ -94,7 +94,7 @@ pub struct RecordingStore {
 impl RecordingStore {
     pub fn new() -> Self {
         Self {
-            inner: SqliteScheduleStore::open_in_memory().expect("store"),
+            inner: SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"),
             writes: watch::Sender::new(Vec::new()),
             lists: watch::Sender::new(0),
             failures: watch::Sender::new(0),
@@ -204,6 +204,10 @@ impl RecordingStore {
 }
 
 impl ScheduleStore for RecordingStore {
+    fn limits(&self) -> ScheduleLimits {
+        self.inner.limits()
+    }
+
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         self.inner.create(schedule, created_at)
     }

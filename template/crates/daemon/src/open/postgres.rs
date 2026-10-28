@@ -9,6 +9,9 @@ pub struct AppConfig {
     /// Endpoint fields passed through to the daemon builder.
     #[serde(flatten)]
     pub daemon: DaemonConfig,
+    /// Schedule row ceiling from sc-config. See [`cron::CronConfig`].
+    #[serde(default)]
+    pub cron: cron::CronConfig,
 }
 
 /// Postgres URL this layout opens.

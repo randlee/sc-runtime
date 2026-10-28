@@ -8,11 +8,13 @@
 //! and [`SqliteScheduleStore`](crate::SqliteScheduleStore) apply, and again
 //! by table CHECKs.
 //!
-//! Row count is not capped unless the embedder passes a limit (see ADR-RUN-0014
-//! in `docs/architecture.md`). With each row bounded here, memory is linear in
-//! a count the caller controls. A caller that accepts schedules from untrusted
-//! input should pass a row limit or enforce one before insert.
+//! Row count is not capped unless the embedder passes [`ScheduleLimits`]
+//! (ADR-RUN-0014). With each row bounded here, memory is linear in a count
+//! the caller controls. A caller that accepts schedules from untrusted input
+//! should pass a row limit or enforce one before insert. This crate does not
+//! read sc-config.
 
+use std::num::NonZeroUsize;
 use std::time::Duration;
 
 /// Longest schedule name, in bytes.
@@ -32,6 +34,45 @@ pub const MAX_HOOK_SOURCE_BYTES: usize = MAX_PAYLOAD_BYTES;
 
 /// Longest run timeout.
 pub const MAX_TIMEOUT: Duration = Duration::from_hours(24);
+
+/// Embedder ceiling on schedule rows.
+///
+/// [`ScheduleLimits::max_schedule_rows`] of [`None`] does not enforce a count.
+/// That is the library default ([`Default`]). The embedder builds this value
+/// and passes it when opening the store. This crate does not read sc-config
+/// and does not map configuration sentinels such as `0` or JSON `null`.
+///
+/// Every writer that opens one schedule database must pass the same
+/// `ScheduleLimits`. The value stays in the process that opened the store
+/// and is not written into the file. A writer opened with a different
+/// value, including unlimited, does not enforce another writer's cap.
+///
+/// The count is every row that has not ended, enabled and disabled together.
+/// Replacing a name that is already in that count does not change it. Ending
+/// a row frees a slot. A lower limit does not delete rows that are already
+/// stored; only a new name is rejected until the count is under the limit.
+///
+/// # Examples
+///
+/// ```
+/// use std::num::NonZeroUsize;
+///
+/// use sc_cron::ScheduleLimits;
+///
+/// let limits = ScheduleLimits {
+///     max_schedule_rows: NonZeroUsize::new(10),
+/// };
+/// assert_eq!(limits.max_schedule_rows.map(NonZeroUsize::get), Some(10));
+/// assert!(ScheduleLimits::default().max_schedule_rows.is_none());
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[must_use]
+pub struct ScheduleLimits {
+    /// Maximum schedule rows that have not ended.
+    ///
+    /// [`None`] means unlimited.
+    pub max_schedule_rows: Option<NonZeroUsize>,
+}
 
 /// Encodes `payload` as compact JSON, refusing it above [`MAX_PAYLOAD_BYTES`].
 pub(crate) fn encode_payload(payload: &serde_json::Value) -> Result<String, crate::CronError> {

@@ -21,13 +21,13 @@ only on `quality-mgr` PASS and green CI.
 ## Track B — Monty extension on `integrate/phase-b-monty`
 
 **Branch:** `integrate/phase-b-monty`, cut from `develop` (at or after
-`a448385`, which contains `b-9`). Sprint and fix branches for `b-10` and `b-11`
-target `integrate/phase-b-monty`. Only the later extension PR targets `develop`.
+`a448385`, which contains `b-9`). Sprint and fix branches for **`b-10`**, **`b-11`**, and **`b-12`** target `integrate/phase-b-monty`. **`develop`** receives one integration PR after phase-end QA on the integration branch (all deliverables verified).
 
 | Sprint | Doc | Wave | Closes |
 |---|---|---|---|
 | `b-10` | [sprint-b-10-sc-cron-monty-host-bridge.md](sprint-b-10-sc-cron-monty-host-bridge.md) | 4 | `render_template` resumed inside `monty_run::execute_feed` |
 | `b-11` | [sprint-b-11-benchmark-monty-reports.md](sprint-b-11-benchmark-monty-reports.md) | 5 | multi-subsystem benchmark platform, HTML code examples, publish-preflight `benchmark-pass` gate, and the `monty` campaign including `production_bridge` |
+| `b-12` | [sprint-b-12-sc-cron-schedule-row-limit.md](sprint-b-12-sc-cron-schedule-row-limit.md) | 6 | embedder `max_schedule_rows`, template default 10, ADR-RUN-0014 |
 
 Extension metrics and the `b-10` → `b-11` edge rationale: [phase-b-plan.md](phase-b-plan.md).
 Track B does not reopen Track A. Its `b-11` benchmark gate does apply to later binary publishes through `release/publish-preflight.toml`.

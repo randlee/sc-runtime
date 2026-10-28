@@ -1,10 +1,17 @@
 //! Optional benchmarks: CPython hook vs Monty host-bridge lab for sc_compose.
 //!
-//! Writes `docs/sc-cron/sc-compose-hook-comparison.report.html` on each run.
+//! Each run writes two gitignored sidecars:
 //!
-//! Run (not in default CI):
+//! - `docs/sc-cron/sc-compose-hook-comparison.report.html`
+//! - `docs/sc-cron/sc-compose-hook-comparison.report.json`
+//!
+//! `scripts/benchmark/monty_compose_campaign.py` copies the HTML and the case
+//! metrics into `site/reports/benchmark-monty/`. Default CI does not run this
+//! test (`required-features = ["monty"]`, and the test is `#[ignore]`d).
+//!
+//! Run:
 //! ```text
-//! SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench -- --ignored --nocapture
+//! just --justfile scripts/benchmark/justfile benchmark-monty
 //! ```
 
 #![cfg(unix)]
@@ -289,13 +296,13 @@ fn rusage_max_rss_bytes(who: libc::c_int) -> Option<u64> {
         return None;
     }
     let usage = unsafe { usage.assume_init() };
+    // macOS reports bytes. Linux reports kilobytes.
     #[cfg(target_os = "macos")]
     {
         Some(usage.ru_maxrss as u64)
     }
     #[cfg(not(target_os = "macos"))]
     {
-        // Linux reports kilobytes.
         Some(usage.ru_maxrss as u64 * 1024)
     }
 }
@@ -339,6 +346,59 @@ fn run_timed_bench(
 fn report_html_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../../docs/sc-cron/sc-compose-hook-comparison.report.html")
+}
+
+fn report_json_path() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../docs/sc-cron/sc-compose-hook-comparison.report.json")
+}
+
+fn rss_pair(note: Option<&RssNote>) -> (Option<u64>, Option<&str>) {
+    match note {
+        Some(note) => (Some(note.bytes), Some(note.method)),
+        None => (None, None),
+    }
+}
+
+fn case_metrics(case: &BenchCase) -> serde_json::Value {
+    let result = case.result.as_ref();
+    let (subprocess_rss_bytes, subprocess_rss_note) =
+        rss_pair(result.and_then(|result| result.subprocess_peak_rss.as_ref()));
+    let (in_process_rss_bytes, in_process_rss_note) =
+        rss_pair(result.and_then(|result| result.in_process_rss.as_ref()));
+    serde_json::json!({
+        "id": case.id,
+        "label": case.label,
+        "strategy": case.strategy,
+        "skipped": case.skipped,
+        "skip_reason": case.skip_reason,
+        "ms_per_run": result.map(|result| result.per_run.as_secs_f64() * 1000.0),
+        "timed_iters": result.map(|result| result.timed_iters),
+        "total_ms": result.map(|result| result.total_elapsed.as_secs_f64() * 1000.0),
+        "subprocess_rss_bytes": subprocess_rss_bytes,
+        "subprocess_rss_note": subprocess_rss_note,
+        "in_process_rss_bytes": in_process_rss_bytes,
+        "in_process_rss_note": in_process_rss_note,
+    })
+}
+
+/// Machine-readable sidecar the campaign publisher reads.
+fn write_metrics_json(ctx: &ReportContext, cases: &[BenchCase]) {
+    let path = report_json_path();
+    let doc = serde_json::json!({
+        "schema": "sc-runtime/benchmark-monty-harness/v1",
+        "host": ctx.hostname,
+        "cargo_profile": ctx.cargo_profile,
+        "sc_compose_cli_version": ctx.sc_compose_cli_version,
+        "python_sc_compose": ctx.python_sc_compose,
+        "cases": cases.iter().map(case_metrics).collect::<Vec<_>>(),
+    });
+    let body = serde_json::to_string_pretty(&doc).expect("metrics json");
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).expect("report dir");
+    }
+    std::fs::write(&path, body + "\n").expect("write metrics json");
+    eprintln!("Wrote {}", path.display());
 }
 
 fn html_escape(s: &str) -> String {
@@ -469,8 +529,8 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
 
 <section>
 <h2>Reproduce</h2>
-<pre>SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench --release -- --ignored --nocapture</pre>
-<p class="muted">Also writes this file: <code>docs/sc-cron/sc-compose-hook-comparison.report.html</code></p>
+<pre>just --justfile scripts/benchmark/justfile benchmark-monty</pre>
+<p class="muted">Harness sidecars (gitignored): <code>docs/sc-cron/sc-compose-hook-comparison.report.html</code> and <code>docs/sc-cron/sc-compose-hook-comparison.report.json</code>. Published copies: <code>site/reports/benchmark-monty/</code>.</p>
 </section>
 </body>
 </html>"#,
@@ -684,6 +744,19 @@ fn bench_sc_compose_hook_paths() {
         result: None,
     });
 
+    // Lab `monty` above calls `feed_start` in this test. Production feeds call
+    // `render_template` inside `execute_feed`. This harness records the case
+    // and does not drive that path.
+    cases.push(BenchCase {
+        id: "production_bridge",
+        label: "production monty_host bridge",
+        strategy: "sc-cron Monty feed calling host render_template through execute_feed. Not the lab repl in this test.",
+        skipped: true,
+        skip_reason: Some("harness records production_bridge without calling execute_feed"),
+        result: None,
+    });
+
+    write_metrics_json(&ctx, &cases);
     write_html_report(&ctx, &cases);
-    eprintln!("See docs/sc-cron/hooks-sc-compose.md for interpretation.");
+    eprintln!("See docs/sc-cron/hooks-sc-compose.md and site/reports/benchmark-monty/.");
 }

@@ -56,8 +56,8 @@
 //! use std::time::{Duration, Instant};
 //!
 //! use sc_cron::{
-//!     Job, RunOutcome, ScheduleSpec, Scheduler, SqliteScheduleStore, StopDecision, SystemClock,
-//!     SystemJitter,
+//!     Job, RunOutcome, ScheduleLimits, ScheduleSpec, Scheduler, SqliteScheduleStore, StopDecision,
+//!     SystemClock, SystemJitter,
 //! };
 //!
 //! struct Sync;
@@ -75,8 +75,9 @@
 //! }
 //!
 //! # async fn example() -> Result<(), sc_cron::CronError> {
+//! let limits = ScheduleLimits::default();
 //! let scheduler = Scheduler::new(
-//!     Arc::new(SqliteScheduleStore::open("cron.db")?),
+//!     Arc::new(SqliteScheduleStore::open("cron.db", limits)?),
 //!     Arc::new(SystemClock),
 //!     Arc::new(SystemJitter),
 //! );
@@ -140,6 +141,7 @@ pub use job::Job;
 #[doc(inline)]
 pub use limits::{
     MAX_EXPR_LEN, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, MAX_TIMEOUT,
+    ScheduleLimits,
 };
 #[doc(inline)]
 pub use scheduler::{DueRun, MissedTickPolicy, Scheduler, WorkerHandle};
