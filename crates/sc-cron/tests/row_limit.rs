@@ -140,12 +140,7 @@ fn unlimited_accepts_more_rows_than_the_template_default() {
     }
     assert_eq!(scheduler.store().list_active().expect("list").len(), 12);
 
-    let mapped = ScheduleLimits::from_config_rows(0);
-    assert!(mapped.max_schedule_rows.is_none());
-    let capped = open(
-        &root.path().join("capped.db"),
-        ScheduleLimits::from_config_rows(10),
-    );
+    let capped = open(&root.path().join("capped.db"), limits(10));
     for index in 0..10 {
         capped.start(spec(&format!("c{index}"))).expect("under ten");
     }

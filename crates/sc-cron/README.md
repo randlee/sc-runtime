@@ -53,6 +53,7 @@ The crate's `Job` trait uses `async-trait`, so a caller needs `async-trait`,
 `serde_json` and `tokio` as well.
 
 ```rust,no_run
+use std::num::NonZeroUsize;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -77,7 +78,9 @@ impl Job for Sync {
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), sc_cron::CronError> {
-    let limits = ScheduleLimits::from_config_rows(10);
+    let limits = ScheduleLimits {
+        max_schedule_rows: NonZeroUsize::new(10),
+    };
     let scheduler = Scheduler::open("cron.db", limits, Arc::new(SystemClock), Arc::new(SystemJitter))?;
     // Every 30 seconds; each run (stop check included) is cut off after 25 s.
     let spec = ScheduleSpec::new("sync", "*/30 * * * * *", Duration::from_secs(25), serde_json::json!({}))?;

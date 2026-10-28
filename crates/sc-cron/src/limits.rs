@@ -38,9 +38,9 @@ pub const MAX_TIMEOUT: Duration = Duration::from_hours(24);
 /// Embedder ceiling on schedule rows.
 ///
 /// [`ScheduleLimits::max_schedule_rows`] of [`None`] does not enforce a count.
-/// That is the library default ([`Default`]). A generated application maps
-/// its sc-config integer with [`ScheduleLimits::from_config_rows`]. `0` in
-/// that integer means unlimited. This crate never reads sc-config.
+/// That is the library default ([`Default`]). The embedder builds this value
+/// and passes it when opening the store. This crate does not read sc-config
+/// and does not map configuration sentinels such as `0` or JSON `null`.
 ///
 /// Every writer that opens one schedule database must pass the same
 /// `ScheduleLimits`. The value stays in the process that opened the store
@@ -72,34 +72,6 @@ pub struct ScheduleLimits {
     ///
     /// [`None`] means unlimited.
     pub max_schedule_rows: Option<NonZeroUsize>,
-}
-
-impl ScheduleLimits {
-    /// Maps an sc-config integer to a row limit.
-    ///
-    /// `0` is unlimited. Any other value that fits in [`usize`] is the cap.
-    /// A value that does not fit becomes [`usize::MAX`], which still caps
-    /// the table.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use std::num::NonZeroUsize;
-    ///
-    /// use sc_cron::ScheduleLimits;
-    ///
-    /// assert_eq!(ScheduleLimits::from_config_rows(0).max_schedule_rows, None);
-    /// assert_eq!(
-    ///     ScheduleLimits::from_config_rows(10).max_schedule_rows,
-    ///     NonZeroUsize::new(10)
-    /// );
-    /// ```
-    pub fn from_config_rows(rows: u64) -> Self {
-        let width = usize::try_from(rows).unwrap_or(usize::MAX);
-        Self {
-            max_schedule_rows: NonZeroUsize::new(width),
-        }
-    }
 }
 
 /// Encodes `payload` as compact JSON, refusing it above [`MAX_PAYLOAD_BYTES`].

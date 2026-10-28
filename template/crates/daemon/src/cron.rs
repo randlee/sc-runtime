@@ -38,9 +38,9 @@ impl CronConfig {
     ///
     /// JSON `null` and `0` are [`None`]. Any other value that fits in
     /// [`usize`] is [`Some`]. A value that does not fit becomes
-    /// [`usize::MAX`], which still caps the table. Integer values match
-    /// `sc_cron::ScheduleLimits::from_config_rows`. `null` is handled here
-    /// so `sc-cron` does not read sc-config.
+    /// [`usize::MAX`], which still caps the table. This is the only mapping
+    /// from the sc-config integer. `sc-cron` receives the resulting
+    /// `ScheduleLimits` and does not read sc-config.
     pub fn row_limit(&self) -> Option<NonZeroUsize> {
         let rows = self.max_schedule_rows?;
         let width = usize::try_from(rows).unwrap_or(usize::MAX);

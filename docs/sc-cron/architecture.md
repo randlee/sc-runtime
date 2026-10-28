@@ -31,7 +31,7 @@ let limits = sc_cron::ScheduleLimits {
 let scheduler = sc_cron::Scheduler::open(cron_db, limits, clock, jitter)?;
 ```
 
-`CronConfig::row_limit` maps JSON `null` and `0` to `None` and any positive value to `Some(NonZeroUsize)`. A missing key stays the default `10`. `ScheduleLimits::from_config_rows` is the same integer mapping for an embedder that does not use the generated daemon. sc-cron does not read sc-config.
+`CronConfig::row_limit` maps JSON `null` and `0` to `None` and any positive value to `Some(NonZeroUsize)`. A missing key stays the default `10`. That mapping stays in the generated daemon. An embedder that does not use it builds `ScheduleLimits` itself. sc-cron receives `ScheduleLimits` only and does not read sc-config.
 
 ## Hook
 
