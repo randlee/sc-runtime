@@ -8,7 +8,7 @@ track: cron
 wave: 6
 branch: sprint/b-12-sc-cron-schedule-row-limit
 worktree: sprint/b-12-sc-cron-schedule-row-limit
-integration_branch: develop
+integration_branch: integrate/phase-b-monty
 requirements:
   - REQ-CRON-0001
   - REQ-CRON-0003
@@ -39,11 +39,11 @@ vertical_rationale: One optional limit parameter on the existing scheduler and s
 
 Plan only until the sprint branch opens. Implements [ADR-RUN-0014](../../architecture.md) and the [owner ruling](decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
 
-PR target: **`develop`** (general sc-cron surface; not gated on `integrate/phase-b-monty`).
+PR target: **`integrate/phase-b-monty`**. Phase-end QA on that integration branch; **`develop`** receives the integration PR after phase-end PASS and green CI.
 
 ## Relations
 
-`must_follow` **`b-9`** (scheduler and store on `develop`). **`parallel_safe`** with **`b-10`** and **`b-11`**: this sprint edits `Scheduler` / schedule store only; it does not touch `monty_host`, `sc-compose`, or `scripts/benchmark/`. Run on a `develop` worktree while Monty sprints use `integrate/phase-b-monty`.
+`must_follow` **`b-9`** (scheduler and store on `develop`, merged before this branch). **`parallel_safe`** with **`b-10`** and **`b-11`**: this sprint edits `Scheduler` / schedule store only; it does not touch `monty_host`, `sc-compose`, or `scripts/benchmark/`. Cut the sprint worktree from **`integrate/phase-b-monty`** (same integration line as Monty sprints).
 
 ## Goal
 
