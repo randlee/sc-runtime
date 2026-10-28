@@ -3,6 +3,7 @@ cargo_generate_version = ">=0.23.0"
 exclude = [
     "AGENTS.md.j2",
     "CLAUDE.md.j2",
+    "answers.schema.json",
 ]
 
 [hooks]

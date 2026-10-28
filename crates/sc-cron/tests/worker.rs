@@ -23,8 +23,8 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use sc_cron::{
     Clock, CronError, Generation, Job, ManualClock, MissedTickPolicy, NewSchedule, RunOutcome,
-    RunTimeout, Schedule, ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore, Scheduler,
-    SeqJitter, SqliteScheduleStore, StopDecision, Timestamp, WorkerHandle,
+    RunTimeout, Schedule, ScheduleId, ScheduleLimits, ScheduleName, ScheduleSpec, ScheduleStore,
+    Scheduler, SeqJitter, SqliteScheduleStore, StopDecision, Timestamp, WorkerHandle,
 };
 use serde_json::{Value, json};
 use tokio::sync::watch;
@@ -198,7 +198,7 @@ struct RecordingStore {
 impl RecordingStore {
     fn new() -> Self {
         Self {
-            inner: SqliteScheduleStore::open_in_memory().expect("store"),
+            inner: SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"),
             writes: watch::Sender::new(Vec::new()),
             list_gate: Mutex::new(None),
             listing: watch::Sender::new(0),
@@ -379,8 +379,13 @@ impl Fixture {
         let store = Arc::new(RecordingStore::new());
         let clock = Arc::new(ManualClock::new(at("2026-10-19T00:00:00Z")));
         let jitter = Arc::new(SeqJitter::default());
-        let scheduler = Scheduler::new(store.clone(), clock.clone(), jitter.clone())
-            .with_missed_tick_policy(policy);
+        let scheduler = Scheduler::new(
+            store.clone(),
+            clock.clone(),
+            jitter.clone(),
+            ScheduleLimits::default(),
+        )
+        .with_missed_tick_policy(policy);
         Self {
             store,
             clock,

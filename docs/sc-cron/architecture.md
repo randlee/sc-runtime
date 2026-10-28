@@ -20,7 +20,18 @@ A six-field string is seconds first: `second minute hour day-of-month month day-
 
 One table, created by the crate. Columns cover the schedule name, the cron string, the timeout, a JSON payload, and the hook target. The rest of the database belongs to the consumer. The connection is not `SqliteWriter`.
 
-The number of schedule rows is not capped unless the embedder passes a limit ([ADR-RUN-0014](../architecture.md)). Each row's name, expression, timeout, module path, source, and payload are capped in the crate. A caller that accepts schedules from untrusted input should pass a row limit or enforce one before insert.
+The number of schedule rows is not capped unless the embedder passes [`ScheduleLimits`](../../crates/sc-cron/src/limits.rs) ([ADR-RUN-0014](../architecture.md)). `max_schedule_rows: None` is the library default and means unlimited. The count is every row that has not ended, enabled and disabled together. Replacing a name that is already counted does not change the count. Ending a row (`Scheduler::stop`, including a stop-check delete) frees a slot in that same store transaction. A new name over the limit is `CronError::InvalidSpec`; the detail names the limit and the current count. There is no new `CronError` variant. Lowering the limit does not delete rows. Each row's name, expression, timeout, module path, source, and payload are capped in the crate. sc-cron does not depend on sc-config.
+
+Generated applications ship sc-config key `cron.max_schedule_rows` (integer, default `10`, `0` means unlimited) in `template/answers.schema.json` and `template/config/default.json`. The daemon reads it into `cron::CronConfig` on every layout. No layout opens `Scheduler` yet. The layout that does maps the integer and opens the scheduler:
+
+```rust
+let limits = sc_cron::ScheduleLimits {
+    max_schedule_rows: config.cron.row_limit(),
+};
+let scheduler = sc_cron::Scheduler::open(cron_db, limits, clock, jitter)?;
+```
+
+`CronConfig::row_limit` maps `0` to `None` and any other value to `Some(NonZeroUsize)`. `ScheduleLimits::from_config_rows` is the same mapping for an embedder that does not use the generated daemon.
 
 ## Hook
 
@@ -82,7 +93,7 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource>;
 
 ## Public exports
 
-The crate-root exports, also listed on `boundaries/sc-cron/sc-cron.toml`, are the contract: `Clock`, `CronError`, `CronExpr`, `DEFAULT_RELOAD_POLL`, `DueRun`, `Generation`, `HOOK_PROTOCOL`, `HookCall`, `HookEvent`, `HookOutput`, `HookStatus`, `HookTarget`, `is_identifier`, `JitterSource`, `Job`, `kill_budget`, `ManualClock`, `MAX_EXPR_LEN`, `MAX_HOOK_OUTPUT_BYTES`, `MAX_HOOK_SOURCE_BYTES`, `MAX_NAME_LEN`, `MAX_PAYLOAD_BYTES`, `MAX_TIMEOUT`, `MissedTickPolicy`, `NewSchedule`, `process`, `PythonHook`, `RunOutcome`, `RunTimeout`, `Schedule`, `ScheduleId`, `ScheduleName`, `ScheduleSpec`, `ScheduleStore`, `Scheduler`, `SCHEMA_VERSION`, `SeqJitter`, `SqliteScheduleStore`, `StopDecision`, `StoreError`, `StoreErrorKind`, `SystemClock`, `SystemJitter`, `Timestamp`, and `WorkerHandle`. `ManualClock` and `SeqJitter` need feature `test-utils`.
+The crate-root exports, also listed on `boundaries/sc-cron/sc-cron.toml`, are the contract: `Clock`, `CronError`, `CronExpr`, `DEFAULT_RELOAD_POLL`, `DueRun`, `Generation`, `HOOK_PROTOCOL`, `HookCall`, `HookEvent`, `HookOutput`, `HookStatus`, `HookTarget`, `is_identifier`, `JitterSource`, `Job`, `kill_budget`, `ManualClock`, `MAX_EXPR_LEN`, `MAX_HOOK_OUTPUT_BYTES`, `MAX_HOOK_SOURCE_BYTES`, `MAX_NAME_LEN`, `MAX_PAYLOAD_BYTES`, `MAX_TIMEOUT`, `MissedTickPolicy`, `NewSchedule`, `process`, `PythonHook`, `RunOutcome`, `RunTimeout`, `Schedule`, `ScheduleId`, `ScheduleLimits`, `ScheduleName`, `ScheduleSpec`, `ScheduleStore`, `Scheduler`, `SCHEMA_VERSION`, `SeqJitter`, `SqliteScheduleStore`, `StopDecision`, `StoreError`, `StoreErrorKind`, `SystemClock`, `SystemJitter`, `Timestamp`, and `WorkerHandle`. `ManualClock` and `SeqJitter` need feature `test-utils`.
 
 A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule row points at one of them. This crate does not know whether that method talks to beads or to Postgres.
 
@@ -90,7 +101,7 @@ A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule
 
 `CronError` is `#[non_exhaustive]` and implements `Display` and `std::error::Error`. Variants: `BadExpression(String)`, `InvalidSpec(String)`, `AlreadyActive(ScheduleName)`, `NotFound(ScheduleName)`, `HookFailed(String)`, `Store(StoreError)`, `Fenced { id, generation }`. Codes: `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, `FENCED`. `StoreError` is this crate's error for the schedule table. It is not the schema crate's `StoreError`. It wraps `rusqlite::Error` through `Error::source` and uses the code `STORE_FAILED`. The `BadExpression` recovery text tells the caller to use a five-field string, a six-field seconds-first string, or `@hourly` through `@yearly`.
 
-`Scheduler::open` takes the path of the schedule database. That file is not the application's `store-sqlite` file.
+`Scheduler::open` takes the path of the schedule database and a `ScheduleLimits`. `Scheduler::new` takes the same `ScheduleLimits` the store was opened with. That file is not the application's `store-sqlite` file.
 
 ## What this crate is not
 

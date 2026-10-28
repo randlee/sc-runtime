@@ -16,8 +16,8 @@ use std::time::Duration;
 use rusqlite::Connection;
 use sc_cron::{
     CronError, Generation, HookTarget, MAX_HOOK_SOURCE_BYTES, MAX_PAYLOAD_BYTES, NewSchedule,
-    RunOutcome, SCHEMA_VERSION, ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore,
-    SqliteScheduleStore, StoreErrorKind, Timestamp,
+    RunOutcome, SCHEMA_VERSION, ScheduleId, ScheduleLimits, ScheduleName, ScheduleSpec,
+    ScheduleStore, SqliteScheduleStore, StoreErrorKind, Timestamp,
 };
 use tempfile::TempDir;
 
@@ -51,7 +51,9 @@ fn generation(value: u32) -> Generation {
 #[test]
 fn writes_a_schedule_without_constructing_sqlite_writer() {
     let root = tempfile::tempdir().expect("tempdir");
-    let store = SqliteScheduleStore::open(root.path().join("schedules.db")).expect("open");
+    let store =
+        SqliteScheduleStore::open(root.path().join("schedules.db"), ScheduleLimits::default())
+            .expect("open");
     let spec = ScheduleSpec::with_hook(
         "nightly",
         "*/5 * * * *",
@@ -138,7 +140,7 @@ impl Harness {
     fn new() -> Self {
         let root = tempfile::tempdir().expect("tempdir");
         let path = root.path().join("cron.db");
-        let store = SqliteScheduleStore::open(&path).expect("store");
+        let store = SqliteScheduleStore::open(&path, ScheduleLimits::default()).expect("store");
         Self {
             _root: root,
             path,
@@ -219,7 +221,7 @@ fn list_active_survives_reopen_and_orders_by_created_at() {
     let names: Vec<_> = before.iter().map(|row| row.spec.name.as_str()).collect();
     assert_eq!(names, ["earlier", "later"]);
 
-    let reopened = SqliteScheduleStore::open(&h.path).expect("reopen");
+    let reopened = SqliteScheduleStore::open(&h.path, ScheduleLimits::default()).expect("reopen");
     assert_eq!(reopened.list_active().expect("list"), before);
 }
 
@@ -644,7 +646,7 @@ fn a_version_1_file_gains_the_enabled_column_with_every_schedule_enabled() {
         old.pragma_update(None, "user_version", 1).expect("v1");
     }
 
-    let store = SqliteScheduleStore::open(&path).expect("upgrade");
+    let store = SqliteScheduleStore::open(&path, ScheduleLimits::default()).expect("upgrade");
     let kept = store.list_active().expect("list");
     assert_eq!(kept.len(), 1);
     assert_eq!(kept[0].spec.name.as_str(), "kept");
@@ -673,7 +675,7 @@ fn a_version_1_file_gains_the_enabled_column_with_every_schedule_enabled() {
         "a version 1 file rebuilds through schema 4"
     );
     // Opening again is a plain open, and the column now works.
-    let store = SqliteScheduleStore::open(&path).expect("reopen");
+    let store = SqliteScheduleStore::open(&path, ScheduleLimits::default()).expect("reopen");
     assert!(
         store
             .set_enabled(&schedule_name("kept"), false)
@@ -728,7 +730,7 @@ fn a_version_3_file_gains_hook_source_and_leaves_other_tables_alone() {
         old.pragma_update(None, "user_version", 3).expect("v3");
     }
 
-    let store = SqliteScheduleStore::open(&path).expect("upgrade");
+    let store = SqliteScheduleStore::open(&path, ScheduleLimits::default()).expect("upgrade");
     let row = store.list_active().expect("list");
     assert_eq!(row.len(), 1);
     assert!(matches!(
@@ -838,7 +840,7 @@ fn a_file_with_other_tables_is_refused() {
         .execute_batch("CREATE TABLE other_table (id TEXT);")
         .expect("foreign table");
     assert_eq!(
-        store_kind(SqliteScheduleStore::open(&path)),
+        store_kind(SqliteScheduleStore::open(&path, ScheduleLimits::default())),
         StoreErrorKind::SchemaMismatch
     );
 }
@@ -854,7 +856,8 @@ fn an_unknown_schema_version_is_refused_and_the_current_one_is_written() {
     h.sql()
         .pragma_update(None, "user_version", SCHEMA_VERSION + 1)
         .expect("bump version");
-    let error = SqliteScheduleStore::open(&h.path).expect_err("unknown version");
+    let error =
+        SqliteScheduleStore::open(&h.path, ScheduleLimits::default()).expect_err("unknown version");
     assert_eq!(error.code(), "STORE_FAILED");
     assert!(
         matches!(&error, CronError::Store(store) if store.kind() == StoreErrorKind::SchemaMismatch),
@@ -866,7 +869,8 @@ fn an_unknown_schema_version_is_refused_and_the_current_one_is_written() {
 fn store_errors_expose_their_rusqlite_source() {
     let root = tempfile::tempdir().expect("tempdir");
     let missing = root.path().join("no-such-dir").join("cron.db");
-    let error = SqliteScheduleStore::open(&missing).expect_err("cannot open");
+    let error =
+        SqliteScheduleStore::open(&missing, ScheduleLimits::default()).expect_err("cannot open");
     assert!(
         matches!(&error, CronError::Store(store) if store.kind() == StoreErrorKind::Unavailable),
         "{error}"

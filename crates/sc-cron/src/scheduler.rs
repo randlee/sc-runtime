@@ -21,7 +21,8 @@ use tokio::sync::{oneshot, watch};
 use tokio::task::JoinHandle;
 
 use crate::coord::RunCoord;
-use crate::limits::encode_payload;
+use crate::limits::{ScheduleLimits, encode_payload};
+use crate::sqlite::SqliteScheduleStore;
 use crate::worker::{DEFAULT_RELOAD_POLL, EXHAUSTED, MIN_RELOAD_POLL, Report, Worker};
 use crate::{
     Clock, CronError, Generation, JitterSource, Job, NewSchedule, RunOutcome, Schedule, ScheduleId,
@@ -56,6 +57,7 @@ struct Core<S, C, J> {
     clock: Arc<C>,
     jitter: Arc<J>,
     reload: watch::Sender<u64>,
+    limits: ScheduleLimits,
 }
 
 impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
@@ -166,14 +168,16 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
 /// use std::time::Duration;
 ///
 /// use sc_cron::{
-///     CronError, ScheduleSpec, ScheduleStore, Scheduler, SqliteScheduleStore, SystemClock,
-///     SystemJitter,
+///     CronError, ScheduleLimits, ScheduleSpec, ScheduleStore, Scheduler, SqliteScheduleStore,
+///     SystemClock, SystemJitter,
 /// };
 ///
+/// let limits = ScheduleLimits::default();
 /// let scheduler = Scheduler::new(
-///     Arc::new(SqliteScheduleStore::open_in_memory()?),
+///     Arc::new(SqliteScheduleStore::open_in_memory(limits)?),
 ///     Arc::new(SystemClock),
 ///     Arc::new(SystemJitter),
+///     limits,
 /// );
 /// let spec = ScheduleSpec::new("sync", "*/30 * * * * *", Duration::from_secs(25), serde_json::json!({}))?;
 /// let schedule = scheduler.start(spec.clone())?;
@@ -217,21 +221,31 @@ where
 {
     /// Creates a scheduler over `store`, reading time from `clock`.
     ///
-    /// The missed-tick policy is [`MissedTickPolicy::Coalesce`].
+    /// `limits` is the ceiling the embedder passed. [`SqliteScheduleStore`]
+    /// enforces the `limits` it was opened with, inside the insert
+    /// transaction; pass that same value here. [`Scheduler::open`] does so.
+    /// [`ScheduleLimits::default`] does not cap the table. The missed-tick
+    /// policy is [`MissedTickPolicy::Coalesce`].
     #[must_use]
-    pub fn new(store: Arc<S>, clock: Arc<C>, jitter: Arc<J>) -> Self {
+    pub fn new(store: Arc<S>, clock: Arc<C>, jitter: Arc<J>, limits: ScheduleLimits) -> Self {
         Self {
             core: Arc::new(Core {
                 store,
                 clock,
                 jitter,
                 reload: watch::channel(0).0,
+                limits,
             }),
             policy: MissedTickPolicy::default(),
             reload_poll: DEFAULT_RELOAD_POLL,
             worker_live: Arc::new(AtomicBool::new(false)),
             coord: Arc::new(RunCoord::new()),
         }
+    }
+
+    /// Returns the row ceiling passed to [`Scheduler::new`].
+    pub fn limits(&self) -> ScheduleLimits {
+        self.core.limits
     }
 
     /// Sets the missed-tick policy for workers spawned after this call.
@@ -276,10 +290,12 @@ where
     /// # Errors
     ///
     /// [`CronError::InvalidSpec`] for a payload over
-    /// [`MAX_PAYLOAD_BYTES`](crate::MAX_PAYLOAD_BYTES) and
+    /// [`MAX_PAYLOAD_BYTES`](crate::MAX_PAYLOAD_BYTES), or when a new name
+    /// would pass the embedder's schedule row limit, and
     /// [`CronError::BadExpression`] for an expression with no future
     /// occurrence, both before anything is stored; then the store's errors,
-    /// including [`CronError::AlreadyActive`].
+    /// including [`CronError::AlreadyActive`]. The row-limit refusal names
+    /// the limit and the current count.
     pub fn start(&self, spec: ScheduleSpec) -> Result<Schedule, CronError> {
         self.core.start(spec)
     }
@@ -507,6 +523,55 @@ where
     }
 }
 
+impl<C, J> Scheduler<SqliteScheduleStore, C, J>
+where
+    C: Clock + 'static,
+    J: JitterSource + 'static,
+{
+    /// Opens the schedule database at `path` and builds a scheduler.
+    ///
+    /// `limits` is stored on the [`SqliteScheduleStore`] and on this
+    /// scheduler. The store enforces it in the insert transaction.
+    /// [`ScheduleLimits::default`] does not cap the table. The file is not
+    /// the application's store-sqlite file.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] when the file cannot be opened or the schema does
+    /// not match, as [`SqliteScheduleStore::open`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::num::NonZeroUsize;
+    /// use std::sync::Arc;
+    ///
+    /// use sc_cron::{ScheduleLimits, Scheduler, SystemClock, SystemJitter};
+    ///
+    /// let dir = tempfile::tempdir().expect("tempdir");
+    /// let limits = ScheduleLimits {
+    ///     max_schedule_rows: NonZeroUsize::new(10),
+    /// };
+    /// let scheduler = Scheduler::open(
+    ///     dir.path().join("cron.db"),
+    ///     limits,
+    ///     Arc::new(SystemClock),
+    ///     Arc::new(SystemJitter),
+    /// )?;
+    /// assert_eq!(scheduler.limits(), limits);
+    /// # Ok::<(), sc_cron::CronError>(())
+    /// ```
+    pub fn open(
+        path: impl AsRef<std::path::Path>,
+        limits: ScheduleLimits,
+        clock: Arc<C>,
+        jitter: Arc<J>,
+    ) -> Result<Self, CronError> {
+        let store = SqliteScheduleStore::open(path, limits)?;
+        Ok(Self::new(Arc::new(store), clock, jitter, limits))
+    }
+}
+
 /// One run started by [`Scheduler::run_due`] and how it ended.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DueRun {
@@ -587,6 +652,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> std::fmt::Debug for Scheduler<
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Scheduler")
             .field("policy", &self.policy)
+            .field("max_schedule_rows", &self.core.limits.max_schedule_rows)
             .field("worker_live", &self.worker_live.load(Ordering::Acquire))
             .finish_non_exhaustive()
     }

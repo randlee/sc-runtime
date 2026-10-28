@@ -42,8 +42,10 @@ pub trait ScheduleStore: Send + Sync {
     ///
     /// [`CronError::AlreadyActive`] if the name is active,
     /// [`CronError::InvalidSpec`] if the payload is over
-    /// [`MAX_PAYLOAD_BYTES`](crate::MAX_PAYLOAD_BYTES), and
+    /// [`MAX_PAYLOAD_BYTES`](crate::MAX_PAYLOAD_BYTES) or a new name would
+    /// exceed the embedder's schedule row limit, and
     /// [`CronError::Store`] if storage fails or the generation is exhausted.
+    /// The row-limit detail names the limit and the current count.
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError>;
 
     /// Returns one schedule, active or ended.
@@ -162,10 +164,11 @@ pub trait ScheduleStore: Send + Sync {
     ///
     /// # Errors
     ///
-    /// [`CronError::InvalidSpec`] if `flags` names the written schedule or
-    /// the payload is over [`MAX_PAYLOAD_BYTES`](crate::MAX_PAYLOAD_BYTES),
-    /// and [`CronError::Store`] if storage fails or the generation is
-    /// exhausted.
+    /// [`CronError::InvalidSpec`] if `flags` names the written schedule, the
+    /// payload is over [`MAX_PAYLOAD_BYTES`](crate::MAX_PAYLOAD_BYTES), or a
+    /// new name would exceed the embedder's schedule row limit, and
+    /// [`CronError::Store`] if storage fails or the generation is exhausted.
+    /// Replacing a name that is already counted does not change the count.
     fn replace_and_set_enabled(
         &self,
         schedule: &NewSchedule,

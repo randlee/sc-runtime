@@ -327,12 +327,16 @@ async fn a_python_row_written_before_schema_4_still_runs() {
         .expect("python row");
         old.pragma_update(None, "user_version", 3).expect("v3");
     }
-    let store = std::sync::Arc::new(sc_cron::SqliteScheduleStore::open(&path).expect("upgrade"));
+    let store = std::sync::Arc::new(
+        sc_cron::SqliteScheduleStore::open(&path, sc_cron::ScheduleLimits::default())
+            .expect("upgrade"),
+    );
     let clock = std::sync::Arc::new(sc_cron::ManualClock::new(at("2026-10-19T00:00:00Z")));
     let scheduler = sc_cron::Scheduler::new(
         store.clone(),
         clock.clone(),
         std::sync::Arc::new(sc_cron::SeqJitter::default()),
+        sc_cron::ScheduleLimits::default(),
     );
     let row = store.list_active().expect("list").remove(0);
     assert!(matches!(row.spec.hook, sc_cron::HookTarget::Python { .. }));

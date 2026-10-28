@@ -15,7 +15,9 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use common::{Fixture, ScriptedJob, TestScheduler, shutdown};
-use sc_cron::{DEFAULT_RELOAD_POLL, RunOutcome, ScheduleSpec, Scheduler, SeqJitter};
+use sc_cron::{
+    DEFAULT_RELOAD_POLL, RunOutcome, ScheduleLimits, ScheduleSpec, Scheduler, SeqJitter,
+};
 
 fn rust(job: &Arc<ScriptedJob>) -> Arc<dyn sc_cron::Job> {
     let job: Arc<ScriptedJob> = Arc::clone(job);
@@ -32,6 +34,7 @@ fn elsewhere(fixture: &Fixture) -> TestScheduler {
         Arc::clone(&fixture.store),
         Arc::clone(&fixture.clock),
         Arc::new(SeqJitter::default()),
+        ScheduleLimits::default(),
     )
 }
 

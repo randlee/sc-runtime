@@ -15,5 +15,8 @@
   "logging": {
     "enableConsoleSink": true,
     "enableFileSink": false
+  },
+  "cron": {
+    "max_schedule_rows": 10
   }
 }
