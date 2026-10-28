@@ -29,7 +29,7 @@ Legacy names `benchmark-monty*` call the same Monty campaign.
 | `scripts/benchmark/monty/campaign.py` | runs release `sc_compose_bench`, packages campaigns |
 | `scripts/benchmark/monty/baselines.json` | optional ms/run floors per case id |
 | `scripts/benchmark/check_gate.py` | publish preflight entry (`benchmark-gate`) |
-| `scripts/benchmark/render_report.py` | validates `examples.*` on campaign JSON |
+| `scripts/benchmark/render_report.py` | validates `examples.hook_source`, `examples.resume_loop`, and `examples.cli_argv`; `campaign.py --index-only` regenerates index and campaign HTML from those keys and exits non-zero when one is missing |
 | `site/reports/benchmark-monty/` | immutable `*.campaign.json`, HTML, `index.html` |
 | `crates/sc-cron/tests/sc_compose_bench.rs` | harness (ignored unless `SC_CRON_BENCH=1`) |
 

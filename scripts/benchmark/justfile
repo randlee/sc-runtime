@@ -3,6 +3,8 @@
 # See .claude/skills/benchmark-run/SKILL.md. Default CI does not run these.
 
 set windows-shell := ["cmd.exe", "/c"]
+# just cds to this justfile's directory; recipes use repo-root paths.
+set working-directory := "../.."
 
 python := if os_family() == "windows" { "python" } else { "python3" }
 

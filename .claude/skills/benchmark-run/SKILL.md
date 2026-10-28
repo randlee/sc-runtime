@@ -60,9 +60,9 @@ overwrite an existing campaign file.
 
 `baselines.json` holds optional `max_ms_per_run` floors. A null floor does not
 fail a case. When a floor is set and a measured case is slower, the campaign
-status is `FAIL`. The result is still written. `production_bridge` stays
-`skipped` until sprint b-10 registers the host function; that skip is not a
-performance result.
+status is `FAIL`. The result is still written. `production_bridge` must run
+through the host bridge. A skip is not a performance result and fails
+`benchmark-gate`.
 
 A harness or environment error before measurement (missing toolchain, missing
 `sc-compose`, test failure before the sidecar exists) exits non-zero and writes

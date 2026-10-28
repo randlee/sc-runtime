@@ -22,6 +22,16 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+_BENCH = Path(__file__).resolve().parent.parent
+if str(_BENCH) not in sys.path:
+    sys.path.insert(0, str(_BENCH))
+from render_report import (  # noqa: E402
+    ReportError,
+    apply_examples_to_html,
+    example_blocks_html,
+    require_examples,
+)
+
 SUBSYSTEM_DIR = Path(__file__).resolve().parent
 ROOT = SUBSYSTEM_DIR.parents[2]
 REPORT_DIR = ROOT / "site" / "reports" / "benchmark-monty"
@@ -173,24 +183,68 @@ def annotate_cases(harness_cases: list, baselines: dict) -> list[dict]:
     return annotated
 
 
-def render_index(campaigns: list[dict]) -> str:
+def assert_examples(payload: dict, *, label: str) -> None:
+    try:
+        require_examples(payload, label=label)
+    except ReportError as exc:
+        raise CampaignError(str(exc)) from exc
+
+
+def floor_table(baselines: dict) -> str:
+    rows: list[str] = []
+    cases = baselines.get("cases")
+    if isinstance(cases, dict):
+        for case_id in sorted(cases):
+            spec = cases[case_id]
+            floor = spec.get("max_ms_per_run") if isinstance(spec, dict) else None
+            shown = "none" if floor is None else html.escape(str(floor))
+            rows.append(
+                f"<tr><td><code>{html.escape(str(case_id))}</code></td><td>{shown}</td></tr>"
+            )
+    if not rows:
+        rows.append('<tr><td colspan="2" class="muted">No floors configured.</td></tr>')
+    return "\n".join(rows)
+
+
+def campaign_examples_html(campaigns: list[dict]) -> str:
+    blocks: list[str] = []
+    for campaign in campaigns:
+        examples = campaign.get("examples")
+        if not isinstance(examples, dict):
+            continue
+        try:
+            rendered = example_blocks_html(examples)
+        except ReportError:
+            continue
+        campaign_id = html.escape(str(campaign.get("campaign_id", "campaign")))
+        blocks.append(f"<h3>{campaign_id}</h3>\n{rendered}")
+    if not blocks:
+        return '<p class="muted">No campaign code examples yet.</p>'
+    return "\n".join(blocks)
+
+
+def render_index(campaigns: list[dict], baselines: dict) -> str:
     rows: list[str] = []
     if not campaigns:
-        rows.append('<tr><td colspan="5" class="muted">No published campaigns yet.</td></tr>')
+        rows.append('<tr><td colspan="6" class="muted">No published campaigns yet.</td></tr>')
     for campaign in campaigns:
         campaign_id = html.escape(str(campaign["campaign_id"]))
         report = html.escape(str(campaign["report_html"]))
         json_name = html.escape(f"{campaign['campaign_id']}.campaign.json")
+        rustc = html.escape(str(campaign.get("rustc", "")))
         rows.append(
             "<tr>"
             f"<td><a href=\"{json_name}\">{campaign_id}</a></td>"
             f"<td>{html.escape(str(campaign['host']))}</td>"
             f"<td><code>{html.escape(str(campaign['git_sha'])[:12])}</code></td>"
             f"<td>{html.escape(str(campaign['status']))}</td>"
+            f"<td>{rustc}</td>"
             f"<td><a href=\"{report}\">{report}</a></td>"
             "</tr>"
         )
     body = "\n".join(rows)
+    floors = floor_table(baselines)
+    examples = campaign_examples_html(campaigns)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -203,6 +257,8 @@ def render_index(campaigns: list[dict]) -> str:
     table {{ border-collapse: collapse; width: 100%; margin-top: 1rem; }}
     th, td {{ border: 1px solid #cbd5e1; padding: 0.45rem; text-align: left; vertical-align: top; }}
     .muted {{ color: #64748b; }}
+    pre {{ background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.75rem; overflow-x: auto; }}
+    code {{ font-family: ui-monospace, Menlo, monospace; font-size: 0.85em; }}
   </style>
 </head>
 <body>
@@ -218,11 +274,22 @@ def render_index(campaigns: list[dict]) -> str:
   </p>
   <h2>Campaigns</h2>
   <table>
-    <thead><tr><th>Campaign</th><th>Host</th><th>Git</th><th>Status</th><th>Report</th></tr></thead>
+    <thead><tr><th>Campaign</th><th>Host</th><th>Git</th><th>Status</th><th>rustc</th><th>Report</th></tr></thead>
     <tbody>
 {body}
     </tbody>
   </table>
+  <h2>Baseline floors</h2>
+  <p class="muted">From <code>scripts/benchmark/monty/baselines.json</code>. <code>none</code> means the case is measured and does not fail the campaign.</p>
+  <table>
+    <thead><tr><th>Case</th><th>max_ms_per_run</th></tr></thead>
+    <tbody>
+{floors}
+    </tbody>
+  </table>
+  <h2>Code examples</h2>
+  <p class="muted">Copied from each campaign JSON (<code>examples.hook_source</code>, <code>examples.resume_loop</code>, <code>examples.cli_argv</code>).</p>
+{examples}
 </body>
 </html>
 """
@@ -249,15 +316,21 @@ def load_campaigns(report_dir: Path) -> list[dict]:
 
 
 def write_index(report_dir: Path) -> str:
-    text = render_index(load_campaigns(report_dir))
+    campaigns = load_campaigns(report_dir)
+    for campaign in campaigns:
+        assert_examples(campaign, label=str(campaign.get("campaign_id", "campaign")))
+    text = render_index(campaigns, load_baselines())
     path = report_dir / "index.html"
     path.write_text(text, encoding="utf-8")
     return text
 
 
 def check_index(report_dir: Path) -> None:
-    load_baselines()
-    expected = render_index(load_campaigns(report_dir))
+    baselines = load_baselines()
+    campaigns = load_campaigns(report_dir)
+    for campaign in campaigns:
+        assert_examples(campaign, label=str(campaign.get("campaign_id", "campaign")))
+    expected = render_index(campaigns, baselines)
     path = report_dir / "index.html"
     actual = path.read_text(encoding="utf-8") if path.is_file() else ""
     if actual != expected:
@@ -323,6 +396,8 @@ def package_campaign(
     dest_html = report_dir / html_name
     if json_path.exists() or dest_html.exists():
         raise CampaignError(f"refusing to overwrite campaign {campaign_id}")
+    examples = harness.get("examples")
+    assert_examples({"examples": examples}, label="harness")
     report_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(html_path, dest_html)
     payload = {
@@ -339,13 +414,55 @@ def package_campaign(
         "sc_compose_cli_version": harness.get("sc_compose_cli_version"),
         "python_sc_compose": harness.get("python_sc_compose"),
         "cases": cases,
+        "examples": examples,
     }
-    examples = harness.get("examples")
-    if isinstance(examples, dict):
-        payload["examples"] = examples
+    assert_examples(payload, label=campaign_id)
+    dest_html.write_text(
+        stamp_report_html(dest_html.read_text(encoding="utf-8"), payload),
+        encoding="utf-8",
+    )
     json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     write_index(report_dir)
     return payload
+
+
+_META_RE = re.compile(r"<!-- campaign-meta --><p class=\"subtitle\">.*?</p>", re.DOTALL)
+
+
+def stamp_report_html(page: str, campaign: dict) -> str:
+    """Record host, git SHA, and rustc on the published campaign HTML."""
+    page = apply_examples_to_html(page, campaign["examples"])
+    meta = (
+        "<!-- campaign-meta --><p class=\"subtitle\">"
+        f"Campaign {html.escape(str(campaign['campaign_id']))}"
+        f" · host {html.escape(str(campaign['host']))}"
+        f" · git <code>{html.escape(str(campaign['git_sha']))}</code>"
+        f" · {html.escape(str(campaign['rustc']))}</p>"
+    )
+    if "<!-- campaign-meta -->" in page:
+        return _META_RE.sub(meta, page, count=1)
+    if "<body>" in page:
+        return page.replace("<body>", "<body>\n" + meta, 1)
+    return meta + "\n" + page
+
+
+def index_only(report_dir: Path) -> None:
+    """Regenerate index and campaign HTML from JSON. Does not run cargo."""
+    paths = sorted(report_dir.glob("*.campaign.json"))
+    for path in paths:
+        payload = load_json(path)
+        assert_examples(payload, label=str(path))
+        html_name = payload.get("report_html")
+        if not isinstance(html_name, str) or not html_name:
+            raise CampaignError(f"{path}: missing report_html")
+        html_path = report_dir / html_name
+        if not html_path.is_file():
+            raise CampaignError(f"{path}: missing report {html_name}")
+        html_path.write_text(
+            stamp_report_html(html_path.read_text(encoding="utf-8"), payload),
+            encoding="utf-8",
+        )
+    write_index(report_dir)
 
 
 def latest_report(report_dir: Path) -> Path | None:
@@ -380,7 +497,7 @@ def publish(report_dir: Path) -> None:
         raise CampaignError(staged.stderr.strip() or "git diff --cached failed")
     if staged.stdout.strip():
         raise CampaignError("refusing to publish: the index already has staged files")
-    write_index(report_dir)
+    index_only(report_dir)
     check_index(report_dir)
     added = run(["git", "add", "--", str(report_dir.relative_to(ROOT))])
     if added.returncode != 0:
@@ -418,6 +535,11 @@ def self_check() -> None:
         "cargo_profile": "release",
         "sc_compose_cli_version": "sc-compose 0.0.0",
         "python_sc_compose": True,
+        "examples": {
+            "hook_source": "def cron_tick(hook):\n    return render_template(hook['payload']['template'], hook['payload']['context'])\n",
+            "resume_loop": "let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;\ncall.resume(result)?;\n",
+            "cli_argv": "sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json\n",
+        },
         "cases": [
             {"id": "cli", "label": "cli", "skipped": False, "ms_per_run": 3.0},
             {"id": "py_hook", "label": "py", "skipped": False, "ms_per_run": 30.0},
@@ -488,10 +610,39 @@ def self_check() -> None:
             pass
         else:
             raise CampaignError("overwrite was allowed")
+        index_only(report_dir)
+        published = (report_dir / f"{payload['campaign_id']}.html").read_text(encoding="utf-8")
+        if "<pre><code>" not in published or "cron_tick" not in published:
+            raise CampaignError("index-only did not refresh campaign HTML examples")
+        if "git" not in published or payload["git_sha"] not in published:
+            raise CampaignError("campaign HTML is missing the git SHA")
+        index_text = (report_dir / "index.html").read_text(encoding="utf-8")
+        for needle in ("cron_tick", "feed_start", "sc-compose render --root", "max_ms_per_run"):
+            if needle not in index_text:
+                raise CampaignError(f"index.html is missing {needle}")
+        broken_path = report_dir / f"{payload['campaign_id']}.campaign.json"
+        broken = json.loads(broken_path.read_text(encoding="utf-8"))
+        del broken["examples"]["hook_source"]
+        broken_path.write_text(json.dumps(broken), encoding="utf-8")
+        try:
+            index_only(report_dir)
+        except CampaignError as exc:
+            if "hook_source" not in str(exc):
+                raise
+        else:
+            raise CampaignError("missing examples.hook_source was accepted")
+        try:
+            validate_gate(payload)
+        except CampaignError as exc:
+            if "production_bridge" not in str(exc):
+                raise
+        else:
+            raise CampaignError("gate accepted a skipped production_bridge")
     print("self-check ok")
 
 
 def validate_gate(payload: dict) -> None:
+    assert_examples(payload, label="gate")
     cases = {case["id"]: case for case in payload.get("cases", []) if isinstance(case, dict)}
     bridge = cases.get("production_bridge")
     if bridge is None or bridge.get("skipped"):
@@ -523,7 +674,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.self_check:
             self_check()
         elif args.index_only:
-            write_index(REPORT_DIR)
+            index_only(REPORT_DIR)
             print(f"wrote {REPORT_DIR.relative_to(ROOT) / 'index.html'}")
         elif args.check:
             check_index(REPORT_DIR)
