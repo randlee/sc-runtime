@@ -54,9 +54,9 @@ PR target: **`integrate/phase-b-monty`**. Phase-end QA on that integration branc
 **Shared files (`b-10` owns the file; this sprint edits named slices only):**
 
 - `crates/sc-cron/src/lib.rs` — re-exports for `ScheduleLimits` and store open signatures only.
-- `docs/sc-cron/requirements.md` — row-limit sentences under [REQ-CRON-0003](../../sc-cron/requirements.md) / REQ-CRON-0004 only.
+- `docs/sc-cron/requirements.md` — [REQ-CRON-0001](../../sc-cron/requirements.md) manifest-dependency sentence (template may name `sc-cron` in comments/schema without a Cargo dep); row-limit sentences under REQ-CRON-0003 / REQ-CRON-0004 only.
 - `docs/sc-cron/architecture.md` — row-limit, `ScheduleLimits`, and template wiring sections only (not Monty host-bridge text).
-- `docs/architecture.md` — [ADR-RUN-0014](../../architecture.md) row-limit summary cross-link only (not ADR-RUN-0013 / Monty bridge sections owned by `b-10`).
+- `docs/architecture.md` — [ADR-RUN-0014](../../architecture.md) row-limit summary cross-link; [ADR-RUN-0013](../../architecture.md) decision point 1 template-dependency sentence only (`b-10` owns point 4 and Monty host-bridge text).
 
 ## Goal
 
