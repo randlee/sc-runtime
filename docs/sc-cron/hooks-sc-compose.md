@@ -19,7 +19,15 @@ and is roughly **7× faster** with **~2× lower RSS** than a
 **What ships:** production Monty feeds run through `monty_run::execute_feed`.
 That function may call `MontyRepl::feed_start` internally and resume
 `render_template` by spawning **`sc-compose`** on `PATH` against a temp root
-the hook cannot choose. The tick does not start CPython. The standalone lab
+the hook cannot choose. The tick does not start CPython.
+
+**Program name:** production always spawns `sc-compose`. That name is not an
+embedder setting. Install the Rust `sc-compose` binary on `PATH`, or symlink
+that name onto `PATH`. A missing binary records `Failed` with
+`COMPOSE_NOT_FOUND`. The child is killed, with its process group, when the
+row's host deadline elapses.
+
+The standalone lab
 `MontyRepl::feed_start` loop in `sc_compose_bench` is not the production path.
 
 Do not import PyO3 `sc_compose` inside the Monty VM; sc-cron does not use

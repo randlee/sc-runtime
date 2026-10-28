@@ -153,6 +153,72 @@ impl ComposeInjection<'static> {
     }
 }
 
+/// Inputs for one blocking-pool feed shared by the worker and `run_due`.
+pub(crate) struct FeedLaunch {
+    /// Repl from the previous feed of this generation, if any.
+    pub(crate) session: Option<MontySession>,
+    /// Hook source.
+    pub(crate) source: String,
+    /// Stop or tick.
+    pub(crate) phase: MontyPhase,
+    /// Schedule generation the repl must match.
+    pub(crate) generation: Generation,
+    /// Schedule name placed in the hook JSON.
+    pub(crate) name: crate::ScheduleName,
+    /// Schedule payload placed in the hook JSON.
+    pub(crate) payload: Value,
+    /// Schedule timeout placed in the hook JSON.
+    pub(crate) timeout: crate::RunTimeout,
+    /// Monotonic deadline for this run.
+    pub(crate) deadline: Instant,
+}
+
+/// Builds the hook request and runs one feed on the blocking pool.
+///
+/// The worker and [`crate::Scheduler::run_due`] both call this so the request,
+/// the blocking handoff, and a panicked task are handled once.
+pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
+    clock: &C,
+    launch: FeedLaunch,
+) -> FeedDone {
+    let FeedLaunch {
+        session,
+        source,
+        phase,
+        generation,
+        name,
+        payload,
+        timeout,
+        deadline,
+    } = launch;
+    let left = deadline.saturating_duration_since(clock.monotonic_now());
+    let stamp = crate::Timestamp::from_datetime(crate::clock::wall_after(clock.now(), left));
+    let event = match phase {
+        MontyPhase::Stop => crate::HookEvent::Stop,
+        MontyPhase::Tick => crate::HookEvent::Tick,
+    };
+    let call = crate::HookCall {
+        event,
+        schedule: &name,
+        payload: &payload,
+        timeout,
+        deadline,
+    };
+    let hook = crate::hook::request(&call, stamp);
+    match tokio::task::spawn_blocking(move || {
+        execute_feed(session, &source, phase, generation, left, &hook)
+    })
+    .await
+    {
+        Ok(done) => done,
+        Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
+        Err(error) => FeedDone {
+            session: None,
+            result: FeedResult::Outcome(RunOutcome::Failed(format!("feed task failed: {error}"))),
+        },
+    }
+}
+
 /// Runs one Monty feed on the calling thread. Call this from the blocking pool.
 ///
 /// The feed calls `cron_stop(__hook)` or `cron_tick(__hook)` through
@@ -373,7 +439,7 @@ fn snippet_inputs(hook: &Value, extra_host_fns: &[&str]) -> NamedValues {
         MontyObject::function("render_template", None),
     );
     for name in extra_host_fns {
-        if *name == "render_template" || *name == "__hook" || !monty_types::is_identifier(name) {
+        if *name == "render_template" || *name == "__hook" || !crate::is_identifier(name) {
             continue;
         }
         inputs.push(
@@ -556,5 +622,38 @@ mod tests {
             done.result,
             FeedResult::Outcome(RunOutcome::TimedOut)
         ));
+    }
+
+    #[test]
+    fn a_killed_child_is_timed_out_even_before_the_clock_passes() {
+        let later = Instant::now()
+            .checked_add(Duration::from_secs(30))
+            .expect("later");
+        let done = after_compose(
+            &ComposeHostError::HostTimedOut {
+                program: "sc-compose".to_owned(),
+            },
+            FeedStage::Tick,
+            Some(later),
+        );
+        assert!(matches!(
+            done.result,
+            FeedResult::Outcome(RunOutcome::TimedOut)
+        ));
+    }
+
+    #[test]
+    fn snippet_inputs_keeps_only_crate_identifiers() {
+        let inputs = super::snippet_inputs(
+            &serde_json::json!({}),
+            &["compose_file", "a-b", "2bad", "café"],
+        );
+        let names: Vec<&str> = inputs.iter().map(|(name, _)| name).collect();
+        assert!(names.contains(&"compose_file"));
+        assert!(names.contains(&"render_template"));
+        assert!(names.contains(&"__hook"));
+        assert!(!names.contains(&"a-b"));
+        assert!(!names.contains(&"2bad"));
+        assert!(!names.contains(&"café"));
     }
 }

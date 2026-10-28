@@ -211,10 +211,9 @@ Feeds that never call `render_template` still run when the compose binary is abs
 
 Monty's `ResourceTracker` pauses `max_feed_duration` while suspended on a host
 `FunctionCall`; CLI wall time is **not** on the VM feed clock. The host times
-the child with `Instant`. If the child never exits, the blocking-pool thread
-stays occupied (same accepted stall as a Monty hook that never reaches another
-checkpoint); there is no second kill and no outcome recorded while the child
-is alive.
+the child with `Instant` and kills the child and its process group when that
+deadline is reached. The feed then records `TimedOut` and drops the repl.
+Stdout past the hook output cap is `COMPOSE_OUTPUT`.
 
 ### Dependency (`REQ-CRON-0001`, `REQ-RUN-0005`)
 
@@ -250,11 +249,10 @@ spawning `sc-compose` on `PATH` against a temp root the hook cannot choose;
 `OsCall` and any other function name fail the feed; the tick does not start
 CPython. **Replace** the `b-9` Monty timeout sentence for time inside
 `render_template`: `ResourceTracker` pauses `max_feed_duration` while the feed
-is suspended on that host call; the host times the child with `Instant`; if the
-child returns after the row's remaining budget, the outcome is
-`RunOutcome::TimedOut` and the repl is dropped when that feed returns; a child
-that never exits is the accepted blocking-pool stall with no second kill and
-no outcome while it is alive (this is **not** a Monty feed-time-limit error).
+is suspended on that host call; the host times the child with `Instant` and
+kills the child and its process group when the row's remaining budget is spent;
+the outcome is `RunOutcome::TimedOut` and the repl is dropped when that feed
+returns (this is **not** a Monty feed-time-limit error).
 Add a consequence naming sprint `b-10`.
 
 `REQ-CRON-0003` gains one sentence for that call. A missing compose program

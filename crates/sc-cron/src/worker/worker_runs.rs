@@ -11,10 +11,6 @@ use tokio::task::JoinError;
 
 use super::*;
 use crate::clock::sleep_until_monotonic;
-#[cfg(feature = "monty")]
-use crate::clock::wall_after;
-#[cfg(feature = "monty")]
-use crate::hook::request;
 
 impl<S, C> Worker<S, C>
 where
@@ -186,34 +182,20 @@ where
             .checked_add(schedule.spec.timeout.get())
             .unwrap_or(monotonic);
         let handle = tokio::spawn(async move {
-            let left = deadline.saturating_duration_since(clock.monotonic_now());
-            let stamp = Timestamp::from_datetime(wall_after(clock.now(), left));
-            let event = match phase {
-                crate::monty_run::MontyPhase::Stop => HookEvent::Stop,
-                crate::monty_run::MontyPhase::Tick => HookEvent::Tick,
-            };
-            let call = HookCall {
-                event,
-                schedule: &schedule.spec.name,
-                payload: &schedule.spec.payload,
-                timeout: schedule.spec.timeout,
-                deadline,
-            };
-            let hook = request(&call, stamp);
-            match tokio::task::spawn_blocking(move || {
-                crate::monty_run::execute_feed(session, &source, phase, generation, left, &hook)
-            })
-            .await
-            {
-                Ok(done) => done,
-                Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
-                Err(error) => crate::monty_run::FeedDone {
-                    session: None,
-                    result: crate::monty_run::FeedResult::Outcome(RunOutcome::Failed(format!(
-                        "feed task failed: {error}"
-                    ))),
+            crate::monty_run::drive_feed(
+                clock.as_ref(),
+                crate::monty_run::FeedLaunch {
+                    session,
+                    source,
+                    phase,
+                    generation,
+                    name: schedule.spec.name.clone(),
+                    payload: schedule.spec.payload.clone(),
+                    timeout: schedule.spec.timeout,
+                    deadline,
                 },
-            }
+            )
+            .await
         });
         let Some(slot) = self.slots.get_mut(index) else {
             drop(guard);
