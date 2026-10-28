@@ -12,7 +12,7 @@ A schedule uses a normal crontab string of five fields: minute, hour, day of mon
 
 ## REQ-CRON-0003: Rust, Python, or Monty hook
 
-A schedule row names the in-process `Job`, a Python module, or a third target, `Monty { source }`, when the crate is built with feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`; it has no beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. A consumer may build one that inserts rows.
+A schedule row names the in-process `Job`, a Python module, or a third target, `Monty { source }`, when the crate is built with feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`; it has no beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. A consumer may build one that inserts rows. A Monty `cron_tick` or `cron_stop` may call the host function `render_template(template, context)`; the host runs `sc-compose` on `PATH` and does not start CPython. A missing compose program during `render_template` records `RunOutcome::Failed` naming the program (not `HookFailed`).
 
 ## REQ-CRON-0004: One configuration table
 

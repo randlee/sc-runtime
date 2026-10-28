@@ -1,7 +1,7 @@
 ---
 id: b-10
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-cron
 track: cron-monty

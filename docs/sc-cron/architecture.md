@@ -45,6 +45,25 @@ pub struct ScheduleSpec {
 
 Monty source defines `cron_stop(hook)` and `cron_tick(hook)`. One REPL is retained per schedule name while no feed is active, so module state survives ticks. The worker always calls stop before tick; `disable` or `delete` skips tick, and an external replacement, disable, delete, or shutdown after a continuing stop check skips tick and drops the REPL. A REPL is never dropped or replaced before its feed returns. Monty feed time uses `ResourceLimits::max_feed_duration`; it is observed at interpreter checkpoints, has no memory limit, and is not aborted by worker shutdown. This is trusted in-process code: stack-overflow and allocator-abort risks are accepted just as they are for a Rust `Job`.
 
+Under feature `monty`, `cron_tick` or `cron_stop` may call the host function `render_template(template, context)`. Production runs that call inside `execute_feed` (which may call `feed_start` internally). The host spawns `sc-compose` on `PATH`:
+
+```text
+sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json
+```
+
+The Monty source does not choose the temp root. `--mode file` reads only those two files. Stdout is the rendered string. `--output` is omitted. `OsCall` and any other function name fail the feed. The tick does not start CPython. `ResourceTracker` pauses `max_feed_duration` while the feed is suspended on `render_template`; the host times the child with `Instant`. No new `CronError` variant. The seven variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`.
+
+| Condition | `RunOutcome` | Operator recovery |
+|---|---|---|
+| Configured compose program not found | `Failed` — detail names the program (not `HookFailed`) | Install `sc-compose` on PATH or fix the injected program name in tests. |
+| Spawn or I/O error starting the child | `Failed` | Check permissions and disk space for temp roots under `tempfile::TempDir`. |
+| CLI exits non-zero | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
+| Monty raises or denied host call (wrong arity, type, or name) | `Failed` | Fix hook source; only `render_template` is allowlisted. |
+| After the CLI returns, host `Instant` exceeds the row budget | `TimedOut` | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
+| Monty feed-time-limit while the VM is executing (not during the host suspend) | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
+
+A feed that never calls `render_template` still runs when the compose program is absent. A child that never exits occupies the blocking-pool thread; there is no second kill and no outcome while it is alive.
+
 ```rust
 #[async_trait::async_trait]
 pub trait Job: Send + Sync {

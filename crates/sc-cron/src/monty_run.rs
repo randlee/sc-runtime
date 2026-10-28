@@ -1,17 +1,18 @@
 //! One in-process Monty feed for a schedule name.
 //!
 //! The repl stays with the caller between feeds. This module never drops a
-//! repl while `feed_run` or `call_function` is on the stack. A feed-time-limit
-//! error is the only timeout; other exceptions fail the run. A source that
-//! does not compile, or that lacks `cron_stop` or `cron_tick`, is
+//! repl while `feed_run` or `feed_start` is on the stack. A feed-time-limit
+//! error is the only Monty timeout. Time inside `render_template` is measured
+//! with [`std::time::Instant`] and is not a feed-time-limit error. A source
+//! that does not compile, or that lacks `cron_stop` or `cron_tick`, is
 //! [`CronError::HookFailed`] and leaves no repl.
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
-use monty::MontyRepl;
+use monty::{MontyRepl, ReplProgress};
 use monty_types::{
-    CallArgs, CompileOptions, ExcType, MontyException, MontyObject, NamedValues, PrintWriter,
-    ResourceLimits, ResourceTracker,
+    CompileOptions, ExcType, ExtFunctionResult, MontyException, MontyObject, NamedValues,
+    PrintWriter, ResourceLimits, ResourceTracker,
 };
 use serde_json::Value;
 
@@ -19,6 +20,11 @@ use crate::{CronError, Generation, RunOutcome, StopDecision};
 
 const STOP_FN: &str = "cron_stop";
 const TICK_FN: &str = "cron_tick";
+const DENY_RECOVERY: &str = "Fix hook source; only `render_template` is allowlisted.";
+#[cfg(feature = "test-utils")]
+const TEST_COMPOSE_PROGRAM: &str = "# sc-cron-test-compose-program:";
+#[cfg(feature = "test-utils")]
+const TEST_HOST_FN: &str = "# sc-cron-test-host-fn:";
 
 /// Which function one feed calls. The first feed of a generation also compiles
 /// `source`.
@@ -51,6 +57,10 @@ pub(crate) enum FeedResult {
 }
 
 /// Runs one Monty feed on the calling thread. Call this from the blocking pool.
+///
+/// The feed calls `cron_stop(__hook)` or `cron_tick(__hook)` through
+/// `feed_start`. A hook may call host function `render_template`; any other
+/// host function or `OsCall` fails the feed and drops the repl.
 pub(crate) fn execute_feed(
     mut session: Option<MontySession>,
     source: &str,
@@ -85,41 +95,38 @@ pub(crate) fn execute_feed(
         .repl
         .tracker_mut()
         .set_max_feed_duration(feed_budget(call_budget));
-    let mut args = CallArgs::new();
-    args.push_arg(json_to_monty(hook));
-    let function = match phase {
-        MontyPhase::Stop => STOP_FN,
-        MontyPhase::Tick => TICK_FN,
+    let label = phase_label(phase);
+    let compose_program = compose_program_name(source);
+    let host_deadline = Instant::now().checked_add(call_budget);
+    let MontySession { repl, generation } = session;
+    let repl = *repl;
+    let mut progress = match repl.feed_start(
+        phase_snippet(phase),
+        snippet_inputs(source, hook),
+        PrintWriter::Disabled,
+    ) {
+        Ok(progress) => progress,
+        Err(error) => return from_exception(error.error, label),
     };
-    let called = session
-        .repl
-        .call_function(function, args, PrintWriter::Disabled);
-    match phase {
-        MontyPhase::Stop => match called {
-            Ok(value) => match parse_stop(&value) {
-                Ok(StopDecision::Continue) => FeedDone {
-                    session: Some(session),
-                    result: FeedResult::Continue,
-                },
-                Ok(StopDecision::Disable(reason)) => FeedDone {
-                    session: Some(session),
-                    result: FeedResult::Disable(reason),
-                },
-                Ok(StopDecision::Delete(reason)) => FeedDone {
-                    session: Some(session),
-                    result: FeedResult::Delete(reason),
-                },
-                Err(why) => failed(format!("stop check: {why}")),
-            },
-            Err(error) => from_exception(error, "stop check"),
-        },
-        MontyPhase::Tick => match called {
-            Ok(_) => FeedDone {
-                session: Some(session),
-                result: FeedResult::Outcome(RunOutcome::Ok),
-            },
-            Err(error) => from_exception(error, "tick"),
-        },
+    loop {
+        progress = match progress {
+            ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
+                match resume_render(call, label, &compose_program, host_deadline) {
+                    Ok(next) => next,
+                    Err(done) => return done,
+                }
+            }
+            ReplProgress::Complete { repl, value } => {
+                return finish_phase(phase, generation, repl, &value);
+            }
+            ReplProgress::FunctionCall(call) => {
+                return denied(label, &format!("host function {}", call.function_name));
+            }
+            ReplProgress::OsCall(_) => return denied(label, "os call"),
+            ReplProgress::NameLookup(_) | ReplProgress::ResolveFutures(_) => {
+                return denied(label, "host call");
+            }
+        };
     }
 }
 
@@ -227,19 +234,163 @@ fn parse_stop(value: &MontyObject) -> Result<StopDecision, String> {
     }
 }
 
-fn json_to_monty(value: &Value) -> MontyObject {
-    match value {
-        Value::Null => MontyObject::none(),
-        Value::Bool(item) => MontyObject::bool(*item),
-        Value::Number(number) => number.as_i64().map_or_else(
-            || MontyObject::float(number.as_f64().unwrap_or(0.0)),
-            MontyObject::int,
-        ),
-        Value::String(text) => MontyObject::string(text.clone()),
-        Value::Array(items) => MontyObject::list(items.iter().map(json_to_monty)),
-        Value::Object(map) => MontyObject::dict(
-            map.iter()
-                .map(|(key, item)| (MontyObject::string(key.clone()), json_to_monty(item))),
-        ),
+fn phase_label(phase: MontyPhase) -> &'static str {
+    match phase {
+        MontyPhase::Stop => "stop check",
+        MontyPhase::Tick => "tick",
+    }
+}
+
+fn phase_snippet(phase: MontyPhase) -> &'static str {
+    match phase {
+        MontyPhase::Stop => "cron_stop(__hook)",
+        MontyPhase::Tick => "cron_tick(__hook)",
+    }
+}
+
+fn snippet_inputs(source: &str, hook: &Value) -> NamedValues {
+    let mut inputs = NamedValues::new();
+    inputs.push("__hook", crate::monty_host::json_to_monty(hook));
+    inputs.push(
+        "render_template",
+        MontyObject::function("render_template", None),
+    );
+    #[cfg(feature = "test-utils")]
+    bind_test_host_fn(source, &mut inputs);
+    #[cfg(not(feature = "test-utils"))]
+    let _ = source;
+    inputs
+}
+
+fn compose_program_name(source: &str) -> String {
+    #[cfg(feature = "test-utils")]
+    if let Some(name) = test_directive(source, TEST_COMPOSE_PROGRAM) {
+        return name;
+    }
+    #[cfg(not(feature = "test-utils"))]
+    let _ = source;
+    "sc-compose".to_owned()
+}
+
+#[cfg(feature = "test-utils")]
+fn bind_test_host_fn(source: &str, inputs: &mut NamedValues) {
+    let Some(name) = test_directive(source, TEST_HOST_FN) else {
+        return;
+    };
+    if name == "render_template" || name == "__hook" || !monty_types::is_identifier(&name) {
+        return;
+    }
+    inputs.push(name.clone(), MontyObject::function(name, None));
+}
+
+#[cfg(feature = "test-utils")]
+fn test_directive(source: &str, prefix: &str) -> Option<String> {
+    source.lines().find_map(|line| {
+        let value = line.trim().strip_prefix(prefix)?.trim();
+        if value.is_empty() || value.split_whitespace().nth(1).is_some() {
+            None
+        } else {
+            Some(value.to_owned())
+        }
+    })
+}
+
+fn resume_render(
+    call: monty::ReplFunctionCall,
+    label: &str,
+    compose_program: &str,
+    host_deadline: Option<Instant>,
+) -> Result<ReplProgress, FeedDone> {
+    let (template, context) = match render_arguments(&call) {
+        Ok(ready) => ready,
+        Err(why) => return Err(denied(label, why)),
+    };
+    let rendered = match crate::monty_host::render_template(&template, &context, compose_program) {
+        Ok(rendered) => rendered,
+        Err(error) => {
+            let missing = matches!(
+                error,
+                crate::monty_host::ComposeHostError::ProgramNotFound { .. }
+            );
+            if !missing && crate::monty_host::host_budget_exhausted(host_deadline) {
+                return Err(timed_out());
+            }
+            return Err(compose_failed(label, &error));
+        }
+    };
+    if crate::monty_host::host_budget_exhausted(host_deadline) {
+        return Err(timed_out());
+    }
+    match call.resume(
+        ExtFunctionResult::Return(MontyObject::string(rendered)),
+        PrintWriter::Disabled,
+    ) {
+        Ok(next) => Ok(next),
+        Err(error) => Err(from_exception(error.error, label)),
+    }
+}
+
+fn render_arguments(call: &monty::ReplFunctionCall) -> Result<(String, Value), &'static str> {
+    if call.args.args().len() != 2 || call.args.kwargs().len() != 0 {
+        return Err("render_template expects a string template and one context value");
+    }
+    let template = call
+        .args
+        .arg(0)
+        .and_then(|value| value.as_str().map(str::to_owned))
+        .ok_or("render_template template must be a string")?;
+    let context = call
+        .args
+        .arg(1)
+        .ok_or("render_template expects a string template and one context value")?;
+    crate::monty_host::monty_value_to_json(context)
+        .map(|context| (template, context))
+        .map_err(|_| "render_template context is not a JSON value")
+}
+
+fn finish_phase(
+    phase: MontyPhase,
+    generation: Generation,
+    repl: MontyRepl,
+    value: &MontyObject,
+) -> FeedDone {
+    match phase {
+        MontyPhase::Stop => match parse_stop(value) {
+            Ok(StopDecision::Continue) => kept(repl, generation, FeedResult::Continue),
+            Ok(StopDecision::Disable(reason)) => {
+                kept(repl, generation, FeedResult::Disable(reason))
+            }
+            Ok(StopDecision::Delete(reason)) => kept(repl, generation, FeedResult::Delete(reason)),
+            Err(why) => {
+                drop(repl);
+                failed(format!("stop check: {why}"))
+            }
+        },
+        MontyPhase::Tick => kept(repl, generation, FeedResult::Outcome(RunOutcome::Ok)),
+    }
+}
+
+fn kept(repl: MontyRepl, generation: Generation, result: FeedResult) -> FeedDone {
+    FeedDone {
+        session: Some(MontySession {
+            repl: Box::new(repl),
+            generation,
+        }),
+        result,
+    }
+}
+
+fn denied(label: &str, why: &str) -> FeedDone {
+    failed(format!("{label}: {why}; {DENY_RECOVERY}"))
+}
+
+fn compose_failed(label: &str, error: &crate::monty_host::ComposeHostError) -> FeedDone {
+    failed(format!("{label}: {error}; {}", error.recovery()))
+}
+
+fn timed_out() -> FeedDone {
+    FeedDone {
+        session: None,
+        result: FeedResult::Outcome(RunOutcome::TimedOut),
     }
 }

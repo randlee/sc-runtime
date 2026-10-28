@@ -63,6 +63,10 @@ name = "monty_hook"
 required-features = ["monty"]
 
 [[test]]
+name = "monty_host_bridge"
+required-features = ["monty"]
+
+[[test]]
 name = "sc_compose_hook"
 
 [[test]]
