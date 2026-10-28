@@ -101,7 +101,7 @@ The Monty source does not choose the temp root. `--mode file` reads only those t
 | Stdout is not UTF-8 (`OutputNotUtf8`) | `COMPOSE_OUTPUT` | `Failed` | Fix the compose program so its stdout is UTF-8. |
 | Stdout longer than the hook output cap (`OutputTooLarge`) | `COMPOSE_OUTPUT` | `Failed` | Shrink the rendered output. |
 | CLI exits non-zero (`NonZeroExit`) | `COMPOSE_EXIT` | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
-| Denied `sc-compose` subcommand (`SubcommandDenied`) | `COMPOSE_SUBCOMMAND` | `Failed` | Call `sc_compose_run` with subcommand `render`. The host stages a temp root and ignores a hook-chosen root; other subcommands are denied. |
+| Denied `sc-compose` subcommand (`SubcommandDenied`) | `COMPOSE_SUBCOMMAND` | `Failed` | Call `sc_compose_run` with subcommand `render` only. `bead`, `init`, and `extract` are denied. |
 | Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
 | Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
 | `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |

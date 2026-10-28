@@ -78,10 +78,11 @@ Production resumes those calls inside `execute_feed`, which spawns Rust
 - **`sc_compose_run`** accepts only subcommand **`render`**. Arguments are
   `[template]` or `[template, context_json]`. The host stages the same temp
   root and argv as `render_template` and ignores a hook-chosen `--root`.
-  A successful call returns `{stdout, stderr, exit_code}`. A non-zero
-  `render` exit fails the tick with `COMPOSE_EXIT`, the same as
-  `render_template`. `bead`, `init`, `extract`, and any other subcommand
-  record `COMPOSE_SUBCOMMAND` and do not spawn.
+  A successful call returns `{stdout, stderr, exit_code}` (`exit_code` is 0;
+  `stderr` is empty because the host keeps the rendered stdout, the same way
+  `render_template` does). A non-zero `render` exit fails the tick with
+  `COMPOSE_EXIT` before that dict is returned. `bead`, `init`, `extract`, and
+  any other subcommand record `COMPOSE_SUBCOMMAND` and do not spawn.
 
 Pure in-VM logic (no compose) stays in Monty without calling either host
 function; state can persist in the per-schedule REPL across ticks. The bench's

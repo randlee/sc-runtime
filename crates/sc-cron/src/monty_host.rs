@@ -114,8 +114,9 @@ pub(crate) fn sc_compose_subcommand_allowed(subcommand: &str) -> bool {
 /// Runs `sc-compose render` in a crate-owned temp root.
 ///
 /// `args` is a template string and an optional JSON context string, the same
-/// files [`render_template`] stages. A `--root` pair is ignored. Any other
-/// subcommand (`bead`, `init`, `extract`, and the rest of `sc-compose --help`)
+/// files [`render_template`] stages. A `--root` pair or `--root=` value is
+/// ignored. Any other subcommand (`bead`, `init`, `extract`, and the rest of
+/// `sc-compose --help`)
 /// or a CLI flag is [`ComposeHostError::SubcommandDenied`]. A non-zero child
 /// exit fails the same way as [`render_template`].
 ///
@@ -460,6 +461,14 @@ mod tests {
             }
             .to_string()
             .contains("signal")
+        );
+        let denied = ComposeHostError::SubcommandDenied {
+            subcommand: "bead".to_owned(),
+        };
+        assert_eq!(denied.code(), "COMPOSE_SUBCOMMAND");
+        assert_eq!(
+            denied.recovery(),
+            "Call `sc_compose_run` with subcommand `render` only. `bead`, `init`, and `extract` are denied."
         );
     }
 
@@ -812,6 +821,7 @@ def cron_tick(hook):
                 "/tmp/hook-chosen".to_owned(),
                 "Hello {{ name }}".to_owned(),
                 r#"{"name":"cron"}"#.to_owned(),
+                "--root=/tmp/sc-cron-hook-chosen-root-eq".to_owned(),
             ],
             ComposeProgram::new(program),
             None,
@@ -819,14 +829,21 @@ def cron_tick(hook):
         .expect("staged render");
         assert_eq!(result.exit_code, Some(0));
         assert_eq!(result.stdout, "rendered");
+        assert!(result.stderr.is_empty(), "{result:?}");
         let argv = std::fs::read_to_string(dir.path().join("argv.txt")).expect("argv");
+        let cwd = std::fs::read_to_string(dir.path().join("cwd.txt")).expect("cwd");
         let staged_root = argv
             .lines()
             .skip_while(|line| *line != "--root")
             .nth(1)
             .expect("staged --root");
-        assert_ne!(staged_root, "/tmp/hook-chosen");
-        assert!(staged_root.starts_with('/'), "{staged_root}");
+        let cwd = cwd.trim();
+        assert!(
+            staged_root == cwd
+                || cwd.strip_prefix("/private") == Some(staged_root)
+                || staged_root.strip_prefix("/private") == Some(cwd),
+            "staged {staged_root} cwd {cwd} argv={argv}"
+        );
         assert!(!argv.contains("hook-chosen"), "{argv}");
         for flag in [
             "render",
@@ -854,6 +871,7 @@ def cron_tick(hook):
 "#;
         let detail = failed_detail(run_tick(source));
         assert!(detail.contains("COMPOSE_SUBCOMMAND"), "{detail}");
+        assert!(detail.contains("subcommand `render` only"), "{detail}");
     }
 
     #[cfg(unix)]
