@@ -2,7 +2,7 @@
 //! The interpreter runs on the blocking pool in real time; a test waits on a
 //! store write, and sleeps only to sample a feed that has not returned yet.
 
-#![allow(clippy::expect_used)]
+#![expect(clippy::expect_used, reason = "integration test harness")]
 
 mod common;
 

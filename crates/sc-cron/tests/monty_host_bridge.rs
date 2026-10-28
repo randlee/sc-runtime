@@ -7,7 +7,7 @@
 //! injection of those values lives in `monty_host`'s unit tests
 //! (`execute_feed_with_compose_program`).
 
-#![allow(clippy::expect_used)]
+#![expect(clippy::expect_used, reason = "integration test harness")]
 
 mod common;
 
