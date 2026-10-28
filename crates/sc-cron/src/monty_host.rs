@@ -77,14 +77,13 @@ pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
 /// when `context` cannot be encoded, [`ComposeHostError::ProgramNotRunnable`]
 /// when the process cannot be started, [`ComposeHostError::OutputNotUtf8`] when
 /// stdout is not UTF-8, [`ComposeHostError::OutputTooLarge`] when stdout
-/// exceeds the hook output cap, [`ComposeHostError::HostTimedOut`] when the
-/// host budget expires while waiting on the compose group, and
-/// [`ComposeHostError::NonZeroExit`] when the child exits non-zero.
+/// exceeds the hook output cap, and [`ComposeHostError::NonZeroExit`]
+/// when the child exits non-zero. The caller records a timeout after this
+/// function returns when the host clock is past the row budget.
 pub(crate) fn render_template(
     template: &str,
     context: &Value,
     compose_program: ComposeProgram<'_>,
-    host_deadline: Option<Instant>,
 ) -> Result<String, ComposeHostError> {
     let program = compose_program.as_str();
     let dir = tempfile::TempDir::new().map_err(|source| ComposeHostError::TempRootFailed {
@@ -100,7 +99,7 @@ pub(crate) fn render_template(
         })?;
     std::fs::write(root.join("v.json"), context_bytes)
         .map_err(|source| stage_failed(program, source))?;
-    crate::monty_compose::run_compose_child(program, root, host_deadline)
+    crate::monty_compose::run_compose_child(program, root)
 }
 
 fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
@@ -378,7 +377,6 @@ mod tests {
             "Hello",
             &json!({}),
             ComposeProgram::new("sc-cron-missing-compose-b10"),
-            None,
         )
         .expect_err("missing");
         assert!(
@@ -533,7 +531,6 @@ def cron_tick(hook):
             "Hello {{ name }}",
             &json!({"name": "cron"}),
             ComposeProgram::SC_COMPOSE,
-            None,
         )
         .expect("sc-compose");
         assert!(
@@ -568,13 +565,8 @@ def cron_tick(hook):
         let dir = tempfile::TempDir::new().expect("dir");
         let script = linked_fixture(dir.path(), "compose-stub", "compose_record_argv.sh");
         let program = script.to_str().expect("utf8 path");
-        let rendered = render_template(
-            "ignored",
-            &json!({"n": 1}),
-            ComposeProgram::new(program),
-            None,
-        )
-        .expect("stub");
+        let rendered = render_template("ignored", &json!({"n": 1}), ComposeProgram::new(program))
+            .expect("stub");
         assert_eq!(rendered, "rendered");
         let argv = std::fs::read_to_string(dir.path().join("argv.txt")).expect("argv");
         for flag in [
@@ -623,7 +615,7 @@ def cron_tick(hook):
         let script = fixture_path("compose_fail.sh");
         let program = script.to_str().expect("utf8 path");
         let error =
-            render_template("t", &json!({}), ComposeProgram::new(program), None).expect_err("exit");
+            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("exit");
         match error {
             ComposeHostError::NonZeroExit { status, stderr } => {
                 assert_eq!(status, Some(7));
@@ -642,8 +634,8 @@ def cron_tick(hook):
             std::fs::set_permissions(&blocked, permissions).expect("chmod");
         }
         let program = blocked.to_str().expect("utf8 path");
-        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
-            .expect_err("spawn");
+        let error =
+            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("spawn");
         assert!(
             matches!(error, ComposeHostError::ProgramNotRunnable { .. }),
             "{error}"
@@ -657,8 +649,8 @@ def cron_tick(hook):
     fn stdout_past_the_hook_cap_is_compose_output() {
         let script = fixture_path("compose_flood.sh");
         let program = script.to_str().expect("utf8 path");
-        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
-            .expect_err("flood");
+        let error =
+            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("flood");
         assert!(
             matches!(error, ComposeHostError::OutputTooLarge { .. }),
             "{error}"
