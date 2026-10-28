@@ -61,6 +61,11 @@ pub(crate) enum ComposeHostError {
         /// Capped stderr text from the child.
         stderr: String,
     },
+    /// The host row budget expired while waiting on the compose child group.
+    HostTimedOut {
+        /// Program name or path that was still running.
+        program: String,
+    },
 }
 
 impl ComposeHostError {
@@ -83,6 +88,7 @@ impl ComposeHostError {
             Self::ProgramNotRunnable { .. } => "COMPOSE_NOT_RUNNABLE",
             Self::OutputNotUtf8 { .. } | Self::OutputTooLarge { .. } => "COMPOSE_OUTPUT",
             Self::NonZeroExit { .. } => "COMPOSE_EXIT",
+            Self::HostTimedOut { .. } => "COMPOSE_HOST_TIMEOUT",
         }
     }
 
@@ -108,6 +114,9 @@ impl ComposeHostError {
             }
             Self::NonZeroExit { .. } => {
                 "Fix template/context or run `sc-compose render` manually with the logged stderr."
+            }
+            Self::HostTimedOut { .. } => {
+                "Reduce compose work or raise the row deadline; the compose group was stopped at the host budget."
             }
         }
     }
@@ -156,6 +165,12 @@ impl fmt::Display for ComposeHostError {
                 Some(status) => write!(formatter, "compose exited {status}: {stderr}"),
                 None => write!(formatter, "compose exited from a signal: {stderr}"),
             },
+            Self::HostTimedOut { program } => {
+                write!(
+                    formatter,
+                    "compose program {program} exceeded the host row budget"
+                )
+            }
         }
     }
 }
@@ -170,7 +185,8 @@ impl std::error::Error for ComposeHostError {
             Self::ProgramNotFound { .. }
             | Self::OutputNotUtf8 { .. }
             | Self::OutputTooLarge { .. }
-            | Self::NonZeroExit { .. } => None,
+            | Self::NonZeroExit { .. }
+            | Self::HostTimedOut { .. } => None,
         }
     }
 }
