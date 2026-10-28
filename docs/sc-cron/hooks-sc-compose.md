@@ -24,8 +24,8 @@ the hook cannot choose. The tick does not start CPython.
 **Program name:** production always spawns `sc-compose`. That name is not an
 embedder setting. Install the Rust `sc-compose` binary on `PATH`, or symlink
 that name onto `PATH`. A missing binary records `Failed` with
-`COMPOSE_NOT_FOUND`. The blocking-pool thread stalls until that child exits.
-After the child exits, a host `Instant` past the row budget records `TimedOut`.
+`COMPOSE_NOT_FOUND`. The child is killed, with its process group, when the
+row's host deadline elapses.
 
 The standalone lab
 `MontyRepl::feed_start` loop in `sc_compose_bench` is not the production path.

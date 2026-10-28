@@ -91,7 +91,7 @@ table. This sprint does not parse expressions and does not add a table.
 
 The `render_template` / `ComposeHostError` contract below is the same contract
 as `docs/sc-cron/architecture.md` and `crates/sc-cron/src/monty_host.rs`:
-`ComposeProgram`, and eight crate-private `ComposeHostError` variants.
+`ComposeProgram`, and nine crate-private `ComposeHostError` variants.
 `CronError` stays the seven public variants.
 
 `MontyRepl::call_function` cannot resume host functions on monty 1.4.0; only
@@ -121,6 +121,7 @@ pub(crate) enum ComposeHostError {
     ProgramNotRunnable { program: String, source: std::io::Error },
     OutputNotUtf8 { program: String },
     OutputTooLarge { program: String },
+    HostTimedOut { program: String },
     NonZeroExit { status: Option<i32>, stderr: String },
 }
 
@@ -133,6 +134,7 @@ pub(crate) fn render_template(
     template: &str,
     context: &serde_json::Value,
     compose_program: ComposeProgram<'_>,
+    host_deadline: Option<std::time::Instant>,
 ) -> Result<String, ComposeHostError>;
 ```
 
@@ -158,7 +160,7 @@ loop {
             let template = template_ref.as_str().ok_or_else(|| denied(...))?;
             let context_ref = call.args.arg(1).ok_or_else(|| denied(...))?;
             let context = monty_host::monty_value_to_json(context_ref)?;
-            let rendered = monty_host::render_template(template, &context, compose_program)?; // ComposeProgram; map Err to FeedDone, do not return it from execute_feed
+            let rendered = monty_host::render_template(template, &context, compose_program, host_deadline)?; // ComposeProgram; map Err to FeedDone, do not return it from execute_feed
             call.resume(
                 monty_types::ExtFunctionResult::Return(monty_types::MontyObject::string(rendered)),
                 monty_types::PrintWriter::Disabled,
@@ -216,13 +218,15 @@ No new `CronError` variant.
 | `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
 | `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
-| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
+| Host deadline while the child runs, or the child returns after that deadline (`HostTimedOut`) | `COMPOSE_HOST_TIMEOUT` | `TimedOut`, session dropped, spawned child killed. The stored outcome is bare `TimedOut`; `COMPOSE_HOST_TIMEOUT` is `ComposeHostError::code` for that variant. | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
 | Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
 
 Feeds that never call `render_template` still run when the compose binary is absent.
 
 Monty's `ResourceTracker` pauses `max_feed_duration` while suspended on a host
-`FunctionCall`; CLI wall time is **not** on the VM feed clock. The blocking-pool thread stalls until the compose `Command` returns. After that child exits, a host `Instant` past the row budget records `TimedOut`. The feed then records bare `RunOutcome::TimedOut` (no code token in the stored outcome) and drops the repl.
+`FunctionCall`; CLI wall time is **not** on the VM feed clock. The host times
+the child with `Instant` and kills the child and its process group when that
+deadline is reached. The feed then records bare `RunOutcome::TimedOut` (no code token in the stored outcome) and drops the repl.
 Stdout past the hook output cap is `COMPOSE_OUTPUT`.
 
 ### Dependency (`REQ-CRON-0001`, `REQ-RUN-0005`)
@@ -240,10 +244,11 @@ expiry. It is an async future polled on a tokio runtime. `render_template`
 runs on the blocking pool inside `spawn_blocking` (ADR-RUN-0007,
 ADR-RUN-0011). Driving `supervise` from that thread would require
 `block_on`, which the sleep gate rejects and which stalls a current-thread
-runtime. The host stalls on `std::process::Child::wait` until the compose
-child exits. It does not kill the child when the row budget elapses, and it
-does not call `process::supervise`. After the child exits, a host `Instant`
-past the row budget records `TimedOut`.
+runtime. The host uses `process-wrap`'s synchronous `CommandWrap` with
+`ProcessGroup` (Unix) or `JobObject` (Windows), the same wrappers
+`supervise` applies. The wait parks between `try_wait` calls so the deadline
+can `start_kill` that spawned child's group. Enabling the existing
+`process-wrap` `std` feature adds no crate.
 
 `NFR-RUN-0008`: `monty_host.rs`, `monty_compose.rs`, and `monty_run.rs` stay within 1000 source
 lines. `NFR-RUN-0009`: public fallible functions still return `CronError`.
@@ -269,7 +274,10 @@ spawning `sc-compose` on `PATH` against a temp root the hook cannot choose;
 `OsCall` and any other function name fail the feed; the tick does not start
 CPython. **Replace** the `b-9` Monty timeout sentence for time inside
 `render_template`: `ResourceTracker` pauses `max_feed_duration` while the feed
-is suspended on that host call; the blocking-pool thread stalls until the compose `Command` returns; after that child exits, a host `Instant` past the row budget records `RunOutcome::TimedOut` and drops the repl (this is **not** a Monty feed-time-limit error).
+is suspended on that host call; the host times the child with `Instant` and
+kills the child and its process group when the row's remaining budget is spent;
+the outcome is `RunOutcome::TimedOut` and the repl is dropped when that feed
+returns (this is **not** a Monty feed-time-limit error).
 Add a consequence naming sprint `b-10`.
 
 `REQ-CRON-0003` gains one sentence for that call. A missing compose program
@@ -287,7 +295,7 @@ lab `MontyRepl::feed_start` in the bench is not the production path.
 4. `NFR-RUN-0005`: the bridge test uses `tempfile::TempDir`, injects the compose program name (not PATH mutation), and does not call `std::env::set_var`.
 5. ADR-RUN-0013 point 4 (including the `render_template` host-timeout sentence above), the new consequence, the `REQ-CRON-0003` sentence, and the hooks note.
 6. `REQ-CRON-0002` and `REQ-CRON-0004`: no expression-parser change and no new table.
-7. `NFR-RUN-0004`: the compose child is waited with `std::process::Child::wait` on the blocking-pool thread, as justified above, and does not call `process::supervise` or stop the child at the row budget.
+7. `NFR-RUN-0004`: the compose child uses `process-wrap`'s synchronous process group, as justified above, and does not call `process::supervise`.
 8. `NFR-RUN-0008`: `monty_host.rs`, `monty_compose.rs`, and `monty_run.rs` stay within 1000 source lines.
 
 ## Acceptance criteria

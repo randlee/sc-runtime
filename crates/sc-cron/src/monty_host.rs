@@ -45,9 +45,8 @@ impl fmt::Display for ComposeProgram<'_> {
 
 /// How `render_template` failed.
 ///
-/// Every variant is recorded as [`crate::RunOutcome::Failed`].
-/// After the child exits, the feed records [`crate::RunOutcome::TimedOut`]
-/// when the host [`std::time::Instant`] is past the row budget.
+/// [`Self::HostTimedOut`] is recorded as [`crate::RunOutcome::TimedOut`].
+/// Every other variant is recorded as [`crate::RunOutcome::Failed`].
 /// These variants are not [`crate::CronError`] variants.
 #[derive(Debug)]
 pub(crate) enum ComposeHostError {
@@ -101,6 +100,14 @@ pub(crate) enum ComposeHostError {
         /// Capped stderr text from the child.
         stderr: String,
     },
+    /// The host deadline passed while the compose child was still running.
+    ///
+    /// The child was killed and reaped. On Unix it is a process-group leader,
+    /// so that signal also reaches grandchildren. This is not a machine-wide kill.
+    HostTimedOut {
+        /// Program name or path that was still running.
+        program: String,
+    },
 }
 
 impl ComposeHostError {
@@ -114,6 +121,7 @@ impl ComposeHostError {
             Self::ProgramNotRunnable { .. } => "COMPOSE_NOT_RUNNABLE",
             Self::OutputNotUtf8 { .. } | Self::OutputTooLarge { .. } => "COMPOSE_OUTPUT",
             Self::NonZeroExit { .. } => "COMPOSE_EXIT",
+            Self::HostTimedOut { .. } => "COMPOSE_HOST_TIMEOUT",
         }
     }
 
@@ -139,6 +147,9 @@ impl ComposeHostError {
             }
             Self::NonZeroExit { .. } => {
                 "Fix template/context or run `sc-compose render` manually with the logged stderr."
+            }
+            Self::HostTimedOut { .. } => {
+                "Reduce compose work or raise the row deadline; the compose child was stopped at the host budget."
             }
         }
     }
@@ -187,6 +198,12 @@ impl fmt::Display for ComposeHostError {
                 Some(status) => write!(formatter, "compose exited {status}: {stderr}"),
                 None => write!(formatter, "compose exited from a signal: {stderr}"),
             },
+            Self::HostTimedOut { program } => {
+                write!(
+                    formatter,
+                    "compose program {program} exceeded the host row budget"
+                )
+            }
         }
     }
 }
@@ -201,7 +218,8 @@ impl std::error::Error for ComposeHostError {
             Self::ProgramNotFound { .. }
             | Self::OutputNotUtf8 { .. }
             | Self::OutputTooLarge { .. }
-            | Self::NonZeroExit { .. } => None,
+            | Self::NonZeroExit { .. }
+            | Self::HostTimedOut { .. } => None,
         }
     }
 }
@@ -238,13 +256,14 @@ pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
 /// when `context` cannot be encoded, [`ComposeHostError::ProgramNotRunnable`]
 /// when the process cannot be started, [`ComposeHostError::OutputNotUtf8`] when
 /// stdout is not UTF-8, [`ComposeHostError::OutputTooLarge`] when stdout
-/// exceeds the hook output cap, and [`ComposeHostError::NonZeroExit`]
-/// when the child exits non-zero. The caller records a timeout after this
-/// function returns when the host clock is past the row budget.
+/// exceeds the hook output cap, [`ComposeHostError::HostTimedOut`] when the
+/// child is killed at `host_deadline`, and [`ComposeHostError::NonZeroExit`]
+/// when the child exits non-zero.
 pub(crate) fn render_template(
     template: &str,
     context: &Value,
     compose_program: ComposeProgram<'_>,
+    host_deadline: Option<Instant>,
 ) -> Result<String, ComposeHostError> {
     let program = compose_program.as_str();
     let dir = tempfile::TempDir::new().map_err(|source| ComposeHostError::TempRootFailed {
@@ -260,7 +279,7 @@ pub(crate) fn render_template(
         })?;
     std::fs::write(root.join("v.json"), context_bytes)
         .map_err(|source| stage_failed(program, source))?;
-    crate::monty_compose::run_compose_child(program, root)
+    crate::monty_compose::run_compose_child(program, root, host_deadline)
 }
 
 fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
@@ -542,6 +561,7 @@ mod tests {
             "Hello",
             &json!({}),
             ComposeProgram::new("sc-cron-missing-compose-b10"),
+            None,
         )
         .expect_err("missing");
         assert!(
@@ -696,6 +716,7 @@ def cron_tick(hook):
             "Hello {{ name }}",
             &json!({"name": "cron"}),
             ComposeProgram::SC_COMPOSE,
+            None,
         )
         .expect("sc-compose");
         assert!(
@@ -703,6 +724,42 @@ def cron_tick(hook):
             "{rendered:?}"
         );
         assert!(!rendered.contains("INFO"), "{rendered:?}");
+    }
+
+    #[cfg(unix)]
+    fn slow_compose_script(dir: &std::path::Path) -> std::path::PathBuf {
+        let path = dir.join("slow-stub");
+        let body = "#!/bin/sh\n\
+dir=$(dirname \"$0\")\n\
+printf '%s\\n' \"$$\" > \"$dir/leader.pid\"\n\
+sleep 15 &\n\
+printf '%s\\n' \"$!\" > \"$dir/child.pid\"\n\
+touch \"$dir/started\"\n\
+wait\n\
+touch \"$dir/finished\"\n\
+printf 'rendered\\n'\n";
+        std::fs::write(&path, body).expect("script");
+        use std::os::unix::fs::PermissionsExt;
+        let mut permissions = std::fs::metadata(&path).expect("meta").permissions();
+        permissions.set_mode(0o755);
+        std::fs::set_permissions(&path, permissions).expect("chmod");
+        path
+    }
+
+    #[cfg(unix)]
+    fn assert_reaped(dir: &std::path::Path) {
+        for name in ["leader.pid", "child.pid"] {
+            let text = std::fs::read_to_string(dir.join(name)).expect(name);
+            let pid: u32 = text.trim().parse().expect("pid");
+            let alive = std::process::Command::new("/bin/kill")
+                .args(["-0", &pid.to_string()])
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status()
+                .is_ok_and(|status| status.success());
+            assert!(!alive, "{name} {pid} still alive");
+        }
     }
 
     /// A checked-in fixture under `tests/fixtures/`. Mode 0755 in git.
@@ -730,8 +787,13 @@ def cron_tick(hook):
         let dir = tempfile::TempDir::new().expect("dir");
         let script = linked_fixture(dir.path(), "compose-stub", "compose_record_argv.sh");
         let program = script.to_str().expect("utf8 path");
-        let rendered = render_template("ignored", &json!({"n": 1}), ComposeProgram::new(program))
-            .expect("stub");
+        let rendered = render_template(
+            "ignored",
+            &json!({"n": 1}),
+            ComposeProgram::new(program),
+            None,
+        )
+        .expect("stub");
         assert_eq!(rendered, "rendered");
         let argv = std::fs::read_to_string(dir.path().join("argv.txt")).expect("argv");
         for flag in [
@@ -780,7 +842,7 @@ def cron_tick(hook):
         let script = fixture_path("compose_fail.sh");
         let program = script.to_str().expect("utf8 path");
         let error =
-            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("exit");
+            render_template("t", &json!({}), ComposeProgram::new(program), None).expect_err("exit");
         match error {
             ComposeHostError::NonZeroExit { status, stderr } => {
                 assert_eq!(status, Some(7));
@@ -799,8 +861,8 @@ def cron_tick(hook):
             std::fs::set_permissions(&blocked, permissions).expect("chmod");
         }
         let program = blocked.to_str().expect("utf8 path");
-        let error =
-            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("spawn");
+        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
+            .expect_err("spawn");
         assert!(
             matches!(error, ComposeHostError::ProgramNotRunnable { .. }),
             "{error}"
@@ -814,8 +876,8 @@ def cron_tick(hook):
     fn stdout_past_the_hook_cap_is_compose_output() {
         let script = fixture_path("compose_flood.sh");
         let program = script.to_str().expect("utf8 path");
-        let error =
-            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("flood");
+        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
+            .expect_err("flood");
         assert!(
             matches!(error, ComposeHostError::OutputTooLarge { .. }),
             "{error}"
@@ -827,8 +889,7 @@ def cron_tick(hook):
     #[test]
     fn a_stub_that_outlasts_the_row_budget_is_timed_out_and_drops_the_session() {
         let dir = tempfile::TempDir::new().expect("dir");
-        let started = dir.path().join("started");
-        let script = linked_fixture(dir.path(), "slow-stub", "compose_slow_touch.sh");
+        let script = slow_compose_script(dir.path());
         let program = script.to_str().expect("utf8 path");
         let source = r#"
 def cron_stop(hook):
@@ -842,15 +903,46 @@ def cron_tick(hook):
             source,
             ComposeProgram::new(program),
             &[],
-            Duration::from_secs(2),
+            Duration::from_millis(800),
         );
-        assert!(started.is_file(), "stub did not start");
+        assert!(dir.path().join("started").is_file(), "stub did not start");
+        assert!(
+            !dir.path().join("finished").exists(),
+            "stub ran past the deadline"
+        );
+        assert_reaped(dir.path());
         assert!(done.session.is_none());
         assert!(
             matches!(done.result, FeedResult::Outcome(RunOutcome::TimedOut)),
             "{:?}",
             done.result
         );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_slow_compose_child_is_killed_at_the_host_deadline_only() {
+        let dir = tempfile::TempDir::new().expect("dir");
+        let script = slow_compose_script(dir.path());
+        let program = script.to_str().expect("utf8 path");
+        let started_at = Instant::now();
+        let error = render_template(
+            "t",
+            &json!({}),
+            ComposeProgram::new(program),
+            Some(started_at + Duration::from_millis(1500)),
+        )
+        .expect_err("timeout");
+        assert!(
+            matches!(error, ComposeHostError::HostTimedOut { .. }),
+            "{error}"
+        );
+        assert!(dir.path().join("started").is_file(), "stub did not start");
+        assert!(
+            !dir.path().join("finished").exists(),
+            "stub ran past the deadline"
+        );
+        assert_reaped(dir.path());
     }
 
     #[test]
