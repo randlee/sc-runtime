@@ -64,6 +64,15 @@ pub(crate) enum ComposeHostError {
 }
 
 impl ComposeHostError {
+    /// True once the compose CLI has returned and stdout or exit status was checked.
+    #[must_use]
+    pub(crate) const fn child_exited(&self) -> bool {
+        matches!(
+            self,
+            Self::OutputNotUtf8 { .. } | Self::OutputTooLarge { .. } | Self::NonZeroExit { .. }
+        )
+    }
+
     /// Stable token stored in the `RunOutcome::Failed` detail.
     #[must_use]
     pub(crate) const fn code(&self) -> &'static str {

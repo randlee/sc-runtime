@@ -477,8 +477,7 @@ fn after_compose(
     stage: FeedStage,
     host_deadline: Option<Instant>,
 ) -> FeedDone {
-    let missing = matches!(error, ComposeHostError::ProgramNotFound { .. });
-    if !missing && crate::monty_host::host_budget_exhausted(host_deadline) {
+    if error.child_exited() && crate::monty_host::host_budget_exhausted(host_deadline) {
         return timed_out();
     }
     compose_failed(stage, error)
@@ -610,6 +609,40 @@ mod tests {
             done.result,
             FeedResult::Outcome(RunOutcome::TimedOut)
         ));
+    }
+
+    #[test]
+    fn pre_exit_compose_errors_stay_failed_when_the_host_deadline_has_passed() {
+        let past = Instant::now()
+            .checked_sub(Duration::from_secs(5))
+            .expect("past");
+        let stage = FeedStage::Tick;
+
+        let staged = ComposeHostError::StageFailed {
+            program: "sc-compose".to_owned(),
+            source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
+        };
+        let done = after_compose(&staged, stage, Some(past));
+        assert!(done.session.is_none());
+        match &done.result {
+            FeedResult::Outcome(RunOutcome::Failed(detail)) => {
+                assert!(detail.contains("COMPOSE_SPAWN"), "{detail}");
+            }
+            other => panic!("expected Failed for staging error, got {other:?}"),
+        }
+
+        let not_runnable = ComposeHostError::ProgramNotRunnable {
+            program: "sc-compose".to_owned(),
+            source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
+        };
+        let done = after_compose(&not_runnable, stage, Some(past));
+        assert!(done.session.is_none());
+        match done.result {
+            FeedResult::Outcome(RunOutcome::Failed(detail)) => {
+                assert!(detail.contains("COMPOSE_NOT_RUNNABLE"), "{detail}");
+            }
+            other => panic!("expected Failed for not-runnable error, got {other:?}"),
+        }
     }
 
     #[test]
