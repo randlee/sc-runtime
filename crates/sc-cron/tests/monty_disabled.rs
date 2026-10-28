@@ -2,7 +2,7 @@
 //! `HookFailed` without starting an interpreter.
 
 #![cfg(not(feature = "monty"))]
-#![allow(clippy::expect_used)]
+#![expect(clippy::expect_used, reason = "integration test harness")]
 
 mod common;
 

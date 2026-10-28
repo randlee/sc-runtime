@@ -10,13 +10,9 @@ use crate::CronError;
 use crate::Generation;
 use crate::HookTarget;
 use crate::clock::sleep_until_monotonic;
-#[cfg(feature = "monty")]
-use crate::clock::wall_after;
 use crate::coord::NameInFlightGuard;
 #[cfg(feature = "monty")]
 use crate::coord::RunCoord;
-#[cfg(feature = "monty")]
-use crate::hook::{HookCall, HookEvent, request};
 use crate::worker::{resolve, run_target};
 
 pub(super) async fn record_due<S, C, J>(
@@ -496,32 +492,18 @@ async fn feed_once<C: Clock + ?Sized>(
     schedule: &Schedule,
     deadline: std::time::Instant,
 ) -> crate::monty_run::FeedDone {
-    let left = deadline.saturating_duration_since(clock.monotonic_now());
-    let stamp = Timestamp::from_datetime(wall_after(clock.now(), left));
-    let event = match phase {
-        crate::monty_run::MontyPhase::Stop => HookEvent::Stop,
-        crate::monty_run::MontyPhase::Tick => HookEvent::Tick,
-    };
-    let call = HookCall {
-        event,
-        schedule: &schedule.spec.name,
-        payload: &schedule.spec.payload,
-        timeout: schedule.spec.timeout,
-        deadline,
-    };
-    let hook = request(&call, stamp);
-    match tokio::task::spawn_blocking(move || {
-        crate::monty_run::execute_feed(session, &source, phase, generation, left, &hook)
-    })
-    .await
-    {
-        Ok(done) => done,
-        Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
-        Err(error) => crate::monty_run::FeedDone {
-            session: None,
-            result: crate::monty_run::FeedResult::Outcome(RunOutcome::Failed(format!(
-                "feed task failed: {error}"
-            ))),
+    crate::monty_run::drive_feed(
+        clock,
+        crate::monty_run::FeedLaunch {
+            session,
+            source,
+            phase,
+            generation,
+            name: schedule.spec.name.clone(),
+            payload: schedule.spec.payload.clone(),
+            timeout: schedule.spec.timeout,
+            deadline,
         },
-    }
+    )
+    .await
 }

@@ -6,23 +6,33 @@ tests exercise.
 
 ## Recommendation
 
-**For compose-heavy hooks (render most ticks), prefer Monty + a host `sc-compose`
-bridge** once sc-cron implements it. Benchmarks on this repo show that pattern
-matches calling the Rust **`sc-compose` CLI** directly (~3 ms/run, ~6 MiB
-compose subprocess peak) and is roughly **7× faster** with **~2× lower RSS**
-than a **`HookTarget::Python`** hook that imports PyO3 `sc_compose` (~23 ms/run,
-~14 MiB). See
-[sc-compose-hook-comparison.report.html](sc-compose-hook-comparison.report.html).
+**For compose-heavy hooks (render most ticks), use Monty + the host `sc-compose`
+bridge.** Production resumes `render_template` inside `execute_feed` by spawning
+the Rust **`sc-compose` CLI**. Benchmarks on this repo show that pattern
+matches calling the CLI directly (~3 ms/run, ~6 MiB compose subprocess peak)
+and is roughly **7× faster** with **~2× lower RSS** than a
+**`HookTarget::Python`** hook that imports PyO3 `sc_compose` (~23 ms/run,
+~14 MiB). Regenerate numbers with the bench command under
+[Benchmarks](#benchmarks). Sprint `b-11` publishes campaign HTML under
+`site/reports/benchmark-monty/`. This note does not link a report file.
 
-**What ships today:** production Monty feeds use `MontyRepl::call_function` for
-`cron_stop` / `cron_tick` only—they do **not** resume a host `render_template`
-yet. Until the bridge lands, use **`HookTarget::Python`** (reference fixture
-below) or pre-render in the embedding **`Job`**.
+**What ships:** production Monty feeds run through `monty_run::execute_feed`.
+That function may call `MontyRepl::feed_start` internally and resume
+`render_template` by spawning **`sc-compose`** on `PATH` against a temp root
+the hook cannot choose. The tick does not start CPython.
 
-**Target bridge (lab in `sc_compose_bench`):** Monty hook code calls a host
-ext fn; the host runs **`sc-compose render`** (or an in-process compose
-engine)—**no CPython per tick**. Do not import PyO3 `sc_compose` inside the
-Monty VM; sc-cron does not use `monty-pool` / `ExternalModule` workers.
+**Program name:** production always spawns `sc-compose`. That name is not an
+embedder setting. Install the Rust `sc-compose` binary on `PATH`, or symlink
+that name onto `PATH`. A missing binary records `Failed` with
+`COMPOSE_NOT_FOUND`. The blocking-pool thread stalls until that child exits.
+After the child exits, a host `Instant` past the row budget records `TimedOut`.
+
+The standalone lab
+`MontyRepl::feed_start` loop in `sc_compose_bench` is not the production path.
+
+Do not import PyO3 `sc_compose` inside the Monty VM; sc-cron does not use
+`monty-pool` / `ExternalModule` workers. A tick that never calls
+`render_template` still runs when `sc-compose` is absent.
 
 Do not confuse this with **`pydantic_monty` + `ExternalModule` + PyO3
 `sc_compose`**: that loads the extension inside a pool worker (full CPython in
@@ -58,20 +68,20 @@ file. Requires **`sc_compose`** on the host (`pip install sc-compose`).
 
 ## Monty hook (with compose via host bridge)
 
-In **`cron_tick`**, call host-provided **`render_template(template, context)`**
-(ext fn). The host implementation should invoke Rust **`sc-compose`**, not
+In **`cron_tick`** or **`cron_stop`**, call host-provided
+**`render_template(template, context)`**. Production resumes that call inside
+`execute_feed`, which spawns Rust **`sc-compose`**, not
 `python3 -c import sc_compose`. Pure in-VM logic (no compose) stays in Monty
-without a bridge; state can persist in the per-schedule REPL across ticks.
-
-Until the bridge is productized, pass pre-rendered text in **`payload`** or use
-the Python reference hook.
+without calling `render_template`; state can persist in the per-schedule REPL
+across ticks. The bench's direct `MontyRepl::feed_start` loop is a lab
+excerpt, not the path a schedule row runs.
 
 ## Benchmarks
 
-Latest numbers (regenerated each bench run):
-[sc-compose-hook-comparison.report.html](sc-compose-hook-comparison.report.html).
-
-Optional tests (not run in default CI):
+Optional tests (not run in default CI). There is no checked-in HTML report in
+this tree. Sprint `b-11` writes campaign HTML under
+`site/reports/benchmark-monty/` and does not revive
+`sc-compose-hook-comparison.report.html`.
 
 ```bash
 # Requires sc_compose importable and feature monty for the Monty lab case.
@@ -86,14 +96,14 @@ path uses the same render script—add interpreter + sc-cron child overhead on t
 |------|---------|
 | `cpython_hook` | Full `PythonHook::invoke` path (subprocess + module import) |
 | `python_render_only` | Same render work, no sc-cron wrapper |
-| `sc_compose_cli_only` | Rust `sc-compose render` only (what the host bridge should call) |
-| `monty_host_bridge + sc-compose CLI` | Monty VM + host resume → CLI (target pattern; not wired in sc-cron yet) |
+| `sc_compose_cli_only` | Rust `sc-compose render` only (what the host bridge calls) |
+| `monty_host_bridge + sc-compose CLI` | Lab `feed_start` loop in the bench. Production is `execute_feed`, which may call `feed_start` internally. |
 
-Read the generated report for your machine. Typical outcome (release, string
+The bench prints the numbers for your machine. Typical outcome (release, string
 template): **Monty + host CLI ≈ bare CLI** (Monty overhead is small); **Python
 hook ≈ 7× slower** and **~2× higher** subprocess RSS than compose-via-CLI paths.
-Python remains appropriate when you need an **untrusted/isolated** child process
-today, or until the Monty host bridge ships.
+Python remains appropriate when you need an **untrusted/isolated** child process.
+The Monty host bridge ships in `execute_feed`, which spawns `sc-compose`.
 
 ## API notes (Gemini / pydantic_monty)
 

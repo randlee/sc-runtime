@@ -102,6 +102,12 @@ mod jitter;
 mod job;
 mod limits;
 #[cfg(feature = "monty")]
+mod monty_compose;
+#[cfg(feature = "monty")]
+mod monty_compose_common;
+#[cfg(feature = "monty")]
+mod monty_host;
+#[cfg(feature = "monty")]
 mod monty_run;
 pub mod process;
 mod scheduler;

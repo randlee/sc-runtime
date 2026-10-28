@@ -2,7 +2,7 @@
 //! The interpreter runs on the blocking pool in real time; a test waits on a
 //! store write, and sleeps only to sample a feed that has not returned yet.
 
-#![allow(clippy::expect_used)]
+#![expect(clippy::expect_used, reason = "integration test harness")]
 
 mod common;
 
@@ -143,8 +143,6 @@ const MISSING_FN: &str = r#"
 def cron_tick(hook):
     return None
 "#;
-
-const PANIC: &str = "SC_CRON_TEST_PANIC\n";
 
 fn spec(name: &str, source: &str, timeout: Duration) -> ScheduleSpec {
     ScheduleSpec::with_hook(
@@ -435,7 +433,7 @@ async fn dropping_run_due_does_not_abort_the_feed_or_start_a_second_one() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
     fixture.clock.advance(chrono::Duration::seconds(60));
-    let scheduler = fixture.scheduler.clone();
+    let scheduler = fixture.scheduler.share();
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
     tokio::time::sleep(Duration::from_millis(100)).await; // allow: monty feed runs on the blocking pool in real time
     let due = fixture.clock.now();
@@ -466,7 +464,7 @@ async fn an_awaited_run_due_records_timed_out_only_after_the_feed_returns() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("slow", TIME_LIMIT, Duration::from_secs(1)));
     fixture.clock.advance(chrono::Duration::seconds(60));
-    let scheduler = fixture.scheduler.clone();
+    let scheduler = fixture.scheduler.share();
     let id = schedule.id;
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
     tokio::time::sleep(Duration::from_millis(200)).await; // allow: monty feed runs on the blocking pool in real time
@@ -579,12 +577,12 @@ async fn source_missing_a_hook_function_is_hook_failed() {
 }
 
 #[tokio::test]
-async fn a_panicking_feed_still_lets_shutdown_finish() {
+async fn a_failing_feed_still_lets_shutdown_finish() {
     let fixture = Fixture::new();
-    let schedule = fixture.start(spec("sync", PANIC, Duration::from_secs(5)));
+    let schedule = fixture.start(spec("sync", RAISES, Duration::from_secs(5)));
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
-    wait_failed(&fixture, &schedule, "panicked").await;
+    wait_failed(&fixture, &schedule, "boom").await;
     let stopped = worker
         .shutdown(tokio::time::Instant::now() + Duration::from_secs(2))
         .await;

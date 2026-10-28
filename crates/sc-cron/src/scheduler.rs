@@ -194,19 +194,37 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource> {
     coord: Arc<RunCoord>,
 }
 
-impl<S, C, J> Clone for Scheduler<S, C, J>
+impl<S, C, J> Scheduler<S, C, J>
 where
     S: ScheduleStore,
     C: Clock,
     J: JitterSource,
 {
-    fn clone(&self) -> Self {
+    /// Returns another handle to the same store, clock, worker, and coordination state.
+    #[must_use]
+    pub fn share(&self) -> Self {
+        Self::from_parts(
+            Arc::clone(&self.core),
+            self.policy,
+            self.reload_poll,
+            Arc::clone(&self.worker_live),
+            Arc::clone(&self.coord),
+        )
+    }
+
+    fn from_parts(
+        core: Arc<Core<S, C, J>>,
+        policy: MissedTickPolicy,
+        reload_poll: Duration,
+        worker_live: Arc<AtomicBool>,
+        coord: Arc<RunCoord>,
+    ) -> Self {
         Self {
-            core: Arc::clone(&self.core),
-            policy: self.policy,
-            reload_poll: self.reload_poll,
-            worker_live: Arc::clone(&self.worker_live),
-            coord: Arc::clone(&self.coord),
+            core,
+            policy,
+            reload_poll,
+            worker_live,
+            coord,
         }
     }
 }

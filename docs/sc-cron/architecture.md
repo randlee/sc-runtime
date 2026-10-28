@@ -56,6 +56,61 @@ pub struct ScheduleSpec {
 
 Monty source defines `cron_stop(hook)` and `cron_tick(hook)`. One REPL is retained per schedule name while no feed is active, so module state survives ticks. The worker always calls stop before tick; `disable` or `delete` skips tick, and an external replacement, disable, delete, or shutdown after a continuing stop check skips tick and drops the REPL. A REPL is never dropped or replaced before its feed returns. Monty feed time uses `ResourceLimits::max_feed_duration`; it is observed at interpreter checkpoints, has no memory limit, and is not aborted by worker shutdown. This is trusted in-process code: stack-overflow and allocator-abort risks are accepted just as they are for a Rust `Job`.
 
+Under feature `monty`, `cron_tick` or `cron_stop` may call the host function `render_template(template, context)`. Production runs that call inside `execute_feed` (which may call `feed_start` internally). The host spawns `sc-compose` on `PATH`. Hook source cannot choose the program or register another host function. Tests pass a program through the crate-private `execute_feed_with_compose_program`; that function is not an embedder setting ([ADR-RUN-0013](../architecture.md) names `sc-compose`).
+
+```text
+sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json
+```
+
+```rust
+pub(crate) struct ComposeProgram<'a>(&'a str);
+
+pub(crate) enum ComposeHostError {
+    ProgramNotFound { program: String },
+    TempRootFailed { program: String, source: std::io::Error },
+    StageFailed { program: String, source: std::io::Error },
+    ContextEncodeFailed { program: String, source: serde_json::Error },
+    ProgramNotRunnable { program: String, source: std::io::Error },
+    OutputNotUtf8 { program: String },
+    OutputTooLarge { program: String },
+    NonZeroExit { status: Option<i32>, stderr: String },
+}
+
+impl ComposeHostError {
+    pub(crate) const fn code(&self) -> &'static str;
+    pub(crate) const fn recovery(&self) -> &'static str;
+}
+
+pub(crate) fn render_template(
+    template: &str,
+    context: &serde_json::Value,
+    compose_program: ComposeProgram<'_>,
+) -> Result<String, ComposeHostError>;
+```
+
+`ComposeHostError` implements `std::error::Error`. I/O and JSON failures keep their `source()`. `NonZeroExit.status` is `None` when a signal ends the child. These variants are not `CronError` variants.
+
+The Monty source does not choose the temp root. `--mode file` reads only those two files. Stdout is the rendered string. `--output` is omitted. `OsCall` and any other function name fail the feed. The tick does not start CPython. `ResourceTracker` pauses `max_feed_duration` while the feed is suspended on `render_template`; the blocking-pool thread stalls until that compose child exits. After the child exits, a host `Instant` past the row budget records `TimedOut` and drops the repl. No new `CronError` variant. The seven variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`.
+
+| Condition | Code | `RunOutcome` | Operator recovery |
+|---|---|---|---|
+| Compose program not found (`ProgramNotFound`) | `COMPOSE_NOT_FOUND` | `Failed` — detail names the program (not `HookFailed`). A passed host deadline does not turn this into `TimedOut`. | Install `sc-compose` on PATH or fix the injected program name in tests. |
+| Temp root or staged file I/O (`TempRootFailed`, `StageFailed`) | `COMPOSE_SPAWN` | `Failed` | Check permissions and disk space for temp roots under `tempfile::TempDir`. |
+| Context JSON encode (`ContextEncodeFailed`) | `COMPOSE_CONTEXT` | `Failed` | Fix the template context; it could not be encoded as JSON. |
+| Program cannot be executed (`ProgramNotRunnable`) | `COMPOSE_NOT_RUNNABLE` | `Failed` | Check that the compose program is executable and allowed to start. |
+| Stdout is not UTF-8 (`OutputNotUtf8`) | `COMPOSE_OUTPUT` | `Failed` | Fix the compose program so its stdout is UTF-8. |
+| Stdout longer than the hook output cap (`OutputTooLarge`) | `COMPOSE_OUTPUT` | `Failed` | Shrink the rendered output. |
+| CLI exits non-zero (`NonZeroExit`) | `COMPOSE_EXIT` | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
+| Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` is allowlisted. |
+| Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
+| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
+| Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
+| `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
+| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
+| Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
+
+A feed that never calls `render_template` still runs when the compose program is absent. The blocking-pool thread stalls until the compose `Command` returns. After that child exits, a host `Instant` past the row budget records bare `RunOutcome::TimedOut` (no code token in the stored outcome). Stdout and stderr are each kept up to `MAX_HOOK_OUTPUT_BYTES`. Stderr copied into a failure detail uses the same 512-byte slice as a Python hook. The program name is fixed as `sc-compose` on `PATH`; install that binary or symlink the name onto `PATH`. There is no embedder override.
+
 ```rust
 #[async_trait::async_trait]
 pub trait Job: Send + Sync {
