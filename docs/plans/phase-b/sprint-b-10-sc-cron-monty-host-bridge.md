@@ -27,14 +27,21 @@ adrs:
   - ADR-RUN-0007
 owned_paths:
   - crates/sc-cron/src/lib.rs
+  - crates/sc-cron/src/hook.rs
   - crates/sc-cron/src/monty_run.rs
   - crates/sc-cron/src/monty_host.rs
+  - crates/sc-cron/src/monty_compose.rs
+  - crates/sc-cron/src/scheduler/run_due.rs
+  - crates/sc-cron/src/worker/worker_runs.rs
   - crates/sc-cron/tests/monty_host_bridge.rs
+  - crates/sc-cron/tests/fixtures/
+  - crates/sc-cron/README.md
   - crates/sc-cron/Cargo.toml
   - docs/sc-cron/architecture.md
   - docs/sc-cron/requirements.md
   - docs/sc-cron/hooks-sc-compose.md
   - docs/architecture.md
+  - docs/project-plan.md
 must_follow: [b-9]
 parallel_safe: [b-8]
 recommended_agent: solar
@@ -82,7 +89,7 @@ table. This sprint does not parse expressions and does not add a table.
 
 The `render_template` / `ComposeHostError` contract below is the same contract
 as `docs/sc-cron/architecture.md` and `crates/sc-cron/src/monty_host.rs`:
-`ComposeProgram`, and seven crate-private `ComposeHostError` variants.
+`ComposeProgram`, and nine crate-private `ComposeHostError` variants.
 `CronError` stays the seven public variants.
 
 `MontyRepl::call_function` cannot resume host functions on monty 1.4.0; only
@@ -111,6 +118,8 @@ pub(crate) enum ComposeHostError {
     ContextEncodeFailed { program: String, source: serde_json::Error },
     ProgramNotRunnable { program: String, source: std::io::Error },
     OutputNotUtf8 { program: String },
+    OutputTooLarge { program: String },
+    HostTimedOut { program: String },
     NonZeroExit { status: Option<i32>, stderr: String },
 }
 
@@ -123,6 +132,7 @@ pub(crate) fn render_template(
     template: &str,
     context: &serde_json::Value,
     compose_program: ComposeProgram<'_>,
+    host_deadline: Option<std::time::Instant>,
 ) -> Result<String, ComposeHostError>;
 ```
 
@@ -148,7 +158,7 @@ loop {
             let template = template_ref.as_str().ok_or_else(|| denied(...))?;
             let context_ref = call.args.arg(1).ok_or_else(|| denied(...))?;
             let context = monty_host::monty_value_to_json(context_ref)?;
-            let rendered = monty_host::render_template(template, &context, compose_program)?; // ComposeProgram; map Err to FeedDone, do not return it from execute_feed
+            let rendered = monty_host::render_template(template, &context, compose_program, host_deadline)?; // ComposeProgram; map Err to FeedDone, do not return it from execute_feed
             call.resume(
                 monty_types::ExtFunctionResult::Return(monty_types::MontyObject::string(rendered)),
                 monty_types::PrintWriter::Disabled,
@@ -206,7 +216,7 @@ No new `CronError` variant.
 | `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
 | `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
-| Host deadline while the child runs, or the child returns after that deadline (`HostTimedOut`) |  | `TimedOut`, session dropped, spawned child killed | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
+| Host deadline while the child runs, or the child returns after that deadline (`HostTimedOut`) | `COMPOSE_HOST_TIMEOUT` | `TimedOut`, session dropped, spawned child killed. The stored outcome is bare `TimedOut`; `COMPOSE_HOST_TIMEOUT` is `ComposeHostError::code` for that variant. | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
 | Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
 
 Feeds that never call `render_template` still run when the compose binary is absent.
@@ -293,6 +303,17 @@ Root: `boundary:sc-cron` and ADR-RUN-0013 as amended here.
 - `cargo build --workspace` exits 0.
 - `sc-lint lint sc-boundary --root . --config sc-lint.toml` exits 0.
 - The `rg` gate above exits 1.
+
+
+Recorded 2026-10-27 on this branch after the process-wrap group wait:
+
+- `cargo fmt -p sc-cron`
+- `cargo clippy -p sc-cron --features monty --all-targets -- -D warnings` exited 0
+- `cargo test -p sc-cron --features monty` exited 0 (including the host-deadline kill tests and `monty_host_bridge`)
+- `cargo build --workspace` exited 0
+- `rg -n 'std::thread::sleep|tokio::time::sleep|block_on' crates/sc-cron/src` exited 1
+
+The bridge test schedules `* * * * *`. `boundaries/sc-cron` was not edited, so the boundary lint was not re-run.
 
 ## Non-goals
 
