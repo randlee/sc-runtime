@@ -2,3 +2,8 @@
 # .github/scripts/run-consumer-preflight.sh (fail-closed before release dispatch).
 
 schema_version = 1
+
+[[checks]]
+id = "benchmark-pass"
+description = "Monty benchmark gate on the controlled host (scripts/benchmark/check_gate.py)."
+run = "just --justfile scripts/benchmark/justfile benchmark-gate"

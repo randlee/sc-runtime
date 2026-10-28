@@ -32,6 +32,27 @@ only on `quality-mgr` PASS and green CI.
 Extension metrics and the `b-10` → `b-11` edge rationale: [phase-b-plan.md](phase-b-plan.md).
 Track B does not reopen Track A. Its `b-11` benchmark gate does apply to later binary publishes through `release/publish-preflight.toml`.
 
+### Track B close is serial (implementation, then QA)
+
+Planning and feature work can run in parallel across sprints; **integration
+close cannot**. The last mile is one ordered pipeline on
+`integrate/phase-b-monty`:
+
+| Phase | Bead(s) | Exit criterion |
+|-------|---------|----------------|
+| **1. Implementation** | `run-u64`, `run-47q`, WIP on branch | b-10 host bridge + `sc_compose_run`; b-11 harness (`production_bridge` runs); b-12 row limit; template observability init; docs named in sprint plans |
+| **2. Branch hygiene** | (session) | Product commits only; no staged triage/orchestration debris; stashes reconciled |
+| **3. CI** | PR **#84** | `just lint` + `just test` green on integration HEAD |
+| **4. Phase-end QA** | `run-qwq` | Full reviewer set + `cursor-quality-mgr` PASS; req-qa findings closed or filed as post-merge with explicit defer |
+| **5. Merge** | PR **#84** → `develop` | Test plan QA box checked; branch up to date with remote |
+
+Do not start phase 4 until phase 1–3 are honest: req-qa on a partial branch
+only produces another replan cycle. **`run-qwq`** is the phase-4 umbrella for
+b-11 acceptance gaps (benchmark platform, gate, `benchmark-monty.md`).
+
+Follow-on (not Track B merge blockers unless promoted): **`run-1jw`** (0.2.0
+publish), **`run-nwk`** (library logger injection).
+
 ## gh stack on Track A (historical)
 
 Stack **#74** on `integrate/phase-b`: **#73** (bottom) → **#72** (top). Merged to `develop` at `a448385`.

@@ -66,6 +66,11 @@ pub(crate) enum ComposeHostError {
         /// Program name or path that was still running.
         program: String,
     },
+    /// Hook asked for a subcommand this host bridge does not expose.
+    SubcommandDenied {
+        /// Requested top-level command name.
+        subcommand: String,
+    },
 }
 
 impl ComposeHostError {
@@ -89,6 +94,7 @@ impl ComposeHostError {
             Self::OutputNotUtf8 { .. } | Self::OutputTooLarge { .. } => "COMPOSE_OUTPUT",
             Self::NonZeroExit { .. } => "COMPOSE_EXIT",
             Self::HostTimedOut { .. } => "COMPOSE_HOST_TIMEOUT",
+            Self::SubcommandDenied { .. } => "COMPOSE_SUBCOMMAND",
         }
     }
 
@@ -117,6 +123,9 @@ impl ComposeHostError {
             }
             Self::HostTimedOut { .. } => {
                 "Reduce compose work or raise the row deadline; the compose group was stopped at the host budget."
+            }
+            Self::SubcommandDenied { .. } => {
+                "Use a top-level `sc-compose` subcommand from `sc_compose_run`; run `sc-compose --help`."
             }
         }
     }
@@ -171,6 +180,9 @@ impl fmt::Display for ComposeHostError {
                     "compose program {program} exceeded the host row budget"
                 )
             }
+            Self::SubcommandDenied { subcommand } => {
+                write!(formatter, "compose subcommand not allowlisted: {subcommand}")
+            }
         }
     }
 }
@@ -186,7 +198,8 @@ impl std::error::Error for ComposeHostError {
             | Self::OutputNotUtf8 { .. }
             | Self::OutputTooLarge { .. }
             | Self::NonZeroExit { .. }
-            | Self::HostTimedOut { .. } => None,
+            | Self::HostTimedOut { .. }
+            | Self::SubcommandDenied { .. } => None,
         }
     }
 }

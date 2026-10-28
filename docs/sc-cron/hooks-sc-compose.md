@@ -69,12 +69,22 @@ file. Requires **`sc_compose`** on the host (`pip install sc-compose`).
 ## Monty hook (with compose via host bridge)
 
 In **`cron_tick`** or **`cron_stop`**, call host-provided
-**`render_template(template, context)`**. Production resumes that call inside
-`execute_feed`, which spawns Rust **`sc-compose`**, not
-`python3 -c import sc_compose`. Pure in-VM logic (no compose) stays in Monty
-without calling `render_template`; state can persist in the per-schedule REPL
-across ticks. The bench's direct `MontyRepl::feed_start` loop is a lab
-excerpt, not the path a schedule row runs.
+**`render_template(template, context)`** or **`sc_compose_run(subcommand, args)`**.
+Production resumes those calls inside `execute_feed`, which spawns Rust
+**`sc-compose`**, not `python3 -c import sc_compose`.
+
+- **`render_template`** stages a temp-root string template and JSON context
+  (fixed `sc-compose render --mode file` argv).
+- **`sc_compose_run`** runs any **allowlisted** top-level subcommand with an
+  optional list of argument strings. It returns a dict
+  `{stdout, stderr, exit_code}`. Non-zero CLI exit does not fail the tick
+  unless spawn, timeout, or output validation fails. Unknown subcommands record
+  `COMPOSE_SUBCOMMAND`.
+
+Pure in-VM logic (no compose) stays in Monty without calling either host
+function; state can persist in the per-schedule REPL across ticks. The bench's
+direct `MontyRepl::feed_start` loop is a lab excerpt, not the path a schedule
+row runs.
 
 ## Benchmarks
 
@@ -91,8 +101,9 @@ Published campaign HTML lives under
 The harness writes gitignored sidecars next to this note
 (`sc-compose-hook-comparison.report.html` and `.report.json`). There is no
 checked-in copy of that HTML. Default CI does not run the benchmark.
-`production_bridge` is the production `execute_feed` path. This harness
-records that case as skipped and does not call `feed_start` for it.
+`production_bridge` is the production `execute_feed` path via
+`Scheduler::run_due` (the harness does not call `feed_start` itself). See
+[`benchmark-monty.md`](benchmark-monty.md) for campaigns and the publish gate.
 
 Optional direct harness invocation (same measurement, no site publish):
 
@@ -111,7 +122,7 @@ path uses the same render script—add interpreter + sc-cron child overhead on t
 | `python_render_only` | Same render work, no sc-cron wrapper |
 | `sc_compose_cli_only` | Rust `sc-compose render` only (what the host bridge calls) |
 | `monty_host_bridge + sc-compose CLI` | Lab `feed_start` loop in the bench. Production is `execute_feed`, which may call `feed_start` internally. |
-| `production_bridge` | Production `monty_host` path through `execute_feed` calling `render_template`. The harness records a skip for this case. |
+| `production_bridge` | Production `monty_host` path through `execute_feed` calling `render_template`. Required for publish preflight `benchmark-gate`. |
 
 The bench prints the numbers for your machine. Typical outcome (release, string
 template): **Monty + host CLI ≈ bare CLI** (Monty overhead is small); **Python

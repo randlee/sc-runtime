@@ -56,7 +56,7 @@ pub struct ScheduleSpec {
 
 Monty source defines `cron_stop(hook)` and `cron_tick(hook)`. One REPL is retained per schedule name while no feed is active, so module state survives ticks. The worker always calls stop before tick; `disable` or `delete` skips tick, and an external replacement, disable, delete, or shutdown after a continuing stop check skips tick and drops the REPL. A REPL is never dropped or replaced before its feed returns. Monty feed time uses `ResourceLimits::max_feed_duration`; it is observed at interpreter checkpoints, has no memory limit, and is not aborted by worker shutdown. This is trusted in-process code: stack-overflow and allocator-abort risks are accepted just as they are for a Rust `Job`.
 
-Under feature `monty`, `cron_tick` or `cron_stop` may call the host function `render_template(template, context)`. Production runs that call inside `execute_feed` (which may call `feed_start` internally). The host spawns `sc-compose` on `PATH`. Hook source cannot choose the program or register another host function. Tests pass a program through the crate-private `execute_feed_with_compose_program`; that function is not an embedder setting ([ADR-RUN-0013](../architecture.md) names `sc-compose`).
+Under feature `monty`, `cron_tick` or `cron_stop` may call the host functions `render_template(template, context)` or `sc_compose_run(subcommand, args)`. Production runs those calls inside `execute_feed` (which may call `feed_start` internally). The host spawns `sc-compose` on `PATH`. Hook source cannot choose the program or register another host function. Tests pass a program through the crate-private `execute_feed_with_compose_program`; that function is not an embedder setting ([ADR-RUN-0013](../architecture.md) names `sc-compose`).
 
 ```text
 sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json
@@ -101,9 +101,10 @@ The Monty source does not choose the temp root. `--mode file` reads only those t
 | Stdout is not UTF-8 (`OutputNotUtf8`) | `COMPOSE_OUTPUT` | `Failed` | Fix the compose program so its stdout is UTF-8. |
 | Stdout longer than the hook output cap (`OutputTooLarge`) | `COMPOSE_OUTPUT` | `Failed` | Shrink the rendered output. |
 | CLI exits non-zero (`NonZeroExit`) | `COMPOSE_EXIT` | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
-| Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` is allowlisted. |
+| Denied `sc-compose` subcommand (`SubcommandDenied`) | `COMPOSE_SUBCOMMAND` | `Failed` | Use an allowlisted top-level subcommand from `sc_compose_run`; run `sc-compose --help`. |
+| Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
 | Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
-| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
+| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
 | `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
 | After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |

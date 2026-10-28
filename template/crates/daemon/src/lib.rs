@@ -8,6 +8,7 @@
 pub mod mcp;
 {% endif %}
 pub mod cron;
+pub mod observability;
 pub mod routes;
 
 use std::path::PathBuf;

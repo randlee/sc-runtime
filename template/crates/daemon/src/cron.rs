@@ -1,7 +1,9 @@
 //! Schedule row limit read from the application's sc-config.
 //!
 //! No layout opens `sc_cron::Scheduler` yet. The layout that does passes
-//! [`CronConfig::row_limit`] as `sc_cron::ScheduleLimits::max_schedule_rows`.
+//! [`CronConfig::row_limit`] as `sc_cron::ScheduleLimits::max_schedule_rows`
+//! and the same injected logger handle as `Daemon::builder` (see
+//! `daemon::observability` and `docs/sc-runtime/observability-injection.md`).
 //! This module does not depend on `sc-cron`. JSON `null` and `0` mean
 //! unlimited. A missing key defaults to 10.
 

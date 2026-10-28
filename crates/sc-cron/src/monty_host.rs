@@ -1,8 +1,8 @@
-//! Host function `render_template` for a Monty cron feed.
+//! Monty host functions for the `sc-compose` CLI.
 //!
-//! The feed stays inside Monty. This module spawns [`ComposeProgram::SC_COMPOSE`]
-//! on a private temp root the hook cannot choose, then returns the child's
-//! stdout. Tests pass another [`ComposeProgram`]. It does not start CPython.
+//! Production registers [`render_template`] (string-template sugar) and
+//! [`sc_compose_run`] (any allowlisted subcommand). Tests pass another
+//! [`ComposeProgram`]. The feed does not start CPython.
 
 use std::fmt;
 use std::time::Instant;
@@ -101,6 +101,72 @@ pub(crate) fn render_template(
     std::fs::write(root.join("v.json"), context_bytes)
         .map_err(|source| stage_failed(program, source))?;
     crate::monty_compose::run_compose_child(program, root, host_deadline)
+}
+
+/// Subcommands exposed through [`sc_compose_run`]. Kept in sync with `sc-compose --help`.
+pub(crate) const SC_COMPOSE_SUBCOMMANDS: &[&str] = &[
+    "bead",
+    "examples",
+    "extract",
+    "frontmatter-init",
+    "help",
+    "init",
+    "lint",
+    "observability-health",
+    "render",
+    "reports",
+    "resolve",
+    "template-init",
+    "templates",
+    "validate",
+    "verify",
+];
+
+#[must_use]
+pub(crate) fn sc_compose_subcommand_allowed(subcommand: &str) -> bool {
+    SC_COMPOSE_SUBCOMMANDS.contains(&subcommand)
+}
+
+/// Runs `sc-compose <subcommand> …` with hook-supplied argv tail.
+///
+/// Non-zero exit is returned in [`crate::monty_compose::ComposeRunResult`].
+pub(crate) fn sc_compose_run(
+    subcommand: &str,
+    args: &[String],
+    compose_program: ComposeProgram<'_>,
+    host_deadline: Option<Instant>,
+) -> Result<crate::monty_compose::ComposeRunResult, ComposeHostError> {
+    if !sc_compose_subcommand_allowed(subcommand) {
+        return Err(ComposeHostError::SubcommandDenied {
+            subcommand: subcommand.to_owned(),
+        });
+    }
+    let program = compose_program.as_str();
+    let mut argv = Vec::with_capacity(1 + args.len());
+    argv.push(subcommand.to_owned());
+    argv.extend_from_slice(args);
+    crate::monty_compose::run_compose_argv(program, None, &argv, host_deadline)
+}
+
+#[must_use]
+pub(crate) fn compose_run_to_monty(result: &crate::monty_compose::ComposeRunResult) -> MontyObject {
+    let mut map = Map::new();
+    map.insert(
+        "stdout".to_owned(),
+        Value::String(result.stdout.clone()),
+    );
+    map.insert(
+        "stderr".to_owned(),
+        Value::String(result.stderr.clone()),
+    );
+    map.insert(
+        "exit_code".to_owned(),
+        result
+            .exit_code
+            .map(|code| Value::Number(Number::from(code)))
+            .unwrap_or(Value::Null),
+    );
+    json_to_monty(&Value::Object(map))
 }
 
 fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
@@ -654,6 +720,20 @@ def cron_tick(hook):
             done.result
         );
         assert!(done.session.is_some());
+    }
+
+    #[test]
+    fn sc_compose_run_denies_an_unknown_subcommand() {
+        let source = r#"
+def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    sc_compose_run("not-an-allowlisted-subcommand", [])
+    return None
+"#;
+        let detail = failed_detail(run_tick(source));
+        assert!(detail.contains("COMPOSE_SUBCOMMAND"), "{detail}");
     }
 
     #[cfg(unix)]

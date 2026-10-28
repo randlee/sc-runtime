@@ -1,4 +1,4 @@
-# Monty compose benchmark campaigns (sprint b-11).
+# Benchmark campaigns (sprint b-11).
 # Invoke from repo root: just --justfile scripts/benchmark/justfile <recipe>
 # See .claude/skills/benchmark-run/SKILL.md. Default CI does not run these.
 
@@ -6,11 +6,24 @@ set windows-shell := ["cmd.exe", "/c"]
 
 python := if os_family() == "windows" { "python" } else { "python3" }
 
+benchmark subsystem:
+    {{python}} scripts/benchmark/{{subsystem}}/campaign.py
+
+benchmark-show subsystem:
+    {{python}} scripts/benchmark/{{subsystem}}/campaign.py --show
+
+benchmark-publish subsystem:
+    {{python}} scripts/benchmark/{{subsystem}}/campaign.py --publish
+
+benchmark-gate:
+    {{python}} scripts/benchmark/check_gate.py
+
+# Backward-compatible Monty recipe names.
 benchmark-monty:
-    {{python}} scripts/benchmark/monty_compose_campaign.py
+    {{python}} scripts/benchmark/monty/campaign.py
 
 benchmark-monty-show:
-    {{python}} scripts/benchmark/monty_compose_campaign.py --show
+    {{python}} scripts/benchmark/monty/campaign.py --show
 
 benchmark-monty-publish:
-    {{python}} scripts/benchmark/monty_compose_campaign.py --publish
+    {{python}} scripts/benchmark/monty/campaign.py --publish

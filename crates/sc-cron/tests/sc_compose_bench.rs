@@ -46,6 +46,19 @@ loop {
 }";
 const EXAMPLE_CLI_ARGV: &str =
     "sc-compose render --root <temp> --mode file --file t.j2 --var-file <temp>/v.json";
+const EXAMPLE_COMPOSE_RUN: &str = r#"def cron_tick(hook):
+    # General sc-compose UX: allowlisted subcommands + argv tail.
+    result = sc_compose_run("help", ["render"])
+    if result["exit_code"] not in (0, None):
+        raise RuntimeError(result["stderr"])
+    return render_template(hook["payload"]["template"], hook["payload"]["context"])
+"#;
+const EXAMPLE_PRODUCTION: &str = r#"def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    return render_template(hook["payload"]["template"], hook["payload"]["context"])
+"#;
 
 /// Timed iterations per case (plus one untimed warmup before the timer starts).
 const TIMED_ITERS: u32 = 30;
@@ -110,6 +123,7 @@ fn sc_compose_cli_version() -> Option<String> {
 
 /// Fixed template tree for `sc-compose render --mode file` (Rust CLI, no Python).
 struct CliRenderFixtures {
+    _dir: tempfile::TempDir,
     root: PathBuf,
     var_file: PathBuf,
 }
@@ -118,12 +132,16 @@ impl CliRenderFixtures {
     fn shared() -> &'static Self {
         static FIX: OnceLock<CliRenderFixtures> = OnceLock::new();
         FIX.get_or_init(|| {
-            let root = std::env::temp_dir().join("sc_cron_sc_compose_bench");
-            std::fs::create_dir_all(&root).expect("bench root");
+            let dir = tempfile::TempDir::new().expect("bench temp root");
+            let root = dir.path().to_path_buf();
             std::fs::write(root.join("t.j2"), TEMPLATE).expect("template");
             let var_file = root.join("v.json");
             std::fs::write(&var_file, r#"{"name":"bench"}"#).expect("vars");
-            CliRenderFixtures { root, var_file }
+            CliRenderFixtures {
+                _dir: dir,
+                root,
+                var_file,
+            }
         })
     }
 
@@ -208,6 +226,9 @@ fn python_hook_once() {
 }
 
 #[cfg(feature = "monty")]
+mod common;
+
+#[cfg(feature = "monty")]
 fn monty_host_bridge_once() {
     use monty::{MontyRepl, ReplProgress};
     use monty_types::{
@@ -252,6 +273,50 @@ fn monty_host_bridge_once() {
             other => panic!("unexpected progress: {other:?}"),
         };
     }
+}
+
+#[cfg(feature = "monty")]
+fn production_bridge_once() {
+    use common::{Fixture, WAIT, idle_job};
+    use sc_cron::{HookTarget, RunOutcome, ScheduleSpec};
+    use serde_json::json;
+
+    const SOURCE: &str = r#"
+def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    out = render_template(hook["payload"]["template"], hook["payload"]["context"])
+    if out.strip() != "Hello bench":
+        raise RuntimeError("unexpected render: " + out)
+    return None
+"#;
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("runtime");
+    runtime.block_on(async {
+        let fixture = Fixture::new();
+        let spec = ScheduleSpec::with_hook(
+            "bench-production-bridge",
+            "* * * * *",
+            Duration::from_secs(20),
+            json!({
+                "template": TEMPLATE,
+                "context": {"name": "bench"},
+            }),
+            HookTarget::monty(SOURCE).expect("source"),
+        )
+        .expect("spec");
+        fixture.start(spec);
+        fixture.clock.advance(chrono::Duration::seconds(60));
+        let runs = match tokio::time::timeout(WAIT, fixture.scheduler.run_due(idle_job())).await {
+            Ok(result) => result.expect("run_due"),
+            Err(_elapsed) => panic!("run_due timed out after {WAIT:?}"),
+        };
+        assert_eq!(runs.len(), 1, "{runs:?}");
+        assert_eq!(runs[0].outcome, RunOutcome::Ok, "{runs:?}");
+    });
 }
 
 /// Peak RSS of a one-shot subprocess (macOS `/usr/bin/time -l`).
@@ -392,6 +457,11 @@ fn write_metrics_json(ctx: &ReportContext, cases: &[BenchCase]) {
         "sc_compose_cli_version": ctx.sc_compose_cli_version,
         "python_sc_compose": ctx.python_sc_compose,
         "cases": cases.iter().map(case_metrics).collect::<Vec<_>>(),
+        "examples": {
+            "hook_source": EXAMPLE_PRODUCTION,
+            "resume_loop": EXAMPLE_RESUME_LOOP,
+            "cli_argv": EXAMPLE_CLI_ARGV,
+        },
     });
     let body = serde_json::to_string_pretty(&doc).expect("metrics json");
     if let Some(parent) = path.parent() {
@@ -744,15 +814,42 @@ fn bench_sc_compose_hook_paths() {
         result: None,
     });
 
-    // Lab `monty` above calls `feed_start` in this test. Production feeds call
-    // `render_template` inside `execute_feed`. This harness records the case
-    // and does not drive that path.
+    #[cfg(feature = "monty")]
+    if have_cli {
+        let fix = CliRenderFixtures::shared();
+        let result = run_timed_bench(
+            TIMED_ITERS,
+            production_bridge_once,
+            Some(fix.render_command()),
+            true,
+        );
+        log_result("production_bridge (Scheduler::run_due / execute_feed)", &result);
+        cases.push(BenchCase {
+            id: "production_bridge",
+            label: "production monty_host bridge",
+            strategy: "Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `execute_feed` resumes `render_template` and spawns `sc-compose` (no lab `feed_start` in this harness).",
+            skipped: false,
+            skip_reason: None,
+            result: Some(result),
+        });
+    } else {
+        cases.push(BenchCase {
+            id: "production_bridge",
+            label: "production monty_host bridge",
+            strategy: "Production `execute_feed` + `render_template`.",
+            skipped: true,
+            skip_reason: Some("sc-compose CLI missing"),
+            result: None,
+        });
+    }
+
+    #[cfg(not(feature = "monty"))]
     cases.push(BenchCase {
         id: "production_bridge",
         label: "production monty_host bridge",
-        strategy: "sc-cron Monty feed calling host render_template through execute_feed. Not the lab repl in this test.",
+        strategy: "Production `execute_feed` + `render_template`.",
         skipped: true,
-        skip_reason: Some("harness records production_bridge without calling execute_feed"),
+        skip_reason: Some("build without --features monty"),
         result: None,
     });
 

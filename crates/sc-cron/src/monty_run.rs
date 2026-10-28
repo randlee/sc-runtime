@@ -7,8 +7,9 @@
 //! that does not compile, or that lacks `cron_stop` or `cron_tick`, is
 //! [`CronError::HookFailed`] and leaves no repl.
 //!
-//! Production feeds spawn `sc-compose` and register only `render_template`.
-//! Hook source cannot choose the program or another host function.
+//! Production feeds spawn `sc-compose` and register `render_template` and
+//! `sc_compose_run`. Hook source cannot choose the program or another host
+//! function.
 
 use std::fmt;
 use std::time::{Duration, Instant};
@@ -25,7 +26,8 @@ use crate::{CronError, Generation, RunOutcome, StopDecision};
 
 const STOP_FN: &str = "cron_stop";
 const TICK_FN: &str = "cron_tick";
-const DENY_RECOVERY: &str = "Fix hook source; only `render_template` is allowlisted.";
+const DENY_RECOVERY: &str =
+    "Fix hook source; only `render_template` and `sc_compose_run` are allowlisted.";
 const CODE_HOST_DENIED: &str = "HOST_DENIED";
 const CODE_HOST_UNDEFINED: &str = "HOST_UNDEFINED";
 const CODE_HOST_OS: &str = "HOST_OS";
@@ -106,6 +108,26 @@ impl fmt::Display for RenderArgError {
             Self::Arity => "render_template expects a string template and one context value",
             Self::Template => "render_template template must be a string",
             Self::Context => "render_template context is not a JSON value",
+        })
+    }
+}
+
+/// Why `sc_compose_run` arguments were rejected.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ComposeRunArgError {
+    Arity,
+    Subcommand,
+    Args,
+}
+
+impl fmt::Display for ComposeRunArgError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(match self {
+            Self::Arity => {
+                "sc_compose_run expects a subcommand string and an optional list of argument strings"
+            }
+            Self::Subcommand => "sc_compose_run subcommand must be a string",
+            Self::Args => "sc_compose_run args must be a list of strings",
         })
     }
 }
@@ -239,9 +261,9 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
 /// Runs one Monty feed on the calling thread. Call this from the blocking pool.
 ///
 /// The feed calls `cron_stop(__hook)` or `cron_tick(__hook)` through
-/// `feed_start`. The only host function is `render_template`, and it always
-/// spawns `sc-compose`. Any other host function or `OsCall` fails the feed
-/// and drops the repl. Hook source does not choose the program.
+/// `feed_start`. Host functions are `render_template` and `sc_compose_run`.
+/// Any other host function or `OsCall` fails the feed and drops the repl.
+/// Hook source does not choose the program.
 pub(crate) fn execute_feed(
     session: Option<MontySession>,
     source: &str,
@@ -327,6 +349,12 @@ pub(crate) fn execute_feed_with_compose_program(
         progress = match progress {
             ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
                 match resume_render(call, stage, compose_program, host_deadline) {
+                    Ok(next) => next,
+                    Err(done) => return done,
+                }
+            }
+            ReplProgress::FunctionCall(call) if call.function_name == "sc_compose_run" => {
+                match resume_compose_run(call, stage, compose_program, host_deadline) {
                     Ok(next) => next,
                     Err(done) => return done,
                 }
@@ -462,9 +490,13 @@ fn snippet_inputs(hook: &Value, #[cfg(test)] extra_host_fns: &[&str]) -> NamedVa
         "render_template",
         MontyObject::function("render_template", None),
     );
+    inputs.push(
+        "sc_compose_run",
+        MontyObject::function("sc_compose_run", None),
+    );
     #[cfg(test)]
     for name in extra_host_fns {
-        if *name == "render_template" || *name == "__hook" || !crate::is_identifier(name) {
+        if reserved_host_binding(name) || !crate::is_identifier(name) {
             continue;
         }
         inputs.push(
@@ -473,6 +505,76 @@ fn snippet_inputs(hook: &Value, #[cfg(test)] extra_host_fns: &[&str]) -> NamedVa
         );
     }
     inputs
+}
+
+#[cfg_attr(not(test), allow(dead_code))]
+fn reserved_host_binding(name: &str) -> bool {
+    matches!(name, "render_template" | "sc_compose_run" | "__hook")
+}
+
+fn resume_compose_run(
+    call: monty::ReplFunctionCall,
+    stage: FeedStage,
+    compose_program: ComposeProgram<'_>,
+    host_deadline: Option<Instant>,
+) -> Result<ReplProgress, FeedDone> {
+    let (subcommand, args) = match compose_run_arguments(&call) {
+        Ok(ready) => ready,
+        Err(why) => return Err(denied(stage, &why.to_string())),
+    };
+    if crate::monty_host::host_budget_exhausted(host_deadline) {
+        return Err(timed_out());
+    }
+    let result = match crate::monty_host::sc_compose_run(
+        &subcommand,
+        &args,
+        compose_program,
+        host_deadline,
+    ) {
+        Ok(result) => result,
+        Err(error) => return Err(after_compose(&error, stage, host_deadline)),
+    };
+    if crate::monty_host::host_budget_exhausted(host_deadline) {
+        return Err(timed_out());
+    }
+    let value = crate::monty_host::compose_run_to_monty(&result);
+    match call.resume(ExtFunctionResult::Return(value), PrintWriter::Disabled) {
+        Ok(next) => Ok(next),
+        Err(error) => Err(from_exception(error.error, stage)),
+    }
+}
+
+fn compose_run_arguments(
+    call: &monty::ReplFunctionCall,
+) -> Result<(String, Vec<String>), ComposeRunArgError> {
+    let positional_len = call.args.args().len();
+    if positional_len == 0 || positional_len > 2 || call.args.kwargs().len() != 0 {
+        return Err(ComposeRunArgError::Arity);
+    }
+    let subcommand = call
+        .args
+        .arg(0)
+        .and_then(|value| value.as_str().map(str::to_owned))
+        .ok_or(ComposeRunArgError::Subcommand)?;
+    let args = if positional_len == 1 {
+        Vec::new()
+    } else {
+        let tail = call.args.arg(1).ok_or(ComposeRunArgError::Arity)?;
+        let json = crate::monty_host::monty_value_to_json(tail)
+            .map_err(|_| ComposeRunArgError::Args)?;
+        let Some(items) = json.as_array() else {
+            return Err(ComposeRunArgError::Args);
+        };
+        let mut argv = Vec::with_capacity(items.len());
+        for item in items {
+            let Some(text) = item.as_str() else {
+                return Err(ComposeRunArgError::Args);
+            };
+            argv.push(text.to_owned());
+        }
+        argv
+    };
+    Ok((subcommand, args))
 }
 
 fn resume_render(
@@ -708,6 +810,7 @@ mod tests {
         let names: Vec<&str> = inputs.iter().map(|(name, _)| name).collect();
         assert!(names.contains(&"compose_file"));
         assert!(names.contains(&"render_template"));
+        assert!(names.contains(&"sc_compose_run"));
         assert!(names.contains(&"__hook"));
         assert!(!names.contains(&"a-b"));
         assert!(!names.contains(&"2bad"));

@@ -31,13 +31,64 @@ const COMPOSE_POLL: Duration = Duration::from_millis(10);
 
 type GroupChild = Box<dyn ChildWrapper>;
 
+/// Outcome of one allowlisted `sc-compose` subprocess.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct ComposeRunResult {
+    /// Captured stdout (UTF-8 when the child exited zero).
+    pub(crate) stdout: String,
+    /// Capped stderr text.
+    pub(crate) stderr: String,
+    /// Process exit code, or `None` when ended by signal.
+    pub(crate) exit_code: Option<i32>,
+}
+
+impl ComposeRunResult {
+    #[must_use]
+    pub(crate) const fn success(&self) -> bool {
+        matches!(self.exit_code, Some(0))
+    }
+}
+
 /// Waits on the spawned compose child and kills that child's group at `host_deadline`.
 pub(crate) fn run_compose_child(
     program: &str,
     root: &std::path::Path,
     host_deadline: Option<Instant>,
 ) -> Result<String, ComposeHostError> {
-    let mut child = spawn_compose(program, root).map_err(|error| spawn_error(program, error))?;
+    let root_arg = root.to_string_lossy().into_owned();
+    let args = vec![
+        "render".to_owned(),
+        "--root".to_owned(),
+        root_arg,
+        "--mode".to_owned(),
+        "file".to_owned(),
+        "--file".to_owned(),
+        "t.j2".to_owned(),
+        "--var-file".to_owned(),
+        "v.json".to_owned(),
+    ];
+    let result = run_compose_argv(program, Some(root), &args, host_deadline)?;
+    if result.success() {
+        return Ok(result.stdout);
+    }
+    Err(ComposeHostError::NonZeroExit {
+        status: result.exit_code,
+        stderr: result.stderr,
+    })
+}
+
+/// Spawns `program` with `args` and waits until the leader exits or the host budget expires.
+///
+/// Non-zero exit is returned in [`ComposeRunResult`]; spawn and host-timeout errors are
+/// [`ComposeHostError`]. On success exit, non-UTF-8 stdout or stdout over the cap is an error.
+pub(crate) fn run_compose_argv(
+    program: &str,
+    cwd: Option<&std::path::Path>,
+    args: &[String],
+    host_deadline: Option<Instant>,
+) -> Result<ComposeRunResult, ComposeHostError> {
+    let mut child =
+        spawn_compose_argv(program, cwd, args).map_err(|error| spawn_error(program, error))?;
     let stdout = match child.stdout().take() {
         Some(pipe) => pipe,
         None => {
@@ -85,9 +136,14 @@ pub(crate) fn run_compose_child(
         }
     };
     match wait_for_exit(&watch, host_deadline) {
-        Waited::Exited(status) => {
-            finish_watched(program, &mut watch, status, stdout, stderr, host_deadline)
-        }
+        Waited::Exited(status) => finish_watched_argv(
+            program,
+            &mut watch,
+            status,
+            stdout,
+            stderr,
+            host_deadline,
+        ),
         Waited::Expired => {
             expire_child(&mut watch, stdout, stderr);
             Err(ComposeHostError::HostTimedOut {
@@ -101,17 +157,16 @@ pub(crate) fn run_compose_child(
     }
 }
 
-fn spawn_compose(program: &str, root: &std::path::Path) -> std::io::Result<GroupChild> {
+fn spawn_compose_argv(
+    program: &str,
+    cwd: Option<&std::path::Path>,
+    args: &[String],
+) -> std::io::Result<GroupChild> {
     let mut command = CommandWrap::with_new(program, |command| {
-        command
-            .current_dir(root)
-            .arg("render")
-            .arg("--root")
-            .arg(root)
-            .args(["--mode", "file", "--file", "t.j2", "--var-file", "v.json"])
-            .stdin(Stdio::null())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
+        if let Some(cwd) = cwd {
+            command.current_dir(cwd);
+        }
+        command.args(args).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped());
     });
     #[cfg(unix)]
     command.wrap(ProcessGroup::leader());
@@ -332,14 +387,14 @@ fn drain_outputs(
     }
 }
 
-fn finish_watched(
+fn finish_watched_argv(
     program: &str,
     watch: &mut ChildWatch,
     status: std::io::Result<ExitStatus>,
     stdout: PipeRead,
     stderr: PipeRead,
     host_deadline: Option<Instant>,
-) -> Result<String, ComposeHostError> {
+) -> Result<ComposeRunResult, ComposeHostError> {
     join_watch(watch);
     let (drained, stderr_drained) = drain_outputs(program, watch, stdout, stderr, host_deadline)?;
     let status = status.map_err(|source| not_runnable(program, source))?;
@@ -348,19 +403,27 @@ fn finish_watched(
             program: program.to_owned(),
         });
     }
-    if !status.success() {
-        return Err(ComposeHostError::NonZeroExit {
-            status: status.code(),
-            stderr: stderr_text(&stderr_drained.bytes),
-        });
-    }
-    if drained.truncated {
-        return Err(ComposeHostError::OutputTooLarge {
+    let stderr = stderr_text(&stderr_drained.bytes);
+    let exit_code = status.code();
+    if status.success() {
+        if drained.truncated {
+            return Err(ComposeHostError::OutputTooLarge {
+                program: program.to_owned(),
+            });
+        }
+        let stdout = String::from_utf8(drained.bytes).map_err(|_| ComposeHostError::OutputNotUtf8 {
             program: program.to_owned(),
+        })?;
+        return Ok(ComposeRunResult {
+            stdout,
+            stderr,
+            exit_code,
         });
     }
-    String::from_utf8(drained.bytes).map_err(|_| ComposeHostError::OutputNotUtf8 {
-        program: program.to_owned(),
+    Ok(ComposeRunResult {
+        stdout: String::from_utf8_lossy(&drained.bytes).into_owned(),
+        stderr,
+        exit_code,
     })
 }
 

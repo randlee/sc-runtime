@@ -3,7 +3,7 @@
 pub struct AppConfig {
     /// MySQL URL (`mysql://`). Not a filesystem path.
     pub database: String,
-    /// Plain logging values. Example choice: console on, file off.
+    /// Plain logging values. Defaults: console and file on; logs under `<instance>/logs/`.
     #[serde(default)]
     pub logging: sc_observability::LogSettings,
     /// Endpoint fields passed through to the daemon builder.

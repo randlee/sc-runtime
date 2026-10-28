@@ -26,7 +26,10 @@ The edge `sc-runtime` → `sc-config` is absent
 `sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`, `utoipa-axum`,
 `utoipa`, `serde`, `rmcp`, `tracing`, and optional `tempfile` behind `test-util`.
 Everything it receives from the project (config, stores, router, MCP service)
-it passes through untouched.
+it passes through untouched. Observability is **not** initialised here; the
+generated daemon constructs `sc-observability` and will inject a handle into
+the builder and into `sc-cron` per
+[observability-injection.md](observability-injection.md).
 
 ## Public surface
 

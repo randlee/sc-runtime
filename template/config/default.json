@@ -14,7 +14,7 @@
 {% endif %}
   "logging": {
     "enableConsoleSink": true,
-    "enableFileSink": false
+    "enableFileSink": true
   },
   "cron": {
     "max_schedule_rows": 10

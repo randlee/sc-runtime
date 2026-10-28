@@ -3,7 +3,7 @@
 pub struct AppConfig {
     /// SQLite file. A relative path is joined to the instance root.
     pub database: PathBuf,
-    /// Plain logging values. Example choice: console on, file off.
+    /// Plain logging values. Defaults: console and file on; logs under `<instance>/logs/`.
     #[serde(default)]
     pub logging: sc_observability::LogSettings,
     /// Endpoint fields passed through to the daemon builder.
