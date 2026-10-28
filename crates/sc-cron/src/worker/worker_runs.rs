@@ -12,6 +12,11 @@ use tokio::task::JoinError;
 use super::*;
 use crate::clock::sleep_until_monotonic;
 
+#[cfg(feature = "monty")]
+const CODE_FEED_JOIN_FAILED: &str = "FEED_JOIN_FAILED";
+#[cfg(feature = "monty")]
+const FEED_JOIN_RECOVERY: &str = "Fix the panic in the hook or host and retry the schedule.";
+
 impl<S, C> Worker<S, C>
 where
     S: ScheduleStore + 'static,
@@ -52,6 +57,7 @@ where
                         wait_shutdown_deadline(deadline).await;
                     }
                 }, if shutdown_at.is_some() => {
+                    self.coord.note_shutdown_deadline();
                     siblings_aborted = true;
                     self.abort_all_abortable().await;
                 }
@@ -153,7 +159,7 @@ where
             .get(index)
             .map(|slot| slot.schedule.spec.name.clone());
         let session = name.as_ref().and_then(|name| self.coord.take_repl(name));
-        let guard = MontyFeedGuard::enter(&self.coord.feeds);
+        let guard = MontyFeedGuard::enter(&self.coord);
         self.spawn_feed(index, crate::monty_run::MontyPhase::Stop, session, guard);
     }
 
@@ -237,7 +243,9 @@ where
                     let schedule = slot.schedule.clone();
                     self.record(
                         &schedule,
-                        RunOutcome::Failed(format!("job panicked: {message}")),
+                        RunOutcome::Failed(format!(
+                            "{CODE_FEED_JOIN_FAILED}: monty feed task panicked: {message}; {FEED_JOIN_RECOVERY}"
+                        )),
                     )
                     .await;
                 }
@@ -292,7 +300,7 @@ where
                 self.settle_queued(index).await;
             }
             FeedResult::Continue => {
-                let tick_guard = MontyFeedGuard::enter(&self.coord.feeds);
+                let tick_guard = MontyFeedGuard::enter(&self.coord);
                 drop(guard);
                 self.spawn_feed(index, MontyPhase::Tick, done.session, tick_guard);
             }

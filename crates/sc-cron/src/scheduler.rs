@@ -212,6 +212,24 @@ where
         )
     }
 
+    /// Subscribes to how many Monty feeds are still inside a run.
+    ///
+    /// The count changes when a feed starts and when it leaves. A test waits
+    /// on it instead of sleeping while the interpreter runs.
+    #[must_use]
+    pub fn subscribe_monty_feeds(&self) -> watch::Receiver<usize> {
+        self.coord.subscribe_feed_level()
+    }
+
+    /// Waits until a shutdown deadline has elapsed during a Monty feed more
+    /// than `above` times.
+    ///
+    /// Returns false when the scheduler drops the watch.
+    pub async fn wait_monty_shutdown_deadlines(&self, above: u64) -> bool {
+        let mut seen = self.coord.subscribe_shutdown_deadlines();
+        seen.wait_for(|value| *value > above).await.is_ok()
+    }
+
     fn from_parts(
         core: Arc<Core<S, C, J>>,
         policy: MissedTickPolicy,

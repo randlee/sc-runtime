@@ -10,12 +10,20 @@ use std::collections::HashSet;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
+use tokio::sync::watch;
+
 use crate::ScheduleName;
 
 /// Claims shared by a scheduler, its worker, and `run_due`.
 pub(crate) struct RunCoord {
     /// Monty joins whose feed has not yet finished its outcome write.
     pub feeds: Arc<AtomicUsize>,
+    /// Serializes the atomic update with [`Self::feed_level`] so a waiter cannot observe a stale count.
+    feed_lock: Mutex<()>,
+    /// Outstanding feed count after each enter or drop. Tests wait on this.
+    feed_level: watch::Sender<usize>,
+    /// Times a shutdown deadline elapsed while a Monty feed was still in flight.
+    shutdown_deadlines: watch::Sender<u64>,
     /// Schedule names whose `run_due` feed has not finished `finish_due`.
     pub names: Arc<Mutex<HashSet<ScheduleName>>>,
     /// Repls that are not inside a feed, keyed by schedule name.
@@ -27,6 +35,9 @@ impl RunCoord {
     pub(crate) fn new() -> Self {
         Self {
             feeds: Arc::new(AtomicUsize::new(0)),
+            feed_lock: Mutex::new(()),
+            feed_level: watch::channel(0).0,
+            shutdown_deadlines: watch::channel(0).0,
             names: Arc::new(Mutex::new(HashSet::new())),
             #[cfg(feature = "monty")]
             repls: Mutex::new(HashMap::new()),
@@ -63,26 +74,58 @@ impl RunCoord {
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .contains(name)
     }
+
+    /// Subscribes to the outstanding Monty feed count.
+    pub(crate) fn subscribe_feed_level(&self) -> watch::Receiver<usize> {
+        self.feed_level.subscribe()
+    }
+
+    /// Subscribes to shutdown-deadline observations.
+    pub(crate) fn subscribe_shutdown_deadlines(&self) -> watch::Receiver<u64> {
+        self.shutdown_deadlines.subscribe()
+    }
+
+    /// Records that a shutdown deadline elapsed while a Monty feed was in flight.
+    pub(crate) fn note_shutdown_deadline(&self) {
+        self.shutdown_deadlines
+            .send_modify(|seen| *seen = seen.wrapping_add(1));
+    }
+
+    fn lock_feeds(&self) -> std::sync::MutexGuard<'_, ()> {
+        self.feed_lock
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    fn publish_feed_level(&self, count: usize) {
+        self.feed_level.send_replace(count);
+    }
 }
 
 /// Increments the outstanding-feed count until dropped.
 pub(crate) struct MontyFeedGuard {
-    feeds: Arc<AtomicUsize>,
+    coord: Arc<RunCoord>,
 }
 
 impl MontyFeedGuard {
     #[cfg_attr(not(any(test, feature = "monty")), allow(dead_code))]
-    pub(crate) fn enter(feeds: &Arc<AtomicUsize>) -> Self {
-        feeds.fetch_add(1, Ordering::AcqRel);
+    pub(crate) fn enter(coord: &Arc<RunCoord>) -> Self {
+        {
+            let _lock = coord.lock_feeds();
+            let count = coord.feeds.fetch_add(1, Ordering::AcqRel) + 1;
+            coord.publish_feed_level(count);
+        }
         Self {
-            feeds: Arc::clone(feeds),
+            coord: Arc::clone(coord),
         }
     }
 }
 
 impl Drop for MontyFeedGuard {
     fn drop(&mut self) {
-        self.feeds.fetch_sub(1, Ordering::AcqRel);
+        let _lock = self.coord.lock_feeds();
+        let previous = self.coord.feeds.fetch_sub(1, Ordering::AcqRel);
+        self.coord.publish_feed_level(previous.saturating_sub(1));
     }
 }
 
@@ -130,15 +173,17 @@ mod tests {
 
     #[test]
     fn a_panicking_feed_guard_still_drops_the_count() {
-        let feeds = Arc::new(AtomicUsize::new(0));
-        let watched = Arc::clone(&feeds);
+        let coord = Arc::new(RunCoord::new());
+        let watched = Arc::clone(&coord);
         let panicked = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let _guard = MontyFeedGuard::enter(&watched);
-            assert_eq!(watched.load(Ordering::Acquire), 1);
+            assert_eq!(watched.feeds.load(Ordering::Acquire), 1);
+            assert_eq!(*watched.feed_level.borrow(), 1);
             panic!("feed");
         }));
         assert!(panicked.is_err());
-        assert_eq!(feeds.load(Ordering::Acquire), 0);
+        assert_eq!(coord.feeds.load(Ordering::Acquire), 0);
+        assert_eq!(*coord.feed_level.borrow(), 0);
     }
 
     #[test]

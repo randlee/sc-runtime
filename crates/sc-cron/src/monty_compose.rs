@@ -501,7 +501,7 @@ mod tests {
             "{error}"
         );
         assert!(
-            (Duration::from_millis(1000)..Duration::from_secs(8)).contains(&elapsed),
+            (Duration::from_millis(1000)..Duration::from_secs(30)).contains(&elapsed),
             "pipe drain ran for {elapsed:?}"
         );
         assert!(

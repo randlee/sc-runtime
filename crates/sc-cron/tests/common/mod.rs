@@ -162,6 +162,11 @@ impl RecordingStore {
         wait_on(&self.writes, what, |writes| writes.iter().any(&condition)).await;
     }
 
+    /// Waits until `condition` holds for the whole write log.
+    pub async fn wait_writes(&self, what: &str, condition: impl FnMut(&Vec<Write>) -> bool) {
+        wait_on(&self.writes, what, condition).await;
+    }
+
     pub async fn wait_recorded(&self, schedule: &Schedule, outcome: RunOutcome) {
         let id = schedule.id;
         self.wait_write(&format!("{outcome} recorded"), |write| {

@@ -15,6 +15,40 @@ use crate::coord::NameInFlightGuard;
 use crate::coord::RunCoord;
 use crate::worker::{resolve, run_target};
 
+#[cfg(feature = "monty")]
+const CODE_DUE_JOIN_FAILED: &str = "DUE_JOIN_FAILED";
+#[cfg(feature = "monty")]
+const DUE_JOIN_RECOVERY: &str =
+    "Retry the schedule; if it persists, inspect the Monty due task and hook source.";
+#[cfg(feature = "monty")]
+const CODE_MONTY_RESOLVE: &str = "MONTY_RESOLVE";
+#[cfg(feature = "monty")]
+const MONTY_RESOLVE_RECOVERY: &str =
+    "Run this row on its Rust or Python target, or set HookTarget::Monty.";
+#[cfg(feature = "monty")]
+const CODE_MONTY_TICK: &str = "MONTY_TICK";
+#[cfg(feature = "monty")]
+const MONTY_TICK_RECOVERY: &str =
+    "Return normally from cron_tick; disable and delete belong in cron_stop.";
+
+#[cfg(feature = "monty")]
+fn monty_failed(
+    code: &'static str,
+    detail: impl std::fmt::Display,
+    recovery: &'static str,
+) -> RunOutcome {
+    RunOutcome::Failed(format!("{code}: {detail}; {recovery}"))
+}
+
+const CODE_RUN_TASK: &str = "RUN_TASK_FAILED";
+const RUN_TASK_RECOVERY: &str = "Retry the run; if it persists, inspect the job task.";
+
+fn run_task_failed(error: &impl std::fmt::Display) -> RunOutcome {
+    RunOutcome::Failed(format!(
+        "{CODE_RUN_TASK}: job panicked or was cancelled: {error}; {RUN_TASK_RECOVERY}"
+    ))
+}
+
 pub(super) async fn record_due<S, C, J>(
     core: Arc<Core<S, C, J>>,
     row: &Schedule,
@@ -300,7 +334,7 @@ where
     let coord = Arc::clone(&scheduler.coord);
     let core = Arc::clone(&scheduler.core);
     let schedule = row.clone();
-    let feed_guard = crate::coord::MontyFeedGuard::enter(&scheduler.coord.feeds);
+    let feed_guard = crate::coord::MontyFeedGuard::enter(&scheduler.coord);
     let handle = tokio::spawn(async move {
         let _name = name_guard;
         let (report, feed_guard) =
@@ -328,11 +362,9 @@ where
                 let Some(handle) = slot.as_mut() else {
                     return Err(CronError::HookFailed("due run has no task".to_owned()));
                 };
-                let report = handle.await.unwrap_or_else(|error| {
-                    Report::Ran(RunOutcome::Failed(format!(
-                        "job panicked or was cancelled: {error}"
-                    )))
-                });
+                let report = handle
+                    .await
+                    .unwrap_or_else(|error| Report::Ran(run_task_failed(&error)));
                 slot.take();
                 done.push(scheduler.finish_due(&row, report, next).await);
             }
@@ -343,7 +375,11 @@ where
                 };
                 let recorded = handle.await.unwrap_or_else(|error| DueRun {
                     name: row.spec.name.clone(),
-                    outcome: RunOutcome::Failed(format!("job panicked or was cancelled: {error}")),
+                    outcome: monty_failed(
+                        CODE_DUE_JOIN_FAILED,
+                        format!("monty due task panicked or was cancelled: {error}"),
+                        DUE_JOIN_RECOVERY,
+                    ),
                 });
                 slot.take();
                 done.push(recorded);
@@ -402,8 +438,10 @@ async fn run_monty_due<C: Clock + 'static>(
     use crate::monty_run::{FeedResult, MontyPhase};
     let HookTarget::Monty { source } = schedule.spec.hook.clone() else {
         return (
-            Report::Ran(RunOutcome::Failed(
-                "resolve: monty path used for another hook".into(),
+            Report::Ran(monty_failed(
+                CODE_MONTY_RESOLVE,
+                "monty path used for another hook",
+                MONTY_RESOLVE_RECOVERY,
             )),
             stop_guard,
         );
@@ -453,7 +491,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
     source: String,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::{FeedResult, MontyPhase};
-    let tick_guard = crate::coord::MontyFeedGuard::enter(&coord.feeds);
+    let tick_guard = crate::coord::MontyFeedGuard::enter(&coord);
     let tick = feed_once(
         stop.session,
         source,
@@ -475,9 +513,11 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
         }
         FeedResult::Disable(reason) => Report::Disable(reason),
         FeedResult::Delete(reason) => Report::Delete(reason),
-        FeedResult::Continue => {
-            Report::Ran(RunOutcome::Failed("tick returned a stop action".into()))
-        }
+        FeedResult::Continue => Report::Ran(monty_failed(
+            CODE_MONTY_TICK,
+            "tick returned a stop action",
+            MONTY_TICK_RECOVERY,
+        )),
     };
     (report, tick_guard)
 }
@@ -506,4 +546,71 @@ async fn feed_once<C: Clock + ?Sized>(
         },
     )
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CODE_RUN_TASK, RUN_TASK_RECOVERY, run_task_failed};
+    use crate::RunOutcome;
+
+    #[test]
+    fn a_joined_task_failure_names_a_code_and_recovery() {
+        let RunOutcome::Failed(detail) = run_task_failed(&"boom") else {
+            panic!("expected Failed");
+        };
+        assert_eq!(
+            detail,
+            format!("{CODE_RUN_TASK}: job panicked or was cancelled: boom; {RUN_TASK_RECOVERY}")
+        );
+    }
+
+    #[cfg(feature = "monty")]
+    #[test]
+    fn monty_due_failures_name_a_code_and_recovery() {
+        use super::{
+            CODE_DUE_JOIN_FAILED, CODE_MONTY_RESOLVE, CODE_MONTY_TICK, DUE_JOIN_RECOVERY,
+            MONTY_RESOLVE_RECOVERY, MONTY_TICK_RECOVERY, monty_failed,
+        };
+
+        let tick = monty_failed(
+            CODE_MONTY_TICK,
+            "tick returned a stop action",
+            MONTY_TICK_RECOVERY,
+        );
+        let RunOutcome::Failed(detail) = tick else {
+            panic!("expected Failed");
+        };
+        assert_eq!(
+            detail,
+            format!("{CODE_MONTY_TICK}: tick returned a stop action; {MONTY_TICK_RECOVERY}")
+        );
+
+        let joined = monty_failed(
+            CODE_DUE_JOIN_FAILED,
+            "monty due task panicked or was cancelled: boom",
+            DUE_JOIN_RECOVERY,
+        );
+        let RunOutcome::Failed(detail) = joined else {
+            panic!("expected Failed");
+        };
+        assert!(
+            detail.starts_with(&format!("{CODE_DUE_JOIN_FAILED}: ")),
+            "{detail}"
+        );
+        assert!(detail.ends_with(DUE_JOIN_RECOVERY), "{detail}");
+
+        let resolved = monty_failed(
+            CODE_MONTY_RESOLVE,
+            "monty path used for another hook",
+            MONTY_RESOLVE_RECOVERY,
+        );
+        let RunOutcome::Failed(detail) = resolved else {
+            panic!("expected Failed");
+        };
+        assert!(
+            detail.starts_with(&format!("{CODE_MONTY_RESOLVE}: ")),
+            "{detail}"
+        );
+        assert!(detail.ends_with(MONTY_RESOLVE_RECOVERY), "{detail}");
+    }
 }

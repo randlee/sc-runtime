@@ -1,6 +1,7 @@
 //! Monty hooks through the worker and `run_due`. Time is a manual clock.
-//! The interpreter runs on the blocking pool in real time; a test waits on a
-//! store write, and sleeps only to sample a feed that has not returned yet.
+//! The interpreter runs on the blocking pool in real time. A test waits on a
+//! store write or on the scheduler's Monty feed watch, bounded by
+//! [`common::WAIT`].
 
 #![expect(clippy::expect_used, reason = "integration test harness")]
 
@@ -155,10 +156,8 @@ fn spec(name: &str, source: &str, timeout: Duration) -> ScheduleSpec {
     .expect("spec")
 }
 
-fn run_count(fixture: &Fixture, schedule: &Schedule, needle: Option<&str>) -> usize {
-    fixture
-        .store
-        .writes()
+fn count_runs(writes: &[Write], schedule: &Schedule, needle: Option<&str>) -> usize {
+    writes
         .iter()
         .filter(|write| match write {
             Write::Run {
@@ -185,20 +184,35 @@ async fn wait_run_count(
     needle: Option<&str>,
     count: usize,
 ) {
-    let reached = tokio::time::timeout(Duration::from_secs(10), async {
-        loop {
-            if run_count(fixture, schedule, needle) >= count {
-                return;
-            }
-            tokio::time::sleep(Duration::from_millis(20)).await; // allow: monty feed runs on the blocking pool in real time
-        }
-    })
-    .await;
+    fixture
+        .store
+        .wait_writes(&format!("{count} runs ({needle:?})"), |writes| {
+            count_runs(writes, schedule, needle) >= count
+        })
+        .await;
+}
+
+async fn wait_feeds_settled(feeds: &mut tokio::sync::watch::Receiver<usize>) {
+    let settled = tokio::time::timeout(common::WAIT, feeds.wait_for(|level| *level == 0))
+        .await
+        .is_ok_and(|ready| ready.is_ok());
+    let level = *feeds.borrow();
     assert!(
-        reached.is_ok(),
-        "timed out waiting for {count} runs ({needle:?}); saw {}",
-        run_count(fixture, schedule, needle)
+        settled,
+        "timed out waiting for monty feeds to finish; still {level}"
     );
+}
+
+async fn wait_launch_stored(fixture: &Fixture, schedule: &Schedule, before: usize) {
+    let id = schedule.id;
+    fixture
+        .store
+        .wait_writes("next run stored for launch", move |writes| {
+            writes.iter().skip(before).any(|write| {
+                matches!(write, Write::Next { id: written, changed: true } if *written == id)
+            })
+        })
+        .await;
 }
 
 fn runs_containing(fixture: &Fixture, schedule: &Schedule, needle: &str) -> usize {
@@ -285,6 +299,7 @@ async fn a_replace_during_stop_compiles_the_new_source_on_the_next_run() {
 async fn an_external_delete_during_stop_skips_the_tick_and_writes_no_outcome() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
+    let mut feeds = fixture.scheduler.subscribe_monty_feeds();
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
     fixture
@@ -292,8 +307,11 @@ async fn an_external_delete_during_stop_skips_the_tick_and_writes_no_outcome() {
         .stop_async(schedule.id, schedule.generation, "gone")
         .await
         .expect("stop");
-    // The hold returns continue; the worker must not record Ok or TimedOut.
-    tokio::time::sleep(Duration::from_millis(300)).await; // allow: monty feed runs on the blocking pool in real time
+    assert!(
+        *feeds.borrow() >= 1,
+        "the stop check finished before the external stop"
+    );
+    wait_feeds_settled(&mut feeds).await;
     shutdown(worker).await;
     let row = fixture.row(&schedule);
     assert!(row.last_outcome.is_none(), "{:?}", row.last_outcome);
@@ -305,6 +323,7 @@ async fn an_external_delete_during_stop_skips_the_tick_and_writes_no_outcome() {
 async fn an_external_disable_during_stop_skips_the_tick() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
+    let mut feeds = fixture.scheduler.subscribe_monty_feeds();
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
     fixture
@@ -312,7 +331,11 @@ async fn an_external_disable_during_stop_skips_the_tick() {
         .set_enabled_async(&schedule.spec.name, false)
         .await
         .expect("disable");
-    tokio::time::sleep(Duration::from_millis(300)).await; // allow: monty feed runs on the blocking pool in real time
+    assert!(
+        *feeds.borrow() >= 1,
+        "the stop check finished before the external disable"
+    );
+    wait_feeds_settled(&mut feeds).await;
     shutdown(worker).await;
     let row = fixture.row(&schedule);
     assert!(row.last_outcome.is_none(), "{:?}", row.last_outcome);
@@ -349,7 +372,10 @@ async fn a_handle_deadline_aborts_rust_siblings_and_waits_for_monty() {
             .shutdown(tokio::time::Instant::now() + Duration::from_millis(300))
             .await
     });
-    tokio::time::sleep(Duration::from_millis(500)).await; // allow: monty feed runs on the blocking pool in real time
+    fixture
+        .store
+        .wait_recorded(&rust, RunOutcome::TimedOut)
+        .await;
     assert!(
         fixture.row(&slow).last_outcome.is_none(),
         "monty is not timed out at the handle deadline: {:?}",
@@ -388,7 +414,10 @@ async fn two_monty_feeds_and_one_rust_run_at_handle_deadline() {
             .shutdown(tokio::time::Instant::now() + Duration::from_millis(300))
             .await
     });
-    tokio::time::sleep(Duration::from_millis(500)).await; // allow: monty feed runs on the blocking pool in real time
+    fixture
+        .store
+        .wait_recorded(&rust, RunOutcome::TimedOut)
+        .await;
     assert!(
         fixture.row(&monty_long).last_outcome.is_none(),
         "handle deadline must not time out the second monty feed early: {:?}",
@@ -411,15 +440,32 @@ async fn two_monty_feeds_and_one_rust_run_at_handle_deadline() {
 async fn a_monty_only_shutdown_does_not_time_out_until_the_feed_returns() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("slow", TIME_LIMIT, Duration::from_secs(2)));
+    let feeds = fixture.scheduler.subscribe_monty_feeds();
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
+    assert!(
+        *feeds.borrow() >= 1,
+        "monty feed did not start before shutdown"
+    );
     let handle = tokio::spawn(async move {
         worker
             .shutdown(tokio::time::Instant::now() + Duration::from_millis(250))
             .await
     });
-    tokio::time::sleep(Duration::from_millis(400)).await; // allow: monty feed runs on the blocking pool in real time
+    let heard = tokio::time::timeout(
+        common::WAIT,
+        fixture.scheduler.wait_monty_shutdown_deadlines(0),
+    )
+    .await;
+    assert!(
+        matches!(heard, Ok(true)),
+        "shutdown deadline was not observed"
+    );
     assert!(fixture.row(&schedule).last_outcome.is_none());
+    assert!(
+        *feeds.borrow() >= 1,
+        "monty feed ended at the shutdown deadline"
+    );
     let stopped = handle.await.expect("shutdown task");
     assert!(!stopped);
     assert_eq!(
@@ -433,9 +479,10 @@ async fn dropping_run_due_does_not_abort_the_feed_or_start_a_second_one() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
     fixture.clock.advance(chrono::Duration::seconds(60));
+    let before = fixture.store.writes().len();
     let scheduler = fixture.scheduler.share();
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
-    tokio::time::sleep(Duration::from_millis(100)).await; // allow: monty feed runs on the blocking pool in real time
+    wait_launch_stored(&fixture, &schedule, before).await;
     let due = fixture.clock.now();
     fixture
         .store
@@ -464,10 +511,11 @@ async fn an_awaited_run_due_records_timed_out_only_after_the_feed_returns() {
     let fixture = Fixture::new();
     let schedule = fixture.start(spec("slow", TIME_LIMIT, Duration::from_secs(1)));
     fixture.clock.advance(chrono::Duration::seconds(60));
+    let before = fixture.store.writes().len();
     let scheduler = fixture.scheduler.share();
     let id = schedule.id;
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
-    tokio::time::sleep(Duration::from_millis(200)).await; // allow: monty feed runs on the blocking pool in real time
+    wait_launch_stored(&fixture, &schedule, before).await;
     assert!(fixture.row(&schedule).last_outcome.is_none());
     let done = running.await.expect("join").expect("run_due");
     assert_eq!(done.len(), 1);
@@ -492,25 +540,20 @@ async fn a_disable_answer_skips_the_tick_and_drops_the_repl() {
         .await
         .expect("enable");
     fixture.step(60).await;
-    let reached = tokio::time::timeout(Duration::from_secs(10), async {
-        loop {
-            let disables = fixture
-                .store
-                .writes()
+    let id = schedule.id;
+    fixture
+        .store
+        .wait_writes("second disable", move |writes| {
+            writes
                 .iter()
                 .filter(|write| {
-                    matches!(write, Write::Disable { id, reason, changed: true }
-                        if *id == schedule.id && reason == "bye")
+                    matches!(write, Write::Disable { id: written, reason, changed: true }
+                        if *written == id && reason == "bye")
                 })
-                .count();
-            if disables >= 2 {
-                return;
-            }
-            tokio::time::sleep(Duration::from_millis(20)).await; // allow: monty feed runs on the blocking pool in real time
-        }
-    })
-    .await;
-    assert!(reached.is_ok(), "second disable did not land");
+                .count()
+                >= 2
+        })
+        .await;
     shutdown(worker).await;
     assert_eq!(runs_containing(&fixture, &schedule, "tick"), 0);
     assert_eq!(runs_containing(&fixture, &schedule, "repl survived"), 0);
