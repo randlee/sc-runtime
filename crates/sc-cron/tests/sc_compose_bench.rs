@@ -16,6 +16,30 @@ use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 const TEMPLATE: &str = "Hello {{ name }}";
+/// Code shown in the HTML report beside the timing table. Excerpts only; the
+/// executed code is `monty_host_bridge_once` and `CliRenderFixtures` below.
+const EXAMPLE_MONTY_HOOK: &str = "def cron_tick(hook):
+    # render_template is the reserved host binding (resumed by the host).
+    out = render_template(hook[\"payload\"][\"template\"], hook[\"payload\"][\"context\"])
+    return None  # normal return is RunOutcome::Ok
+";
+const EXAMPLE_RESUME_LOOP: &str =
+    "let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;
+loop {
+    progress = match progress {
+        ReplProgress::FunctionCall(call) if call.function_name == \"render_template\" => {
+            let template = call.args.arg(0)?.as_str()?;
+            let rendered = run_sc_compose(template, context); // host spawns the CLI
+            call.resume(ExtFunctionResult::Return(MontyObject::string(rendered)),
+                        PrintWriter::Disabled)?
+        }
+        ReplProgress::Complete { .. } => break,
+        _ => return Err(denied()),
+    };
+}";
+const EXAMPLE_CLI_ARGV: &str =
+    "sc-compose render --root <temp> --mode file --file t.j2 --var-file <temp>/v.json";
+
 /// Timed iterations per case (plus one untimed warmup before the timer starts).
 const TIMED_ITERS: u32 = 30;
 
@@ -402,6 +426,8 @@ th {{ color:var(--muted); font-size:.75rem; text-transform:uppercase; letter-spa
 .muted {{ color:var(--muted); font-size:.82rem; }}
 ul {{ margin:.4rem 0 0; padding-left:1.2rem; }}
 code {{ font-family:ui-monospace,Menlo,monospace; font-size:.85em; }}
+h3 {{ font-size:.9rem; margin:.9rem 0 .3rem; color:var(--muted); }}
+pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; padding:.75rem; overflow-x:auto; }}
 </style>
 </head>
 <body>
@@ -431,6 +457,17 @@ code {{ font-family:ui-monospace,Menlo,monospace; font-size:.85em; }}
 </section>
 
 <section>
+<h2>Code examples</h2>
+<p class="muted">What each Monty case runs. The timing table above measures this path.</p>
+<h3>Monty hook</h3>
+<pre><code>{ex_hook}</code></pre>
+<h3>feed_start / resume loop (host side)</h3>
+<pre><code>{ex_loop}</code></pre>
+<h3>sc-compose CLI argv</h3>
+<pre><code>{ex_argv}</code></pre>
+</section>
+
+<section>
 <h2>Reproduce</h2>
 <pre>SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench --release -- --ignored --nocapture</pre>
 <p class="muted">Also writes this file: <code>docs/sc-cron/sc-compose-hook-comparison.report.html</code></p>
@@ -446,6 +483,9 @@ code {{ font-family:ui-monospace,Menlo,monospace; font-size:.85em; }}
         total_execs = TIMED_ITERS + 1,
         rows = rows,
         template = html_escape(TEMPLATE),
+        ex_hook = html_escape(EXAMPLE_MONTY_HOOK),
+        ex_loop = html_escape(EXAMPLE_RESUME_LOOP),
+        ex_argv = html_escape(EXAMPLE_CLI_ARGV),
     );
 
     if let Some(parent) = path.parent() {

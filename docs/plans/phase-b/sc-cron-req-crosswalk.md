@@ -67,7 +67,7 @@ These are different mechanisms. This crosswalk does not fold the product mutex i
 | What a clash does | That tick is skipped and logged. Other names keep running. | The run replies `skipped: "in_flight"` or `sync use-python` fails with `TICK_IN_FLIGHT`. |
 | What it is not | A repository-wide sync lock | An sc-cron rule, and not `REQ-CRON-0006` |
 
-beads-cache **REQ-BDC-0720** mutual enable is **temporary** bd-cache behavior under the [owner ruling](decision-sync-scheduling-at-api.md#owner-ruling-no-slot-restriction-2026-10-26), not lasting scheduling policy. sc-cron does not implement that ceiling.
+beads-cache **REQ-BDC-0720** mutual enable is **temporary** bd-cache behavior under the [owner ruling](decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27), not lasting scheduling policy. sc-cron does not implement that ceiling; its only row ceiling is the optional embedder-supplied limit (default about 10 per consuming app, from that app's sc-config, passed into the sc-cron API).
 
 ## Monty is outside beads-cache REQ-CRON
 

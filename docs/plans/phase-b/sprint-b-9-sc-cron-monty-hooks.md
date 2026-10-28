@@ -35,7 +35,9 @@ vertical_rationale: One crate. b-3 lands `HookTarget` (Rust and Python `{ module
 
 # Sprint b-9 — Monty hook target for sc-cron
 
-Plan for bead `run-zif.1` (parent `run-zif`). This document is the plan. It contains no crate change. Implementation starts only after this plan is accepted. Sprint b-3 (`run-9ny`, PR #68) is merged on `integrate/phase-b`; this sprint extends that tree.
+Sprint **b-9** landed on **`develop`** (Monty target, schema 4, feature `monty`).
+This copy is the index the Monty extension (`b-10`, `b-11`) follows. Sprint b-3
+(`run-9ny`, PR #68) is the port base.
 
 ## Slot
 
@@ -64,11 +66,14 @@ pub enum HookTarget {
     Python { module: std::path::PathBuf },
     /// Source the embedding process already trusts.
     /// sc-cron does not read this from a file.
-    Monty { source: String },
+    Monty { source: MontyHookSource },
 }
+
+/// Validated hook program text (`MAX_HOOK_SOURCE_BYTES`, same as table CHECK).
+pub struct MontyHookSource(String);
 ```
 
-`HookTarget::monty(source)` is the public constructor for Monty rows: it validates `source` length against `MAX_HOOK_SOURCE_BYTES` and returns `CronError::InvalidSpec` when over the cap (same limit as table CHECK). Internal call sites may build `Monty { source }` only after that validation.
+`HookTarget::monty(source: impl Into<String>)` is the public constructor: it validates length and returns `CronError::InvalidSpec` when over the cap, then wraps `MontyHookSource`. Internal call sites may build `Monty { source }` only via `MontyHookSource::try_new` or `HookTarget::monty`.
 
 `source` is the hook program text. It is not a filesystem path.
 
@@ -125,9 +130,9 @@ For **Monty**:
 - **`WorkerHandle::shutdown`:** send stop and the handle deadline into the worker, then wait for the worker task. Call `task.abort()` on the worker **only** when the deadline has passed, the worker has not finished, and **`monty_feeds_outstanding == 0`**. Dropping `WorkerHandle` may signal stop; it must not abort a Monty join. `shutdown` may return after the handle deadline; the `bool` is `true` only when the worker finished before that deadline, and `false` when it finished only after waiting out Monty.
 - **`Scheduler::run_due` (Monty):** on the **calling** task, publish the schedule name in the scheduler's **per-name in-flight set** (beads-cache `REQ-CRON-0006` behavior; not a separate sc-runtime requirement id) **before** `tokio::spawn` and before any later `await`. The worker holds the same set; `slot.run` is the worker's own join and is **not** this mark. The spawned task owns the `Arc` clones `finish_due` needs, waits for the feed with no parent deadline `select`, performs `finish_due`, then returns the `DueRun`. Clear the mark only after that task's `finish_due` returns (including a fenced or failed write). `run_due` awaits while polled and does not write the row again. `DueTask` carries the resolved target kind; on `Drop`, **Monty** **forgets** the join handle without abort and does not publish or clear the per-name mark (the spawned task owns the mark). **Rust and Python** keep abort-on-drop and record nothing on drop. While the mark is set, a later `run_due` and `Worker::launch_due` skip that name even when `next_run_at` is still due. **Rust and Python** keep the inner deadline `select`, `DueTask` abort, and record nothing on drop.
 
-**Monty** cancellation does not record `TimedOut` or `Failed`; a Monty `TimedOut` is recorded only when that feed returns a feed-time-limit error. A **Rust or Python** join aborted at the handle deadline while a Monty feed is in flight records `TimedOut` from that cancellation. A hook that never starts records `RunOutcome::Failed` from `CronError::HookFailed` and leaves no repl. A source missing `cron_stop` or `cron_tick` returns `HookFailed` and does not start.
+**Monty** cancellation does not record `TimedOut` or `Failed`; a Monty `TimedOut` from VM execution is recorded only when that feed returns a feed-time-limit error (host time inside `render_template` follows sprint `b-10`, not this sentence). A **Rust or Python** join aborted at the handle deadline while a Monty feed is in flight records `TimedOut` from that cancellation. A hook that never starts records `RunOutcome::Failed` from `CronError::HookFailed` and leaves no repl. A source missing `cron_stop` or `cron_tick` returns `HookFailed` and does not start.
 
-The schedule-table connection is not held across a feed. Synchronous store I/O and Monty feeds both run on **tokio's blocking pool** (same pool as the port today), so a long Monty feed can delay unrelated store work on that pool. Many schedule names may each occupy a blocking-pool thread until their feeds hit the next interpreter checkpoint after the deadline; that stall is accepted because sc-cron does not cap row count. A Monty hook that never reaches another checkpoint can stall `WorkerHandle::shutdown` until process exit; **consumers** must enforce an outer process or runtime kill if they need a hard ceiling beyond the feed-time limit.
+The schedule-table connection is not held across a feed. Synchronous store I/O and Monty feeds both run on **tokio's blocking pool** (same pool as the port today), so a long Monty feed can delay unrelated store work on that pool. Many schedule names may each occupy a blocking-pool thread until their feeds hit the next interpreter checkpoint after the deadline; that stall is accepted because sc-cron has no built-in row cap (an embedder-supplied row limit is [sprint b-12](sprint-b-12-sc-cron-schedule-row-limit.md) / [ADR-RUN-0014](../../architecture.md)). A Monty hook that never reaches another checkpoint can stall `WorkerHandle::shutdown` until process exit; **consumers** must enforce an outer process or runtime kill if they need a hard ceiling beyond the feed-time limit.
 
 ### Schedule table (`REQ-CRON-0004`)
 
@@ -157,7 +162,7 @@ In-process Monty can abort the host on a stack overflow or an allocator abort. A
 
 Each row already has a timeout. The CPython process-group kill does not apply.
 
-The time remaining until the row deadline is `ResourceLimits::max_feed_duration` for that feed (`monty-types`). A **Monty** `RunOutcome::TimedOut` is recorded only when that feed returns a feed-time-limit error. Do not wrap a Monty feed in a parent timeout that records `TimedOut` while the interpreter is still running; Monty is exempt from `Worker::expire`, merge/`InFlight` drop-abort, Monty join abort on shutdown/drain, and `Scheduler::run_due` parent timeout (see Worker above). The task joined to the feed **stays joined** until the next interpreter checkpoint after the deadline; that return is the only Monty timeout path. Code between checkpoints may run past the wall deadline until that checkpoint; there is no second kill switch on Monty.
+The time remaining until the row deadline is `ResourceLimits::max_feed_duration` for that feed (`monty-types`). A **Monty** `RunOutcome::TimedOut` is recorded only when that feed returns a feed-time-limit error. Do not wrap a Monty feed in a parent timeout that records `TimedOut` while the interpreter is still running; Monty is exempt from `Worker::expire`, merge/`InFlight` drop-abort, Monty join abort on shutdown/drain, and `Scheduler::run_due` parent timeout (see Worker above). The task joined to the feed **stays joined** until the next interpreter checkpoint after the deadline; that return is the only Monty timeout path for ordinary VM execution. Code between checkpoints may run past the wall deadline until that checkpoint; there is no second kill switch on Monty. A **`render_template` host call** (sprint `b-10`) follows the host-`Instant` rule in [sprint-b-10-sc-cron-monty-host-bridge.md](sprint-b-10-sc-cron-monty-host-bridge.md) and is not a Monty feed-time-limit error.
 
 Any other exception raised by the running hook is `RunOutcome::Failed`. `CronError::HookFailed` is only "the hook could not be started" (feature off, compile error, missing `cron_stop` or `cron_tick`). A deadline is not `HookFailed`.
 
@@ -181,7 +186,7 @@ Amend point 4 so the hook target is a Rust function, a Python module, or **trust
 
 Amend point 6 so the variant set is `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`. That sentence replaces the point 6 list that named five variants and claimed the beads-cache stable codes.
 
-Add a consequence: sprint `b-9` adds feature `monty` and `HookTarget::Monty`. beads-cache does not gain a Monty target. sc-cron has **no row cap, no global in-flight lock, and no two-row mutex** per the [owner ruling](decision-sync-scheduling-at-api.md#owner-ruling-no-slot-restriction-2026-10-26) (beads-cache REQ-BDC-0720 two-row ceiling is temporary bd-cache behavior only).
+Add a consequence: sprint `b-9` adds feature `monty` and `HookTarget::Monty`. beads-cache does not gain a Monty target. sc-cron has **no built-in row cap, no global in-flight lock, and no two-row mutex**. [ADR-RUN-0014](../../architecture.md) amends the 2026-10-26 no-slot text: the embedder may pass a row limit (app default about 10, from the app's sc-config, never read by sc-cron); that API is a later sprint, not b-9. beads-cache REQ-BDC-0720 two-row ceiling is temporary bd-cache behavior only.
 
 `REQ-CRON-0003` gains one sentence: a third target, `Monty { source }`, available when the crate is built with feature `monty`, with the entry contract and lifecycle above. `REQ-CRON-0005` points at the amended variant set.
 
@@ -225,4 +230,4 @@ Root: `boundary:sc-cron` and ADR-RUN-0013 as amended by this sprint.
 
 ## Non-goals
 
-No beads-cache Monty integration. No `monty-pool`. No sandbox and no hook loaded from a cache file. No replacement of the CPython target. No HTTP, MCP, or CLI API. No global in-flight lock and no cap on schedule row count. No edit to PR #68. No edit to `b-8` or to the stores sprints. Workspace `Cargo.toml` stays as `b-3` left it. `Cargo.lock` changes only to record the optional Monty crates. beads-cache **REQ-BDC-0720** slot-cap text is out of scope here; track under `run-zif.2` in beads-cache.
+No beads-cache Monty integration. No `monty-pool`. No sandbox and no hook loaded from a cache file. No replacement of the CPython target. No HTTP, MCP, or CLI API. No global in-flight lock and no built-in cap on schedule row count (the embedder-supplied limit is the planned amendment above, not a b-9 deliverable). No edit to PR #68. No edit to `b-8` or to the stores sprints. Workspace `Cargo.toml` stays as `b-3` left it. `Cargo.lock` changes only to record the optional Monty crates. beads-cache **REQ-BDC-0720** slot-cap text is out of scope here; track under `run-zif.2` in beads-cache.
