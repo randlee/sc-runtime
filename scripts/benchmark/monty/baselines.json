@@ -1,6 +1,7 @@
 {
   "schema": "sc-runtime/benchmark-monty-baselines/v1",
-  "notes": "Optional regression floors in milliseconds per run, keyed by harness case id. Null means no floor: the case is MEASURED and does not fail the campaign. Ratify a number only after at least three clean published campaigns for the same host and case. Do not rewrite older campaign JSON when a floor changes.",
+  "notes": "Optional regression floors in milliseconds per run, keyed by harness case id. Null means no floor: the case is MEASURED and does not fail the campaign. Ratify a number only after at least three clean published campaigns for the same host and case. Do not rewrite older campaign JSON when a floor changes. The publish gate allowlist is rand-m5 plus allowed_hosts. SC_BENCH_GATE_ALLOW_ANY_HOST=1 bypasses that check for local development only.",
+  "allowed_hosts": ["rand-m5"],
   "cases": {
     "cli": { "max_ms_per_run": null },
     "py_render": { "max_ms_per_run": null },

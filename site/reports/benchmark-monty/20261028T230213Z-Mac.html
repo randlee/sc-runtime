@@ -58,27 +58,52 @@ pre { background:#0b0f14; border:1px solid var(--border); border-radius:6px; pad
 <section>
 <h2>Code examples</h2>
 <p class="muted">What each Monty case runs. The timing table above measures this path.</p>
-<h3>Monty hook</h3>
+<h3>Hook snippet</h3>
 <pre><code>def cron_stop(hook):
     return {&quot;action&quot;: &quot;continue&quot;, &quot;reason&quot;: &quot;ok&quot;}
 
 def cron_tick(hook):
     return render_template(hook[&quot;payload&quot;][&quot;template&quot;], hook[&quot;payload&quot;][&quot;context&quot;])
 </code></pre>
-<h3>feed_start / resume loop (host side)</h3>
-<pre><code>let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;
+<h3>production execute_feed resume loop</h3>
+<pre><code>// production path: execute_feed (not the lab feed_start harness)
+let mut progress = match repl.feed_start(
+    phase_snippet(phase),
+    snippet_inputs(hook),
+    PrintWriter::Disabled,
+) {
+    Ok(progress) =&gt; progress,
+    Err(error) =&gt; return from_exception(error.error, stage),
+};
 loop {
     progress = match progress {
         ReplProgress::FunctionCall(call) if call.function_name == &quot;render_template&quot; =&gt; {
-            let template = call.args.arg(0)?.as_str()?;
-            let rendered = run_sc_compose(template, context); // host spawns the CLI
-            call.resume(ExtFunctionResult::Return(MontyObject::string(rendered)),
-                        PrintWriter::Disabled)?
+            match resume_render(call, stage, compose_program, host_deadline) {
+                Ok(next) =&gt; next,
+                Err(done) =&gt; return done,
+            }
         }
-        ReplProgress::Complete { .. } =&gt; break,
-        _ =&gt; return Err(denied()),
+        ReplProgress::FunctionCall(call) if call.function_name == &quot;sc_compose_run&quot; =&gt; {
+            match resume_compose_run(call, stage, compose_program, host_deadline) {
+                Ok(next) =&gt; next,
+                Err(done) =&gt; return done,
+            }
+        }
+        ReplProgress::Complete { repl, value } =&gt; {
+            return finish_phase(phase, generation, repl, &amp;value);
+        }
+        ReplProgress::FunctionCall(call) =&gt; {
+            return denied(stage, &amp;format!(&quot;host function {}&quot;, call.function_name));
+        }
+        ReplProgress::OsCall(call) =&gt; {
+            let operation: &amp;&#x27;static str = call.function_call.into();
+            return denied_os(stage, operation);
+        }
+        ReplProgress::NameLookup(lookup) =&gt; return undefined_name(stage, &amp;lookup.name),
+        ReplProgress::ResolveFutures(_) =&gt; return denied(stage, &quot;unresolved futures&quot;),
     };
-}</code></pre>
+}
+</code></pre>
 <h3>sc-compose CLI argv</h3>
 <pre><code>sc-compose render --root &lt;temp&gt; --mode file --file t.j2 --var-file &lt;temp&gt;/v.json</code></pre>
 </section>

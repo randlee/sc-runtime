@@ -39,4 +39,9 @@ Hook interpretation: [`hooks-sc-compose.md`](hooks-sc-compose.md).
 
 Release publish runs `benchmark-gate` from
 [`release/publish-preflight.toml`](../../release/publish-preflight.toml) on the
-controlled host. A skipped **`production_bridge`** case fails the gate.
+controlled host **`atmbench@rand-m5`**. A skipped **`production_bridge`** case
+fails the gate. The gate also rejects a host label that is not `rand-m5` and
+not listed in `scripts/benchmark/monty/baselines.json` (`allowed_hosts`),
+unless `SC_BENCH_GATE_ALLOW_ANY_HOST=1` (local development only). Floors are
+read from that baselines file. `site/reports/benchmark-monty/` does not carry
+a second copy.

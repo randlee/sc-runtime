@@ -25,6 +25,8 @@ from pathlib import Path
 _BENCH = Path(__file__).resolve().parent.parent
 if str(_BENCH) not in sys.path:
     sys.path.insert(0, str(_BENCH))
+from check_gate import GateHostError, assert_gate_host  # noqa: E402
+from check_gate import host_label as gate_host_label  # noqa: E402
 from render_report import (  # noqa: E402
     ReportError,
     apply_examples_to_html,
@@ -41,7 +43,6 @@ HARNESS_JSON = ROOT / "docs" / "sc-cron" / "sc-compose-hook-comparison.report.js
 HARNESS_SCHEMA = "sc-runtime/benchmark-monty-harness/v1"
 CAMPAIGN_SCHEMA = "sc-runtime/benchmark-monty-campaign/v1"
 BASELINE_SCHEMA = "sc-runtime/benchmark-monty-baselines/v1"
-HOST_SAFE = re.compile(r"[^A-Za-z0-9._-]+")
 
 
 class CampaignError(Exception):
@@ -56,19 +57,11 @@ def stamp(when: datetime) -> str:
     return when.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def safe_host(label: str) -> str:
-    cleaned = HOST_SAFE.sub("-", label.strip()).strip("-.")
-    if not cleaned:
-        raise CampaignError(f"host label is empty after sanitizing: {label!r}")
-    return cleaned[:64]
-
-
 def host_label() -> str:
-    raw = os.environ.get("SC_BENCH_HOST_LABEL")
-    if raw:
-        return safe_host(raw)
-    node = os.uname().nodename.split(".")[0]
-    return safe_host(node)
+    try:
+        return gate_host_label()
+    except GateHostError as exc:
+        raise CampaignError(str(exc)) from exc
 
 
 def run(cmd: list[str], *, cwd: Path = ROOT, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -188,6 +181,23 @@ def assert_examples(payload: dict, *, label: str) -> None:
         require_examples(payload, label=label)
     except ReportError as exc:
         raise CampaignError(str(exc)) from exc
+
+
+def require_production_resume_loop(examples: dict) -> None:
+    """The published resume loop is the ``execute_feed`` excerpt.
+
+    The lab ``feed_start`` harness stays a separate constant. Packaging
+    rejects a resume loop that is not labelled as the production path.
+    """
+    resume = examples.get("resume_loop")
+    if not isinstance(resume, str):
+        raise CampaignError("examples.resume_loop must be the production execute_feed excerpt")
+    lowered = resume.lower()
+    if "execute_feed" not in lowered or "production" not in lowered:
+        raise CampaignError(
+            "examples.resume_loop must be the production execute_feed excerpt "
+            "(label it production and name execute_feed; keep the lab loop separate)"
+        )
 
 
 def floor_table(baselines: dict) -> str:
@@ -398,6 +408,9 @@ def package_campaign(
         raise CampaignError(f"refusing to overwrite campaign {campaign_id}")
     examples = harness.get("examples")
     assert_examples({"examples": examples}, label="harness")
+    if not isinstance(examples, dict):
+        raise CampaignError("harness examples must be an object")
+    require_production_resume_loop(examples)
     report_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(html_path, dest_html)
     payload = {
@@ -537,7 +550,11 @@ def self_check() -> None:
         "python_sc_compose": True,
         "examples": {
             "hook_source": "def cron_tick(hook):\n    return render_template(hook['payload']['template'], hook['payload']['context'])\n",
-            "resume_loop": "let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;\ncall.resume(result)?;\n",
+            "resume_loop": (
+                "// production execute_feed resume loop\n"
+                "let mut progress = repl.feed_start(phase_snippet(phase), snippet_inputs(hook), PrintWriter::Disabled)?;\n"
+                "resume_render(call, stage, compose_program, host_deadline)?;\n"
+            ),
             "cli_argv": "sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json\n",
         },
         "cases": [
@@ -617,9 +634,37 @@ def self_check() -> None:
         if "git" not in published or payload["git_sha"] not in published:
             raise CampaignError("campaign HTML is missing the git SHA")
         index_text = (report_dir / "index.html").read_text(encoding="utf-8")
-        for needle in ("cron_tick", "feed_start", "sc-compose render --root", "max_ms_per_run"):
+        for needle in (
+            "cron_tick",
+            "feed_start",
+            "execute_feed",
+            "production",
+            "sc-compose render --root",
+            "max_ms_per_run",
+        ):
             if needle not in index_text:
                 raise CampaignError(f"index.html is missing {needle}")
+        lab_only = json.loads(json.dumps(harness))
+        lab_only["examples"]["resume_loop"] = (
+            "let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;\n"
+            "call.resume(result)?;\n"
+        )
+        try:
+            package_campaign(
+                report_dir=report_dir,
+                harness=lab_only,
+                html_path=html_path,
+                host="self-check",
+                git_revision="c" * 40,
+                rustc_version="rustc 1.96.1 (self-check)",
+                when=when.replace(minute=2),
+            )
+        except CampaignError as exc:
+            if "execute_feed" not in str(exc):
+                raise
+        else:
+            raise CampaignError("lab resume_loop was published as examples.resume_loop")
+        check_gate_host_allowlist()
         broken_path = report_dir / f"{payload['campaign_id']}.campaign.json"
         broken = json.loads(broken_path.read_text(encoding="utf-8"))
         del broken["examples"]["hook_source"]
@@ -641,8 +686,60 @@ def self_check() -> None:
     print("self-check ok")
 
 
+def check_gate_host_allowlist() -> None:
+    """The gate rejects a host outside rand-m5 and baselines.json unless bypassed."""
+    import tempfile
+
+    keys = ("SC_BENCH_HOST_LABEL", "SC_BENCH_GATE_ALLOW_ANY_HOST")
+    saved = {key: os.environ.get(key) for key in keys}
+    try:
+        os.environ.pop("SC_BENCH_GATE_ALLOW_ANY_HOST", None)
+        os.environ["SC_BENCH_HOST_LABEL"] = "not-a-controlled-host"
+        try:
+            assert_gate_host(BASELINES_PATH)
+        except GateHostError as exc:
+            text = str(exc)
+            if "not-a-controlled-host" not in text or "rand-m5" not in text:
+                raise CampaignError(text) from exc
+        else:
+            raise CampaignError("gate accepted a disallowed host label")
+        os.environ["SC_BENCH_HOST_LABEL"] = "rand-m5"
+        if assert_gate_host(BASELINES_PATH) != "rand-m5":
+            raise CampaignError("rand-m5 was not allowed")
+        os.environ["SC_BENCH_GATE_ALLOW_ANY_HOST"] = "1"
+        os.environ["SC_BENCH_HOST_LABEL"] = "not-a-controlled-host"
+        if assert_gate_host(BASELINES_PATH) != "not-a-controlled-host":
+            raise CampaignError("SC_BENCH_GATE_ALLOW_ANY_HOST=1 did not bypass the allowlist")
+        os.environ["SC_BENCH_GATE_ALLOW_ANY_HOST"] = "0"
+        with tempfile.TemporaryDirectory() as tmp:
+            recorded = Path(tmp) / "baselines.json"
+            recorded.write_text(
+                json.dumps({"allowed_hosts": ["lab-host"]}),
+                encoding="utf-8",
+            )
+            os.environ.pop("SC_BENCH_GATE_ALLOW_ANY_HOST", None)
+            os.environ["SC_BENCH_HOST_LABEL"] = "lab-host"
+            if assert_gate_host(recorded) != "lab-host":
+                raise CampaignError("a baselines.json host label was rejected")
+            os.environ["SC_BENCH_HOST_LABEL"] = "other-host"
+            try:
+                assert_gate_host(recorded)
+            except GateHostError:
+                pass
+            else:
+                raise CampaignError("gate accepted a host missing from baselines.json")
+    finally:
+        for key, value in saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+
 def validate_gate(payload: dict) -> None:
     assert_examples(payload, label="gate")
+    examples = payload.get("examples")
+    require_production_resume_loop(examples if isinstance(examples, dict) else {})
     cases = {case["id"]: case for case in payload.get("cases", []) if isinstance(case, dict)}
     bridge = cases.get("production_bridge")
     if bridge is None or bridge.get("skipped"):
@@ -684,6 +781,10 @@ def main(argv: list[str] | None = None) -> int:
         elif args.publish:
             publish(REPORT_DIR)
         elif args.gate:
+            try:
+                assert_gate_host(BASELINES_PATH)
+            except GateHostError as exc:
+                raise CampaignError(str(exc)) from exc
             payload = run_campaign()
             validate_gate(payload)
             print(f"gate ok: {payload['campaign_id']} status={payload['status']}")

@@ -30,11 +30,12 @@ const EXAMPLE_MONTY_HOOK: &str = "def cron_tick(hook):
     out = render_template(hook[\"payload\"][\"template\"], hook[\"payload\"][\"context\"])
     return None  # normal return is RunOutcome::Ok
 ";
-const EXAMPLE_RESUME_LOOP: &str =
-    "let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;
+/// Lab `monty_host_bridge` harness. Production campaigns publish
+/// [`EXAMPLE_PRODUCTION_RESUME_LOOP`] instead of this excerpt.
+const EXAMPLE_RESUME_LOOP: &str = r#"let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;
 loop {
     progress = match progress {
-        ReplProgress::FunctionCall(call) if call.function_name == \"render_template\" => {
+        ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
             let template = call.args.arg(0)?.as_str()?;
             let rendered = run_sc_compose(template, context); // host spawns the CLI
             call.resume(ExtFunctionResult::Return(MontyObject::string(rendered)),
@@ -43,12 +44,52 @@ loop {
         ReplProgress::Complete { .. } => break,
         _ => return Err(denied()),
     };
-}";
+}"#;
+/// Production path inside `execute_feed`. The bench does not call `feed_start`
+/// itself for `production_bridge`; this is the host loop that does.
+const EXAMPLE_PRODUCTION_RESUME_LOOP: &str = r#"// production path: execute_feed (not the lab feed_start harness)
+let mut progress = match repl.feed_start(
+    phase_snippet(phase),
+    snippet_inputs(hook),
+    PrintWriter::Disabled,
+) {
+    Ok(progress) => progress,
+    Err(error) => return from_exception(error.error, stage),
+};
+loop {
+    progress = match progress {
+        ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
+            match resume_render(call, stage, compose_program, host_deadline) {
+                Ok(next) => next,
+                Err(done) => return done,
+            }
+        }
+        ReplProgress::FunctionCall(call) if call.function_name == "sc_compose_run" => {
+            match resume_compose_run(call, stage, compose_program, host_deadline) {
+                Ok(next) => next,
+                Err(done) => return done,
+            }
+        }
+        ReplProgress::Complete { repl, value } => {
+            return finish_phase(phase, generation, repl, &value);
+        }
+        ReplProgress::FunctionCall(call) => {
+            return denied(stage, &format!("host function {}", call.function_name));
+        }
+        ReplProgress::OsCall(call) => {
+            let operation: &'static str = call.function_call.into();
+            return denied_os(stage, operation);
+        }
+        ReplProgress::NameLookup(lookup) => return undefined_name(stage, &lookup.name),
+        ReplProgress::ResolveFutures(_) => return denied(stage, "unresolved futures"),
+    };
+}
+"#;
 const EXAMPLE_CLI_ARGV: &str =
     "sc-compose render --root <temp> --mode file --file t.j2 --var-file <temp>/v.json";
 const EXAMPLE_COMPOSE_RUN: &str = r#"def cron_tick(hook):
-    # General sc-compose UX: allowlisted subcommands + argv tail.
-    result = sc_compose_run("help", ["render"])
+    # Only render is allowed. The host stages a temp root and ignores --root.
+    result = sc_compose_run("render", ["--mode", "file", "--file", "t.j2", "--var-file", "v.json"])
     if result["exit_code"] not in (0, None):
         raise RuntimeError(result["stderr"])
     return render_template(hook["payload"]["template"], hook["payload"]["context"])
@@ -459,7 +500,8 @@ fn write_metrics_json(ctx: &ReportContext, cases: &[BenchCase]) {
         "cases": cases.iter().map(case_metrics).collect::<Vec<_>>(),
         "examples": {
             "hook_source": EXAMPLE_PRODUCTION,
-            "resume_loop": EXAMPLE_RESUME_LOOP,
+            "resume_loop": EXAMPLE_PRODUCTION_RESUME_LOOP,
+            "lab_resume_loop": EXAMPLE_RESUME_LOOP,
             "cli_argv": EXAMPLE_CLI_ARGV,
             "compose_run": EXAMPLE_COMPOSE_RUN,
         },
@@ -592,12 +634,14 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
 <p class="muted">What each Monty case runs. The timing table above measures this path.</p>
 <h3>Monty hook</h3>
 <pre><code>{ex_hook}</code></pre>
-<h3>feed_start / resume loop (host side)</h3>
+<h3>production execute_feed resume loop</h3>
 <pre><code>{ex_loop}</code></pre>
 <h3>sc-compose CLI argv</h3>
 <pre><code>{ex_argv}</code></pre>
 <h3>sc_compose_run hook</h3>
 <pre><code>{ex_compose}</code></pre>
+<h3>lab feed_start / resume loop (monty_host_bridge only)</h3>
+<pre><code>{ex_lab}</code></pre>
 </section>
 
 <section>
@@ -617,9 +661,10 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
         rows = rows,
         template = html_escape(TEMPLATE),
         ex_hook = html_escape(EXAMPLE_MONTY_HOOK),
-        ex_loop = html_escape(EXAMPLE_RESUME_LOOP),
+        ex_loop = html_escape(EXAMPLE_PRODUCTION_RESUME_LOOP),
         ex_argv = html_escape(EXAMPLE_CLI_ARGV),
         ex_compose = html_escape(EXAMPLE_COMPOSE_RUN),
+        ex_lab = html_escape(EXAMPLE_RESUME_LOOP),
     );
 
     if let Some(parent) = path.parent() {

@@ -26,22 +26,32 @@ does not run this campaign.
 
 ## 1. Preflight
 
-Run from a checkout of the revision you intend to measure. The tree must be
-clean before you publish. Install the Monty toolchain (Rust 1.96.1) and have
-`sc-compose` on `PATH`. Python cases also need `import sc_compose`.
+Authoritative timings come from the controlled host **`atmbench@rand-m5`**
+([ADR-RUN-0015](../../../docs/architecture.md)). When this session is not
+already on that host, SSH there and continue in a checkout of the revision
+you intend to measure:
+
+```sh
+ssh atmbench@rand-m5
+```
+
+On `atmbench@rand-m5`, the tree must be clean before you publish. Install the
+Monty toolchain (Rust 1.96.1) and have `sc-compose` on `PATH`. Python cases
+also need `import sc_compose`.
 
 ```sh
 git status --short
 command -v sc-compose
 python3 -c "import sc_compose" || true
 rustup run 1.96.1 rustc --version
+hostname -s
 ```
 
-Set the host label when this machine is not the one you want recorded:
-
-```sh
-export SC_BENCH_HOST_LABEL="${SC_BENCH_HOST_LABEL:-$(hostname -s)}"
-```
+`hostname -s` on the controlled host is `rand-m5`. `SC_BENCH_HOST_LABEL`
+overrides the label recorded in the campaign. The publish gate allowlist is
+`rand-m5` plus every label in `scripts/benchmark/<subsystem>/baselines.json`
+(`allowed_hosts`). `SC_BENCH_GATE_ALLOW_ANY_HOST=1` bypasses that check for
+local development only. Do not set it for publish preflight.
 
 Keep the host quiet. A campaign is a measurement of this checkout, this
 toolchain, and this machine. Do not run it on a shared developer session that
@@ -49,20 +59,29 @@ is also compiling the workspace.
 
 ## 2. Run
 
+Run the recipe on `atmbench@rand-m5` (the SSH session from preflight when you
+were not already on that host):
+
 ```sh
-just --justfile scripts/benchmark/justfile benchmark-monty
+just --justfile scripts/benchmark/justfile benchmark monty
 ```
 
-The recipe runs release `sc_compose_bench` with `SC_CRON_BENCH=1` on Rust
-1.96.1, then writes the campaign under `site/reports/benchmark-monty/`. A
-campaign id looks like `20261027T180000Z-host-label`. The runner refuses to
-overwrite an existing campaign file.
+`benchmark-monty` is the same Monty campaign. The recipe runs release
+`sc_compose_bench` with `SC_CRON_BENCH=1` on Rust 1.96.1, then writes the
+campaign under `site/reports/benchmark-monty/`. A campaign id looks like
+`20261027T180000Z-rand-m5`. The runner refuses to overwrite an existing
+campaign file.
 
-`baselines.json` holds optional `max_ms_per_run` floors. A null floor does not
-fail a case. When a floor is set and a measured case is slower, the campaign
-status is `FAIL`. The result is still written. `production_bridge` must run
-through the host bridge. A skip is not a performance result and fails
-`benchmark-gate`.
+`scripts/benchmark/monty/baselines.json` holds optional `max_ms_per_run`
+floors. A null floor does not fail a case. When a floor is set and a measured
+case is slower, the campaign status is `FAIL`. The result is still written.
+`production_bridge` must run through `execute_feed`. A skip is not a
+performance result and fails `benchmark-gate`.
+
+`just --justfile scripts/benchmark/justfile benchmark-gate` and
+`scripts/benchmark/monty/campaign.py --gate` reject a host label outside the
+allowlist before they measure anything, unless
+`SC_BENCH_GATE_ALLOW_ANY_HOST=1`.
 
 A harness or environment error before measurement (missing toolchain, missing
 `sc-compose`, test failure before the sidecar exists) exits non-zero and writes
