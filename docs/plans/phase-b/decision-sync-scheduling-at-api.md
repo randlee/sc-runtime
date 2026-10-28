@@ -62,7 +62,7 @@ Sync fallback (Rust built-in vs consumer Python) stays **commands and row semant
 
 Follow-up in the **beads-cache** repo: amend **REQ-BDC-0720** (and related CLI text) toward "any rows up to the app's `max_rows`" and wire bd-cache's own config key to the sc-cron limit; link from bead `run-zif.2`.
 
-The ADR-RUN-0013 consequence sentence on `develop` ("sc-cron has no row cap, global in-flight lock, or two-row mutex", `docs/architecture.md`) is amended by the implementation sprint to "no built-in row cap (the embedder may pass one), no global in-flight lock, no two-row mutex". This plan PR does not edit `docs/architecture.md`.
+Binding record: [ADR-RUN-0014](../../architecture.md) (Active, owner 2026-10-27). [ADR-RUN-0013](../../architecture.md) consequences are amended on this branch accordingly.
 
 ## Out of scope
 

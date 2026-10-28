@@ -18,6 +18,7 @@ requirements:
 adrs:
   - ADR-RUN-0013
   - ADR-RUN-0011
+  - ADR-RUN-0015
 owned_paths:
   - .claude/skills/benchmark-run/
   - scripts/benchmark/
@@ -60,12 +61,13 @@ integration sprint. Extension width stays 1. See
 
 ## Goal
 
-An operator can run a subsystem's benchmark campaign, review it, and publish
-one immutable campaign under `site/reports/benchmark-<subsystem>/`. The first
-subsystem is `monty`; its published campaign includes `production_bridge` once
-`b-10` has landed. A **binary publish is blocked** unless every registered
-subsystem's benchmark passes in publish preflight (below). Default PR CI does
-not run campaigns.
+An operator or agent can run a subsystem's benchmark campaign (automated
+procedure below), review it, and publish one immutable campaign under
+`site/reports/benchmark-<subsystem>/`. The first subsystem is `monty`; its
+published campaign includes `production_bridge` once `b-10` has landed. A
+**binary publish is blocked** unless every registered subsystem's benchmark
+passes in publish preflight on the **controlled host** ([ADR-RUN-0015](../../architecture.md)).
+Default PR CI does not run campaigns or produce timing regressions.
 
 ## This sprint does not close
 
@@ -97,12 +99,32 @@ For this sprint the only subsystem is `monty`:
 `scripts/benchmark/monty/campaign.py` (replaces the earlier single
 `monty_compose_campaign.py`) and `site/reports/benchmark-monty/`.
 
-## Operator flow
+## Controlled environment
 
-`.claude/skills/benchmark-run/SKILL.md` is the procedure: preflight, run,
-review, publish. First consumer is the `monty` campaign. The skill is
-subsystem-parameterized (`<subsystem>` argument) and lists subsystems by
-directory name; it does not add a second runner.
+Authoritative benchmark timings come only from a **controlled environment**
+([ADR-RUN-0015](../../architecture.md)). The reference host is **`atmbench@rand-m5`**
+(SSH). Operators coordinate access to the `atmbench` account; agents run the
+skill on that machine (or SSH there and execute the same recipes).
+
+- Campaign JSON and HTML must record **git SHA**, **rustc** version, **host
+  label**, and every case result. `SC_BENCH_HOST_LABEL` overrides the default
+  hostname when set.
+- `baselines.json` ceilings apply to campaigns from approved host labels
+  (default allowlist includes `rand-m5` and the label recorded when baselines
+  were first accepted). GitHub Actions workflow duration is **not** a baseline
+  source.
+- `check_gate.py` rejects `--gate` when the host label is not in the allowlist
+  unless `SC_BENCH_GATE_ALLOW_ANY_HOST=1` (local dev only; never in publish
+  preflight).
+
+## Operator and agent flow
+
+`.claude/skills/benchmark-run/SKILL.md` is the procedure agents invoke
+(`/benchmark-run`): preflight on the controlled host, run, review, publish.
+First consumer is the `monty` campaign. The skill is subsystem-parameterized
+(`<subsystem>` argument) and lists subsystems by directory name; it does not add
+a second runner. Steps name the SSH target (`atmbench@rand-m5`) when the session
+is not already on that host.
 
 Recipes live in `scripts/benchmark/justfile` (owned here). The root `Justfile`
 stays with sprint `b-2`. Invoke with `just --justfile scripts/benchmark/justfile …`.
@@ -120,31 +142,38 @@ RSS notes into `{timestamp}-{host}.campaign.json`.
 
 ## Publish preflight gate
 
-**Replaces** the earlier "the campaign is manual / no regression gate" rule.
-Operator review and publishing of a campaign to `site/reports/` stay manual
-(`benchmark-publish`). The **pass/fail gate** is not manual: a binary publish
-cannot proceed unless it passes.
+**Replaces** the earlier "campaign is manual only / no regression gate" rule.
+Publishing a reviewed campaign to `site/reports/` (`benchmark-publish`) stays
+an operator or agent step after review. The **pass/fail gate** is automated on
+the controlled host: a binary publish cannot proceed unless it passes.
 
 - `release/publish-preflight.toml` declares a check `benchmark-pass` with
   `run = "just --justfile scripts/benchmark/justfile benchmark-gate"`.
   `.github/scripts/run-consumer-preflight.sh` runs every `[[checks]]` entry
   from `release-preflight.yml` and fails closed before release dispatch, so a
   non-zero `benchmark-gate` blocks binary publish.
+- **Where the gate runs:** publish preflight invokes the skill or an SSH step
+  that executes `benchmark-gate` **on `atmbench@rand-m5`**, not on a GitHub
+  hosted runner. The release workflow may SSH to rand-m5 or fail with a clear
+  message when the controlled host is unreachable. Timing regressions are never
+  inferred from Actions job duration.
 - `release/publish-preflight.toml` is rendered from
   `release/publish-preflight.toml.j2`. The check is added through the
   `preflight_checks` list in `release/sc-publish-consumer-input.json` and the
   toml is re-rendered, not hand-edited.
 - `benchmark-gate` does a **fresh** run per registered subsystem (a stale
-  committed campaign never passes) with `--gate`. A subsystem passes only when:
+  committed campaign never passes) with `--gate` on the controlled host. A
+  subsystem passes only when:
   1. every required case ran (none skipped; `monty` requires
      `production_bridge`);
   2. each case's rendered output equals the expected string (a wrong render is
      a failure, not a fast sample);
   3. each case is within its `baselines.json` ceiling
-     (`floor_ms * max_regression_ratio`, both recorded from the first accepted
-     campaign; the ratio is generous because preflight hosts differ);
-  4. the subsystem wrote its campaign JSON and HTML.
-- The preflight job must provide what the gate needs (`sc-compose` on `PATH`,
+     (`floor_ms * max_regression_ratio`, recorded from the first accepted
+     campaign on the controlled host);
+  4. the subsystem wrote its campaign JSON and HTML with an allowed host
+     label.
+- The gate host must provide what the gate needs (`sc-compose` on `PATH`,
   Rust 1.96.1 for `--features monty`). A missing prerequisite **fails** the
   gate; it is never a skip.
 - Default PR CI and root `just test` do not run `benchmark-gate`.

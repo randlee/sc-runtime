@@ -2385,13 +2385,68 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-9` adds `HookTarget::Monty` behind feature `monty`; beads-cache does not gain this target. sc-cron has no row cap, global in-flight lock, or two-row mutex. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-26.
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-9` adds `HookTarget::Monty` behind feature `monty`; beads-cache does not gain this target. sc-cron has no built-in row cap (the embedder may pass one per [ADR-RUN-0014](architecture.md)), no global in-flight lock, and no two-row mutex. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-27.
 
 ### Related Documents
 
 - beads-cache ADR-BDC-0006.
 - [ADR-RUN-0012](architecture.md). The writer and the cron store are separate rusqlite connections.
+- [ADR-RUN-0014](architecture.md). Optional embedder-supplied schedule row limit.
 - [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md).
+
+## ADR-RUN-0014: Optional embedder-supplied schedule row limit
+
+**Status:** Active  
+**Decision Date:** 2026-10-27  
+**Source:** Owner, 2026-10-27. Recorded in [decision-sync-scheduling-at-api.md](plans/phase-b/decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27).
+
+### Context
+
+[ADR-RUN-0013](architecture.md) keeps sc-cron a general scheduler: no two-row mutex, no global in-flight lock, and no beads-specific slot shape. Reloading schedules loads every row into memory; an uncapped row count is unsafe when schedules come from operators or configuration. Released applications must allow raising the ceiling without recompiling. sc-cron must not depend on `sc-config` ([ADR-RUN-0007](architecture.md)).
+
+### Decision
+
+1. The scheduler accepts an optional row limit at construction (`max_schedule_rows: Option<NonZeroUsize>` or equivalent). **`None`** is the library default and means no row-count enforcement.
+2. The limit counts **every row** in the schedule table, **enabled and disabled**. `replace` on an existing name does not change the count. Deletes free capacity immediately.
+3. When the limit is set, adding a row whose name is new while the table is already at the limit returns the existing **`CronError::InvalidSpec`** (detail names the limit and current count). No new error variant ([ADR-RUN-0013](architecture.md) point 6 stays seven variants). Lowering the limit below the current row count never deletes rows; only new names are rejected until the count is under the limit. The check runs in the same store transaction as the insert.
+4. **Generated sc-runtime applications** ship a sc-config key (name chosen by the template; default **`10`**) that the daemon reads at startup. Sentinel **`0`** or **`null`** in JSON means unlimited (`None` passed to sc-cron). The embedder maps config to the scheduler parameter; sc-cron never reads sc-config files.
+5. **v1:** the limit is applied when the embedder builds or opens the scheduler (daemon startup). **v2 (optional):** a reconfiguration API (for example `set_max_schedule_rows`) may apply a config reload without process restart.
+
+### Consequences
+
+A later sprint implements the API, store count check, template default, and doc updates in `docs/sc-cron/`. beads-cache may enforce its own sync semantics; that is not sc-cron's default ceiling.
+
+### Related Documents
+
+- [ADR-RUN-0013](architecture.md), [ADR-RUN-0007](architecture.md).
+- [decision-sync-scheduling-at-api.md](plans/phase-b/decision-sync-scheduling-at-api.md).
+
+## ADR-RUN-0015: Benchmark campaigns in a controlled environment
+
+**Status:** Active  
+**Decision Date:** 2026-10-27  
+**Source:** Owner, 2026-10-27. Sprint plan: [sprint-b-11-benchmark-monty-reports.md](plans/phase-b/sprint-b-11-benchmark-monty-reports.md).
+
+### Context
+
+Monty and sc-cron performance campaigns produce HTML and JSON under `site/reports/benchmark-<subsystem>/`. Timing data is meaningful only on a stable host. GitHub Actions runners are not a controlled benchmark environment and must not be treated as regression authority ([NFR-RUN-0005](requirements.md)).
+
+### Decision
+
+1. Benchmarks are **automated procedures**: agents follow `.claude/skills/benchmark-run/SKILL.md` (the `/benchmark-run` skill), which drives `scripts/benchmark/` recipes (`just --justfile scripts/benchmark/justfile …`) and subsystem `campaign.py` runners. This is repeatable automation, not ad-hoc manual timing.
+2. **Authoritative timings** come only from a **controlled benchmark environment**. The primary reference host is **`atmbench@rand-m5`** (SSH). Campaign JSON records git SHA, `rustc` version, subsystem, cases, and a **host label** (`SC_BENCH_HOST_LABEL` or hostname). Baselines in `baselines.json` belong to that environment class.
+3. **Default PR CI and root `just test`** do not run benchmark campaigns or `benchmark-gate`. CI may compile ignored bench tests; it does not produce benchmark regressions.
+4. **Binary publish preflight** runs `benchmark-gate` ([sprint b-11](plans/phase-b/sprint-b-11-benchmark-monty-reports.md)). The gate executes on the controlled host (agent or operator via the skill over SSH to `rand-m5`), not on arbitrary GitHub-hosted runners. Preflight fails closed if prerequisites are missing; it never silently skips required cases.
+5. The platform layout is multi-subsystem: `scripts/benchmark/<subsystem>/` and `site/reports/benchmark-<subsystem>/`. The first subsystem is `monty`.
+
+### Consequences
+
+Sprint `b-11` implements the skill, layout, `benchmark-gate`, and the `benchmark-pass` entry in publish preflight. Operators coordinate access to the `atmbench` account; agents run the documented procedure.
+
+### Related Documents
+
+- [ADR-RUN-0011](architecture.md), [ADR-RUN-0013](architecture.md).
+- [NFR-RUN-0005](requirements.md), [REQ-RUN-0005](requirements.md).
 
 ## ADR-RUN-0306: General database commands ship on CLI, MCP, and HTTP
 

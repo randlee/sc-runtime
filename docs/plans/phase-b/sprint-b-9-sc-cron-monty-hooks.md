@@ -186,7 +186,7 @@ Amend point 4 so the hook target is a Rust function, a Python module, or **trust
 
 Amend point 6 so the variant set is `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`. That sentence replaces the point 6 list that named five variants and claimed the beads-cache stable codes.
 
-Add a consequence: sprint `b-9` adds feature `monty` and `HookTarget::Monty`. beads-cache does not gain a Monty target. sc-cron has **no built-in row cap, no global in-flight lock, and no two-row mutex**. The [2026-10-27 owner ruling](decision-sync-scheduling-at-api.md#owner-ruling-embedder-supplied-row-limit-2026-10-27) amends the 2026-10-26 no-slot text: the embedder may pass a row limit (app default about 10, from the app's sc-config, never read by sc-cron); that API is a later sprint, not b-9. beads-cache REQ-BDC-0720 two-row ceiling is temporary bd-cache behavior only.
+Add a consequence: sprint `b-9` adds feature `monty` and `HookTarget::Monty`. beads-cache does not gain a Monty target. sc-cron has **no built-in row cap, no global in-flight lock, and no two-row mutex**. [ADR-RUN-0014](../../architecture.md) amends the 2026-10-26 no-slot text: the embedder may pass a row limit (app default about 10, from the app's sc-config, never read by sc-cron); that API is a later sprint, not b-9. beads-cache REQ-BDC-0720 two-row ceiling is temporary bd-cache behavior only.
 
 `REQ-CRON-0003` gains one sentence: a third target, `Monty { source }`, available when the crate is built with feature `monty`, with the entry contract and lifecycle above. `REQ-CRON-0005` points at the amended variant set.
 

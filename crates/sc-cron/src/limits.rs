@@ -8,11 +8,10 @@
 //! and [`SqliteScheduleStore`](crate::SqliteScheduleStore) apply, and again
 //! by table CHECKs.
 //!
-//! The number of active schedules is not capped. `sc-cron` is an
-//! in-process library and every schedule is created by its own caller, not
-//! by remote input. With each row bounded here, memory is linear in a count
-//! the caller controls. A caller that accepts schedules from untrusted input
-//! must cap the count itself.
+//! Row count is not capped unless the embedder passes a limit (see ADR-RUN-0014
+//! in `docs/architecture.md`). With each row bounded here, memory is linear in
+//! a count the caller controls. A caller that accepts schedules from untrusted
+//! input should pass a row limit or enforce one before insert.
 
 use std::time::Duration;
 
