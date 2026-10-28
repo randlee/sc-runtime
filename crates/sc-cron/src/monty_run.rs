@@ -31,6 +31,9 @@ const CODE_HOST_UNDEFINED: &str = "HOST_UNDEFINED";
 const CODE_HOST_OS: &str = "HOST_OS";
 const CODE_HOST_RAISED: &str = "HOST_RAISED";
 const CODE_HOST_REPLY: &str = "HOST_REPLY";
+const CODE_FEED_TASK: &str = "FEED_TASK_FAILED";
+const FEED_TASK_RECOVERY: &str =
+    "Retry the run; if it persists, inspect blocking-pool capacity and hook source.";
 
 /// Which function one feed calls. The first feed of a generation also compiles
 /// `source`.
@@ -138,7 +141,8 @@ impl fmt::Display for StopReplyError {
 pub(crate) struct ComposeInjection<'a> {
     /// Program spawned for `render_template`.
     pub(crate) program: ComposeProgram<'a>,
-    /// Host function names registered besides `render_template`.
+    /// Host function names registered besides `render_template` (unit tests only).
+    #[cfg(test)]
     pub(crate) extra_host_fns: &'a [&'a str],
 }
 
@@ -148,6 +152,7 @@ impl ComposeInjection<'static> {
     pub(crate) const fn production() -> Self {
         Self {
             program: ComposeProgram::SC_COMPOSE,
+            #[cfg(test)]
             extra_host_fns: &[],
         }
     }
@@ -205,8 +210,17 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
         deadline,
     };
     let hook = crate::hook::request(&call, stamp);
+    let run_deadline = deadline;
     match tokio::task::spawn_blocking(move || {
-        execute_feed(session, &source, phase, generation, left, &hook)
+        execute_feed(
+            session,
+            &source,
+            phase,
+            generation,
+            left,
+            &hook,
+            run_deadline,
+        )
     })
     .await
     {
@@ -214,7 +228,9 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
         Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
         Err(error) => FeedDone {
             session: None,
-            result: FeedResult::Outcome(RunOutcome::Failed(format!("feed task failed: {error}"))),
+            result: FeedResult::Outcome(RunOutcome::Failed(format!(
+                "{CODE_FEED_TASK}: monty feed task join failed: {error}; {FEED_TASK_RECOVERY}"
+            ))),
         },
     }
 }
@@ -232,6 +248,7 @@ pub(crate) fn execute_feed(
     generation: Generation,
     budget: Duration,
     hook: &Value,
+    run_deadline: Instant,
 ) -> FeedDone {
     execute_feed_with_compose_program(
         session,
@@ -241,6 +258,7 @@ pub(crate) fn execute_feed(
         budget,
         hook,
         ComposeInjection::production(),
+        run_deadline,
     )
 }
 
@@ -251,6 +269,7 @@ pub(crate) fn execute_feed(
 /// embedder cannot select the program. Extra host names are registered only
 /// for this call; production registers `render_template` alone. Names that
 /// are not identifiers, or that are `render_template` or `__hook`, are ignored.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn execute_feed_with_compose_program(
     mut session: Option<MontySession>,
     source: &str,
@@ -259,6 +278,7 @@ pub(crate) fn execute_feed_with_compose_program(
     budget: Duration,
     hook: &Value,
     injection: ComposeInjection<'_>,
+    run_deadline: Instant,
 ) -> FeedDone {
     if session
         .as_ref()
@@ -284,12 +304,19 @@ pub(crate) fn execute_feed_with_compose_program(
         .tracker_mut()
         .set_max_feed_duration(feed_budget(call_budget));
     let stage = FeedStage::from_phase(phase);
-    let host_deadline = Instant::now().checked_add(call_budget);
+    let host_deadline = Some(run_deadline);
+    let compose_program = injection.program;
+    #[cfg(test)]
+    let extra_host_fns = injection.extra_host_fns;
     let MontySession { repl, generation } = session;
     let repl = *repl;
     let mut progress = match repl.feed_start(
         phase_snippet(phase),
-        snippet_inputs(hook, injection.extra_host_fns),
+        snippet_inputs(
+            hook,
+            #[cfg(test)]
+            extra_host_fns,
+        ),
         PrintWriter::Disabled,
     ) {
         Ok(progress) => progress,
@@ -298,7 +325,7 @@ pub(crate) fn execute_feed_with_compose_program(
     loop {
         progress = match progress {
             ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
-                match resume_render(call, stage, injection.program, host_deadline) {
+                match resume_render(call, stage, compose_program, host_deadline) {
                     Ok(next) => next,
                     Err(done) => return done,
                 }
@@ -427,13 +454,14 @@ fn phase_snippet(phase: MontyPhase) -> &'static str {
     }
 }
 
-fn snippet_inputs(hook: &Value, extra_host_fns: &[&str]) -> NamedValues {
+fn snippet_inputs(hook: &Value, #[cfg(test)] extra_host_fns: &[&str]) -> NamedValues {
     let mut inputs = NamedValues::new();
     inputs.push("__hook", crate::monty_host::json_to_monty(hook));
     inputs.push(
         "render_template",
         MontyObject::function("render_template", None),
     );
+    #[cfg(test)]
     for name in extra_host_fns {
         if *name == "render_template" || *name == "__hook" || !crate::is_identifier(name) {
             continue;
@@ -456,7 +484,15 @@ fn resume_render(
         Ok(ready) => ready,
         Err(why) => return Err(denied(stage, &why.to_string())),
     };
-    let rendered = match crate::monty_host::render_template(&template, &context, compose_program) {
+    if crate::monty_host::host_budget_exhausted(host_deadline) {
+        return Err(timed_out());
+    }
+    let rendered = match crate::monty_host::render_template(
+        &template,
+        &context,
+        compose_program,
+        host_deadline,
+    ) {
         Ok(rendered) => rendered,
         Err(error) => return Err(after_compose(&error, stage, host_deadline)),
     };
@@ -477,6 +513,9 @@ fn after_compose(
     stage: FeedStage,
     host_deadline: Option<Instant>,
 ) -> FeedDone {
+    if matches!(error, ComposeHostError::HostTimedOut { .. }) {
+        return timed_out();
+    }
     if error.child_exited() && crate::monty_host::host_budget_exhausted(host_deadline) {
         return timed_out();
     }
@@ -592,6 +631,18 @@ mod tests {
             }
             other => panic!("expected Failed, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn host_timed_out_maps_to_timed_out() {
+        let error = ComposeHostError::HostTimedOut {
+            program: "sc-compose".to_owned(),
+        };
+        let done = after_compose(&error, FeedStage::Tick, None);
+        assert!(matches!(
+            done.result,
+            FeedResult::Outcome(RunOutcome::TimedOut)
+        ));
     }
 
     #[test]

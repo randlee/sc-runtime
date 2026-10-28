@@ -78,10 +78,23 @@ excerpt, not the path a schedule row runs.
 
 ## Benchmarks
 
-Optional tests (not run in default CI). There is no checked-in HTML report in
-this tree. Sprint `b-11` writes campaign HTML under
-`site/reports/benchmark-monty/` and does not revive
-`sc-compose-hook-comparison.report.html`.
+Operator procedure: [`.claude/skills/benchmark-run/SKILL.md`](../../.claude/skills/benchmark-run/SKILL.md).
+
+```bash
+just --justfile scripts/benchmark/justfile benchmark-monty
+just --justfile scripts/benchmark/justfile benchmark-monty-show
+just --justfile scripts/benchmark/justfile benchmark-monty-publish
+```
+
+Published campaign HTML lives under
+[`site/reports/benchmark-monty/`](../../site/reports/benchmark-monty/).
+The harness writes gitignored sidecars next to this note
+(`sc-compose-hook-comparison.report.html` and `.report.json`). There is no
+checked-in copy of that HTML. Default CI does not run the benchmark.
+`production_bridge` is the production `execute_feed` path. This harness
+records that case as skipped and does not call `feed_start` for it.
+
+Optional direct harness invocation (same measurement, no site publish):
 
 ```bash
 # Requires sc_compose importable and feature monty for the Monty lab case.
@@ -98,6 +111,7 @@ path uses the same render script—add interpreter + sc-cron child overhead on t
 | `python_render_only` | Same render work, no sc-cron wrapper |
 | `sc_compose_cli_only` | Rust `sc-compose render` only (what the host bridge calls) |
 | `monty_host_bridge + sc-compose CLI` | Lab `feed_start` loop in the bench. Production is `execute_feed`, which may call `feed_start` internally. |
+| `production_bridge` | Production `monty_host` path through `execute_feed` calling `render_template`. The harness records a skip for this case. |
 
 The bench prints the numbers for your machine. Typical outcome (release, string
 template): **Monty + host CLI ≈ bare CLI** (Monty overhead is small); **Python

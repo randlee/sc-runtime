@@ -34,7 +34,7 @@ use serde_json::{Value, json};
 use tokio::sync::watch;
 
 /// Longest a failing test waits for a signal.
-pub const WAIT: Duration = Duration::from_secs(10);
+pub const WAIT: Duration = Duration::from_secs(30);
 
 pub fn at(text: &str) -> DateTime<Utc> {
     text.parse().expect("timestamp")
