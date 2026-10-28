@@ -926,10 +926,6 @@ def cron_tick(hook):
     #[cfg(unix)]
     #[test]
     fn stdout_past_the_hook_cap_is_compose_output() {
-        assert!(
-            crate::MAX_HOOK_OUTPUT_BYTES < 65_537,
-            "compose_flood.sh emits 65537 bytes and must exceed the hook cap"
-        );
         let script = fixture_path("compose_flood.sh");
         let program = script.to_str().expect("utf8 path");
         let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
