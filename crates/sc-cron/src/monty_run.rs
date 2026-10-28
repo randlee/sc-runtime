@@ -525,15 +525,12 @@ fn resume_compose_run(
     if crate::monty_host::host_budget_exhausted(host_deadline) {
         return Err(timed_out());
     }
-    let result = match crate::monty_host::sc_compose_run(
-        &subcommand,
-        &args,
-        compose_program,
-        host_deadline,
-    ) {
-        Ok(result) => result,
-        Err(error) => return Err(after_compose(&error, stage, host_deadline)),
-    };
+    let result =
+        match crate::monty_host::sc_compose_run(&subcommand, &args, compose_program, host_deadline)
+        {
+            Ok(result) => result,
+            Err(error) => return Err(after_compose(&error, stage, host_deadline)),
+        };
     if crate::monty_host::host_budget_exhausted(host_deadline) {
         return Err(timed_out());
     }
@@ -560,8 +557,8 @@ fn compose_run_arguments(
         Vec::new()
     } else {
         let tail = call.args.arg(1).ok_or(ComposeRunArgError::Arity)?;
-        let json = crate::monty_host::monty_value_to_json(tail)
-            .map_err(|_| ComposeRunArgError::Args)?;
+        let json =
+            crate::monty_host::monty_value_to_json(tail).map_err(|_| ComposeRunArgError::Args)?;
         let Some(items) = json.as_array() else {
             return Err(ComposeRunArgError::Args);
         };

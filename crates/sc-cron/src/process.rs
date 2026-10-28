@@ -178,6 +178,10 @@ impl Capped {
 ///
 /// Retries `ErrorKind::Interrupted`. Any other read error is returned so a
 /// zero exit cannot be treated as a successful truncated render.
+///
+/// The Monty compose wait is the only caller. `supervise` reads pipes on the
+/// runtime, so this stays out of builds that do not enable `monty`.
+#[cfg(feature = "monty")]
 pub(crate) fn read_pipe_capped(
     mut reader: impl std::io::Read,
     cap: usize,

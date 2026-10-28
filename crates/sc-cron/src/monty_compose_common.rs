@@ -181,7 +181,10 @@ impl fmt::Display for ComposeHostError {
                 )
             }
             Self::SubcommandDenied { subcommand } => {
-                write!(formatter, "compose subcommand not allowlisted: {subcommand}")
+                write!(
+                    formatter,
+                    "compose subcommand not allowlisted: {subcommand}"
+                )
             }
         }
     }

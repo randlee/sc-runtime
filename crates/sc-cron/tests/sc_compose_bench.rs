@@ -461,6 +461,7 @@ fn write_metrics_json(ctx: &ReportContext, cases: &[BenchCase]) {
             "hook_source": EXAMPLE_PRODUCTION,
             "resume_loop": EXAMPLE_RESUME_LOOP,
             "cli_argv": EXAMPLE_CLI_ARGV,
+            "compose_run": EXAMPLE_COMPOSE_RUN,
         },
     });
     let body = serde_json::to_string_pretty(&doc).expect("metrics json");
@@ -595,6 +596,8 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
 <pre><code>{ex_loop}</code></pre>
 <h3>sc-compose CLI argv</h3>
 <pre><code>{ex_argv}</code></pre>
+<h3>sc_compose_run hook</h3>
+<pre><code>{ex_compose}</code></pre>
 </section>
 
 <section>
@@ -616,6 +619,7 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
         ex_hook = html_escape(EXAMPLE_MONTY_HOOK),
         ex_loop = html_escape(EXAMPLE_RESUME_LOOP),
         ex_argv = html_escape(EXAMPLE_CLI_ARGV),
+        ex_compose = html_escape(EXAMPLE_COMPOSE_RUN),
     );
 
     if let Some(parent) = path.parent() {
@@ -823,7 +827,10 @@ fn bench_sc_compose_hook_paths() {
             Some(fix.render_command()),
             true,
         );
-        log_result("production_bridge (Scheduler::run_due / execute_feed)", &result);
+        log_result(
+            "production_bridge (Scheduler::run_due / execute_feed)",
+            &result,
+        );
         cases.push(BenchCase {
             id: "production_bridge",
             label: "production monty_host bridge",

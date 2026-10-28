@@ -151,14 +151,8 @@ pub(crate) fn sc_compose_run(
 #[must_use]
 pub(crate) fn compose_run_to_monty(result: &crate::monty_compose::ComposeRunResult) -> MontyObject {
     let mut map = Map::new();
-    map.insert(
-        "stdout".to_owned(),
-        Value::String(result.stdout.clone()),
-    );
-    map.insert(
-        "stderr".to_owned(),
-        Value::String(result.stderr.clone()),
-    );
+    map.insert("stdout".to_owned(), Value::String(result.stdout.clone()));
+    map.insert("stderr".to_owned(), Value::String(result.stderr.clone()));
     map.insert(
         "exit_code".to_owned(),
         result

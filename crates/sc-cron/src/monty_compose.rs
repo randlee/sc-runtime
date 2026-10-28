@@ -136,14 +136,9 @@ pub(crate) fn run_compose_argv(
         }
     };
     match wait_for_exit(&watch, host_deadline) {
-        Waited::Exited(status) => finish_watched_argv(
-            program,
-            &mut watch,
-            status,
-            stdout,
-            stderr,
-            host_deadline,
-        ),
+        Waited::Exited(status) => {
+            finish_watched_argv(program, &mut watch, status, stdout, stderr, host_deadline)
+        }
         Waited::Expired => {
             expire_child(&mut watch, stdout, stderr);
             Err(ComposeHostError::HostTimedOut {
@@ -166,7 +161,11 @@ fn spawn_compose_argv(
         if let Some(cwd) = cwd {
             command.current_dir(cwd);
         }
-        command.args(args).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped());
+        command
+            .args(args)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
     });
     #[cfg(unix)]
     command.wrap(ProcessGroup::leader());
@@ -411,9 +410,10 @@ fn finish_watched_argv(
                 program: program.to_owned(),
             });
         }
-        let stdout = String::from_utf8(drained.bytes).map_err(|_| ComposeHostError::OutputNotUtf8 {
-            program: program.to_owned(),
-        })?;
+        let stdout =
+            String::from_utf8(drained.bytes).map_err(|_| ComposeHostError::OutputNotUtf8 {
+                program: program.to_owned(),
+            })?;
         return Ok(ComposeRunResult {
             stdout,
             stderr,
