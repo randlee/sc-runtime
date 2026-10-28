@@ -1,11 +1,12 @@
 //! Optional benchmarks: CPython hook vs Monty host-bridge lab for sc_compose.
 //!
-//! Each run writes two gitignored sidecars:
+//! Each run writes two files under `target/sc-compose-bench/` (or
+//! `$CARGO_TARGET_DIR/sc-compose-bench`):
 //!
-//! - `docs/sc-cron/sc-compose-hook-comparison.report.html`
-//! - `docs/sc-cron/sc-compose-hook-comparison.report.json`
+//! - `sc-compose-hook-comparison.report.html`
+//! - `sc-compose-hook-comparison.report.json`
 //!
-//! `scripts/benchmark/monty_compose_campaign.py` copies the HTML and the case
+//! `scripts/benchmark/monty/campaign.py` copies the HTML and the case
 //! metrics into `site/reports/benchmark-monty/`. Default CI does not run this
 //! test (`required-features = ["monty"]`, and the test is `#[ignore]`d).
 //!
@@ -316,10 +317,6 @@ fn monty_host_bridge_once() {
 
 #[cfg(feature = "monty")]
 fn production_bridge_once() {
-    use common::{Fixture, WAIT, idle_job};
-    use sc_cron::{HookTarget, RunOutcome, ScheduleSpec};
-    use serde_json::json;
-
     const SOURCE: &str = r#"
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
@@ -334,28 +331,35 @@ def cron_tick(hook):
         .enable_all()
         .build()
         .expect("runtime");
-    runtime.block_on(async {
-        let fixture = Fixture::new();
-        let spec = ScheduleSpec::with_hook(
-            "bench-production-bridge",
-            "* * * * *",
-            Duration::from_secs(20),
-            json!({
-                "template": TEMPLATE,
-                "context": {"name": "bench"},
-            }),
-            HookTarget::monty(SOURCE).expect("source"),
-        )
-        .expect("spec");
-        fixture.start(spec);
-        fixture.clock.advance(chrono::Duration::seconds(60));
-        let runs = match tokio::time::timeout(WAIT, fixture.scheduler.run_due(idle_job())).await {
-            Ok(result) => result.expect("run_due"),
-            Err(_elapsed) => panic!("run_due timed out after {WAIT:?}"),
-        };
-        assert_eq!(runs.len(), 1, "{runs:?}");
-        assert_eq!(runs[0].outcome, RunOutcome::Ok, "{runs:?}");
-    });
+    runtime.block_on(production_bridge_run(SOURCE)) // allow: bench local runtime
+}
+
+#[cfg(feature = "monty")]
+async fn production_bridge_run(source: &str) {
+    use common::{Fixture, WAIT, idle_job};
+    use sc_cron::{HookTarget, RunOutcome, ScheduleSpec};
+    use serde_json::json;
+
+    let fixture = Fixture::new();
+    let spec = ScheduleSpec::with_hook(
+        "bench-production-bridge",
+        "* * * * *",
+        Duration::from_secs(20),
+        json!({
+            "template": TEMPLATE,
+            "context": {"name": "bench"},
+        }),
+        HookTarget::monty(source).expect("source"),
+    )
+    .expect("spec");
+    fixture.start(spec);
+    fixture.clock.advance(chrono::Duration::seconds(60));
+    let runs = match tokio::time::timeout(WAIT, fixture.scheduler.run_due(idle_job())).await {
+        Ok(result) => result.expect("run_due"),
+        Err(_elapsed) => panic!("run_due timed out after {WAIT:?}"),
+    };
+    assert_eq!(runs.len(), 1, "{runs:?}");
+    assert_eq!(runs[0].outcome, RunOutcome::Ok, "{runs:?}");
 }
 
 /// Peak RSS of a one-shot subprocess (macOS `/usr/bin/time -l`).
@@ -447,14 +451,19 @@ fn run_timed_bench(
     }
 }
 
+fn harness_output_dir() -> PathBuf {
+    match std::env::var_os("CARGO_TARGET_DIR") {
+        Some(dir) => PathBuf::from(dir).join("sc-compose-bench"),
+        None => PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/sc-compose-bench"),
+    }
+}
+
 fn report_html_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../docs/sc-cron/sc-compose-hook-comparison.report.html")
+    harness_output_dir().join("sc-compose-hook-comparison.report.html")
 }
 
 fn report_json_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../docs/sc-cron/sc-compose-hook-comparison.report.json")
+    harness_output_dir().join("sc-compose-hook-comparison.report.json")
 }
 
 fn rss_pair(note: Option<&RssNote>) -> (Option<u64>, Option<&str>) {
@@ -645,7 +654,7 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
 <section>
 <h2>Reproduce</h2>
 <pre>just --justfile scripts/benchmark/justfile benchmark-monty</pre>
-<p class="muted">Harness sidecars (gitignored): <code>docs/sc-cron/sc-compose-hook-comparison.report.html</code> and <code>docs/sc-cron/sc-compose-hook-comparison.report.json</code>. Published copies: <code>site/reports/benchmark-monty/</code>.</p>
+<p class="muted">Harness output (not published): <code>target/sc-compose-bench/sc-compose-hook-comparison.report.html</code> and <code>target/sc-compose-bench/sc-compose-hook-comparison.report.json</code>. Published copies: <code>site/reports/benchmark-monty/</code>.</p>
 </section>
 </body>
 </html>"#,

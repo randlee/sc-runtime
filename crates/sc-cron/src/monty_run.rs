@@ -295,7 +295,7 @@ pub(crate) fn execute_feed(
 /// reserved bindings, are ignored.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn execute_feed_with_compose_program(
-    mut session: Option<MontySession>,
+    session: Option<MontySession>,
     source: &str,
     phase: MontyPhase,
     generation: Generation,
@@ -304,29 +304,48 @@ pub(crate) fn execute_feed_with_compose_program(
     injection: ComposeInjection<'_>,
     run_deadline: Instant,
 ) -> FeedDone {
+    let (mut session, call_budget) = match open_session(session, source, generation, budget) {
+        Ok(ready) => ready,
+        Err(done) => return done,
+    };
+    session
+        .repl
+        .tracker_mut()
+        .set_max_feed_duration(feed_budget(call_budget));
+    resume_started_feed(session, phase, hook, injection, run_deadline)
+}
+
+/// Keeps a repl only when its generation matches, otherwise compiles `source`.
+fn open_session(
+    mut session: Option<MontySession>,
+    source: &str,
+    generation: Generation,
+    budget: Duration,
+) -> Result<(MontySession, Duration), FeedDone> {
     if session
         .as_ref()
         .is_some_and(|current| current.generation != generation)
     {
         session = None;
     }
-    let mut call_budget = budget;
-    let mut session = match session {
-        Some(session) => session,
+    match session {
+        Some(session) => Ok((session, budget)),
         None => {
             let compile_started = Instant::now();
-            let compiled = match compile(source, generation, feed_budget(budget)) {
-                Ok(session) => session,
-                Err(done) => return done,
-            };
-            call_budget = budget.saturating_sub(compile_started.elapsed());
-            compiled
+            let compiled = compile(source, generation, feed_budget(budget))?;
+            Ok((compiled, budget.saturating_sub(compile_started.elapsed())))
         }
-    };
-    session
-        .repl
-        .tracker_mut()
-        .set_max_feed_duration(feed_budget(call_budget));
+    }
+}
+
+/// Resumes host calls until the snippet returns or the host denies one.
+fn resume_started_feed(
+    session: MontySession,
+    phase: MontyPhase,
+    hook: &Value,
+    injection: ComposeInjection<'_>,
+    run_deadline: Instant,
+) -> FeedDone {
     let stage = FeedStage::from_phase(phase);
     let host_deadline = Some(run_deadline);
     let compose_program = injection.program;

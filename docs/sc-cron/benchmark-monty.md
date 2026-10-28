@@ -32,6 +32,7 @@ Legacy names `benchmark-monty*` call the same Monty campaign.
 | `scripts/benchmark/render_report.py` | validates `examples.hook_source`, `examples.resume_loop`, and `examples.cli_argv`; `campaign.py --index-only` regenerates index and campaign HTML from those keys and exits non-zero when one is missing |
 | `site/reports/benchmark-monty/` | immutable `*.campaign.json`, HTML, `index.html` |
 | `crates/sc-cron/tests/sc_compose_bench.rs` | harness (ignored unless `SC_CRON_BENCH=1`) |
+| `target/sc-compose-bench/` | harness HTML and JSON that `campaign.py` packages |
 
 Hook interpretation: [`hooks-sc-compose.md`](hooks-sc-compose.md).
 
@@ -45,3 +46,8 @@ not listed in `scripts/benchmark/monty/baselines.json` (`allowed_hosts`),
 unless `SC_BENCH_GATE_ALLOW_ANY_HOST=1` (local development only). Floors are
 read from that baselines file. `site/reports/benchmark-monty/` does not carry
 a second copy.
+
+`campaign.py --gate` on **`atmbench@rand-m5`** is publish preflight. Pull-request
+CI does not run that gate. The committed Mac campaign in
+`site/reports/benchmark-monty/` is the evidence stored in this repository.
+A Mac measurement stays labeled `Mac`.

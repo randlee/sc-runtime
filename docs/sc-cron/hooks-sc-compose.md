@@ -101,9 +101,9 @@ just --justfile scripts/benchmark/justfile benchmark-monty-publish
 
 Published campaign HTML lives under
 [`site/reports/benchmark-monty/`](../../site/reports/benchmark-monty/).
-The harness writes gitignored sidecars next to this note
+The harness writes its HTML and JSON under `target/sc-compose-bench/`
 (`sc-compose-hook-comparison.report.html` and `.report.json`). There is no
-checked-in copy of that HTML. Default CI does not run the benchmark.
+checked-in copy of that harness HTML. Default CI does not run the benchmark.
 `production_bridge` is the production `execute_feed` path via
 `Scheduler::run_due` (the harness does not call `feed_start` itself). See
 [`benchmark-monty.md`](benchmark-monty.md) for campaigns and the publish gate.

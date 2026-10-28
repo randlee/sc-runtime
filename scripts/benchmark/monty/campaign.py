@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Package sc_compose_bench output into site/reports/benchmark-monty/.
 
-The harness writes gitignored HTML and JSON under docs/sc-cron/. This script
-copies that evidence into an immutable campaign and regenerates index.html
-from every ``*.campaign.json`` file. Default CI does not invoke it.
+The harness writes HTML and JSON under ``target/sc-compose-bench/`` (or
+``$CARGO_TARGET_DIR/sc-compose-bench``). This script copies that evidence
+into an immutable campaign and regenerates index.html from every
+``*.campaign.json`` file. Default CI does not invoke it.
 
 Campaign JSON schema: ``sc-runtime/benchmark-monty-campaign/v1``.
 Harness JSON schema: ``sc-runtime/benchmark-monty-harness/v1``.
@@ -38,8 +39,8 @@ SUBSYSTEM_DIR = Path(__file__).resolve().parent
 ROOT = SUBSYSTEM_DIR.parents[2]
 REPORT_DIR = ROOT / "site" / "reports" / "benchmark-monty"
 BASELINES_PATH = SUBSYSTEM_DIR / "baselines.json"
-HARNESS_HTML = ROOT / "docs" / "sc-cron" / "sc-compose-hook-comparison.report.html"
-HARNESS_JSON = ROOT / "docs" / "sc-cron" / "sc-compose-hook-comparison.report.json"
+HARNESS_HTML_NAME = "sc-compose-hook-comparison.report.html"
+HARNESS_JSON_NAME = "sc-compose-hook-comparison.report.json"
 HARNESS_SCHEMA = "sc-runtime/benchmark-monty-harness/v1"
 CAMPAIGN_SCHEMA = "sc-runtime/benchmark-monty-campaign/v1"
 BASELINE_SCHEMA = "sc-runtime/benchmark-monty-baselines/v1"
@@ -55,6 +56,20 @@ def utc_now() -> datetime:
 
 def stamp(when: datetime) -> str:
     return when.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def harness_output_dir() -> Path:
+    override = os.environ.get("CARGO_TARGET_DIR")
+    base = Path(override) if override else ROOT / "target"
+    return base / "sc-compose-bench"
+
+
+def harness_html_path() -> Path:
+    return harness_output_dir() / HARNESS_HTML_NAME
+
+
+def harness_json_path() -> Path:
+    return harness_output_dir() / HARNESS_JSON_NAME
 
 
 def host_label() -> str:
@@ -374,9 +389,10 @@ def run_bench() -> str:
         raise CampaignError(
             f"sc_compose_bench exited {completed.returncode} before a campaign was written"
         )
-    if not HARNESS_JSON.is_file() or not HARNESS_HTML.is_file():
+    if not harness_json_path().is_file() or not harness_html_path().is_file():
         raise CampaignError(
-            "benchmark finished without harness sidecars; not publishing a campaign"
+            "benchmark finished without harness output under target/sc-compose-bench; "
+            "not publishing a campaign"
         )
     return rustc_version
 
@@ -528,11 +544,11 @@ def publish(report_dir: Path) -> None:
 
 def run_campaign() -> dict:
     rustc_version = run_bench()
-    harness = load_json(HARNESS_JSON)
+    harness = load_json(harness_json_path())
     return package_campaign(
         report_dir=REPORT_DIR,
         harness=harness,
-        html_path=HARNESS_HTML,
+        html_path=harness_html_path(),
         host=host_label(),
         git_revision=git_sha(),
         rustc_version=rustc_version,

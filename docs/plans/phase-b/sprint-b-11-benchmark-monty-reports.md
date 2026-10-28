@@ -1,7 +1,7 @@
 ---
 id: b-11
 phase: b
-status: planned
+status: complete
 closure_type: integration
 target_boundary: benchmark
 track: cron-monty

@@ -19,7 +19,7 @@ this skill is how an operator produces the next campaign.
 Underlying harness: `crates/sc-cron/tests/sc_compose_bench.rs`. Interpretation
 notes: `docs/sc-cron/hooks-sc-compose.md`.
 
-The harness writes gitignored sidecars under `docs/sc-cron/`. The publisher
+The harness writes HTML and JSON under `target/sc-compose-bench/`. The publisher
 turns those into immutable `{campaign-id}.campaign.json` and `{campaign-id}.html`
 files and regenerates `index.html` from every `*.campaign.json`. Default CI
 does not run this campaign.
@@ -84,7 +84,7 @@ allowlist before they measure anything, unless
 `SC_BENCH_GATE_ALLOW_ANY_HOST=1`.
 
 A harness or environment error before measurement (missing toolchain, missing
-`sc-compose`, test failure before the sidecar exists) exits non-zero and writes
+`sc-compose`, test failure before harness output exists) exits non-zero and writes
 no campaign. Fix the cause and run again.
 
 ## 3. Review
