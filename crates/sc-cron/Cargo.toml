@@ -39,7 +39,7 @@ tracing = "0.1"
 # Spawns a hook in a Unix process group or a Windows job object so the kill
 # reaches grandchildren too; wraps the safe parts of the platform calls so
 # this crate keeps `forbid(unsafe_code)`.
-process-wrap = { version = "10", default-features = false, features = ["tokio1", "kill-on-drop", "process-group", "job-object"] }
+process-wrap = { version = "10", default-features = false, features = ["std", "tokio1", "kill-on-drop", "process-group", "job-object"] }
 monty = { version = "1.4.0", optional = true }
 monty-types = { version = "1.4.0", optional = true }
 

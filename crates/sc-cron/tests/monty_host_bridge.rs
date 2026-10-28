@@ -20,7 +20,7 @@ use serde_json::json;
 fn spec(name: &str, source: &str, payload: serde_json::Value) -> ScheduleSpec {
     ScheduleSpec::with_hook(
         name,
-        "0 * * * * *",
+        "* * * * *",
         Duration::from_secs(20),
         payload,
         HookTarget::monty(source).expect("source"),

@@ -18,6 +18,7 @@ requirements:
   - NFR-CRON-0001
   - REQ-RUN-0005
   - NFR-RUN-0002
+  - NFR-RUN-0004
   - NFR-RUN-0005
   - NFR-RUN-0008
   - NFR-RUN-0009
@@ -34,6 +35,7 @@ owned_paths:
   - crates/sc-cron/src/scheduler/run_due.rs
   - crates/sc-cron/src/worker/worker_runs.rs
   - crates/sc-cron/tests/monty_host_bridge.rs
+  - crates/sc-cron/tests/monty_hook.rs
   - crates/sc-cron/tests/fixtures/
   - crates/sc-cron/README.md
   - crates/sc-cron/Cargo.toml
@@ -237,7 +239,18 @@ under `monty` only. Do not add `monty`, `monty-types`, or `sc-compose` to
 `crates/sc-cron/Cargo.toml` gains one `[[test]]` target, justified below, and
 no new dependency. Default CI (Rust 1.94.1) does not enable `monty`.
 
-`NFR-RUN-0008`: `monty_host.rs` and `monty_run.rs` stay within 1000 source
+`NFR-RUN-0004`: `process::supervise` already kills a process group at an
+expiry. It is an async future polled on a tokio runtime. `render_template`
+runs on the blocking pool inside `spawn_blocking` (ADR-RUN-0007,
+ADR-RUN-0011). Driving `supervise` from that thread would require
+`block_on`, which the sleep gate rejects and which stalls a current-thread
+runtime. The host uses `process-wrap`'s synchronous `CommandWrap` with
+`ProcessGroup` (Unix) or `JobObject` (Windows), the same wrappers
+`supervise` applies. The wait parks between `try_wait` calls so the deadline
+can `start_kill` that spawned child's group. Enabling the existing
+`process-wrap` `std` feature adds no crate.
+
+`NFR-RUN-0008`: `monty_host.rs`, `monty_compose.rs`, and `monty_run.rs` stay within 1000 source
 lines. `NFR-RUN-0009`: public fallible functions still return `CronError`.
 `ComposeHostError` is crate-private. Code on the feed path does not use
 panicking slice indexing; `stderr_text` takes its prefix with `str::get`.
@@ -282,7 +295,8 @@ lab `MontyRepl::feed_start` in the bench is not the production path.
 4. `NFR-RUN-0005`: the bridge test uses `tempfile::TempDir`, injects the compose program name (not PATH mutation), and does not call `std::env::set_var`.
 5. ADR-RUN-0013 point 4 (including the `render_template` host-timeout sentence above), the new consequence, the `REQ-CRON-0003` sentence, and the hooks note.
 6. `REQ-CRON-0002` and `REQ-CRON-0004`: no expression-parser change and no new table.
-7. `NFR-RUN-0008`: `monty_host.rs` and `monty_run.rs` stay within 1000 source lines.
+7. `NFR-RUN-0004`: the compose child uses `process-wrap`'s synchronous process group, as justified above, and does not call `process::supervise`.
+8. `NFR-RUN-0008`: `monty_host.rs`, `monty_compose.rs`, and `monty_run.rs` stay within 1000 source lines.
 
 ## Acceptance criteria
 

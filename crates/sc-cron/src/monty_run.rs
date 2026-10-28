@@ -260,10 +260,6 @@ pub(crate) fn execute_feed_with_compose_program(
     hook: &Value,
     injection: ComposeInjection<'_>,
 ) -> FeedDone {
-    #[cfg(feature = "test-utils")]
-    if source.contains("SC_CRON_TEST_PANIC") {
-        panic!("monty feed");
-    }
     if session
         .as_ref()
         .is_some_and(|current| current.generation != generation)

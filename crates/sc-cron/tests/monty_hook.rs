@@ -144,8 +144,6 @@ def cron_tick(hook):
     return None
 "#;
 
-const PANIC: &str = "SC_CRON_TEST_PANIC\n";
-
 fn spec(name: &str, source: &str, timeout: Duration) -> ScheduleSpec {
     ScheduleSpec::with_hook(
         name,
@@ -579,12 +577,12 @@ async fn source_missing_a_hook_function_is_hook_failed() {
 }
 
 #[tokio::test]
-async fn a_panicking_feed_still_lets_shutdown_finish() {
+async fn a_failing_feed_still_lets_shutdown_finish() {
     let fixture = Fixture::new();
-    let schedule = fixture.start(spec("sync", PANIC, Duration::from_secs(5)));
+    let schedule = fixture.start(spec("sync", RAISES, Duration::from_secs(5)));
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
-    wait_failed(&fixture, &schedule, "panicked").await;
+    wait_failed(&fixture, &schedule, "boom").await;
     let stopped = worker
         .shutdown(tokio::time::Instant::now() + Duration::from_secs(2))
         .await;
