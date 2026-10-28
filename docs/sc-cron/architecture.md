@@ -62,7 +62,6 @@ pub(crate) enum ComposeHostError {
     ProgramNotRunnable { program: String, source: std::io::Error },
     OutputNotUtf8 { program: String },
     OutputTooLarge { program: String },
-    HostTimedOut { program: String },
     NonZeroExit { status: Option<i32>, stderr: String },
 }
 
@@ -75,13 +74,12 @@ pub(crate) fn render_template(
     template: &str,
     context: &serde_json::Value,
     compose_program: ComposeProgram<'_>,
-    host_deadline: Option<std::time::Instant>,
 ) -> Result<String, ComposeHostError>;
 ```
 
 `ComposeHostError` implements `std::error::Error`. I/O and JSON failures keep their `source()`. `NonZeroExit.status` is `None` when a signal ends the child. These variants are not `CronError` variants.
 
-The Monty source does not choose the temp root. `--mode file` reads only those two files. Stdout is the rendered string. `--output` is omitted. `OsCall` and any other function name fail the feed. The tick does not start CPython. `ResourceTracker` pauses `max_feed_duration` while the feed is suspended on `render_template`; the host kills the child and its process group at that `Instant` deadline. No new `CronError` variant. The seven variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`.
+The Monty source does not choose the temp root. `--mode file` reads only those two files. Stdout is the rendered string. `--output` is omitted. `OsCall` and any other function name fail the feed. The tick does not start CPython. `ResourceTracker` pauses `max_feed_duration` while the feed is suspended on `render_template`; the blocking-pool thread stalls until that compose child exits. After the child exits, a host `Instant` past the row budget records `TimedOut` and drops the repl. No new `CronError` variant. The seven variants stay `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`.
 
 | Condition | Code | `RunOutcome` | Operator recovery |
 |---|---|---|---|
@@ -97,10 +95,10 @@ The Monty source does not choose the temp root. `--mode file` reads only those t
 | `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
 | `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
-| Host deadline while the child runs, or the child returns after that deadline (`HostTimedOut`) |  | `TimedOut`, session dropped, spawned child killed | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
+| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
 | Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
 
-A feed that never calls `render_template` still runs when the compose program is absent. The compose child is supervised like a Python hook: at the host deadline the child and its process group are killed, the blocking-pool thread is released, and the feed records bare `RunOutcome::TimedOut` (no code token in the stored outcome). `ComposeHostError::code()` names `COMPOSE_HOST_TIMEOUT` for `HostTimedOut` inside compose error handling only; that token is not copied into `RunOutcome` when the feed times out at the host budget. Stdout and stderr are each kept up to `MAX_HOOK_OUTPUT_BYTES`. Stderr copied into a failure detail uses the same 512-byte slice as a Python hook. The program name is fixed as `sc-compose` on `PATH`; install that binary or symlink the name onto `PATH`. There is no embedder override.
+A feed that never calls `render_template` still runs when the compose program is absent. The blocking-pool thread stalls until the compose `Command` returns. After that child exits, a host `Instant` past the row budget records bare `RunOutcome::TimedOut` (no code token in the stored outcome). Stdout and stderr are each kept up to `MAX_HOOK_OUTPUT_BYTES`. Stderr copied into a failure detail uses the same 512-byte slice as a Python hook. The program name is fixed as `sc-compose` on `PATH`; install that binary or symlink the name onto `PATH`. There is no embedder override.
 
 ```rust
 #[async_trait::async_trait]
