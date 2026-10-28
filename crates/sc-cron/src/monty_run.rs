@@ -394,7 +394,12 @@ fn resume_render(
         Ok(ready) => ready,
         Err(why) => return Err(denied(stage, &why.to_string())),
     };
-    let rendered = match crate::monty_host::render_template(&template, &context, compose_program) {
+    let rendered = match crate::monty_host::render_template(
+        &template,
+        &context,
+        compose_program,
+        host_deadline,
+    ) {
         Ok(rendered) => rendered,
         Err(error) => return Err(after_compose(&error, stage, host_deadline)),
     };
@@ -415,6 +420,9 @@ fn after_compose(
     stage: FeedStage,
     host_deadline: Option<Instant>,
 ) -> FeedDone {
+    if matches!(error, ComposeHostError::HostTimedOut { .. }) {
+        return timed_out();
+    }
     let missing = matches!(error, ComposeHostError::ProgramNotFound { .. });
     if !missing && crate::monty_host::host_budget_exhausted(host_deadline) {
         return timed_out();

@@ -5,8 +5,8 @@
 //! stdout. Tests pass another [`ComposeProgram`]. It does not start CPython.
 
 use std::fmt;
-use std::io::ErrorKind;
-use std::process::Command;
+use std::io::{ErrorKind, Read};
+use std::process::{Command, Stdio};
 use std::time::Instant;
 
 use monty_types::{MontyObject, ObjectRef};
@@ -45,10 +45,11 @@ impl fmt::Display for ComposeProgram<'_> {
     }
 }
 
-/// How `render_template` failed before the feed records [`crate::RunOutcome::Failed`].
+/// How `render_template` failed.
 ///
-/// These variants are not [`crate::CronError`] variants. The feed stores
-/// [`crate::RunOutcome::Failed`].
+/// [`Self::HostTimedOut`] is recorded as [`crate::RunOutcome::TimedOut`].
+/// Every other variant is recorded as [`crate::RunOutcome::Failed`].
+/// These variants are not [`crate::CronError`] variants.
 #[derive(Debug)]
 pub(crate) enum ComposeHostError {
     /// `compose_program` was not found on `PATH` (or the injected path).
@@ -89,12 +90,25 @@ pub(crate) enum ComposeHostError {
         /// Program name or path that produced the stdout.
         program: String,
     },
+    /// The child exited zero and stdout exceeded [`crate::MAX_HOOK_OUTPUT_BYTES`].
+    OutputTooLarge {
+        /// Program name or path that produced the stdout.
+        program: String,
+    },
     /// The child ran and exited non-zero.
     NonZeroExit {
         /// Exit status, or `None` when the process was ended by a signal.
         status: Option<i32>,
         /// Capped stderr text from the child.
         stderr: String,
+    },
+    /// The host deadline passed while the compose child was still running.
+    ///
+    /// The child was killed and reaped. On Unix it is a process-group leader,
+    /// so that signal also reaches grandchildren. This is not a machine-wide kill.
+    HostTimedOut {
+        /// Program name or path that was still running.
+        program: String,
     },
 }
 
@@ -107,8 +121,9 @@ impl ComposeHostError {
             Self::TempRootFailed { .. } | Self::StageFailed { .. } => "COMPOSE_SPAWN",
             Self::ContextEncodeFailed { .. } => "COMPOSE_CONTEXT",
             Self::ProgramNotRunnable { .. } => "COMPOSE_NOT_RUNNABLE",
-            Self::OutputNotUtf8 { .. } => "COMPOSE_OUTPUT",
+            Self::OutputNotUtf8 { .. } | Self::OutputTooLarge { .. } => "COMPOSE_OUTPUT",
             Self::NonZeroExit { .. } => "COMPOSE_EXIT",
+            Self::HostTimedOut { .. } => "COMPOSE_HOST_TIMEOUT",
         }
     }
 
@@ -129,8 +144,14 @@ impl ComposeHostError {
                 "Check that the compose program is executable and allowed to start."
             }
             Self::OutputNotUtf8 { .. } => "Fix the compose program so its stdout is UTF-8.",
+            Self::OutputTooLarge { .. } => {
+                "Shrink the rendered output; stdout is capped at the hook output limit."
+            }
             Self::NonZeroExit { .. } => {
                 "Fix template/context or run `sc-compose render` manually with the logged stderr."
+            }
+            Self::HostTimedOut { .. } => {
+                "Reduce compose work or raise the row deadline; the compose child was stopped at the host budget."
             }
         }
     }
@@ -169,10 +190,22 @@ impl fmt::Display for ComposeHostError {
             Self::OutputNotUtf8 { program } => {
                 write!(formatter, "compose program {program} stdout was not utf-8")
             }
+            Self::OutputTooLarge { program } => {
+                write!(
+                    formatter,
+                    "compose program {program} stdout exceeded the hook output cap"
+                )
+            }
             Self::NonZeroExit { status, stderr } => match status {
                 Some(status) => write!(formatter, "compose exited {status}: {stderr}"),
                 None => write!(formatter, "compose exited from a signal: {stderr}"),
             },
+            Self::HostTimedOut { program } => {
+                write!(
+                    formatter,
+                    "compose program {program} exceeded the host row budget"
+                )
+            }
         }
     }
 }
@@ -186,7 +219,9 @@ impl std::error::Error for ComposeHostError {
             Self::ContextEncodeFailed { source, .. } => Some(source),
             Self::ProgramNotFound { .. }
             | Self::OutputNotUtf8 { .. }
-            | Self::NonZeroExit { .. } => None,
+            | Self::OutputTooLarge { .. }
+            | Self::NonZeroExit { .. }
+            | Self::HostTimedOut { .. } => None,
         }
     }
 }
@@ -222,12 +257,15 @@ pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
 /// when the temp root cannot be prepared, [`ComposeHostError::ContextEncodeFailed`]
 /// when `context` cannot be encoded, [`ComposeHostError::ProgramNotRunnable`]
 /// when the process cannot be started, [`ComposeHostError::OutputNotUtf8`] when
-/// stdout is not UTF-8, and [`ComposeHostError::NonZeroExit`] when the child
-/// exits non-zero.
+/// stdout is not UTF-8, [`ComposeHostError::OutputTooLarge`] when stdout
+/// exceeds the hook output cap, [`ComposeHostError::HostTimedOut`] when the
+/// child is killed at `host_deadline`, and [`ComposeHostError::NonZeroExit`]
+/// when the child exits non-zero.
 pub(crate) fn render_template(
     template: &str,
     context: &Value,
     compose_program: ComposeProgram<'_>,
+    host_deadline: Option<Instant>,
 ) -> Result<String, ComposeHostError> {
     let program = compose_program.as_str();
     let dir = tempfile::TempDir::new().map_err(|source| ComposeHostError::TempRootFailed {
@@ -243,23 +281,111 @@ pub(crate) fn render_template(
         })?;
     std::fs::write(root.join("v.json"), context_bytes)
         .map_err(|source| stage_failed(program, source))?;
-    let output = Command::new(program)
+    run_compose_child(program, root, host_deadline)
+}
+
+/// Waits on the compose CLI child, killing only that [`std::process::Child`] at `host_deadline`.
+fn run_compose_child(
+    program: &str,
+    root: &std::path::Path,
+    host_deadline: Option<Instant>,
+) -> Result<String, ComposeHostError> {
+    let mut child = Command::new(program)
         .current_dir(root)
         .arg("render")
         .arg("--root")
         .arg(root)
         .args(["--mode", "file", "--file", "t.j2", "--var-file", "v.json"])
-        .output()
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
         .map_err(|error| spawn_error(program, error))?;
-    if !output.status.success() {
-        return Err(ComposeHostError::NonZeroExit {
-            status: output.status.code(),
-            stderr: stderr_text(&output.stderr),
-        });
+    let stdout = child.stdout.take().expect("stdout");
+    let stderr = child.stderr.take().expect("stderr");
+    let stdout_cap = crate::hook::MAX_HOOK_OUTPUT_BYTES;
+    let stdout_handle = std::thread::spawn(move || drain_capped(stdout, stdout_cap));
+    let stderr_handle = std::thread::spawn(move || drain_capped(stderr, stdout_cap).bytes);
+
+    loop {
+        if host_budget_exhausted(host_deadline) {
+            let _ = child.kill();
+            let _ = child.wait();
+            let _ = stdout_handle.join();
+            let _ = stderr_handle.join();
+            return Err(ComposeHostError::HostTimedOut {
+                program: program.to_owned(),
+            });
+        }
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                let drained = stdout_handle.join().unwrap_or(Drained {
+                    bytes: Vec::new(),
+                    over_cap: false,
+                });
+                let stderr = stderr_handle.join().unwrap_or_default();
+                if !status.success() {
+                    return Err(ComposeHostError::NonZeroExit {
+                        status: status.code(),
+                        stderr: stderr_text(&stderr),
+                    });
+                }
+                if drained.over_cap {
+                    return Err(ComposeHostError::OutputTooLarge {
+                        program: program.to_owned(),
+                    });
+                }
+                return String::from_utf8(drained.bytes).map_err(|_| {
+                    ComposeHostError::OutputNotUtf8 {
+                        program: program.to_owned(),
+                    }
+                });
+            }
+            Ok(None) => std::thread::yield_now(),
+            Err(source) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                let _ = stdout_handle.join();
+                let _ = stderr_handle.join();
+                return Err(ComposeHostError::ProgramNotRunnable {
+                    program: program.to_owned(),
+                    source,
+                });
+            }
+        }
     }
-    String::from_utf8(output.stdout).map_err(|_| ComposeHostError::OutputNotUtf8 {
-        program: program.to_owned(),
-    })
+}
+
+struct Drained {
+    bytes: Vec<u8>,
+    over_cap: bool,
+}
+
+fn drain_capped(mut reader: impl Read, cap: usize) -> Drained {
+    let mut kept = Vec::new();
+    let mut over_cap = false;
+    let mut chunk = [0u8; 4096];
+    loop {
+        let read = match reader.read(&mut chunk) {
+            Ok(0) => break,
+            Ok(n) => n,
+            Err(_) => break,
+        };
+        if kept.len() >= cap {
+            over_cap = true;
+            continue;
+        }
+        let room = cap - kept.len();
+        if read > room {
+            kept.extend_from_slice(&chunk[..room]);
+            over_cap = true;
+        } else {
+            kept.extend_from_slice(&chunk[..read]);
+        }
+    }
+    Drained {
+        bytes: kept,
+        over_cap,
+    }
 }
 
 fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
@@ -283,7 +409,7 @@ fn spawn_error(program: &str, source: std::io::Error) -> ComposeHostError {
 }
 
 fn stderr_text(bytes: &[u8]) -> String {
-    const CAP: usize = 1024;
+    const CAP: usize = 512;
     let text = String::from_utf8_lossy(bytes);
     let trimmed = text.trim();
     if trimmed.len() <= CAP {
@@ -565,6 +691,7 @@ mod tests {
             "Hello",
             &json!({}),
             ComposeProgram::new("sc-cron-missing-compose-b10"),
+            None,
         )
         .expect_err("missing");
         assert!(
@@ -719,6 +846,7 @@ def cron_tick(hook):
             "Hello {{ name }}",
             &json!({"name": "cron"}),
             ComposeProgram::SC_COMPOSE,
+            None,
         )
         .expect("sc-compose");
         assert!(
@@ -751,8 +879,13 @@ def cron_tick(hook):
             &format!("#!/bin/sh\nprintf '%s\\n' \"$@\" > {log_quoted}\nprintf 'rendered'\n"),
         );
         let program = script.to_str().expect("utf8 path");
-        let rendered = render_template("ignored", &json!({"n": 1}), ComposeProgram::new(program))
-            .expect("stub");
+        let rendered = render_template(
+            "ignored",
+            &json!({"n": 1}),
+            ComposeProgram::new(program),
+            None,
+        )
+        .expect("stub");
         assert_eq!(rendered, "rendered");
         let argv = std::fs::read_to_string(&log).expect("argv");
         for flag in [
@@ -805,7 +938,7 @@ def cron_tick(hook):
         );
         let program = script.to_str().expect("utf8 path");
         let error =
-            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("exit");
+            render_template("t", &json!({}), ComposeProgram::new(program), None).expect_err("exit");
         match error {
             ComposeHostError::NonZeroExit { status, stderr } => {
                 assert_eq!(status, Some(7));
@@ -824,8 +957,8 @@ def cron_tick(hook):
             std::fs::set_permissions(&blocked, permissions).expect("chmod");
         }
         let program = blocked.to_str().expect("utf8 path");
-        let error =
-            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("spawn");
+        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
+            .expect_err("spawn");
         assert!(
             matches!(error, ComposeHostError::ProgramNotRunnable { .. }),
             "{error}"
@@ -843,7 +976,7 @@ def cron_tick(hook):
         let script = executable_script(
             dir.path(),
             "slow-stub",
-            &format!("#!/bin/sh\ntouch {started_quoted}\nsleep 0.6\nprintf 'rendered'\n"),
+            &format!("#!/bin/sh\ntouch {started_quoted}\nsleep 5\nprintf 'rendered'\n"),
         );
         let program = script.to_str().expect("utf8 path");
         let source = r#"
@@ -858,7 +991,7 @@ def cron_tick(hook):
             source,
             ComposeProgram::new(program),
             &[],
-            Duration::from_millis(150),
+            Duration::from_millis(800),
         );
         assert!(started.is_file(), "stub did not start");
         assert!(done.session.is_none());
@@ -866,6 +999,30 @@ def cron_tick(hook):
             matches!(done.result, FeedResult::Outcome(RunOutcome::TimedOut)),
             "{:?}",
             done.result
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_slow_compose_child_is_killed_at_the_host_deadline_only() {
+        let dir = tempfile::TempDir::new().expect("dir");
+        let script = executable_script(
+            dir.path(),
+            "slow-direct",
+            "#!/bin/sh\nsleep 2\nprintf 'rendered'\n",
+        );
+        let program = script.to_str().expect("utf8 path");
+        let deadline = Instant::now() + Duration::from_millis(80);
+        let error = render_template(
+            "t",
+            &json!({}),
+            ComposeProgram::new(program),
+            Some(deadline),
+        )
+        .expect_err("timeout");
+        assert!(
+            matches!(error, ComposeHostError::HostTimedOut { .. }),
+            "{error}"
         );
     }
 
