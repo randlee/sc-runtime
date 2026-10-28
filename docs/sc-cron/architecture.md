@@ -101,7 +101,7 @@ A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule
 
 `CronError` is `#[non_exhaustive]` and implements `Display` and `std::error::Error`. Variants: `BadExpression(String)`, `InvalidSpec(String)`, `AlreadyActive(ScheduleName)`, `NotFound(ScheduleName)`, `HookFailed(String)`, `Store(StoreError)`, `Fenced { id, generation }`. Codes: `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, `FENCED`. `StoreError` is this crate's error for the schedule table. It is not the schema crate's `StoreError`. It wraps `rusqlite::Error` through `Error::source` and uses the code `STORE_FAILED`. The `BadExpression` recovery text tells the caller to use a five-field string, a six-field seconds-first string, or `@hourly` through `@yearly`.
 
-`Scheduler::open` is the production path. It takes the path of the schedule database and a `ScheduleLimits`, opens the store with that value, and returns `CronError::InvalidSpec` when the value does not match the store's limits. The ceiling is not written into the file. `Scheduler::new` does not take a second copy. `Scheduler::limits` reads `ScheduleStore::limits`, and the store enforces it. That file is not the application's `store-sqlite` file.
+`Scheduler::open` is the production path. It takes the path of the schedule database and a `ScheduleLimits` and opens the store with that value. The ceiling is not stored in the file, so open cannot compare it with another writer's value and does not return `CronError::InvalidSpec` for a limits mismatch. `Scheduler::new` does not take a second copy. `Scheduler::limits` reads `ScheduleStore::limits`, and the store enforces it. That file is not the application's `store-sqlite` file.
 
 ## What this crate is not
 
