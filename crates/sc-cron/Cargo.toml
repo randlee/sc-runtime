@@ -39,7 +39,7 @@ tracing = "0.1"
 # Spawns a hook in a Unix process group or a Windows job object so the kill
 # reaches grandchildren too; wraps the safe parts of the platform calls so
 # this crate keeps `forbid(unsafe_code)`.
-process-wrap = { version = "10", default-features = false, features = ["tokio1", "kill-on-drop", "process-group", "job-object"] }
+process-wrap = { version = "10", default-features = false, features = ["std", "tokio1", "kill-on-drop", "process-group", "job-object"] }
 monty = { version = "1.4.0", optional = true }
 monty-types = { version = "1.4.0", optional = true }
 
@@ -60,6 +60,14 @@ harness = false
 # this target; `cargo test -p sc-cron --features monty` builds it.
 [[test]]
 name = "monty_hook"
+required-features = ["monty"]
+
+# Public Scheduler path. Integration tests are compiled on a default
+# `cargo test` unless `required-features` skips the target. Without this gate
+# the file would reference `HookTarget::monty` and link the interpreter.
+# `cargo test -p sc-cron --features monty --test monty_host_bridge` builds it.
+[[test]]
+name = "monty_host_bridge"
 required-features = ["monty"]
 
 [[test]]

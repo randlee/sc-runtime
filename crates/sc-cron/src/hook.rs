@@ -55,6 +55,17 @@ pub const MAX_HOOK_OUTPUT_BYTES: usize = crate::MAX_PAYLOAD_BYTES;
 /// stderr is available from [`HookOutput`] to a caller that wants it.
 const STDERR_IN_MESSAGE: usize = 512;
 
+/// The start of `stderr` copied into a stored failure message.
+///
+/// At most [`STDERR_IN_MESSAGE`] bytes, on a char boundary, after trim.
+/// A compose child's stderr uses this same slice.
+#[must_use]
+pub(crate) fn stderr_in_message(stderr: &str) -> &str {
+    let trimmed = stderr.trim();
+    let cut = trimmed.floor_char_boundary(STDERR_IN_MESSAGE);
+    trimmed.get(..cut).unwrap_or_default()
+}
+
 /// The target a launch actually runs: the worker's job, or a built Python hook.
 #[derive(Clone)]
 pub(crate) enum ResolvedTarget {
@@ -358,9 +369,7 @@ impl HookOutput {
         match &self.status {
             HookStatus::Exited(status) if status.success() => None,
             HookStatus::Exited(status) => {
-                let stderr = self.stderr.trim();
-                let cut = stderr.floor_char_boundary(STDERR_IN_MESSAGE);
-                let shown = stderr.get(..cut).unwrap_or_default();
+                let shown = stderr_in_message(&self.stderr);
                 Some(if shown.is_empty() {
                     format!("hook exited with {status}")
                 } else {
