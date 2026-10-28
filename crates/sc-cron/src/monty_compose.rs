@@ -10,7 +10,7 @@
 //! A descendant that keeps a pipe open does not extend the wait: the group
 //! or job is killed and the leader is reaped.
 
-use std::io::{ErrorKind, Read};
+use std::io::ErrorKind;
 use std::process::{ExitStatus, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, mpsc};
@@ -121,33 +121,36 @@ fn spawn_compose(program: &str, root: &std::path::Path) -> std::io::Result<Group
 }
 
 struct PipeRead {
-    receiver: mpsc::Receiver<Drained>,
+    receiver: mpsc::Receiver<std::io::Result<crate::process::Capped>>,
     handle: thread::JoinHandle<()>,
 }
 
-fn spawn_reader(reader: impl Read + Send + 'static, cap: usize) -> std::io::Result<PipeRead> {
+fn spawn_reader(
+    reader: impl std::io::Read + Send + 'static,
+    cap: usize,
+) -> std::io::Result<PipeRead> {
     let (sender, receiver) = mpsc::channel();
     let handle = thread::Builder::new()
         .name("sc-cron-compose-read".to_owned())
         .spawn(move || {
-            let _ = sender.send(drain_capped(reader, cap));
+            let _ = sender.send(crate::process::read_pipe_capped(reader, cap));
         })?;
     Ok(PipeRead { receiver, handle })
 }
 
-fn join_reader(pipe: PipeRead) -> Drained {
+fn join_reader(pipe: PipeRead) -> std::io::Result<crate::process::Capped> {
     match pipe.receiver.recv_timeout(crate::process::REAP_AFTER_KILL) {
         Ok(drained) => {
             let _ = pipe.handle.join();
             drained
         }
-        Err(_) => {
+        Err(mpsc::RecvTimeoutError::Timeout) => {
             tracing::warn!("compose pipe was not drained before the reap bound");
-            Drained {
-                bytes: Vec::new(),
-                over_cap: false,
-            }
+            Ok(crate::process::Capped::default())
         }
+        Err(mpsc::RecvTimeoutError::Disconnected) => Err(std::io::Error::other(
+            "compose pipe reader exited without sending output",
+        )),
     }
 }
 
@@ -245,8 +248,9 @@ fn wait_for_exit(watch: &ChildWatch, host_deadline: Option<Instant>) -> Waited {
 }
 
 enum Take {
-    Ready(Drained),
+    Ready(crate::process::Capped),
     Expired(PipeRead),
+    ReadFailed(std::io::Error),
 }
 
 /// Reads one pipe until it closes, or until `deadline`.
@@ -259,17 +263,20 @@ fn take_pipe(pipe: PipeRead, deadline: Instant) -> Take {
         return Take::Expired(pipe);
     }
     match pipe.receiver.recv_timeout(remaining) {
-        Ok(drained) => {
+        Ok(Ok(drained)) => {
             let _ = pipe.handle.join();
             Take::Ready(drained)
+        }
+        Ok(Err(source)) => {
+            let _ = pipe.handle.join();
+            Take::ReadFailed(source)
         }
         Err(mpsc::RecvTimeoutError::Timeout) => Take::Expired(pipe),
         Err(mpsc::RecvTimeoutError::Disconnected) => {
             let _ = pipe.handle.join();
-            Take::Ready(Drained {
-                bytes: Vec::new(),
-                over_cap: false,
-            })
+            Take::ReadFailed(std::io::Error::other(
+                "compose pipe reader exited without sending output",
+            ))
         }
     }
 }
@@ -297,16 +304,19 @@ fn drain_outputs(
     stdout: PipeRead,
     stderr: PipeRead,
     host_deadline: Option<Instant>,
-) -> Result<(Drained, Drained), ComposeHostError> {
+) -> Result<(crate::process::Capped, crate::process::Capped), ComposeHostError> {
     let Some(deadline) = host_deadline else {
         let _ = kill_and_reap(&watch.child);
-        return Ok((join_reader(stdout), join_reader(stderr)));
+        let stdout = join_reader(stdout).map_err(|source| not_runnable(program, source))?;
+        let stderr = join_reader(stderr).map_err(|source| not_runnable(program, source))?;
+        return Ok((stdout, stderr));
     };
     let drained = match take_pipe(stdout, deadline) {
         Take::Ready(drained) => drained,
         Take::Expired(stdout) => {
             return Err(budget_expired(program, watch, vec![stdout, stderr]));
         }
+        Take::ReadFailed(source) => return Err(not_runnable(program, source)),
     };
     match take_pipe(stderr, deadline) {
         Take::Ready(stderr_drained) => {
@@ -314,6 +324,7 @@ fn drain_outputs(
             Ok((drained, stderr_drained))
         }
         Take::Expired(stderr) => Err(budget_expired(program, watch, vec![stderr])),
+        Take::ReadFailed(source) => Err(not_runnable(program, source)),
     }
 }
 
@@ -339,7 +350,7 @@ fn finish_watched(
             stderr: stderr_text(&stderr_drained.bytes),
         });
     }
-    if drained.over_cap {
+    if drained.truncated {
         return Err(ComposeHostError::OutputTooLarge {
             program: program.to_owned(),
         });
@@ -380,37 +391,6 @@ fn not_runnable(program: &str, source: std::io::Error) -> ComposeHostError {
     ComposeHostError::ProgramNotRunnable {
         program: program.to_owned(),
         source,
-    }
-}
-
-struct Drained {
-    bytes: Vec<u8>,
-    over_cap: bool,
-}
-
-fn drain_capped(mut reader: impl Read, cap: usize) -> Drained {
-    let mut kept = Vec::new();
-    let mut over_cap = false;
-    let mut chunk = [0u8; 4096];
-    loop {
-        let read = match reader.read(&mut chunk) {
-            Ok(0) => break,
-            Ok(n) => n,
-            Err(_) => break,
-        };
-        let Some(incoming) = chunk.get(..read) else {
-            break;
-        };
-        let room = cap.saturating_sub(kept.len());
-        let (head, rest) = incoming.split_at(incoming.len().min(room));
-        kept.extend_from_slice(head);
-        if !rest.is_empty() {
-            over_cap = true;
-        }
-    }
-    Drained {
-        bytes: kept,
-        over_cap,
     }
 }
 

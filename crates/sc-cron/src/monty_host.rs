@@ -176,6 +176,8 @@ pub(crate) fn monty_value_to_json(value: ObjectRef<'_>) -> Result<Value, MontyJs
 #[cfg(all(test, feature = "monty"))]
 mod tests {
     use std::error::Error;
+    use std::sync::mpsc;
+    use std::thread;
     use std::time::{Duration, Instant};
 
     use serde_json::{Value, json};
@@ -201,7 +203,35 @@ mod tests {
         )
     }
 
+    const STOP_BUDGET: Duration = Duration::from_secs(20);
+    const INJECTED_GUARD_SLACK: Duration = Duration::from_secs(5);
+
     fn run_injected(
+        source: &str,
+        program: ComposeProgram<'_>,
+        extra_host_fns: &[&str],
+        budget: Duration,
+    ) -> crate::monty_run::FeedDone {
+        let outer = STOP_BUDGET
+            .saturating_add(budget)
+            .saturating_add(INJECTED_GUARD_SLACK);
+        let (tx, rx) = mpsc::sync_channel(1);
+        thread::scope(|scope| {
+            scope.spawn(|| {
+                let _ = tx.send(run_injected_on_thread(
+                    source,
+                    program,
+                    extra_host_fns,
+                    budget,
+                ));
+            });
+            rx.recv_timeout(outer).unwrap_or_else(|_| {
+                panic!("run_injected did not finish within {outer:?} (stop+tick guard)");
+            })
+        })
+    }
+
+    fn run_injected_on_thread(
         source: &str,
         program: ComposeProgram<'_>,
         extra_host_fns: &[&str],
@@ -209,20 +239,27 @@ mod tests {
     ) -> crate::monty_run::FeedDone {
         let generation = Generation::new(1).expect("generation");
         let payload = hook();
+        let stop_deadline = Instant::now()
+            .checked_add(STOP_BUDGET)
+            .expect("stop deadline");
         let stop = crate::monty_run::execute_feed_with_compose_program(
             None,
             source,
             MontyPhase::Stop,
             generation,
-            Duration::from_secs(20),
+            STOP_BUDGET,
             &payload,
             ComposeInjection::production(),
+            stop_deadline,
         );
         assert!(
             matches!(stop.result, FeedResult::Continue),
             "stop: {:?}",
             stop.result
         );
+        let tick_deadline = Instant::now()
+            .checked_add(budget)
+            .expect("tick deadline");
         crate::monty_run::execute_feed_with_compose_program(
             stop.session,
             source,
@@ -234,6 +271,7 @@ mod tests {
                 program,
                 extra_host_fns,
             },
+            tick_deadline,
         )
     }
 
@@ -510,6 +548,9 @@ def cron_tick(hook):
 
         let generation = Generation::new(1).expect("generation");
         let payload = hook();
+        let run_deadline = Instant::now()
+            .checked_add(Duration::from_secs(20))
+            .expect("run deadline");
         let second = crate::monty_run::execute_feed_with_compose_program(
             None,
             source,
@@ -521,6 +562,7 @@ def cron_tick(hook):
                 program,
                 extra_host_fns: &[],
             },
+            run_deadline,
         );
         let detail = failed_detail(second);
         assert!(detail.contains("sc-cron-missing-compose-b10"), "{detail}");
@@ -731,6 +773,9 @@ def cron_tick(hook):
 "#;
         let generation = Generation::new(1).expect("generation");
         let payload = hook();
+        let stop_deadline = Instant::now()
+            .checked_add(Duration::from_secs(20))
+            .expect("stop deadline");
         let stop = crate::monty_run::execute_feed(
             None,
             source,
@@ -738,8 +783,12 @@ def cron_tick(hook):
             generation,
             Duration::from_secs(20),
             &payload,
+            stop_deadline,
         );
         assert!(matches!(stop.result, FeedResult::Continue));
+        let tick_deadline = Instant::now()
+            .checked_add(Duration::from_secs(20))
+            .expect("tick deadline");
         let done = crate::monty_run::execute_feed(
             stop.session,
             source,
@@ -747,6 +796,7 @@ def cron_tick(hook):
             generation,
             Duration::from_secs(20),
             &payload,
+            tick_deadline,
         );
         let detail = failed_detail(done);
         assert!(detail.contains("not_defined"), "{detail}");
