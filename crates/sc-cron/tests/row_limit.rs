@@ -69,7 +69,7 @@ fn at_the_limit_a_new_name_is_invalid_and_replace_is_not() {
     let error = scheduler.start(spec("beta")).expect_err("over limit");
     assert_eq!(
         error.recovery(),
-        "stop or delete a schedule to free a row, or raise the schedule row limit (0 or null means unlimited)"
+        "stop or delete a schedule to free a row, or raise ScheduleLimits at store open or in app config"
     );
     let detail = invalid_spec(error);
     assert_eq!(scheduler.store().list_active().expect("list").len(), 1);

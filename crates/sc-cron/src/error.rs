@@ -18,11 +18,11 @@ use crate::{Generation, ScheduleId, ScheduleName};
 /// Recovery for [`CronError::InvalidSpec`].
 ///
 /// A detail that names the schedule row limit tells the caller how to free a
-/// slot or raise the cap. Other invalid fields keep the generic guidance.
+/// row or raise [`crate::ScheduleLimits`] when opening the store or in app
+/// config. Other invalid fields keep the generic guidance.
 fn invalid_spec_recovery(detail: &str) -> &'static str {
     if detail.contains("schedule row limit") {
-        "stop or delete a schedule to free a row, or raise the schedule row limit \
-         (0 or null means unlimited)"
+        "stop or delete a schedule to free a row, or raise ScheduleLimits at store open or in app config"
     } else {
         "correct the named field; see the limits in sc_cron's docs"
     }
