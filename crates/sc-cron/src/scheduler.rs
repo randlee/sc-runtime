@@ -533,18 +533,17 @@ where
     ///
     /// This is the production path. `limits` is stored on the
     /// [`SqliteScheduleStore`], which enforces it in the insert transaction.
-    /// [`Scheduler::limits`] reads that value from the store. Every writer
-    /// of one schedule database must pass the same [`ScheduleLimits`]; the
-    /// ceiling is not stored in the file. [`ScheduleLimits::default`] does
-    /// not cap the table. The file is not the application's store-sqlite
-    /// file.
+    /// [`Scheduler::new`] reads that ceiling from the store and does not
+    /// keep a second copy. This call does not compare `limits` with another
+    /// writer's ceiling. Every writer of one schedule database must pass
+    /// the same [`ScheduleLimits`]; the ceiling is not stored in the file.
+    /// [`ScheduleLimits::default`] does not cap the table. The file is not
+    /// the application's store-sqlite file.
     ///
     /// # Errors
     ///
     /// [`CronError::Store`] when the file cannot be opened or the schema does
-    /// not match, as [`SqliteScheduleStore::open`]. [`CronError::InvalidSpec`]
-    /// when `limits` does not match [`SqliteScheduleStore::limits`] on the
-    /// store this call opened.
+    /// not match, as [`SqliteScheduleStore::open`].
     ///
     /// # Examples
     ///
@@ -574,31 +573,7 @@ where
         jitter: Arc<J>,
     ) -> Result<Self, CronError> {
         let store = SqliteScheduleStore::open(path, limits)?;
-        Self::from_opened_store(store, limits, clock, jitter)
-    }
-
-    fn from_opened_store(
-        store: SqliteScheduleStore,
-        limits: ScheduleLimits,
-        clock: Arc<C>,
-        jitter: Arc<J>,
-    ) -> Result<Self, CronError> {
-        let stored = store.limits();
-        if stored != limits {
-            return Err(CronError::InvalidSpec(format!(
-                "passed max_schedule_rows is {} but the store was opened with {}; every writer on one schedule database must open with the same ScheduleLimits",
-                ceiling_label(limits),
-                ceiling_label(stored),
-            )));
-        }
         Ok(Self::new(Arc::new(store), clock, jitter))
-    }
-}
-
-fn ceiling_label(limits: ScheduleLimits) -> String {
-    match limits.max_schedule_rows {
-        Some(limit) => limit.to_string(),
-        None => "unlimited".to_owned(),
     }
 }
 
@@ -766,35 +741,5 @@ impl Drop for WorkerHandle {
             // The worker may already have exited; nothing to signal then.
             let _ = shutdown.send(None);
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::num::NonZeroUsize;
-    use std::sync::Arc;
-
-    use super::Scheduler;
-    use crate::{CronError, ScheduleLimits, SqliteScheduleStore, SystemClock, SystemJitter};
-
-    #[test]
-    fn open_rejects_limits_that_differ_from_the_store() {
-        let store = SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store");
-        let passed = ScheduleLimits {
-            max_schedule_rows: NonZeroUsize::new(4),
-        };
-        let error = Scheduler::from_opened_store(
-            store,
-            passed,
-            Arc::new(SystemClock),
-            Arc::new(SystemJitter),
-        )
-        .expect_err("mismatch");
-        let CronError::InvalidSpec(detail) = error else {
-            panic!("expected InvalidSpec, got {error}");
-        };
-        assert!(detail.contains("4"), "{detail}");
-        assert!(detail.contains("unlimited"), "{detail}");
-        assert!(detail.contains("same ScheduleLimits"), "{detail}");
     }
 }
