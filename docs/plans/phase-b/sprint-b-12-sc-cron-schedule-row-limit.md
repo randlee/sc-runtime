@@ -19,10 +19,13 @@ requirements:
   - REQ-RUN-0005
   - NFR-RUN-0009
 adrs:
-  - ADR-RUN-0013
-  - ADR-RUN-0014
+  - ADR-RUN-0002
   - ADR-RUN-0007
   - ADR-RUN-0011
+  - ADR-RUN-0013
+  - ADR-RUN-0014
+  - ADR-RUN-0401
+  - ADR-RUN-0402
 owned_paths:
   - crates/sc-cron/src/scheduler.rs
   - crates/sc-cron/src/sqlite.rs
