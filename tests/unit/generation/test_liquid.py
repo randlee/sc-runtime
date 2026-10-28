@@ -47,7 +47,11 @@ class LiquidTests(unittest.TestCase):
         self.assertIn("crates/cli/tests/widget_mcp.rs", ignored)
         self.assertEqual(
             cargo["template"]["exclude"],
-            ["AGENTS.md.j2", "CLAUDE.md.j2", "answers.schema.json"],
+            ["AGENTS.md.j2", "CLAUDE.md.j2"],
+        )
+        self.assertEqual(
+            cargo["template"]["ignore"],
+            ["config/cron.schema.json"],
         )
 
 

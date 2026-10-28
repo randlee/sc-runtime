@@ -22,7 +22,7 @@ One table, created by the crate. Columns cover the schedule name, the cron strin
 
 The number of schedule rows is not capped unless the embedder passes [`ScheduleLimits`](../../crates/sc-cron/src/limits.rs) ([ADR-RUN-0014](../architecture.md)). `max_schedule_rows: None` is the library default and means unlimited. The count is every row that has not ended, enabled and disabled together. Replacing a name that is already counted does not change the count. Ending a row (`Scheduler::stop`, including a stop-check delete) frees a slot in that same store transaction. A new name over the limit is `CronError::InvalidSpec`; the detail names the limit and the current count. There is no new `CronError` variant. Lowering the limit does not delete rows. Each row's name, expression, timeout, module path, source, and payload are capped in the crate. sc-cron does not depend on sc-config. The ceiling is the `ScheduleLimits` that process passed when it opened the store. It is not written into the schedule database. Every writer on one schedule database must open with identical `ScheduleLimits`. A writer opened with a different ceiling, including unlimited, does not enforce another writer's cap.
 
-Generated applications ship sc-config key `cron.max_schedule_rows` (integer or JSON null, default `10` when the key is absent, `0` or `null` means unlimited) in `template/answers.schema.json` and `template/config/default.json`. The daemon reads it into `cron::CronConfig` on every layout. No layout opens `Scheduler` yet. The layout that does maps the value and opens the scheduler:
+Generated applications ship sc-config key `cron.max_schedule_rows` (integer or JSON null, default `10` when the key is absent, `0` or `null` means unlimited) in `template/config/default.json`. [`template/config/cron.schema.json`](../../template/config/cron.schema.json) checks that object and allows every other key in the file, so the real default document validates. cargo-generate `exclude` copies a file without Liquid rendering and does not omit it. The cron schema is on `[template] ignore`, so a generated project does not contain it and does not contain `answers.schema.json`. The daemon reads the key into `cron::CronConfig` on every layout. No layout opens `Scheduler` yet. The layout that does maps the value and opens the scheduler:
 
 ```rust
 let limits = sc_cron::ScheduleLimits {
@@ -89,7 +89,7 @@ pub enum StopDecision {
 pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource>;
 ```
 
-`SqliteScheduleStore` is the production store. The crosswalk retains this seam with the copy (REQ-CRON-0009). The public module `process` and `PythonHook` also stay public. They are the retained REQ-CRON-0018 supervisor port (`ChildSpec`, `supervise`, and the related supervisor types). That surface is not an sc-runtime HTTP route, MCP tool, or product API.
+`SqliteScheduleStore` is the production store. `ScheduleStore::limits` defaults to `ScheduleLimits::default()` (unlimited). That store returns the ceiling it was opened with. The crosswalk retains this seam with the copy (REQ-CRON-0009). The public module `process` and `PythonHook` also stay public. They are the retained REQ-CRON-0018 supervisor port (`ChildSpec`, `supervise`, and the related supervisor types). That surface is not an sc-runtime HTTP route, MCP tool, or product API.
 
 ## Public exports
 
@@ -101,7 +101,7 @@ A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule
 
 `CronError` is `#[non_exhaustive]` and implements `Display` and `std::error::Error`. Variants: `BadExpression(String)`, `InvalidSpec(String)`, `AlreadyActive(ScheduleName)`, `NotFound(ScheduleName)`, `HookFailed(String)`, `Store(StoreError)`, `Fenced { id, generation }`. Codes: `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, `FENCED`. `StoreError` is this crate's error for the schedule table. It is not the schema crate's `StoreError`. It wraps `rusqlite::Error` through `Error::source` and uses the code `STORE_FAILED`. The `BadExpression` recovery text tells the caller to use a five-field string, a six-field seconds-first string, or `@hourly` through `@yearly`.
 
-`Scheduler::open` is the production path. It takes the path of the schedule database and a `ScheduleLimits`, opens the store with that value, and returns `CronError::InvalidSpec` when the value does not match the store's limits. `Scheduler::new` does not take a second copy. `Scheduler::limits` reads `ScheduleStore::limits`, and the store enforces it. That file is not the application's `store-sqlite` file.
+`Scheduler::open` is the production path. It takes the path of the schedule database and a `ScheduleLimits` and opens the store with that value. The ceiling is not stored in the file, so open cannot compare it with another writer's value and does not return `CronError::InvalidSpec` for a limits mismatch. `Scheduler::new` does not take a second copy. `Scheduler::limits` reads `ScheduleStore::limits`, and the store enforces it. That file is not the application's `store-sqlite` file.
 
 ## What this crate is not
 

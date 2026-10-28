@@ -26,7 +26,7 @@ owned_paths:
   - crates/sc-cron/tests/row_limit.rs
   - docs/sc-cron/requirements.md
   - docs/sc-cron/architecture.md
-  - template/answers.schema.json
+  - template/config/cron.schema.json
   - template/cargo-generate.toml
 must_follow: [b-9]
 parallel_safe: [b-10, b-11]
@@ -61,7 +61,7 @@ The embedder can pass an optional maximum schedule row count when opening the sc
 
 ## Generated template
 
-1. **`template/answers.schema.json`**: key **`cron.max_schedule_rows`**, integer or JSON null, default **`10`**. **`0`** or **`null`** means unlimited. A missing key stays **`10`**.
+1. **`template/config/cron.schema.json`**: key **`cron.max_schedule_rows`**, integer or JSON null, default **`10`**. **`0`** or **`null`** means unlimited. A missing key stays **`10`**. The schema allows the other keys in `config/default.json`. cargo-generate `exclude` copies a file without Liquid rendering and does not omit it. This schema is on `[template] ignore`, so a generated project does not contain it. Generated projects carry the key in `config/default.json`.
 2. **Generated daemon wiring:** wherever the layout opens `Scheduler` (new module or existing startup path when sc-cron is enabled for the layout), read config → map **`0`** or JSON **`null`** to `None`, a missing key to **`10`**, else `Some(NonZeroUsize::new(n))` → pass into `ScheduleLimits`. If no layout enables sc-cron yet, add the schema key and document the wiring contract in `docs/sc-cron/` for the next layout that adds cron.
 
 sc-cron crate does **not** depend on `sc-config`.

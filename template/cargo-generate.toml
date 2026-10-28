@@ -1,9 +1,14 @@
 [template]
 cargo_generate_version = ">=0.23.0"
+# exclude copies these files without Liquid rendering. It does not omit them.
 exclude = [
     "AGENTS.md.j2",
     "CLAUDE.md.j2",
-    "answers.schema.json",
+]
+# ignore removes the file from the generated project. The schema stays in
+# the template so generation tests can check config/default.json.
+ignore = [
+    "config/cron.schema.json",
 ]
 
 [hooks]

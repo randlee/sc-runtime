@@ -36,11 +36,15 @@ pub trait ScheduleStore: Send + Sync {
     /// Returns the row ceiling this store enforces.
     ///
     /// The store is the authority. [`Scheduler::limits`](crate::Scheduler::limits)
-    /// reads this value and does not keep a second copy. [`None`] on
+    /// reads this value and does not keep a second copy. The default body
+    /// returns [`ScheduleLimits::default`], which leaves the table uncapped.
+    /// A store that enforces a ceiling overrides this method. [`None`] on
     /// [`ScheduleLimits::max_schedule_rows`] means unlimited. v1 does not
     /// write the ceiling into the database. Every process that writes one
     /// schedule database must open its store with the same [`ScheduleLimits`].
-    fn limits(&self) -> ScheduleLimits;
+    fn limits(&self) -> ScheduleLimits {
+        ScheduleLimits::default()
+    }
 
     /// Creates a schedule, or restarts an ended one with the same name.
     ///
@@ -186,4 +190,98 @@ pub trait ScheduleStore: Send + Sync {
         created_at: Timestamp,
         flags: &[(ScheduleName, bool)],
     ) -> Result<Option<Schedule>, CronError>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ScheduleStore;
+    use crate::{
+        CronError, Generation, NewSchedule, RunOutcome, Schedule, ScheduleId, ScheduleLimits,
+        ScheduleName, Timestamp,
+    };
+
+    /// Store that leaves [`ScheduleStore::limits`] at its default body.
+    struct BareStore;
+
+    impl ScheduleStore for BareStore {
+        fn create(
+            &self,
+            _schedule: &NewSchedule,
+            _created_at: Timestamp,
+        ) -> Result<Schedule, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn get(&self, _id: ScheduleId) -> Result<Option<Schedule>, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn list_active(&self) -> Result<Vec<Schedule>, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn record_run(
+            &self,
+            _id: ScheduleId,
+            _generation: Generation,
+            _at: Timestamp,
+            _outcome: &RunOutcome,
+        ) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn set_next(
+            &self,
+            _id: ScheduleId,
+            _generation: Generation,
+            _next_run_at: Timestamp,
+        ) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn stop(
+            &self,
+            _id: ScheduleId,
+            _generation: Generation,
+            _at: Timestamp,
+            _reason: &str,
+        ) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn set_enabled(&self, _name: &ScheduleName, _enabled: bool) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn disable(
+            &self,
+            _id: ScheduleId,
+            _generation: Generation,
+            _at: Timestamp,
+            _reason: &str,
+        ) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn set_enabled_many(&self, _flags: &[(ScheduleName, bool)]) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn replace_and_set_enabled(
+            &self,
+            _schedule: &NewSchedule,
+            _enabled: bool,
+            _created_at: Timestamp,
+            _flags: &[(ScheduleName, bool)],
+        ) -> Result<Option<Schedule>, CronError> {
+            unimplemented!("limits default")
+        }
+    }
+
+    #[test]
+    fn limits_defaults_to_unlimited() {
+        let store = BareStore;
+        assert_eq!(store.limits(), ScheduleLimits::default());
+        assert!(store.limits().max_schedule_rows.is_none());
+    }
 }
