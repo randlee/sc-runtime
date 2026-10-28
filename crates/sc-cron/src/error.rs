@@ -15,6 +15,19 @@ use std::sync::Arc;
 
 use crate::{Generation, ScheduleId, ScheduleName};
 
+/// Recovery for [`CronError::InvalidSpec`].
+///
+/// A detail that names the schedule row limit tells the caller how to free a
+/// slot or raise the cap. Other invalid fields keep the generic guidance.
+fn invalid_spec_recovery(detail: &str) -> &'static str {
+    if detail.contains("schedule row limit") {
+        "stop or delete a schedule to free a row, or raise the schedule row limit \
+         (0 or null means unlimited)"
+    } else {
+        "correct the named field; see the limits in sc_cron's docs"
+    }
+}
+
 /// Every failure the scheduler and its stores report.
 #[derive(Clone, Debug)]
 #[non_exhaustive]
@@ -65,13 +78,13 @@ impl CronError {
 
     /// Returns what a caller can do about this error.
     #[must_use]
-    pub const fn recovery(&self) -> &'static str {
+    pub fn recovery(&self) -> &'static str {
         match self {
             Self::BadExpression(_) => {
                 "use 5 fields (minute first), 6 or 7 fields (seconds first) or @hourly..@yearly, \
                  with a future occurrence"
             }
-            Self::InvalidSpec(_) => "correct the named field; see the limits in sc_cron's docs",
+            Self::InvalidSpec(detail) => invalid_spec_recovery(detail.as_str()),
             Self::AlreadyActive(_) => "stop the active schedule first, or choose another name",
             Self::NotFound(_) => "start a schedule with this name or pick an active one",
             Self::HookFailed(_) => {
@@ -252,6 +265,10 @@ mod tests {
             assert_eq!(error.code(), code);
             assert!(!error.recovery().is_empty());
         }
+        assert_eq!(
+            CronError::InvalidSpec(String::new()).recovery(),
+            "correct the named field; see the limits in sc_cron's docs"
+        );
     }
 
     #[test]

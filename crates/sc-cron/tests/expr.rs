@@ -29,12 +29,7 @@ fn fixture() -> Fixture {
     let clock = Arc::new(ManualClock::new(
         "2026-10-19T00:00:00Z".parse().expect("timestamp"),
     ));
-    let scheduler = Scheduler::new(
-        store.clone(),
-        clock,
-        Arc::new(SeqJitter::default()),
-        ScheduleLimits::default(),
-    );
+    let scheduler = Scheduler::new(store.clone(), clock, Arc::new(SeqJitter::default()));
     Fixture { store, scheduler }
 }
 
@@ -119,12 +114,7 @@ fn first_run(expr: &str, now: &str) -> String {
     let store =
         Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"));
     let clock = Arc::new(ManualClock::new(now.parse().expect("timestamp")));
-    let scheduler = Scheduler::new(
-        store,
-        clock,
-        Arc::new(SeqJitter::default()),
-        ScheduleLimits::default(),
-    );
+    let scheduler = Scheduler::new(store, clock, Arc::new(SeqJitter::default()));
     let schedule = scheduler.start(spec(expr).expect("spec")).expect("start");
     schedule.next_run_at.expect("next run").to_string()
 }

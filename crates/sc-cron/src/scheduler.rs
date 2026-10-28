@@ -57,7 +57,6 @@ struct Core<S, C, J> {
     clock: Arc<C>,
     jitter: Arc<J>,
     reload: watch::Sender<u64>,
-    limits: ScheduleLimits,
 }
 
 impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
@@ -177,7 +176,6 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
 ///     Arc::new(SqliteScheduleStore::open_in_memory(limits)?),
 ///     Arc::new(SystemClock),
 ///     Arc::new(SystemJitter),
-///     limits,
 /// );
 /// let spec = ScheduleSpec::new("sync", "*/30 * * * * *", Duration::from_secs(25), serde_json::json!({}))?;
 /// let schedule = scheduler.start(spec.clone())?;
@@ -221,20 +219,20 @@ where
 {
     /// Creates a scheduler over `store`, reading time from `clock`.
     ///
-    /// `limits` is the ceiling the embedder passed. [`SqliteScheduleStore`]
-    /// enforces the `limits` it was opened with, inside the insert
-    /// transaction; pass that same value here. [`Scheduler::open`] does so.
+    /// The row ceiling is [`ScheduleStore::limits`]. The store enforces it
+    /// inside the insert transaction. This constructor does not take a
+    /// second copy. [`Scheduler::open`] is the production path: it opens
+    /// the file with the embedder's [`ScheduleLimits`].
     /// [`ScheduleLimits::default`] does not cap the table. The missed-tick
     /// policy is [`MissedTickPolicy::Coalesce`].
     #[must_use]
-    pub fn new(store: Arc<S>, clock: Arc<C>, jitter: Arc<J>, limits: ScheduleLimits) -> Self {
+    pub fn new(store: Arc<S>, clock: Arc<C>, jitter: Arc<J>) -> Self {
         Self {
             core: Arc::new(Core {
                 store,
                 clock,
                 jitter,
                 reload: watch::channel(0).0,
-                limits,
             }),
             policy: MissedTickPolicy::default(),
             reload_poll: DEFAULT_RELOAD_POLL,
@@ -243,9 +241,12 @@ where
         }
     }
 
-    /// Returns the row ceiling passed to [`Scheduler::new`].
+    /// Returns the row ceiling the store enforces.
+    ///
+    /// This is [`ScheduleStore::limits`]. The scheduler does not keep another
+    /// copy.
     pub fn limits(&self) -> ScheduleLimits {
-        self.core.limits
+        self.core.store.limits()
     }
 
     /// Sets the missed-tick policy for workers spawned after this call.
@@ -530,15 +531,19 @@ where
 {
     /// Opens the schedule database at `path` and builds a scheduler.
     ///
-    /// `limits` is stored on the [`SqliteScheduleStore`] and on this
-    /// scheduler. The store enforces it in the insert transaction.
-    /// [`ScheduleLimits::default`] does not cap the table. The file is not
-    /// the application's store-sqlite file.
+    /// This is the production path. `limits` is stored on the
+    /// [`SqliteScheduleStore`], which enforces it in the insert transaction.
+    /// [`Scheduler::limits`] reads that value from the store. Every writer
+    /// of one schedule database must pass the same [`ScheduleLimits`]; the
+    /// ceiling is not stored in the file. [`ScheduleLimits::default`] does
+    /// not cap the table. The file is not the application's store-sqlite
+    /// file.
     ///
     /// # Errors
     ///
     /// [`CronError::Store`] when the file cannot be opened or the schema does
-    /// not match, as [`SqliteScheduleStore::open`].
+    /// not match, as [`SqliteScheduleStore::open`]. [`CronError::InvalidSpec`]
+    /// when `limits` does not match the limits the opened store reports.
     ///
     /// # Examples
     ///
@@ -568,7 +573,31 @@ where
         jitter: Arc<J>,
     ) -> Result<Self, CronError> {
         let store = SqliteScheduleStore::open(path, limits)?;
-        Ok(Self::new(Arc::new(store), clock, jitter, limits))
+        Self::from_opened_store(store, limits, clock, jitter)
+    }
+
+    fn from_opened_store(
+        store: SqliteScheduleStore,
+        limits: ScheduleLimits,
+        clock: Arc<C>,
+        jitter: Arc<J>,
+    ) -> Result<Self, CronError> {
+        let stored = store.limits();
+        if stored != limits {
+            return Err(CronError::InvalidSpec(format!(
+                "passed max_schedule_rows is {} but the store was opened with {}; every writer on one schedule database must open with the same ScheduleLimits",
+                ceiling_label(limits),
+                ceiling_label(stored),
+            )));
+        }
+        Ok(Self::new(Arc::new(store), clock, jitter))
+    }
+}
+
+fn ceiling_label(limits: ScheduleLimits) -> String {
+    match limits.max_schedule_rows {
+        Some(limit) => limit.to_string(),
+        None => "unlimited".to_owned(),
     }
 }
 
@@ -652,7 +681,10 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> std::fmt::Debug for Scheduler<
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Scheduler")
             .field("policy", &self.policy)
-            .field("max_schedule_rows", &self.core.limits.max_schedule_rows)
+            .field(
+                "max_schedule_rows",
+                &self.core.store.limits().max_schedule_rows,
+            )
             .field("worker_live", &self.worker_live.load(Ordering::Acquire))
             .finish_non_exhaustive()
     }
@@ -733,5 +765,35 @@ impl Drop for WorkerHandle {
             // The worker may already have exited; nothing to signal then.
             let _ = shutdown.send(None);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::num::NonZeroUsize;
+    use std::sync::Arc;
+
+    use super::Scheduler;
+    use crate::{CronError, ScheduleLimits, SqliteScheduleStore, SystemClock, SystemJitter};
+
+    #[test]
+    fn open_rejects_limits_that_differ_from_the_store() {
+        let store = SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store");
+        let passed = ScheduleLimits {
+            max_schedule_rows: NonZeroUsize::new(4),
+        };
+        let error = Scheduler::from_opened_store(
+            store,
+            passed,
+            Arc::new(SystemClock),
+            Arc::new(SystemJitter),
+        )
+        .expect_err("mismatch");
+        let CronError::InvalidSpec(detail) = error else {
+            panic!("expected InvalidSpec, got {error}");
+        };
+        assert!(detail.contains("4"), "{detail}");
+        assert!(detail.contains("unlimited"), "{detail}");
+        assert!(detail.contains("same ScheduleLimits"), "{detail}");
     }
 }

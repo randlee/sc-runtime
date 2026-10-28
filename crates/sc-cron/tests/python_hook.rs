@@ -336,7 +336,6 @@ async fn a_python_row_written_before_schema_4_still_runs() {
         store.clone(),
         clock.clone(),
         std::sync::Arc::new(sc_cron::SeqJitter::default()),
-        sc_cron::ScheduleLimits::default(),
     );
     let row = store.list_active().expect("list").remove(0);
     assert!(matches!(row.spec.hook, sc_cron::HookTarget::Python { .. }));

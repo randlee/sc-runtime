@@ -20,7 +20,8 @@
 //! separate calls would not be one transaction.
 
 use crate::{
-    CronError, Generation, NewSchedule, RunOutcome, Schedule, ScheduleId, ScheduleName, Timestamp,
+    CronError, Generation, NewSchedule, RunOutcome, Schedule, ScheduleId, ScheduleLimits,
+    ScheduleName, Timestamp,
 };
 
 /// Durable storage for schedules and their run state.
@@ -32,6 +33,15 @@ use crate::{
 /// either gets a default body that keeps the contract, or ships in a breaking
 /// release.
 pub trait ScheduleStore: Send + Sync {
+    /// Returns the row ceiling this store enforces.
+    ///
+    /// The store is the authority. [`Scheduler::limits`](crate::Scheduler::limits)
+    /// reads this value and does not keep a second copy. [`None`] on
+    /// [`ScheduleLimits::max_schedule_rows`] means unlimited. v1 does not
+    /// write the ceiling into the database. Every process that writes one
+    /// schedule database must open its store with the same [`ScheduleLimits`].
+    fn limits(&self) -> ScheduleLimits;
+
     /// Creates a schedule, or restarts an ended one with the same name.
     ///
     /// A new name gets a new id at [`Generation::FIRST`]. An ended name is

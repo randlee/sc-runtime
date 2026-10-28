@@ -250,6 +250,10 @@ impl RecordingStore {
 }
 
 impl ScheduleStore for RecordingStore {
+    fn limits(&self) -> ScheduleLimits {
+        self.inner.limits()
+    }
+
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         self.inner.create(schedule, created_at)
     }
@@ -379,13 +383,8 @@ impl Fixture {
         let store = Arc::new(RecordingStore::new());
         let clock = Arc::new(ManualClock::new(at("2026-10-19T00:00:00Z")));
         let jitter = Arc::new(SeqJitter::default());
-        let scheduler = Scheduler::new(
-            store.clone(),
-            clock.clone(),
-            jitter.clone(),
-            ScheduleLimits::default(),
-        )
-        .with_missed_tick_policy(policy);
+        let scheduler = Scheduler::new(store.clone(), clock.clone(), jitter.clone())
+            .with_missed_tick_policy(policy);
         Self {
             store,
             clock,

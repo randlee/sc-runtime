@@ -23,6 +23,7 @@
 //! become text only here, in the fixed-width form [`Timestamp`] displays.
 
 use std::collections::HashSet;
+use std::num::NonZeroUsize;
 use std::path::Path;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
@@ -155,7 +156,9 @@ impl SqliteScheduleStore {
     /// Opens or creates the sc-cron database at `path`.
     ///
     /// `limits` is enforced in the same transaction as an insert of a new
-    /// name. [`ScheduleLimits::default`] does not cap the table.
+    /// name. [`ScheduleLimits::default`] does not cap the table. The value
+    /// stays in this process and is not written to the database. Every
+    /// writer of this file must pass the same `limits`.
     ///
     /// # Errors
     ///
@@ -332,6 +335,10 @@ fn init_schema(connection: &mut Connection) -> Result<(), CronError> {
 }
 
 impl ScheduleStore for SqliteScheduleStore {
+    fn limits(&self) -> ScheduleLimits {
+        self.limits
+    }
+
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         let columns = Columns::new(schedule, created_at)?;
         let mut connection = self.lock();
@@ -595,7 +602,10 @@ impl ScheduleStore for SqliteScheduleStore {
 ///
 /// Enabled and disabled rows both count. An ended row does not. The check
 /// runs in the caller's immediate transaction, before the insert, so two
-/// processes sharing the file cannot both pass it (ADR-RUN-0014).
+/// writers that enforce the same ceiling cannot both pass it (ADR-RUN-0014).
+/// The ceiling is the [`ScheduleLimits`] this process opened with. It is not
+/// stored in the database. A finite cap is always compared; a cap above
+/// [`i64::MAX`] is not treated as unlimited.
 fn reserve_new_row(limits: ScheduleLimits, transaction: &Transaction<'_>) -> Result<(), CronError> {
     let Some(limit) = limits.max_schedule_rows else {
         return Ok(());
@@ -607,15 +617,28 @@ fn reserve_new_row(limits: ScheduleLimits, transaction: &Transaction<'_>) -> Res
             |row| row.get(0),
         )
         .map_err(|error| store_error(&format!("failed to count {TABLE}"), error))?;
-    let Ok(cap) = i64::try_from(limit.get()) else {
-        return Ok(());
-    };
-    if count >= cap {
+    if row_count_reached(count, limit) {
         return Err(CronError::InvalidSpec(format!(
             "schedule row limit is {limit}; current row count is {count}"
         )));
     }
     Ok(())
+}
+
+/// Whether `count` is at or above the finite cap `limit`.
+///
+/// `count` is SQLite `COUNT(*)`, a signed integer. It is widened to `u64`
+/// and then compared as `usize` against `limit`. A cap that does not fit in
+/// `i64` stays a cap. A count that does not fit in `u64` or `usize` is
+/// already past every finite cap this process can name.
+fn row_count_reached(count: i64, limit: NonZeroUsize) -> bool {
+    let Ok(count) = u64::try_from(count) else {
+        return true;
+    };
+    match usize::try_from(count) {
+        Ok(count) => count >= limit.get(),
+        Err(_) => true,
+    }
 }
 
 /// Sets each listed active schedule's flag inside `transaction`; `false` as
@@ -937,6 +960,29 @@ mod tests {
         assert_eq!(kind_of(ffi::SQLITE_FULL), StoreErrorKind::Unavailable);
         assert_eq!(kind_of(ffi::SQLITE_READONLY), StoreErrorKind::Unavailable);
         assert_eq!(kind_of(ffi::SQLITE_CONSTRAINT), StoreErrorKind::Other);
+    }
+
+    #[test]
+    fn a_finite_cap_above_i64_max_is_compared() {
+        let above = u64::try_from(i64::MAX).expect("i64::MAX") + 1;
+        let Some(cap) = usize::try_from(above).ok().and_then(NonZeroUsize::new) else {
+            // A 32-bit `usize` cannot name a cap above `i64::MAX`. A count
+            // that does not fit in `usize` is still at every finite cap.
+            let cap = NonZeroUsize::new(1).expect("one");
+            assert!(row_count_reached(i64::MAX, cap));
+            return;
+        };
+        assert!(
+            !row_count_reached(i64::MAX, cap),
+            "i64::MAX rows are under a larger finite cap"
+        );
+        assert!(
+            row_count_reached(-1, cap),
+            "a count that does not fit in u64 is not an unlimited bypass"
+        );
+        let ten = NonZeroUsize::new(10).expect("ten");
+        assert!(row_count_reached(10, ten));
+        assert!(!row_count_reached(9, ten));
     }
 
     #[test]

@@ -80,7 +80,6 @@
 //!     Arc::new(SqliteScheduleStore::open("cron.db", limits)?),
 //!     Arc::new(SystemClock),
 //!     Arc::new(SystemJitter),
-//!     limits,
 //! );
 //! let spec = ScheduleSpec::new("sync", "*/5 * * * *", Duration::from_secs(25), serde_json::json!({}))?;
 //! scheduler.start_async(spec).await?;

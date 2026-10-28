@@ -49,7 +49,6 @@ fn scheduler(path: &Path) -> Shared {
         Arc::new(SqliteScheduleStore::open(path, ScheduleLimits::default()).expect("open")),
         clock,
         Arc::new(SeqJitter::default()),
-        ScheduleLimits::default(),
     )
 }
 

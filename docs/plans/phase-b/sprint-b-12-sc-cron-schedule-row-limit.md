@@ -52,7 +52,7 @@ The embedder can pass an optional maximum schedule row count when opening the sc
 ## API (names fixed in this sprint)
 
 1. **`ScheduleLimits`** (or equivalent options struct) with **`max_schedule_rows: Option<NonZeroUsize>`**. **`None`** = unlimited (library default).
-2. **`Scheduler::new` / `open`** (and store constructors the scheduler uses) accept `ScheduleLimits`. Existing call sites pass **`ScheduleLimits::default()`** (unlimited) unless the embedder sets a limit.
+2. **`Scheduler::open`** and the store constructors accept `ScheduleLimits`. **`Scheduler::new`** reads that ceiling from the store (`ScheduleStore::limits`) and does not keep a second copy. Existing call sites open the store with **`ScheduleLimits::default()`** (unlimited) unless the embedder sets a limit.
 3. **Count:** enabled **and** disabled rows in the schedule table. **`replace`** on an existing name does not change the count. **Delete** frees a slot.
 4. **Enforcement:** in the same store transaction as an insert of a **new** name. Over limit → **`CronError::InvalidSpec`** with detail naming the limit and current count. No new `CronError` variant.
 5. **Lowering the limit** below the current row count does not delete rows; only **new** names are rejected until count is under the limit.

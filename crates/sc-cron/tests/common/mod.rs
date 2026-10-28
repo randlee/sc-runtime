@@ -204,6 +204,10 @@ impl RecordingStore {
 }
 
 impl ScheduleStore for RecordingStore {
+    fn limits(&self) -> ScheduleLimits {
+        self.inner.limits()
+    }
+
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         self.inner.create(schedule, created_at)
     }
@@ -408,7 +412,6 @@ impl Fixture {
             store.clone(),
             clock.clone(),
             Arc::new(SeqJitter::default()),
-            ScheduleLimits::default(),
         ));
         Self {
             store,
