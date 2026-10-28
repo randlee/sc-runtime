@@ -311,15 +311,17 @@ Root: `boundary:sc-cron` and ADR-RUN-0013 as amended here.
 - The `rg` gate above exits 1.
 
 
-Recorded 2026-10-27 on this branch after the process-wrap group wait:
+Recorded 2026-10-27 on this branch after the compose `Child::wait` stall change:
 
 - `cargo fmt -p sc-cron`
 - `cargo clippy -p sc-cron --features monty --all-targets -- -D warnings` exited 0
-- `cargo test -p sc-cron --features monty` exited 0 (including the host-deadline kill tests and `monty_host_bridge`)
+- `cargo test -p sc-cron --features monty` exited 0 (including the `Child::wait` stall and post-exit host `Instant` `TimedOut` tests, and `monty_host_bridge`)
 - `cargo build --workspace` exited 0
 - `rg -n 'std::thread::sleep|tokio::time::sleep|block_on' crates/sc-cron/src` exited 1
 
 The bridge test schedules `* * * * *`. `boundaries/sc-cron` was not edited, so the boundary lint was not re-run.
+
+Scope note (ceremony screen): FTQ-003 (production-side kill of a stalled `sc-compose`) and `cargo nextest` are out of scope for this sprint. The bridge tests assume `sc-compose` finishes, per the acceptance above. A stalled child blocks in `Child::wait`; the feed records `TimedOut` from the host `Instant` only after the child exits.
 
 ## Non-goals
 
