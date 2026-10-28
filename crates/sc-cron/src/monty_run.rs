@@ -456,12 +456,7 @@ fn resume_render(
         Ok(ready) => ready,
         Err(why) => return Err(denied(stage, &why.to_string())),
     };
-    let rendered = match crate::monty_host::render_template(
-        &template,
-        &context,
-        compose_program,
-        host_deadline,
-    ) {
+    let rendered = match crate::monty_host::render_template(&template, &context, compose_program) {
         Ok(rendered) => rendered,
         Err(error) => return Err(after_compose(&error, stage, host_deadline)),
     };
@@ -482,9 +477,6 @@ fn after_compose(
     stage: FeedStage,
     host_deadline: Option<Instant>,
 ) -> FeedDone {
-    if matches!(error, ComposeHostError::HostTimedOut { .. }) {
-        return timed_out();
-    }
     let missing = matches!(error, ComposeHostError::ProgramNotFound { .. });
     if !missing && crate::monty_host::host_budget_exhausted(host_deadline) {
         return timed_out();
@@ -614,24 +606,6 @@ mod tests {
             .expect("past");
         let done = after_compose(&error, FeedStage::Tick, Some(past));
         assert!(done.session.is_none());
-        assert!(matches!(
-            done.result,
-            FeedResult::Outcome(RunOutcome::TimedOut)
-        ));
-    }
-
-    #[test]
-    fn a_killed_child_is_timed_out_even_before_the_clock_passes() {
-        let later = Instant::now()
-            .checked_add(Duration::from_secs(30))
-            .expect("later");
-        let done = after_compose(
-            &ComposeHostError::HostTimedOut {
-                program: "sc-compose".to_owned(),
-            },
-            FeedStage::Tick,
-            Some(later),
-        );
         assert!(matches!(
             done.result,
             FeedResult::Outcome(RunOutcome::TimedOut)
