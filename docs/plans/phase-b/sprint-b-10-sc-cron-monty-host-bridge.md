@@ -11,11 +11,16 @@ worktree: sprint/b-10-sc-cron-monty-host-bridge
 integration_branch: integrate/phase-b-monty
 requirements:
   - REQ-CRON-0001
+  - REQ-CRON-0002
   - REQ-CRON-0003
+  - REQ-CRON-0004
   - REQ-CRON-0005
+  - NFR-CRON-0001
   - REQ-RUN-0005
   - NFR-RUN-0002
   - NFR-RUN-0005
+  - NFR-RUN-0008
+  - NFR-RUN-0009
 adrs:
   - ADR-RUN-0013
   - ADR-RUN-0011
@@ -25,6 +30,7 @@ owned_paths:
   - crates/sc-cron/src/monty_run.rs
   - crates/sc-cron/src/monty_host.rs
   - crates/sc-cron/tests/monty_host_bridge.rs
+  - crates/sc-cron/Cargo.toml
   - docs/sc-cron/architecture.md
   - docs/sc-cron/requirements.md
   - docs/sc-cron/hooks-sc-compose.md
@@ -59,6 +65,10 @@ review on `integrate/phase-b`: it does not edit that branch.
 `render_template`. The host runs the Rust `sc-compose` CLI. The tick does not
 start CPython.
 
+`REQ-CRON-0002` and `REQ-CRON-0004` stay as `b-3` and `b-9` left them: a normal
+schedule string is five fields, minute first, and the crate keeps one schedule
+table. This sprint does not parse expressions and does not add a table.
+
 ## This sprint does not close
 
 - Campaign JSON, the benchmark-run skill, and `site/reports/benchmark-monty/`.
@@ -70,9 +80,10 @@ start CPython.
 
 ## Contract (monty 1.4.0)
 
-The shipped `render_template` / `ComposeHostError` contract lives in
-`docs/sc-cron/architecture.md` (`ComposeProgram`, seven variants). The sketch
-below is the planning contract.
+The `render_template` / `ComposeHostError` contract below is the same contract
+as `docs/sc-cron/architecture.md` and `crates/sc-cron/src/monty_host.rs`:
+`ComposeProgram`, and seven crate-private `ComposeHostError` variants.
+`CronError` stays the seven public variants.
 
 `MontyRepl::call_function` cannot resume host functions on monty 1.4.0; only
 `feed_start` yields `ReplProgress`. Production therefore **replaces** the
@@ -89,27 +100,38 @@ binding; hook authors call this bare name) via `MontyObject::function` and
 registered in this sprint.
 
 ```rust
-// crates/sc-cron/src/monty_host.rs — crate-private; program name injectable for tests.
+// crates/sc-cron/src/monty_host.rs — crate-private. Tests pass another program.
+// Production uses ComposeProgram::SC_COMPOSE ("sc-compose").
+pub(crate) struct ComposeProgram<'a>(&'a str);
+
 pub(crate) enum ComposeHostError {
     ProgramNotFound { program: String },
-    SpawnFailed { program: String, detail: String },
-    NonZeroExit { status: i32, stderr: String },
+    TempRootFailed { program: String, source: std::io::Error },
+    StageFailed { program: String, source: std::io::Error },
+    ContextEncodeFailed { program: String, source: serde_json::Error },
+    ProgramNotRunnable { program: String, source: std::io::Error },
+    OutputNotUtf8 { program: String },
+    NonZeroExit { status: Option<i32>, stderr: String },
 }
 
 impl ComposeHostError {
-    pub(crate) fn recovery(&self) -> &'static str { /* see error table */ }
+    pub(crate) const fn code(&self) -> &'static str;
+    pub(crate) const fn recovery(&self) -> &'static str;
 }
 
 pub(crate) fn render_template(
     template: &str,
     context: &serde_json::Value,
-    compose_program: &str,
+    compose_program: ComposeProgram<'_>,
 ) -> Result<String, ComposeHostError>;
 ```
 
-Production passes `compose_program = "sc-compose"`. The missing-binary test
-passes a name that is not installed. No `std::env::set_var` and no PATH
-rewrite (`NFR-RUN-0005`).
+`compose_program` in the progress loop is that `ComposeProgram`. Production
+passes `ComposeProgram::SC_COMPOSE`.
+
+Production passes `ComposeProgram::SC_COMPOSE` (`"sc-compose"`). The
+missing-program unit tests pass a name that is not installed. No
+`std::env::set_var` and no PATH rewrite (`NFR-RUN-0005`).
 
 Progress loop inside `execute_feed` (repl taken by value; state is
 `ReplProgress`, not a single `match` on `feed_start`):
@@ -126,7 +148,7 @@ loop {
             let template = template_ref.as_str().ok_or_else(|| denied(...))?;
             let context_ref = call.args.arg(1).ok_or_else(|| denied(...))?;
             let context = monty_host::monty_value_to_json(context_ref)?;
-            let rendered = monty_host::render_template(template, &context, compose_program)?;
+            let rendered = monty_host::render_template(template, &context, compose_program)?; // ComposeProgram; map Err to FeedDone, do not return it from execute_feed
             call.resume(
                 monty_types::ExtFunctionResult::Return(monty_types::MontyObject::string(rendered)),
                 monty_types::PrintWriter::Disabled,
@@ -170,14 +192,20 @@ and any other function name fail the feed.
 
 No new `CronError` variant.
 
-| Condition | `RunOutcome` / detail | Operator `recovery()` (maps to existing `CronError::recovery()` text where applicable) |
-|---|---|---|
-| Configured compose program not found (`ProgramNotFound`) | `Failed` — detail names the program (not `HookFailed`) | Install `sc-compose` on PATH or fix the injected program name in tests. |
-| Spawn or I/O error starting the child (`SpawnFailed`) | `Failed` | Check permissions and disk space for temp roots under `tempfile::TempDir`. |
-| CLI exits non-zero (`NonZeroExit`) | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
-| Monty raises or denied host call (wrong arity/type/name) | `Failed` | Fix hook source; only `render_template` is allowlisted. |
-| After CLI returns, host `Instant` exceeds row budget | `TimedOut` | Reduce compose work or raise row deadline; VM clock was paused during the host call. |
-| Monty feed-time-limit while VM executing (not on host suspend) | `TimedOut` | Same as `b-9` checkpoint path. |
+| Condition | Code | `RunOutcome` | Operator recovery |
+|---|---|---|---|
+| Compose program not found (`ProgramNotFound`) | `COMPOSE_NOT_FOUND` | `Failed` — detail names the program (not `HookFailed`). A passed host deadline does not turn this into `TimedOut`. | Install `sc-compose` on PATH or fix the injected program name in tests. |
+| Temp root or staged file I/O (`TempRootFailed`, `StageFailed`) | `COMPOSE_SPAWN` | `Failed` | Check permissions and disk space for temp roots under `tempfile::TempDir`. |
+| Context JSON encode (`ContextEncodeFailed`) | `COMPOSE_CONTEXT` | `Failed` | Fix the template context; it could not be encoded as JSON. |
+| Program cannot be executed (`ProgramNotRunnable`) | `COMPOSE_NOT_RUNNABLE` | `Failed` | Check that the compose program is executable and allowed to start. |
+| Stdout is not UTF-8 (`OutputNotUtf8`) | `COMPOSE_OUTPUT` | `Failed` | Fix the compose program so its stdout is UTF-8. |
+| CLI exits non-zero (`NonZeroExit`) | `COMPOSE_EXIT` | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
+| Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` is allowlisted. |
+| Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
+| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
+| Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
+| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
+| Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
 
 Feeds that never call `render_template` still run when the compose binary is absent.
 
@@ -190,20 +218,29 @@ is alive.
 
 ### Dependency (`REQ-CRON-0001`, `REQ-RUN-0005`)
 
-Feature `monty` stays optional. No new workspace crate and no dependency on
-another workspace crate. Reuse the existing **`tempfile`** dependency (already
-on `sc-cron` for Python hooks); do not add a second copy under `monty` only.
-Do not add `monty`, `monty-types`, or `sc-compose` to `boundaries/sc-cron`
-`allowed_dependencies`. `Cargo.toml` / `Cargo.lock` change only if `tempfile`
-is not already present (it is on the integrated tree). Default CI (Rust 1.94.1)
-does not enable `monty`. Bridge tests are `cfg(feature = "monty")` on Rust
-1.96.1.
+Feature `monty` stays optional (`NFR-CRON-0001`). No new workspace crate and
+no dependency on another workspace crate. Reuse the existing **`tempfile`**
+dependency (already on `sc-cron` for Python hooks); do not add a second copy
+under `monty` only. Do not add `monty`, `monty-types`, or `sc-compose` to
+`boundaries/sc-cron` `allowed_dependencies`. `Cargo.lock` does not change.
+`crates/sc-cron/Cargo.toml` gains one `[[test]]` target, justified below, and
+no new dependency. Default CI (Rust 1.94.1) does not enable `monty`.
+
+`NFR-RUN-0008`: `monty_host.rs` and `monty_run.rs` stay within 1000 source
+lines. `NFR-RUN-0009`: public fallible functions still return `CronError`.
+`ComposeHostError` is crate-private. Code on the feed path does not use
+panicking slice indexing; `stderr_text` takes its prefix with `str::get`.
 
 **Testing layout (`REQ-RUN-0005`, boundary):** inject/deny/resume unit tests
 live in `crates/sc-cron/src/monty_host.rs` under
 `#[cfg(all(test, feature = "monty"))]`. `crates/sc-cron/tests/monty_host_bridge.rs`
 exercises only the public **`Scheduler`** / `execute_feed` path end-to-end; it
-does not import `monty_host` directly.
+does not import `monty_host` directly. That file is an integration test, so a
+`cfg` attribute on the library does not keep `cargo test` from compiling it.
+`Cargo.toml` therefore names the target and sets `required-features = ["monty"]`:
+a default `cargo test` skips the target and does not link the interpreter;
+`cargo test -p sc-cron --features monty --test monty_host_bridge` builds it and
+runs it. The same gate is already used for `monty_hook`.
 
 ## ADR-RUN-0013 amendment
 
@@ -230,16 +267,20 @@ lab `MontyRepl::feed_start` in the bench is not the production path.
 ## Deliverables
 
 1. `REQ-CRON-0003`: `monty_host::render_template` and the `ReplProgress` loop in `execute_feed`, with the signature and deny rules above.
-2. `REQ-CRON-0005`: the error table above, still seven variants.
-3. `REQ-CRON-0001` and `REQ-RUN-0005`: no workspace dependency, no boundary-manifest edit, no `Cargo.lock` edit.
+2. `REQ-CRON-0005` and `NFR-RUN-0009`: the error table above, the same rows as `docs/sc-cron/architecture.md`. `CronError` stays seven variants. `ComposeHostError` is not an eighth public variant.
+3. `REQ-CRON-0001`, `NFR-CRON-0001`, and `REQ-RUN-0005`: no workspace dependency, no boundary-manifest edit, no `Cargo.lock` edit. The `Cargo.toml` `[[test]]` entry only sets `required-features`.
 4. `NFR-RUN-0005`: the bridge test uses `tempfile::TempDir`, injects the compose program name (not PATH mutation), and does not call `std::env::set_var`.
 5. ADR-RUN-0013 point 4 (including the `render_template` host-timeout sentence above), the new consequence, the `REQ-CRON-0003` sentence, and the hooks note.
+6. `REQ-CRON-0002` and `REQ-CRON-0004`: no expression-parser change and no new table.
+7. `NFR-RUN-0008`: `monty_host.rs` and `monty_run.rs` stay within 1000 source lines.
 
 ## Acceptance criteria
 
 Root: `boundary:sc-cron` and ADR-RUN-0013 as amended here.
 
-- `cargo test -p sc-cron --features monty --test monty_host_bridge` on Rust 1.96.1 **must execute** (not skip): success path with real `sc-compose` on `PATH` (`render` with `--root`, `--mode file`, `--file`, `--var-file`, stdout body, `--output` omitted); deny paths for another function name and for `OsCall`; non-zero CLI → `Failed`. When `sc-compose` is absent, those cases **fail** the test. A separate case uses a non-installed program name → `Failed` detail names that program and repl is dropped. Skips are not an acceptance outcome.
+- `cargo test -p sc-cron --features monty --test monty_host_bridge` on Rust 1.96.1 **must execute** (not skip): success path with real `sc-compose` on `PATH` (stdout body); deny paths for another function name and for `OsCall`; non-zero CLI → `Failed`. When `sc-compose` is absent, those cases **fail** the test. Skips are not an acceptance outcome. This target does not inject a program name. Production `Scheduler` always spawns `sc-compose`.
+- The missing-program case is the `monty_host` unit tests: `cargo test -p sc-cron --features monty --lib a_missing_program` on Rust 1.96.1. A non-installed program name → `RunOutcome::Failed` whose detail names that program (`COMPOSE_NOT_FOUND`, not `HOOK_FAILED`) and the repl is dropped (`a_missing_program_names_itself_and_does_not_spawn_on_a_bad_call`, `a_missing_program_on_the_feed_drops_the_repl`, `a_missing_program_is_failed_not_timed_out`).
+- On Unix, `cargo test -p sc-cron --features monty --lib an_injected_program_sees_the_render_argv` checks the child argv: `render`, `--root`, `--mode`, `file`, `--file`, `--var-file`, and `--output` omitted.
 - `cargo test -p sc-cron` with the default features does not compile the `monty` crates. `cargo tree -p sc-cron -e normal --prefix none` prints no crate whose name starts with `monty`.
 - `boundaries/sc-cron/sc-cron.toml` has no `monty`, `monty-types`, or `sc-compose` entry added by this sprint.
 - `docs/architecture.md` point 4 names `render_template`, the `sc-compose` spawn, and the host-timeout rule for time inside `render_template`. `docs/sc-cron/requirements.md` has the new `REQ-CRON-0003` sentence. `docs/sc-cron/hooks-sc-compose.md` calls `execute_feed` the production path.

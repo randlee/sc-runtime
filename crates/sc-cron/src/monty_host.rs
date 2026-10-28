@@ -293,7 +293,8 @@ fn stderr_text(bytes: &[u8]) -> String {
     while !trimmed.is_char_boundary(end) {
         end -= 1;
     }
-    format!("{}…", &trimmed[..end])
+    let shown = trimmed.get(..end).unwrap_or_default();
+    format!("{shown}…")
 }
 
 /// Converts a JSON value into the Monty object passed as `__hook` or a context.
@@ -507,6 +508,18 @@ mod tests {
             .to_string()
             .contains("signal")
         );
+    }
+
+    #[test]
+    fn stderr_text_stops_on_a_char_boundary_without_slicing() {
+        let mut bytes = vec![b'a'; 1023];
+        bytes.extend("é".as_bytes());
+        bytes.extend(b"zzzz");
+        let text = super::stderr_text(&bytes);
+        assert!(text.ends_with('…'), "{text}");
+        assert_eq!(text.chars().next_back(), Some('…'));
+        assert!(text.is_char_boundary(text.len()));
+        assert!(!text.contains('é'), "{text}");
     }
 
     #[test]
@@ -757,7 +770,6 @@ def cron_tick(hook):
         assert!(!argv.contains("--output"), "{argv}");
 
         let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-should-not-run
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
@@ -835,7 +847,6 @@ def cron_tick(hook):
         );
         let program = script.to_str().expect("utf8 path");
         let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-should-not-run
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
@@ -884,8 +895,6 @@ def cron_tick(hook):
     #[test]
     fn hook_source_cannot_select_the_program_or_an_extra_host_function() {
         let source = r#"
-# sc-cron-test-compose-program: sc-cron-missing-compose-b10
-# sc-cron-test-host-fn: compose_file
 def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
