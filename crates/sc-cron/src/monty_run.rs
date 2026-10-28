@@ -30,6 +30,7 @@ const DENY_RECOVERY: &str =
     "Fix hook source; only `render_template` and `sc_compose_run` are allowlisted.";
 const CODE_HOST_DENIED: &str = "HOST_DENIED";
 const CODE_HOST_UNDEFINED: &str = "HOST_UNDEFINED";
+#[cfg_attr(feature = "monty-test-handshake", allow(dead_code))]
 const CODE_HOST_OS: &str = "HOST_OS";
 const CODE_HOST_RAISED: &str = "HOST_RAISED";
 const CODE_HOST_REPLY: &str = "HOST_REPLY";
@@ -386,8 +387,18 @@ fn resume_started_feed(
                 return denied(stage, &format!("host function {}", call.function_name));
             }
             ReplProgress::OsCall(call) => {
-                let operation: &'static str = call.function_call.into();
-                return denied_os(stage, operation);
+                #[cfg(feature = "monty-test-handshake")]
+                {
+                    match crate::monty_test_os::resume_test_os(call, host_deadline) {
+                        Ok(next) => next,
+                        Err(done) => return done,
+                    }
+                }
+                #[cfg(not(feature = "monty-test-handshake"))]
+                {
+                    let operation: &'static str = call.function_call.into();
+                    return denied_os(stage, operation);
+                }
             }
             ReplProgress::NameLookup(lookup) => return undefined_name(stage, &lookup.name),
             ReplProgress::ResolveFutures(_) => return denied(stage, "unresolved futures"),
@@ -705,6 +716,7 @@ fn undefined_name(stage: FeedStage, name: &str) -> FeedDone {
     ))
 }
 
+#[cfg_attr(feature = "monty-test-handshake", allow(dead_code))]
 fn denied_os(stage: FeedStage, operation: &str) -> FeedDone {
     failed(format!(
         "{CODE_HOST_OS}: {label}: os call {operation}; {DENY_RECOVERY}",

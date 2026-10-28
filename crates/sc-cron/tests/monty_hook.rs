@@ -7,6 +7,7 @@
 
 mod common;
 
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -66,12 +67,17 @@ def check(hook, event):
         raise ValueError("extra")
 "#;
 
-/// A stop check that stays inside the interpreter long enough for a reload.
+/// A stop check that blocks until the test writes the release file (or the host budget expires).
 const HOLD_STOP: &str = r#"
 def cron_stop(hook):
-    i = 0
-    while i < 400000:
-        i = i + 1
+    payload = hook["payload"]
+    open(payload["hold"], "w").write("stop")
+    while True:
+        try:
+            open(payload["release"]).close()
+            break
+        except OSError:
+            pass
     return {"action": "continue", "reason": "ok"}
 
 def cron_tick(hook):
@@ -145,15 +151,58 @@ def cron_tick(hook):
     return None
 "#;
 
+struct HoldHandshake {
+    _dir: tempfile::TempDir,
+    hold: PathBuf,
+    release: PathBuf,
+}
+
+impl HoldHandshake {
+    fn new() -> Self {
+        let dir = tempfile::TempDir::new().expect("hold temp dir");
+        Self {
+            hold: dir.path().join("hold"),
+            release: dir.path().join("release"),
+            _dir: dir,
+        }
+    }
+
+    fn payload(&self) -> serde_json::Value {
+        json!({
+            "scope": "a",
+            "n": [1, 2],
+            "hold": self.hold.display().to_string(),
+            "release": self.release.display().to_string(),
+        })
+    }
+
+    fn release_stop(&self) {
+        std::fs::write(&self.release, b"go").expect("release stop hold");
+    }
+}
+
 fn spec(name: &str, source: &str, timeout: Duration) -> ScheduleSpec {
+    spec_with_payload(name, source, timeout, json!({"scope": "a", "n": [1, 2]}))
+}
+
+fn spec_with_payload(
+    name: &str,
+    source: &str,
+    timeout: Duration,
+    payload: serde_json::Value,
+) -> ScheduleSpec {
     ScheduleSpec::with_hook(
         name,
         "0 * * * * *",
         timeout,
-        json!({"scope": "a", "n": [1, 2]}),
+        payload,
         HookTarget::monty(source).expect("source"),
     )
     .expect("spec")
+}
+
+fn hold_stop_spec(name: &str, handshake: &HoldHandshake, timeout: Duration) -> ScheduleSpec {
+    spec_with_payload(name, HOLD_STOP, timeout, handshake.payload())
 }
 
 fn count_runs(writes: &[Write], schedule: &Schedule, needle: Option<&str>) -> usize {
@@ -190,6 +239,35 @@ async fn wait_run_count(
             count_runs(writes, schedule, needle) >= count
         })
         .await;
+}
+
+async fn wait_monty_feed_at_least(feeds: &mut tokio::sync::watch::Receiver<usize>, level: usize) {
+    let reached = tokio::time::timeout(common::WAIT, feeds.wait_for(|count| *count >= level))
+        .await
+        .is_ok_and(|ready| ready.is_ok());
+    let seen = *feeds.borrow();
+    assert!(
+        reached,
+        "timed out waiting for monty feed level >={level}; saw {seen}"
+    );
+}
+
+async fn wait_hold_file(hold: &Path) {
+    let path = hold.to_path_buf();
+    let heard = tokio::time::timeout(common::WAIT, async move {
+        loop {
+            if path.is_file() {
+                return;
+            }
+            tokio::task::yield_now().await;
+        }
+    })
+    .await;
+    assert!(
+        heard.is_ok(),
+        "timed out waiting for hold file at {}",
+        hold.display()
+    );
 }
 
 async fn wait_feeds_settled(feeds: &mut tokio::sync::watch::Receiver<usize>) {
@@ -277,9 +355,14 @@ async fn the_hook_object_matches_the_protocol() {
 #[tokio::test]
 async fn a_replace_during_stop_compiles_the_new_source_on_the_next_run() {
     let fixture = Fixture::new();
-    let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
+    let handshake = HoldHandshake::new();
+    let schedule = fixture.start(hold_stop_spec("sync", &handshake, Duration::from_secs(15)));
+    let mut feeds = fixture.scheduler.subscribe_monty_feeds();
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
+    wait_hold_file(&handshake.hold).await;
+    wait_monty_feed_at_least(&mut feeds, 1).await;
+    handshake.release_stop();
     let replaced = fixture
         .scheduler
         .replace_and_set_enabled_async(
@@ -298,19 +381,19 @@ async fn a_replace_during_stop_compiles_the_new_source_on_the_next_run() {
 #[tokio::test]
 async fn an_external_delete_during_stop_skips_the_tick_and_writes_no_outcome() {
     let fixture = Fixture::new();
-    let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
+    let handshake = HoldHandshake::new();
+    let schedule = fixture.start(hold_stop_spec("sync", &handshake, Duration::from_secs(15)));
     let mut feeds = fixture.scheduler.subscribe_monty_feeds();
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
+    wait_hold_file(&handshake.hold).await;
+    wait_monty_feed_at_least(&mut feeds, 1).await;
     fixture
         .scheduler
         .stop_async(schedule.id, schedule.generation, "gone")
         .await
         .expect("stop");
-    assert!(
-        *feeds.borrow() >= 1,
-        "the stop check finished before the external stop"
-    );
+    handshake.release_stop();
     wait_feeds_settled(&mut feeds).await;
     shutdown(worker).await;
     let row = fixture.row(&schedule);
@@ -322,19 +405,19 @@ async fn an_external_delete_during_stop_skips_the_tick_and_writes_no_outcome() {
 #[tokio::test]
 async fn an_external_disable_during_stop_skips_the_tick() {
     let fixture = Fixture::new();
-    let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
+    let handshake = HoldHandshake::new();
+    let schedule = fixture.start(hold_stop_spec("sync", &handshake, Duration::from_secs(15)));
     let mut feeds = fixture.scheduler.subscribe_monty_feeds();
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
+    wait_hold_file(&handshake.hold).await;
+    wait_monty_feed_at_least(&mut feeds, 1).await;
     fixture
         .scheduler
         .set_enabled_async(&schedule.spec.name, false)
         .await
         .expect("disable");
-    assert!(
-        *feeds.borrow() >= 1,
-        "the stop check finished before the external disable"
-    );
+    handshake.release_stop();
     wait_feeds_settled(&mut feeds).await;
     shutdown(worker).await;
     let row = fixture.row(&schedule);
@@ -346,12 +429,20 @@ async fn an_external_disable_during_stop_skips_the_tick() {
 #[tokio::test]
 async fn shutdown_during_continue_leaves_the_outcome_unchanged() {
     let fixture = Fixture::new();
-    let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
+    let handshake = HoldHandshake::new();
+    let schedule = fixture.start(hold_stop_spec("sync", &handshake, Duration::from_secs(15)));
+    let mut feeds = fixture.scheduler.subscribe_monty_feeds();
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
-    let stopped = worker
-        .shutdown(tokio::time::Instant::now() + Duration::from_secs(10))
-        .await;
+    wait_hold_file(&handshake.hold).await;
+    wait_monty_feed_at_least(&mut feeds, 1).await;
+    let handle = tokio::spawn(async move {
+        worker
+            .shutdown(tokio::time::Instant::now() + Duration::from_secs(10))
+            .await
+    });
+    handshake.release_stop();
+    let stopped = handle.await.expect("shutdown task");
     assert!(stopped, "the hold finished before the deadline");
     let row = fixture.row(&schedule);
     assert!(row.last_outcome.is_none(), "{:?}", row.last_outcome);
@@ -477,12 +568,15 @@ async fn a_monty_only_shutdown_does_not_time_out_until_the_feed_returns() {
 #[tokio::test]
 async fn dropping_run_due_does_not_abort_the_feed_or_start_a_second_one() {
     let fixture = Fixture::new();
-    let schedule = fixture.start(spec("sync", HOLD_STOP, Duration::from_secs(15)));
+    let handshake = HoldHandshake::new();
+    let schedule = fixture.start(hold_stop_spec("sync", &handshake, Duration::from_secs(15)));
     fixture.clock.advance(chrono::Duration::seconds(60));
     let before = fixture.store.writes().len();
     let scheduler = fixture.scheduler.share();
     let running = tokio::spawn(async move { scheduler.run_due(idle_job()).await });
     wait_launch_stored(&fixture, &schedule, before).await;
+    wait_hold_file(&handshake.hold).await;
+    handshake.release_stop();
     let due = fixture.clock.now();
     fixture
         .store
