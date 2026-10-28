@@ -4,13 +4,8 @@
 //! on a private temp root the hook cannot choose, then returns the child's
 //! stdout. Tests pass another [`ComposeProgram`]. It does not start CPython.
 
-use std::ffi::OsString;
 use std::fmt;
-use std::io::ErrorKind;
-use std::path::Path;
 use std::time::Instant;
-
-use crate::process::{ChildEnv, ChildSpec};
 
 use monty_types::{MontyObject, ObjectRef};
 use serde_json::{Map, Number, Value};
@@ -284,77 +279,7 @@ pub(crate) fn render_template(
         })?;
     std::fs::write(root.join("v.json"), context_bytes)
         .map_err(|source| stage_failed(program, source))?;
-    run_compose_child(program, root, host_deadline)
-}
-
-/// Waits on the compose CLI child and kills its process group at `host_deadline`.
-fn run_compose_child(
-    program: &str,
-    root: &Path,
-    host_deadline: Option<Instant>,
-) -> Result<String, ComposeHostError> {
-    let spec = ChildSpec {
-        program: Path::new(program),
-        args: render_args(root),
-        cwd: root,
-        input: b"",
-        env: ChildEnv::Inherit,
-    };
-    let captured =
-        block_on_supervise(&spec, host_deadline).map_err(|error| spawn_error(program, error))?;
-    let Some(status) = captured.status else {
-        return Err(ComposeHostError::HostTimedOut {
-            program: program.to_owned(),
-        });
-    };
-    if !status.success() {
-        return Err(ComposeHostError::NonZeroExit {
-            status: status.code(),
-            stderr: stderr_text(&captured.stderr.bytes),
-        });
-    }
-    if captured.stdout.truncated {
-        return Err(ComposeHostError::OutputTooLarge {
-            program: program.to_owned(),
-        });
-    }
-    String::from_utf8(captured.stdout.bytes).map_err(|_| ComposeHostError::OutputNotUtf8 {
-        program: program.to_owned(),
-    })
-}
-
-fn render_args(root: &Path) -> Vec<OsString> {
-    let mut args = Vec::with_capacity(8);
-    args.push(OsString::from("render"));
-    args.push(OsString::from("--root"));
-    args.push(root.as_os_str().to_owned());
-    for arg in ["--mode", "file", "--file", "t.j2", "--var-file", "v.json"] {
-        args.push(OsString::from(arg));
-    }
-    args
-}
-
-fn block_on_supervise(
-    spec: &ChildSpec<'_>,
-    host_deadline: Option<Instant>,
-) -> std::io::Result<crate::process::Captured> {
-    let run = crate::process::supervise(spec, crate::MAX_HOOK_OUTPUT_BYTES, async move {
-        match host_deadline {
-            Some(deadline) => {
-                tokio::time::sleep(deadline.saturating_duration_since(Instant::now())).await; // allow: compose host expiry for supervise
-            }
-            None => std::future::pending::<()>().await,
-        }
-    });
-    if let Ok(handle) = tokio::runtime::Handle::try_current() {
-        return handle.block_on(run); // allow: Monty render runs on the blocking pool
-    }
-    tokio::runtime::Builder::new_current_thread()
-        .enable_io()
-        .enable_time()
-        .build()
-        .map_err(std::io::Error::other)?
-        .block_on(run) // allow: compose host supervises without a nested runtime
+    crate::monty_compose::run_compose_child(program, root, host_deadline)
 }
 
 fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
@@ -364,20 +289,7 @@ fn stage_failed(program: &str, source: std::io::Error) -> ComposeHostError {
     }
 }
 
-fn spawn_error(program: &str, source: std::io::Error) -> ComposeHostError {
-    if source.kind() == ErrorKind::NotFound {
-        ComposeHostError::ProgramNotFound {
-            program: program.to_owned(),
-        }
-    } else {
-        ComposeHostError::ProgramNotRunnable {
-            program: program.to_owned(),
-            source,
-        }
-    }
-}
-
-fn stderr_text(bytes: &[u8]) -> String {
+pub(crate) fn stderr_text(bytes: &[u8]) -> String {
     let text = String::from_utf8_lossy(bytes);
     crate::hook::stderr_in_message(&text).to_owned()
 }
@@ -814,6 +726,42 @@ def cron_tick(hook):
         assert!(!rendered.contains("INFO"), "{rendered:?}");
     }
 
+    #[cfg(unix)]
+    fn slow_compose_script(dir: &std::path::Path) -> std::path::PathBuf {
+        let path = dir.join("slow-stub");
+        let body = "#!/bin/sh\n\
+dir=$(dirname \"$0\")\n\
+printf '%s\\n' \"$$\" > \"$dir/leader.pid\"\n\
+sleep 15 &\n\
+printf '%s\\n' \"$!\" > \"$dir/child.pid\"\n\
+touch \"$dir/started\"\n\
+wait\n\
+touch \"$dir/finished\"\n\
+printf 'rendered\\n'\n";
+        std::fs::write(&path, body).expect("script");
+        use std::os::unix::fs::PermissionsExt;
+        let mut permissions = std::fs::metadata(&path).expect("meta").permissions();
+        permissions.set_mode(0o755);
+        std::fs::set_permissions(&path, permissions).expect("chmod");
+        path
+    }
+
+    #[cfg(unix)]
+    fn assert_reaped(dir: &std::path::Path) {
+        for name in ["leader.pid", "child.pid"] {
+            let text = std::fs::read_to_string(dir.join(name)).expect(name);
+            let pid: u32 = text.trim().parse().expect("pid");
+            let alive = std::process::Command::new("/bin/kill")
+                .args(["-0", &pid.to_string()])
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status()
+                .is_ok_and(|status| status.success());
+            assert!(!alive, "{name} {pid} still alive");
+        }
+    }
+
     /// A checked-in fixture under `tests/fixtures/`. Mode 0755 in git.
     #[cfg(unix)]
     fn fixture_path(name: &str) -> std::path::PathBuf {
@@ -941,8 +889,7 @@ def cron_tick(hook):
     #[test]
     fn a_stub_that_outlasts_the_row_budget_is_timed_out_and_drops_the_session() {
         let dir = tempfile::TempDir::new().expect("dir");
-        let started = dir.path().join("started");
-        let script = linked_fixture(dir.path(), "slow-stub", "compose_slow_touch.sh");
+        let script = slow_compose_script(dir.path());
         let program = script.to_str().expect("utf8 path");
         let source = r#"
 def cron_stop(hook):
@@ -952,13 +899,23 @@ def cron_tick(hook):
     render_template("Hello", {"n": 1})
     return None
 "#;
+        let started_at = Instant::now();
         let done = run_injected(
             source,
             ComposeProgram::new(program),
             &[],
-            Duration::from_secs(2),
+            Duration::from_millis(800),
         );
-        assert!(started.is_file(), "stub did not start");
+        assert!(
+            started_at.elapsed() < Duration::from_secs(4),
+            "host waited for the stub"
+        );
+        assert!(dir.path().join("started").is_file(), "stub did not start");
+        assert!(
+            !dir.path().join("finished").exists(),
+            "stub ran past the deadline"
+        );
+        assert_reaped(dir.path());
         assert!(done.session.is_none());
         assert!(
             matches!(done.result, FeedResult::Outcome(RunOutcome::TimedOut)),
@@ -971,22 +928,30 @@ def cron_tick(hook):
     #[test]
     fn a_slow_compose_child_is_killed_at_the_host_deadline_only() {
         let dir = tempfile::TempDir::new().expect("dir");
-        let started = dir.path().join("started");
-        let script = linked_fixture(dir.path(), "slow-direct", "compose_slow_touch.sh");
+        let script = slow_compose_script(dir.path());
         let program = script.to_str().expect("utf8 path");
-        let deadline = Instant::now() + Duration::from_millis(250);
+        let started_at = Instant::now();
         let error = render_template(
             "t",
             &json!({}),
             ComposeProgram::new(program),
-            Some(deadline),
+            Some(started_at + Duration::from_millis(1500)),
         )
         .expect_err("timeout");
-        assert!(started.is_file(), "stub did not start");
+        assert!(
+            started_at.elapsed() < Duration::from_secs(3),
+            "host waited for the stub"
+        );
         assert!(
             matches!(error, ComposeHostError::HostTimedOut { .. }),
             "{error}"
         );
+        assert!(dir.path().join("started").is_file(), "stub did not start");
+        assert!(
+            !dir.path().join("finished").exists(),
+            "stub ran past the deadline"
+        );
+        assert_reaped(dir.path());
     }
 
     #[test]
