@@ -6,6 +6,7 @@
 # Wave 3: b-8 follows b-5, b-6, b-7; b-9 follows b-3 (parallel with b-8).
 # b-10 follows b-9 on integrate/phase-b-monty (wave 4).
 # b-11 follows b-10 (wave 5) for render_template, not for a shared path.
+# b-12 follows b-9 (wave 6 on develop); parallel with b-10/b-11 on other branches.
 
 triage:PhaseB a triage:Phase .
 
@@ -86,3 +87,11 @@ triage:b-11 a triage:Sprint ;
   triage:integrateBranch "integrate/phase-b-monty" ;
   triage:criteria "docs/plans/phase-b/sprint-b-11-benchmark-monty-reports.md" ;
   triage:follows triage:b-10 .
+
+triage:b-12 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 12 ;
+  triage:branch "sprint/b-12-sc-cron-schedule-row-limit" ;
+  triage:integrateBranch "develop" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md" ;
+  triage:follows triage:b-9 .

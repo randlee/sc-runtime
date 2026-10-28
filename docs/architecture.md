@@ -2414,7 +2414,7 @@ Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook 
 
 ### Consequences
 
-A later sprint implements the API, store count check, template default, and doc updates in `docs/sc-cron/`. beads-cache may enforce its own sync semantics; that is not sc-cron's default ceiling.
+Sprint **`b-12`** implements the API, store count check, template default, and doc updates in `docs/sc-cron/` ([sprint-b-12-sc-cron-schedule-row-limit.md](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md)). beads-cache may enforce its own sync semantics; that is not sc-cron's default ceiling.
 
 ### Related Documents
 

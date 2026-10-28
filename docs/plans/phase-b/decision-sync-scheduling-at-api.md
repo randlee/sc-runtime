@@ -5,7 +5,7 @@
 **Bead:** `run-zif.2` (parent `run-zif`)  
 **Owner intent:** 2026-10-26, amended 2026-10-27
 
-This record is the decision for `run-zif.2`. It names no change to `crates/sc-cron` and no change to PR #68. The row-limit API in this record is a **plan stub**: it is implemented by a later sprint (see [phase-b-plan.md](phase-b-plan.md#planned-amendment-schedule-row-limit-stub)), not by this plan PR.
+This record is the decision for `run-zif.2`. It names no change to PR #68. Row-limit **implementation** is [sprint b-12](sprint-b-12-sc-cron-schedule-row-limit.md) on `develop` ([ADR-RUN-0014](../../architecture.md)).
 
 ## Settled
 
@@ -36,7 +36,7 @@ The scheduler primitives those commands already use (generic; no sync, lease, or
 - `ScheduleStore::replace_and_set_enabled` and `Scheduler::replace_and_set_enabled` (`REQ-CRON-0017`)
 - one run in flight per schedule name (`REQ-CRON-0006`)
 - generation fencing so a replaced row's old run cannot write (`REQ-CRON-0007`)
-- **planned (stub):** an optional row limit the embedder passes in (below)
+- optional row limit the embedder passes in ([sprint b-12](sprint-b-12-sc-cron-schedule-row-limit.md))
 
 `REQ-CRON-0006` is per schedule name, inside one scheduler: if a tick is due while that name's previous run is still in flight, sc-cron skips the new tick. `REQ-BDC-0722` is one lease for every sync run in the cache file, across processes, whichever row is enabled. They are different mechanisms (in-process per-name skip vs cross-process sync lease); do not merge them into one requirement. The REQ-CRON-0006 vs REQ-BDC-0722 distinction is also tabulated in [sc-cron-req-crosswalk.md](sc-cron-req-crosswalk.md#per-schedule-in-flight-skip-and-the-tick-lease).
 
@@ -47,7 +47,7 @@ Replaces the 2026-10-26 text "the scheduler must not cap how many schedule rows 
 1. **Default limit: about 10 schedule rows**, counting **enabled and disabled** rows together (every row in the app's `sc_cron_schedule` table). "About 10" is the per-app default the consuming application ships; it is not a constant inside sc-cron.
 2. **Where the limit is configured.** The limit lives in the **consuming application's sc-config JSON** (the application owns the key name and its own default; per-app default is configurable). **sc-cron never reads sc-config** and takes no sc-config dependency (`REQ-CRON-0001`: no other workspace crate). The embedder reads its own config and **passes the limit into the sc-cron API** when it builds or opens the scheduler/store.
 3. **Library default is unlimited.** If the embedder passes no limit (`None`), sc-cron enforces none. A bd-cache, ATM, or other consumer that wants about 10 sets it in its own config and passes it.
-4. **Enforcement point (plan, final names chosen by the implementation sprint).** The check runs inside the same store transaction as the insert, so two processes sharing one file cannot both pass it. Adding a row whose name is new and would exceed the limit is rejected with the existing `CronError::InvalidSpec` (detail names the limit and current count); `replace` of an existing name does not change the count. No new `CronError` variant (`REQ-CRON-0005` stays seven variants). Lowering the limit below the current row count never deletes rows: existing rows keep running; new names are rejected until the count is under the limit. Deleting a row frees a slot immediately.
+4. **Enforcement point ([sprint b-12](sprint-b-12-sc-cron-schedule-row-limit.md)).** The check runs inside the same store transaction as the insert, so two processes sharing one file cannot both pass it. Adding a row whose name is new and would exceed the limit is rejected with the existing `CronError::InvalidSpec` (detail names the limit and current count); `replace` of an existing name does not change the count. No new `CronError` variant (`REQ-CRON-0005` stays seven variants). Lowering the limit below the current row count never deletes rows: existing rows keep running; new names are rejected until the count is under the limit. Deleting a row frees a slot immediately.
 5. **Relationship to blocking-pool stalls.** The b-9 text that many names may each hold a blocking-pool thread is bounded for any consumer that sets the limit. sc-cron still has no global in-flight lock and no two-row mutex.
 
 Illustrative shape only (not a frozen contract):
@@ -66,7 +66,7 @@ Binding record: [ADR-RUN-0014](../../architecture.md) (Active, owner 2026-10-27)
 
 ## Out of scope
 
-- `crates/sc-cron`, PR #68, and bead `run-9ny`. The row-limit **implementation** is a later sprint.
+- PR #68 and bead `run-9ny`. Row-limit code is **b-12**, not this decision PR alone.
 - A Monty hook target. beads-cache does not take one.
 - Implementing a beads-cache patch from this repo.
 - Any sc-config reader inside sc-cron.
