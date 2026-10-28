@@ -2430,7 +2430,7 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-9` adds `HookTarget::Monty` behind feature `monty`; beads-cache does not gain this target. Sprint `b-10` resumes host function `render_template(template, context)` by spawning `sc-compose` on `PATH` against a temp root the hook cannot choose. sc-cron has no built-in row cap (the embedder may pass one per [ADR-RUN-0014](architecture.md)), no global in-flight lock, and no two-row mutex. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-27.
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-9` adds `HookTarget::Monty` behind feature `monty`; beads-cache does not gain this target. Sprint `b-10` resumes host function `render_template(template, context)` by spawning `sc-compose` on `PATH` against a temp root the hook cannot choose. At the host deadline that spawned child and its process group are killed, the feed records `TimedOut`, and the repl is dropped. sc-cron has no built-in row cap (the embedder may pass one per [ADR-RUN-0014](architecture.md)), no global in-flight lock, and no two-row mutex. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-27.
 
 ### Related Documents
 

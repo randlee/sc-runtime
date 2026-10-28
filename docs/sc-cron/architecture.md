@@ -96,7 +96,7 @@ The Monty source does not choose the temp root. `--mode file` reads only those t
 | Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
 | `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
-| Host `Instant` deadline during the child, or the child returns after that deadline |  | `TimedOut`, session dropped, child killed | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
+| Host deadline while the child runs, or the child returns after that deadline (`HostTimedOut`) | `COMPOSE_HOST_TIMEOUT` | `TimedOut`, session dropped, spawned child killed | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
 | Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
 
 A feed that never calls `render_template` still runs when the compose program is absent. The compose child is supervised like a Python hook: at the host deadline the child and its process group are killed, the blocking-pool thread is released, and the feed records `TimedOut`. Stdout and stderr are each kept up to `MAX_HOOK_OUTPUT_BYTES`. Stderr copied into a failure detail uses the same 512-byte slice as a Python hook. The program name is fixed as `sc-compose` on `PATH`; install that binary or symlink the name onto `PATH`. There is no embedder override.
