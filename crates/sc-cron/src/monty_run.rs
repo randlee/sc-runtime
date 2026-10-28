@@ -31,6 +31,7 @@ const CODE_HOST_UNDEFINED: &str = "HOST_UNDEFINED";
 const CODE_HOST_OS: &str = "HOST_OS";
 const CODE_HOST_RAISED: &str = "HOST_RAISED";
 const CODE_HOST_REPLY: &str = "HOST_REPLY";
+const STOP_REPLY_RECOVERY: &str = "Return an object with string \"action\" (continue, disable, or delete) and a non-empty \"reason\" when disabling or deleting.";
 const CODE_FEED_TASK: &str = "FEED_TASK_FAILED";
 const FEED_TASK_RECOVERY: &str =
     "Retry the run; if it persists, inspect blocking-pool capacity and hook source.";
@@ -552,7 +553,9 @@ fn finish_phase(
             Ok(StopDecision::Delete(reason)) => kept(repl, generation, FeedResult::Delete(reason)),
             Err(why) => {
                 drop(repl);
-                failed(format!("stop check: {CODE_HOST_REPLY}: {why}"))
+                failed(format!(
+                    "stop check: {CODE_HOST_REPLY}: {why}; {STOP_REPLY_RECOVERY}"
+                ))
             }
         },
         MontyPhase::Tick => kept(repl, generation, FeedResult::Outcome(RunOutcome::Ok)),

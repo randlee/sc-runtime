@@ -154,7 +154,11 @@ fn join_reader(pipe: PipeRead) -> std::io::Result<crate::process::Capped> {
     }
 }
 
+/// Waits for the compose leader on a side thread while the caller may kill/reap.
 struct ChildWatch {
+    // `GroupChild` is not `Sync`; the poll thread calls `try_wait` while the
+    // blocking-pool thread may `start_kill` at the host deadline, so one leader
+    // sits behind a mutex (same pattern as `SqliteScheduleStore`'s connection).
     child: Arc<Mutex<GroupChild>>,
     stop: Arc<AtomicBool>,
     receiver: mpsc::Receiver<std::io::Result<ExitStatus>>,
