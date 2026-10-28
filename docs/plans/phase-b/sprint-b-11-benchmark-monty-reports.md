@@ -241,8 +241,9 @@ visible without re-reading old HTML. Observed defect: an earlier lab resumed
 that as the Monty result. The floor is the CLI-backed sample, not that run.
 
 The bench writes campaign HTML beside the JSON under
-`site/reports/benchmark-monty/`. It stops writing
-`docs/sc-cron/sc-compose-hook-comparison.report.html`. The bench's temp root
+`site/reports/benchmark-monty/`. Harness HTML and JSON sidecars live under
+`target/sc-compose-bench/` (`sc-compose-hook-comparison.report.html` and
+`.report.json`), not under `docs/sc-cron/`. The bench's temp root
 is a `tempfile::TempDir`, not `std::env::temp_dir().join("sc_cron_sc_compose_bench")`
 (`NFR-RUN-0005`).
 
