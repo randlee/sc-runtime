@@ -40,7 +40,7 @@ close cannot**. The last mile is one ordered pipeline on
 
 | Phase | Bead(s) | Exit criterion |
 |-------|---------|----------------|
-| **1. Implementation** | `run-u64`, `run-47q`, WIP on branch | b-10 host bridge + `sc_compose_run`; b-11 harness (`production_bridge` runs); b-12 row limit; template observability init; docs named in sprint plans |
+| **1. Implementation** | `run-u64`, `run-47q`, WIP on branch | b-10 host bridge + `sc_compose_run`; b-11 harness (`production_bridge` runs); b-12 row limit + template observability init (**ADR-RUN-0004** on [sprint-b-12](sprint-b-12-sc-cron-schedule-row-limit.md)); docs named in sprint plans |
 | **2. Branch hygiene** | (session) | Product commits only; no staged triage/orchestration debris; stashes reconciled |
 | **3. CI** | PR **#84** | `just lint` + `just test` green on integration HEAD |
 | **4. Phase-end QA** | `run-qwq` | Full reviewer set + `cursor-quality-mgr` PASS; req-qa findings closed or filed as post-merge with explicit defer |

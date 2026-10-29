@@ -195,8 +195,10 @@ The Monty source does not choose a filesystem path. `--mode file` reads only
 those two temp files. Stdout is the rendered string. The temp dir is removed
 when the call returns.
 
-Allowlist is `render_template` only. `compose_file` is out of scope. `OsCall`
-and any other function name fail the feed.
+Allowlist is `render_template(template, context)` and
+`sc_compose_run(subcommand, args)` (production: `render` only; hook cannot
+choose `--root` or disallowed subcommands). `compose_file` is out of scope.
+`OsCall` and any other function name fail the feed.
 
 ### Errors (`REQ-CRON-0005`)
 
@@ -211,9 +213,9 @@ No new `CronError` variant.
 | Stdout is not UTF-8 (`OutputNotUtf8`) | `COMPOSE_OUTPUT` | `Failed` | Fix the compose program so its stdout is UTF-8. |
 | Stdout longer than the hook output cap (`OutputTooLarge`) | `COMPOSE_OUTPUT` | `Failed` | Shrink the rendered output. |
 | CLI exits non-zero (`NonZeroExit`) | `COMPOSE_EXIT` | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
-| Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` is allowlisted. |
+| Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
 | Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
-| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` is allowlisted. |
+| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; host functions are allowlisted; `OsCall` is not. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
 | `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
 | After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
@@ -325,6 +327,7 @@ Scope note (ceremony screen): FTQ-003 (production-side kill of a stalled `sc-com
 
 ## Non-goals
 
-No `monty-pool`. No sandbox. No second allowlisted function. No edit to
+No `monty-pool`. No sandbox. No third host function beyond `render_template`
+and `sc_compose_run`. No edit to
 `sc_compose_bench.rs`, `Justfile`, `scripts/benchmark/`, or
 `site/reports/`. No phase-close fix on `integrate/phase-b`.

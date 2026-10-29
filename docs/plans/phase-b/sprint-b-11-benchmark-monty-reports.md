@@ -16,6 +16,7 @@ requirements:
   - REQ-RUN-0005
   - NFR-RUN-0005
 adrs:
+  - ADR-RUN-0002
   - ADR-RUN-0013
   - ADR-RUN-0011
   - ADR-RUN-0015
