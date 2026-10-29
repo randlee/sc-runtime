@@ -257,7 +257,7 @@ panicking slice indexing; `stderr_text` takes its prefix with `str::get`.
 **Testing layout (`REQ-RUN-0005`, boundary):** inject/deny/resume unit tests
 live in `crates/sc-cron/src/monty_host.rs` under
 `#[cfg(all(test, feature = "monty"))]`. `crates/sc-cron/tests/monty_host_bridge.rs`
-exercises only the public **`Scheduler`** / `execute_feed` path end-to-end; it
+exercises only the public **`Scheduler`** / `run_due` → `drive_feed` path end-to-end; it
 does not import `monty_host` directly. That file is an integration test, so a
 `cfg` attribute on the library does not keep `cargo test` from compiling it.
 `Cargo.toml` therefore names the target and sets `required-features = ["monty"]`:
@@ -270,7 +270,7 @@ runs it. The same gate is already used for `monty_hook`.
 On the `b-9` text of point 4, add: under feature `monty`, a hook may call the
 host functions `render_template(template, context)` and
 `sc_compose_run(subcommand, args)`. sc-cron resumes those calls inside
-`execute_feed` by spawning the compose program the embedder set with
+`drive_feed` via `execute_feed_with_compose_program` by spawning the compose program the embedder set with
 `Scheduler::with_monty_host` and `MontyHostConfig`. The default, when the
 embedder does not call `with_monty_host`, is the basename `sc-compose` on
 `PATH` (install that binary or symlink the name). `MontyHostConfig::new`
@@ -293,15 +293,16 @@ through `MontyHostConfig`.
 `render_template` records `RunOutcome::Failed` naming the program (not
 `HookFailed`). `docs/sc-cron/architecture.md` shows the signature, the embedder
 program rule, and the error table above. `docs/sc-cron/hooks-sc-compose.md`
-states that production ships in `execute_feed` (which may call `feed_start`
-internally), that the compose program is `MontyHostConfig` (default
+states that production ships in `drive_feed` /
+`execute_feed_with_compose_program` (which may call `feed_start` internally;
+cfg(test) `execute_feed` uses the default basename only), that the compose program is `MontyHostConfig` (default
 `sc-compose` on `PATH`; hook source cannot choose the program or the temp
 root), and that the standalone lab `MontyRepl::feed_start` in the bench is not
 the production path.
 
 ## Deliverables
 
-1. `REQ-CRON-0003`: `monty_host::render_template` and the `ReplProgress` loop in `execute_feed`, with the signature and deny rules above.
+1. `REQ-CRON-0003`: `monty_host::render_template` and the `ReplProgress` loop in `execute_feed_with_compose_program` (production via `drive_feed`), with the signature and deny rules above.
 2. `REQ-CRON-0005` and `NFR-RUN-0009`: the error table above, the same rows as `docs/sc-cron/architecture.md`. `CronError` stays seven variants. `ComposeHostError` is not an eighth public variant.
 3. `REQ-CRON-0001`, `NFR-CRON-0001`, and `REQ-RUN-0005`: no workspace dependency, no boundary-manifest edit, no `Cargo.lock` edit. The `Cargo.toml` `[[test]]` entry only sets `required-features`.
 4. `NFR-RUN-0005`: the bridge test uses `tempfile::TempDir`, injects the compose program name (not PATH mutation), and does not call `std::env::set_var`.
@@ -319,7 +320,7 @@ Root: `boundary:sc-cron` and ADR-RUN-0013 as amended here.
 - On Unix, `cargo test -p sc-cron --features monty --lib an_injected_program_sees_the_render_argv` checks the child argv: `render`, `--root`, `--mode`, `file`, `--file`, `--var-file`, and `--output` omitted.
 - `cargo test -p sc-cron` with the default features does not compile the `monty` crates. `cargo tree -p sc-cron -e normal --prefix none` prints no crate whose name starts with `monty`.
 - `boundaries/sc-cron/sc-cron.toml` has no `monty`, `monty-types`, or `sc-compose` entry added by this sprint.
-- `docs/architecture.md` point 4 names `render_template`, `sc_compose_run`, `Scheduler::with_monty_host`, `MontyHostConfig` (default basename `sc-compose` on `PATH`; hook source cannot choose the program or the temp root), and the host-timeout rule for time inside the host call. `docs/sc-cron/requirements.md` has the `REQ-CRON-0003` sentence. `docs/sc-cron/hooks-sc-compose.md` calls `execute_feed` the production path and names the same embedder program rule.
+- `docs/architecture.md` point 4 names `render_template`, `sc_compose_run`, `Scheduler::with_monty_host`, `MontyHostConfig` (default basename `sc-compose` on `PATH`; hook source cannot choose the program or the temp root), and the host-timeout rule for time inside the host call. `docs/sc-cron/requirements.md` has the `REQ-CRON-0003` sentence. `docs/sc-cron/hooks-sc-compose.md` names `drive_feed` / `execute_feed_with_compose_program` as the production path (cfg(test) `execute_feed` is the default-basename wrapper only) and names the same embedder program rule.
 - `rg -n 'std::thread::sleep|tokio::time::sleep|block_on' crates/sc-cron/src` exits 1.
 
 ## Required validation

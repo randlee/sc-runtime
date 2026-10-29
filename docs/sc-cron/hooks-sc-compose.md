@@ -6,9 +6,10 @@ tests exercise.
 
 ## Recommendation
 
-**For compose-heavy hooks (render most ticks), use Monty + the host `sc-compose`
-bridge.** Production resumes `render_template` inside `execute_feed` by spawning
-the Rust **`sc-compose` CLI**. Benchmarks on this repo show that pattern
+**For compose-heavy hooks (render most ticks), use Monty + the host compose
+bridge.** Production resumes `render_template` inside `drive_feed` /
+`execute_feed_with_compose_program` by spawning the embedder's compose program
+(default basename **`sc-compose`** on `PATH`). Benchmarks on this repo show that pattern
 matches calling the CLI directly (~3 ms/run, ~6 MiB compose subprocess peak)
 and is roughly **7× faster** with **~2× lower RSS** than a
 **`HookTarget::Python`** hook that imports PyO3 `sc_compose` (~23 ms/run,
@@ -16,8 +17,9 @@ and is roughly **7× faster** with **~2× lower RSS** than a
 [Benchmarks](#benchmarks). Sprint `b-11` publishes campaign HTML under
 `site/reports/benchmark-monty/`. This note does not link a report file.
 
-**What ships:** production Monty feeds run through `monty_run::execute_feed`.
-That function may call `MontyRepl::feed_start` internally and resume
+**What ships:** production Monty feeds run through `monty_run::drive_feed`, which
+calls `execute_feed_with_compose_program` on the blocking pool. That path may
+call `MontyRepl::feed_start` internally and resume
 `render_template` by spawning the embedder's compose program (default
 **`sc-compose`** on `PATH`) against a temp root the hook cannot choose. The
 tick does not start CPython.
@@ -76,8 +78,9 @@ file. Requires **`sc_compose`** on the host (`pip install sc-compose`).
 
 In **`cron_tick`** or **`cron_stop`**, call host-provided
 **`render_template(template, context)`** or **`sc_compose_run(subcommand, args)`**.
-Production resumes those calls inside `execute_feed`, which spawns the
-embedder's compose program (default Rust **`sc-compose`**), not
+Production resumes those calls inside `drive_feed` /
+`execute_feed_with_compose_program`, which spawns the embedder's compose program
+(default basename **`sc-compose`** on `PATH`), not
 `python3 -c import sc_compose`.
 
 - **`render_template`** stages a temp-root string template and JSON context
@@ -111,7 +114,7 @@ Published campaign HTML lives under
 The harness writes its HTML and JSON under `target/sc-compose-bench/`
 (`sc-compose-hook-comparison.report.html` and `.report.json`). There is no
 checked-in copy of that harness HTML. Default CI does not run the benchmark.
-`production_bridge` is the production `execute_feed` path via
+`production_bridge` is the production `drive_feed` path via
 `Scheduler::run_due` (the harness does not call `feed_start` itself). See
 [`benchmark-monty.md`](benchmark-monty.md) for campaigns and the publish gate.
 
@@ -131,14 +134,15 @@ path uses the same render script—add interpreter + sc-cron child overhead on t
 | `cpython_hook` | Full `PythonHook::invoke` path (subprocess + module import) |
 | `python_render_only` | Same render work, no sc-cron wrapper |
 | `sc_compose_cli_only` | Rust `sc-compose render` only (what the host bridge calls) |
-| `monty_host_bridge + sc-compose CLI` | Lab `feed_start` loop in the bench. Production is `execute_feed`, which may call `feed_start` internally. |
-| `production_bridge` | Production `monty_host` path through `execute_feed` calling `render_template`. Required for publish preflight `benchmark-gate`. |
+| `monty_host_bridge + sc-compose CLI` | Lab `feed_start` loop in the bench. Production is `drive_feed` / `execute_feed_with_compose_program`, which may call `feed_start` internally. |
+| `production_bridge` | Production `monty_host` path through `drive_feed` calling `render_template`. Required for publish preflight `benchmark-gate`. |
 
 The bench prints the numbers for your machine. Typical outcome (release, string
 template): **Monty + host CLI ≈ bare CLI** (Monty overhead is small); **Python
 hook ≈ 7× slower** and **~2× higher** subprocess RSS than compose-via-CLI paths.
 Python remains appropriate when you need an **untrusted/isolated** child process.
-The Monty host bridge ships in `execute_feed`, which spawns `sc-compose`.
+The Monty host bridge ships in `drive_feed`, which spawns the embedder's
+compose program (default basename `sc-compose` on `PATH`).
 
 ## API notes (Gemini / pydantic_monty)
 
