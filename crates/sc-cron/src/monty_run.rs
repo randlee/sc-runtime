@@ -389,6 +389,10 @@ fn resume_started_feed(
             ReplProgress::OsCall(call) => {
                 #[cfg(feature = "monty-test-handshake")]
                 {
+                    if !crate::monty_test_os::os_call_allowed_in_tests(&call) {
+                        let operation: &'static str = call.function_call.into();
+                        return denied_os(stage, operation);
+                    }
                     match crate::monty_test_os::resume_test_os(call, host_deadline) {
                         Ok(next) => next,
                         Err(done) => return done,

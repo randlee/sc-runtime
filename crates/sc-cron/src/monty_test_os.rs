@@ -17,6 +17,19 @@ use crate::RunOutcome;
 use crate::monty_host::host_budget_exhausted;
 use crate::monty_run::{FeedDone, FeedResult};
 
+/// When `monty-test-handshake` is on, OS calls outside the temp dir still use
+/// production-style denial so unit tests in `monty_host` stay unchanged.
+pub(crate) fn os_call_allowed_in_tests(call: &ReplOsCall) -> bool {
+    let path = match &call.function_call {
+        OsFunctionCall::Exists(path) | OsFunctionCall::Open(OpenCallArgs { path, .. }) => {
+            path.as_str()
+        }
+        OsFunctionCall::WriteText(args) | OsFunctionCall::AppendText(args) => args.path.as_str(),
+        _ => return false,
+    };
+    allowed_path(path)
+}
+
 fn allowed_path(path: &str) -> bool {
     let Ok(temp) = std::env::temp_dir().canonicalize() else {
         return false;
