@@ -22,7 +22,9 @@ calls `execute_feed_with_compose_program` on the blocking pool. That path may
 call `MontyRepl::feed_start` internally and resume
 `render_template` by spawning the embedder's compose program (default
 **`sc-compose`** on `PATH`) against a temp root the hook cannot choose. The
-tick does not start CPython.
+tick does not start CPython. The cfg(test) helper `execute_feed` wraps
+`execute_feed_with_compose_program` with the default basename only; it is not
+the production path.
 
 **Program name:** the embedder sets the program with `Scheduler::with_monty_host`
 and `MontyHostConfig`. The default is the basename `sc-compose` on `PATH`.
