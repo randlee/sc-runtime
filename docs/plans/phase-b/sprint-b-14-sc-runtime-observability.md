@@ -55,16 +55,22 @@ disjoint.
 
 | Target | Action | Point | Required fields |
 |---|---|---|---|
-| `http.server` | `request.start` | after request-id selection, before handler | request_id, method, path without query |
-| `http.server` | `request.finish` | non-5xx response | request_id, method, path, status, elapsed_ms; `success` for 2xx/3xx or `client_error` for 4xx; no diagnostic |
-| `http.server` | `request.error` | arbitrary application 5xx | request_id, method, path, status, elapsed_ms, `server_error`; diagnostic absent because no framework code is known |
-| `http.server` | `request.error` | handler deadline wins | request_id, method, path, status, elapsed_ms, `deadline_remaining_ms = 0`, `timeout`; diagnostic code `RUNTIME.REQUEST_TIMEOUT` |
+| `http.server` | `request.start` | after request-id selection, before handler | request_id, method, matched-route template (or fixed `<unmatched>`) |
+| `http.server` | `request.finish` | non-5xx response | request_id, method, matched-route template, status, elapsed_ms; `success` for 1xx/2xx/3xx or `client_error` for 4xx; no diagnostic |
+| `http.server` | `request.error` | arbitrary application 5xx | request_id, method, matched-route template, status, elapsed_ms, `server_error`; diagnostic absent because no framework code is known |
+| `http.server` | `request.error` | handler deadline wins | request_id, method, matched-route template, status, elapsed_ms, `deadline_remaining_ms = 0`, `timeout`; diagnostic code `RUNTIME.REQUEST_TIMEOUT` |
 | `http.server` | `request.error` | shutdown drain deadline wins | same typed fields and timeout outcome; diagnostic code `RUNTIME.DRAIN_TIMEOUT` |
 
 `LogEvent.service` comes from `CanonicalLog::service_name`. Header values,
-bodies, query strings, authorization data, and secrets are never logged.
+bodies, raw URI paths, path-parameter values, query strings, authorization
+data, and secrets are never logged. `path` is Axum's matched-route template;
+an unmatched route uses `<unmatched>` rather than its raw URI.
 All other envelope/field types follow b-13's canonical mapping; an arbitrary
 handler response never has its body inspected to manufacture a code.
+For every emitted `request.start`, normal response and the two framework
+timeout branches emit exactly one terminal `request.finish` or
+`request.error`; rejection by the logger never creates a second terminal
+attempt or changes request execution.
 
 ## Required work and deliverables
 
@@ -90,10 +96,10 @@ handler response never has its body inspected to manufacture a code.
 2. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when a
    handler timeout emits `RUNTIME.REQUEST_TIMEOUT` and a drain timeout emits
    `RUNTIME.DRAIN_TIMEOUT`.
-3. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when
+3. ADR-RT-0001 / `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when
    concurrent requests retain distinct IDs and the real signal regression
    drains and joins with deadline polling rather than fixed sleeps.
-4. ADR-RUN-0004 / ADR-RUN-0007: `observability_http` passes only when
+4. ADR-RUN-0004 / ADR-RUN-0007 / NFR-RUN-0002: `observability_http` passes only when
    queue-full and disconnected rejection returns immediately and changes no
    status, body, header, counter, request deadline, or error.
 5. `boundary:BOUNDARY-sc-runtime`: the required boundary lint and
@@ -102,6 +108,10 @@ handler response never has its body inspected to manufacture a code.
 6. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when an
    arbitrary application 5xx has no diagnostic and the two framework timeout
    branches carry exactly their fixed codes.
+7. `boundary:BOUNDARY-sc-runtime`: table-driven 1xx/2xx/3xx/4xx/5xx and
+   unmatched-route cases prove total outcome mapping, matched-template path
+   cardinality, and one terminal event per started request without recording
+   raw path parameters.
 
 ## Required validation
 

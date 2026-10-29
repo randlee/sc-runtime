@@ -13,19 +13,18 @@ requirements:
   - REQ-RUN-0002
   - REQ-RUN-0003
   - REQ-RUN-0005
+  - REQ-RUN-0301
   - REQ-RUN-0309
   - REQ-RUN-0503
   - REQ-RUN-0701
   - REQ-RUN-0702
   - REQ-RT-0001
-  - REQ-RT-0004
+  - REQ-RT-0005
   - NFR-RT-0001
   - NFR-RT-0002
   - NFR-RT-0003
-  - NFR-RT-0004
   - REQ-CRON-0001
   - REQ-CRON-0003
-  - REQ-CRON-0005
   - NFR-CRON-0001
   - NFR-RUN-0002
   - NFR-RUN-0005
@@ -129,6 +128,10 @@ and remains best effort at every library call site. It does not require
 Applications retain `Arc<Logger>` and coerce an Arc clone to
 `SharedCanonicalLog`. Noop and the upstream recording/test-double contract are
 fixed here so b-14 and b-15 do not renegotiate them.
+This is a trusted synchronous trait boundary: custom implementations must
+return promptly, perform no sink I/O or capacity wait, and not panic. The
+libraries do not spawn or time-box `emit`; acceptance proves the published
+Logger adapter and supplied doubles, not adversarial third-party trait code.
 
 `named_or_default` is infallible: it uses the requested valid static name and
 falls back to the upstream Noop identity if validation ever rejects it. The
@@ -180,6 +183,7 @@ Existing constructors remain source-compatible and install an infallible
 Noop with fixed library identity (`sc-runtime` or `sc-cron`). The builder
 `logger` method is available in `NeedStores`, `NeedRoutes`, and `Ready`,
 returns the same state, and adds no `NeedLogger` state or `run()` step.
+Repeated `logger` calls are last-write-wins and drop the replaced handle.
 `share()` and
 worker construction clone the same Arc through `RunCoord`. Libraries never
 construct, flush, or shut down the full logger. Only an injected production
@@ -273,6 +277,9 @@ carry a secret-free human summary but is never parsed by tests.
 | method, path, schedule/target/hook stage, error text | string JSON values in `fields` |
 | status, elapsed milliseconds, remaining deadline milliseconds, attempt, pid | non-negative integer JSON values in `fields` under `status`, `elapsed_ms`, `deadline_remaining_ms`, `attempt`, `pid` |
 
+HTTP `path` is the Axum matched-route template, never the raw URI, query, or
+path-parameter value; unmatched requests use the fixed `<unmatched>` token.
+
 Diagnostics use the event timestamp, secret-free message/cause, recoverable
 remediation, and the fixed code from the owning sprint. Successful/client
 events have `diagnostic: None`. Arbitrary application 5xx responses also have
@@ -301,14 +308,18 @@ this sprint; remaining cron taxonomy belongs to b-15.
    ADR-RUN-0011, ADR-RUN-0013, ADR-RUN-0303, ADR-CMD-0001, ADR-RT-0001 and the listed REQ/NFRs to
    allow only the types-level dependency, define Noop defaults, Arc identity,
    direct canonical emission, best-effort failure semantics, and the internal
-   `0.1.1` publication boundary. In particular, amend the REQ-RT-0001 and
+   `0.1.1` publication boundary. In particular, amend
+   REQ-RUN-0301/ADR-RUN-0303 for the generated daemon's direct
+   observability/types/transport/command edges and optional cron graph; amend
+   the REQ-RT-0001 and
    NFR-RT-0001 method tables for optional all-phase `.logger()` without a new
    typestate; REQ-RUN-0309 for generated/runtime/cron caret `1.5.1`
    requirements, the retained sc-command tested minimum `1.5.0`, and exact
    lock resolution `1.5.1`; REQ-CRON-0001 and ADR-RUN-0303 for the optional generated
    cron graph; REQ-RUN-0702 for the five-crate release order; and
-   ADR-CMD-0001 to remove its stale only-library assertion. Amend
-   NFR-RUN-0010 to bind the generated real-daemon signal tests to the
+   ADR-CMD-0001 to remove its stale only-library assertion. Amend REQ-RT-0005
+   to close its stale OPEN around the already-landed 30-second request/drain
+   envelopes and stable codes. Amend NFR-RUN-0010 to bind the generated real-daemon signal tests to the
    dedicated `ubuntu-latest` GitHub-hosted job and its fail-closed three-value
    detection contract; b-18 remains the sole integration acceptance root.
    These are observability and release amendments only: do not remove,
@@ -319,7 +330,7 @@ this sprint; remaining cron taxonomy belongs to b-15.
    manifests with the caret-compatible requirement `1.5.1`; enable its `test-util` feature only for
    dev-dependencies. Neither library may resolve `sc-observability` or OTLP.
    `Cargo.lock` proves the exact resolved `1.5.1` pair.
-3. Implement the two public signatures, propagate one handle through runtime
+3. Implement the public signatures fixed above, propagate one handle through runtime
    state and `RunCoord`, and preserve all old constructor calls.
    `Scheduler::open_with_logger` installs one handle coherently and emits the
    production `cron.scheduler/logger.attached` event; b-18 consumes
@@ -338,8 +349,10 @@ this sprint; remaining cron taxonomy belongs to b-15.
 4. NFR-RT-0002 / NFR-CRON-0001 / NFR-RUN-0002 / NFR-RUN-0005: contract tests prove object safety, Noop compatibility, replacement,
    Arc identity through `share()`/worker construction, immediate queue-full
    and disconnected rejection, component propagation, and isolated
-   temp-root/parallel-safe execution. Static assertions
-   forbid `log(` and `enqueue_blocking` in the upstream adapter contract.
+   temp-root/parallel-safe execution. Source-scoped static assertions reject
+   full-runtime dependencies and direct blocking adapter calls in this
+   repository; the upstream adapter's non-blocking behavior is proved by its
+   published contract tests, not by grepping unrelated test helpers here.
 5. NFR-RT-0003 / NFR-RUN-0009: keep `tracing` manifest dependencies during the staged migration. Their
    cleanup is explicitly deferred; b-14 and b-15 remove owned production
    calls without reopening these shared manifests.
@@ -393,6 +406,7 @@ this sprint; remaining cron taxonomy belongs to b-15.
 cargo test -p sc-runtime --test observability_contract
 cargo test -p sc-cron --test observability_contract
 cargo test -p sc-cron --test observability_components
+cargo +1.96.1 test -p sc-cron --features monty --test observability_components
 cargo test -p sc-runtime --features test-util
 cargo test -p sc-cron
 cargo tree -p sc-runtime -e normal --depth 1 --prefix none
@@ -404,7 +418,7 @@ sc-lint lint sc-boundary --root . --config sc-lint.toml
 ! rg -n '#\[(tracing::)?instrument|tracing::|(trace|debug|info|warn|error|event|span|trace_span|debug_span|info_span|warn_span|error_span)!' crates/sc-cron/src/lib.rs crates/sc-cron/src/coord.rs crates/sc-cron/src/scheduler.rs crates/sc-cron/src/jitter.rs crates/sc-cron/src/sqlite.rs crates/sc-cron/src/process.rs crates/sc-cron/src/hook.rs crates/sc-cron/src/monty_compose.rs crates/sc-cron/src/monty_host.rs crates/sc-cron/src/monty_run.rs
 rg -n '\bsupervise_with_logger\(' crates/sc-cron/src/hook.rs
 ! rg -n '\bsupervise\(' crates/sc-cron/src/hook.rs
-! rg -n 'enqueue_blocking|\.log\(' crates/sc-runtime crates/sc-cron
+! rg -n 'enqueue_blocking|\.log\(' crates/sc-runtime/src crates/sc-cron/src
 just lint
 just lint gates
 ```

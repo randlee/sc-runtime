@@ -13,6 +13,7 @@ requirements:
   - REQ-RUN-0003
   - REQ-RUN-0702
   - REQ-RUN-0309
+  - REQ-RUN-0301
   - REQ-CRON-0001
   - REQ-CRON-0003
   - NFR-CRON-0001
@@ -90,11 +91,11 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 
 ## Required work and deliverables
 
-1. REQ-CRON-0001 / REQ-CRON-0003 / ADR-RUN-0303: add optional daemon dependency `sc-cron`, direct
+1. REQ-RUN-0301 / REQ-CRON-0001 / REQ-CRON-0003 / ADR-RUN-0303: add optional daemon dependency `sc-cron`, direct
    `sc-observability-types`, and features equivalent to
    `cron = ["dep:sc-cron"]` and
    `monty = ["cron", "sc-cron/monty"]`; preserve the default feature set.
-2. ADR-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0702: update both template dependency
+2. ADR-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0309 / REQ-RUN-0702: update both template dependency
    inventories for the `0.1.1` internal cut, including `sc-cron`, and set the
    published `sc-observability` / `sc-observability-types` requirements to
    caret-compatible `1.5.1`; generated lockfiles prove exact resolution.

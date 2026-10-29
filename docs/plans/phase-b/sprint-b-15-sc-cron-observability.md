@@ -64,7 +64,7 @@ outcome prose.
 | `cron.worker` | `run.missed_skipped` | info | — | — | schedule; once per skipped missed-tick decision |
 | `cron.worker` | `run.missed_replayed` | info | — | — | schedule; once per replayed missed-tick decision |
 | `cron.worker` | `run.launched` | info | — | — | schedule, run when allocated, deadline remaining; once per launch |
-| `cron.worker` | `run.finished` | outcome table below | outcome table below | outcome table below | schedule, run when known, exact `RunOutcome` detail; once per recorded run |
+| `cron.worker` | `run.finished` | outcome table below | outcome table below | outcome table below | schedule, run when known, the normalized detail written to `RunOutcome`; once per recorded run |
 | `cron.worker` | `run.record_failed` | error | `failed` | `RUN_RECORD_FAILED` | schedule, run when known, error; once per failed record write |
 | `cron.worker` | `schedule.next_failed` | error | `failed` | `SCHEDULE_NEXT_FAILED` | schedule, error; once per failed next-run write |
 | `cron.worker` | `schedule.stopped` | info | `stopped` | — | schedule, reason; once per successful stop write |
@@ -73,7 +73,7 @@ outcome prose.
 | `cron.worker` | `schedule.disable_failed` | error | `failed` | `SCHEDULE_DISABLE_FAILED` | schedule, error; once per failed disable write |
 | `cron.worker` | `run.fenced` | warning | `fenced` | `SCHEDULE_FENCED` | schedule, operation; once per refused generation-guarded write |
 | `cron.scheduler` | `due.launched` | info | — | — | schedule, run when allocated, deadline remaining; once per launch |
-| `cron.scheduler` | `due.finished` | outcome table below | outcome table below | outcome table below | schedule, run, exact `RunOutcome` detail; once per recorded due run |
+| `cron.scheduler` | `due.finished` | outcome table below | outcome table below | outcome table below | schedule, run, the normalized detail written to `RunOutcome`; once per recorded due run |
 | `cron.scheduler` | `due.fenced` | warning | `fenced` | `SCHEDULE_FENCED` | schedule, operation; once per refused write |
 | `cron.scheduler` | `due.partial_write` | warning | `partial` | `FOLLOW_UP_FENCED` | schedule, run, outcome; once when outcome committed but follow-up was refused |
 | `cron.scheduler` | `due.follow_up_failed` | error | `partial` | `FOLLOW_UP_WRITE_FAILED` | schedule, run, outcome, error; once when outcome committed but follow-up failed |
@@ -103,6 +103,11 @@ Thus arbitrary consumer `Failed`/`Refused` strings cannot forge a diagnostic
 code, while `TARGET_RESOLVE_FAILED`, `JOB_JOIN_FAILED`, `DUE_JOIN_FAILED`,
 `RUN_TASK_FAILED`, `MONTY_RESOLVE`, `MONTY_TICK`, and `FEED_JOIN_FAILED`
 remain explicit origin diagnostics without parsing stored prose.
+Consumer `Failed`/`Refused` prose is trusted application text, not a general
+secret-classification boundary. b-17 later guarantees that configured hook
+environment values are redacted before this normalized detail reaches either
+the persisted outcome or these event fields; this sprint must not preserve a
+second unredacted copy that would bypass that boundary.
 
 The interface-owned `cron.scheduler/logger.attached` event is introduced by
 b-13 in `Scheduler::open_with_logger`; b-13 also owns the jitter/store/process/
@@ -133,7 +138,8 @@ field keys. Every failed emission is ignored after the attempt.
    emitter. Queue-full and disconnected rejection returns immediately and
    cannot change a deadline or scheduler result; assert event order only
    where the implementation guarantees it.
-5. NFR-CRON-0001: remove direct tracing calls from owned source. The shared manifest remains
+5. ADR-RUN-0004 / NFR-CRON-0001: remove direct tracing calls from owned
+   source and retain only the types-level observability edge. The shared manifest remains
    b-13-owned and dependency cleanup is not part of this sprint.
 6. ADR-RUN-0011: production changes add no sleep or `block_on` call and hold
    no `std::sync::Mutex` guard across `.await`; deadline-based test polling is
@@ -151,8 +157,10 @@ field keys. Every failed emission is ignored after the attempt.
    condition/deadline coordination, and the required sleep grep finds no
    fixed-delay sleep in `monty_hook`.
 4. `boundary:BOUNDARY-sc-cron`: `observability` passes only when identifiers
-   correlate scheduler, worker, and process/feed records without bodies, hook
-   source, or secrets.
+   correlate scheduler, worker, and process/feed records without bodies or
+   hook source. b-17's follow-on canary cases prove configured environment
+   values are absent; arbitrary consumer prose remains trusted input rather
+   than an unimplementable claim that all possible secrets are detected.
 5. `cargo +1.96.1 test -p sc-cron --features monty` passes against the landed
    allowlist, host deadline, process-group kill, and render-only host behavior
    without this sprint reimplementing those components.
@@ -168,6 +176,7 @@ field keys. Every failed emission is ignored after the attempt.
 
 ```sh
 cargo test -p sc-cron --test observability
+cargo +1.96.1 test -p sc-cron --features monty --test observability
 cargo test -p sc-cron
 cargo +1.96.1 test -p sc-cron --features monty
 cargo clippy -p sc-cron --all-targets --all-features -- -D warnings

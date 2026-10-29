@@ -21,11 +21,9 @@ requirements:
   - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
-  - ADR-RUN-0007
   - ADR-RUN-0011
   - ADR-RUN-0013
   - ADR-RUN-0016
-  - ADR-RUN-0303
 owned_paths:
   - docs/architecture.md
   - docs/sc-cron/requirements.md
@@ -53,6 +51,7 @@ owned_paths:
   - template/examples/monty/cron.py
   - docs/sc-cron/monty-generated-example.md
   - tests/unit/generation/test_cron_environment.py
+  - .github/workflows/crates.yml
 must_follow: [b-15, b-16]
 parallel_safe: []
 recommended_agent: solar
@@ -100,6 +99,8 @@ The public surface is equivalent to:
 
 ```rust
 pub const MAX_ENV_ENTRIES: usize = 128;
+pub const MAX_ENV_DOTENV_SOURCES: usize = 16;
+pub const MAX_ENV_NAME_BYTES: usize = 256;
 pub const MAX_ENV_VALUE_BYTES: usize = 16 * 1024;
 pub const MAX_ENV_REFERENCE_BYTES: usize = 4 * 1024;
 pub const MAX_ENV_PATH_BYTES: usize = 4 * 1024;
@@ -188,11 +189,29 @@ impl<S, C, J> Scheduler<S, C, J> {
 }
 ```
 
+`EnvName` implements `Clone`, `Eq`, `Ord`, `Hash`, `Display`, and value-safe
+`Debug`. `DotenvSource` and `HookEnvironment` implement `Clone`, `Eq`, and
+custom value-free `Debug`; `HookEnvironment` also implements `Default` as the
+empty environment. `EnvOperationRef` is `Copy + Clone + Eq` with value-free
+`Debug`. `EnvironmentReferenceError` is `Copy + Clone + Eq` and implements
+`Display` plus `std::error::Error` without provider text. `HookEnvironmentHost`
+is `Clone + Default` (its resolver is an Arc and its default is the empty
+policy) and has custom value-free `Debug`. The
+resolver trait is object-safe, and a compile test constructs
+`Arc<dyn EnvironmentReferenceResolver>`.
+
+`HookEnvironment::len()` is the number of name-keyed variable operations, not
+the number of dotenv sources; `is_empty()` is true only when both collections
+are empty. `dotenv_sources().len()` exposes the other count without a second
+ambiguous aggregate. `operation()` borrows and never clones a value or
+reference locator.
+
 The actual encoding is compact UTF-8 with no insignificant whitespace. Top
 level keys are exactly `dotenv` then `variables`; each dotenv object is `path`
 then `required` and retains declaration order; variable names sort by UTF-8
 byte order; each operation object contains exactly one key, `set`, `reference`,
-or `clear`. The empty literal is exactly
+or `clear`. The clear form is exactly `{"clear":true}` and `false` is
+rejected. The empty literal is exactly
 `{"dotenv":[],"variables":{}}`. Decode rejects unknown or duplicate fields
 instead of normalizing them silently.
 
@@ -202,8 +221,9 @@ environment builder on `MontyHostConfig`, or a Rust `JobContext` compatibility
 layer. The stored operation enum is private so raw strings cannot bypass the
 builders. Read access to deliberate set/reference configuration is explicit
 through named accessors. `Debug` for `HookEnvironment`, `DotenvSource`,
-`EnvOperationRef`, `EnvironmentReferenceRequest`, resolved maps, host configuration, and
-`HookOutput` shows names, source kinds, status, and byte counts only; it never
+`EnvOperationRef`, `EnvironmentReferenceRequest`, resolved maps, host
+configuration, `ChildEnv`, `ChildSpec`, `PythonHook`, and `HookOutput` shows
+names, source kinds, status, and byte counts only; it never
 prints set values, resolved values, reference strings, stdout, or stderr.
 
 This is a deliberate pre-release source break for environment types and
@@ -215,8 +235,9 @@ construction, every store write/decode, and every execution revalidate the
 hook/environment pairing so a caller cannot mutate a Python/Monty spec into an
 invalid Rust spec after `with_environment`.
 
-`EnvName` accepts `[A-Za-z_][A-Za-z0-9_]*`. Limits are 128 entries in every
-intermediate and final environment, 16 `.env` sources, 256 bytes per name,
+`EnvName` accepts `[A-Za-z_][A-Za-z0-9_]*`. Limits are
+`MAX_ENV_ENTRIES` entries in every intermediate and final environment,
+`MAX_ENV_DOTENV_SOURCES` `.env` sources, `MAX_ENV_NAME_BYTES` bytes per name,
 16 KiB per stored or resolved value, 4 KiB per reference locator, 4 KiB per
 path, 256 KiB for the canonical stored environment document, 1 MiB per `.env`
 file, and 32,000 UTF-8 bytes for the encoded final block. The block size is the
@@ -240,9 +261,10 @@ after every resolution layer and before Python, Monty, or compose executes.
 Repeated builder calls are deterministic. `set`, `reference`, or `clear` for
 the same exact name replaces that name's prior operation; a different spelling
 with the same ASCII case-fold is rejected. Repeating the same dotenv source is
-invalid. Host allowlists accumulate; an exact duplicate is idempotent and a
-case-fold name collision is rejected. Exact file/root duplicates are
-idempotent.
+invalid: identity is the normalized path regardless of the `required` flag,
+so one file cannot be listed twice with contradictory flags. Host allowlists
+accumulate; an exact duplicate is idempotent and a case-fold name collision is
+rejected. Exact file/root duplicates are idempotent.
 
 ## Daemon and schedule scopes
 
@@ -260,13 +282,14 @@ typed policy into sc-cron:
   "cron": {
     "environment": {
       "allow_process": ["JEV_API_KEY"],
+      "allow_dotenv_files": ["/var/lib/widget-app/shared.env"],
       "allow_dotenv_roots": ["/var/lib/widget-app/agents"]
     }
   }
 }
 ```
 
-The generated default is two empty arrays. sc-cron still does not depend on
+The generated default is three empty arrays. sc-cron still does not depend on
 `sc-config` and never opens the application configuration file itself. An
 embedder may build the same policy without using the template.
 
@@ -411,7 +434,10 @@ Python and Monty receive the same resolved key/value map:
   child environment and install exactly the resolved snapshot. Interpreter
   lookup is host launch policy: before clearing the child environment, sc-cron
   resolves a configured basename against the daemon's launch `PATH` (including
-  Windows `PATHEXT`) or normalizes the configured path to an absolute program.
+  Windows `PATHEXT`), retains an absolute program, or makes a relative path
+  with components absolute against the daemon current directory captured when
+  the hook/host configuration is built. This preserves prior executable
+  selection without relying on the cleared child's `PATH`.
   The child receives that absolute executable and does not receive the daemon's
   `PATH`. `PythonHook::new` no longer inherits the daemon environment by
   default; direct callers must explicitly select `ChildEnv::Inherit` if they
@@ -433,7 +459,8 @@ Python and Monty receive the same resolved key/value map:
   `sc_compose_run` receives the same resolved snapshot and does not inherit
   the daemon's complete environment. An embedder-selected basename is likewise
   resolved to an absolute program through daemon launch policy before the
-  child's environment is cleared; `MontyHostConfig` remains the sole program
+  child's environment is cleared; absolute and relative-with-components paths
+  follow the same rule above. `MontyHostConfig` remains the sole program
   selector.
 
 Rust `Job` remains trusted in-process application code. This sprint does not
@@ -480,23 +507,26 @@ begins with the first released schema, not with discarded development cuts.
 
 ## Required work and deliverables
 
-1. Add ADR-RUN-0016, REQ-CRON-0019, and NFR-CRON-0002 with the public model,
+1. REQ-CRON-0001 / REQ-CRON-0003 / REQ-CRON-0004 / REQ-CRON-0005:
+   add ADR-RUN-0016, REQ-CRON-0019, and NFR-CRON-0002 with the public model,
    resolution order, redaction, file authorization, runtime delivery, Rust
    non-goal, and pre-release schema ruling above. Amend ADR-RUN-0013 point 3
    for the release-v1 row shape and point 4 so Monty allows only `Getenv` and
    `GetEnviron` in addition to its two existing host functions. Do not shorten
    the landed compose program, render-only, timeout, or recovery text.
-2. Implement the validated environment types, private resolved snapshot, host
+2. NFR-CRON-0001 / NFR-RUN-0009: implement the validated environment types,
+   private resolved snapshot, host
    policy, reference-resolver seam, and boundary exports. Existing schedule
    constructors default to empty. Reject non-empty Rust environments and
-   custom `Debug` output that reveals values. Compile-test the documented
+   custom `Debug` output that reveals values, including through `ChildEnv`,
+   `ChildSpec`, and `PythonHook`. Compile-test the documented
    constructors, accessors, resolver request, and redacted formatting surface.
    Tests fix replacement/idempotence/collision behavior for every builder.
 3. Store canonical environment JSON on Python and Monty rows and consolidate
    SQLite into the release-v1 schema. Validate at construction, store write,
    and row decode. A corrupt row is skipped through the existing store path;
    no unbounded allocation occurs before size checks.
-4. Resolve one snapshot per occurrence and carry it through worker and
+4. REQ-CRON-0005 / NFR-RUN-0005: resolve one snapshot per occurrence and carry it through worker and
    `run_due` stop/tick paths. Implement exact daemon, `.env`, reference,
    set/clear precedence and stable failures. Bound reference futures and the
    complete resolution phase by the row deadline. Resolution performs file
@@ -512,7 +542,8 @@ begins with the first released schema, not with discarded development cuts.
    feeds, preserve absence semantics, deny every function call during source
    initialization and every other OS call in all stages, and pass the same
    snapshot to compose children without changing allowed subcommands.
-7. Add generated daemon configuration with empty defaults, wire the typed
+7. NFR-RUN-0005: add generated daemon configuration with empty `allow_process`,
+   `allow_dotenv_files`, and `allow_dotenv_roots` defaults, wire the typed
    host policy in `cron.rs`, and expose a generated
    `CronConfig::hook_environment_host()` builder so application composition can
    attach an `EnvironmentReferenceResolver` before scheduler open. Extend the
@@ -527,19 +558,26 @@ begins with the first released schema, not with discarded development cuts.
 9. NFR-RUN-0008 / ADR-RUN-0011: keep changed production Rust sources below
    the line-count gate, add no production sleep or `block_on`, call no
    `std::env::set_var`, and hold no synchronous lock across await.
+10. Extend crate CI with a `windows-latest` acceptance job for the
+    platform-gated environment tests. It installs Rust 1.96.1 and Python and
+    runs the named hook-environment and Monty bridge suites; Linux-only green
+    results are not evidence for Windows case-folding or `PATHEXT` behavior.
 
 ## Acceptance criteria
 
 1. `hook_environment` passes a table covering present/missing daemon names,
    multiple `.env` precedence, set/reference replacement, clear, empty values,
-   required/optional files, invalid grammar, symlink escape, resolver denial/
+   separately authorized exact files and roots, required/optional files,
+   invalid grammar, symlink escape, resolver denial/
    failure/timeout, non-UTF-8 daemon input, exact-Unix and uppercased/
    case-insensitive-Windows lookup plus enumeration parity, builder
-   replacement/duplicate behavior, redacted formatting,
+   replacement/duplicate behavior, value-free environment/supervisor debug formatting,
    and every size/name limit. Process, dotenv, and resolver oversize values plus
    entry-count/encoded-total overflow each fail value-free before execution.
    A Windows-gated case stores `Path` in config but observes only `PATH` in
    both Python `os.environ` and Monty `GetEnviron`.
+   That case must pass on `windows-latest`; compiling or skipping it on Linux
+   is not acceptance evidence.
 2. `hook_environment` passes only when caller-only variables and non-allowlisted
    daemon variables are absent from both Python and Monty. A daemon
    `ATM_IDENTITY`/`ATM_TEAM` cannot override schedule `Set` values.
@@ -568,8 +606,9 @@ begins with the first released schema, not with discarded development cuts.
    and refusal of each old development fixture shape without changing its
    bytes or creating/modifying SQLite sidecars.
    No test or active document calls the release schema version 5.
-7. `test_cron_environment` passes only when generated default configuration is
-   empty, absolute paths are required, the daemon builds the exact typed host
+7. `test_cron_environment` passes only when all three generated administrator
+   arrays are empty by default, absolute paths are required, exact-file and
+   root authorization are wired separately, the daemon builds the exact typed host
    policy, and its temporary example passes a recording resolver through that
    public builder and proves set/clear/reference/`.env` behavior without
    reading a real secret.
@@ -585,6 +624,9 @@ cargo test -p sc-cron
 cargo +1.96.1 test -p sc-cron --features monty --test monty_host_bridge
 cargo +1.96.1 test -p sc-cron --features monty
 cargo +1.96.1 test -p sc-cron --features monty-test-handshake --test monty_hook
+# The crates.yml windows-latest job runs these same named parity roots:
+cargo +1.96.1 test -p sc-cron --features monty --test hook_environment
+cargo +1.96.1 test -p sc-cron --features monty --test monty_host_bridge
 cargo clippy -p sc-cron --all-targets --all-features -- -D warnings
 cargo fmt --all --check
 just test sc-cron-tree-default

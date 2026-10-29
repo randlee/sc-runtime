@@ -45,7 +45,7 @@ let scheduler = sc_cron::Scheduler::open(cron_db, limits, clock, jitter)?
     .with_monty_host(sc_cron::MontyHostConfig::new(compose_program)?);
 ```
 
-`compose_program` is [`MontyHostConfig`](../../crates/sc-cron/src/monty_host.rs) on [`Scheduler::with_monty_host`](../../crates/sc-cron/src/scheduler.rs): any non-empty path (`CronError::InvalidSpec` when empty). A basename is resolved on `PATH`; an absolute path, or any other non-empty path, is spawned as given. The default, when the embedder does not call `with_monty_host`, is the basename `sc-compose`. The embedder may take that path from configuration or `SC_COMPOSE` in the daemon. sc-cron does not read an application configuration file; it reads daemon-process variables only by the names the embedder passes in `HookEnvironmentHost`. Hook source cannot choose the program or the temp root.
+`compose_program` is [`MontyHostConfig`](../../crates/sc-cron/src/monty_host.rs) on [`Scheduler::with_monty_host`](../../crates/sc-cron/src/scheduler.rs): any non-empty path (`CronError::InvalidSpec` when empty). Before a child environment is cleared, a basename is resolved on daemon `PATH`/Windows `PATHEXT`, an absolute path is retained, and a relative path with components is made absolute against the daemon current directory captured when host configuration is built. The default, when the embedder does not call `with_monty_host`, is the basename `sc-compose`. The embedder may take that path from configuration or `SC_COMPOSE` in the daemon. sc-cron does not read an application configuration file; it reads daemon-process variables only by the names the embedder passes in `HookEnvironmentHost`. Hook source cannot choose the program or the temp root.
 
 `CronConfig::row_limit` maps JSON `null` and `0` to `None` and any positive value to `Some(NonZeroUsize)`. A missing key stays the default `10`. That mapping stays in the generated daemon. An embedder that does not use it builds `ScheduleLimits` itself. sc-cron receives `ScheduleLimits` only and does not read sc-config.
 
@@ -110,7 +110,9 @@ Stable text, metadata, and canonical environment configuration writes are not
 substituted; deliberate set values remain plaintext. This includes Python
 output, Monty exception/return text, and compose stderr. Raw public
 `HookOutput` fields remain available only to trusted direct callers; its
-`Debug` omits output content. Exact-value replacement mitigates accidental
+`Debug` omits output content. `ChildEnv`, `ChildSpec`, and `PythonHook` also
+use value-free custom `Debug` so a resolved snapshot cannot leak through
+supervisor configuration objects. Exact-value replacement mitigates accidental
 propagation, not transformation or exfiltration by trusted hook code.
 
 At execution, an absolute `.env` path is lexically normalized and authorized
@@ -126,7 +128,9 @@ fail before hook source starts.
 
 Python's child environment is cleared and populated with exactly the snapshot.
 Python and compose basenames are resolved through daemon `PATH`/Windows
-`PATHEXT` to absolute programs before the child environment is cleared.
+`PATHEXT` before the child environment is cleared; absolute paths are retained,
+and relative paths with components are made absolute against the captured
+daemon current directory.
 Full ambient inheritance remains available only through explicit direct-call
 `ChildEnv::Inherit`. Monty resumes `Getenv` and `GetEnviron` from the same map;
 missing or cleared names behave as absent. Source initialization uses a
@@ -142,7 +146,8 @@ config retains original spelling.
 
 The generated daemon reads its own config and constructs the typed host
 policy; sc-cron never reads `sc-config`. Default generated arrays
-`cron.environment.allow_process` and `allow_dotenv_roots` are empty. Reference
+`cron.environment.allow_process`, `allow_dotenv_files`, and
+`allow_dotenv_roots` are empty. Reference
 schemes such as `keychain://` remain opaque and require an embedder resolver.
 The generated `cron::open` accepts the completed `HookEnvironmentHost`, so
 application resolver injection is not lost during final composition.
@@ -256,7 +261,7 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource>;
 
 ## Public exports
 
-The crate-root exports, also listed on `boundaries/sc-cron/sc-cron.toml`, are the contract: `Clock`, `CronError`, `CronExpr`, `DEFAULT_RELOAD_POLL`, `DotenvSource`, `DueRun`, `EnvironmentReferenceError`, `EnvironmentReferenceRequest`, `EnvironmentReferenceResolver`, `EnvName`, `EnvOperationRef`, `Generation`, `HOOK_PROTOCOL`, `HookCall`, `HookEnvironment`, `HookEnvironmentHost`, `HookEvent`, `HookOutput`, `HookStatus`, `HookTarget`, `is_identifier`, `JitterSource`, `Job`, `kill_budget`, `ManualClock`, `MAX_ENV_DOCUMENT_BYTES`, `MAX_ENV_ENTRIES`, `MAX_ENV_FILE_BYTES`, `MAX_ENV_PATH_BYTES`, `MAX_ENV_REFERENCE_BYTES`, `MAX_ENV_SNAPSHOT_BYTES`, `MAX_ENV_VALUE_BYTES`, `MAX_EXPR_LEN`, `MAX_HOOK_OUTPUT_BYTES`, `MAX_HOOK_SOURCE_BYTES`, `MAX_NAME_LEN`, `MAX_PAYLOAD_BYTES`, `MAX_TIMEOUT`, `MissedTickPolicy`, `MontyHostConfig`, `NewSchedule`, `process`, `PythonHook`, `RunFailureParts`, `RunOutcome`, `RunTimeout`, `Schedule`, `ScheduleId`, `ScheduleLimits`, `ScheduleName`, `ScheduleSpec`, `ScheduleStore`, `Scheduler`, `SCHEMA_VERSION`, `SeqJitter`, `SqliteScheduleStore`, `StopDecision`, `StoreError`, `StoreErrorKind`, `SystemClock`, `SystemJitter`, `Timestamp`, and `WorkerHandle`. `ManualClock` and `SeqJitter` need feature `test-utils`. `MontyHostConfig` needs feature `monty`.
+The crate-root exports, also listed on `boundaries/sc-cron/sc-cron.toml`, are the contract: `Clock`, `CronError`, `CronExpr`, `DEFAULT_RELOAD_POLL`, `DotenvSource`, `DueRun`, `EnvironmentReferenceError`, `EnvironmentReferenceRequest`, `EnvironmentReferenceResolver`, `EnvName`, `EnvOperationRef`, `Generation`, `HOOK_PROTOCOL`, `HookCall`, `HookEnvironment`, `HookEnvironmentHost`, `HookEvent`, `HookOutput`, `HookStatus`, `HookTarget`, `is_identifier`, `JitterSource`, `Job`, `kill_budget`, `ManualClock`, `MAX_ENV_DOCUMENT_BYTES`, `MAX_ENV_DOTENV_SOURCES`, `MAX_ENV_ENTRIES`, `MAX_ENV_FILE_BYTES`, `MAX_ENV_NAME_BYTES`, `MAX_ENV_PATH_BYTES`, `MAX_ENV_REFERENCE_BYTES`, `MAX_ENV_SNAPSHOT_BYTES`, `MAX_ENV_VALUE_BYTES`, `MAX_EXPR_LEN`, `MAX_HOOK_OUTPUT_BYTES`, `MAX_HOOK_SOURCE_BYTES`, `MAX_NAME_LEN`, `MAX_PAYLOAD_BYTES`, `MAX_TIMEOUT`, `MissedTickPolicy`, `MontyHostConfig`, `NewSchedule`, `process`, `PythonHook`, `RunFailureParts`, `RunOutcome`, `RunTimeout`, `Schedule`, `ScheduleId`, `ScheduleLimits`, `ScheduleName`, `ScheduleSpec`, `ScheduleStore`, `Scheduler`, `SCHEMA_VERSION`, `SeqJitter`, `SqliteScheduleStore`, `StopDecision`, `StoreError`, `StoreErrorKind`, `SystemClock`, `SystemJitter`, `Timestamp`, and `WorkerHandle`. `ManualClock` and `SeqJitter` need feature `test-utils`. `MontyHostConfig` needs feature `monty`.
 
 A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule row points at one of them. This crate does not know whether that method talks to beads or to Postgres.
 

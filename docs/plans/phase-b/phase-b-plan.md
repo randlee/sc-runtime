@@ -106,12 +106,12 @@ head; it does not relabel or materially expand b-10 through b-12.
 | `sc-cron` (Monty host bridge) | `b-10` | `render_template` resumed inside `monty_run::drive_feed` / `execute_feed_with_compose_program`; default `sc-compose` on `PATH` | `b-9`, for `HookTarget::Monty`. Branch `integrate/phase-b-monty` |
 | benchmark platform and Monty reports | `b-11` | benchmark-run skill, multi-subsystem layout (`scripts/benchmark/<subsystem>/`, `site/reports/benchmark-<subsystem>/`), HTML code examples, publish-preflight `benchmark-pass` gate, first subsystem `monty` with campaign case `production_bridge` | `b-10`, for the ext fn `render_template` |
 | `sc-cron` (schedule row limit) | `b-12` | optional embedder `max_schedule_rows`, template sc-config default 10, ADR-RUN-0014 implementation | `b-9` (on `develop`; parallel with Monty track) |
-| injected observability contract | `b-13` | upstream non-blocking types-only contract adoption, ADR/REQ amendments, boundary allowlists, public injection signatures, Noop defaults, whole jitter/store/process/Monty component propagation and events, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches; Track B Monty is already present in the `develop` baseline |
+| injected observability contract | `b-13` | upstream non-blocking types-only contract adoption, generated-workspace and timeout authority amendments, boundary allowlists, public injection signatures, Noop defaults, whole jitter/store/process/Monty component propagation and events, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches; Track B Monty is already present in the `develop` baseline |
 | `sc-runtime` canonical events | `b-14` | HTTP request lifecycle events through the injected handle | `b-13` |
 | `sc-cron` canonical events | `b-15` | due-run/worker event taxonomy and residual stable failure tokens | `b-13`, which owns scheduler and component logger seams plus component-owned events |
 | generated Monty product surface | `b-16` | both template dependency inventories, daemon Cargo `cron`/`monty` features, checked trusted-source hook example, product documentation | `b-10` host artifact and b-13 graph/REQ amendments; parallel with b-14 and b-15 |
 | shared Python/Monty hook environment | `b-17` | daemon process-name allowlist; per-schedule absolute `.env`, set, reference, and clear operations; one Python/Monty snapshot; release-v1 schema consolidation; generated config wiring | `b-15` final cron call sites and b-16 generated feature/example |
-| generated observability composition and release proof | `b-18` | one Arc-owned logger injected into runtime and real scheduler; HTTP+cron JSONL; exact pinned-kit install and complete installed-output ownership; sc-publish `0.1.1` order/preflight and registry-only release build | `b-14`, `b-17`; human release authorization and credentials |
+| generated observability composition and release proof | `b-18` | one Arc-owned logger injected into runtime and real scheduler; HTTP+cron JSONL; exact pinned-kit install and complete installed-output ownership; sc-publish `0.1.1` order/preflight, registry-only release build, and same-commit `v0.1.1` tag | `b-14`, `b-17`; human release authorization and credentials |
 
 ### Continuation boundary edges
 
@@ -120,8 +120,8 @@ head; it does not relabel or materially expand b-10 through b-12.
 | upstream observability crates | published `CanonicalLog`, `NoopCanonicalLog`, `SharedCanonicalLog`; `CanonicalLog for v2::Logger` | no upstream source path is owned here | external entry prerequisite |
 | `BOUNDARY-sc-runtime` | direct `sc-observability-types`; `DaemonBuilder::logger(SharedCanonicalLog)` with fixed `sc-runtime` Noop | `sc-observability`, OTLP, config, and cron | b-13 contract; b-14 event implementation |
 | `BOUNDARY-sc-cron` | direct `sc-observability-types`; `SqliteScheduleStore::open_with_logger`, the sole coherent `Scheduler::open_with_logger` that internally constructs logger-aware `SystemJitter`, `supervise_with_logger`, logger-aware Python hook API, and internal Monty propagation, all with source-compatible Noop legacy entry points | full observability runtime and every other workspace library | b-13 contract/component/hook API; b-15 worker call site and worker/due-run events |
-| generated daemon | full logger in one composition root; Arc coercion and injection to both libraries | libraries do not depend back on daemon | b-16 owns both template Cargo inventories; b-17 owns hook-environment config; b-18 owns observability wiring and registry-release proof |
-| Python/Monty hook environment | daemon-scoped process-name allowlist plus schedule `.env`, set, reference, and clear operations; empty defaults; identical resolved snapshot for Python and Monty | implicit caller capture, full daemon inheritance, value-bearing logs, relative `.env` paths, Rust pseudo-sandboxing | b-17 |
+| generated daemon | direct full logger/types/transport/command edges in one composition root; Arc coercion and injection to both libraries; optional cron/monty features | libraries do not depend back on daemon | b-13 owns graph authority; b-16 owns both template Cargo inventories; b-17 owns hook-environment config; b-18 owns observability wiring and registry-release proof |
+| Python/Monty hook environment | daemon-scoped process-name and exact-file/root allowlists plus schedule `.env`, set, reference, and clear operations; three empty generated defaults; identical resolved snapshot for Python and Monty | implicit caller capture, full daemon inheritance, value-bearing debug/log paths, relative `.env` paths, Rust pseudo-sandboxing | b-17 |
 | generated Monty example | opt-in `monty` forwards trusted embedding-chosen in-process source to `sc-cron/monty`; allowed render-only hosts and filtered `Getenv`/`GetEnviron` | untrusted source, any sandbox claim, root selection, arbitrary compose subcommands, or other OS calls; host allowlisting does not remove abort risk | b-16 feature/example; b-17 environment extension |
 
 At the planning baseline, both library boundary manifests allow `tracing` and
@@ -184,7 +184,7 @@ does not require every embedder to ship `sc-compose`.
 | canonical HTTP event taxonomy | b-14 `observability_http` test | b-18 consumes the events in its generated-process proof |
 | canonical cron event taxonomy | b-15 `observability` test | b-17 preserves and b-18 consumes the events |
 | generated `cron`/`monty` product surface and trusted-source example | b-16 `test_monty_example` | b-17 extends the example for environment inputs without reopening its Cargo features |
-| shared Python/Monty hook environment and release-v1 schedule schema | b-17 `hook_environment`, `monty_host_bridge`, and `test_cron_environment` | b-18 consumes the generated configuration and real scheduler path |
+| shared Python/Monty hook environment and release-v1 schedule schema | b-17 `hook_environment`, `monty_host_bridge`, `test_cron_environment`, and the `windows-latest` parity job | b-18 consumes the generated configuration and real scheduler path |
 | generated composition, JSONL, release, and signal-shutdown proof | b-18 `test_observability` and consumer preflight | none; this is the continuation integration close |
 
 Static review must parse the six frontmatter blocks, reject duplicate exact
@@ -261,7 +261,7 @@ REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../.
 `b-9` and `b-10` are governed by [REQ-CRON-0001](../../sc-cron/requirements.md) through [REQ-CRON-0005](../../sc-cron/requirements.md) and [ADR-RUN-0013](../../architecture.md). `b-11` is governed by REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0005, REQ-RUN-0005, and NFR-RUN-0005, plus [ADR-RUN-0015](../../architecture.md) (not REQ-CRON-0002 or REQ-CRON-0004). **`b-12`** implements [ADR-RUN-0014](../../architecture.md) ([sprint-b-12-sc-cron-schedule-row-limit.md](sprint-b-12-sc-cron-schedule-row-limit.md)). `REQ-CRON-0003` on `develop` already carries the Monty sentence (`b-9` landed). The `render_template` sentence is a `b-10` deliverable.
 
 `b-13` through `b-18` are governed by REQ-RUN-0002 through REQ-RUN-0005,
-REQ-RUN-0309, REQ-RUN-0503, REQ-RUN-0701, REQ-RUN-0702, REQ-RT-0001,
+REQ-RUN-0301, REQ-RUN-0309, REQ-RUN-0503, REQ-RUN-0701, REQ-RUN-0702, REQ-RT-0001,
 REQ-RT-0004, REQ-RT-0005, NFR-RT-0001 through
 NFR-RT-0004, REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0004, REQ-CRON-0005,
 REQ-CRON-0019, NFR-CRON-0001, NFR-CRON-0002, NFR-RUN-0002,
@@ -279,7 +279,8 @@ Matching published patches of `sc-observability-types` and
 `sc-observability` at `1.5.1` are an entry prerequisite, not
 repository-owned work. b-13 establishes but does not publish this repository's
 `0.1.1` contract; b-18 closes only after the human-authorized sc-publish order
-and a no-checkout-patch registry render succeed.
+and a no-checkout-patch registry render succeed, with the publication/proof
+commit tagged `v0.1.1` before any further source or manifest change.
 
 ## Out of this phase
 

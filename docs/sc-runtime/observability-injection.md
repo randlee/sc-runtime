@@ -8,7 +8,8 @@
 A project rendered from `template/` uses the caret-compatible requirement
 **`sc-observability` 1.5.1** (with exact `1.5.1` lock resolution) in
 `main`, logs to the same on-disk layout as other SC consumers, and **injects**
-that logger into workspace libraries (`sc-runtime`, `sc-cron`, …) so they emit
+that logger into the two participating workspace libraries (`sc-runtime` and
+`sc-cron`) so they emit
 **`LogEvent`** records with canonical **`TargetCategory`** / **`ActionName`**
 fields—not ad hoc `tracing` key/value pairs that never reach JSONL sinks.
 
@@ -37,6 +38,11 @@ path. Queue-full and disconnected rejection returns an immediate
 `EventError`; library callers apply the best-effort policy below.
 This repository consumes those releases; it does not own their source or
 publication. `Logger` is not assumed to be `Clone`.
+The trait is a trusted synchronous injection boundary: custom implementations
+must return promptly, perform no blocking sink I/O or capacity wait, and must
+not panic. The libraries do not spawn or time-box `emit`; their non-blocking
+guarantee is proven for the published Logger adapter, Noop, and supplied test
+doubles rather than for an adversarial third-party implementation.
 
 `named_or_default` never exposes validation failure: the runtime and cron
 legacy constructors use the fixed names `sc-runtime` and `sc-cron`, with the
@@ -151,8 +157,11 @@ failure codes live only in `Diagnostic.code`, never in the arbitrary fields
 map. Successful events and arbitrary application 5xx responses have no
 diagnostic.
 
-The shared fields map uses string values for method, path, schedule, target,
-hook stage, and secret-free error detail; it uses non-negative integers for
+The HTTP `path` field is the Axum matched-route template (for example
+`/widgets/{id}`), never the raw URI, query string, or path-parameter value; an
+unmatched route uses the fixed value `<unmatched>`. The shared fields map uses
+string values for method, path, schedule, target, hook stage, and secret-free
+error detail; it uses non-negative integers for
 status, `elapsed_ms`, `deadline_remaining_ms`, attempt, and pid. Outcomes are
 the typed labels `success`, `client_error`, `server_error`, `timeout`,
 `fenced`, `partial`, `stopped`, or `failed`. A diagnostic repeats the event
@@ -191,6 +200,8 @@ The repository public crates move to workspace version `0.1.1`; b-13 makes
 sc-publish consumer update, real installation and complete output sync from
 the exact pinned kit revision, authorization/order proof, and registry-only
 generated build.
+The publication evidence and registry-only proof bind to one source commit,
+which is tagged `v0.1.1` without an intervening source or manifest change.
 The currently pinned kit is not a valid b-18 input because it installs an
 upstream `docs/sprints/**` artifact. b-18 remains blocked until an exact later
 revision excludes that class; its inventory gate must enumerate installed

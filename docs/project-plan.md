@@ -45,7 +45,9 @@ environment and release-v1 sc-cron schema baseline; b-18 owns the sc-publish
 consumer update, a real install and complete synchronization from the exact
 pinned kit revision, the human-authorized five-crate publish order, and the
 registry-only generated proof plus isolated-CI SIGINT/SIGTERM lifecycle
-proof. b-18 is blocked until an exact later kit
+proof. Publication evidence and the registry-only proof are produced from one
+unchanged source commit and that exact commit is tagged `v0.1.1`. b-18 is
+blocked until an exact later kit
 revision excludes `docs/sprints/**`; the current pin is not a valid input.
 
 | Sprint | Plan | Status | Branch |

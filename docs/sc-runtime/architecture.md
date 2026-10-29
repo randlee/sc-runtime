@@ -17,13 +17,14 @@ and binding; an ADR changes only through a later ADR that names it.
 
 ## Role
 
-The single assembly point. It is the only one of the four library crates that
-may depend on the others, and it is a dependency of the daemon only. It
+The single assembly point. It is the only workspace library crate that may
+depend on the core transport/command crates, and it is a dependency of the
+daemon only. It
 depends on `sc-transport` and `sc-command`, each with the `server` feature.
 The edge `sc-runtime` → `sc-config` is absent
 ([ADR-RUN-0003](../architecture.md), [NFR-RT-0003](requirements.md)).
 [NFR-RT-0003](requirements.md) owns this crate's allowed-dependency list:
-`sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`, `utoipa-axum`,
+`sc-transport`, `sc-command`, `sc-observability-types`, `axum`, `tokio`, `fd-lock`, `utoipa-axum`,
 `utoipa`, `serde`, `rmcp`, `tracing`, and optional `tempfile` behind `test-util`.
 Everything it receives from the project (config, stores, router, MCP service)
 it passes through untouched. Observability is **not** initialised here; the

@@ -62,20 +62,30 @@ async fn main() -> ExitCode {
         Ok(cfg) => cfg,
         Err(e) => return report(e),
     };
-    // observability is initialised by the project, not by sc-runtime
-    let _obs = sc_observability::init(cfg.logging.clone());
+    // observability is built and retained by the project, not by sc-runtime
+    let observability = match daemon::observability::Observability::build(
+        APP_NAME, log_root, &cfg.logging,
+    ) {
+        Ok(owner) => owner,
+        Err(e) => return report_observability(e),
+    };
+    let logger = observability.shared_log();
 
     let app = match sc_transport::AppName::new("my-app") {
         Ok(app) => app,
         Err(e) => return report(e),
     };
     let result = sc_runtime::Daemon::builder(&app, &cfg.daemon)
+        .logger(logger.clone())
         .stores(|| async { Stores::open(&cfg.stores).await })   // project-defined struct
         .routes(|stores| routes::router(stores))                // utoipa_axum::OpenApiRouter
         .mcp(|stores| mcp::service(stores))                     // optional; an rmcp service
         .run()
         .await;
-    exit_code(result)
+    drop(logger);
+    let shutdown = observability.shutdown();
+    // project helper preserves a run error when shutdown also fails
+    exit_code(prefer_run_error(result, shutdown))
 }
 ```
 
@@ -420,9 +430,15 @@ The same six-step sequence MUST run when shutdown is started by the
 crate-private trigger that `testing::DaemonFixture` uses to stop its own
 daemon ([REQ-RT-0006](requirements.md)). That trigger MUST NOT be public.
 
-**OPEN:** the drain timeout, that is how long shutdown waits for in-flight
-requests before giving up, and what `run()` returns if it is exceeded, is not
-stated by the design.
+The request-handler timeout and shutdown drain timeout are each 30 seconds.
+When the handler deadline wins, the middleware returns the existing 503
+envelope with code `RUNTIME.REQUEST_TIMEOUT`. When shutdown's drain deadline
+wins first, it returns the existing 503 envelope with code
+`RUNTIME.DRAIN_TIMEOUT`. In both cases the handler future is dropped, the
+shutdown sequence continues, and a signal-initiated `run()` still returns
+`Ok(())` after listener/endpoint/instance-lock cleanup. These constants and
+wire outcomes are existing runtime behavior; Phase B observability reports
+them but does not change them.
 
 **OPEN:** Windows signal handling beyond Ctrl-C (Ctrl-Break, console close,
 service stop) and the API used to receive it are not stated by the design.
@@ -456,6 +472,13 @@ machine, never on a developer's host
    it is decided: a `#[cfg(windows)]` test sends `CTRL_C_EVENT` to a child
    daemon while a request is in flight and asserts the client receives the
    complete successful response and the child exits with the success code.
+7. An in-process coordinated test proves a handler exceeding 30 seconds gets
+   the 503 `RUNTIME.REQUEST_TIMEOUT` envelope and that no later terminal
+   response is emitted for that request.
+8. A separate coordinated shutdown test proves an in-flight handler exceeding
+   the 30-second drain gets the 503 `RUNTIME.DRAIN_TIMEOUT` envelope, after
+   which endpoint and instance-lock cleanup complete and `run()` returns
+   `Ok(())`.
 
 ---
 
@@ -794,12 +817,9 @@ machine, never on a developer's host
   free function, no public macro, and no `pub use` of an item from another
   crate.
 
-**OPEN:** whether a generated project's `daemon` crate takes `sc-command` as
-a direct dependency or through a re-export from `sc-runtime` is not decided
-(owner: [REQ-RUN-0301](../requirements.md)); the `service` crate takes it
-directly, because it may not depend on `sc-runtime`. If the re-export
-is chosen, it MUST be added to the table above as a further kind of item;
-until then no re-export is allowed.
+The generated `daemon` and `service` crates take `sc-command` directly as
+fixed by [REQ-RUN-0301](../requirements.md). `sc-runtime` does not re-export
+it, so the closed public-surface table above remains complete.
 
 ### Rationale
 

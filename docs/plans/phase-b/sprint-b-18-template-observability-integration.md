@@ -14,6 +14,7 @@ requirements:
   - REQ-RUN-0003
   - REQ-RUN-0004
   - REQ-RUN-0005
+  - REQ-RUN-0301
   - REQ-RUN-0309
   - REQ-RUN-0503
   - REQ-RUN-0701
@@ -26,6 +27,7 @@ requirements:
   - NFR-RT-0003
   - NFR-RT-0004
   - REQ-CRON-0003
+  - REQ-CRON-0004
   - REQ-CRON-0005
   - REQ-CRON-0019
   - NFR-CRON-0002
@@ -228,7 +230,7 @@ pair the store and `RunCoord` handle with a differently configured jitter.
 `main` builds `hook_environment` from generated daemon config through b-17's
 typed builder, attaches the application's reference resolver when it has one,
 and passes the completed host policy into `cron::open`. It retains empty
-defaults, daemon-name allowlist, authorized absolute dotenv roots, and the
+defaults, daemon-name allowlist, authorized exact dotenv files/roots, and the
 resolver; `cron::open` does not recreate or overwrite that policy. Final
 composition does not weaken it. `with_hook_environment` applies for
 every `cron` build; `with_monty_host` is compiled and applied only when the
@@ -273,10 +275,10 @@ the three literal codes above and do not duplicate the layout.
 
 ## Required work and deliverables
 
-1. REQ-RUN-0004 / REQ-RUN-0309: change generated `Observability` to Arc ownership and expose only the
+1. ADR-RUN-0004 / REQ-RUN-0004 / REQ-RUN-0309: change generated `Observability` to Arc ownership and expose only the
    types-level shared handle to library consumers.
-2. REQ-RT-0001 / REQ-RT-0004: inject that handle into `DaemonBuilder` for every layout.
-3. REQ-CRON-0003 / REQ-CRON-0005: under the b-16 `cron` feature, use b-13's
+2. ADR-RT-0001 / REQ-RT-0001 / REQ-RT-0004: inject that handle into `DaemonBuilder` for every layout.
+3. ADR-RUN-0013 / REQ-RUN-0301 / REQ-CRON-0003 / REQ-CRON-0004 / REQ-CRON-0005: under the b-16 `cron` feature, use b-13's
    `Scheduler::open_with_logger`, which internally constructs the concrete
    logger-aware `SystemJitter`, to open the scheduler
    database below the instance root, apply configured limits, attach the same handle, and retain
@@ -325,6 +327,9 @@ the three literal codes above and do not duplicate the layout.
    a human release owner with crates.io credentials must authorize and observe
    the generated release workflow. This repository neither publishes nor
    claims authority over the upstream observability `1.5.1` pair.
+   The publication evidence, registry-only proof, and `v0.1.1` tag bind to
+   the same source commit; no manifest or source change is allowed between
+   them.
 8. REQ-RUN-0702: after the five internal `0.1.1` crates are published, render
    with `scripts/new_project.py --release`, assert there is no
    `[patch.crates-io]` or path override, and build/test the generated daemon
@@ -354,15 +359,17 @@ the three literal codes above and do not duplicate the layout.
    NFR-RT-0003 / NFR-RT-0004: `test_observability` passes only when the
    rendered daemon injects through unchanged builder typestate and writes
    correlated canonical HTTP events to its configured JSONL file.
-3. REQ-CRON-0005 / ADR-RUN-0014: `test_schedule_limit_mapping` and the full
+3. REQ-CRON-0004 / REQ-CRON-0005 / ADR-RUN-0014: `test_schedule_limit_mapping` and the full
    `test_observability` suite pass only when the real generated scheduler
    writes the real cron attachment event and maps `0`/`null`/positive limits
    exactly, without a fake emitter in this integration proof.
    REQ-CRON-0019 / NFR-CRON-0002 / ADR-RUN-0016:
-   `test_cron_environment` reruns against final `cron::open` composition and
-   carries a recording resolver through generated `main`'s builder and the real
-   `cron::open` argument, proving typed policy, empty defaults, and redaction
-   wiring survive observability integration.
+   `test_observability` carries a recording resolver through generated
+   `main`'s builder and the real `cron::open` argument, proving typed policy,
+   all three empty administrator defaults, exact-file/root authorization, and
+   redaction wiring survive final observability composition. b-17's
+   `test_cron_environment` reruns unchanged as a regression root rather than
+   becoming a b-18-owned test file.
 4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: b-14/b-15
    rejecting-emitter contract tests remain the authoritative
    immediate, best-effort proof; `test_observability` passes only for reachable
@@ -381,7 +388,8 @@ the three literal codes above and do not duplicate the layout.
    from the registry with no checkout patch. The PR workflow has exactly one
    matrix entry per answers fixture, and the sqlite-mcp entry closes the
    exact generate -> setup -> lint -> test -> build-cli -> build-daemon
-   no-source-edits sequence.
+   no-source-edits sequence. `v0.1.1` resolves to the exact
+   publication/proof commit.
 7. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006:
    `test_signal_shutdown_isolated_ci` passes in the dedicated GitHub-hosted
    ephemeral job for both real SIGINT and SIGTERM paths with
@@ -436,6 +444,7 @@ cargo test --manifest-path generated/test-observability/Cargo.toml -p widget-app
 cargo +1.96.1 check --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon -e normal
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
+test "$(git rev-list -n 1 v0.1.1)" = "$(git rev-parse HEAD)"
 just lint gates
 ```
 

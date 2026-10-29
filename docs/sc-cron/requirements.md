@@ -23,7 +23,7 @@ A schedule row names the in-process `Job`, a Python module, or a third target, `
 
 ## REQ-CRON-0004: One configuration table
 
-The crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
+The crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
 
 ## REQ-CRON-0005: One error enum
 
@@ -69,7 +69,9 @@ Host-deadline paths record bare `RunOutcome::TimedOut` with no code token in the
 Python and Monty schedule rows share one `HookEnvironment`; existing
 constructors default it to empty. A daemon-scoped `HookEnvironmentHost` names
 which daemon-process variables may be inherited, authorizes absolute `.env`
-files or canonical roots, and supplies an optional reference resolver. Every
+files or canonical roots, and supplies an optional reference resolver. The
+generated administrator config exposes empty-by-default `allow_process`,
+`allow_dotenv_files`, and `allow_dotenv_roots` arrays. Every
 host default is empty. The crate never infers or captures an invoking caller's
 environment. The generated daemon passes a prebuilt host policy into scheduler
 composition so an application-provided resolver is preserved.
@@ -120,7 +122,7 @@ This item owns the third-party crates `sc-cron` may depend on. The `allowed_depe
 ## NFR-CRON-0002: Environment isolation and redaction
 
 Environment names use `[A-Za-z_][A-Za-z0-9_]*`. Construction, persistence,
-row decode, and execution enforce 128 entries, 16 KiB per stored/resolved
+row decode, and execution enforce 256 bytes per name, 16 `.env` sources, 128 entries, 16 KiB per stored/resolved
 value, 4 KiB per reference locator/path, a 32,000-byte encoded final block, a
 256 KiB canonical document, and a 1 MiB dotenv file. Names,
 paths, values, and references are UTF-8 and NUL-free; ASCII case-fold name
@@ -131,14 +133,18 @@ Canonical path authorization follows symlinks before checking an exact
 file/root policy; authorization precedes missing classification. Lookup and
 enumeration preserve spelling on Unix; Windows runtime keys are uppercased for
 both Python and Monty and lookup is case-insensitive, while stored config keeps
-the original spelling. Python and compose executables are
-resolved to absolute paths from daemon launch policy before child `PATH` is
-cleared.
+the original spelling. Python and compose executables are resolved before
+child `PATH` is cleared: basenames use daemon launch `PATH`/Windows `PATHEXT`,
+absolute paths are retained, and relative paths with components use the
+daemon current directory captured when hook/host configuration is built.
 
-Set values, resolved values, file contents, and reference strings never appear
-in configuration `Debug`, scheduled errors, recovery text, `RunOutcome`,
-tracing, canonical events, or persisted stop reasons. Direct `HookOutput`
-field access is the sole trusted raw-output exception. Tests make Python,
+Set values, resolved values, file contents, and reference strings are never
+copied from those sources into configuration `Debug`, scheduled errors,
+recovery text, `RunOutcome`, tracing, canonical events, or persisted stop
+reasons. Stable metadata that happens to equal a short value is not rewritten.
+`ChildEnv`, `ChildSpec`, and `PythonHook` use value-free custom `Debug` just
+like the environment model. Direct `HookOutput` field access is the sole
+trusted raw-output exception. Tests make Python,
 Monty, compose, and resolver paths echo canaries and prove redaction, positive
 delivery, and absence of a non-allowlisted daemon secret. Resolution performs
 file I/O off the async hot path, holds no store connection or synchronous lock

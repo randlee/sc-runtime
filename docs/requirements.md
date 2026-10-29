@@ -88,7 +88,7 @@ each waits until a project asks for it.
 
 ---
 
-## REQ-RUN-0001: Repository layout: one workspace, four library crates
+## REQ-RUN-0001: Repository layout: one workspace and its library crates
 
 **Status:** Active  
 
@@ -97,7 +97,7 @@ each waits until a project asks for it.
 The GitHub repository `randlee/sc-runtime` MUST contain one Cargo workspace,
 declared in the root `Cargo.toml`.
 
-The workspace members MUST be exactly these library crates. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md), [ADR-RUN-0013](architecture.md)): `sc-runtime-db-sqlite` and `sc-cron` are members. Neither is a store the daemon opens, and the template does not depend on either.
+The workspace members MUST be exactly these library crates. Amended 2026-10-25 ([ADR-RUN-0012](architecture.md), [ADR-RUN-0013](architecture.md)): `sc-runtime-db-sqlite` and `sc-cron` are members. `sc-runtime-db-sqlite` is not a store the generated daemon opens and is not a template dependency. The generated daemon may depend on `sc-cron` only through the optional `cron` feature fixed by [REQ-RUN-0301](requirements.md); feature-off generated builds do not link it.
 
 | Member path | Crate name | Purpose |
 |---|---|---|
@@ -483,9 +483,9 @@ criterion 5 `cargo tree` checks. sc-lint 0.8.0 cannot fail a crates.io edge,
 so b-13's types-only rule is measured with direct-depth `cargo tree` checks
 for `sc-runtime` and `sc-cron`; each may print `sc-observability-types ` but
 must print no direct `sc-observability ` or `sc-observability-otlp ` line.
-`allowed_dependents` is empty for
-`sc-config` and `sc-runtime`, and `sc-runtime` only for `sc-transport` and
-`sc-command`. The edge `sc-runtime` -> `sc-config` is absent, so it is not an
+`allowed_dependents` is empty for `sc-config`, `sc-runtime`,
+`sc-runtime-db-sqlite`, and `sc-cron`, and is `sc-runtime` only for
+`sc-transport` and `sc-command`. The edge `sc-runtime` -> `sc-config` is absent, so it is not an
 `allowed_dependents` entry and it is a `forbidden_edges` entry
 `sc-runtime -> sc-config`. The measurement is the sprint a-1 evidence record
 for the other edges, and sprint a-5 for this absent edge.
@@ -550,9 +550,10 @@ built in parallel without touching each other.
    `forbidden_edges` on sc-lint 0.8.0; criterion 5 enforces those names with
    `cargo tree`. The obligation-3 table states the full policy. No manifest of
    `sc-config`, `sc-transport` or `sc-command` lists another workspace crate
-   under `allowed_dependencies`. `allowed_dependents` is empty for `sc-config`
-   and for `sc-runtime`, and is `sc-runtime` only for `sc-transport` and
-   `sc-command`. The open `sc-runtime` → `sc-config` MAY is not copied into
+   under `allowed_dependencies`. `allowed_dependents` is empty for `sc-config`,
+   `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`, and is `sc-runtime`
+   only for `sc-transport` and `sc-command`. The absent `sc-runtime` →
+   `sc-config` edge is not copied into
    `allowed_dependents`. Sprint a-1 recorded this split in
    `docs/architecture.md`.
 3. `just lint` invokes `sc-lint-boundary` (inspect the recipe) and exits 0 on
@@ -1467,7 +1468,7 @@ layout renders SQLite, that layout's one sqlx engine, and the adaptor.
    | each `<project>-store-*` the layout renders | `sqlx` with that engine's feature | `sqlx` 0.9 checks queries against one database per crate |
    | `<project>-store-adaptor`, on a two-store layout | `<project>-schema` and the store crates whose rows it moves | moves rows between those stores |
    | `<project>-service` | `<project>-types`; the adaptor on a two-store layout, or that one store on a one-store layout; the `sc-command` items `OpError` (default features, see below) | the single code path to SQL, called by REST handlers and MCP tools |
-   | `<project>-daemon` | `<project>-service`, `<project>-types`, `sc-runtime`, `sc-config`; the `sc-command` items `Envelope<T>` and `into_mcp()`, which need its `server` cargo feature (see below) | owns the wiring: which routes exist and what they call |
+   | `<project>-daemon` | `<project>-service`, `<project>-types`, `sc-runtime`, `sc-config`, `sc-transport`, `sc-observability`, and `sc-observability-types`; direct `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron` | owns the wiring and the full-observability composition root; optional cron is embedding policy |
    | `<project>-cli` | `<project>-types`, `sc-transport`, `sc-command`, `sc-config` | thin HTTP client |
 
    Amended 2026-10-25. A one-store layout has no adaptor row. A no-database
@@ -1501,20 +1502,21 @@ layout renders SQLite, that layout's one sqlx engine, and the adaptor.
    project in the synaptic-canvas port registry. No file under `template/`
    and none of the four library crates may hard-code a TCP port.
 
+Generated feature `cron` MUST enable the optional daemon dependency on
+`sc-cron`; generated feature `monty` MUST imply `cron` and enable
+`sc-cron/monty`. Neither feature is in the default set. The daemon takes
+`sc-observability-types` directly because its composition root names
+`SharedCanonicalLog`; reaching the types crate only transitively through the
+full logger is not sufficient for a public Rust signature.
+
 `service` MUST take `sc-command` (default features) as a direct dependency:
 by rule 7 it may not have a dependency on `sc-runtime`, so a re-export from
 `sc-runtime` cannot reach it.
 
-**OPEN:** whether `daemon` takes `sc-command` as a direct dependency with
-`features = ["server"]`, or reaches it through a re-export from `sc-runtime`,
-is not decided. A re-export would have to be added to the public surface of
-`sc-runtime`, which [NFR-RT-0001](sc-runtime/requirements.md) limits.
-
-**OPEN:** which generated crate defines the project's config struct
-`AppConfig`, and whether `cli` and `daemon` load the same type, is not
-decided. The constraints are: `cli` cannot take it from `daemon` or
-`service` (forbidden edges above), and `api-types` may depend only on
-`serde`, `schemars` and `utoipa`.
+The generated `daemon` takes `sc-command` directly with
+`features = ["server"]`; `sc-runtime` does not re-export it. The generated
+daemon crate defines `AppConfig`. The CLI loads only its own client-side
+configuration and does not depend on the daemon crate for that type.
 
 **OPEN:** whether the template renders a service definition for the daemon
 (a launchd property list on macOS, and the Linux and Windows equivalents), and
@@ -1566,6 +1568,11 @@ REST and MCP have exactly one place to call.
    appears (once the default-port question above is decided in favour of a
    default, the one registered value in `template/config/default.json` is
    exempt).
+9. A rendered daemon manifest names `sc-config`, `sc-transport`,
+   `sc-command` with `server`, `sc-runtime`, `sc-observability`, and
+   `sc-observability-types` directly. With default features its normal tree
+   contains no `sc-cron`; `--features cron` adds `sc-cron` without Monty, and
+   `--features monty` adds `sc-cron/monty`.
 
 ---
 
@@ -2117,18 +2124,30 @@ This applies to `crates/daemon` of a project rendered from `template/`.
       lives until `main` returns;
    3. assemble and run the daemon with `sc_runtime::Daemon::builder(...)`.
 
-   The shape, with illustrative function names:
+   The shape below fixes the ownership and lifetime, while the generated
+   `daemon::observability` module owns the detailed settings conversion:
 
    ```rust
    let cfg: AppConfig = match sc_config::load("my-app") {
        Ok(cfg) => cfg,
        Err(e) => return report(e),
    };
-   let _obs = sc_observability::init(cfg.logging.clone());
-   let result = sc_runtime::Daemon::builder("my-app", &cfg.daemon)
+   let app = sc_transport::AppName::new(APP_NAME)?;
+   let log_root = resolve_log_root(&cfg, &app)?;
+   let observability = daemon::observability::Observability::build(
+       APP_NAME,
+       log_root,
+       &cfg.logging,
+   )?; // generated main maps this to DAEMON.OBSERVABILITY
+   let logger = observability.shared_log();
+   let result = sc_runtime::Daemon::builder(&app, &cfg.daemon)
+       .logger(logger.clone())
        /* .stores(...).routes(...).mcp(...) */
        .run()
        .await;
+   drop(logger);
+   let shutdown = observability.shutdown();
+   prefer_run_error(result, shutdown)?;
    ```
 
 3. No library crate may initialise, wrap or depend on
@@ -2149,15 +2168,15 @@ This applies to `crates/daemon` of a project rendered from `template/`.
 4. The template MUST NOT add OpenTelemetry export. A project that wants it
    adds `sc-observability-otlp` to its own `daemon` crate.
 5. The template MUST NOT contain a bridge from the `tracing` crate into
-   `sc-observability`; whether such a bridge is acceptable is undecided.
+   `sc-observability`. Phase B resolves the earlier open question in favor of
+   direct injected `LogEvent` emission; no tracing bridge is added.
 
-**OPEN:** the exact `sc-observability` initialisation function, its argument
-type, whether it returns a guard that must be kept alive, and the keys of
-the config's logging section are not stated; the names in the sketch are
-illustrative.
-
-**OPEN:** which generated crate defines `AppConfig` is not decided
-([REQ-RUN-0301](requirements.md) owns the question).
+The Phase B composition contract fixes the concrete path: the generated
+daemon crate defines `AppConfig`; its `observability` module builds
+`LoggerConfig::default_for(ServiceName::new(APP_NAME)?, log_root)`, applies
+the generated logging settings, and calls `LoggerBuilder::build`. It retains
+the resulting `Arc<Logger>` until all injected handles have drained and then
+consumes the generated `Observability` owner with `shutdown(self)`.
 
 ### Rationale
 
@@ -2175,10 +2194,11 @@ is logged.
    `sc-observability = "1.5.1"`, lists no OpenTelemetry crate, and the
    generated lockfile resolves both observability crates exactly to `1.5.1`.
 2. In rendered `crates/daemon/src/main.rs`, the `sc-config` load call comes
-   before the `sc_observability` initialisation call, which comes before
-   `Daemon::builder`. Once it is confirmed that the initialisation call
-   returns a guard: that value is bound to a named variable (not `_`) that
-   lives to the end of `main`.
+   before `daemon::observability::Observability::build`, which comes before
+   `Daemon::builder`. The named `Observability` owner lives until runtime and
+   scheduler workers have drained and every injected handle has been dropped;
+   `shutdown(self)` is then called exactly once. There is no anonymous guard,
+   library-owned construction, or second logger.
 3. In the `randlee/sc-runtime` repository, for each library
    crates, `cargo tree -p <crate> -e normal --prefix none` prints no line
    beginning with `sc-observability ` or `sc-observability-otlp ` (the name
@@ -3618,6 +3638,9 @@ release-mode generated lockfile proves registry resolution with no checkout
 path, git dependency, or `[patch.crates-io]` override. Sprint b-13 records
 this amendment but performs no publication; sprint b-18 owns its single
 integration acceptance root and release evidence.
+The exact commit published and proven by b-18 MUST be tagged `v0.1.1`; no
+source or manifest change may occur between the five crate publications, the
+registry-only generated proof, and that tag.
 
 ### Rationale
 
@@ -3644,6 +3667,9 @@ the point at which generated projects become upgradeable by a normal
    `0.1.1` crates in the order above, records `sc-runtime-db-sqlite` as
    unpublished, and proves a release-mode generated workspace resolves those
    five packages from crates.io without a checkout patch.
+7. `git tag -l v0.1.1` prints `v0.1.1`, the tag resolves to the exact commit
+   recorded by the b-18 publication evidence, and the registry-only generated
+   proof was run against that same source commit.
 
 ---
 
