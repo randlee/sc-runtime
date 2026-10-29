@@ -211,9 +211,16 @@ This requirement applies to each of the four workspace crates: `sc-config`,
 7. Each crate MUST be published to crates.io separately (one
    `cargo publish -p <crate>` per crate).
 
+The Phase B continuation extends, rather than replaces, those Phase A
+obligations: `sc-cron` is the fifth independently packaged public crate. It
+MUST satisfy the same package-metadata, standalone test, README/doctest,
+publishability, and separate-publication obligations. The five-crate publish
+order is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, then
+`sc-cron`; `sc-runtime-db-sqlite` remains unpublished.
+
 This repository and every crate it publishes (`sc-config`, `sc-transport`,
-`sc-command`, `sc-runtime`) MUST be MIT licensed (decided by the owner on
-2026-09-20): the `license` field of each of the four crates MUST be `MIT`,
+`sc-command`, `sc-runtime`, `sc-cron`) MUST be MIT licensed (decided by the owner on
+2026-09-20): the `license` field of each of the five published crates MUST be `MIT`,
 and the repository's `LICENSE` file MUST be the MIT licence text. This says
 nothing about the licence of a generated project, which is a generation
 option ([REQ-RUN-0401](requirements.md)): the generator is also used for
@@ -261,6 +268,9 @@ dependencies.
 5. Each `crates/<crate>/Cargo.toml` sets the six `[package]` fields listed in
    obligation 6, and none of them is inherited from a value that would be
    wrong for that crate.
+6. `cargo test -p sc-cron` and `cargo package --list -p sc-cron` exit 0,
+   `sc-cron` carries the same six package fields, and the authorized release
+   publishes it independently as the fifth crate after `sc-runtime`.
 
 ---
 
@@ -296,6 +306,13 @@ from `template/`. "The four crates" means `sc-config`, `sc-transport`,
    here. It is owned by [REQ-RUN-0301](requirements.md), which holds the
    dependency table of the generated workspace.
 
+The Phase B continuation extends this requirement to the fifth published
+crate, `sc-cron`: when the generated daemon enables its optional `cron`
+feature, every rendered dependency on `sc-cron` MUST retain a crates.io
+version requirement. Checkout validation MAY satisfy that requirement with
+the same `[patch.crates-io]` mechanism above; release-mode generation MUST
+resolve all five crates from the registry without a path or git override.
+
 **OPEN:** who writes the `[patch.crates-io]` entry in the pre-publish case
 (a template option, the driver `scripts/new_project.py`, or the CI workflow)
 is not decided. The same undecided mechanism is what would let template CI
@@ -324,6 +341,9 @@ every project. Everyone who owns a generated project is affected.
    table.
 3. The rendered project contains no directory named `sc-config`,
    `sc-transport`, `sc-command` or `sc-runtime`.
+4. A release-mode render with generated feature `cron` names `sc-cron` by
+   version, contains no path/git override for any of the five crates, and
+   resolves all five from the registry.
 
 ---
 
@@ -439,7 +459,7 @@ state it.
    record the crate's public facade (the items it exports) in
    `[public] facade`, and its allowed dependents, allowed dependencies and
    forbidden edges in `[dependencies]`.
-3. This item owns the edges among the four workspace crates and the
+3. This item owns the edges among all workspace library crates and the
    forbidden edges. The manifests MUST encode exactly this table, and
    [ADR-RUN-0003](architecture.md) and the crate graph in
    `docs/architecture.md` mirror it:
@@ -449,17 +469,21 @@ state it.
    | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
    | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron` | MUST: `sc-observability-types` for the injected canonical logger contract | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
-`sc-observability-types` is an allowed dependency of `sc-command` only.
+`sc-observability-types` is an allowed dependency of `sc-command`,
+`sc-runtime`, and `sc-cron`; the latter two use only the types-level injected
+logger contract. The full `sc-observability` runtime remains forbidden in
+every library crate.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only workspace-member targets in that lint tree; crates.io names use
 criterion 5 `cargo tree` checks. sc-lint 0.8.0 cannot fail a crates.io edge,
-so the `sc-runtime` direct-only rule is `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`
-printing no line beginning with `sc-observability-types `. A transitive line
-through `sc-command` is allowed. `allowed_dependents` is empty for
+so b-13's types-only rule is measured with direct-depth `cargo tree` checks
+for `sc-runtime` and `sc-cron`; each may print `sc-observability-types ` but
+must print no direct `sc-observability ` or `sc-observability-otlp ` line.
+`allowed_dependents` is empty for
 `sc-config` and `sc-runtime`, and `sc-runtime` only for `sc-transport` and
 `sc-command`. The edge `sc-runtime` -> `sc-config` is absent, so it is not an
 `allowed_dependents` entry and it is a `forbidden_edges` entry
@@ -519,7 +543,7 @@ built in parallel without touching each other.
 2. Each manifest's `forbidden_edges` lists `"<owner> -> <target>"` strings
    only when `<target>` is a workspace member of that crate's lint tree at
    the sprint that creates the manifest (the inter-crate forbidden edges
-   among the four library crates, added as each crate lands). Names that are
+   among the workspace library crates, added as each crate lands). Names that are
    crates.io packages (`sc-observability`, `sc-observability-otlp`,
    `sc-observability-types`, `tokio`, `sqlx`) and any obligation-3 target
    that is not a workspace member in that tree are not listed in
@@ -541,15 +565,11 @@ built in parallel without touching each other.
    `cargo tree -p <crate> -e normal --prefix none` prints no line beginning
    with `<name> ` (the name followed by a space) for any `<name>` in that
    crate's "Forbidden edges" cell. For `sc-transport` and `sc-command` the
-   same holds with `--features server` added. For `sc-runtime`,
-   `sc-observability-types` is not in that cell. `cargo tree -p sc-runtime -e normal --depth 1 --prefix none`
-   prints no line beginning with `sc-observability-types `. The same command
-   without `--depth 1` may print that line when the crate arrives through
-   `sc-command`. A direct `sc-runtime` dependency on
-   `sc-observability-types` fails the depth-1 command. Sprint a-1 moved this
-   rule off the manifest because sc-lint 0.8.0 does not report a crates.io
-   forbidden edge. The measurement is the sprint a-1 evidence record in
-   `docs/architecture.md`.
+   same holds with `--features server` added. Direct-depth trees for
+   `sc-runtime` and `sc-cron` each contain `sc-observability-types ` and no
+   `sc-observability ` or `sc-observability-otlp ` line. `sc-config` and
+   `sc-transport` contain none of those three. Sprint b-13 records the
+   types-only edge evidence.
 6. The table in obligation 3, the crate dependency table of
    [ADR-RUN-0003](architecture.md) and the crate graph section of
    `docs/architecture.md` name the same workspace edges and the same
@@ -2082,9 +2102,11 @@ and on a fresh clone without a database.
 This applies to `crates/daemon` of a project rendered from `template/`.
 `sc-observability` is the SC logging crate.
 
-1. `crates/daemon/Cargo.toml` MUST depend on `sc-observability` 1.5.0, the
-   Phase A pin recorded by sprint a-1. The matching
-   `sc-observability-types` pin is 1.5.0. a-4, a-6, and a-7 copy that pair.
+1. `crates/daemon/Cargo.toml` MUST use the normal caret-compatible semver
+   requirement `1.5.1` for `sc-observability`. The matching
+   `sc-observability-types` requirement is `1.5.1`; the generated lockfile
+   proves both resolve exactly to `1.5.1`. These are version requirements,
+   not manifest exact pins.
 2. `crates/daemon/src/main.rs` MUST perform these three steps, in this order:
    1. load the project's configuration with `sc-config` into the project's
       own config struct; on error, report it and return a failure exit code
@@ -2109,14 +2131,17 @@ This applies to `crates/daemon` of a project rendered from `template/`.
        .await;
    ```
 
-3. None of the four library crates may initialise, wrap or depend on
+3. No library crate may initialise, wrap or depend on
    `sc-observability` or its OpenTelemetry export crate
    `sc-observability-otlp`; the forbidden edges are owned by
-   [REQ-RUN-0005](requirements.md). The only observability dependency
-   inside the four library crates is `sc-observability-types` 1.5.0 on
-   `sc-command`. It is not allowed on `sc-transport`. The logging runtime
-   stays forbidden on all four libraries. `Remediation` stays on
-   `sc-command` only. `DaemonNotRunning` carries `code: &'static str`
+   [REQ-RUN-0005](requirements.md). The only observability dependency inside
+   library crates is `sc-observability-types`: `sc-command` retains its
+   tested-minimum caret requirement `1.5.0`, while `sc-runtime` and
+   `sc-cron` require `1.5.1` for the injected canonical logger types. The
+   workspace lockfile may unify all three at exact `1.5.1`. It is not allowed on
+   `sc-config` or `sc-transport`. The logging runtime stays forbidden on all
+   library crates. `Remediation` stays on `sc-command` only.
+   `DaemonNotRunning` carries `code: &'static str`
    (`DAEMON.NOT_RUNNING`) plus the endpoint and the cause, and does not
    carry `sc_observability_types::ErrorCode`
    ([ADR-RUN-0004](architecture.md)). a-4's `sc-command` publishes the
@@ -2146,21 +2171,22 @@ is logged.
 
 ### Success Criteria
 
-1. Rendered `crates/daemon/Cargo.toml` lists `sc-observability` 1.5.0, the
-   Phase A pin, and lists no OpenTelemetry crate.
+1. Rendered `crates/daemon/Cargo.toml` lists the caret-compatible requirement
+   `sc-observability = "1.5.1"`, lists no OpenTelemetry crate, and the
+   generated lockfile resolves both observability crates exactly to `1.5.1`.
 2. In rendered `crates/daemon/src/main.rs`, the `sc-config` load call comes
    before the `sc_observability` initialisation call, which comes before
    `Daemon::builder`. Once it is confirmed that the initialisation call
    returns a guard: that value is bound to a named variable (not `_`) that
    lives to the end of `main`.
-3. In the `randlee/sc-runtime` repository, for each of the four library
+3. In the `randlee/sc-runtime` repository, for each library
    crates, `cargo tree -p <crate> -e normal --prefix none` prints no line
    beginning with `sc-observability ` or `sc-observability-otlp ` (the name
    followed by a space). A line beginning with `sc-observability-types ` is
    expected under `sc-command` and does not match those two names. The
-   same command on `sc-transport` prints no line beginning with
-   `sc-observability-types `. `sc-runtime` follows the depth-1 rule in
-   [REQ-RUN-0005](requirements.md) criterion 5.
+   same command on `sc-config` and `sc-transport` prints no line beginning
+   with `sc-observability-types `. `sc-runtime` and `sc-cron` follow the
+   direct types-only rule in [REQ-RUN-0005](requirements.md) criterion 5.
 4. `grep -rn 'tracing' template/crates/daemon` finds no bridge or subscriber
    set-up code.
 5. Rendered `main.rs` contains no `unwrap`, `expect` or `panic!` on the
@@ -3209,7 +3235,7 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
    between that writes to that directory, and it exits 0.
 4. The same job then runs `just test` in `$RUNNER_TEMP/app`, and it exits 0.
    `just test` includes the observability grep: `crates/daemon` requires
-   `sc-observability` at 1.5.0, does not require `sc-observability-otlp`, and
+   `sc-observability` at 1.5.1, does not require `sc-observability-otlp`, and
    the logging-crate token does not match `sc-observability-types`.
 5. The same job then runs `just build-cli` in `$RUNNER_TEMP/app`, and it
    exits 0. That recipe includes `cargo tree -p <project>-cli -e normal --prefix none`.
@@ -3449,7 +3475,7 @@ this order and MUST fail when any of them exits non-zero:
 3. `just lint` inside the generated project at `<dest>`.
 4. `just test` inside the generated project at `<dest>`. It includes the
    observability grep: rendered `crates/daemon` requires `sc-observability`
-   at 1.5.0, does not require `sc-observability-otlp`, and the logging-crate
+   at 1.5.1, does not require `sc-observability-otlp`, and the logging-crate
    token does not match `sc-observability-types`.
 5. `just build-cli` inside the generated project at `<dest>`. It includes
    `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
@@ -3583,6 +3609,16 @@ when all of the following hold.
 The version number of each published crate is not constrained by this
 requirement; each crate carries its own version.
 
+Phase B's `0.1.1` continuation is also binding under this requirement. Its
+human-authorized crates.io order is `sc-config` (1), `sc-transport` (2),
+`sc-command` (3), `sc-runtime` (4), then `sc-cron` (5). All five publish at
+`0.1.1`; `sc-runtime-db-sqlite` remains unpublished. Generated manifests use
+normal crates.io version requirements satisfied by `0.1.1`, and the
+release-mode generated lockfile proves registry resolution with no checkout
+path, git dependency, or `[patch.crates-io]` override. Sprint b-13 records
+this amendment but performs no publication; sprint b-17 owns its single
+integration acceptance root and release evidence.
+
 ### Rationale
 
 A generated project must depend on the four crates by crates.io version
@@ -3604,6 +3640,10 @@ the point at which generated projects become upgradeable by a normal
    `Cargo.lock` of a project generated in that run lists the four crates with
    source `registry+https://github.com/rust-lang/crates.io-index`.
 5. `git ls-tree -d v0.1.0 examples/spike` prints nothing.
+6. For the Phase B continuation, the b-17 release evidence records the five
+   `0.1.1` crates in the order above, records `sc-runtime-db-sqlite` as
+   unpublished, and proves a release-mode generated workspace resolves those
+   five packages from crates.io without a checkout patch.
 
 ---
 
@@ -4261,13 +4301,18 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
    executing them on the host, and it MUST say that they were not run. What
    `just test` covers is part of the standard SC `just` system, whose source
    of truth is the sc-lint project; this item constrains only where the tests
-   execute. Such tests exist in two places:
-   this repository's crate tests, and any tests of the generated `cli` and
-   `daemon` binaries that live in `template/` and are rendered into a project
-   ([REQ-RUN-0310](requirements.md) criterion 4). The fixture-matrix workflow
-   ([REQ-RUN-0701](requirements.md)) MUST run the generated project's
-   daemon-process tests on the CI runner for every fixture, after
-   `just test`. That clause is conditional on the selection OPEN below.
+   execute. Such tests exist in two places: this repository's crate tests,
+   and tests of generated `cli` and `daemon` binaries that live in `template/`
+   and are rendered into a project ([REQ-RUN-0310](requirements.md)
+   criterion 4). Phase B fixes selection and detection for the generated
+   real-daemon SIGINT/SIGTERM tests: a dedicated `ubuntu-latest`
+   GitHub-hosted job selects them and is the only workflow/recipe that sets
+   `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`. Before starting a daemon, each
+   test MUST also require `GITHUB_ACTIONS=true` and
+   `RUNNER_ENVIRONMENT=github-hosted`; absence or mismatch of any of the three
+   values fails closed without spawning a process. Setting only the dedicated
+   marker on a developer host is insufficient. Selection of other generated
+   daemon-process tests remains governed by the broader OPEN below.
 4. When a test cannot be made safe on a developer's host, the answer MUST be
    to run it on an isolated machine. It MUST NOT be to add a test-only
    daemon, to weaken the `daemon.lock` singleton
@@ -4299,12 +4344,12 @@ undecided ([REQ-TRN-0002](sc-transport/requirements.md)).
 host-safe tests, or also the daemon-process tests by executing them inside an
 isolated machine when one can be started. It belongs to the standard SC
 `just` system (sc-lint) and applies to every repository, not only this one.  
-**OPEN:** how the tests of obligation 2 are selected and how they detect that
-they are on an isolated machine (an environment marker set by the runner, a
-cargo test filter or `#[ignore]`, a separate `just` recipe) is not decided.
-If the answer adds a `just` recipe, the closed recipe list of the generated
-`Justfile` ([REQ-RUN-0307](requirements.md)) is amended in the same
-change.  
+**OPEN:** beyond the binding Phase B generated SIGINT/SIGTERM scheme above,
+how other tests of obligation 2 are selected and detect an isolated machine
+(a runner marker, cargo test filter, `#[ignore]`, or separate `just` recipe)
+is not decided. If that broader answer adds a `just` recipe, the closed
+recipe list of the generated `Justfile`
+([REQ-RUN-0307](requirements.md)) is amended in the same change.
 The launchd comparison formerly described by deferred REQ-RUN-0206 is not a
 Phase A test. Its future execution venue is decided with that optional layer.
 
@@ -4339,14 +4384,17 @@ test daemon.
    deferred [REQ-RUN-0206](requirements.md)) is
    among the tests obligation 3 governs; none of them executes on a
    developer's host, whichever command started the run.
-3. Run on a machine that is not marked isolated, a test of obligation 2
-   exits without starting a daemon and reports that it needs an isolated
-   machine. This criterion is conditional on the selection and detection OPEN
-   above.
+3. The Phase B generated SIGINT/SIGTERM tests exit without starting a daemon
+   unless all three fixed values are present:
+   `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`, `GITHUB_ACTIONS=true`, and
+   `RUNNER_ENVIRONMENT=github-hosted`. Other obligation-2 tests likewise
+   refuse a non-isolated host, with their broader selection mechanism still
+   governed by the qualified OPEN above.
 4. This repository's crate CI workflow runs this repository's tests of
-   obligation 2, and, once the selection OPEN is decided, the fixture-matrix
-   workflow runs the generated project's tests of obligation 2 for every
-   fixture.
+   obligation 2. A dedicated `ubuntu-latest` GitHub-hosted job runs the Phase
+   B generated SIGINT/SIGTERM tests and sets their dedicated marker. Once the
+   broader selection OPEN is decided, the fixture-matrix workflow also runs
+   the remaining generated-project tests of obligation 2 for every fixture.
 5. After the full test suite has run on a developer's host, no daemon
    process started by a test is still running. The same holds after a run in
    which a fixture was made to fail.

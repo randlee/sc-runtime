@@ -16,11 +16,11 @@ requirements:
   - NFR-CRON-0001
   - NFR-RUN-0005
   - NFR-RUN-0002
-  - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
   - ADR-RUN-0004
   - ADR-RUN-0007
+  - ADR-RUN-0011
   - ADR-RUN-0013
 owned_paths:
   - crates/sc-cron/src/worker.rs
@@ -105,7 +105,7 @@ code, while `TARGET_RESOLVE_FAILED`, `JOB_JOIN_FAILED`, `DUE_JOIN_FAILED`,
 remain explicit origin diagnostics without parsing stored prose.
 
 The interface-owned `cron.scheduler/logger.attached` event is introduced by
-b-13 in `Scheduler::with_logger`; b-13 also owns the jitter/store/process/
+b-13 in `Scheduler::open_with_logger`; b-13 also owns the jitter/store/process/
 compose propagation and component events. This sprint consumes those seams
 and owns only worker and due-run event sites. Timestamps and service names use the types
 contract. Every field and envelope location follows b-13's canonical mapping:
@@ -115,18 +115,19 @@ field keys. Every failed emission is ignored after the attempt.
 
 ## Required work and deliverables
 
-Every numbered item must land production-ready for `sc-cron` boundary
-closure. Every owned trace site and each stable persisted failure shape must
-be migrated and behavior-tested; partial taxonomy coverage cannot close it.
-
 1. REQ-CRON-0001 / REQ-CRON-0003: replace production trace calls in the owned files with canonical events;
    do not change `RunOutcome`, retry, stop, lease, deadline, or kill logic.
+   At the worker-owned call site, pass `RunCoord`'s `SharedCanonicalLog`
+   through `run_target` into b-13's logger-aware `PythonHook` API. `hook.rs`
+   remains wholly b-13-owned, so the sprints never overlap an exact path.
 2. REQ-CRON-0003 / NFR-CRON-0001: preserve PR #84's stable Monty codes (`DUE_JOIN_FAILED`,
    `FEED_JOIN_FAILED`) and compose deadline/process-group implementation.
-3. REQ-CRON-0005 / NFR-RUN-0008: replace persisted `"resolve: ..."` and
+3. REQ-CRON-0005: replace persisted `"resolve: ..."` and
    job-panic prose with exact `CODE: detail; recovery` shapes:
    `TARGET_RESOLVE_FAILED: {detail}; fix hook target configuration and retry`
-   and `JOB_JOIN_FAILED: {detail}; fix the job panic and retry`.
+   and `JOB_JOIN_FAILED: {detail}; fix the job panic and retry`. One typed
+   internal formatter owns these display strings. Structured `LogEvent` is
+   the machine contract; display prose is not public or parseable schema.
 4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0005 / NFR-RUN-0009: test native
    and Monty success/failure paths with a recording emitter and a rejecting
    emitter. Queue-full and disconnected rejection returns immediately and
@@ -134,6 +135,9 @@ be migrated and behavior-tested; partial taxonomy coverage cannot close it.
    where the implementation guarantees it.
 5. NFR-CRON-0001: remove direct tracing calls from owned source. The shared manifest remains
    b-13-owned and dependency cleanup is not part of this sprint.
+6. ADR-RUN-0011: production changes add no sleep or `block_on` call and hold
+   no `std::sync::Mutex` guard across `.await`; deadline-based test polling is
+   exempt.
 
 ## Acceptance criteria
 
@@ -153,6 +157,10 @@ be migrated and behavior-tested; partial taxonomy coverage cannot close it.
    and assert exact target, action, level, outcome, `Diagnostic.code`,
    required fields, terminal `RunOutcome` mapping, and stated
    cardinality; the complete owned-file grep below returns no tracing site.
+7. `boundary:BOUNDARY-sc-cron`: worker tests prove the identical Arc is
+   passed from `RunCoord` through `run_target` into b-13's logger-aware
+   `PythonHook`; the typed formatter is the only producer of the two stable
+   display strings.
 
 ## Required validation
 
@@ -162,8 +170,10 @@ cargo test -p sc-cron
 cargo +1.96.1 test -p sc-cron --features monty
 cargo clippy -p sc-cron --all-targets --all-features -- -D warnings
 cargo check --workspace
-! rg -n 'tracing::|trace!|debug!|info!|warn!|error!' crates/sc-cron/src/worker.rs crates/sc-cron/src/worker/worker_runs.rs crates/sc-cron/src/scheduler/run_due.rs
+! rg -n '#\[(tracing::)?instrument|tracing::|(trace|debug|info|warn|error|event|span|trace_span|debug_span|info_span|warn_span|error_span)!' crates/sc-cron/src
+rg -n 'run_target|PythonHook' crates/sc-cron/src/worker.rs crates/sc-cron/src/worker/worker_runs.rs crates/sc-cron/src/scheduler/run_due.rs
 ! rg -n 'tokio::time::sleep|sleep\(' crates/sc-cron/tests/monty_hook.rs
+just adr-run-0011
 sc-lint lint sc-boundary --root . --config sc-lint.toml
 ```
 

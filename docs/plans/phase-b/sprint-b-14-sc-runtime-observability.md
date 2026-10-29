@@ -17,11 +17,11 @@ requirements:
   - NFR-RT-0004
   - NFR-RUN-0005
   - NFR-RUN-0002
-  - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
   - ADR-RUN-0004
   - ADR-RUN-0007
+  - ADR-RUN-0011
   - ADR-RT-0001
   - ADR-RT-0004
 owned_paths:
@@ -68,17 +68,20 @@ handler response never has its body inspected to manufacture a code.
 
 ## Required work and deliverables
 
-Every numbered item must land production-ready for `sc-runtime` boundary
-closure; no event branch, rejection path, or fixture may remain stubbed or be
-deferred to b-17.
-
 1. REQ-RT-0004: replace `info_span!("http_request", ...)` with the three events above.
-2. REQ-RT-0004 / NFR-RUN-0008: preserve the exact `x-request-id` used by responses and canonical events.
+2. REQ-RT-0004: preserve the exact `x-request-id` used by responses and canonical events.
 3. REQ-RT-0005: preserve existing timeout/drain envelopes and stable codes
    `RUNTIME.REQUEST_TIMEOUT` and `RUNTIME.DRAIN_TIMEOUT`.
 4. NFR-RT-0004 / NFR-RUN-0009: add a recording-emitter fixture without a full-observability dependency.
 5. NFR-RT-0002 / NFR-RT-0003: remove direct tracing calls from runtime source. The shared manifest is
    owned by b-13 and may retain the dependency for staged cleanup.
+6. REQ-RT-0005 / NFR-RUN-0005 / ADR-RT-0004: add a runtime regression that
+   uses the existing real-daemon fixture to drive the signal/shutdown path
+   with deadline coordination and an isolated temporary instance root; it
+   must not spawn a generated-project daemon process.
+7. ADR-RUN-0011: production changes add no sleep or `block_on` call and hold
+   no `std::sync::Mutex` guard across `.await`; test deadline polling is
+   exempt.
 
 ## Acceptance criteria
 
@@ -88,8 +91,9 @@ deferred to b-17.
    error with `RUNTIME.REQUEST_TIMEOUT`; a drain timeout separately produces
    `RUNTIME.DRAIN_TIMEOUT`.
 3. `boundary:BOUNDARY-sc-runtime`: concurrent requests retain distinct IDs;
-   tests use deadlines, not sleeps.
-4. ADR-RUN-0004 / ADR-RUN-0007 / NFR-RUN-0002: queue-full and disconnected
+   the signal regression drains and joins through the production shutdown
+   path, and tests use deadlines rather than fixed sleeps.
+4. ADR-RUN-0004 / ADR-RUN-0007: queue-full and disconnected
    rejection returns immediately and changes no status, body, header,
    counter, request deadline, or error.
 5. `boundary:BOUNDARY-sc-runtime`: no test asserts through another crate or a
@@ -105,7 +109,8 @@ cargo test -p sc-runtime --test observability_http --features test-util
 cargo test -p sc-runtime --features test-util
 cargo clippy -p sc-runtime --all-targets --features test-util -- -D warnings
 cargo check --workspace
-! rg -n 'tracing::|info_span!' crates/sc-runtime/src
+! rg -n '#\[(tracing::)?instrument|tracing::|(trace|debug|info|warn|error|event|span|trace_span|debug_span|info_span|warn_span|error_span)!' crates/sc-runtime/src
+just adr-run-0011
 sc-lint lint sc-boundary --root . --config sc-lint.toml
 ```
 

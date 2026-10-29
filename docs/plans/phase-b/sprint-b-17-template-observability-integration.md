@@ -15,21 +15,33 @@ requirements:
   - REQ-RUN-0004
   - REQ-RUN-0005
   - REQ-RUN-0309
+  - REQ-RUN-0503
+  - REQ-RUN-0701
   - REQ-RUN-0702
   - REQ-RT-0001
   - REQ-RT-0004
+  - REQ-RT-0005
+  - NFR-RT-0001
+  - NFR-RT-0002
+  - NFR-RT-0003
+  - NFR-RT-0004
   - REQ-CRON-0003
   - REQ-CRON-0005
   - NFR-RUN-0005
   - NFR-RUN-0002
   - NFR-RUN-0008
   - NFR-RUN-0009
+  - NFR-RUN-0010
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0004
   - ADR-RUN-0007
+  - ADR-RUN-0011
   - ADR-RUN-0013
+  - ADR-RUN-0014
   - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-TRN-0006
 owned_paths:
   - template/crates/daemon/src/main.rs
   - template/crates/daemon/src/observability.rs
@@ -175,7 +187,7 @@ pub struct Observability {
 
 impl Observability {
     pub fn logger(&self) -> sc_observability_types::SharedCanonicalLog;
-    pub fn shutdown(&self) -> Result<(), sc_observability::v2::ShutdownError>;
+    pub fn shutdown(self) -> Result<(), sc_observability::v2::ShutdownError>;
 }
 
 #[cfg(feature = "cron")]
@@ -183,7 +195,7 @@ pub fn open(
     config: &CronConfig,
     instance_root: &std::path::Path,
     logger: SharedCanonicalLog,
-) -> Result<Scheduler<SqliteScheduleStore, SystemClock, LoggedJitter<SystemJitter>>, CronError>;
+) -> Result<Scheduler<SqliteScheduleStore, SystemClock, SystemJitter>, CronError>;
 ```
 
 The wrapper resolves `database_path` below `instance_root`, maps config to
@@ -194,46 +206,83 @@ Scheduler::open_with_logger(
     database_path,
     limits,
     Arc::new(SystemClock),
-    Arc::new(SystemJitter::with_logger(logger.clone())),
     logger,
 )
 ```
 
+`Scheduler::open_with_logger` constructs
+`SystemJitter::with_logger(logger.clone())` internally, so callers cannot
+pair the store and `RunCoord` handle with a differently configured jitter.
+
 `Observability` creates `Arc<Logger>` once and derives `shared` by Arc
 coercion; it never clones `Logger`. `main` injects clones of the shared handle,
-keeps scheduler state alive for daemon lifetime, drops runtime/scheduler work,
-then calls shutdown. The reachable result precedence is fixed: logger
-construction failure returns immediately; setup or scheduler-open failure
-after logger construction remains primary and any shutdown failure is
-secondary; daemon-run failure remains primary and any shutdown failure is
-secondary; a successful run followed by shutdown failure returns process
-failure mapped from `ShutdownError`; only successful run plus successful
-shutdown returns success.
+keeps scheduler state alive for daemon lifetime, drains and joins scheduler
+workers and runtime work, drops every scheduler/runtime/shared-handle owner,
+then consumes `Observability` with `shutdown(self)`. No shared logger handle
+remains when the underlying logger shuts down; `shutdown(self)` destructures
+the owner, drops its internal `shared` Arc clone, and then invokes shutdown on
+the retained original logger.
+
+Generated agent-facing failures use the established exact
+`CODE cause — recovery` form:
+
+| Failure | Code | Recovery |
+|---|---|---|
+| logger build | `DAEMON.OBSERVABILITY` | fix logging configuration or sink paths and retry |
+| scheduler open | `DAEMON.CRON_OPEN` | fix cron configuration or database path and retry |
+| logger shutdown | `DAEMON.OBSERVABILITY_SHUTDOWN` | inspect sink health and retry shutdown |
+
+Each row includes its secret-free cause. The generated path forbids bare
+`Display`/`Debug`, `anyhow`, and `Box<dyn Error>` reporting. Primary/secondary
+precedence is fixed. Existing config, transport, and runtime failures retain
+their exact primary code, cause, and recovery strings; composition does not
+rewrite them. A shutdown failure remains secondary whenever one of those
+operations already failed:
+
+One centralized `format_agent_error(code, cause, recovery)` function owns the
+exact `format!("{code} {cause} — {recovery}")` layout. Callers select one of
+the three literal codes above and do not duplicate the layout.
+
+| Primary operation | Shutdown result | Returned/reporting result |
+|---|---|---|
+| logger build fails | unreachable | `DAEMON.OBSERVABILITY` primary |
+| setup or scheduler open fails | succeeds or fails | setup/`DAEMON.CRON_OPEN` remains primary; shutdown failure is secondary |
+| daemon run fails | succeeds or fails | daemon error remains primary; shutdown failure is secondary |
+| daemon run succeeds | fails | `DAEMON.OBSERVABILITY_SHUTDOWN` becomes primary process failure |
+| daemon run succeeds | succeeds | success |
 
 ## Required work and deliverables
-
-Every numbered item must land production-ready for integration closure. The
-real generated composition, lifecycle ordering, sink behavior, and JSONL proof
-must pass together; a fake-only or test-only wiring cannot close this sprint.
 
 1. REQ-RUN-0004 / REQ-RUN-0309: change generated `Observability` to Arc ownership and expose only the
    types-level shared handle to library consumers.
 2. REQ-RT-0001 / REQ-RT-0004: inject that handle into `DaemonBuilder` for every layout.
 3. REQ-CRON-0003 / REQ-CRON-0005: under the b-16 `cron` feature, use b-13's
-   `LoggedJitter` and `Scheduler::open_with_logger` to open the scheduler
+   `Scheduler::open_with_logger`, which internally constructs the concrete
+   logger-aware `SystemJitter`, to open the scheduler
    database below the instance root, apply configured limits, attach the same handle, and retain
-   the scheduler. Feature-off behavior is unchanged.
-4. NFR-RUN-0005 / NFR-RUN-0008: add a generated-project smoke test that polls with a deadline, sends a
+   the scheduler. Map config `0` or `null` to unlimited (`None`) and every
+   other accepted positive value to `ScheduleLimits` at scheduler open;
+   sc-cron never loads config. Feature-off behavior is unchanged.
+4. NFR-RUN-0005: add a generated-project smoke test that polls with a deadline, sends a
    health request, enables cron, and parses JSONL. It must observe
    `http.server/request.*` plus the production
    `cron.scheduler/logger.attached` event with one service identity.
-5. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: prove the fixed reachable result/shutdown precedence and that
-   logger shutdown happens after both library users stop. Do not add a
+5. ADR-RUN-0007 / ADR-RUN-0011 / NFR-RUN-0002 / NFR-RUN-0009: prove the fixed reachable result/shutdown precedence and that
+   logger shutdown happens after both library users drain and join, every
+   shared handle is dropped, and `shutdown(self)` consumes the owner. Add no
+   production sleep/`block_on` or `std::sync::Mutex` guard across `.await`.
+   Do not add a
    post-construction production-logger fault injector: b-14 and b-15 already
    own rejecting-emitter contract tests for emission failure, while this
    sprint owns only the real production JSONL proof.
-6. ADR-RUN-0002 / REQ-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0702: extend the
-   existing sc-publish consumer input for the
+6. REQ-RUN-0503 / REQ-RUN-0701: make the PR template workflow create one
+   matrix entry for every `wizard/fixtures/*.json` file. The `sqlite-mcp`
+   entry must execute exactly `just new` -> generated `just setup` ->
+   `just lint` -> `just test` -> `just build-cli` -> `just build-daemon`, in
+   that order, with no generated source edit between steps. Contract tests
+   compare the fixture set with the matrix entries and preserve a generated
+   source-tree snapshot across the entire no-edits sequence.
+7. ADR-RUN-0002 / REQ-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0702: extend the existing sc-publish consumer input for the
    `0.1.1` release. Preserve publish order `sc-config` (1), `sc-transport` (2),
    `sc-command` (3), `sc-runtime` (4), then publish `sc-cron` (5);
    `sc-runtime-db-sqlite` remains unpublished. Advance the current rejected
@@ -250,7 +299,7 @@ must pass together; a fake-only or test-only wiring cannot close this sprint.
    a human release owner with crates.io credentials must authorize and observe
    the generated release workflow. This repository neither publishes nor
    claims authority over the upstream observability `1.5.1` pair.
-7. REQ-RUN-0702: after the five internal `0.1.1` crates are published, render
+8. REQ-RUN-0702: after the five internal `0.1.1` crates are published, render
    with `scripts/new_project.py --release`, assert there is no
    `[patch.crates-io]` or path override, and build/test the generated daemon
    against the registry with `cron` and `monty`. The pre-publication source
@@ -258,29 +307,55 @@ must pass together; a fake-only or test-only wiring cannot close this sprint.
    `GeneratedObservabilityIntegration.test_release_contract_sources`; the
    registry-only proof lives in
    `GeneratedObservabilityIntegration.test_release_mode_uses_registry`.
+9. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006: on an isolated ephemeral CI runner only,
+   launch the real generated daemon binary twice with a fresh temporary
+   instance root, deliver SIGINT in one case and SIGTERM in the other, and
+   assert bounded drain/join, process exit, lock/socket cleanup, and logger
+   shutdown. A dedicated `ubuntu-latest` GitHub-hosted job, and no local
+   recipe, sets `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`. The test fails
+   closed unless that marker, `GITHUB_ACTIONS=true`, and
+   `RUNNER_ENVIRONMENT=github-hosted` are all present; setting the dedicated
+   marker alone on a developer host cannot enable it.
+10. NFR-RUN-0008: keep every generated production Rust file below the existing
+   1000-source-line gate; the ID governs only line counts.
 
 ## Acceptance criteria
 
-1. ADR-RUN-0004: config -> log root -> logger -> shared injection -> run ->
+1. REQ-RUN-0309 / REQ-RUN-0004: config -> log root -> logger -> shared injection -> run ->
    shutdown order is explicit and tested.
-2. `REQ-RT-0004`: the rendered daemon writes correlated canonical HTTP events
+2. REQ-RT-0001 / REQ-RT-0004 / NFR-RT-0001 / NFR-RT-0002 /
+   NFR-RT-0003 / NFR-RT-0004: the rendered daemon injects through the
+   unchanged builder typestate, writes correlated canonical HTTP events
    to its configured JSONL file.
-3. `REQ-CRON-0003`: opening the real generated scheduler with the injected
+3. REQ-CRON-0005 / ADR-RUN-0014: opening the real generated scheduler with the injected
    handle writes the real cron attachment event; no fake emitter stands in for
-   the production logger in this integration proof.
+   the production logger in this integration proof, and `0`/`null`/positive
+   schedule-limit mappings are exact.
 4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: b-14/b-15
    rejecting-emitter contract tests remain the authoritative immediate,
    best-effort emission proof; this integration test verifies only reachable
    generated-process result/shutdown precedence and production JSONL output.
-5. No generated library crate depends on the full observability runtime.
-6. REQ-RUN-0702: the current bad pin has been replaced by a qualified exact
+5. REQ-RUN-0005: this repository's workspace library crates exclude the full
+   observability runtime; the generated daemon remains the sole composition
+   root that owns it.
+6. REQ-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0503 / REQ-RUN-0701 /
+   REQ-RUN-0702: the current bad pin has been replaced by a qualified exact
    later revision; its package inventory contains no `docs/sprints/**`. The
    real install from that exact pinned kit revision owns and
    synchronizes every listed manifest, workflow, script, action, agent, skill,
    and kit document; its repeat dry-run and git drift checks are clean,
    generated preflight passes, the human-authorized publish follows orders 1 through 5,
    and a subsequent `--release` generated build resolves all internal crates
-   from the registry with no checkout patch.
+   from the registry with no checkout patch. The PR workflow has exactly one
+   matrix entry per answers fixture, and the sqlite-mcp entry closes the
+   exact generate -> setup -> lint -> test -> build-cli -> build-daemon
+   no-source-edits sequence.
+7. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006: the dedicated
+   GitHub-hosted ephemeral job proves both real SIGINT and SIGTERM paths with
+   temporary instance roots, released instance/endpoint locks, removed
+   sockets, and no leaked process or shared logger handle.
+8. NFR-RUN-0008: `just lint` reports the sc-lint line-count gate clean for
+   all generated production Rust sources; no behavior claim is attached.
 
 ## Required validation
 
@@ -288,6 +363,17 @@ must pass together; a fake-only or test-only wiring cannot close this sprint.
 python3 -m unittest tests.integration.generation.test_observability
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_contract_sources
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_pinned_publish_kit_inventory
+python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_schedule_limit_mapping
+python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_agent_error_inventory
+python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_sqlite_mcp_no_edits_sequence
+python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_pr_fixture_matrix_one_entry_per_fixture
+SC_RUNTIME_FIXTURE_ROOT="$(mktemp -d)"
+just new "$SC_RUNTIME_FIXTURE_ROOT/sqlite-mcp" --var-file wizard/fixtures/sqlite-mcp.json
+(cd "$SC_RUNTIME_FIXTURE_ROOT/sqlite-mcp" && just setup && just lint && just test && just build-cli && just build-daemon)
+test "${GITHUB_ACTIONS:-}" = true
+test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+test "${SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST:-}" = 1
+python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_signal_shutdown_isolated_ci
 SC_PUBLISH_REPOSITORY="$(sed -n 's/^repository = "\([^"]*\)"/\1/p' release/sc-publish-pin.toml)"
 SC_PUBLISH_REVISION="$(sed -n 's/^revision = "\([0-9a-f]*\)"/\1/p' release/sc-publish-pin.toml)"
 test -n "$SC_PUBLISH_REPOSITORY"
@@ -314,6 +400,13 @@ cargo test --manifest-path generated/test-observability/Cargo.toml --workspace
 cargo test --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features cron
 cargo +1.96.1 check --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon -e normal
+test "$(rg -F -o '"DAEMON.OBSERVABILITY"' template/crates/daemon/src | wc -l | tr -d ' ')" -eq 1
+test "$(rg -F -o '"DAEMON.CRON_OPEN"' template/crates/daemon/src | wc -l | tr -d ' ')" -eq 1
+test "$(rg -F -o '"DAEMON.OBSERVABILITY_SHUTDOWN"' template/crates/daemon/src | wc -l | tr -d ' ')" -eq 1
+rg -n 'fn format_agent_error' template/crates/daemon/src
+test "$(rg -F -o 'format!("{code} {cause} — {recovery}")' template/crates/daemon/src | wc -l | tr -d ' ')" -eq 1
+! rg -n 'Box<dyn (std::error::)?Error>|eprintln!\([^,]*\{[?:#]?\}' template/crates/daemon/src
+just adr-run-0011
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
 just lint gates
 ```

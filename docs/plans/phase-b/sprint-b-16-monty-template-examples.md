@@ -5,7 +5,7 @@ status: planned
 closure_type: integration
 target_boundary: generated-daemon-monty
 track: monty-product
-wave: 7
+wave: 8
 branch: sprint/b-16-monty-template-examples
 worktree: sprint/b-16-monty-template-examples
 integration_branch: integrate/phase-b-observability
@@ -13,12 +13,14 @@ requirements:
   - REQ-RUN-0003
   - REQ-RUN-0702
   - REQ-RUN-0309
+  - REQ-CRON-0001
   - REQ-CRON-0003
   - NFR-CRON-0001
   - NFR-RUN-0005
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0013
+  - ADR-RUN-0303
 owned_paths:
   - template/Cargo.toml
   - template/workspace.template.toml
@@ -26,8 +28,8 @@ owned_paths:
   - template/examples/monty/cron.py
   - docs/sc-cron/monty-generated-example.md
   - tests/unit/generation/test_monty_example.py
-must_follow: [b-10]
-parallel_safe: [b-13, b-14, b-15]
+must_follow: [b-10, b-13]
+parallel_safe: [b-14, b-15]
 recommended_agent: cipher
 recommended_model: luna
 vertical_rationale: One generated-product boundary owns the Cargo feature, checked example, documentation, and render assertion; splitting it would create pass-through sprints without parallel work.
@@ -45,8 +47,9 @@ remaining Monty product-surface work; it does not reopen b-10 through b-12.
 
 PR #84 being merged is a phase entry prerequisite. The retained `must_follow`
 b-10 edge names the concrete `render_template` and render-only
-`sc_compose_run` host artifact that this example consumes. This sprint is
-`parallel_safe` with b-13 through b-15 because it alone owns the shared
+`sc_compose_run` host artifact that this example consumes. It also follows
+b-13 for amended REQ-CRON-0001 and ADR-RUN-0303 graph authority. This sprint is
+`parallel_safe` with b-14 and b-15 because it alone owns the shared
 generated Cargo files and its example/docs/test paths. b-17 must merge b-16
 first because it consumes the `cron`/`monty` feature artifact.
 
@@ -74,33 +77,35 @@ sc-observability-types.workspace = true
 `template/workspace.template.toml` is the rendered registry dependency
 inventory. Both record the internal `0.1.1` cut (`sc-config`, `sc-transport`,
 `sc-command`, `sc-runtime`, and `sc-cron`); the workspace template additionally
-pins the published `sc-observability` / `sc-observability-types` pair to
-`1.5.1`. Neither feature joins `default`. A normal checkout render therefore
+uses caret-compatible `1.5.1` requirements for the published
+`sc-observability` / `sc-observability-types` pair. Neither feature joins
+`default`. A normal checkout render therefore
 patches `sc-cron` to the local workspace just like the other internal crates,
 while `scripts/new_project.py --release` suppresses every checkout patch.
 
 ## Required work and deliverables
 
-Every numbered item must land production-ready for the generated Monty
-product boundary: rendered Cargo features, example, documentation, and
-generation assertions ship together with no placeholder hook body.
-
-1. REQ-CRON-0003: add optional daemon dependency `sc-cron`, direct
+1. REQ-CRON-0001 / REQ-CRON-0003 / ADR-RUN-0303: add optional daemon dependency `sc-cron`, direct
    `sc-observability-types`, and features equivalent to
    `cron = ["dep:sc-cron"]` and
    `monty = ["cron", "sc-cron/monty"]`; preserve the default feature set.
 2. ADR-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0702: update both template dependency
    inventories for the `0.1.1` internal cut, including `sc-cron`, and set the
-   published `sc-observability` / `sc-observability-types` pins to `1.5.1`.
+   published `sc-observability` / `sc-observability-types` requirements to
+   caret-compatible `1.5.1`; generated lockfiles prove exact resolution.
    `template/Cargo.toml` must contain the same five internal crate names used
    by checkout patch generation; `template/workspace.template.toml` must
-   contain their exact registry versions. These shared Cargo artifacts are
+   contain their `0.1.1` registry requirements. These shared Cargo artifacts are
    consumed by b-17 and owned only here.
 3. REQ-CRON-0003: add `template/examples/monty/cron.py` with `cron_stop` and `cron_tick`.
    The example calls both allowed hosts, treats `sc_compose_run` as
    render-only, and returns the current stop decision.
-4. ADR-RUN-0013 / NFR-CRON-0001: document generated path, feature enablement, input/output shape, and
-   security limits. Do not imply that Monty source is trusted.
+4. ADR-RUN-0013 / NFR-CRON-0001: create
+   `docs/sc-cron/monty-generated-example.md` documenting the generated path,
+   feature enablement, input/output shape, and security limits. Monty source
+   is trusted, embedding-chosen in-process source, not a sandbox: untrusted
+   source is forbidden, and the render-only host allowlist does not remove
+   stack-overflow or allocator-abort risk.
 5. NFR-RUN-0005: add a generation test that renders the example and compiles the generated
    daemon with and without `monty`. Assert that a checkout render contains the
    local `sc-cron` patch and a `--release` render contains no
@@ -109,20 +114,25 @@ generation assertions ship together with no placeholder hook body.
 
 ## Acceptance criteria
 
-1. `REQ-CRON-0003`: a rendered project has the opt-in Monty feature and the
+1. `REQ-CRON-0001`: the generated daemon is the only generated crate with the
+   optional `sc-cron` edge; feature-off builds do not link it.
+2. `REQ-CRON-0003`: a rendered project has the opt-in Monty feature and the
    checked example; default generation does not link Monty.
-2. ADR-RUN-0013: the example contains no root/program override and invokes no
-   host other than the two allowed functions.
-3. `NFR-RUN-0005`: generation assertions are deterministic and use no sleep,
+3. `NFR-CRON-0001`: the default tree contains no Monty crates and the Monty
+   tree contains no `monty-pool`, `monty-fs`, or `monty-runtime`.
+4. `NFR-RUN-0005`: generation assertions are deterministic and use no sleep,
    network, globally fixed project path, or external compose process.
-4. b-17 can consume the exact feature without reopening a Cargo manifest.
-5. REQ-RUN-0309: a checkout-rendered Cargo tree uses the recorded matching
+5. ADR-RUN-0013: the example contains no root/program override, invokes no
+   host other than the two allowed functions, and labels its source trusted
+   in-process code with accepted abort risk rather than a sandbox.
+6. ADR-RUN-0303: a checkout-rendered Cargo tree uses the recorded matching
    observability pair and locally patched `sc-cron` at the exact future
    registry version; the default feature tree does not enable
    `sc-cron/monty`. Registry resolution itself belongs to b-17 after publish.
-6. REQ-RUN-0702: the two template manifests agree on the complete five-crate
+7. ADR-RUN-0002: the two template manifests agree on the complete five-crate
    internal inventory at `0.1.1`; checkout generation patches `sc-cron`
    locally, while release-mode generation emits no checkout patch.
+8. b-17 can consume the exact feature without reopening a Cargo manifest.
 
 ## Required validation
 

@@ -4,7 +4,14 @@
 
 ## REQ-CRON-0001: Workspace member
 
-`crates/sc-cron` is a workspace member, ported from beads-cache `crates/sc-cron` at `develop`. It depends on no other workspace crate. The template does not name it, and `sc-runtime` does not name it. Here "name" means a Cargo or other manifest dependency. Documented wiring may reference the crate in comments and schema descriptions.
+`crates/sc-cron` is a workspace member, ported from beads-cache
+`crates/sc-cron` at `develop`. It depends on no other workspace crate and
+uses `sc-observability-types` only for its injected canonical logger contract.
+`sc-runtime` does not name it. The generated daemon may name it only as the
+optional `cron` dependency selected by the embedding application; default
+generated builds do not link it. Here "name" means a Cargo or other manifest
+dependency. Documented wiring may reference the crate in comments and schema
+descriptions.
 
 ## REQ-CRON-0002: Normal crontab strings
 
@@ -20,7 +27,9 @@ The crate creates one schedule table. A test writes a row without constructing `
 
 ## REQ-CRON-0005: One error enum
 
-Fallible public functions return `CronError`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.
+Fallible public functions return `CronError`, including both
+`process::supervise` and `process::supervise_with_logger`, which return
+`Result<Captured, CronError>`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.
 
 With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::TimedOut` instead of returning `CronError`. Stable code tokens appear in `Failed` detail strings as `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) and [`RunFailureParts`](../../crates/sc-cron/src/run_failure.rs) parse that form for agents and UIs. `ComposeHostError` is crate-private and is not an eighth public variant. The inventory matches [architecture.md](architecture.md):
 
@@ -51,4 +60,4 @@ Host-deadline paths record bare `RunOutcome::TimedOut` with no code token in the
 
 ## NFR-CRON-0001: Allowed third-party dependencies
 
-This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. No other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
+This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. No other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.

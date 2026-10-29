@@ -49,6 +49,7 @@ typestate, [ADR-RT-0001](architecture.md)).
 | `.stores(closure)` | an async closure taking no arguments that opens the project's stores and returns the project's own `Stores` value or an error | yes |
 | `.routes(closure)` | a closure that receives the `Stores` value and returns a `utoipa_axum::OpenApiRouter` | yes |
 | `.mcp(closure)` | a closure that receives the `Stores` value and returns an rmcp Streamable HTTP service | no |
+| `.logger(handle)` | a `sc_observability_types::SharedCanonicalLog`; optional in every builder state and replaces the fixed `sc-runtime` Noop | no |
 | `.run().await` | none; returns `Result<(), RuntimeError>` | yes |
 
 Intended use, in the `daemon/src/main.rs` of a generated project:
@@ -121,6 +122,10 @@ The builder MUST NOT offer hooks, callbacks or configuration that insert work
 between steps or reorder them (decided in this document and recorded in
 [ADR-RT-0001](architecture.md); the design lists the five steps and says the
 crate is a bootstrap, not a framework layer).
+`.logger(...)` only replaces the event handle carried by the builder. It is
+available on `NeedStores`, `NeedRoutes`, and `Ready`, adds no typestate, and
+does not add or reorder a `run()` step. The required transition remains
+`NeedStores` -> `NeedRoutes` -> `Ready`.
 
 v0.1 binds exactly one listener. `sc-transport` can bind either a Unix domain
 socket or a TCP address ([REQ-TRN-0003](../sc-transport/requirements.md)).
@@ -714,7 +719,7 @@ The lock lives in the instance root and, by default, so does the socket. If
 `sc-runtime` computed either on its own, the lock directory and the socket
 directory could diverge, and a daemon could listen where no CLI looks. One
 resolver in one crate, called by both binaries with the same inputs, is what
-makes the CLI find the daemon. The builder is limited to four methods, so the
+makes the CLI find the daemon. The builder is limited to five methods, so the
 inputs need a named carrier, and `DaemonConfig` is the only value the project
 hands to `run()`. The decision that one resolver is shared by daemon and CLI
 is [ADR-TRN-0002](../sc-transport/architecture.md); the template-side
@@ -780,7 +785,7 @@ machine, never on a developer's host
 | Kind of public item | How many | Name |
 |---|---|---|
 | Entry type whose only public function is the constructor that returns the builder | one | `Daemon` (`Daemon::builder`) |
-| Builder type with exactly four public methods: three that each take one project closure (stores, routes, optional MCP service) and one that runs the daemon | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `run`) |
+| Builder type with exactly five public methods: three that each take one project closure (stores, routes, optional MCP service), one optional all-phase logger setter, and one that runs the daemon | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`) |
 | Configuration struct implementing `serde::Deserialize` | one | `DaemonConfig` |
 | Error enum | one | `RuntimeError` |
 | Public module for tests, containing one fixture type, behind `test-util` | one | `testing` (`testing::DaemonFixture`) |
@@ -817,7 +822,7 @@ libraries, and would be code every project has to learn.
    build does not expose `testing`.
 3. Inspection of the crate's rustdoc index (`cargo doc -p sc-runtime
    --no-deps`, and again with `--features test-util`): the builder type has
-   exactly four public methods (`stores`, `routes`, `mcp`, `run`), the entry
+   exactly five public methods (`stores`, `routes`, `mcp`, `logger`, `run`), the entry
    type has exactly one public function (`builder`), and the index does not
    list `sc_runtime::AppName`. `testing` appears only when `test-util` is on.
 4. The `arch-qa` architecture review confirms no public type has a field or
@@ -846,17 +851,15 @@ libraries, and would be code every project has to learn.
   read.
 
 The only observability-related crate permitted in its dependency tree is
-`sc-observability-types`, and only transitively through `sc-command`. A direct
-dependency on `sc-observability-types` is forbidden. sc-lint 0.8.0 cannot
-express that direct-only rule: a `forbidden_edges` entry would also fail the
-allowed transitive crate. The check is
-`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no line
-beginning with `sc-observability-types `.
+`sc-observability-types`. It is a direct dependency used only for the
+injected canonical logger contract; the full runtime and OTel exporter remain
+forbidden. The direct-depth cargo tree must contain the types crate and no
+full-runtime line.
 
 `sqlx`, `sc-observability`, and `sc-observability-otlp` are not workspace
 members. sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so
 those names are not `forbidden_edges` entries. `cargo tree` enforces them.
-The repo-level owner of the forbidden edges of all four crates is
+The repo-level owner of the forbidden edges of all workspace library crates is
 [REQ-RUN-0005](../requirements.md).
 
 ### Rationale
@@ -881,7 +884,7 @@ lets the project report a config error before anything else starts.
    `sc-observability-types`, because sc-lint 0.8.0 rejects a forbidden edge
    whose target is not a workspace member. `just lint` (which runs
    `sc-lint lint sc-boundary`) is clean. Criterion 1 is the `cargo tree` check
-   for `sqlx`, the logging crates, and direct-only `sc-observability-types`.
+   for `sqlx` and the forbidden logging-runtime crates.
 3. A search of `crates/sc-runtime/src` (excluding `#[cfg(test)]` code) finds
    no call to `sc_config::load`, no read of a config file, and no read of
    `SC_ENDPOINT`. `run` calls `sc_transport::resolve_endpoint_from_env`, which
@@ -895,10 +898,10 @@ lets the project report a config error before anything else starts.
 
 ### Requirement Statement
 
-The workspace has four library crates: `sc-config`, `sc-transport`,
-`sc-command` and `sc-runtime`. This item owns the list of third-party
+The workspace library set includes `sc-config`, `sc-transport`, `sc-command`,
+`sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`. This item owns only the list of third-party
 dependencies `sc-runtime` is allowed. The workspace-internal edges and the
-forbidden edges of all four crates are owned by
+forbidden edges of all workspace library crates are owned by
 [REQ-RUN-0005](../requirements.md): `sc-runtime` is the only one of the four
 that may depend on the others, and `sc-config`, `sc-transport` and
 `sc-command` MUST NOT depend on `sc-runtime` or on each other.
@@ -910,6 +913,7 @@ the following.
 |---|---|
 | `sc-transport` with `features = ["server"]` | listener binding, the endpoint resolver and the instance-root function |
 | `sc-command` with `features = ["server"]` | the axum response and rmcp tool-result conversions of the response envelope, including `GET /health` |
+| `sc-observability-types` | `SharedCanonicalLog` and canonical request lifecycle events; no sink construction or shutdown |
 | `axum` | the merged `axum::Router` and serving |
 | `tokio` | the async runtime and signal handling |
 | `fd-lock` | the exclusive lock on `daemon.lock` |
@@ -953,7 +957,7 @@ would reject one.
 1. `crates/sc-runtime/Cargo.toml` declares `sc-transport` with
    `features = ["server"]` and `sc-command` with `features = ["server"]`.
 2. Every entry under `[dependencies]` in `crates/sc-runtime/Cargo.toml` is
-   one of: `sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`,
+   one of: `sc-transport`, `sc-command`, `sc-observability-types`, `axum`, `tokio`, `fd-lock`,
    `utoipa-axum`, `utoipa`, `serde`, `rmcp`, `tracing`, or optional `tempfile` enabled
    only by `test-util`. A search of `crates/sc-runtime/src` finds at least one
    `sc_command` use. The criterion fails when that use is absent.

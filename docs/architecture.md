@@ -104,19 +104,19 @@ workspace-internal edges and the forbidden edges.
 | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
 | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
 | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron` | MUST: `sc-observability-types` for injected canonical events | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
-`sc-observability-types` is an allowed dependency of `sc-command` only.
+`sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
+`sc-cron`; the latter two use only the injected canonical logger contract.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only targets that are workspace members in that crate's lint tree;
 crates.io names and other non-member targets are enforced by criterion 5 of
 [REQ-RUN-0005](requirements.md) (`cargo tree`). sc-lint 0.8.0 cannot fail a
-crates.io edge, so the `sc-runtime` direct-only rule is
-`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no line
-beginning with `sc-observability-types `. A transitive line through
-`sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
+crates.io edge, so direct-depth cargo-tree checks prove `sc-runtime` and
+`sc-cron` link the types crate but not the full logging runtime.
+`allowed_dependents` is empty for `sc-config` and
 `sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
 edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
 entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
@@ -438,18 +438,18 @@ as its own selection.
    | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
    | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-   | `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
+   | `sc-cron` | MUST: `sc-observability-types` for injected canonical events | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
-`sc-observability-types` is an allowed dependency of `sc-command` only.
+`sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
+`sc-cron`; the latter two use only the injected canonical logger contract.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only workspace-member targets in that lint tree; crates.io names use
 criterion 5 `cargo tree` checks (see sprint a-1 evidence). sc-lint 0.8.0
-cannot fail a crates.io edge, so the `sc-runtime` direct-only rule is
-`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no
-line beginning with `sc-observability-types `. A transitive line through
-`sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
+cannot fail a crates.io edge, so direct-depth cargo-tree checks prove that
+`sc-runtime` and `sc-cron` contain the types crate but not the full runtime.
+`allowed_dependents` is empty for `sc-config` and
 `sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
 edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
 entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
@@ -579,9 +579,12 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 
 ### Context
 
-`sc-observability` 1.5.0 and `sc-observability-types` 1.5.0 are the Phase A
-pin recorded by sprint a-1. Every generated daemon uses `sc-observability`
-at that pin. The tempting design is to have `sc-config` or `sc-runtime`
+The Phase B contract advances the generated daemon's `sc-observability`
+requirement and the `sc-runtime`/`sc-cron` types-only requirements to the
+normal caret-compatible `1.5.1`; `sc-command` retains its tested-minimum
+caret requirement `1.5.0`, and the lockfile may unify it at exact `1.5.1`.
+Every generated daemon uses the full runtime. The tempting design is to have
+`sc-config` or `sc-runtime`
 initialise it. That would make those crates depend on the observability
 stack, so `sc-config` could no longer be used by a program that does not use
 `sc-observability`, and observability would in turn be tied to how config is
@@ -589,17 +592,17 @@ loaded.
 
 ### Decision
 
-1. `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` MUST NOT depend
+1. Library crates MUST NOT depend
    on `sc-observability` or on its OTel export crate `sc-observability-otlp`.
-2. Those four crates MUST NOT wrap `sc-observability`, re-export it, or define
+2. Library crates MUST NOT wrap `sc-observability`, re-export it, or define
    logging wrapper functions.
-3. The only observability dependency allowed inside the four crates is
-   `sc-observability-types` on `sc-command`. It is not allowed on
-   `sc-transport`. The logging runtime `sc-observability` and
-   `sc-observability-otlp` stay forbidden on all four libraries.
-   `Remediation` stays on `sc-command` only.
+3. `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
+   `sc-cron`. Runtime and cron use only `CanonicalLog`/`SharedCanonicalLog`
+   and canonical event types; error remediation stays on `sc-command`.
+   It is not allowed on `sc-config` or `sc-transport`. The logging runtime
+   and OTel export stay forbidden on all library crates.
 4. The generated `daemon/src/main.rs` MUST, in this order: load config with
-   `sc-config`; initialise `sc-observability` 1.5.0 directly with plain values
+   `sc-config`; initialise `sc-observability` 1.5.1 directly with plain values
    taken from that config; then call `sc_runtime::Daemon::builder()`.
 5. `TransportError::DaemonNotRunning` is owned by
    [ADR-TRN-0003](sc-transport/architecture.md). It carries
@@ -620,10 +623,8 @@ loaded.
 program. A project chooses its own log sinks and adds the OTel export crate
 itself if it wants export.
 
-How much daemon-internal logging the four crates emit in v0.1 depends on a
-question that is undecided: whether a `tracing` bridge into
-`sc-observability` is acceptable. Until it is decided, no code or plan may
-assume such a bridge exists.
+Library lifecycle events use direct injected `LogEvent` emission; no
+`tracing` bridge into `sc-observability` is assumed or added.
 
 ### Alternatives Considered
 
@@ -637,7 +638,7 @@ assume such a bridge exists.
 ### Implementation
 
 **Enforced by:** `forbidden_edges` entries for `sc-observability` and
-`sc-observability-otlp` in each of the four crates' boundary manifests under
+`sc-observability-otlp` in each library crate's boundary manifest under
 `boundaries/<crate>/` (the forbidden-edge table is owned by
 [REQ-RUN-0005](requirements.md)), checked by `sc-lint-boundary` through `just lint`;
 `arch-qa` review of points 2 and 3 and of the generated `daemon/src/main.rs`
@@ -646,9 +647,9 @@ for the order in point 4.
 ### Related Documents
 
 - [REQ-RUN-0005](requirements.md): owner of the forbidden-edge table; `sc-observability`
-  and `sc-observability-otlp` are forbidden for all four crates.
-- [REQ-RUN-0309](requirements.md): the generated daemon initialises `sc-observability` 1.5.0
-  directly in `main.rs`. `sc-observability-types` 1.5.0 is the matching pin.
+  and `sc-observability-otlp` are forbidden for all library crates.
+- [REQ-RUN-0309](requirements.md): the generated daemon uses caret-compatible
+  `1.5.1` requirements; its lockfile proves the exact matching resolution.
 - [NFR-CFG-0002](sc-config/requirements.md): `sc-config` has minimal dependencies and none on
   observability.
 - [NFR-CMD-0002](sc-command/requirements.md): `sc-command` takes only types from
@@ -1873,7 +1874,7 @@ The owner of these edges and of their criteria is
    | `store-*` | `sqlx` with exactly one driver feature | design table |
    | `service` | the adaptor, `api-types`; `sc-command` with default features | design table; `sc-command` follows from service functions returning `OpError` |
    | adaptor | `<project>-schema` and the `store-*` crates whose rows it moves | [ADR-RUN-0305](architecture.md), [REQ-RUN-0324](requirements.md) |
-   | `daemon` | `service`, `sc-runtime`, `sc-config`; `api-types`; `sc-command` with its `server` cargo feature | design table; the last two follow from handlers naming `api-types` structs, `Envelope<T>` and `into_mcp()` |
+   | `daemon` | `service`, `sc-runtime`, `sc-config`, `sc-observability`; `api-types`; `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron` | design table and composition-root contract; handler types require the command/api edges; the embedding application owns optional cron |
    | `cli` | `api-types`, `sc-transport`, `sc-command`, `sc-config`, none with the `server` cargo feature | design table |
 
 2. Only `store-*` crates depend on sqlx. Only `service` and the adaptor depend on `store-*` crates. `service` depends on the adaptor. `daemon` and `cli` do not. Amended 2026-10-25.
@@ -1888,6 +1889,11 @@ The owner of these edges and of their criteria is
 7. Only `daemon` may have a normal (non-dev) dependency on `sc-runtime`. A
    dev-dependency for the example test is covered by the OPEN in
    [REQ-RUN-0302](requirements.md) on which crate hosts that test.
+8. Generated feature `cron` enables the optional daemon dependency on
+   `sc-cron`; generated feature `monty` implies `cron` and enables
+   `sc-cron/monty`. Feature-off generated builds do not link `sc-cron`.
+   `sc-cron` remains independent of the generated workspace and never loads
+   application configuration.
 
 `service` takes `sc-command` as a direct dependency: by point 7 it may not
 depend on `sc-runtime`, so a re-export cannot reach it.
@@ -2689,4 +2695,3 @@ those edges, because the analyzer will not.
 a-2, a-3, a-4, and a-5 read this record before writing a manifest. Exit 0 on
 a single crate needs a `[workspace]` with `[workspace.package].version`. A
 tree with no `[workspace]` exits 3.
-

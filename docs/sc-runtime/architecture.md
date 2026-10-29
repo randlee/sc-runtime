@@ -36,7 +36,7 @@ the builder and into `sc-cron` per
 | Item | Purpose |
 |---|---|
 | `Daemon::builder(&sc_transport::AppName, &DaemonConfig)` | start assembly |
-| `DaemonBuilder::stores / routes / mcp / run` | the project's three closures, then serve |
+| `DaemonBuilder::logger / stores / routes / mcp / run` | optional same-state logger injection, the project's three closures, then serve; the five-method surface adds no logger typestate |
 | `DaemonConfig` | `#[non_exhaustive]` settings the project loads; `transport` is flattened `sc_transport::TransportConfig` (`endpoint`, `instance_root`, `tcp_port`); `endpoint_flag` is `Option<String>` for `--endpoint` ([ADR-RT-0001](#adr-rt-0001-daemonbuilder-run-is-assembly-only-in-a-fixed-order), [REQ-RT-0001](requirements.md), [REQ-RT-0008](requirements.md)) |
 | `RuntimeError` | typed error naming the failing step |
 | `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
@@ -81,7 +81,7 @@ sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
 The same crate owns the one endpoint resolver that the daemon and the CLI
 share ([ADR-TRN-0002](../sc-transport/architecture.md)), so some component of
-the daemon has to call it, and the builder has only four methods through
+the daemon has to call it, and the builder has only five methods through
 which inputs could arrive.
 
 ### Decision
@@ -90,7 +90,9 @@ which inputs could arrive.
 `NeedRoutes`, and `Ready`. `stores` consumes `NeedStores` and returns
 `NeedRoutes`. `routes` consumes `NeedRoutes` and returns `Ready`. `run`
 exists only on `Ready`. `mcp` is optional and is implemented only on
-`Ready`. The markers are `pub` so the builder can be named across crates.
+`Ready`. `logger` is optional on all three states and returns the same state;
+it replaces the fixed `sc-runtime` Noop handle and creates no `NeedLogger`
+state or run step. The markers are `pub` so the builder can be named across crates.
 They are `#[doc(hidden)]` and are not facade items.
 
 `run()` on the builder returned by `Daemon::builder(&sc_transport::AppName, &daemon_config)`
@@ -130,7 +132,9 @@ layer). The caller-facing sequence is consuming typestate. `Daemon::builder` tak
 `&sc_transport::AppName` and `&DaemonConfig` and returns a builder on which
 `run` is not implemented. `stores` then `routes` consume the builder. `mcp`
 and `run` exist only after `routes`. `mcp` is optional and returns the same
-ready builder. This crate does not define `sc_runtime::AppName`.
+ready builder. `logger` is optional before or after either transition and
+preserves `NeedStores` -> `NeedRoutes` -> `Ready`. This crate does not define
+`sc_runtime::AppName`.
 
 v0.1 binds exactly one listener. `TransportConfig` is `#[non_exhaustive]` and
 has no `additional_endpoints` field. `sc-transport` can bind either kind of
@@ -172,7 +176,7 @@ by [REQ-RT-0001](requirements.md); the explicit-instance-root and
 endpoint-override tests of [REQ-RT-0008](requirements.md), and its check that
 `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
 line outside test code; `arch-qa` architecture review of the public surface
-of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `run`).
+of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `logger`, `run`).
 
 ### Related Documents
 

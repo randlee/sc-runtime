@@ -1,12 +1,12 @@
 # Injectable observability for generated projects
 
 **Status:** Phase B b-13 contract (implementation planned)
-**Related:** [ADR-RUN-0004](../architecture.md), [ADR-RUN-0007](../architecture.md), [REQ-RUN-0309](../requirements.md), [NFR-RUN-0002](../requirements.md), [NFR-RT-0002](requirements.md)
+**Related:** [ADR-RUN-0003](../architecture.md), [ADR-RUN-0004](../architecture.md), [ADR-RUN-0007](../architecture.md), [ADR-RUN-0011](../architecture.md), [ADR-RUN-0014](../architecture.md), [ADR-RUN-0303](../architecture.md), [ADR-RT-0002](architecture.md), [ADR-TRN-0006](../sc-transport/architecture.md), [REQ-RUN-0309](../requirements.md), [NFR-RUN-0002](../requirements.md), [NFR-RUN-0010](../requirements.md), [NFR-RT-0002](requirements.md)
 
 ## Goal
 
-A project rendered from `template/` constructs published
-**`sc-observability` 1.5.1** in
+A project rendered from `template/` uses the caret-compatible requirement
+**`sc-observability` 1.5.1** (with exact `1.5.1` lock resolution) in
 `main`, logs to the same on-disk layout as other SC consumers, and **injects**
 that logger into workspace libraries (`sc-runtime`, `sc-cron`, …) so they emit
 **`LogEvent`** records with canonical **`TargetCategory`** / **`ActionName`**
@@ -63,19 +63,39 @@ Order is fixed ([REQ-RUN-0309](../requirements.md)):
 4. **`LoggerBuilder::build()`** → store it in `Arc<Logger>` until `main`
    returns, and coerce an Arc clone to `SharedCanonicalLog`.
 5. Pass a **shareable handle** into assembly:
-   - **`Daemon::builder(...).logger(handle)`**.
-   - **`SystemJitter::with_logger(handle.clone())`** plus
-     **`Scheduler::open_with_logger(..., handle)`** when `cron` is enabled.
-6. Run the daemon and retain scheduler state for the same lifetime.
-7. Stop/drop runtime and scheduler users, then shut down the original logger.
+   - **`Daemon::builder(...).logger(handle)`** in any builder state; it adds
+   no typestate or run step.
+   - **`Scheduler::open_with_logger(..., handle)`** when `cron` is enabled;
+     that constructor creates
+     **`SystemJitter::with_logger(handle.clone())`** internally.
+6. Map generated cron config `0` or `null` to unlimited and positive values
+   to `ScheduleLimits` at scheduler open; sc-cron never loads config.
+7. Run the daemon and retain scheduler state for the same lifetime.
+8. Drain/join runtime and scheduler workers, drop every shared handle, then
+   consume the owner with `Observability::shutdown(self)`.
 
 The template module `daemon::observability` centralises step 3–4 so generated
 `main.rs` stays a thin orchestration layer.
 
 The cron contract also exposes `SqliteScheduleStore::open_with_logger` and
 `supervise_with_logger` and propagates the handle through compose, host, and
-run internals. Existing `open`, jitter, and `supervise` entry points remain
-source-compatible by delegating with the fixed `sc-cron` Noop identity.
+run internals. `Scheduler::open_with_logger` is the only public logger-aware
+scheduler construction path and installs one Arc into store, concrete
+`SystemJitter`, and `RunCoord`; there is no public wrapper jitter or
+post-construction `Scheduler::with_logger`. Existing `open`, jitter, and
+`supervise` entry points remain source-compatible by delegating with the
+fixed `sc-cron` Noop identity. Both supervision functions return
+`Result<Captured, CronError>`.
+
+Generated stderr errors are stable agent-facing strings in the established
+`CODE cause — recovery` form:
+`DAEMON.OBSERVABILITY cause — recovery`,
+`DAEMON.CRON_OPEN cause — recovery`, and
+`DAEMON.OBSERVABILITY_SHUTDOWN cause — recovery`. Bare `Display`/`Debug`,
+`anyhow`, and `Box<dyn Error>` reporting is forbidden. A build/open/run error
+remains primary if shutdown also fails; existing config, transport, and
+runtime failures keep their exact code, cause, and recovery strings.
+Shutdown becomes primary only after otherwise successful execution.
 
 ## Default logging layout (initial consumers)
 
@@ -149,7 +169,9 @@ Before library code can accept injection:
    runtime) on `sc-runtime` and `sc-cron`; consume the matching published
    types/runtime **1.5.1** patches. `sc-transport` remains out of this cut.
 2. Update **`REQ-RUN-0005`** forbidden/allowed edges and run `sc-lint-boundary`.
-3. Resolve the open **`tracing` bridge** item in [requirements](../requirements.md):
+3. Amend ADR-RUN-0003/0303 and ADR-CMD-0001 so the library and generated
+   feature graphs, and the command crate's types dependency, are consistent.
+4. Resolve the open **`tracing` bridge** item in [requirements](../requirements.md):
    prefer explicit **`LogEvent`** emission via injection; drop library `tracing`
    once migrated.
 
@@ -178,5 +200,12 @@ observability crate.
   returns `SharedCanonicalLog` without cloning `Logger`.
 - Rendered runtime and real scheduler receive the same handle; one HTTP event
   and `cron.scheduler/logger.attached` parse from the same JSONL file.
+- Isolated CI sends real SIGINT and SIGTERM to separate generated daemons on
+  temporary instance roots and proves bounded drain/join, cleanup, handle
+  drop, and consuming logger shutdown. The dedicated `ubuntu-latest` job sets
+  `SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST=1`; the test also requires
+  `GITHUB_ACTIONS=true` and `RUNNER_ENVIRONMENT=github-hosted`, so the marker
+  alone cannot enable it on a developer host. This is not a host-safe local
+  test.
 - No `sc-observability-otlp` in the template; OTel remains opt-in on the
   consumer `daemon` crate.
