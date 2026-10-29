@@ -88,17 +88,15 @@ migrates events. This repository does not own those upstream source trees or
 their publication. If matching releases are unavailable, this sprint is
 blocked at entry; it does not vendor a replacement.
 
-PR #84 (`integrate/phase-b-monty`) must first be merged. Acceptance reads its
-final hosted `mergeCommit.oid` and verifies that commit against fetched
-`origin/develop`; no moving head snapshot is treated as the merge proof.
+The baseline is `develop` after Track B Monty merged at `240e445`. This sprint
+extends that landed host contract with logger propagation; it does not reopen
+or restate the host allowlist, program-selection, or recovery rules.
 
 ## Relations
 
-PR #84 being merged is a phase entry prerequisite, not an edge into b-13.
-b-13 establishes the graph and requirement authority that b-14, b-15, and
-b-16 consume in the next wave.
-That prerequisite closes b-10 through b-12 and prevents this amendment from
-replanning their work.
+b-10 through b-12 are already part of the baseline. b-13 establishes the
+graph and requirement authority that b-14, b-15, and b-16 consume in the next
+wave without replanning that closed work.
 
 ## Upstream artifact consumed
 
@@ -237,6 +235,11 @@ forms delegate with the Noop. This sprint implements logger-aware
 `RunCoord.logger()` into this API, plus its worker and due-run event sites,
 without reopening these b-13 component files.
 
+`execute_feed_with_logger` is the internal logger-bearing counterpart of the
+landed `execute_feed_with_compose_program` path: it receives both the
+embedder-selected compose program and `SharedCanonicalLog`. It is not a new
+public entry point and does not replace `drive_feed` as the production path.
+
 This sprint migrates the component-owned events in its whole-file ownership:
 
 | Target | Action | Level | Outcome | `Diagnostic.code` | Required fields / cardinality |
@@ -308,6 +311,10 @@ this sprint; remaining cron taxonomy belongs to b-15.
    NFR-RUN-0010 to bind the generated real-daemon signal tests to the
    dedicated `ubuntu-latest` GitHub-hosted job and its fail-closed three-value
    detection contract; b-17 remains the sole integration acceptance root.
+   These are observability and release amendments only: do not remove,
+   shorten, or replace ADR-RUN-0013 section 4 or REQ-CRON-0003's landed host
+   bridge, `MontyHostConfig`, `drive_feed` /
+   `execute_feed_with_compose_program`, or recovery text.
 2. Add `sc-observability-types` to both boundary allowlists and crate
    manifests with the caret-compatible requirement `1.5.1`; enable its `test-util` feature only for
    dev-dependencies. Neither library may resolve `sc-observability` or OTLP.
@@ -354,43 +361,43 @@ this sprint; remaining cron taxonomy belongs to b-15.
 
 ## Acceptance criteria
 
-1. ADR-RUN-0004 / ADR-RUN-0007 / ADR-RUN-0013 / ADR-RT-0001: the amended decision and
-   requirement documents record the exact object-safe trait, Arc ownership,
-   Noop defaults, dependency edges, and best-effort failure policy.
-2. ADR-RUN-0004: boundary lint accepts the two types-only
-   edges and continues to reject the full runtime and OTLP.
-3. `boundary:BOUNDARY-sc-runtime`: rustdoc exposes `DaemonBuilder::logger`; the typestate
-   surface is exactly `logger`, `stores`, `routes`, `mcp`, and `run`.
-4. `boundary:BOUNDARY-sc-cron`: legacy `Scheduler::new` and `open` still
-   compile with Noop; `open_with_logger` is the only logger-aware public
-   construction path and installs one identical handle in store, jitter,
-   shared, and worker state.
-5. `boundary:BOUNDARY-sc-cron`: each scheduler shutdown branch emits its
-   fixed target/action/level/code once, and a rejecting emitter does not
-   change the returned shutdown result.
-6. ADR-RUN-0004 / ADR-RUN-0007: a rejecting emitter cannot
-   change any primary outcome; saturated and disconnected production logger
-   paths reject immediately without blocking scheduler, HTTP, process, or
-   Monty execution.
-7. `boundary:observability-injection`: legacy constructors install fixed
-   `sc-runtime` / `sc-cron` Noops without parsing application input or
-   panicking; only injection changes the service identity.
-8. ADR-RUN-0002: `cargo metadata` reports workspace version `0.1.1`, both
-   public crates package, `sc-cron` is publishable, and no release command has
-   been run by this sprint.
+1. ADR-RUN-0004 / ADR-RUN-0007 / ADR-RUN-0013 / ADR-RT-0001:
+   `observability_contract` for both crates passes against the documented
+   object-safe trait, Arc ownership, Noop defaults, dependency edges, and
+   best-effort failure policy.
+2. ADR-RUN-0004: the required `sc-lint lint sc-boundary` command exits zero
+   with both types-only edges allowed and the full runtime and OTLP rejected.
+3. `boundary:BOUNDARY-sc-runtime`: the runtime `observability_contract` test
+   passes only when `DaemonBuilder::logger` preserves typestate and the public
+   builder surface remains `logger`, `stores`, `routes`, `mcp`, and `run`.
+4. `boundary:BOUNDARY-sc-cron`: the cron `observability_contract` and
+   `observability_components` tests pass only when legacy constructors use a
+   Noop and `open_with_logger` installs one identical handle in store, jitter,
+   shared, and worker state as the sole public logger-aware constructor.
+5. `boundary:BOUNDARY-sc-cron`: `observability_components` passes only when
+   each scheduler shutdown branch emits its fixed row once and rejection does
+   not change the returned shutdown result.
+6. ADR-RUN-0004 / ADR-RUN-0007: both `observability_contract` tests pass only
+   when rejecting, saturated, and disconnected emitters return immediately
+   without changing scheduler, HTTP, process, or Monty outcomes.
+7. `boundary:observability-injection`: both `observability_contract` tests
+   pass only when legacy constructors install fixed `sc-runtime` / `sc-cron`
+   Noops and only explicit injection changes service identity.
+8. ADR-RUN-0002: both `cargo package --list` commands and `cargo metadata`
+   inspection pass with workspace version `0.1.1`, publishable `sc-runtime`
+   and `sc-cron`, and no publication performed by this sprint.
 
 ## Required validation
 
 ```sh
-test "$(gh pr view 84 --json state --jq '.state')" = MERGED
-git fetch origin develop
-git merge-base --is-ancestor "$(gh pr view 84 --json mergeCommit --jq '.mergeCommit.oid')" origin/develop
 cargo test -p sc-runtime --test observability_contract
 cargo test -p sc-cron --test observability_contract
+cargo test -p sc-cron --test observability_components
 cargo test -p sc-runtime --features test-util
 cargo test -p sc-cron
 cargo tree -p sc-runtime -e normal --depth 1 --prefix none
 cargo tree -p sc-cron -e normal --depth 1 --prefix none
+cargo metadata --no-deps --format-version 1
 cargo package --list -p sc-runtime
 cargo package --list -p sc-cron
 sc-lint lint sc-boundary --root . --config sc-lint.toml
@@ -398,7 +405,6 @@ sc-lint lint sc-boundary --root . --config sc-lint.toml
 rg -n '\bsupervise_with_logger\(' crates/sc-cron/src/hook.rs
 ! rg -n '\bsupervise\(' crates/sc-cron/src/hook.rs
 ! rg -n 'enqueue_blocking|\.log\(' crates/sc-runtime crates/sc-cron
-just adr-run-0011
 just lint
 just lint gates
 ```

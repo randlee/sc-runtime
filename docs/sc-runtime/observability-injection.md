@@ -77,6 +77,12 @@ Order is fixed ([REQ-RUN-0309](../requirements.md)):
 The template module `daemon::observability` centralises step 3–4 so generated
 `main.rs` stays a thin orchestration layer.
 
+For application authors, the normal interface is deliberately two calls:
+`.logger(handle)` on the runtime builder and `Scheduler::open_with_logger`
+when cron is enabled. Applications own construction, configuration, and
+shutdown of the concrete logger; neither library imports application config
+or requires the full observability runtime.
+
 The cron contract also exposes `SqliteScheduleStore::open_with_logger` and
 `supervise_with_logger` and propagates the handle through compose, host, and
 run internals. `Scheduler::open_with_logger` is the only public logger-aware

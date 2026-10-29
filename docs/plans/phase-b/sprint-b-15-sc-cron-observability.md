@@ -120,7 +120,7 @@ field keys. Every failed emission is ignored after the attempt.
    At the worker-owned call site, pass `RunCoord`'s `SharedCanonicalLog`
    through `run_target` into b-13's logger-aware `PythonHook` API. `hook.rs`
    remains wholly b-13-owned, so the sprints never overlap an exact path.
-2. REQ-CRON-0003 / NFR-CRON-0001: preserve PR #84's stable Monty codes (`DUE_JOIN_FAILED`,
+2. REQ-CRON-0003 / NFR-CRON-0001: preserve the baseline's stable Monty codes (`DUE_JOIN_FAILED`,
    `FEED_JOIN_FAILED`) and compose deadline/process-group implementation.
 3. REQ-CRON-0005: replace persisted `"resolve: ..."` and
    job-panic prose with exact `CODE: detail; recovery` shapes:
@@ -141,26 +141,28 @@ field keys. Every failed emission is ignored after the attempt.
 
 ## Acceptance criteria
 
-1. `boundary:BOUNDARY-sc-cron`: native and Monty runs emit one terminal event
-   using the complete `RunOutcome` table; arbitrary consumer strings are
-   copied, never parsed, and every internal resolver/join failure also emits
-   its exact fixed origin-code row.
-2. ADR-RUN-0013: stop and retry decisions are unchanged when emission
-   rejects every event.
-3. `boundary:BOUNDARY-sc-cron`: tests coordinate with condition/deadline helpers and add
-   no fixed-delay sleep.
-4. `boundary:BOUNDARY-sc-cron`: identifiers correlate scheduler, worker, and process/feed
-   records without bodies, hook source, or secret values.
-5. The previously closed allowlist, host deadline, process-group kill, and
-   render-only host behavior are verified, not reimplemented.
-6. `boundary:BOUNDARY-sc-cron`: table-driven tests trigger every row above
-   and assert exact target, action, level, outcome, `Diagnostic.code`,
-   required fields, terminal `RunOutcome` mapping, and stated
-   cardinality; the complete owned-file grep below returns no tracing site.
-7. `boundary:BOUNDARY-sc-cron`: worker tests prove the identical Arc is
-   passed from `RunCoord` through `run_target` into b-13's logger-aware
-   `PythonHook`; the typed formatter is the only producer of the two stable
-   display strings.
+1. `boundary:BOUNDARY-sc-cron`: `observability` passes only when native and
+   Monty runs emit one terminal event from the complete `RunOutcome` table,
+   arbitrary strings are copied rather than parsed, and each resolver/join
+   origin emits its fixed code.
+2. ADR-RUN-0013: `observability` passes only when rejecting every event leaves
+   stop and retry decisions unchanged.
+3. `boundary:BOUNDARY-sc-cron`: `observability` and `monty_hook` pass with
+   condition/deadline coordination, and the required sleep grep finds no
+   fixed-delay sleep in `monty_hook`.
+4. `boundary:BOUNDARY-sc-cron`: `observability` passes only when identifiers
+   correlate scheduler, worker, and process/feed records without bodies, hook
+   source, or secrets.
+5. `cargo +1.96.1 test -p sc-cron --features monty` passes against the landed
+   allowlist, host deadline, process-group kill, and render-only host behavior
+   without this sprint reimplementing those components.
+6. `boundary:BOUNDARY-sc-cron`: the table-driven `observability` test passes
+   every exact event row and cardinality, and the owned-file tracing grep
+   returns no match.
+7. `boundary:BOUNDARY-sc-cron`: worker cases in `observability` pass only when
+   the identical Arc reaches b-13's logger-aware `PythonHook`; the required
+   `run_target|PythonHook` search identifies those owned call sites and the
+   typed formatter remains the only producer of the two display strings.
 
 ## Required validation
 
@@ -170,7 +172,7 @@ cargo test -p sc-cron
 cargo +1.96.1 test -p sc-cron --features monty
 cargo clippy -p sc-cron --all-targets --all-features -- -D warnings
 cargo check --workspace
-! rg -n '#\[(tracing::)?instrument|tracing::|(trace|debug|info|warn|error|event|span|trace_span|debug_span|info_span|warn_span|error_span)!' crates/sc-cron/src
+! rg -n '#\[(tracing::)?instrument|tracing::|(trace|debug|info|warn|error|event|span|trace_span|debug_span|info_span|warn_span|error_span)!' crates/sc-cron/src/worker.rs crates/sc-cron/src/worker/worker_runs.rs crates/sc-cron/src/scheduler/run_due.rs
 rg -n 'run_target|PythonHook' crates/sc-cron/src/worker.rs crates/sc-cron/src/worker/worker_runs.rs crates/sc-cron/src/scheduler/run_due.rs
 ! rg -n 'tokio::time::sleep|sleep\(' crates/sc-cron/tests/monty_hook.rs
 just adr-run-0011

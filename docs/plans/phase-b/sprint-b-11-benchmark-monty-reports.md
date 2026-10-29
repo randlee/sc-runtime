@@ -51,6 +51,14 @@ Monty `cron_tick` that calls that function and records the CLI render. The
 lab case `monty_host_bridge` is a standalone `MontyRepl::feed_start` in the
 bench and is not that artifact.
 
+Host resume spawns the embedder-configured program from `MontyHostConfig`;
+the default is the basename `sc-compose` on `PATH`. `sc-compose` is this
+repository's reference CLI for this benchmark, integration tests, and
+examples. Consumer applications may select another non-empty program path
+implementing the same host contract. Thus `production_bridge` demonstrates
+the scheduler -> `drive_feed` path with the default program; it does not
+require every embedder to ship `sc-compose`.
+
 `owned_paths` do not intersect `b-10`. The serial edge is the ext fn, not a
 shared file. Publishing only the lab cases could share a wave with `b-10`.
 That publisher would be a thin sprint: **#73** already runs the lab, and the

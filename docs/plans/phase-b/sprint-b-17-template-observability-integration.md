@@ -174,8 +174,8 @@ b-17 is blocked until sc-publish publishes a later qualified exact revision
 whose installer package contains no `docs/sprints/**`. This plan does not
 invent that future SHA. Once available, b-17 updates
 `release/sc-publish-pin.toml`, installs only from that exact revision, and
-proves its installed file inventory equals the explicit `owned_paths` set;
-the leaked upstream sprint-history document is never copied or owned here.
+proves the installer destination inventory is complete and package-safe; the
+leaked upstream sprint-history document is never copied or owned here.
 
 ## Fixed composition signatures
 
@@ -288,12 +288,13 @@ the three literal codes above and do not duplicate the layout.
    `sc-runtime-db-sqlite` remains unpublished. Advance the current rejected
    pin to a later qualified exact kit revision with no `docs/sprints/**`.
    `test_pinned_publish_kit_inventory` must enumerate installer destination
-   paths and assert exact equality with the installed-output subset of
-   `owned_paths`; any `docs/sprints/**` destination fails closed.
+   paths, reject path traversal and package-unsafe destinations, and fail
+   closed on any `docs/sprints/**` destination. It must not read sprint
+   frontmatter or couple the product installer inventory to `owned_paths`.
    From a clean checkout, fetch
    the repository and exact revision in `release/sc-publish-pin.toml`, detach
    at `FETCH_HEAD`, bootstrap the pinned renderer, run the real installer,
-   and commit every exact installed output listed in `owned_paths`. Require a
+   and commit every exact installed output produced by that install. Require a
    clean repeat `--dry-run` and git drift check. Add the release-mode generated
    contract preflight and document that
    a human release owner with crates.io credentials must authorize and observe
@@ -321,41 +322,43 @@ the three literal codes above and do not duplicate the layout.
 
 ## Acceptance criteria
 
-1. REQ-RUN-0309 / REQ-RUN-0004: config -> log root -> logger -> shared injection -> run ->
-   shutdown order is explicit and tested.
+1. REQ-RUN-0309 / REQ-RUN-0004: `test_observability` passes only when config
+   -> log root -> logger -> shared injection -> run -> shutdown order is
+   explicit and observed.
 2. REQ-RT-0001 / REQ-RT-0004 / NFR-RT-0001 / NFR-RT-0002 /
-   NFR-RT-0003 / NFR-RT-0004: the rendered daemon injects through the
-   unchanged builder typestate, writes correlated canonical HTTP events
-   to its configured JSONL file.
-3. REQ-CRON-0005 / ADR-RUN-0014: opening the real generated scheduler with the injected
-   handle writes the real cron attachment event; no fake emitter stands in for
-   the production logger in this integration proof, and `0`/`null`/positive
-   schedule-limit mappings are exact.
+   NFR-RT-0003 / NFR-RT-0004: `test_observability` passes only when the
+   rendered daemon injects through unchanged builder typestate and writes
+   correlated canonical HTTP events to its configured JSONL file.
+3. REQ-CRON-0005 / ADR-RUN-0014: `test_schedule_limit_mapping` and the full
+   `test_observability` suite pass only when the real generated scheduler
+   writes the real cron attachment event and maps `0`/`null`/positive limits
+   exactly, without a fake emitter in this integration proof.
 4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: b-14/b-15
-   rejecting-emitter contract tests remain the authoritative immediate,
-   best-effort emission proof; this integration test verifies only reachable
+   rejecting-emitter contract tests remain the authoritative
+   immediate, best-effort proof; `test_observability` passes only for reachable
    generated-process result/shutdown precedence and production JSONL output.
-5. REQ-RUN-0005: this repository's workspace library crates exclude the full
-   observability runtime; the generated daemon remains the sole composition
-   root that owns it.
+5. REQ-RUN-0005: `cargo tree` for the generated daemon and b-13's direct-tree
+   checks pass only when workspace libraries exclude the full observability
+   runtime and the generated daemon remains its sole composition root.
 6. REQ-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0503 / REQ-RUN-0701 /
    REQ-RUN-0702: the current bad pin has been replaced by a qualified exact
    later revision; its package inventory contains no `docs/sprints/**`. The
-   real install from that exact pinned kit revision owns and
-   synchronizes every listed manifest, workflow, script, action, agent, skill,
-   and kit document; its repeat dry-run and git drift checks are clean,
-   generated preflight passes, the human-authorized publish follows orders 1 through 5,
+   `test_pinned_publish_kit_inventory`, the real install/dry-run/drift block,
+   consumer preflight, and the registry-only test pass. Together they prove
+   the exact pinned kit synchronizes its complete package-safe destination
+   inventory, the human-authorized publish follows orders 1 through 5,
    and a subsequent `--release` generated build resolves all internal crates
    from the registry with no checkout patch. The PR workflow has exactly one
    matrix entry per answers fixture, and the sqlite-mcp entry closes the
    exact generate -> setup -> lint -> test -> build-cli -> build-daemon
    no-source-edits sequence.
-7. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006: the dedicated
-   GitHub-hosted ephemeral job proves both real SIGINT and SIGTERM paths with
+7. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006:
+   `test_signal_shutdown_isolated_ci` passes in the dedicated GitHub-hosted
+   ephemeral job for both real SIGINT and SIGTERM paths with
    temporary instance roots, released instance/endpoint locks, removed
    sockets, and no leaked process or shared logger handle.
-8. NFR-RUN-0008: `just lint` reports the sc-lint line-count gate clean for
-   all generated production Rust sources; no behavior claim is attached.
+8. NFR-RUN-0008: `just lint gates` exits zero with the line-count gate clean
+   for all generated production Rust sources; no behavior claim is attached.
 
 ## Required validation
 
@@ -400,13 +403,6 @@ cargo test --manifest-path generated/test-observability/Cargo.toml --workspace
 cargo test --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features cron
 cargo +1.96.1 check --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon -e normal
-test "$(rg -F -o '"DAEMON.OBSERVABILITY"' template/crates/daemon/src | wc -l | tr -d ' ')" -eq 1
-test "$(rg -F -o '"DAEMON.CRON_OPEN"' template/crates/daemon/src | wc -l | tr -d ' ')" -eq 1
-test "$(rg -F -o '"DAEMON.OBSERVABILITY_SHUTDOWN"' template/crates/daemon/src | wc -l | tr -d ' ')" -eq 1
-rg -n 'fn format_agent_error' template/crates/daemon/src
-test "$(rg -F -o 'format!("{code} {cause} — {recovery}")' template/crates/daemon/src | wc -l | tr -d ' ')" -eq 1
-! rg -n 'Box<dyn (std::error::)?Error>|eprintln!\([^,]*\{[?:#]?\}' template/crates/daemon/src
-just adr-run-0011
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
 just lint gates
 ```

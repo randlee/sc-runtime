@@ -4,6 +4,10 @@
 **Status:** Planning input only  
 **Bead:** (create epic when plan exists)
 
+> Historical discovery snapshot: Track B Monty is now on `develop` at merge
+> `240e445`. For binding host behavior use the landed b-10/b-11 documents,
+> ADR-RUN-0013 section 4, and REQ-CRON-0003; this outline is not authority.
+
 ## One-line goal
 
 Take `HookTarget::Monty` from “works in lab + minimal production bridge” to a **shippable, ADR-aligned, CI-stable** Monty cron path: same reliability and operability as Rust/Python hooks, with compose host calls bounded and observable.

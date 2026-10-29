@@ -85,22 +85,23 @@ handler response never has its body inspected to manufacture a code.
 
 ## Acceptance criteria
 
-1. `boundary:BOUNDARY-sc-runtime`: a successful request produces start then
-   finish with the response ID.
-2. `boundary:BOUNDARY-sc-runtime`: a handler timeout produces start then
-   error with `RUNTIME.REQUEST_TIMEOUT`; a drain timeout separately produces
+1. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when a
+   successful request emits start then finish with the response ID.
+2. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when a
+   handler timeout emits `RUNTIME.REQUEST_TIMEOUT` and a drain timeout emits
    `RUNTIME.DRAIN_TIMEOUT`.
-3. `boundary:BOUNDARY-sc-runtime`: concurrent requests retain distinct IDs;
-   the signal regression drains and joins through the production shutdown
-   path, and tests use deadlines rather than fixed sleeps.
-4. ADR-RUN-0004 / ADR-RUN-0007: queue-full and disconnected
-   rejection returns immediately and changes no status, body, header,
-   counter, request deadline, or error.
-5. `boundary:BOUNDARY-sc-runtime`: no test asserts through another crate or a
-   full runtime sink.
-6. `boundary:BOUNDARY-sc-runtime`: an arbitrary coded or uncoded application
-   5xx emits `server_error` with no diagnostic, while both framework timeout
-   branches carry exactly their fixed diagnostic code.
+3. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when
+   concurrent requests retain distinct IDs and the real signal regression
+   drains and joins with deadline polling rather than fixed sleeps.
+4. ADR-RUN-0004 / ADR-RUN-0007: `observability_http` passes only when
+   queue-full and disconnected rejection returns immediately and changes no
+   status, body, header, counter, request deadline, or error.
+5. `boundary:BOUNDARY-sc-runtime`: the required boundary lint and
+   `cargo check --workspace` pass with tests using the types test double, not
+   another workspace crate or a full runtime sink.
+6. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when an
+   arbitrary application 5xx has no diagnostic and the two framework timeout
+   branches carry exactly their fixed codes.
 
 ## Required validation
 

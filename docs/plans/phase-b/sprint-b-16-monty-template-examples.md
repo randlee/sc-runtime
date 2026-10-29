@@ -39,14 +39,14 @@ vertical_rationale: One generated-product boundary owns the Cargo feature, check
 
 ## Goal
 
-Expose the already-implemented PR #84 Monty host contract in generated
-projects through an opt-in Cargo feature and one checked example. This is the
-remaining Monty product-surface work; it does not reopen b-10 through b-12.
+Expose the landed Track B Monty host contract in generated projects through
+an opt-in Cargo feature and one checked example. This is the remaining Monty
+product-surface work; it does not reopen b-10 through b-12.
 
 ## Relations
 
-PR #84 being merged is a phase entry prerequisite. The retained `must_follow`
-b-10 edge names the concrete `render_template` and render-only
+The baseline is `develop` after Track B Monty merged at `240e445`. The
+retained `must_follow` b-10 edge names the concrete `render_template` and render-only
 `sc_compose_run` host artifact that this example consumes. It also follows
 b-13 for amended REQ-CRON-0001 and ADR-RUN-0303 graph authority. This sprint is
 `parallel_safe` with b-14 and b-15 because it alone owns the shared
@@ -55,9 +55,14 @@ first because it consumes the `cron`/`monty` feature artifact.
 
 ## Consumed artifact
 
-PR #84 must be merged. The example consumes exactly `render_template` and the
-render-only `sc_compose_run`. It cannot select a root or another compose
-subcommand. The template Cargo files are owned only by this sprint. b-17
+The example consumes exactly `render_template` and the render-only
+`sc_compose_run`. It cannot select a root, program, or another compose
+subcommand. Program selection remains embedder policy through
+`MontyHostConfig`: the default is the basename `sc-compose` on `PATH`, and an
+application may select any other non-empty program path implementing the same
+host contract. `sc-compose` is this repository's reference CLI for tests,
+benchmarks, and examples, not a required dependency of every application.
+The template Cargo files are owned only by this sprint. b-17
 consumes the resulting `cron`/`monty` feature definitions and does not edit
 those files.
 
@@ -103,9 +108,11 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 4. ADR-RUN-0013 / NFR-CRON-0001: create
    `docs/sc-cron/monty-generated-example.md` documenting the generated path,
    feature enablement, input/output shape, and security limits. Monty source
-   is trusted, embedding-chosen in-process source, not a sandbox: untrusted
-   source is forbidden, and the render-only host allowlist does not remove
-   stack-overflow or allocator-abort risk.
+   is trusted, embedding-chosen in-process source, not a sandbox:
+   applications may provide trusted Monty source, untrusted source is
+   forbidden, and the render-only host allowlist does not remove
+   stack-overflow or allocator-abort risk. Do not shorten or replace the
+   landed ADR-RUN-0013 section 4 or REQ-CRON-0003 host contract.
 5. NFR-RUN-0005: add a generation test that renders the example and compiles the generated
    daemon with and without `monty`. Assert that a checkout render contains the
    local `sc-cron` patch and a `--release` render contains no
@@ -114,25 +121,30 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 
 ## Acceptance criteria
 
-1. `REQ-CRON-0001`: the generated daemon is the only generated crate with the
-   optional `sc-cron` edge; feature-off builds do not link it.
-2. `REQ-CRON-0003`: a rendered project has the opt-in Monty feature and the
-   checked example; default generation does not link Monty.
-3. `NFR-CRON-0001`: the default tree contains no Monty crates and the Monty
-   tree contains no `monty-pool`, `monty-fs`, or `monty-runtime`.
-4. `NFR-RUN-0005`: generation assertions are deterministic and use no sleep,
-   network, globally fixed project path, or external compose process.
-5. ADR-RUN-0013: the example contains no root/program override, invokes no
-   host other than the two allowed functions, and labels its source trusted
-   in-process code with accepted abort risk rather than a sandbox.
-6. ADR-RUN-0303: a checkout-rendered Cargo tree uses the recorded matching
-   observability pair and locally patched `sc-cron` at the exact future
-   registry version; the default feature tree does not enable
-   `sc-cron/monty`. Registry resolution itself belongs to b-17 after publish.
-7. ADR-RUN-0002: the two template manifests agree on the complete five-crate
+1. `REQ-CRON-0001`: `test_monty_example` and the two generated `cargo check`
+   commands pass with the generated daemon as the only generated crate with
+   the optional `sc-cron` edge; the feature-off build does not link it.
+2. `REQ-CRON-0003`: `test_monty_example` passes with the opt-in Monty feature
+   and checked example present; default generation does not link Monty.
+3. `NFR-CRON-0001`: the required `cargo tree` command passes inspection with
+   no Monty crate in the default tree and no `monty-pool`, `monty-fs`, or
+   `monty-runtime` in the Monty tree.
+4. `NFR-RUN-0005`: `test_monty_example` passes using a temporary output and
+   no sleep, network, globally fixed project path, or external compose process.
+5. ADR-RUN-0013: `test_monty_example` passes only when the example contains no
+   root/program override, invokes no host other than the two allowed
+   functions, and labels its source trusted in-process code with accepted
+   abort risk rather than a sandbox.
+6. ADR-RUN-0303: the required `cargo tree` and manifest `rg` commands pass
+   with the recorded matching observability pair and locally patched
+   `sc-cron`; the default feature tree does not enable `sc-cron/monty`.
+   Registry resolution itself belongs to b-17 after publish.
+7. ADR-RUN-0002: the manifest `rg` check and `test_monty_example` pass only
+   when the two template manifests agree on the complete five-crate
    internal inventory at `0.1.1`; checkout generation patches `sc-cron`
    locally, while release-mode generation emits no checkout patch.
-8. b-17 can consume the exact feature without reopening a Cargo manifest.
+8. `test_monty_example` passes with b-17 able to consume the exact feature
+   names without reopening a Cargo manifest.
 
 ## Required validation
 
@@ -142,6 +154,7 @@ just new generated/test-monty --var-file wizard/fixtures/sqlite-mcp.json
 cargo check --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon
 cargo +1.96.1 check --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon -e features
+cargo tree --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon -e features --features monty
 rg -n 'render_template|sc_compose_run|cron_stop|cron_tick' generated/test-monty/examples/monty/cron.py
 rg -n 'sc-(config|transport|command|runtime|cron).*0\.1\.1|sc-observability(-types)?.*1\.5\.1' template/Cargo.toml template/workspace.template.toml
 just lint gates

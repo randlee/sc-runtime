@@ -70,8 +70,9 @@ Plan and build the storage phase as one phase. One chain is the rusqlite writer,
 Waves 1–3 close on `integrate/phase-b`. Waves 4–5 are the Monty host bridge and the benchmark publisher on `integrate/phase-b-monty`, cut from `integrate/phase-b` and run in parallel with phase-end review. They do not gate that review. Coordination is [phase-b-integration-close.md](phase-b-integration-close.md).
 
 Sprints b-13 through b-17 are a Phase B continuation amendment, not a new
-phase. PR #84 must merge b-10 through b-12 before they begin, and none of that
-closed scope is replanned. Both continuation tracks integrate on
+phase. The baseline is `develop` after Track B Monty merged at `240e445`;
+b-10 through b-12 are closed scope and are not replanned. Both continuation
+tracks integrate on
 `integrate/phase-b-observability`; their sprint branches remain parallel and
 disjoint, and b-16 merges before b-17 consumes its feature.
 This amendment is authored on `plan/spinoff-monty-observability`; sprint
@@ -101,7 +102,7 @@ head; it does not relabel or materially expand b-10 through b-12.
 | `sc-cron` (Monty host bridge) | `b-10` | `render_template` resumed inside `monty_run::drive_feed` / `execute_feed_with_compose_program`; default `sc-compose` on `PATH` | `b-9`, for `HookTarget::Monty`. Branch `integrate/phase-b-monty` |
 | benchmark platform and Monty reports | `b-11` | benchmark-run skill, multi-subsystem layout (`scripts/benchmark/<subsystem>/`, `site/reports/benchmark-<subsystem>/`), HTML code examples, publish-preflight `benchmark-pass` gate, first subsystem `monty` with campaign case `production_bridge` | `b-10`, for the ext fn `render_template` |
 | `sc-cron` (schedule row limit) | `b-12` | optional embedder `max_schedule_rows`, template sc-config default 10, ADR-RUN-0014 implementation | `b-9` (on `develop`; parallel with Monty track) |
-| injected observability contract | `b-13` | upstream non-blocking types-only contract adoption, ADR/REQ amendments, boundary allowlists, public injection signatures, Noop defaults, whole jitter/store/process/Monty component propagation and events, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches; PR #84 merge is an external phase-entry gate |
+| injected observability contract | `b-13` | upstream non-blocking types-only contract adoption, ADR/REQ amendments, boundary allowlists, public injection signatures, Noop defaults, whole jitter/store/process/Monty component propagation and events, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches; Track B Monty is already present in the `develop` baseline |
 | `sc-runtime` canonical events | `b-14` | HTTP request lifecycle events through the injected handle | `b-13` |
 | `sc-cron` canonical events | `b-15` | due-run/worker event taxonomy and residual stable failure tokens | `b-13`, which owns scheduler and component logger seams plus component-owned events |
 | generated Monty product surface | `b-16` | both template dependency inventories, daemon Cargo `cron`/`monty` features, checked trusted-source hook example, product documentation | `b-10` host artifact and b-13 graph/REQ amendments; parallel with b-14 and b-15 |
@@ -159,6 +160,24 @@ is authoritative for its exact `owned_paths`, relations, branch, and model.
 | b-16 | monty-product / `generated-daemon-monty` | checkout/registry template Cargo inventories, trusted-source example, docs, render test | b-10 `render_template`/render-only `sc_compose_run` plus b-13 graph authority |
 | b-17 | observability / `generated-daemon-observability` | generated composition, smoke test, sc-publish pin/input plus every exact pinned-kit installed output | b-14 events, b-15 events, b-16 Cargo features and exact `0.1.1` pins; a later qualifying kit revision with no `docs/sprints/**` |
 
+The compose program is embedder policy. Host resume spawns the program selected
+by `MontyHostConfig`; its default is the basename `sc-compose` on `PATH`.
+`sc-compose` is this repository's reference CLI for benchmarks, integration
+tests, and examples, while a consumer application may select another binary
+that implements the same host contract. The `production_bridge` benchmark
+demonstrates `Scheduler::run_due` -> `drive_feed` with the default program; it
+does not require every embedder to ship `sc-compose`.
+
+### Continuation acceptance roots
+
+| Contract or product surface | Single acceptance root | Consuming sprints |
+|---|---|---|
+| injected types edge, Noop compatibility, and public library injection seams | b-13 contract tests plus boundary lint | b-14, b-15, b-17 consume; they do not redefine the seams |
+| canonical HTTP event taxonomy | b-14 `observability_http` test | b-17 consumes the events in its generated-process proof |
+| canonical cron event taxonomy | b-15 `observability` test | b-17 consumes the events in its generated-process proof |
+| generated `cron`/`monty` product surface and trusted-source example | b-16 `test_monty_example` | b-17 consumes the Cargo features without reopening them |
+| generated composition, JSONL, release, and signal-shutdown proof | b-17 `test_observability` and consumer preflight | none; this is the continuation integration close |
+
 Static review must parse the five frontmatter blocks, reject duplicate exact
 owned paths inside a wave, and verify every `.sprints/b/structure.ttl`
 criteria path exists. This checks the authoritative source without creating a
@@ -205,8 +224,10 @@ b-15 and b-16 all `must_follow` b-13; b-16 also names b-10's host artifact.
 The current sc-publish pin is not a valid b-17 input because its installer
 package includes upstream sprint history under `docs/sprints/**`. b-17 is
 blocked until an exact later qualifying revision exists; it then owns the pin
-advance and proves the installed inventory exactly matches its explicit
-installed-output paths. This plan does not invent the future revision.
+advance and proves the installer destination inventory is complete,
+package-safe, and excludes `docs/sprints/**`. Product inventory validation is
+independent of sprint frontmatter. This plan does not invent the future
+revision.
 
 `b-10` and `b-11` are not one wave. Their `owned_paths` are disjoint, so the `must_follow` edge is not a shared file. `b-11` consumes `render_template` from `b-10`. A lab-only publisher in wave 4 would be a thin sprint and would not remove that edge. The cron chain `b-1` → `b-3` → `b-9` → `b-10` → `b-11` is length 5 because waves 4–5 sit after the Monty target. Those waves are not on the phase-close critical path. [phase-b-integration-close.md](phase-b-integration-close.md) records that split.
 
