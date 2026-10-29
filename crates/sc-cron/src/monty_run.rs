@@ -572,12 +572,10 @@ fn resume_compose_run(
     if crate::monty_host::host_budget_exhausted(host_deadline) {
         return Err(timed_out());
     }
-    let result =
-        match crate::monty_host::sc_compose_run(&subcommand, &args, compose_program, host_deadline)
-        {
-            Ok(result) => result,
-            Err(error) => return Err(after_compose(&error, stage, host_deadline)),
-        };
+    let result = match crate::monty_host::sc_compose_run(&subcommand, &args, compose_program) {
+        Ok(result) => result,
+        Err(error) => return Err(after_compose(&error, stage, host_deadline)),
+    };
     if crate::monty_host::host_budget_exhausted(host_deadline) {
         return Err(timed_out());
     }
@@ -634,12 +632,7 @@ fn resume_render(
     if crate::monty_host::host_budget_exhausted(host_deadline) {
         return Err(timed_out());
     }
-    let rendered = match crate::monty_host::render_template(
-        &template,
-        &context,
-        compose_program,
-        host_deadline,
-    ) {
+    let rendered = match crate::monty_host::render_template(&template, &context, compose_program) {
         Ok(rendered) => rendered,
         Err(error) => return Err(after_compose(&error, stage, host_deadline)),
     };
@@ -660,9 +653,6 @@ fn after_compose(
     stage: FeedStage,
     host_deadline: Option<Instant>,
 ) -> FeedDone {
-    if matches!(error, ComposeHostError::HostTimedOut { .. }) {
-        return timed_out();
-    }
     if error.child_exited() && crate::monty_host::host_budget_exhausted(host_deadline) {
         return timed_out();
     }
@@ -781,18 +771,6 @@ mod tests {
             }
             other => panic!("expected Failed, got {other:?}"),
         }
-    }
-
-    #[test]
-    fn host_timed_out_maps_to_timed_out() {
-        let error = ComposeHostError::HostTimedOut {
-            program: "sc-compose".to_owned(),
-        };
-        let done = after_compose(&error, FeedStage::Tick, None);
-        assert!(matches!(
-            done.result,
-            FeedResult::Outcome(RunOutcome::TimedOut)
-        ));
     }
 
     #[test]

@@ -91,7 +91,7 @@ table. This sprint does not parse expressions and does not add a table.
 
 The `render_template` / `ComposeHostError` contract below is the same contract
 as `docs/sc-cron/architecture.md` and `crates/sc-cron/src/monty_host.rs`:
-`ComposeProgram`, and eight crate-private `ComposeHostError` variants.
+`ComposeProgram`, and nine crate-private `ComposeHostError` variants.
 `CronError` stays the seven public variants.
 
 `MontyRepl::call_function` cannot resume host functions on monty 1.4.0; only
@@ -124,6 +124,7 @@ pub(crate) enum ComposeHostError {
     OutputNotUtf8 { program: String },
     OutputTooLarge { program: String },
     NonZeroExit { status: Option<i32>, stderr: String },
+    SubcommandDenied { subcommand: String },
 }
 
 impl ComposeHostError {
@@ -217,11 +218,13 @@ No new `CronError` variant.
 | Stdout is not UTF-8 (`OutputNotUtf8`) | `COMPOSE_OUTPUT` | `Failed` | Fix the compose program so its stdout is UTF-8. |
 | Stdout longer than the hook output cap (`OutputTooLarge`) | `COMPOSE_OUTPUT` | `Failed` | Shrink the rendered output. |
 | CLI exits non-zero (`NonZeroExit`) | `COMPOSE_EXIT` | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
+| Denied `sc-compose` subcommand (`SubcommandDenied`) | `COMPOSE_SUBCOMMAND` | `Failed` | Call `sc_compose_run` with subcommand `render` only. `bead`, `init`, and `extract` are denied. |
 | Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
 | Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
-| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; host functions are allowlisted; `OsCall` is not. |
+| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
 | `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
+| Monty feed task join failed (cancelled blocking-pool task) | `FEED_TASK_FAILED` | `Failed` | Retry the run; if it persists, inspect blocking-pool capacity and hook source. |
 | After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
 | Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
 

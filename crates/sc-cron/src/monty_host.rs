@@ -123,14 +123,12 @@ pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
 /// when `context` cannot be encoded, [`ComposeHostError::ProgramNotRunnable`]
 /// when the process cannot be started, [`ComposeHostError::OutputNotUtf8`] when
 /// stdout is not UTF-8, [`ComposeHostError::OutputTooLarge`] when stdout
-/// exceeds the hook output cap, [`ComposeHostError::HostTimedOut`] when the
-/// host budget expires while waiting on the compose group, and
+/// exceeds the hook output cap, and
 /// [`ComposeHostError::NonZeroExit`] when the child exits non-zero.
 pub(crate) fn render_template(
     template: &str,
     context: &Value,
     compose_program: ComposeProgram<'_>,
-    host_deadline: Option<Instant>,
 ) -> Result<String, ComposeHostError> {
     let program = compose_program.as_str();
     let dir = tempfile::TempDir::new().map_err(|source| ComposeHostError::TempRootFailed {
@@ -146,7 +144,7 @@ pub(crate) fn render_template(
         })?;
     std::fs::write(root.join("v.json"), context_bytes)
         .map_err(|source| stage_failed(program, source))?;
-    crate::monty_compose::run_compose_child(program, root, host_deadline)
+    crate::monty_compose::run_compose_child(program, root)
 }
 
 /// The only [`sc_compose_run`] subcommand production feeds spawn.
@@ -176,7 +174,6 @@ pub(crate) fn sc_compose_run(
     subcommand: &str,
     args: &[String],
     compose_program: ComposeProgram<'_>,
-    host_deadline: Option<Instant>,
 ) -> Result<crate::monty_compose::ComposeRunResult, ComposeHostError> {
     if !sc_compose_subcommand_allowed(subcommand) {
         return Err(ComposeHostError::SubcommandDenied {
@@ -185,7 +182,7 @@ pub(crate) fn sc_compose_run(
     }
     let staged = strip_hook_chosen_root(args);
     let (template, context) = staged_render_inputs(compose_program.as_str(), &staged)?;
-    let stdout = render_template(&template, &context, compose_program, host_deadline)?;
+    let stdout = render_template(&template, &context, compose_program)?;
     Ok(crate::monty_compose::ComposeRunResult {
         stdout,
         stderr: String::new(),
@@ -579,7 +576,6 @@ mod tests {
             "Hello",
             &json!({}),
             ComposeProgram::new("sc-cron-missing-compose-b10"),
-            None,
         )
         .expect_err("missing");
         assert!(
@@ -738,7 +734,6 @@ def cron_tick(hook):
             "Hello {{ name }}",
             &json!({"name": "cron"}),
             ComposeProgram::SC_COMPOSE,
-            None,
         )
         .expect("sc-compose");
         assert!(
@@ -773,13 +768,8 @@ def cron_tick(hook):
         let dir = tempfile::TempDir::new().expect("dir");
         let script = linked_fixture(dir.path(), "compose-stub", "compose_record_argv.sh");
         let program = script.to_str().expect("utf8 path");
-        let rendered = render_template(
-            "ignored",
-            &json!({"n": 1}),
-            ComposeProgram::new(program),
-            None,
-        )
-        .expect("stub");
+        let rendered = render_template("ignored", &json!({"n": 1}), ComposeProgram::new(program))
+            .expect("stub");
         assert_eq!(rendered, "rendered");
         let argv = std::fs::read_to_string(dir.path().join("argv.txt")).expect("argv");
         for flag in [
@@ -828,7 +818,6 @@ def cron_tick(hook):
                 subcommand,
                 &["--root".to_owned(), "/tmp".to_owned()],
                 ComposeProgram::new("sc-cron-missing-compose-b10"),
-                None,
             )
             .expect_err(subcommand);
             assert_eq!(error.code(), "COMPOSE_SUBCOMMAND", "{subcommand}: {error}");
@@ -851,7 +840,6 @@ def cron_tick(hook):
                 "/etc/passwd".to_owned(),
             ],
             ComposeProgram::new("sc-cron-missing-compose-b10"),
-            None,
         )
         .expect_err("flag");
         assert_eq!(error.code(), "COMPOSE_SUBCOMMAND");
@@ -877,7 +865,6 @@ def cron_tick(hook):
                 "--root=/tmp/sc-cron-hook-chosen-root-eq".to_owned(),
             ],
             ComposeProgram::new(program),
-            None,
         )
         .expect("staged render");
         assert_eq!(result.exit_code, Some(0));
@@ -934,7 +921,7 @@ def cron_tick(hook):
         let script = fixture_path("compose_fail.sh");
         let program = script.to_str().expect("utf8 path");
         let error =
-            render_template("t", &json!({}), ComposeProgram::new(program), None).expect_err("exit");
+            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("exit");
         match error {
             ComposeHostError::NonZeroExit { status, stderr } => {
                 assert_eq!(status, Some(7));
@@ -953,8 +940,8 @@ def cron_tick(hook):
             std::fs::set_permissions(&blocked, permissions).expect("chmod");
         }
         let program = blocked.to_str().expect("utf8 path");
-        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
-            .expect_err("spawn");
+        let error =
+            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("spawn");
         assert!(
             matches!(error, ComposeHostError::ProgramNotRunnable { .. }),
             "{error}"
@@ -968,8 +955,8 @@ def cron_tick(hook):
     fn stdout_past_the_hook_cap_is_compose_output() {
         let script = fixture_path("compose_flood.sh");
         let program = script.to_str().expect("utf8 path");
-        let error = render_template("t", &json!({}), ComposeProgram::new(program), None)
-            .expect_err("flood");
+        let error =
+            render_template("t", &json!({}), ComposeProgram::new(program)).expect_err("flood");
         assert!(
             matches!(error, ComposeHostError::OutputTooLarge { .. }),
             "{error}"

@@ -201,10 +201,7 @@ def cron_tick(hook):
             "deadline": "2026-10-19T00:01:00Z",
         });
         let deadline = Instant::now() + Duration::from_secs(5);
-        std::thread::spawn(move || {
-            std::thread::sleep(Duration::from_millis(50));
-            std::fs::write(release, b"go").expect("release");
-        });
+        std::fs::write(&release, b"go").expect("release");
         let done = execute_feed(
             None,
             HOLD_SNIPPET,

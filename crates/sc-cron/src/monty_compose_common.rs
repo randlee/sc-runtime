@@ -61,11 +61,6 @@ pub(crate) enum ComposeHostError {
         /// Capped stderr text from the child.
         stderr: String,
     },
-    /// The host row budget expired while waiting on the compose child group.
-    HostTimedOut {
-        /// Program name or path that was still running.
-        program: String,
-    },
     /// Hook asked for a subcommand this host bridge does not expose.
     SubcommandDenied {
         /// Requested top-level command name.
@@ -93,7 +88,6 @@ impl ComposeHostError {
             Self::ProgramNotRunnable { .. } => "COMPOSE_NOT_RUNNABLE",
             Self::OutputNotUtf8 { .. } | Self::OutputTooLarge { .. } => "COMPOSE_OUTPUT",
             Self::NonZeroExit { .. } => "COMPOSE_EXIT",
-            Self::HostTimedOut { .. } => "COMPOSE_HOST_TIMEOUT",
             Self::SubcommandDenied { .. } => "COMPOSE_SUBCOMMAND",
         }
     }
@@ -118,9 +112,6 @@ impl ComposeHostError {
             Self::OutputTooLarge { .. } => "Shrink the rendered output.",
             Self::NonZeroExit { .. } => {
                 "Fix template/context or run `sc-compose render` manually with the logged stderr."
-            }
-            Self::HostTimedOut { .. } => {
-                "Reduce compose work or raise the row deadline; the compose group was stopped at the host budget."
             }
             Self::SubcommandDenied { .. } => {
                 "Call `sc_compose_run` with subcommand `render` only. `bead`, `init`, and `extract` are denied."
@@ -172,12 +163,6 @@ impl fmt::Display for ComposeHostError {
                 Some(status) => write!(formatter, "compose exited {status}: {stderr}"),
                 None => write!(formatter, "compose exited from a signal: {stderr}"),
             },
-            Self::HostTimedOut { program } => {
-                write!(
-                    formatter,
-                    "compose program {program} exceeded the host row budget"
-                )
-            }
             Self::SubcommandDenied { subcommand } => {
                 write!(
                     formatter,
@@ -199,7 +184,6 @@ impl std::error::Error for ComposeHostError {
             | Self::OutputNotUtf8 { .. }
             | Self::OutputTooLarge { .. }
             | Self::NonZeroExit { .. }
-            | Self::HostTimedOut { .. }
             | Self::SubcommandDenied { .. } => None,
         }
     }
