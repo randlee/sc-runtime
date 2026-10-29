@@ -268,20 +268,36 @@ runs it. The same gate is already used for `monty_hook`.
 ## ADR-RUN-0013 amendment
 
 On the `b-9` text of point 4, add: under feature `monty`, a hook may call the
-host function `render_template(template, context)`; sc-cron resumes it by
-spawning `sc-compose` on `PATH` against a temp root the hook cannot choose;
-`OsCall` and any other function name fail the feed; the tick does not start
-CPython. **Replace** the `b-9` Monty timeout sentence for time inside
-`render_template`: `ResourceTracker` pauses `max_feed_duration` while the feed
-is suspended on that host call; the blocking-pool thread stalls until the compose `Command` returns; after that child exits, a host `Instant` past the row budget records `RunOutcome::TimedOut` and drops the repl (this is **not** a Monty feed-time-limit error).
-Add a consequence naming sprint `b-10`.
+host functions `render_template(template, context)` and
+`sc_compose_run(subcommand, args)`. sc-cron resumes those calls inside
+`execute_feed` by spawning the compose program the embedder set with
+`Scheduler::with_monty_host` and `MontyHostConfig`. The default, when the
+embedder does not call `with_monty_host`, is the basename `sc-compose` on
+`PATH` (install that binary or symlink the name). `MontyHostConfig::new`
+accepts any non-empty path and returns `CronError::InvalidSpec` when the path
+is empty. A basename is resolved on `PATH`; an absolute path, or any other
+non-empty path, is spawned as given. Hook source cannot choose the program or
+the temp root. `OsCall` and any other host function name fail the feed. The
+tick does not start CPython. **Replace** the `b-9` Monty timeout sentence for
+time inside the host call: `ResourceTracker` pauses `max_feed_duration` while
+the feed is suspended on that host call; the blocking-pool thread stalls until
+the compose `Command` returns; after that child exits, a host `Instant` past
+the row budget records `RunOutcome::TimedOut` and drops the repl (this is
+**not** a Monty feed-time-limit error). The `b-10` consequence names this
+embedder program rule. The amendment is **Active** in
+[ADR-RUN-0013](../../architecture.md): the embedder sets the compose program
+through `MontyHostConfig`.
 
-`REQ-CRON-0003` gains one sentence for that call. A missing compose program
-during `render_template` records `RunOutcome::Failed` naming the program (not
-`HookFailed`). `docs/sc-cron/architecture.md` shows the signature and error
-table above. `docs/sc-cron/hooks-sc-compose.md` states that production ships in
-`execute_feed` (which may call `feed_start` internally) and that the standalone
-lab `MontyRepl::feed_start` in the bench is not the production path.
+`REQ-CRON-0003` gains one sentence for those calls and for `MontyHostConfig` /
+`Scheduler::with_monty_host`. A missing compose program during
+`render_template` records `RunOutcome::Failed` naming the program (not
+`HookFailed`). `docs/sc-cron/architecture.md` shows the signature, the embedder
+program rule, and the error table above. `docs/sc-cron/hooks-sc-compose.md`
+states that production ships in `execute_feed` (which may call `feed_start`
+internally), that the compose program is `MontyHostConfig` (default
+`sc-compose` on `PATH`; hook source cannot choose the program or the temp
+root), and that the standalone lab `MontyRepl::feed_start` in the bench is not
+the production path.
 
 ## Deliverables
 
@@ -289,7 +305,7 @@ lab `MontyRepl::feed_start` in the bench is not the production path.
 2. `REQ-CRON-0005` and `NFR-RUN-0009`: the error table above, the same rows as `docs/sc-cron/architecture.md`. `CronError` stays seven variants. `ComposeHostError` is not an eighth public variant.
 3. `REQ-CRON-0001`, `NFR-CRON-0001`, and `REQ-RUN-0005`: no workspace dependency, no boundary-manifest edit, no `Cargo.lock` edit. The `Cargo.toml` `[[test]]` entry only sets `required-features`.
 4. `NFR-RUN-0005`: the bridge test uses `tempfile::TempDir`, injects the compose program name (not PATH mutation), and does not call `std::env::set_var`.
-5. ADR-RUN-0013 point 4 (including the `render_template` host-timeout sentence above), the new consequence, the `REQ-CRON-0003` sentence, and the hooks note.
+5. ADR-RUN-0013 point 4 (including the host-timeout sentence above and the Active embedder program rule: `Scheduler::with_monty_host` / `MontyHostConfig`, default basename `sc-compose` on `PATH`, any non-empty path legal, empty path `CronError::InvalidSpec`, hook source cannot choose the program or the temp root), the matching `b-10` consequence, the `REQ-CRON-0003` sentence, and the hooks note.
 6. `REQ-CRON-0002` and `REQ-CRON-0004`: no expression-parser change and no new table.
 7. `NFR-RUN-0004`: the compose child is waited with `std::process::Child::wait` on the blocking-pool thread, as justified above, and does not call `process::supervise` or stop the child at the row budget.
 8. `NFR-RUN-0008`: `monty_host.rs`, `monty_compose.rs`, and `monty_run.rs` stay within 1000 source lines.
@@ -298,12 +314,12 @@ lab `MontyRepl::feed_start` in the bench is not the production path.
 
 Root: `boundary:sc-cron` and ADR-RUN-0013 as amended here.
 
-- `cargo test -p sc-cron --features monty --test monty_host_bridge` on Rust 1.96.1 **must execute** (not skip): success path with real `sc-compose` on `PATH` (stdout body); deny paths for another function name and for `OsCall`; non-zero CLI → `Failed`. When `sc-compose` is absent, those cases **fail** the test. Skips are not an acceptance outcome. This target does not inject a program name. Production `Scheduler` always spawns `sc-compose`.
+- `cargo test -p sc-cron --features monty --test monty_host_bridge` on Rust 1.96.1 **must execute** (not skip): success path with real `sc-compose` on `PATH` (stdout body); deny paths for another function name and for `OsCall`; non-zero CLI → `Failed`. When `sc-compose` is absent, those cases **fail** the test. Skips are not an acceptance outcome. This target does not inject a program name and does not call `with_monty_host`, so it exercises the default basename `sc-compose` on `PATH`. Production `Scheduler` spawns the program in `MontyHostConfig` (that default unless the embedder sets another non-empty path). Hook source cannot choose the program or the temp root.
 - The missing-program case is the `monty_host` unit tests: `cargo test -p sc-cron --features monty --lib a_missing_program` on Rust 1.96.1. A non-installed program name → `RunOutcome::Failed` whose detail names that program (`COMPOSE_NOT_FOUND`, not `HOOK_FAILED`) and the repl is dropped (`a_missing_program_names_itself_and_does_not_spawn_on_a_bad_call`, `a_missing_program_on_the_feed_drops_the_repl`, `a_missing_program_is_failed_not_timed_out`).
 - On Unix, `cargo test -p sc-cron --features monty --lib an_injected_program_sees_the_render_argv` checks the child argv: `render`, `--root`, `--mode`, `file`, `--file`, `--var-file`, and `--output` omitted.
 - `cargo test -p sc-cron` with the default features does not compile the `monty` crates. `cargo tree -p sc-cron -e normal --prefix none` prints no crate whose name starts with `monty`.
 - `boundaries/sc-cron/sc-cron.toml` has no `monty`, `monty-types`, or `sc-compose` entry added by this sprint.
-- `docs/architecture.md` point 4 names `render_template`, the `sc-compose` spawn, and the host-timeout rule for time inside `render_template`. `docs/sc-cron/requirements.md` has the new `REQ-CRON-0003` sentence. `docs/sc-cron/hooks-sc-compose.md` calls `execute_feed` the production path.
+- `docs/architecture.md` point 4 names `render_template`, `sc_compose_run`, `Scheduler::with_monty_host`, `MontyHostConfig` (default basename `sc-compose` on `PATH`; hook source cannot choose the program or the temp root), and the host-timeout rule for time inside the host call. `docs/sc-cron/requirements.md` has the `REQ-CRON-0003` sentence. `docs/sc-cron/hooks-sc-compose.md` calls `execute_feed` the production path and names the same embedder program rule.
 - `rg -n 'std::thread::sleep|tokio::time::sleep|block_on' crates/sc-cron/src` exits 1.
 
 ## Required validation

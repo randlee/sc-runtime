@@ -18,14 +18,20 @@ and is roughly **7× faster** with **~2× lower RSS** than a
 
 **What ships:** production Monty feeds run through `monty_run::execute_feed`.
 That function may call `MontyRepl::feed_start` internally and resume
-`render_template` by spawning **`sc-compose`** on `PATH` against a temp root
-the hook cannot choose. The tick does not start CPython.
+`render_template` by spawning the embedder's compose program (default
+**`sc-compose`** on `PATH`) against a temp root the hook cannot choose. The
+tick does not start CPython.
 
-**Program name:** production always spawns `sc-compose`. That name is not an
-embedder setting. Install the Rust `sc-compose` binary on `PATH`, or symlink
-that name onto `PATH`. A missing binary records `Failed` with
-`COMPOSE_NOT_FOUND`. The blocking-pool thread stalls until that child exits.
-After the child exits, a host `Instant` past the row budget records `TimedOut`.
+**Program name:** the embedder sets the program with `Scheduler::with_monty_host`
+and `MontyHostConfig`. The default is the basename `sc-compose` on `PATH`.
+`MontyHostConfig::new` accepts any non-empty path and returns
+`CronError::InvalidSpec` when the path is empty. A basename is resolved on
+`PATH`; an absolute path, or any other non-empty path, is spawned as given.
+Hook source cannot choose the program or the temp root. Install the Rust
+`sc-compose` binary on `PATH`, or pass another program from configuration.
+A missing binary records `Failed` with `COMPOSE_NOT_FOUND`. The blocking-pool
+thread stalls until that child exits. After the child exits, a host `Instant`
+past the row budget records `TimedOut`.
 
 The standalone lab
 `MontyRepl::feed_start` loop in `sc_compose_bench` is not the production path.
@@ -70,11 +76,12 @@ file. Requires **`sc_compose`** on the host (`pip install sc-compose`).
 
 In **`cron_tick`** or **`cron_stop`**, call host-provided
 **`render_template(template, context)`** or **`sc_compose_run(subcommand, args)`**.
-Production resumes those calls inside `execute_feed`, which spawns Rust
-**`sc-compose`**, not `python3 -c import sc_compose`.
+Production resumes those calls inside `execute_feed`, which spawns the
+embedder's compose program (default Rust **`sc-compose`**), not
+`python3 -c import sc_compose`.
 
 - **`render_template`** stages a temp-root string template and JSON context
-  (fixed `sc-compose render --mode file` argv).
+  (fixed `render --mode file` argv on that program).
 - **`sc_compose_run`** accepts only subcommand **`render`**. Arguments are
   `[template]` or `[template, context_json]`. The host stages the same temp
   root and argv as `render_template` and ignores a hook-chosen `--root`.

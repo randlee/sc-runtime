@@ -1,10 +1,12 @@
 //! Monty `render_template` and `sc_compose_run` through [`sc_cron::Scheduler::run_due`].
 //!
-//! These tests call the public scheduler. They do not import the host module
-//! and they do not change `PATH` or the environment. Production always spawns
-//! `sc-compose` and registers `render_template` and `sc_compose_run`. A comment
-//! in the hook source cannot select a program or another host function.
-//! Crate-private injection of those values lives in `monty_host`'s unit tests
+//! These tests call the public scheduler. They do not import the host module,
+//! they do not change `PATH` or the environment, and they do not call
+//! `Scheduler::with_monty_host`. They therefore spawn the default basename
+//! `sc-compose` on `PATH` and register `render_template` and `sc_compose_run`.
+//! An embedder sets another program with `MontyHostConfig`. Hook source cannot
+//! choose the program, the temp root, or another host function. Crate-private
+//! injection of those values lives in `monty_host`'s unit tests
 //! (`execute_feed_with_compose_program`).
 
 #![expect(clippy::expect_used, reason = "integration test harness")]
