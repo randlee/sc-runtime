@@ -186,6 +186,8 @@ pub(crate) struct Worker<S, C> {
     job: Arc<dyn Job>,
     policy: MissedTickPolicy,
     coord: Arc<RunCoord>,
+    #[cfg(feature = "monty")]
+    compose_program: Arc<std::path::PathBuf>,
     shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
     /// Tokio instant from [`crate::WorkerHandle::shutdown`]. `None` when the
     /// handle was dropped, which stops the worker without a handle deadline.
@@ -282,6 +284,7 @@ where
     S: ScheduleStore + 'static,
     C: Clock + 'static,
 {
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn new(
         store: Arc<S>,
         clock: Arc<C>,
@@ -290,6 +293,7 @@ where
         coord: Arc<RunCoord>,
         reload_poll: Duration,
         shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
+        #[cfg(feature = "monty")] compose_program: Arc<std::path::PathBuf>,
     ) -> Self {
         Self {
             store,
@@ -297,6 +301,8 @@ where
             job,
             policy,
             coord,
+            #[cfg(feature = "monty")]
+            compose_program,
             shutdown,
             handle_deadline: None,
             stopping: false,

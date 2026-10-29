@@ -12,6 +12,8 @@
 //! the same calls on tokio's blocking pool so a busy database never blocks
 //! an executor thread.
 
+#[cfg(feature = "monty")]
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
@@ -192,6 +194,10 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource> {
     reload_poll: Duration,
     worker_live: Arc<AtomicBool>,
     coord: Arc<RunCoord>,
+    #[cfg(feature = "monty")]
+    monty_host: crate::MontyHostConfig,
+    #[cfg(feature = "monty")]
+    compose_program: Arc<PathBuf>,
 }
 
 impl<S, C, J> Scheduler<S, C, J>
@@ -209,6 +215,10 @@ where
             self.reload_poll,
             Arc::clone(&self.worker_live),
             Arc::clone(&self.coord),
+            #[cfg(feature = "monty")]
+            self.monty_host.clone(),
+            #[cfg(feature = "monty")]
+            Arc::clone(&self.compose_program),
         )
     }
 
@@ -236,6 +246,8 @@ where
         reload_poll: Duration,
         worker_live: Arc<AtomicBool>,
         coord: Arc<RunCoord>,
+        #[cfg(feature = "monty")] monty_host: crate::MontyHostConfig,
+        #[cfg(feature = "monty")] compose_program: Arc<PathBuf>,
     ) -> Self {
         Self {
             core,
@@ -243,6 +255,10 @@ where
             reload_poll,
             worker_live,
             coord,
+            #[cfg(feature = "monty")]
+            monty_host,
+            #[cfg(feature = "monty")]
+            compose_program,
         }
     }
 }
@@ -263,6 +279,8 @@ where
     /// policy is [`MissedTickPolicy::Coalesce`].
     #[must_use]
     pub fn new(store: Arc<S>, clock: Arc<C>, jitter: Arc<J>) -> Self {
+        #[cfg(feature = "monty")]
+        let monty_host = crate::MontyHostConfig::default();
         Self {
             core: Arc::new(Core {
                 store,
@@ -274,6 +292,10 @@ where
             reload_poll: DEFAULT_RELOAD_POLL,
             worker_live: Arc::new(AtomicBool::new(false)),
             coord: Arc::new(RunCoord::new()),
+            #[cfg(feature = "monty")]
+            monty_host: monty_host.clone(),
+            #[cfg(feature = "monty")]
+            compose_program: Arc::new(monty_host.compose_program().to_path_buf()),
         }
     }
 
@@ -309,6 +331,26 @@ where
     pub fn with_reload_poll(mut self, interval: Duration) -> Self {
         self.reload_poll = interval.max(MIN_RELOAD_POLL);
         self
+    }
+
+    /// Sets the program spawned for Monty host calls (`render_template`,
+    /// `sc_compose_run`). Hook source cannot override this.
+    ///
+    /// The default is `sc-compose` on `PATH`, like [`PythonHook::new`]'s
+    /// default of `python3`.
+    #[cfg(feature = "monty")]
+    #[must_use]
+    pub fn with_monty_host(mut self, config: crate::MontyHostConfig) -> Self {
+        self.compose_program = Arc::new(config.compose_program().to_path_buf());
+        self.monty_host = config;
+        self
+    }
+
+    /// Monty host settings (compose program path).
+    #[cfg(feature = "monty")]
+    #[must_use]
+    pub fn monty_host(&self) -> &crate::MontyHostConfig {
+        &self.monty_host
     }
 
     /// Returns the store, for reading schedules and their run state.
@@ -547,6 +589,8 @@ where
             Arc::clone(&self.coord),
             self.reload_poll,
             shutdown_rx,
+            #[cfg(feature = "monty")]
+            Arc::clone(&self.compose_program),
         );
         let task = tokio::spawn(async move {
             let _live = live;
@@ -722,14 +766,16 @@ pub(super) async fn blocking<T: Send + 'static>(
 
 impl<S: ScheduleStore, C: Clock, J: JitterSource> std::fmt::Debug for Scheduler<S, C, J> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Scheduler")
-            .field("policy", &self.policy)
+        let mut dbg = f.debug_struct("Scheduler");
+        dbg.field("policy", &self.policy)
             .field(
                 "max_schedule_rows",
                 &self.core.store.limits().max_schedule_rows,
             )
-            .field("worker_live", &self.worker_live.load(Ordering::Acquire))
-            .finish_non_exhaustive()
+            .field("worker_live", &self.worker_live.load(Ordering::Acquire));
+        #[cfg(feature = "monty")]
+        dbg.field("monty_compose_program", &*self.compose_program);
+        dbg.finish_non_exhaustive()
     }
 }
 

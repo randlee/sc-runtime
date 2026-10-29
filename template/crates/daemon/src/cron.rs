@@ -48,6 +48,24 @@ impl CronConfig {
         let width = usize::try_from(rows).unwrap_or(usize::MAX);
         NonZeroUsize::new(width)
     }
+
+    /// Values to pass into `sc_cron::ScheduleLimits::with_max_schedule_rows`.
+    ///
+    /// Keeps sc-config mapping in this module so layouts do not duplicate `0` / JSON `null` rules.
+    /// This module does not depend on `sc-cron`, so those paths are not doc links.
+    #[must_use]
+    pub fn schedule_limits_fields(&self) -> CronScheduleLimitsFields {
+        CronScheduleLimitsFields {
+            max_schedule_rows: self.row_limit(),
+        }
+    }
+}
+
+/// Row-cap fields for `sc_cron::ScheduleLimits` (see [`CronConfig::schedule_limits_fields`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CronScheduleLimitsFields {
+    /// Same meaning as `sc_cron::ScheduleLimits::max_schedule_rows`.
+    pub max_schedule_rows: Option<NonZeroUsize>,
 }
 
 #[cfg(test)]
@@ -80,5 +98,15 @@ mod tests {
             serde_json::from_str(r#"{"max_schedule_rows": null}"#).expect("json");
         assert!(unlimited.max_schedule_rows.is_none());
         assert!(unlimited.row_limit().is_none());
+    }
+
+    #[test]
+    fn schedule_limits_fields_match_row_limit() {
+        let config: CronConfig = serde_json::from_str(r#"{"max_schedule_rows":25}"#).expect("json");
+        let fields = config.schedule_limits_fields();
+        assert_eq!(
+            fields.max_schedule_rows.map(std::num::NonZeroUsize::get),
+            Some(25)
+        );
     }
 }

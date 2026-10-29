@@ -108,9 +108,9 @@ Runtime notes:
 | Feature | Enables |
 |---|---|
 | `test-utils` | `ManualClock` (a deterministic clock whose parks tell a test the worker has settled) and `SeqJitter` (a scripted jitter source) |
-| `monty` | Trusted in-process Monty source hooks (`HookTarget::Monty`); requires **Rust 1.96.1** to build. Feeds run on the blocking pool in wall time. `render_template` spawns the `sc-compose` binary found on `PATH`. |
+| `monty` | Trusted in-process Monty source hooks (`HookTarget::Monty`); requires **Rust 1.96.1** to build. Feeds run on the blocking pool in wall time. `render_template` spawns the embedder's compose program (default basename `sc-compose` on `PATH`). |
 
-With feature `monty`, production always runs the program named `sc-compose`. That name is not an embedder setting and hook source cannot change it. Install the `sc-compose` binary so `PATH` lookup finds it, or add a symlink named `sc-compose` on `PATH`. A missing program records `RunOutcome::Failed` with `COMPOSE_NOT_FOUND`.
+With feature `monty`, set the compose program with `Scheduler::with_monty_host(MontyHostConfig::new(...)?)`. The default is `sc-compose` on `PATH` (like `PythonHook`'s default `python3`). Hook source cannot override it. Use a basename for `PATH` lookup or an absolute path from your configuration. A missing program records `RunOutcome::Failed` with `COMPOSE_NOT_FOUND`; use `RunOutcome::failure_parts()` to read the code.
 
 ## Links
 

@@ -25,11 +25,14 @@ The number of schedule rows is not capped unless the embedder passes [`ScheduleL
 Generated applications ship sc-config key `cron.max_schedule_rows` (integer or JSON null, default `10` when the key is absent, `0` or `null` means unlimited) in `template/config/default.json`. [`template/config/cron.schema.json`](../../template/config/cron.schema.json) checks that object and allows every other key in the file, so the real default document validates. cargo-generate `exclude` copies a file without Liquid rendering and does not omit it. The cron schema is on `[template] ignore`, so a generated project does not contain it and does not contain `answers.schema.json`. The daemon reads the key into `cron::CronConfig` on every layout. No layout opens `Scheduler` yet. The layout that does maps the value and opens the scheduler:
 
 ```rust
-let limits = sc_cron::ScheduleLimits {
-    max_schedule_rows: config.cron.row_limit(),
-};
-let scheduler = sc_cron::Scheduler::open(cron_db, limits, clock, jitter)?;
+let limits = sc_cron::ScheduleLimits::with_max_schedule_rows(
+    config.cron.schedule_limits_fields().max_schedule_rows,
+);
+let scheduler = sc_cron::Scheduler::open(cron_db, limits, clock, jitter)?
+    .with_monty_host(sc_cron::MontyHostConfig::new(compose_program)?);
 ```
+
+`compose_program` is a basename on `PATH` or an absolute path the embedder chooses (for example from configuration or `SC_COMPOSE` in the daemon). The library does not read environment variables itself.
 
 `CronConfig::row_limit` maps JSON `null` and `0` to `None` and any positive value to `Some(NonZeroUsize)`. A missing key stays the default `10`. That mapping stays in the generated daemon. An embedder that does not use it builds `ScheduleLimits` itself. sc-cron receives `ScheduleLimits` only and does not read sc-config.
 
@@ -56,7 +59,7 @@ pub struct ScheduleSpec {
 
 Monty source defines `cron_stop(hook)` and `cron_tick(hook)`. One REPL is retained per schedule name while no feed is active, so module state survives ticks. The worker always calls stop before tick; `disable` or `delete` skips tick, and an external replacement, disable, delete, or shutdown after a continuing stop check skips tick and drops the REPL. A REPL is never dropped or replaced before its feed returns. Monty feed time uses `ResourceLimits::max_feed_duration`; it is observed at interpreter checkpoints, has no memory limit, and is not aborted by worker shutdown. This is trusted in-process code: stack-overflow and allocator-abort risks are accepted just as they are for a Rust `Job`.
 
-Under feature `monty`, `cron_tick` or `cron_stop` may call the host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)`. Amended [ADR-RUN-0013](../architecture.md) decision point 4 names both functions: other host function names fail the feed, and `sc-compose` on `PATH` is the program. Production runs those calls inside `execute_feed` (which may call `feed_start` internally). Render paths stage a temp root the hook cannot choose (`sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json`). `sc_compose_run` allows only subcommand `render` on that path; a hook-chosen `--root` is ignored, and `bead`, `init`, and `extract` fail the feed with `COMPOSE_SUBCOMMAND`. Hook source cannot choose the program or register another host function. Tests pass a program through the crate-private `execute_feed_with_compose_program`; that function is not an embedder setting.
+Under feature `monty`, `cron_tick` or `cron_stop` may call the host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)`. Amended [ADR-RUN-0013](../architecture.md) decision point 4 names both functions: other host function names fail the feed. The embedder sets the compose program on [`Scheduler::with_monty_host`](../../crates/sc-cron/src/scheduler.rs) via [`MontyHostConfig`](../../crates/sc-cron/src/monty_host.rs) (default `sc-compose` on `PATH`). Production runs those calls inside `drive_feed` / `execute_feed_with_compose_program`. Render paths stage a temp root the hook cannot choose (`render --root <temp> --mode file --file t.j2 --var-file v.json`). `sc_compose_run` allows only subcommand `render` on that path; a hook-chosen `--root` is ignored, and `bead`, `init`, and `extract` fail the feed with `COMPOSE_SUBCOMMAND`. Hook source cannot choose the program or register another host function. Tests pass another program through the crate-private `execute_feed_with_compose_program`.
 
 ```text
 sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json
@@ -110,7 +113,7 @@ The Monty source does not choose the temp root. `--mode file` reads only those t
 | After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
 | Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
 
-A feed that never calls `render_template` still runs when the compose program is absent. The blocking-pool thread stalls until the compose `Command` returns. After that child exits, a host `Instant` past the row budget records bare `RunOutcome::TimedOut` (no code token in the stored outcome). Stdout and stderr are each kept up to `MAX_HOOK_OUTPUT_BYTES`. Stderr copied into a failure detail uses the same 512-byte slice as a Python hook. The program name is fixed as `sc-compose` on `PATH`; install that binary or symlink the name onto `PATH`. There is no embedder override.
+A feed that never calls `render_template` still runs when the compose program is absent. The blocking-pool thread stalls until the compose `Command` returns. After that child exits, a host `Instant` past the row budget records bare `RunOutcome::TimedOut` (no code token in the stored outcome). Stdout and stderr are each kept up to `MAX_HOOK_OUTPUT_BYTES`. Stderr copied into a failure detail uses the same 512-byte slice as a Python hook. Failed run details use `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) parses that layout. The default compose program basename is `sc-compose` on `PATH`; the embedder overrides it with [`MontyHostConfig`](../../crates/sc-cron/src/monty_host.rs).
 
 ```rust
 #[async_trait::async_trait]

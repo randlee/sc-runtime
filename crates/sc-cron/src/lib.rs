@@ -112,6 +112,7 @@ mod monty_run;
 #[cfg(feature = "monty-test-handshake")]
 mod monty_test_os;
 pub mod process;
+mod run_failure;
 mod scheduler;
 mod sqlite;
 mod store;
@@ -145,6 +146,11 @@ pub use limits::{
     MAX_EXPR_LEN, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, MAX_TIMEOUT,
     ScheduleLimits,
 };
+#[cfg(feature = "monty")]
+#[doc(inline)]
+pub use monty_host::MontyHostConfig;
+#[doc(inline)]
+pub use run_failure::RunFailureParts;
 #[doc(inline)]
 pub use scheduler::{DueRun, MissedTickPolicy, Scheduler, WorkerHandle};
 #[doc(inline)]

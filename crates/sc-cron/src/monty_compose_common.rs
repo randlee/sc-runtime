@@ -103,7 +103,7 @@ impl ComposeHostError {
     pub(crate) const fn recovery(&self) -> &'static str {
         match self {
             Self::ProgramNotFound { .. } => {
-                "Install `sc-compose` on PATH or fix the injected program name in tests."
+                "Install the compose program on PATH, set Scheduler::with_monty_host, or fix the injected program name in tests."
             }
             Self::TempRootFailed { .. } | Self::StageFailed { .. } => {
                 "Check permissions and disk space for temp roots under `tempfile::TempDir`."

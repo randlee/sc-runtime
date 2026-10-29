@@ -74,6 +74,13 @@ pub struct ScheduleLimits {
     pub max_schedule_rows: Option<NonZeroUsize>,
 }
 
+impl ScheduleLimits {
+    /// Builds limits from an embedder row cap (for example `CronConfig::row_limit()` in generated daemons).
+    pub const fn with_max_schedule_rows(max_schedule_rows: Option<NonZeroUsize>) -> Self {
+        Self { max_schedule_rows }
+    }
+}
+
 /// Encodes `payload` as compact JSON, refusing it above [`MAX_PAYLOAD_BYTES`].
 pub(crate) fn encode_payload(payload: &serde_json::Value) -> Result<String, crate::CronError> {
     let encoded = payload.to_string();

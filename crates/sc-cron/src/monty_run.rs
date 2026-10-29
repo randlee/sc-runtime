@@ -160,8 +160,9 @@ impl fmt::Display for StopReplyError {
 
 /// Compose program and extra host names for one feed.
 ///
-/// [`execute_feed`] does not take this value. [`crate::Scheduler`] cannot set
-/// it. Tests pass it to [`execute_feed_with_compose_program`].
+/// [`crate::Scheduler::drive_feed`] passes the embedder's
+/// [`crate::MontyHostConfig`]. Tests pass other values to
+/// [`execute_feed_with_compose_program`].
 pub(crate) struct ComposeInjection<'a> {
     /// Program spawned for `render_template`.
     pub(crate) program: ComposeProgram<'a>,
@@ -171,7 +172,8 @@ pub(crate) struct ComposeInjection<'a> {
 }
 
 impl ComposeInjection<'static> {
-    /// Production injection: `sc-compose` and no extra host functions.
+    /// Default test injection: `sc-compose` on `PATH` and no extra host functions.
+    #[cfg(test)]
     #[must_use]
     pub(crate) const fn production() -> Self {
         Self {
@@ -200,6 +202,8 @@ pub(crate) struct FeedLaunch {
     pub(crate) timeout: crate::RunTimeout,
     /// Monotonic deadline for this run.
     pub(crate) deadline: Instant,
+    /// Embedder compose binary (see [`crate::MontyHostConfig`]).
+    pub(crate) compose_program: std::sync::Arc<std::path::PathBuf>,
 }
 
 /// Builds the hook request and runs one feed on the blocking pool.
@@ -219,6 +223,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
         payload,
         timeout,
         deadline,
+        compose_program,
     } = launch;
     let left = deadline.saturating_duration_since(clock.monotonic_now());
     let stamp = crate::Timestamp::from_datetime(crate::clock::wall_after(clock.now(), left));
@@ -236,13 +241,19 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
     let hook = crate::hook::request(&call, stamp);
     let run_deadline = deadline;
     match tokio::task::spawn_blocking(move || {
-        execute_feed(
+        let program = compose_program.to_string_lossy().into_owned();
+        execute_feed_with_compose_program(
             session,
             &source,
             phase,
             generation,
             left,
             &hook,
+            ComposeInjection {
+                program: ComposeProgram::new(&program),
+                #[cfg(test)]
+                extra_host_fns: &[],
+            },
             run_deadline,
         )
     })
@@ -265,6 +276,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
 /// `feed_start`. Host functions are `render_template` and `sc_compose_run`.
 /// Any other host function or `OsCall` fails the feed and drops the repl.
 /// Hook source does not choose the program.
+#[cfg(test)]
 pub(crate) fn execute_feed(
     session: Option<MontySession>,
     source: &str,
@@ -288,8 +300,8 @@ pub(crate) fn execute_feed(
 
 /// Runs one feed with a test-selected compose program and extra host names.
 ///
-/// [`crate::Scheduler`] calls [`execute_feed`], which always passes
-/// [`ComposeInjection::production`]. This function is crate-private so an
+/// Direct callers use [`ComposeInjection::production`] (default `sc-compose`).
+/// [`crate::Scheduler`] uses [`drive_feed`] with [`crate::MontyHostConfig`]. This function is crate-private so an
 /// embedder cannot select the program. Extra host names are registered only
 /// for this call. Production registers `__hook`, `render_template`, and
 /// `sc_compose_run`. Names that are not identifiers, or that are those

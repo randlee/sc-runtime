@@ -109,8 +109,8 @@ binding; hook authors call this bare name) via `MontyObject::function` and
 registered in this sprint.
 
 ```rust
-// crates/sc-cron/src/monty_host.rs — crate-private. Tests pass another program.
-// Production uses ComposeProgram::SC_COMPOSE ("sc-compose").
+// crates/sc-cron/src/monty_host.rs — crate-private program handle. Embedder path:
+// MontyHostConfig on Scheduler (default "sc-compose" on PATH). Tests pass another program.
 pub(crate) struct ComposeProgram<'a>(&'a str);
 
 pub(crate) enum ComposeHostError {
@@ -136,11 +136,13 @@ pub(crate) fn render_template(
 ) -> Result<String, ComposeHostError>;
 ```
 
-`compose_program` in the progress loop is that `ComposeProgram`. Production
-passes `ComposeProgram::SC_COMPOSE`.
+`compose_program` in the progress loop is that `ComposeProgram`. The embedder
+sets it on [`Scheduler::with_monty_host`](../../crates/sc-cron/src/scheduler.rs)
+via public [`MontyHostConfig`](../../crates/sc-cron/src/monty_host.rs) (default
+`sc-compose` on `PATH`, like `PythonHook`'s default `python3`). Hook source
+cannot override the path.
 
-Production passes `ComposeProgram::SC_COMPOSE` (`"sc-compose"`). The
-missing-program unit tests pass a name that is not installed. No
+The missing-program unit tests pass a name that is not installed. No
 `std::env::set_var` and no PATH rewrite (`NFR-RUN-0005`).
 
 Progress loop inside `execute_feed` (repl taken by value; state is

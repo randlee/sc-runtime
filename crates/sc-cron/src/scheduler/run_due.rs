@@ -333,12 +333,20 @@ where
 {
     let coord = Arc::clone(&scheduler.coord);
     let core = Arc::clone(&scheduler.core);
+    let compose_program = Arc::clone(&scheduler.compose_program);
     let schedule = row.clone();
     let feed_guard = crate::coord::MontyFeedGuard::enter(&scheduler.coord);
     let handle = tokio::spawn(async move {
         let _name = name_guard;
-        let (report, feed_guard) =
-            run_monty_due(coord, clock, schedule.clone(), deadline, feed_guard).await;
+        let (report, feed_guard) = run_monty_due(
+            coord,
+            clock,
+            schedule.clone(),
+            deadline,
+            feed_guard,
+            compose_program,
+        )
+        .await;
         let recorded = record_due(core, &schedule, report, next).await;
         drop(feed_guard);
         recorded
@@ -434,6 +442,7 @@ async fn run_monty_due<C: Clock + 'static>(
     schedule: Schedule,
     deadline: std::time::Instant,
     stop_guard: crate::coord::MontyFeedGuard,
+    compose_program: Arc<std::path::PathBuf>,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::{FeedResult, MontyPhase};
     let HookTarget::Monty { source } = schedule.spec.hook.clone() else {
@@ -456,6 +465,7 @@ async fn run_monty_due<C: Clock + 'static>(
         clock.as_ref(),
         &schedule,
         deadline,
+        Arc::clone(&compose_program),
     )
     .await;
     match stop.result {
@@ -476,7 +486,16 @@ async fn run_monty_due<C: Clock + 'static>(
             (Report::Ran(outcome), stop_guard)
         }
         FeedResult::Continue => {
-            run_monty_tick_after_stop(coord, clock, schedule, deadline, stop, source).await
+            run_monty_tick_after_stop(
+                coord,
+                clock,
+                schedule,
+                deadline,
+                stop,
+                source,
+                compose_program,
+            )
+            .await
         }
     }
 }
@@ -489,6 +508,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
     deadline: std::time::Instant,
     stop: crate::monty_run::FeedDone,
     source: String,
+    compose_program: Arc<std::path::PathBuf>,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::{FeedResult, MontyPhase};
     let tick_guard = crate::coord::MontyFeedGuard::enter(&coord);
@@ -500,6 +520,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
         clock.as_ref(),
         &schedule,
         deadline,
+        compose_program,
     )
     .await;
     let report = match tick.result {
@@ -523,6 +544,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
 }
 
 #[cfg(feature = "monty")]
+#[allow(clippy::too_many_arguments)]
 async fn feed_once<C: Clock + ?Sized>(
     session: Option<crate::monty_run::MontySession>,
     source: String,
@@ -531,6 +553,7 @@ async fn feed_once<C: Clock + ?Sized>(
     clock: &C,
     schedule: &Schedule,
     deadline: std::time::Instant,
+    compose_program: Arc<std::path::PathBuf>,
 ) -> crate::monty_run::FeedDone {
     crate::monty_run::drive_feed(
         clock,
@@ -543,6 +566,7 @@ async fn feed_once<C: Clock + ?Sized>(
             payload: schedule.spec.payload.clone(),
             timeout: schedule.spec.timeout,
             deadline,
+            compose_program,
         },
     )
     .await

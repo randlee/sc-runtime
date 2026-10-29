@@ -2,10 +2,56 @@
 //!
 //! Production registers [`render_template`] (string-template sugar) and
 //! [`sc_compose_run`] (subcommand `render` only, same temp-root staging).
-//! Tests pass another [`ComposeProgram`]. The feed does not start CPython.
+//! The embedder chooses the program via [`MontyHostConfig`] on
+//! [`crate::Scheduler`]. Tests pass another [`ComposeProgram`]. The feed does
+//! not start CPython.
 
 use std::fmt;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
+
+use crate::CronError;
+
+/// Embedder settings for Monty host calls (`render_template`, `sc_compose_run`).
+///
+/// Hook source cannot choose the compose binary or temp root. The default
+/// program name is `sc-compose` on `PATH`, matching [`PythonHook::new`]'s
+/// default of `python3`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MontyHostConfig {
+    compose_program: PathBuf,
+}
+
+impl Default for MontyHostConfig {
+    fn default() -> Self {
+        Self {
+            compose_program: PathBuf::from("sc-compose"),
+        }
+    }
+}
+
+impl MontyHostConfig {
+    /// Builds config with `compose_program` (basename on `PATH` or absolute path).
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::InvalidSpec`] when the path is empty.
+    pub fn new(compose_program: impl Into<PathBuf>) -> Result<Self, CronError> {
+        let compose_program = compose_program.into();
+        if compose_program.as_os_str().is_empty() {
+            return Err(CronError::InvalidSpec(
+                "compose program path is empty".into(),
+            ));
+        }
+        Ok(Self { compose_program })
+    }
+
+    /// Program spawned for host compose calls.
+    #[must_use]
+    pub fn compose_program(&self) -> &Path {
+        &self.compose_program
+    }
+}
 
 use monty_types::{MontyObject, ObjectRef};
 use serde_json::{Map, Number, Value};
@@ -14,14 +60,14 @@ pub(crate) use crate::monty_compose_common::ComposeHostError;
 
 /// Program name or path spawned for one `render_template` call.
 ///
-/// Production uses [`Self::SC_COMPOSE`]. A test may pass another name. This is
-/// not an embedder setting: [`crate::Scheduler`](crate::Scheduler) never
-/// accepts a program.
+/// Production reads the path from [`MontyHostConfig`] on
+/// [`crate::Scheduler`]. Unit tests may pass another name directly.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct ComposeProgram<'a>(&'a str);
 
 impl ComposeProgram<'static> {
-    /// The program production feeds spawn on `PATH`.
+    /// Default basename used in unit tests and [`MontyHostConfig::default`].
+    #[allow(dead_code)]
     pub(crate) const SC_COMPOSE: Self = Self::new("sc-compose");
 }
 
@@ -391,7 +437,7 @@ mod tests {
         };
         assert_eq!(
             missing.recovery(),
-            "Install `sc-compose` on PATH or fix the injected program name in tests."
+            "Install the compose program on PATH, set Scheduler::with_monty_host, or fix the injected program name in tests."
         );
         assert_eq!(missing.code(), "COMPOSE_NOT_FOUND");
         assert!(missing.source().is_none());
