@@ -14,7 +14,23 @@ The storage plan is ADR-RUN-0305. SQLite and Postgres meet in an adaptor crate t
 - A new application is created with no database, SQLite only, one sqlx SQL engine only, or SQLite plus one sqlx SQL engine. Postgres and MySQL are the SQL engines sqlx 0.9 ships.
 - The copy cache and the host-aggregate cache are both generated when the application has SQLite and a SQL engine. The consumer defines the host rollup. Tables can be skipped on either side.
 - Paired stores use the same schema or a similar schema, and one shared trait or a different trait per store. Each engine's SQL stays in that engine's crate.
-- `sc-cron` is an optional crate with one SQLite table and normal cron strings. A sync method is Rust or a Python hook. The consuming application schedules the sync.
+- `sc-cron` is an optional general-purpose crate with one SQLite table and normal cron strings. Application jobs may use Rust, Python, or application-supplied Monty source. The consuming application schedules the work.
+
+## Phase B continuation intent approved 2026-10-29
+
+Applications can extend Monty host calls without changing sc-cron. Phase B
+provides sc_compose_run and atm_run through that shared interface, supporting
+any command/subcommand of their external executables. Neither tool's Rust
+crates enter any production release crate; boundary lint enforces that rule,
+with test and benchmark references permitted. render_template is not a product
+requirement. MVP has no script signing or separate approval mechanism.
+
+Python and Monty share explicit environment configuration. Daemon inheritance
+is allowed by name; schedules can set or clear values, use application-resolved
+references, and load absolute dotenv files. Schedule writes never implicitly
+capture ambient values. Deliberate plaintext set values are valid registry
+data. Monty can read the configured environment during source initialization.
+The first release establishes one schedule-schema baseline.
 
 ## What is deliberately out of scope
 
@@ -23,4 +39,7 @@ The storage plan is ADR-RUN-0305. SQLite and Postgres meet in an adaptor crate t
 
 ## Anchors
 
-The judged anchors are the REQ and ADR ids in the register. `anchors.json` records those ids. An ANC id is only a retired pointer at one of them.
+The judged anchors include approved ANC statements alongside REQ and ADR ids.
+ANC-027 through ANC-042 preserve the approved Phase B continuation intent.
+Earlier retired ANC records remain provenance; existing REQ/ADR records retain
+their own version history and must be reconciled explicitly with amended contracts.

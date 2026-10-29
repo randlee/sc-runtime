@@ -5087,6 +5087,694 @@
           "reason": "Sprint b-7 does not carry this obligation."
         }
       ]
+    },
+    {
+      "id": "ANC-027",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "sc-cron is a general-purpose cron library supporting application-defined jobs.",
+      "quote": "sc-cron is a general-purpose cron library.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "General-purpose scheduler",
+      "scope": "edits sc-cron scheduling or job interfaces",
+      "deterministic_check": "A consumer can schedule an application-defined job without a tool-specific payload.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-ojx",
+        "plan_questions": "run-ojx.1",
+        "dev_questions": "run-ojx.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:04+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:35+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ojx",
+            "plan_questions": "run-ojx.1",
+            "dev_questions": "run-ojx.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-028",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Embedding applications can register additional Monty host functions without modifying sc-cron.",
+      "quote": "the primary requirement of being able to be extensible w/ other apps/calls is supported.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Application host extensions",
+      "scope": "edits Monty host registration or dispatch",
+      "deterministic_check": "An integration test registers and invokes a consumer-defined host function.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-mvj",
+        "plan_questions": "run-mvj.1",
+        "dev_questions": "run-mvj.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:36+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-mvj",
+            "plan_questions": "run-mvj.1",
+            "dev_questions": "run-mvj.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-029",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The sc_compose_run integration supports any sc-compose command/subcommand supplied by an application script.",
+      "quote": "sc_compose_run (any subcommand) would be a useful working example for showing how to use sc-cron",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Compose command coverage",
+      "scope": "edits sc_compose_run or its examples",
+      "deterministic_check": "Argument-forwarding tests cover render and non-render subcommands.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-uoc",
+        "plan_questions": "run-uoc.1",
+        "dev_questions": "run-uoc.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:37+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-uoc",
+            "plan_questions": "run-uoc.1",
+            "dev_questions": "run-uoc.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-030",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase B provides an atm_run host integration supporting any ATM CLI command/subcommand through the same extension interface used by sc_compose_run.",
+      "quote": "i am in agreement.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "ATM host integration",
+      "scope": "implements Phase B Monty integrations",
+      "deterministic_check": "An ATM executable fixture is invoked through the same registry as sc_compose_run.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-7l7",
+        "plan_questions": "run-7l7.1",
+        "dev_questions": "run-7l7.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:38+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-7l7",
+            "plan_questions": "run-7l7.1",
+            "dev_questions": "run-7l7.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-031",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Every production release crate excludes sc-compose and ATM crate dependencies and Rust imports, enforced by boundary lint; test and benchmark references are permitted.",
+      "quote": "sc-compose and atm crates should be blocked from any production release crate.  sc-compose and atm can be referenced for tests i.e. benchmark tests",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Production tool crate boundary",
+      "scope": "edits production release manifests, imports, features, or boundary lint",
+      "deterministic_check": "Boundary lint rejects production imports/dependencies while permitting test-only references.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-z1z",
+        "plan_questions": "run-z1z.1",
+        "dev_questions": "run-z1z.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:39+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-z1z",
+            "plan_questions": "run-z1z.1",
+            "dev_questions": "run-z1z.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-032",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "render_template is not required by the sc-cron product contract.",
+      "quote": "render_template is not a product requirement",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "No mandatory render helper",
+      "scope": "edits Monty product requirements, examples, or benchmarks",
+      "deterministic_check": "Product requirements and acceptance do not require render_template.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-bn5",
+        "plan_questions": "run-bn5.1",
+        "dev_questions": "run-bn5.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:40+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-bn5",
+            "plan_questions": "run-bn5.1",
+            "dev_questions": "run-bn5.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-033",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "MVP executes application-supplied Monty scripts without script signing or a separate approval mechanism.",
+      "quote": "for mvp this is not something available for consumers to do.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "No MVP signing gate",
+      "scope": "edits Monty execution, configuration, or authorization",
+      "deterministic_check": "MVP execution requires neither signatures nor approval configuration.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-wdb",
+        "plan_questions": "run-wdb.1",
+        "dev_questions": "run-wdb.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:41+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-wdb",
+            "plan_questions": "run-wdb.1",
+            "dev_questions": "run-wdb.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-034",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Python and Monty hooks use the same schedule-environment configuration and resolution rules.",
+      "quote": "python/monty having consistent settings would be least confusing",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Shared hook environment",
+      "scope": "edits Python or Monty environment delivery",
+      "deterministic_check": "The same environment cases produce equivalent Python and Monty results.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-c1j",
+        "plan_questions": "run-c1j.1",
+        "dev_questions": "run-c1j.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:43+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-c1j",
+            "plan_questions": "run-c1j.1",
+            "dev_questions": "run-c1j.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-035",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Hooks inherit daemon-process environment values only through variable names explicitly allowed by daemon configuration.",
+      "quote": "whitelisting api keys globally (by name) in config file (this is really a daemon scope decision)",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Explicit daemon inheritance",
+      "scope": "edits daemon environment configuration or subprocess creation",
+      "deterministic_check": "An allowed daemon value is delivered and an unlisted value is absent.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-6cy",
+        "plan_questions": "run-6cy.1",
+        "dev_questions": "run-6cy.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:44+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-6cy",
+            "plan_questions": "run-6cy.1",
+            "dev_questions": "run-6cy.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-036",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Each schedule can explicitly set or clear its own environment variables.",
+      "quote": "having each entry having the ability to set or clear specific environment variables",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Schedule environment overrides",
+      "scope": "edits schedule environment persistence or resolution",
+      "deterministic_check": "Two schedules set distinct identities and clearing removes a prior value.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-89l",
+        "plan_questions": "run-89l.1",
+        "dev_questions": "run-89l.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:45+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-89l",
+            "plan_questions": "run-89l.1",
+            "dev_questions": "run-89l.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-037",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Schedule creation and updates never implicitly capture environment values from the caller or daemon process.",
+      "quote": "Never capture or persist inherited host values accidentally",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "No implicit environment capture",
+      "scope": "edits schedule creation, updates, or serialization",
+      "deterministic_check": "Ambient canaries are absent from persisted rows without explicit set input.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-5z3",
+        "plan_questions": "run-5z3.1",
+        "dev_questions": "run-5z3.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:46+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-5z3",
+            "plan_questions": "run-5z3.1",
+            "dev_questions": "run-5z3.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-038",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The schedule registry permits deliberately supplied environment values as plaintext configuration.",
+      "quote": "why can we never add values?  all environment variables are not api keys?",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Explicit plaintext values",
+      "scope": "edits schedule environment validation or persistence",
+      "deterministic_check": "An explicit set value round-trips through the registry.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-oov",
+        "plan_questions": "run-oov.1",
+        "dev_questions": "run-oov.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:47+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-oov",
+            "plan_questions": "run-oov.1",
+            "dev_questions": "run-oov.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-039",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Schedules can resolve environment values through an application-provided resolver for opaque references.",
+      "quote": "I also like allowing this:   \"OTHER_API_KEY\": { \"reference\": \"keychain://agents/planner-7/api-key\" }",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Application secret references",
+      "scope": "edits environment reference resolution",
+      "deterministic_check": "A consumer resolver supplies a referenced value without persisting the result.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-9a5",
+        "plan_questions": "run-9a5.1",
+        "dev_questions": "run-9a5.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:48+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-9a5",
+            "plan_questions": "run-9a5.1",
+            "dev_questions": "run-9a5.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-040",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Schedules can load environment variables from full-path .env files.",
+      "quote": "Another useful way to specify would be loading from a full-path .env file.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Absolute dotenv sources",
+      "scope": "edits schedule environment sources or file loading",
+      "deterministic_check": "An authorized absolute dotenv file supplies hook values.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-xaz",
+        "plan_questions": "run-xaz.1",
+        "dev_questions": "run-xaz.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:49+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-xaz",
+            "plan_questions": "run-xaz.1",
+            "dev_questions": "run-xaz.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-041",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Monty scripts can read their configured environment during source initialization, before hook functions run.",
+      "quote": "there should also be the ability to set environment variables in a monty script before it runs.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "Environment before initialization",
+      "scope": "edits Monty source initialization or environment delivery",
+      "deterministic_check": "A top-level getenv reads the configured snapshot before cron_stop or cron_tick.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-euz",
+        "plan_questions": "run-euz.1",
+        "dev_questions": "run-euz.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:50+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-euz",
+            "plan_questions": "run-euz.1",
+            "dev_questions": "run-euz.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-042",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The first released schedule schema establishes one baseline without requiring migrations among unreleased development schemas.",
+      "quote": "i don't know why we are on schema v4 when we haven't even released binaries yet.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-29",
+      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "summary": "First release schema baseline",
+      "scope": "edits schedule schema versioning or migrations",
+      "deterministic_check": "First-release schema validation does not require a v1-v4 development migration ladder.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-fv4",
+        "plan_questions": "run-fv4.1",
+        "dev_questions": "run-fv4.2"
+      },
+      "history": [
+        {
+          "at": "2026-10-29T21:11:05+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-10-29T21:11:52+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-fv4",
+            "plan_questions": "run-fv4.1",
+            "dev_questions": "run-fv4.2"
+          }
+        }
+      ]
     }
   ]
 }
