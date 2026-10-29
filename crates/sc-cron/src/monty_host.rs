@@ -437,7 +437,7 @@ mod tests {
         };
         assert_eq!(
             missing.recovery(),
-            "Install the compose program on PATH, set Scheduler::with_monty_host, or fix the injected program name in tests."
+            "Install `sc-compose` on PATH or fix the injected program name in tests."
         );
         assert_eq!(missing.code(), "COMPOSE_NOT_FOUND");
         assert!(missing.source().is_none());
@@ -492,6 +492,13 @@ mod tests {
         );
         assert!(utf8.source().is_none());
         assert!(!utf8.recovery().contains("disk"));
+        assert_eq!(
+            ComposeHostError::OutputTooLarge {
+                program: "sc-compose".to_owned(),
+            }
+            .recovery(),
+            "Shrink the rendered output."
+        );
         assert_eq!(
             ComposeHostError::NonZeroExit {
                 status: Some(2),

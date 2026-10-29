@@ -103,7 +103,7 @@ impl ComposeHostError {
     pub(crate) const fn recovery(&self) -> &'static str {
         match self {
             Self::ProgramNotFound { .. } => {
-                "Install the compose program on PATH, set Scheduler::with_monty_host, or fix the injected program name in tests."
+                "Install `sc-compose` on PATH or fix the injected program name in tests."
             }
             Self::TempRootFailed { .. } | Self::StageFailed { .. } => {
                 "Check permissions and disk space for temp roots under `tempfile::TempDir`."
@@ -115,9 +115,7 @@ impl ComposeHostError {
                 "Check that the compose program is executable and allowed to start."
             }
             Self::OutputNotUtf8 { .. } => "Fix the compose program so its stdout is UTF-8.",
-            Self::OutputTooLarge { .. } => {
-                "Shrink the rendered output; stdout is capped at the hook output limit."
-            }
+            Self::OutputTooLarge { .. } => "Shrink the rendered output.",
             Self::NonZeroExit { .. } => {
                 "Fix template/context or run `sc-compose render` manually with the logged stderr."
             }
