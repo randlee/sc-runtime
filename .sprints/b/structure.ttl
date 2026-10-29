@@ -8,7 +8,8 @@
 # b-11 follows b-10 (wave 5) for render_template, not for a shared path.
 # b-12 follows b-9 (wave 6 on develop); parallel with b-10/b-11 on other branches.
 # Continuation: b-13 is wave 7; b-14/b-15/b-16 follow b-13 in wave 8;
-# b-16 also consumes b-10; b-17 follows all three wave-8 sprints in wave 9.
+# b-16 also consumes b-10; b-17 follows b-15/b-16 in wave 9; b-18 follows
+# b-14/b-17 in wave 10.
 # This registry is consumed by ATM dispatch/QA for branch, criteria, and DAG
 # lookup. It fixes the observed defect that markdown-only sprints are invisible
 # to those consumers. Retain it as the historical dispatch record; retire it
@@ -137,9 +138,17 @@ triage:b-16 a triage:Sprint ;
 triage:b-17 a triage:Sprint ;
   triage:inPhase triage:PhaseB ;
   triage:order 17 ;
-  triage:branch "sprint/b-17-template-observability-integration" ;
+  triage:branch "sprint/b-17-sc-cron-hook-environment" ;
   triage:integrateBranch "integrate/phase-b-observability" ;
-  triage:criteria "docs/plans/phase-b/sprint-b-17-template-observability-integration.md" ;
-  triage:follows triage:b-14 ;
+  triage:criteria "docs/plans/phase-b/sprint-b-17-sc-cron-hook-environment.md" ;
   triage:follows triage:b-15 ;
   triage:follows triage:b-16 .
+
+triage:b-18 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 18 ;
+  triage:branch "sprint/b-18-template-observability-integration" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-18-template-observability-integration.md" ;
+  triage:follows triage:b-14 ;
+  triage:follows triage:b-17 .

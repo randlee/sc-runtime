@@ -169,6 +169,9 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0011 | No sleep or `block_on` on the hot path; no `Mutex` guard across `.await` | Active |
 | ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
 | ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active |
+| ADR-RUN-0014 | Optional embedder-supplied schedule row limit | Active |
+| ADR-RUN-0015 | Benchmark campaigns in a controlled environment | Active |
+| ADR-RUN-0016 | Explicit Python and Monty hook environments | Active |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Active |
@@ -2416,7 +2419,7 @@ Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc
 
 **Status:** Active  
 **Decision Date:** 2026-10-25  
-**Amended:** 2026-10-28. Point 4 and the `b-10` consequence authorize embedder `MontyHostConfig` / `Scheduler::with_monty_host`.  
+**Amended:** 2026-10-28. Point 3 records the pre-release schema baseline; point 4 and the consequences authorize the b-10 host bridge and b-17 hook environment.
 **Source:** Owner, 2026-10-25. Port beads-cache `crates/sc-cron` as an optional drop-in. Configuration is one SQLite table. Schedules are cron strings. The hook is Rust or a Python module, as atm-core does with `atm-cron`. A richer scheduling API is the consumer's.
 
 ### Context
@@ -2429,21 +2432,22 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The template does not depend on it in any Cargo manifest unless a later generation flag says so. Comments and schema descriptions may name the crate; that is not a manifest dependency. `sc-runtime` does not start it.
 2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
-3. Configuration is one SQLite table in its own database file. That path is not the application `store-sqlite` file. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`. Amended 2026-10-25.
-4. The hook target is a Rust function, a Python module, or trusted in-process Monty source under feature `monty`. Monty source is embedding-chosen text, not a cache file, and does not use `monty-pool`, `monty-fs`, or `monty-runtime`. The hook names are `cron.tick` and `cron.stop`. Python and Monty receive the `sc-cron.hook.v1` JSON object with required `protocol`, `event`, `schedule`, `payload`, and `deadline` members; it has no beads, bd-cache, or ATM field. One Monty REPL is retained per schedule name and is not dropped or replaced until the feed inside it returns. The worker gates stop then tick: a `disable` or `delete` answer skips `cron_tick`, and a `continue` answer plus a queued replace, external delete, external disable, or shutdown skips `cron_tick` and writes no outcome. `monty_feeds_outstanding` counts feeds whose outcome write has not finished. Shutdown drains every in-flight join at once and does not abort a Monty join. When that count is above zero at the handle deadline, in-flight Rust or Python joins are aborted and recorded `TimedOut`; the worker task is aborted only when the count is zero. `run_due` publishes a per-name in-flight mark before it spawns a Monty feed. Monty timeout for VM execution is `max_feed_duration`, observed only at interpreter checkpoints, with `max_memory` unset. Under feature `monty`, a hook may call the host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)`. sc-cron resumes those calls inside `drive_feed` via `execute_feed_with_compose_program` by spawning the compose program the embedder set with `Scheduler::with_monty_host` and `MontyHostConfig` (feature `monty`). The cfg(test) helper `execute_feed` wraps the same resume loop with the default basename only. The default, when the embedder does not call `with_monty_host`, is the basename `sc-compose` on `PATH` (install that binary or symlink the name). `MontyHostConfig::new` accepts any non-empty path and returns `CronError::InvalidSpec` when the path is empty. A basename is resolved on `PATH`; an absolute path, or any other non-empty path, is spawned as given. Hook source cannot choose the program or the temp root. Render paths (`render_template`, and `sc_compose_run` when `subcommand` is `render`) stage a temp root the hook cannot choose and run that program as `render --root <temp> --mode file --file t.j2 --var-file v.json`. Any other subcommand, including `bead`, `init`, and `extract`, fails the feed with `COMPOSE_SUBCOMMAND`. `OsCall` and any other host function name fail the feed. The tick does not start CPython. `ResourceTracker` pauses `max_feed_duration` while the feed is suspended on that host call; the blocking-pool thread stalls until the compose `Command` returns; after that child exits, a host `Instant` past the row budget records `RunOutcome::TimedOut` and drops the repl (this is not a Monty feed-time-limit error). Stdout past the hook output cap fails the feed with `COMPOSE_OUTPUT`. A stack overflow or allocator abort from this trusted in-process code is accepted, the same class of risk as a Rust `Job`. The crate ships no HTTP, MCP, or CLI API.
+3. Configuration is one SQLite table in its own database file. That path is not the application `store-sqlite` file. A row holds the name, the cron string, the timeout, a JSON payload, the hook target, and the canonical Python/Monty hook-environment document from [ADR-RUN-0016](architecture.md). The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`. No sc-runtime binary or sc-cron crate was released with development schema versions 1 through 4; sprint b-17 consolidates them into one fingerprint-checked release schema at `SCHEMA_VERSION = 1` rather than promising migrations among unreleased cuts. Amended 2026-10-28.
+4. The hook target is a Rust function, a Python module, or trusted in-process Monty source under feature `monty`. Monty source is embedding-chosen text, not a cache file, and does not use `monty-pool`, `monty-fs`, or `monty-runtime`. The hook names are `cron.tick` and `cron.stop`. Python and Monty receive the `sc-cron.hook.v1` JSON object with required `protocol`, `event`, `schedule`, `payload`, and `deadline` members; it has no beads, bd-cache, or ATM field. One Monty REPL is retained per schedule name and is not dropped or replaced until the feed inside it returns. The worker gates stop then tick: a `disable` or `delete` answer skips `cron_tick`, and a `continue` answer plus a queued replace, external delete, external disable, or shutdown skips `cron_tick` and writes no outcome. `monty_feeds_outstanding` counts feeds whose outcome write has not finished. Shutdown drains every in-flight join at once and does not abort a Monty join. When that count is above zero at the handle deadline, in-flight Rust or Python joins are aborted and recorded `TimedOut`; the worker task is aborted only when the count is zero. `run_due` publishes a per-name in-flight mark before it spawns a Monty feed. Monty timeout for VM execution is `max_feed_duration`, observed only at interpreter checkpoints, with `max_memory` unset. Under feature `monty`, a hook may call the host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)`. sc-cron resumes those calls inside `drive_feed` via `execute_feed_with_compose_program` by spawning the compose program the embedder set with `Scheduler::with_monty_host` and `MontyHostConfig` (feature `monty`). The cfg(test) helper `execute_feed` wraps the same resume loop with the default basename only. The default, when the embedder does not call `with_monty_host`, is the basename `sc-compose` on `PATH` (install that binary or symlink the name). `MontyHostConfig::new` accepts any non-empty path and returns `CronError::InvalidSpec` when the path is empty. A basename is resolved on `PATH`; an absolute path, or any other non-empty path, is spawned as given. Hook source cannot choose the program or the temp root. Render paths (`render_template`, and `sc_compose_run` when `subcommand` is `render`) stage a temp root the hook cannot choose and run that program as `render --root <temp> --mode file --file t.j2 --var-file v.json`. Any other subcommand, including `bead`, `init`, and `extract`, fails the feed with `COMPOSE_SUBCOMMAND`. [ADR-RUN-0016](architecture.md) additionally allows Monty's existing `Getenv` and `GetEnviron` OS calls against the resolved Python/Monty hook snapshot; every other `OsCall` and any other host function name fail the feed. The tick does not start CPython. `ResourceTracker` pauses `max_feed_duration` while the feed is suspended on that host call; the blocking-pool thread stalls until the compose `Command` returns; after that child exits, a host `Instant` past the row budget records `RunOutcome::TimedOut` and drops the repl (this is not a Monty feed-time-limit error). Stdout past the hook output cap fails the feed with `COMPOSE_OUTPUT`. A stack overflow or allocator abort from this trusted in-process code is accepted, the same class of risk as a Rust `Job`. The crate ships no HTTP, MCP, or CLI API.
 5. A cache-sync adaptor lives in the consumer repo. It exposes the sync methods. A schedule row points at one of those methods, in Rust or in Python. `sc-cron` only fires the row. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
 6. `CronError` is the crate's one error enum. Its variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`. `BadExpression`'s recovery text names the five-field form.
 7. beads-cache remains a SQLite-only consumer. Its scheduled hook syncs through beads to Dolt. Postgres and the copy or host-plus-aggregate adaptors are other consumers' hooks, not part of this crate. After this crate is published, beads-cache depends on it from crates.io instead of carrying its own copy. That dependency change is beads-cache's work.
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-9` adds `HookTarget::Monty` behind feature `monty`; beads-cache does not gain this target. Sprint `b-10` resumes host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)` inside `drive_feed` via `execute_feed_with_compose_program` by spawning the compose program the embedder set with `Scheduler::with_monty_host` and `MontyHostConfig` (feature `monty`); cfg(test) `execute_feed` wraps the same loop with the default basename only. The default is the basename `sc-compose` on `PATH` (install that binary or symlink the name). `MontyHostConfig::new` accepts any non-empty path and returns `CronError::InvalidSpec` when the path is empty; a basename is resolved on `PATH`, and an absolute path or any other non-empty path is spawned as given. Hook source cannot choose the program or the temp root. Render paths stage a temp root the hook cannot choose; `sc_compose_run` allows only subcommand `render` on that path. The blocking-pool thread stalls until that compose child exits. After the child exits, a host `Instant` past the row budget records `TimedOut` and drops the repl. sc-cron has no built-in row cap (the embedder may pass one per [ADR-RUN-0014](architecture.md)), no global in-flight lock, and no two-row mutex. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-28.
+Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-9` adds `HookTarget::Monty` behind feature `monty`; beads-cache does not gain this target. Sprint `b-10` resumes host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)` inside `drive_feed` via `execute_feed_with_compose_program` by spawning the compose program the embedder set with `Scheduler::with_monty_host` and `MontyHostConfig` (feature `monty`); cfg(test) `execute_feed` wraps the same loop with the default basename only. The default is the basename `sc-compose` on `PATH` (install that binary or symlink the name). `MontyHostConfig::new` accepts any non-empty path and returns `CronError::InvalidSpec` when the path is empty; a basename is resolved on `PATH`, and an absolute path or any other non-empty path is spawned as given. Hook source cannot choose the program or the temp root. Render paths stage a temp root the hook cannot choose; `sc_compose_run` allows only subcommand `render` on that path. The blocking-pool thread stalls until that compose child exits. After the child exits, a host `Instant` past the row budget records `TimedOut` and drops the repl. Sprint `b-17` adds the shared Python/Monty hook environment, permits only `Getenv`/`GetEnviron`, removes implicit Python/compose-child daemon inheritance, and consolidates unreleased development schemas into the release-v1 table. sc-cron has no built-in row cap (the embedder may pass one per [ADR-RUN-0014](architecture.md)), no global in-flight lock, and no two-row mutex. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-28.
 
 ### Related Documents
 
 - beads-cache ADR-BDC-0006.
 - [ADR-RUN-0012](architecture.md). The writer and the cron store are separate rusqlite connections.
 - [ADR-RUN-0014](architecture.md). Optional embedder-supplied schedule row limit.
+- [ADR-RUN-0016](architecture.md). Explicit Python and Monty hook environments.
 - [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md).
 
 ## ADR-RUN-0014: Optional embedder-supplied schedule row limit
@@ -2499,6 +2503,118 @@ Sprint `b-11` implements the skill, layout, `benchmark-gate`, and the `benchmark
 
 - [ADR-RUN-0011](architecture.md), [ADR-RUN-0013](architecture.md).
 - [NFR-RUN-0005](requirements.md), [REQ-RUN-0005](requirements.md).
+
+## ADR-RUN-0016: Explicit Python and Monty hook environments
+
+**Status:** Active
+**Decision Date:** 2026-10-28
+**Source:** Owner, 2026-10-28. A daemon's ambient identity/team is not the
+invoking agent's context. Daemon-scope API keys may be exposed by name, while
+each schedule must be able to set or clear its own environment and resolve
+authorized secret references or absolute `.env` files.
+
+### Context
+
+The Python hook currently inherits the complete daemon environment. Monty
+denies all OS calls, including its existing `Getenv` and `GetEnviron` calls,
+while the compose child inherits the complete daemon environment. That is an
+inconsistent capability boundary and has caused difficult identity/team bugs
+when a daemon starts under one agent and later executes another agent's
+schedule. The invoking agent process may not even exist when a durable cron
+entry runs.
+
+Environment variables are not uniformly secrets. Durable values such as
+`ATM_IDENTITY` and `ATM_TEAM` belong with a schedule. API keys may instead be
+daemon-wide inherited values, explicit schedule values, references resolved
+by an application secret provider, or values loaded from an authorized
+absolute `.env` file. The library must support those choices without silently
+capturing host values.
+
+### Decision
+
+1. `HookEnvironment` is one schedule-level contract for Python and Monty.
+   Existing constructors default to empty. It contains ordered absolute
+   `.env` sources and a name-keyed map whose operation is exactly one of
+   `Set(String)`, `Reference(String)`, or `Clear`. A non-empty environment on
+   a Rust target is invalid; trusted in-process Rust jobs keep the existing
+   `Job` trait and may use the application/daemon environment directly.
+2. `HookEnvironmentHost` is daemon scope. It names daemon-process variables
+   that may be inherited, authorizes exact `.env` files or canonical roots,
+   and holds an embedder-provided reference resolver. Every default is empty.
+   The library never infers or captures an invoking caller's environment. The
+   generated composition accepts a prebuilt host policy so an application can
+   attach its resolver; config parsing never overwrites the trait object.
+3. One immutable snapshot is resolved before `cron.stop` and shared with
+   `cron.tick`: daemon allowlisted values first, `.env` files in declared
+   order second, and schedule operations last. Set and a resolved reference
+   replace prior values; clear removes a value. Missing daemon values and
+   missing optional files are absent. Required-file, path-policy, parse, and
+   reference failures fail closed before hook source runs. A reference request
+   includes schedule identity, variable name, opaque reference, and the row
+   deadline so the application can authorize per-schedule access. Resolution
+   is deadline-bounded; expiration records `TimedOut`.
+4. Python starts from an empty child environment and receives exactly that
+   snapshot. Ambient inheritance remains possible only through an explicit
+   direct-call `ChildEnv::Inherit`. Monty resumes only `Getenv` and
+   `GetEnviron` against the same snapshot; missing or cleared names behave as
+   absent and every other OS call remains denied. Source initialization is
+   resumable only for environment reads so top-level `os.getenv` works while
+   top-level compose function calls remain denied. The render-only compose
+   child receives the snapshot and no longer inherits the daemon environment.
+5. `.env` sources are full absolute paths, read at execution, capped, parsed
+   as data rather than shell, and authorized after canonicalization so a
+   symlink cannot escape an allowed file/root policy. Interpolation, command
+   substitution, duplicate keys, and NUL are invalid. Authorization precedes
+   missing-file classification; a missing optional file is accepted only when
+   its expected canonical path is covered by an exact-file or canonical-root
+   policy. Reference strings are opaque, persisted plaintext non-secret
+   locators; the default resolver resolves none.
+6. Explicit `Set` values are intentionally persisted as plaintext SQLite
+   data. Values resolved from the daemon, a reference, or a file are never
+   persisted. Every hook/provider-controlled detail or stop reason has each
+   distinct non-empty resolved value replaced with `[REDACTED_ENV]` before its
+   byte cap and before fixed codes/recovery, diagnostics, traces, outcomes,
+   events, or persisted reasons are assembled. Stable codes, recovery text,
+   metadata, and the canonical environment configuration write are never
+   substituted; deliberate `Set` values remain plaintext schedule data. This
+   covers Python output, Monty exception/return text, and compose stderr. Raw
+   `HookOutput` remains available to a trusted direct PythonHook caller, but
+   its `Debug` omits output content. Reference strings and provider error prose
+   are never emitted.
+7. sc-cron has not shipped a binary or package schema. Sprint b-17 therefore
+   consolidates development schema versions 1 through 4 into one
+   fingerprint-checked release schema at `SCHEMA_VERSION = 1`; it does not add
+   version 5. Old development shapes are rejected with recreate guidance.
+   Compatibility begins with the first released schema.
+8. Environment names and values are UTF-8 and NUL-free. ASCII case-fold name
+   collisions are rejected on every platform. An allowlisted non-Unicode
+   daemon value fails closed rather than becoming absent. Runtime lookup and
+   enumeration preserve spelling on Unix; Windows runtime keys are uppercased
+   for both Python and Monty and lookup is case-insensitive, while persisted
+   configuration retains original spelling. Every intermediate/final map is capped at
+   128 entries, every resolved value at 16 KiB, and the encoded block at 32,000
+   UTF-8 bytes. Python and compose basenames are resolved to absolute programs
+   from daemon launch policy before the child's `PATH` is cleared. The
+   canonical JSON ordering and SQLite release-v1 structural fingerprint are
+   fixed by the b-17 plan and tested as public persistence behavior.
+
+### Consequences
+
+Sprint b-17 implements [REQ-CRON-0019](sc-cron/requirements.md) and
+[NFR-CRON-0002](sc-cron/requirements.md), updates the generated daemon's
+empty-default policy, and tests identical Python/Monty resolution. sc-cron
+still reads no `sc-config` file and implements no secret backend. Applications
+authorize agent-to-file access and provide reference resolvers. Monty
+write-through `os.environ` mutation remains unsupported until Monty exposes
+set/unset OS calls; sc-cron never mutates the daemon process environment.
+Exact-value redaction mitigates accidental propagation, not transformation or
+exfiltration by trusted hook code.
+
+### Related Documents
+
+- [ADR-RUN-0013](architecture.md).
+- [sprint b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md).
+- [REQ-CRON-0019](sc-cron/requirements.md), [NFR-CRON-0002](sc-cron/requirements.md).
 
 ## ADR-RUN-0306: General database commands ship on CLI, MCP, and HTTP
 

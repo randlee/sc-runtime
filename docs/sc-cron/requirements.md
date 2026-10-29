@@ -1,6 +1,6 @@
 # sc-cron Requirements
 
-**Status:** Active as of 2026-10-25. The contract is [architecture.md](architecture.md) and [ADR-RUN-0013](../architecture.md). Sprint `b-3` implements these items.
+**Status:** Active as of 2026-10-28. The contract is [architecture.md](architecture.md), [ADR-RUN-0013](../architecture.md), and [ADR-RUN-0016](../architecture.md). Sprints `b-3` through `b-17` implement these items.
 
 ## REQ-CRON-0001: Workspace member
 
@@ -45,7 +45,13 @@ With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::Tim
 | Denied `sc-compose` subcommand (`SubcommandDenied`) | `COMPOSE_SUBCOMMAND` | `Failed` | Call `sc_compose_run` with subcommand `render` only. `bead`, `init`, and `extract` are denied. |
 | Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
 | Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
-| `OsCall` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
+| Monty `OsCall` other than `Getenv` or `GetEnviron` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only the two environment reads plus `render_template` and `sc_compose_run` are allowlisted. |
+| Allowlisted daemon variable is not Unicode or exceeds the value cap | `ENV_PROCESS_INVALID` | `Failed` — value-free detail | Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist. |
+| `.env` path outside daemon policy | `ENV_FILE_DENIED` | `Failed` — value-free detail | Authorize the canonical file/root or remove the schedule source. |
+| Required `.env` file missing | `ENV_FILE_MISSING` | `Failed` — value-free detail | Restore the absolute file or mark the source optional. |
+| `.env` file invalid | `ENV_FILE_INVALID` | `Failed` — value-free detail | Fix the bounded data-file syntax; shell expansion is not supported. |
+| Reference missing or resolver failed | `ENV_REFERENCE` | `Failed` — value-free detail | Configure the daemon resolver and restore the referenced value. |
+| Resolved entry-count or encoded-block limit exceeded | `ENV_SNAPSHOT_LIMIT` | `Failed` — value-free detail | Remove variables or reduce values before retrying. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
 | `cron_stop` return value is not a valid stop reply | `HOST_REPLY` | `Failed` — detail is `stop check: HOST_REPLY:` then the parse error | Fix hook source; return an object with string `"action"` (`continue`, `disable`, or `delete`) and a non-empty `"reason"` when disabling or deleting. |
 | Monty feed task join failed (cancelled blocking-pool task) | `FEED_TASK_FAILED` | `Failed` | Retry the run; if it persists, inspect blocking-pool capacity and hook source. |
@@ -58,6 +64,82 @@ With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::Tim
 
 Host-deadline paths record bare `RunOutcome::TimedOut` with no code token in the stored outcome.
 
+## REQ-CRON-0019: Explicit Python and Monty hook environment
+
+Python and Monty schedule rows share one `HookEnvironment`; existing
+constructors default it to empty. A daemon-scoped `HookEnvironmentHost` names
+which daemon-process variables may be inherited, authorizes absolute `.env`
+files or canonical roots, and supplies an optional reference resolver. Every
+host default is empty. The crate never infers or captures an invoking caller's
+environment. The generated daemon passes a prebuilt host policy into scheduler
+composition so an application-provided resolver is preserved.
+
+Reference resolution receives the schedule name, variable name, opaque
+reference, and row deadline. The provider returns only `Denied`, `Unavailable`,
+missing, or a value; sc-cron emits no provider prose. Resolution is bounded by
+the row deadline, and expiration is `RunOutcome::TimedOut` before hook source
+runs.
+
+The schedule environment contains ordered absolute `.env` sources followed
+by name-keyed `Set`, `Reference`, or `Clear` operations. One immutable map is
+resolved before `cron.stop` and reused for `cron.tick`: allowlisted daemon
+values, then files in declaration order, then schedule operations. Explicit
+set values are canonical plaintext schedule data. Daemon, file, and reference
+values are never persisted. A non-empty environment on a Rust row is invalid;
+trusted Rust jobs keep their existing `Job` interface.
+
+Reference locators are non-secret plaintext registry metadata; only their
+resolved values remain external. Every intermediate/final map has at most 128
+entries, every stored/resolved value is at most 16 KiB, and the encoded final
+block is at most 32,000 UTF-8 bytes. Per-source oversize failures and aggregate
+`ENV_SNAPSHOT_LIMIT` failures are value-free.
+
+Python starts with exactly the resolved map rather than the daemon's complete
+environment. Monty source initialization and hook feeds answer `Getenv` and
+`GetEnviron` from the same map with ordinary absent/default behavior; every
+other OS call remains denied. Render-only compose children receive that map
+and do not inherit the daemon environment. sc-cron never mutates the daemon
+process environment. Full semantics, limits, file authorization, and the
+release-v1 schema baseline are [ADR-RUN-0016](../architecture.md).
+
+Every hook/provider-controlled failure detail or stop reason has each distinct
+non-empty resolved value replaced with `[REDACTED_ENV]` before byte capping and
+before fixed codes/recovery, outcomes, events, traces, or persisted reasons are
+assembled. Stable text, metadata, and the canonical environment configuration
+write are exempt; deliberate set values remain plaintext schedule data. Python
+output, Monty exception/return text, and compose stderr are included. Trusted
+direct callers may read raw public `HookOutput` fields, but `HookOutput` debug
+formatting omits their contents. This exact-value replacement mitigates
+accidental propagation; trusted hooks can transform or exfiltrate values and
+remain outside an untrusted-code boundary.
+
 ## NFR-CRON-0001: Allowed third-party dependencies
 
 This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. No other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
+
+## NFR-CRON-0002: Environment isolation and redaction
+
+Environment names use `[A-Za-z_][A-Za-z0-9_]*`. Construction, persistence,
+row decode, and execution enforce 128 entries, 16 KiB per stored/resolved
+value, 4 KiB per reference locator/path, a 32,000-byte encoded final block, a
+256 KiB canonical document, and a 1 MiB dotenv file. Names,
+paths, values, and references are UTF-8 and NUL-free; ASCII case-fold name
+collisions are rejected on every platform. An allowlisted non-Unicode daemon
+value fails as `ENV_PROCESS_INVALID`. `.env` files are bounded UTF-8 data
+files: no interpolation, command substitution, duplicate names, or NUL.
+Canonical path authorization follows symlinks before checking an exact
+file/root policy; authorization precedes missing classification. Lookup and
+enumeration preserve spelling on Unix; Windows runtime keys are uppercased for
+both Python and Monty and lookup is case-insensitive, while stored config keeps
+the original spelling. Python and compose executables are
+resolved to absolute paths from daemon launch policy before child `PATH` is
+cleared.
+
+Set values, resolved values, file contents, and reference strings never appear
+in configuration `Debug`, scheduled errors, recovery text, `RunOutcome`,
+tracing, canonical events, or persisted stop reasons. Direct `HookOutput`
+field access is the sole trusted raw-output exception. Tests make Python,
+Monty, compose, and resolver paths echo canaries and prove redaction, positive
+delivery, and absence of a non-allowlisted daemon secret. Resolution performs
+file I/O off the async hot path, holds no store connection or synchronous lock
+across await, and calls no `std::env::set_var` or `std::env::remove_var`.

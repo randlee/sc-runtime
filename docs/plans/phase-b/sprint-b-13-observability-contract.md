@@ -286,7 +286,7 @@ b-13 changes the root workspace version from `0.1.0` to **`0.1.1`**, so the
 new `sc-runtime` API and first publishable `sc-cron` injection API have an
 immutable registry version. It removes `publish = false` from `sc-cron` and
 keeps `sc-runtime-db-sqlite` unpublished. This sprint updates manifests and
-lockfile only; it does not publish any crate. b-17 owns the existing
+lockfile only; it does not publish any crate. b-18 owns the existing
 sc-publish consumer input, authorization gate, publication order, and
 registry-only generated build.
 
@@ -310,7 +310,7 @@ this sprint; remaining cron taxonomy belongs to b-15.
    ADR-CMD-0001 to remove its stale only-library assertion. Amend
    NFR-RUN-0010 to bind the generated real-daemon signal tests to the
    dedicated `ubuntu-latest` GitHub-hosted job and its fail-closed three-value
-   detection contract; b-17 remains the sole integration acceptance root.
+   detection contract; b-18 remains the sole integration acceptance root.
    These are observability and release amendments only: do not remove,
    shorten, or replace ADR-RUN-0013 section 4 or REQ-CRON-0003's landed host
    bridge, `MontyHostConfig`, `drive_feed` /
@@ -322,7 +322,7 @@ this sprint; remaining cron taxonomy belongs to b-15.
 3. Implement the two public signatures, propagate one handle through runtime
    state and `RunCoord`, and preserve all old constructor calls.
    `Scheduler::open_with_logger` installs one handle coherently and emits the
-   production `cron.scheduler/logger.attached` event; b-17 consumes
+   production `cron.scheduler/logger.attached` event; b-18 consumes
    this interface-owned event without manufacturing a fake cron record.
    The same `scheduler.rs` ownership migrates its two shutdown-deadline trace
    calls to `cron.scheduler/shutdown.worker_timeout` (error) and
@@ -350,7 +350,7 @@ this sprint; remaining cron taxonomy belongs to b-15.
    both generated green/CI observability checks to `1.5.1`, and inspect the
    package file lists for both changed public crates without claiming
    publication of the upstream observability pair. This sprint amends the
-   release and boundary authority; b-17 owns each integration acceptance
+   release and boundary authority; b-18 owns each integration acceptance
    root.
 7. NFR-RUN-0008: keep every changed production Rust source below the existing
    1000-source-line gate; this ID governs only `just lint` line counts, not
@@ -414,6 +414,6 @@ direct `sc-observability` or `sc-observability-otlp` line.
 
 ## This sprint does not close
 
-- HTTP event taxonomy (b-14), cron event taxonomy (b-15), generated wiring
-  (b-17), or upstream release work.
+- HTTP event taxonomy (b-14), cron event taxonomy (b-15), generated
+  observability wiring (b-18), or upstream release work.
 - Removal of every diagnostics dependency.

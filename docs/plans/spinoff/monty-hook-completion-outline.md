@@ -77,6 +77,32 @@ Acceptance: no fixed sleeps in `monty_hook.rs` (or justify each with injected cl
 - Rust **1.96.1** for Monty tests; default workspace **1.94.1** without feature.
 - No new workspace deps; boundaries unchanged unless ADR amends host contract only.
 
+### 7. Shared Python/Monty hook environment (owner-promoted 2026-10-28)
+
+The daemon process environment is not the invoking agent environment. A daemon
+started under one agent's `ATM_IDENTITY` / `ATM_TEAM` must not leak that
+identity into another agent's schedule. The hardened plan therefore adds a
+shared Python/Monty environment boundary before release:
+
+- daemon configuration allowlists process variables by name for all trusted
+  hooks (for example `JEV_API_KEY`), with empty defaults;
+- each schedule may load authorized full-path `.env` files and then `set`,
+  resolve a provider `reference`, or `clear` individual names;
+- one resolved snapshot is used for Python and Monty stop/tick; Python and the
+  render-only compose child do not inherit the complete daemon environment;
+- Monty permits its existing `Getenv` / `GetEnviron` calls and denies every
+  other OS call; source initialization can read the snapshot;
+- explicit `set` values are deliberate plaintext registry data, while daemon,
+  file, and reference values are never persisted or logged;
+- Rust jobs remain trusted application code and keep their existing interface;
+- because no binary or package schema has shipped, the development v1-v4
+  migration ladder is consolidated into a fingerprinted release-v1 schema
+  rather than extended to v5.
+
+Binding authority is [ADR-RUN-0016](../../architecture.md),
+[REQ-CRON-0019](../../sc-cron/requirements.md), and
+[sprint b-17](../phase-b/sprint-b-17-sc-cron-hook-environment.md).
+
 ## Suggested sprint split (planner may merge/split)
 
 | Candidate id | Focus | Depends on |
@@ -85,8 +111,10 @@ Acceptance: no fixed sleeps in `monty_hook.rs` (or justify each with injected cl
 | **b-14** (name TBD) | RBP error strings on scheduler/worker Monty paths | b-13 or parallel if touch disjoint files |
 | **b-15** (name TBD) | `monty_hook` flake fixes + optional compose-kill | b-13 |
 | **b-16** (name TBD) | Template Monty cron examples + generation flag | template + sc-cron schema |
+| **b-17** | Shared Python/Monty hook environment and release-v1 schema | final cron call sites + generated Monty feature/example |
+| **b-18** | Generated observability composition and release proof | b-14 + b-17 |
 
-Planner should assign **REQ-CRON-0003**, **NFR-RUN-0004/0008/0009**, **ADR-RUN-0013**, **REQ-RUN-0005**, **NFR-CRON-0001** and owned_paths under `crates/sc-cron/`, `docs/sc-cron/`, `docs/architecture.md`, `template/`.
+Planner should assign **REQ-CRON-0003/0019**, **NFR-RUN-0004/0008/0009**, **ADR-RUN-0013/0016**, **REQ-RUN-0005**, **NFR-CRON-0001/0002** and owned_paths under `crates/sc-cron/`, `docs/sc-cron/`, `docs/architecture.md`, `template/`.
 
 ## Acceptance themes (for hardened plan)
 

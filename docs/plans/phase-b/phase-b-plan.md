@@ -51,8 +51,11 @@ requirements:
   - NFR-RT-0004
   - REQ-CRON-0001
   - REQ-CRON-0003
+  - REQ-CRON-0004
   - REQ-CRON-0005
+  - REQ-CRON-0019
   - NFR-CRON-0001
+  - NFR-CRON-0002
 ---
 
 # Phase b — stores, adaptor, writer, cron, and lint
@@ -61,7 +64,7 @@ requirements:
 
 `b`. The owner named this phase b. That is an exception to the letter-pair default in `.claude/project/quality-policy.md`, consistent with the grandfathered phase id `a`.
 
-Entry state is the workspace at tag `v0.1.0`: four library crates, template `store-sqlite` on sqlx 0.9 with no write actor, `just lint` running boundary, line-counts, fmt, and clippy. The original b-1 through b-12 cut does not retag `v0.1.0` or publish; the continuation establishes and releases the new `0.1.1` public contract under b-13/b-17.
+Entry state is the workspace at tag `v0.1.0`: four library crates, template `store-sqlite` on sqlx 0.9 with no write actor, `just lint` running boundary, line-counts, fmt, and clippy. The original b-1 through b-12 cut does not retag `v0.1.0` or publish; the continuation establishes and releases the new `0.1.1` public contract under b-13/b-18.
 
 ## Objective
 
@@ -69,12 +72,13 @@ Plan and build the storage phase as one phase. One chain is the rusqlite writer,
 
 Waves 1–3 close on `integrate/phase-b`. Waves 4–5 are the Monty host bridge and the benchmark publisher on `integrate/phase-b-monty`, cut from `integrate/phase-b` and run in parallel with phase-end review. They do not gate that review. Coordination is [phase-b-integration-close.md](phase-b-integration-close.md).
 
-Sprints b-13 through b-17 are a Phase B continuation amendment, not a new
+Sprints b-13 through b-18 are a Phase B continuation amendment, not a new
 phase. The baseline is `develop` after Track B Monty merged at `240e445`;
 b-10 through b-12 are closed scope and are not replanned. Both continuation
 tracks integrate on
-`integrate/phase-b-observability`; their sprint branches remain parallel and
-disjoint, and b-16 merges before b-17 consumes its feature.
+`integrate/phase-b-observability`; their wave-8 sprint branches remain
+parallel and disjoint. b-17 then consumes b-15's final cron paths and b-16's
+feature/example before b-18 performs release integration.
 This amendment is authored on `plan/spinoff-monty-observability`; sprint
 dispatch uses the branches declared in each sprint frontmatter.
 
@@ -106,7 +110,8 @@ head; it does not relabel or materially expand b-10 through b-12.
 | `sc-runtime` canonical events | `b-14` | HTTP request lifecycle events through the injected handle | `b-13` |
 | `sc-cron` canonical events | `b-15` | due-run/worker event taxonomy and residual stable failure tokens | `b-13`, which owns scheduler and component logger seams plus component-owned events |
 | generated Monty product surface | `b-16` | both template dependency inventories, daemon Cargo `cron`/`monty` features, checked trusted-source hook example, product documentation | `b-10` host artifact and b-13 graph/REQ amendments; parallel with b-14 and b-15 |
-| generated observability composition and release proof | `b-17` | one Arc-owned logger injected into runtime and real scheduler; HTTP+cron JSONL; exact pinned-kit install and complete installed-output ownership; sc-publish `0.1.1` order/preflight and registry-only release build | `b-14`, `b-15`, `b-16`; human release authorization and credentials |
+| shared Python/Monty hook environment | `b-17` | daemon process-name allowlist; per-schedule absolute `.env`, set, reference, and clear operations; one Python/Monty snapshot; release-v1 schema consolidation; generated config wiring | `b-15` final cron call sites and b-16 generated feature/example |
+| generated observability composition and release proof | `b-18` | one Arc-owned logger injected into runtime and real scheduler; HTTP+cron JSONL; exact pinned-kit install and complete installed-output ownership; sc-publish `0.1.1` order/preflight and registry-only release build | `b-14`, `b-17`; human release authorization and credentials |
 
 ### Continuation boundary edges
 
@@ -115,8 +120,9 @@ head; it does not relabel or materially expand b-10 through b-12.
 | upstream observability crates | published `CanonicalLog`, `NoopCanonicalLog`, `SharedCanonicalLog`; `CanonicalLog for v2::Logger` | no upstream source path is owned here | external entry prerequisite |
 | `BOUNDARY-sc-runtime` | direct `sc-observability-types`; `DaemonBuilder::logger(SharedCanonicalLog)` with fixed `sc-runtime` Noop | `sc-observability`, OTLP, config, and cron | b-13 contract; b-14 event implementation |
 | `BOUNDARY-sc-cron` | direct `sc-observability-types`; `SqliteScheduleStore::open_with_logger`, the sole coherent `Scheduler::open_with_logger` that internally constructs logger-aware `SystemJitter`, `supervise_with_logger`, logger-aware Python hook API, and internal Monty propagation, all with source-compatible Noop legacy entry points | full observability runtime and every other workspace library | b-13 contract/component/hook API; b-15 worker call site and worker/due-run events |
-| generated daemon | full logger in one composition root; Arc coercion and injection to both libraries | libraries do not depend back on daemon | b-16 owns both template Cargo inventories; b-17 owns wiring and registry-release proof |
-| generated Monty example | opt-in `monty` forwards trusted embedding-chosen in-process source to `sc-cron/monty`; allowed render-only hosts | untrusted source, any sandbox claim, root selection, arbitrary compose subcommands, or new hosts; host allowlisting does not remove abort risk | b-16 |
+| generated daemon | full logger in one composition root; Arc coercion and injection to both libraries | libraries do not depend back on daemon | b-16 owns both template Cargo inventories; b-17 owns hook-environment config; b-18 owns observability wiring and registry-release proof |
+| Python/Monty hook environment | daemon-scoped process-name allowlist plus schedule `.env`, set, reference, and clear operations; empty defaults; identical resolved snapshot for Python and Monty | implicit caller capture, full daemon inheritance, value-bearing logs, relative `.env` paths, Rust pseudo-sandboxing | b-17 |
+| generated Monty example | opt-in `monty` forwards trusted embedding-chosen in-process source to `sc-cron/monty`; allowed render-only hosts and filtered `Getenv`/`GetEnviron` | untrusted source, any sandbox claim, root selection, arbitrary compose subcommands, or other OS calls; host allowlisting does not remove abort risk | b-16 feature/example; b-17 environment extension |
 
 At the planning baseline, both library boundary manifests allow `tracing` and
 neither allows `sc-observability-types`; their test-double lists are empty.
@@ -145,7 +151,8 @@ and b-15.
 | `b-14` | [sprint-b-14-sc-runtime-observability.md](sprint-b-14-sc-runtime-observability.md) | `boundary` | observability | 8 |
 | `b-15` | [sprint-b-15-sc-cron-observability.md](sprint-b-15-sc-cron-observability.md) | `boundary` | observability | 8 |
 | `b-16` | [sprint-b-16-monty-template-examples.md](sprint-b-16-monty-template-examples.md) | `integration` | monty-product | 8 |
-| `b-17` | [sprint-b-17-template-observability-integration.md](sprint-b-17-template-observability-integration.md) | `integration` | observability | 9 |
+| `b-17` | [sprint-b-17-sc-cron-hook-environment.md](sprint-b-17-sc-cron-hook-environment.md) | `boundary` | hook-environment | 9 |
+| `b-18` | [sprint-b-18-template-observability-integration.md](sprint-b-18-template-observability-integration.md) | `integration` | observability | 10 |
 
 ### Continuation dispatch projection
 
@@ -158,7 +165,8 @@ is authoritative for its exact `owned_paths`, relations, branch, and model.
 | b-14 | observability / `sc-runtime` | runtime HTTP event sites and tests | `SharedCanonicalLog`, `DaemonBuilder::logger` |
 | b-15 | observability / `sc-cron` | cron worker and due-run event sites and tests | `SharedCanonicalLog` in `RunCoord` plus b-13 component seams |
 | b-16 | monty-product / `generated-daemon-monty` | checkout/registry template Cargo inventories, trusted-source example, docs, render test | b-10 `render_template`/render-only `sc_compose_run` plus b-13 graph authority |
-| b-17 | observability / `generated-daemon-observability` | generated composition, smoke test, sc-publish pin/input plus every exact pinned-kit installed output | b-14 events, b-15 events, b-16 Cargo features and exact `0.1.1` pins; a later qualifying kit revision with no `docs/sprints/**` |
+| b-17 | hook-environment / `sc-cron-hook-environment` | shared persisted environment model, resolver/security policy, Python/Monty delivery, generated config/example | b-15 final cron paths plus b-16 Cargo features and example |
+| b-18 | observability / `generated-daemon-observability` | generated composition, smoke test, sc-publish pin/input plus every exact pinned-kit installed output | b-14 events and b-17 completed cron environment/product surface; a later qualifying kit revision with no `docs/sprints/**` |
 
 The compose program is embedder policy. Host resume spawns the program selected
 by `MontyHostConfig`; its default is the basename `sc-compose` on `PATH`.
@@ -172,13 +180,14 @@ does not require every embedder to ship `sc-compose`.
 
 | Contract or product surface | Single acceptance root | Consuming sprints |
 |---|---|---|
-| injected types edge, Noop compatibility, and public library injection seams | b-13 contract tests plus boundary lint | b-14, b-15, b-17 consume; they do not redefine the seams |
-| canonical HTTP event taxonomy | b-14 `observability_http` test | b-17 consumes the events in its generated-process proof |
-| canonical cron event taxonomy | b-15 `observability` test | b-17 consumes the events in its generated-process proof |
-| generated `cron`/`monty` product surface and trusted-source example | b-16 `test_monty_example` | b-17 consumes the Cargo features without reopening them |
-| generated composition, JSONL, release, and signal-shutdown proof | b-17 `test_observability` and consumer preflight | none; this is the continuation integration close |
+| injected types edge, Noop compatibility, and public library injection seams | b-13 contract tests plus boundary lint | b-14, b-15, b-17, and b-18 consume; they do not redefine the seams |
+| canonical HTTP event taxonomy | b-14 `observability_http` test | b-18 consumes the events in its generated-process proof |
+| canonical cron event taxonomy | b-15 `observability` test | b-17 preserves and b-18 consumes the events |
+| generated `cron`/`monty` product surface and trusted-source example | b-16 `test_monty_example` | b-17 extends the example for environment inputs without reopening its Cargo features |
+| shared Python/Monty hook environment and release-v1 schedule schema | b-17 `hook_environment`, `monty_host_bridge`, and `test_cron_environment` | b-18 consumes the generated configuration and real scheduler path |
+| generated composition, JSONL, release, and signal-shutdown proof | b-18 `test_observability` and consumer preflight | none; this is the continuation integration close |
 
-Static review must parse the five frontmatter blocks, reject duplicate exact
+Static review must parse the six frontmatter blocks, reject duplicate exact
 owned paths inside a wave, and verify every `.sprints/b/structure.ttl`
 criteria path exists. This checks the authoritative source without creating a
 second path inventory.
@@ -195,7 +204,8 @@ second path inventory.
 | 6 | `b-12` | `integrate/phase-b-monty` (after `b-9` on `develop`; parallel with waves 4–5) |
 | 7 | `b-13` | `integrate/phase-b-observability` (shared contract and graph authority) |
 | 8 | `b-14`, `b-15`, `b-16` | `integrate/phase-b-observability` (parallel runtime, cron call-site, and generated-product boundaries) |
-| 9 | `b-17` | `integrate/phase-b-observability` after b-16 merges forward |
+| 9 | `b-17` | `integrate/phase-b-observability` after b-15 and b-16 merge forward |
+| 10 | `b-18` | `integrate/phase-b-observability` after b-14 and b-17 merge forward |
 
 Phase-close critical path 3 (`b-4` → `b-5` → `b-8`, and `b-1` → `b-3` → `b-9`). Width 4 (wave 2). Sprint count for that close: 9 (merged to `develop`).
 
@@ -203,26 +213,31 @@ b-11 also owns the **publish preflight gate**: `release/publish-preflight.toml` 
 
 Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Row-limit path 1 (`b-12` on `integrate/phase-b-monty`, parallel with Monty). Phase-end on `integrate/phase-b-monty`, then merge to `develop`. Combined sprint count 12.
 
-Post-Track-B continuation critical path is 3
-(`b-13` -> `b-14`, `b-15`, or `b-16` -> `b-17`).
+Post-Track-B continuation critical path is 4
+(`b-13` -> `b-15` or `b-16` -> `b-17` -> `b-18`).
 Continuation width is 3 because b-14, b-15, and b-16 are disjoint siblings
-in wave 8; continuation sprint count is 5, and the combined
-Phase B sprint count is 17.
+in wave 8; continuation sprint count is 6, and the combined
+Phase B sprint count is 18.
 
-Continuation ownership is disjoint. b-13 exclusively owns shared ADR/REQ,
+Wave-8 sibling ownership is disjoint. b-13 first owns shared ADR/REQ,
 boundary, lockfile, library manifests, public injection signatures, and the
 whole jitter/store/process/hook/Monty component files and their events/API.
 b-14 owns runtime event sites; b-15 owns only worker and due-run trace sites
 and the worker call passing the handle into b-13's hook API. b-16 exclusively
-owns both template dependency inventories, daemon Cargo, and the Monty
-example. b-17 consumes those artifacts and owns generated composition, the
-integration smoke, the sc-publish consumer input, and every exact output of a
-real install from the pinned kit revision for the `0.1.1` release. Thus b-17
-`must_follow` b-14, b-15, and b-16; b-14 and
-b-15 and b-16 all `must_follow` b-13; b-16 also names b-10's host artifact.
+owns both template dependency inventories, daemon Cargo, and the first Monty
+example. Serial consumer sprints intentionally extend predecessor-owned paths:
+b-17 follows b-15 and b-16 and then amends the environment model, storage,
+final cron call sites, generated environment configuration, and the example;
+b-18 follows b-17 and amends the generated cron composition without weakening
+its environment policy. b-18 consumes those artifacts and
+owns generated observability composition, the integration smoke, the
+sc-publish consumer input, and every exact output of a real install from the
+pinned kit revision for the `0.1.1` release. Thus b-18 `must_follow` b-14 and
+b-17; b-17 `must_follow` b-15 and b-16; b-14, b-15, and b-16 all
+`must_follow` b-13; b-16 also names b-10's host artifact.
 
-The current sc-publish pin is not a valid b-17 input because its installer
-package includes upstream sprint history under `docs/sprints/**`. b-17 is
+The current sc-publish pin is not a valid b-18 input because its installer
+package includes upstream sprint history under `docs/sprints/**`. b-18 is
 blocked until an exact later qualifying revision exists; it then owns the pin
 advance and proves the installer destination inventory is complete,
 package-safe, and excludes `docs/sprints/**`. Product inventory validation is
@@ -238,22 +253,23 @@ revision.
 ## Requirements and ADRs
 
 - [REQ-RUN-0001](../../requirements.md), [REQ-RUN-0004](../../requirements.md), [REQ-RUN-0005](../../requirements.md), [REQ-RUN-0201](../../requirements.md), [REQ-RUN-0301](../../requirements.md), [REQ-RUN-0302](../../requirements.md), [REQ-RUN-0303](../../requirements.md), [REQ-RUN-0304](../../requirements.md), [REQ-RUN-0306](../../requirements.md), [REQ-RUN-0307](../../requirements.md), [REQ-RUN-0308](../../requirements.md), [REQ-RUN-0313](../../requirements.md) through [REQ-RUN-0331](../../requirements.md), [REQ-RUN-0401](../../requirements.md), [REQ-RUN-0402](../../requirements.md), [REQ-RUN-0403](../../requirements.md), [REQ-RUN-0501](../../requirements.md), [REQ-RUN-0503](../../requirements.md), [REQ-RUN-0701](../../requirements.md), [NFR-RUN-0001](../../requirements.md), [NFR-RUN-0002](../../requirements.md), [NFR-RUN-0004](../../requirements.md), [NFR-RUN-0005](../../requirements.md), [NFR-RUN-0006](../../requirements.md), [NFR-RUN-0008](../../requirements.md), [NFR-RUN-0009](../../requirements.md).
-- [ADR-RUN-0001](../../architecture.md), [ADR-RUN-0002](../../architecture.md), [ADR-RUN-0003](../../architecture.md), [ADR-RUN-0004](../../architecture.md), [ADR-RUN-0005](../../architecture.md), [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0007](../../architecture.md), [ADR-RUN-0008](../../architecture.md), [ADR-RUN-0009](../../architecture.md), [ADR-RUN-0011](../../architecture.md), [ADR-RUN-0012](../../architecture.md), [ADR-RUN-0013](../../architecture.md), [ADR-RUN-0014](../../architecture.md), [ADR-RUN-0015](../../architecture.md), [ADR-RUN-0201](../../architecture.md), [ADR-RUN-0202](../../architecture.md), [ADR-RUN-0301](../../architecture.md), [ADR-RUN-0302](../../architecture.md), [ADR-RUN-0303](../../architecture.md), [ADR-RUN-0305](../../architecture.md), [ADR-RUN-0306](../../architecture.md), [ADR-RUN-0307](../../architecture.md), [ADR-RUN-0401](../../architecture.md), [ADR-RUN-0402](../../architecture.md), [ADR-RT-0001](../../sc-runtime/architecture.md), [ADR-RT-0002](../../sc-runtime/architecture.md), [ADR-RT-0003](../../sc-runtime/architecture.md), [ADR-RT-0004](../../sc-runtime/architecture.md), [ADR-TRN-0001](../../sc-transport/architecture.md), [ADR-TRN-0002](../../sc-transport/architecture.md), [ADR-TRN-0003](../../sc-transport/architecture.md), [ADR-TRN-0004](../../sc-transport/architecture.md), [ADR-TRN-0005](../../sc-transport/architecture.md), [ADR-TRN-0006](../../sc-transport/architecture.md), [ADR-CMD-0001](../../sc-command/architecture.md), [ADR-CMD-0002](../../sc-command/architecture.md), [ADR-CMD-0003](../../sc-command/architecture.md).
+- [ADR-RUN-0001](../../architecture.md), [ADR-RUN-0002](../../architecture.md), [ADR-RUN-0003](../../architecture.md), [ADR-RUN-0004](../../architecture.md), [ADR-RUN-0005](../../architecture.md), [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0007](../../architecture.md), [ADR-RUN-0008](../../architecture.md), [ADR-RUN-0009](../../architecture.md), [ADR-RUN-0011](../../architecture.md), [ADR-RUN-0012](../../architecture.md), [ADR-RUN-0013](../../architecture.md), [ADR-RUN-0014](../../architecture.md), [ADR-RUN-0015](../../architecture.md), [ADR-RUN-0016](../../architecture.md), [ADR-RUN-0201](../../architecture.md), [ADR-RUN-0202](../../architecture.md), [ADR-RUN-0301](../../architecture.md), [ADR-RUN-0302](../../architecture.md), [ADR-RUN-0303](../../architecture.md), [ADR-RUN-0305](../../architecture.md), [ADR-RUN-0306](../../architecture.md), [ADR-RUN-0307](../../architecture.md), [ADR-RUN-0401](../../architecture.md), [ADR-RUN-0402](../../architecture.md), [ADR-RT-0001](../../sc-runtime/architecture.md), [ADR-RT-0002](../../sc-runtime/architecture.md), [ADR-RT-0003](../../sc-runtime/architecture.md), [ADR-RT-0004](../../sc-runtime/architecture.md), [ADR-TRN-0001](../../sc-transport/architecture.md), [ADR-TRN-0002](../../sc-transport/architecture.md), [ADR-TRN-0003](../../sc-transport/architecture.md), [ADR-TRN-0004](../../sc-transport/architecture.md), [ADR-TRN-0005](../../sc-transport/architecture.md), [ADR-TRN-0006](../../sc-transport/architecture.md), [ADR-CMD-0001](../../sc-command/architecture.md), [ADR-CMD-0002](../../sc-command/architecture.md), [ADR-CMD-0003](../../sc-command/architecture.md).
 - Acceptance for the writer contract roots at [ADR-RUN-0012](../../architecture.md) and [docs/sc-runtime-db-sqlite/architecture.md](../../sc-runtime-db-sqlite/architecture.md).
 
 REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../../requirements.md) and [architecture.md](../../architecture.md).
 
 `b-9` and `b-10` are governed by [REQ-CRON-0001](../../sc-cron/requirements.md) through [REQ-CRON-0005](../../sc-cron/requirements.md) and [ADR-RUN-0013](../../architecture.md). `b-11` is governed by REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0005, REQ-RUN-0005, and NFR-RUN-0005, plus [ADR-RUN-0015](../../architecture.md) (not REQ-CRON-0002 or REQ-CRON-0004). **`b-12`** implements [ADR-RUN-0014](../../architecture.md) ([sprint-b-12-sc-cron-schedule-row-limit.md](sprint-b-12-sc-cron-schedule-row-limit.md)). `REQ-CRON-0003` on `develop` already carries the Monty sentence (`b-9` landed). The `render_template` sentence is a `b-10` deliverable.
 
-`b-13` through `b-17` are governed by REQ-RUN-0002 through REQ-RUN-0005,
+`b-13` through `b-18` are governed by REQ-RUN-0002 through REQ-RUN-0005,
 REQ-RUN-0309, REQ-RUN-0503, REQ-RUN-0701, REQ-RUN-0702, REQ-RT-0001,
 REQ-RT-0004, REQ-RT-0005, NFR-RT-0001 through
-NFR-RT-0004, REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0005,
-NFR-CRON-0001, NFR-RUN-0002, NFR-RUN-0005, NFR-RUN-0008, NFR-RUN-0009,
+NFR-RT-0004, REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0004, REQ-CRON-0005,
+REQ-CRON-0019, NFR-CRON-0001, NFR-CRON-0002, NFR-RUN-0002,
+NFR-RUN-0005, NFR-RUN-0008, NFR-RUN-0009,
 and NFR-RUN-0010. Their decision authority is ADR-RUN-0003, ADR-RUN-0004,
-ADR-RUN-0007, ADR-RUN-0011, ADR-RUN-0013, ADR-RUN-0014, ADR-RUN-0303,
+ADR-RUN-0007, ADR-RUN-0011, ADR-RUN-0013, ADR-RUN-0014, ADR-RUN-0016, ADR-RUN-0303,
 ADR-CMD-0001, ADR-RT-0001, ADR-RT-0002, and ADR-TRN-0006. ADR-RT-0002 and
-ADR-TRN-0006 apply narrowly to b-17's proof that real signal shutdown releases
+ADR-TRN-0006 apply narrowly to b-18's proof that real signal shutdown releases
 the instance lock and endpoint lock/socket. ADR-RT-0003 governs transparent
 Stores/router/rmcp pass-through; that decision remains unchanged and is
 inapplicable to this continuation. ADR-RT-0004 is referenced narrowly by
@@ -262,7 +278,7 @@ phase-wide authority.
 Matching published patches of `sc-observability-types` and
 `sc-observability` at `1.5.1` are an entry prerequisite, not
 repository-owned work. b-13 establishes but does not publish this repository's
-`0.1.1` contract; b-17 closes only after the human-authorized sc-publish order
+`0.1.1` contract; b-18 closes only after the human-authorized sc-publish order
 and a no-checkout-patch registry render succeed.
 
 ## Out of this phase
@@ -271,11 +287,12 @@ and a no-checkout-patch registry render succeed.
 - SQL Server. sqlx has no driver for it.
 - A checkpoint that re-runs every earlier sprint. `b-8` is the generation integration sprint for the six layouts.
 - Treating `b-11` as a second phase-wide integration checkpoint. It closes the Monty campaign only. `b-8` still closes the six layouts.
-- Reopening b-10 through b-12 allowlist, render-only compose, fixed-wait,
+- Reopening b-10 through b-12 render-only compose, fixed-wait,
   process-group deadline, benchmark, or row-limit work. The continuation only
   verifies those merged results.
 - Owning upstream observability source/publication, default OTLP, a tracing
-  bridge, new Monty hosts, or injection into every workspace crate.
+  bridge, Monty OS calls beyond b-17's `Getenv`/`GetEnviron`, or injection into
+  every workspace crate.
 
 ## Continuation acceptance
 
@@ -292,8 +309,9 @@ cargo tree -p sc-cron -e normal --depth 1 --prefix none
 rg -n '\bsupervise_with_logger\(' crates/sc-cron/src/hook.rs
 ! rg -n '\bsupervise\(' crates/sc-cron/src/hook.rs
 python3 -m unittest tests.unit.generation.test_monty_example
+python3 -m unittest tests.unit.generation.test_cron_environment
 python3 -m unittest tests.integration.generation.test_observability
-# Run b-17's clean-checkout pinned-kit fetch, real install, repeat dry-run,
+# Run b-18's clean-checkout pinned-kit fetch, real install, repeat dry-run,
 # inventory rejection of docs/sprints/**, and clean git-drift block before
 # the generated consumer preflight.
 bash .github/scripts/run-consumer-preflight.sh

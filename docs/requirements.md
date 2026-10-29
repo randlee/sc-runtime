@@ -3616,7 +3616,7 @@ human-authorized crates.io order is `sc-config` (1), `sc-transport` (2),
 normal crates.io version requirements satisfied by `0.1.1`, and the
 release-mode generated lockfile proves registry resolution with no checkout
 path, git dependency, or `[patch.crates-io]` override. Sprint b-13 records
-this amendment but performs no publication; sprint b-17 owns its single
+this amendment but performs no publication; sprint b-18 owns its single
 integration acceptance root and release evidence.
 
 ### Rationale
@@ -3640,7 +3640,7 @@ the point at which generated projects become upgradeable by a normal
    `Cargo.lock` of a project generated in that run lists the four crates with
    source `registry+https://github.com/rust-lang/crates.io-index`.
 5. `git ls-tree -d v0.1.0 examples/spike` prints nothing.
-6. For the Phase B continuation, the b-17 release evidence records the five
+6. For the Phase B continuation, the b-18 release evidence records the five
    `0.1.1` crates in the order above, records `sc-runtime-db-sqlite` as
    unpublished, and proves a release-mode generated workspace resolves those
    five packages from crates.io without a checkout patch.

@@ -181,18 +181,18 @@ Before library code can accept injection:
    prefer explicit **`LogEvent`** emission via injection; drop library `tracing`
    once migrated.
 
-The implementation sequence is [b-13 through b-17](../plans/phase-b/phase-b-plan.md#sprint-index).
+The implementation sequence is [b-13 through b-18](../plans/phase-b/phase-b-plan.md#sprint-index).
 The `tracing` bridge question is resolved in favor of direct canonical
 emission. Shared manifest dependency cleanup may follow after the staged
 migration; it is not required to change the event contract.
 
 The repository public crates move to workspace version `0.1.1`; b-13 makes
-`sc-cron` publishable but performs no publication. b-17 owns the existing
+`sc-cron` publishable but performs no publication. b-18 owns the existing
 sc-publish consumer update, real installation and complete output sync from
 the exact pinned kit revision, authorization/order proof, and registry-only
 generated build.
-The currently pinned kit is not a valid b-17 input because it installs an
-upstream `docs/sprints/**` artifact. b-17 remains blocked until an exact later
+The currently pinned kit is not a valid b-18 input because it installs an
+upstream `docs/sprints/**` artifact. b-18 remains blocked until an exact later
 revision excludes that class; its inventory gate must enumerate installed
 destinations and reject any `docs/sprints/**` path.
 This contract does not authorize or perform publication of either upstream

@@ -117,5 +117,5 @@ sc-lint lint sc-boundary --root . --config sc-lint.toml
 
 ## This sprint does not close
 
-- File/console sinks or generated configuration (b-17).
+- File/console sinks or generated observability configuration (b-18).
 - Cron events (b-15) or logger construction/shutdown.

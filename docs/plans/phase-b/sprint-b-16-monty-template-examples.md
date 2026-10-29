@@ -116,7 +116,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 5. NFR-RUN-0005: add a generation test that renders the example and compiles the generated
    daemon with and without `monty`. Assert that a checkout render contains the
    local `sc-cron` patch and a `--release` render contains no
-   `[patch.crates-io]` or path dependency; b-17 owns the registry build after
+   `[patch.crates-io]` or path dependency; b-18 owns the registry build after
    publication.
 
 ## Acceptance criteria
@@ -138,7 +138,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 6. ADR-RUN-0303: the required `cargo tree` and manifest `rg` commands pass
    with the recorded matching observability pair and locally patched
    `sc-cron`; the default feature tree does not enable `sc-cron/monty`.
-   Registry resolution itself belongs to b-17 after publish.
+   Registry resolution itself belongs to b-18 after publish.
 7. ADR-RUN-0002: the manifest `rg` check and `test_monty_example` pass only
    when the two template manifests agree on the complete five-crate
    internal inventory at `0.1.1`; checkout generation patches `sc-cron`

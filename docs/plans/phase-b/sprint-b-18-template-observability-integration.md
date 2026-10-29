@@ -1,13 +1,13 @@
 ---
-id: b-17
+id: b-18
 phase: b
 status: planned
 closure_type: integration
 target_boundary: generated-daemon-observability
 track: observability
-wave: 9
-branch: sprint/b-17-template-observability-integration
-worktree: sprint/b-17-template-observability-integration
+wave: 10
+branch: sprint/b-18-template-observability-integration
+worktree: sprint/b-18-template-observability-integration
 integration_branch: integrate/phase-b-observability
 requirements:
   - REQ-RUN-0002
@@ -27,6 +27,8 @@ requirements:
   - NFR-RT-0004
   - REQ-CRON-0003
   - REQ-CRON-0005
+  - REQ-CRON-0019
+  - NFR-CRON-0002
   - NFR-RUN-0005
   - NFR-RUN-0002
   - NFR-RUN-0008
@@ -39,6 +41,7 @@ adrs:
   - ADR-RUN-0011
   - ADR-RUN-0013
   - ADR-RUN-0014
+  - ADR-RUN-0016
   - ADR-RT-0001
   - ADR-RT-0002
   - ADR-TRN-0006
@@ -136,13 +139,13 @@ owned_paths:
   - .github/workflows/scoop-publish.yml
   - .github/workflows/template.yml
   - .github/workflows/winget-publish.yml
-must_follow: [b-14, b-15, b-16]
+must_follow: [b-14, b-17]
 parallel_safe: []
 recommended_agent: arch-ctm
 recommended_model: terra
 ---
 
-# Sprint b-17 — generated daemon observability integration
+# Sprint b-18 — generated daemon observability integration
 
 ## Goal
 
@@ -152,27 +155,29 @@ and proves canonical HTTP and cron events in one JSONL sink.
 
 ## Relations
 
-`must_follow` b-14, b-15, and b-16 because this sprint consumes the runtime
-events, cron events/injection, and generated Cargo features respectively.
-Each parent PR must merge into this branch before development begins and
-before every fix round. There is no same-wave sibling.
+`must_follow` b-14 and b-17 because this sprint consumes the runtime events
+from b-14 and the completed cron environment/generated-daemon surface from
+b-17. b-17 already follows b-15 and b-16, so cron events, injection, Cargo
+features, and hook-environment wiring all arrive through that parent. Each
+parent PR must merge into this branch before development begins and before
+every fix round. There is no same-wave sibling.
 
 ## Consumed artifacts
 
 - b-14: `DaemonBuilder::logger` and HTTP events.
-- b-15: cron worker/due-run event taxonomy; b-13 supplies
-  `Scheduler::open_with_logger`, component propagation/events, and
-  `cron.scheduler/logger.attached`.
-- b-16: the daemon `cron` and `monty` Cargo features. This sprint does not
-  edit shared Cargo files. It also consumes the exact `0.1.1` registry pins
-  and checkout-patch inventory owned by b-16.
+- b-17: the daemon `cron` and `monty` Cargo features from b-16, the cron
+  worker/due-run event taxonomy from b-15, and the shared Python/Monty hook
+  environment contract. b-13 supplies `Scheduler::open_with_logger`,
+  component propagation/events, and `cron.scheduler/logger.attached`. This
+  sprint does not edit shared Cargo files. It also consumes the exact `0.1.1`
+  registry pins and checkout-patch inventory that originated in b-16.
 
 The current pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` is not a valid
-b-17 starting artifact because that kit package includes upstream sprint
+b-18 starting artifact because that kit package includes upstream sprint
 history at `docs/sprints/fix-homebrew-formula-bundled-paths-tojson.md`.
-b-17 is blocked until sc-publish publishes a later qualified exact revision
+b-18 is blocked until sc-publish publishes a later qualified exact revision
 whose installer package contains no `docs/sprints/**`. This plan does not
-invent that future SHA. Once available, b-17 updates
+invent that future SHA. Once available, b-18 updates
 `release/sc-publish-pin.toml`, installs only from that exact revision, and
 proves the installer destination inventory is complete and package-safe; the
 leaked upstream sprint-history document is never copied or owned here.
@@ -195,6 +200,7 @@ pub fn open(
     config: &CronConfig,
     instance_root: &std::path::Path,
     logger: SharedCanonicalLog,
+    hook_environment: HookEnvironmentHost,
 ) -> Result<Scheduler<SqliteScheduleStore, SystemClock, SystemJitter>, CronError>;
 ```
 
@@ -202,17 +208,31 @@ The wrapper resolves `database_path` below `instance_root`, maps config to
 `ScheduleLimits`, and calls exactly:
 
 ```rust
-Scheduler::open_with_logger(
+let scheduler = Scheduler::open_with_logger(
     database_path,
     limits,
     Arc::new(SystemClock),
     logger,
-)
+)?
+.with_hook_environment(hook_environment);
+
+#[cfg(feature = "monty")]
+let scheduler = scheduler.with_monty_host(monty_host);
+
+Ok(scheduler)
 ```
 
 `Scheduler::open_with_logger` constructs
 `SystemJitter::with_logger(logger.clone())` internally, so callers cannot
 pair the store and `RunCoord` handle with a differently configured jitter.
+`main` builds `hook_environment` from generated daemon config through b-17's
+typed builder, attaches the application's reference resolver when it has one,
+and passes the completed host policy into `cron::open`. It retains empty
+defaults, daemon-name allowlist, authorized absolute dotenv roots, and the
+resolver; `cron::open` does not recreate or overwrite that policy. Final
+composition does not weaken it. `with_hook_environment` applies for
+every `cron` build; `with_monty_host` is compiled and applied only when the
+generated `monty` feature enables `sc-cron/monty`.
 
 `Observability` creates `Arc<Logger>` once and derives `shared` by Arc
 coercion; it never clones `Logger`. `main` injects clones of the shared handle,
@@ -263,6 +283,11 @@ the three literal codes above and do not duplicate the layout.
    the scheduler. Map config `0` or `null` to unlimited (`None`) and every
    other accepted positive value to `ScheduleLimits` at scheduler open;
    sc-cron never loads config. Feature-off behavior is unchanged.
+   REQ-CRON-0019 / NFR-CRON-0002 / ADR-RUN-0016: then apply b-17's
+   prebuilt `HookEnvironmentHost`, preserving empty defaults and configured
+   allowlists/resolver without reintroducing daemon environment inheritance in
+   Python, Monty, or compose children. Generated `main` owns construction and
+   resolver injection; `cron::open` accepts the completed policy as an argument.
 4. NFR-RUN-0005: add a generated-project smoke test that polls with a deadline, sends a
    health request, enables cron, and parses JSONL. It must observe
    `http.server/request.*` plus the production
@@ -333,6 +358,11 @@ the three literal codes above and do not duplicate the layout.
    `test_observability` suite pass only when the real generated scheduler
    writes the real cron attachment event and maps `0`/`null`/positive limits
    exactly, without a fake emitter in this integration proof.
+   REQ-CRON-0019 / NFR-CRON-0002 / ADR-RUN-0016:
+   `test_cron_environment` reruns against final `cron::open` composition and
+   carries a recording resolver through generated `main`'s builder and the real
+   `cron::open` argument, proving typed policy, empty defaults, and redaction
+   wiring survive observability integration.
 4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: b-14/b-15
    rejecting-emitter contract tests remain the authoritative
    immediate, best-effort proof; `test_observability` passes only for reachable
@@ -370,6 +400,7 @@ python3 -m unittest tests.integration.generation.test_observability.GeneratedObs
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_agent_error_inventory
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_sqlite_mcp_no_edits_sequence
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_pr_fixture_matrix_one_entry_per_fixture
+python3 -m unittest tests.unit.generation.test_cron_environment
 SC_RUNTIME_FIXTURE_ROOT="$(mktemp -d)"
 just new "$SC_RUNTIME_FIXTURE_ROOT/sqlite-mcp" --var-file wizard/fixtures/sqlite-mcp.json
 (cd "$SC_RUNTIME_FIXTURE_ROOT/sqlite-mcp" && just setup && just lint && just test && just build-cli && just build-daemon)
@@ -400,6 +431,7 @@ just lint
 just test
 just new generated/test-observability --var-file wizard/fixtures/sqlite-mcp.json
 cargo test --manifest-path generated/test-observability/Cargo.toml --workspace
+cargo check --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features cron
 cargo test --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features cron
 cargo +1.96.1 check --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon -e normal
