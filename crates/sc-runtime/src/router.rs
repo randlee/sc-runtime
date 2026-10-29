@@ -77,6 +77,13 @@ const CODE_REQUEST_TIMEOUT: &str = "RUNTIME.REQUEST_TIMEOUT";
 /// Stable code when shutdown stops waiting for an in-flight handler.
 const CODE_DRAIN_TIMEOUT: &str = "RUNTIME.DRAIN_TIMEOUT";
 
+/// Wire `suggested_action` for [`CODE_REQUEST_TIMEOUT`].
+const REQUEST_TIMEOUT_RECOVERY: &str =
+    "retry the request; if it persists, shorten the handler or raise the request time limit";
+
+/// Wire `suggested_action` for [`CODE_DRAIN_TIMEOUT`].
+const DRAIN_TIMEOUT_RECOVERY: &str = "retry after the daemon is serving again";
+
 /// Body of the liveness probe `GET /health`.
 ///
 /// `status` is `"ok"` while this process is serving. It does not describe
@@ -210,7 +217,8 @@ pub(crate) fn with_runtime_routes(
 /// the start of the request is the request-timeout case. Both failures use
 /// [`ErrorKind::Unavailable`]. [`ErrorKind::http_status_code`] selects the
 /// HTTP status, which is 503 for that kind. The codes are
-/// `RUNTIME.REQUEST_TIMEOUT` and `RUNTIME.DRAIN_TIMEOUT`.
+/// `RUNTIME.REQUEST_TIMEOUT` and `RUNTIME.DRAIN_TIMEOUT`. Each envelope
+/// sets `suggested_action` to the recovery for that code.
 ///
 /// When `limit` elapses, the middleware returns that 503 and drops the handler
 /// future. Drop cancels the future at its next `.await`. Cancellation is
@@ -314,17 +322,33 @@ async fn drain_handler(
 }
 
 fn request_timeout_response() -> Response {
-    deadline_response(CODE_REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY)
+    deadline_response(
+        CODE_REQUEST_TIMEOUT,
+        REQUEST_TIMEOUT_BODY,
+        REQUEST_TIMEOUT_RECOVERY,
+    )
 }
 
 fn drain_timeout_response() -> Response {
-    deadline_response(CODE_DRAIN_TIMEOUT, DRAIN_TIMEOUT_BODY)
+    deadline_response(
+        CODE_DRAIN_TIMEOUT,
+        DRAIN_TIMEOUT_BODY,
+        DRAIN_TIMEOUT_RECOVERY,
+    )
 }
 
 /// Failure envelope whose status comes only from [`ErrorKind::http_status_code`].
-fn deadline_response(code: &'static str, message: &'static str) -> Response {
-    Envelope::<()>::failure(OpError::from_code(ErrorKind::Unavailable, code, message))
-        .into_response()
+///
+/// `recovery` is the wire `suggested_action`.
+fn deadline_response(
+    code: &'static str,
+    message: &'static str,
+    recovery: &'static str,
+) -> Response {
+    Envelope::<()>::failure(
+        OpError::from_code(ErrorKind::Unavailable, code, message).with_suggestion(recovery),
+    )
+    .into_response()
 }
 
 /// Mounts the rmcp service at `/mcp` as it was given.
@@ -434,7 +458,13 @@ mod tests {
             .expect("slow");
         let status = slow.status();
         let body: serde_json::Value = slow.json().await.expect("envelope");
-        assert_unavailable_envelope(&status, &body, CODE_REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY);
+        assert_unavailable_envelope(
+            &status,
+            &body,
+            CODE_REQUEST_TIMEOUT,
+            REQUEST_TIMEOUT_BODY,
+            REQUEST_TIMEOUT_RECOVERY,
+        );
         drop(shutdown_tx);
     }
 
@@ -461,7 +491,13 @@ mod tests {
             .expect("slow");
         let status = slow.status();
         let body: serde_json::Value = slow.json().await.expect("envelope");
-        assert_unavailable_envelope(&status, &body, CODE_DRAIN_TIMEOUT, DRAIN_TIMEOUT_BODY);
+        assert_unavailable_envelope(
+            &status,
+            &body,
+            CODE_DRAIN_TIMEOUT,
+            DRAIN_TIMEOUT_BODY,
+            DRAIN_TIMEOUT_RECOVERY,
+        );
     }
 
     fn assert_unavailable_envelope(
@@ -469,12 +505,14 @@ mod tests {
         body: &serde_json::Value,
         code: &str,
         message: &str,
+        recovery: &str,
     ) {
         assert_eq!(status.as_u16(), ErrorKind::Unavailable.http_status_code());
         assert_eq!(body["ok"], false);
         assert_eq!(body["error"]["kind"], "unavailable");
         assert_eq!(body["error"]["code"], code);
         assert_eq!(body["error"]["message"], message);
+        assert_eq!(body["error"]["suggested_action"], recovery);
     }
 
     #[tokio::test]

@@ -23,8 +23,8 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use sc_cron::{
     Clock, CronError, Generation, Job, ManualClock, MissedTickPolicy, NewSchedule, RunOutcome,
-    RunTimeout, Schedule, ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore, Scheduler,
-    SeqJitter, SqliteScheduleStore, StopDecision, Timestamp, WorkerHandle,
+    RunTimeout, Schedule, ScheduleId, ScheduleLimits, ScheduleName, ScheduleSpec, ScheduleStore,
+    Scheduler, SeqJitter, SqliteScheduleStore, StopDecision, Timestamp, WorkerHandle,
 };
 use serde_json::{Value, json};
 use tokio::sync::watch;
@@ -198,7 +198,7 @@ struct RecordingStore {
 impl RecordingStore {
     fn new() -> Self {
         Self {
-            inner: SqliteScheduleStore::open_in_memory().expect("store"),
+            inner: SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"),
             writes: watch::Sender::new(Vec::new()),
             list_gate: Mutex::new(None),
             listing: watch::Sender::new(0),
@@ -250,6 +250,10 @@ impl RecordingStore {
 }
 
 impl ScheduleStore for RecordingStore {
+    fn limits(&self) -> ScheduleLimits {
+        self.inner.limits()
+    }
+
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         self.inner.create(schedule, created_at)
     }

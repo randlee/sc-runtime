@@ -67,5 +67,12 @@
   "python_packages": [],
   "python_distributions": [],
   "npm_packages": [],
-  "channels": {}
+  "channels": {},
+  "preflight_checks": [
+    {
+      "id": "benchmark-pass",
+      "description": "Monty benchmark gate on the controlled host (scripts/benchmark/check_gate.py).",
+      "run": "just --justfile scripts/benchmark/justfile benchmark-gate"
+    }
+  ]
 }

@@ -174,6 +174,31 @@ impl Capped {
     }
 }
 
+/// Reads one pipe synchronously, keeping at most `cap` bytes.
+///
+/// Retries `ErrorKind::Interrupted`. Any other read error is returned so a
+/// zero exit cannot be treated as a successful truncated render.
+///
+/// The Monty compose wait is the only caller. `supervise` reads pipes on the
+/// runtime, so this stays out of builds that do not enable `monty`.
+#[cfg(feature = "monty")]
+pub(crate) fn read_pipe_capped(
+    mut reader: impl std::io::Read,
+    cap: usize,
+) -> std::io::Result<Capped> {
+    let mut capped = Capped::default();
+    let mut chunk = [0u8; 4096];
+    loop {
+        match reader.read(&mut chunk) {
+            Ok(0) => break,
+            Ok(n) => capped.push(&chunk[..n], cap),
+            Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
+            Err(error) => return Err(error),
+        }
+    }
+    Ok(capped)
+}
+
 /// What a supervised child left behind.
 #[derive(Debug)]
 pub struct Captured {

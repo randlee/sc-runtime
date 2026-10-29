@@ -1,10 +1,18 @@
 //! Optional benchmarks: CPython hook vs Monty host-bridge lab for sc_compose.
 //!
-//! Writes `docs/sc-cron/sc-compose-hook-comparison.report.html` on each run.
+//! Each run writes two files under `target/sc-compose-bench/` (or
+//! `$CARGO_TARGET_DIR/sc-compose-bench`):
 //!
-//! Run (not in default CI):
+//! - `sc-compose-hook-comparison.report.html`
+//! - `sc-compose-hook-comparison.report.json`
+//!
+//! `scripts/benchmark/monty/campaign.py` copies the HTML and the case
+//! metrics into `site/reports/benchmark-monty/`. Default CI does not run this
+//! test (`required-features = ["monty"]`, and the test is `#[ignore]`d).
+//!
+//! Run:
 //! ```text
-//! SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench -- --ignored --nocapture
+//! just --justfile scripts/benchmark/justfile benchmark-monty
 //! ```
 
 #![cfg(unix)]
@@ -23,11 +31,12 @@ const EXAMPLE_MONTY_HOOK: &str = "def cron_tick(hook):
     out = render_template(hook[\"payload\"][\"template\"], hook[\"payload\"][\"context\"])
     return None  # normal return is RunOutcome::Ok
 ";
-const EXAMPLE_RESUME_LOOP: &str =
-    "let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;
+/// Lab `monty_host_bridge` harness. Production campaigns publish
+/// [`EXAMPLE_PRODUCTION_RESUME_LOOP`] instead of this excerpt.
+const EXAMPLE_RESUME_LOOP: &str = r#"let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;
 loop {
     progress = match progress {
-        ReplProgress::FunctionCall(call) if call.function_name == \"render_template\" => {
+        ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
             let template = call.args.arg(0)?.as_str()?;
             let rendered = run_sc_compose(template, context); // host spawns the CLI
             call.resume(ExtFunctionResult::Return(MontyObject::string(rendered)),
@@ -36,9 +45,60 @@ loop {
         ReplProgress::Complete { .. } => break,
         _ => return Err(denied()),
     };
-}";
+}"#;
+/// Production resume loop inside `execute_feed_with_compose_program`. The bench does not call `feed_start`
+/// itself for `production_bridge`; `Scheduler::run_due` → `drive_feed` does.
+const EXAMPLE_PRODUCTION_RESUME_LOOP: &str = r#"// production path: execute_feed_with_compose_program (not the lab feed_start harness)
+let mut progress = match repl.feed_start(
+    phase_snippet(phase),
+    snippet_inputs(hook),
+    PrintWriter::Disabled,
+) {
+    Ok(progress) => progress,
+    Err(error) => return from_exception(error.error, stage),
+};
+loop {
+    progress = match progress {
+        ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
+            match resume_render(call, stage, compose_program, host_deadline) {
+                Ok(next) => next,
+                Err(done) => return done,
+            }
+        }
+        ReplProgress::FunctionCall(call) if call.function_name == "sc_compose_run" => {
+            match resume_compose_run(call, stage, compose_program, host_deadline) {
+                Ok(next) => next,
+                Err(done) => return done,
+            }
+        }
+        ReplProgress::Complete { repl, value } => {
+            return finish_phase(phase, generation, repl, &value);
+        }
+        ReplProgress::FunctionCall(call) => {
+            return denied(stage, &format!("host function {}", call.function_name));
+        }
+        ReplProgress::OsCall(call) => {
+            let operation: &'static str = call.function_call.into();
+            return denied_os(stage, operation);
+        }
+        ReplProgress::NameLookup(lookup) => return undefined_name(stage, &lookup.name),
+        ReplProgress::ResolveFutures(_) => return denied(stage, "unresolved futures"),
+    };
+}
+"#;
 const EXAMPLE_CLI_ARGV: &str =
     "sc-compose render --root <temp> --mode file --file t.j2 --var-file <temp>/v.json";
+const EXAMPLE_COMPOSE_RUN: &str = r#"def cron_tick(hook):
+    # Only render is allowed. The host stages a temp root and ignores --root.
+    # bead, init, and extract fail the tick with COMPOSE_SUBCOMMAND.
+    return sc_compose_run("render", [hook["payload"]["template"], '{"name": "bench"}'])
+"#;
+const EXAMPLE_PRODUCTION: &str = r#"def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    return render_template(hook["payload"]["template"], hook["payload"]["context"])
+"#;
 
 /// Timed iterations per case (plus one untimed warmup before the timer starts).
 const TIMED_ITERS: u32 = 30;
@@ -103,6 +163,7 @@ fn sc_compose_cli_version() -> Option<String> {
 
 /// Fixed template tree for `sc-compose render --mode file` (Rust CLI, no Python).
 struct CliRenderFixtures {
+    _dir: tempfile::TempDir,
     root: PathBuf,
     var_file: PathBuf,
 }
@@ -111,12 +172,16 @@ impl CliRenderFixtures {
     fn shared() -> &'static Self {
         static FIX: OnceLock<CliRenderFixtures> = OnceLock::new();
         FIX.get_or_init(|| {
-            let root = std::env::temp_dir().join("sc_cron_sc_compose_bench");
-            std::fs::create_dir_all(&root).expect("bench root");
+            let dir = tempfile::TempDir::new().expect("bench temp root");
+            let root = dir.path().to_path_buf();
             std::fs::write(root.join("t.j2"), TEMPLATE).expect("template");
             let var_file = root.join("v.json");
             std::fs::write(&var_file, r#"{"name":"bench"}"#).expect("vars");
-            CliRenderFixtures { root, var_file }
+            CliRenderFixtures {
+                _dir: dir,
+                root,
+                var_file,
+            }
         })
     }
 
@@ -201,6 +266,9 @@ fn python_hook_once() {
 }
 
 #[cfg(feature = "monty")]
+mod common;
+
+#[cfg(feature = "monty")]
 fn monty_host_bridge_once() {
     use monty::{MontyRepl, ReplProgress};
     use monty_types::{
@@ -247,6 +315,53 @@ fn monty_host_bridge_once() {
     }
 }
 
+#[cfg(feature = "monty")]
+fn production_bridge_once() {
+    const SOURCE: &str = r#"
+def cron_stop(hook):
+    return {"action": "continue", "reason": "ok"}
+
+def cron_tick(hook):
+    out = render_template(hook["payload"]["template"], hook["payload"]["context"])
+    if out.strip() != "Hello bench":
+        raise RuntimeError("unexpected render: " + out)
+    return None
+"#;
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("runtime");
+    runtime.block_on(production_bridge_run(SOURCE)) // allow: bench local runtime
+}
+
+#[cfg(feature = "monty")]
+async fn production_bridge_run(source: &str) {
+    use common::{Fixture, WAIT, idle_job};
+    use sc_cron::{HookTarget, RunOutcome, ScheduleSpec};
+    use serde_json::json;
+
+    let fixture = Fixture::new();
+    let spec = ScheduleSpec::with_hook(
+        "bench-production-bridge",
+        "* * * * *",
+        Duration::from_secs(20),
+        json!({
+            "template": TEMPLATE,
+            "context": {"name": "bench"},
+        }),
+        HookTarget::monty(source).expect("source"),
+    )
+    .expect("spec");
+    fixture.start(spec);
+    fixture.clock.advance(chrono::Duration::seconds(60));
+    let runs = match tokio::time::timeout(WAIT, fixture.scheduler.run_due(idle_job())).await {
+        Ok(result) => result.expect("run_due"),
+        Err(_elapsed) => panic!("run_due timed out after {WAIT:?}"),
+    };
+    assert_eq!(runs.len(), 1, "{runs:?}");
+    assert_eq!(runs[0].outcome, RunOutcome::Ok, "{runs:?}");
+}
+
 /// Peak RSS of a one-shot subprocess (macOS `/usr/bin/time -l`).
 fn subprocess_peak_rss_bytes(cmd: Command) -> Option<u64> {
     let program = cmd.get_program().to_string_lossy().into_owned();
@@ -289,13 +404,13 @@ fn rusage_max_rss_bytes(who: libc::c_int) -> Option<u64> {
         return None;
     }
     let usage = unsafe { usage.assume_init() };
+    // macOS reports bytes. Linux reports kilobytes.
     #[cfg(target_os = "macos")]
     {
         Some(usage.ru_maxrss as u64)
     }
     #[cfg(not(target_os = "macos"))]
     {
-        // Linux reports kilobytes.
         Some(usage.ru_maxrss as u64 * 1024)
     }
 }
@@ -336,9 +451,74 @@ fn run_timed_bench(
     }
 }
 
+fn harness_output_dir() -> PathBuf {
+    match std::env::var_os("CARGO_TARGET_DIR") {
+        Some(dir) => PathBuf::from(dir).join("sc-compose-bench"),
+        None => PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/sc-compose-bench"),
+    }
+}
+
 fn report_html_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../docs/sc-cron/sc-compose-hook-comparison.report.html")
+    harness_output_dir().join("sc-compose-hook-comparison.report.html")
+}
+
+fn report_json_path() -> PathBuf {
+    harness_output_dir().join("sc-compose-hook-comparison.report.json")
+}
+
+fn rss_pair(note: Option<&RssNote>) -> (Option<u64>, Option<&str>) {
+    match note {
+        Some(note) => (Some(note.bytes), Some(note.method)),
+        None => (None, None),
+    }
+}
+
+fn case_metrics(case: &BenchCase) -> serde_json::Value {
+    let result = case.result.as_ref();
+    let (subprocess_rss_bytes, subprocess_rss_note) =
+        rss_pair(result.and_then(|result| result.subprocess_peak_rss.as_ref()));
+    let (in_process_rss_bytes, in_process_rss_note) =
+        rss_pair(result.and_then(|result| result.in_process_rss.as_ref()));
+    serde_json::json!({
+        "id": case.id,
+        "label": case.label,
+        "strategy": case.strategy,
+        "skipped": case.skipped,
+        "skip_reason": case.skip_reason,
+        "ms_per_run": result.map(|result| result.per_run.as_secs_f64() * 1000.0),
+        "timed_iters": result.map(|result| result.timed_iters),
+        "total_ms": result.map(|result| result.total_elapsed.as_secs_f64() * 1000.0),
+        "subprocess_rss_bytes": subprocess_rss_bytes,
+        "subprocess_rss_note": subprocess_rss_note,
+        "in_process_rss_bytes": in_process_rss_bytes,
+        "in_process_rss_note": in_process_rss_note,
+    })
+}
+
+/// Machine-readable sidecar the campaign publisher reads.
+fn write_metrics_json(ctx: &ReportContext, cases: &[BenchCase]) {
+    let path = report_json_path();
+    let doc = serde_json::json!({
+        "schema": "sc-runtime/benchmark-monty-harness/v1",
+        "host": ctx.hostname,
+        "cargo_profile": ctx.cargo_profile,
+        "sc_compose_cli_version": ctx.sc_compose_cli_version,
+        "python_sc_compose": ctx.python_sc_compose,
+        "cases": cases.iter().map(case_metrics).collect::<Vec<_>>(),
+        "examples": {
+            "hook_source": EXAMPLE_PRODUCTION,
+            "resume_loop": EXAMPLE_PRODUCTION_RESUME_LOOP,
+            "lab_resume_loop": EXAMPLE_RESUME_LOOP,
+            "cli_argv": EXAMPLE_CLI_ARGV,
+            "compose_run": EXAMPLE_COMPOSE_RUN,
+        },
+    });
+    let body = serde_json::to_string_pretty(&doc).expect("metrics json");
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).expect("report dir");
+    }
+    std::fs::write(&path, body + "\n").expect("write metrics json");
+    eprintln!("Wrote {}", path.display());
 }
 
 fn html_escape(s: &str) -> String {
@@ -461,16 +641,20 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
 <p class="muted">What each Monty case runs. The timing table above measures this path.</p>
 <h3>Monty hook</h3>
 <pre><code>{ex_hook}</code></pre>
-<h3>feed_start / resume loop (host side)</h3>
+<h3>production drive_feed resume loop</h3>
 <pre><code>{ex_loop}</code></pre>
 <h3>sc-compose CLI argv</h3>
 <pre><code>{ex_argv}</code></pre>
+<h3>sc_compose_run hook</h3>
+<pre><code>{ex_compose}</code></pre>
+<h3>lab feed_start / resume loop (monty_host_bridge only)</h3>
+<pre><code>{ex_lab}</code></pre>
 </section>
 
 <section>
 <h2>Reproduce</h2>
-<pre>SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench --release -- --ignored --nocapture</pre>
-<p class="muted">Also writes this file: <code>docs/sc-cron/sc-compose-hook-comparison.report.html</code></p>
+<pre>just --justfile scripts/benchmark/justfile benchmark-monty</pre>
+<p class="muted">Harness output (not published): <code>target/sc-compose-bench/sc-compose-hook-comparison.report.html</code> and <code>target/sc-compose-bench/sc-compose-hook-comparison.report.json</code>. Published copies: <code>site/reports/benchmark-monty/</code>.</p>
 </section>
 </body>
 </html>"#,
@@ -484,8 +668,10 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
         rows = rows,
         template = html_escape(TEMPLATE),
         ex_hook = html_escape(EXAMPLE_MONTY_HOOK),
-        ex_loop = html_escape(EXAMPLE_RESUME_LOOP),
+        ex_loop = html_escape(EXAMPLE_PRODUCTION_RESUME_LOOP),
         ex_argv = html_escape(EXAMPLE_CLI_ARGV),
+        ex_compose = html_escape(EXAMPLE_COMPOSE_RUN),
+        ex_lab = html_escape(EXAMPLE_RESUME_LOOP),
     );
 
     if let Some(parent) = path.parent() {
@@ -684,6 +870,49 @@ fn bench_sc_compose_hook_paths() {
         result: None,
     });
 
+    #[cfg(feature = "monty")]
+    if have_cli {
+        let fix = CliRenderFixtures::shared();
+        let result = run_timed_bench(
+            TIMED_ITERS,
+            production_bridge_once,
+            Some(fix.render_command()),
+            true,
+        );
+        log_result(
+            "production_bridge (Scheduler::run_due / drive_feed)",
+            &result,
+        );
+        cases.push(BenchCase {
+            id: "production_bridge",
+            label: "production monty_host bridge",
+            strategy: "Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `drive_feed` → `execute_feed_with_compose_program` resumes `render_template` and spawns `sc-compose` (no lab `feed_start` in this harness).",
+            skipped: false,
+            skip_reason: None,
+            result: Some(result),
+        });
+    } else {
+        cases.push(BenchCase {
+            id: "production_bridge",
+            label: "production monty_host bridge",
+            strategy: "Production `drive_feed` + `render_template`.",
+            skipped: true,
+            skip_reason: Some("sc-compose CLI missing"),
+            result: None,
+        });
+    }
+
+    #[cfg(not(feature = "monty"))]
+    cases.push(BenchCase {
+        id: "production_bridge",
+        label: "production monty_host bridge",
+        strategy: "Production `drive_feed` + `render_template`.",
+        skipped: true,
+        skip_reason: Some("build without --features monty"),
+        result: None,
+    });
+
+    write_metrics_json(&ctx, &cases);
     write_html_report(&ctx, &cases);
-    eprintln!("See docs/sc-cron/hooks-sc-compose.md for interpretation.");
+    eprintln!("See docs/sc-cron/hooks-sc-compose.md and site/reports/benchmark-monty/.");
 }

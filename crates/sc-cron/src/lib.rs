@@ -56,8 +56,8 @@
 //! use std::time::{Duration, Instant};
 //!
 //! use sc_cron::{
-//!     Job, RunOutcome, ScheduleSpec, Scheduler, SqliteScheduleStore, StopDecision, SystemClock,
-//!     SystemJitter,
+//!     Job, RunOutcome, ScheduleLimits, ScheduleSpec, Scheduler, SqliteScheduleStore, StopDecision,
+//!     SystemClock, SystemJitter,
 //! };
 //!
 //! struct Sync;
@@ -75,8 +75,9 @@
 //! }
 //!
 //! # async fn example() -> Result<(), sc_cron::CronError> {
+//! let limits = ScheduleLimits::default();
 //! let scheduler = Scheduler::new(
-//!     Arc::new(SqliteScheduleStore::open("cron.db")?),
+//!     Arc::new(SqliteScheduleStore::open("cron.db", limits)?),
 //!     Arc::new(SystemClock),
 //!     Arc::new(SystemJitter),
 //! );
@@ -101,8 +102,17 @@ mod jitter;
 mod job;
 mod limits;
 #[cfg(feature = "monty")]
+mod monty_compose;
+#[cfg(feature = "monty")]
+mod monty_compose_common;
+#[cfg(feature = "monty")]
+mod monty_host;
+#[cfg(feature = "monty")]
 mod monty_run;
+#[cfg(feature = "monty-test-handshake")]
+mod monty_test_os;
 pub mod process;
+mod run_failure;
 mod scheduler;
 mod sqlite;
 mod store;
@@ -134,7 +144,13 @@ pub use job::Job;
 #[doc(inline)]
 pub use limits::{
     MAX_EXPR_LEN, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, MAX_TIMEOUT,
+    ScheduleLimits,
 };
+#[cfg(feature = "monty")]
+#[doc(inline)]
+pub use monty_host::MontyHostConfig;
+#[doc(inline)]
+pub use run_failure::RunFailureParts;
 #[doc(inline)]
 pub use scheduler::{DueRun, MissedTickPolicy, Scheduler, WorkerHandle};
 #[doc(inline)]

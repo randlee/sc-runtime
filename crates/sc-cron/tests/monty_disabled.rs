@@ -2,7 +2,6 @@
 //! `HookFailed` without starting an interpreter.
 
 #![cfg(not(feature = "monty"))]
-#![allow(clippy::expect_used)]
 
 mod common;
 

@@ -5,12 +5,15 @@ pub struct AppConfig {
     pub database: PathBuf,
     /// Postgres URL. Not joined onto the instance root.
     pub remote_database: String,
-    /// Plain logging values. Example choice: console on, file off.
+    /// Plain logging values. Defaults: console and file on; logs under `<instance>/logs/`.
     #[serde(default)]
     pub logging: sc_observability::LogSettings,
     /// Endpoint fields passed through to the daemon builder.
     #[serde(flatten)]
     pub daemon: DaemonConfig,
+    /// Schedule row ceiling from sc-config. See [`cron::CronConfig`].
+    #[serde(default)]
+    pub cron: cron::CronConfig,
 }
 
 /// The two stores this layout opens.

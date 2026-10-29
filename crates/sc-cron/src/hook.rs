@@ -55,6 +55,25 @@ pub const MAX_HOOK_OUTPUT_BYTES: usize = crate::MAX_PAYLOAD_BYTES;
 /// stderr is available from [`HookOutput`] to a caller that wants it.
 const STDERR_IN_MESSAGE: usize = 512;
 
+/// Stable code when a `cron.stop` reply is not one of the three actions.
+///
+/// Same token and recovery sentence as the Monty `HOST_REPLY` path.
+const CODE_HOST_REPLY: &str = "HOST_REPLY";
+
+/// Recovery appended to a failed stop-reply parse.
+const STOP_REPLY_RECOVERY: &str = "Return an object with string \"action\" (continue, disable, or delete) and a non-empty \"reason\" when disabling or deleting.";
+
+/// The start of `stderr` copied into a stored failure message.
+///
+/// At most [`STDERR_IN_MESSAGE`] bytes, on a char boundary, after trim.
+/// A compose child's stderr uses this same slice.
+#[must_use]
+pub(crate) fn stderr_in_message(stderr: &str) -> &str {
+    let trimmed = stderr.trim();
+    let cut = trimmed.floor_char_boundary(STDERR_IN_MESSAGE);
+    trimmed.get(..cut).unwrap_or_default()
+}
+
 /// The target a launch actually runs: the worker's job, or a built Python hook.
 #[derive(Clone)]
 pub(crate) enum ResolvedTarget {
@@ -323,9 +342,12 @@ impl HookOutput {
     /// `Ok` with the decision when the hook exited 0 and printed one of the
     /// three actions; otherwise `Err` with the outcome to record for a run
     /// that is skipped: [`RunOutcome::TimedOut`] for a hook killed at its
-    /// timeout, [`RunOutcome::Failed`] for a non-zero exit or a reply that is
-    /// not one of the actions. A caller that runs a [`PythonHook`] inside its
-    /// own [`Job`] applies the protocol's rules with this, without copying them.
+    /// timeout, [`RunOutcome::Failed`] for a non-zero exit, or
+    /// [`RunOutcome::Failed`] for a reply that is not one of the actions.
+    /// That parse failure is `stop check: HOST_REPLY:` then the parse error
+    /// and the recovery sentence. A caller that runs a [`PythonHook`] inside
+    /// its own [`Job`] applies the protocol's rules with this, without copying
+    /// them.
     ///
     /// # Errors
     ///
@@ -337,7 +359,11 @@ impl HookOutput {
         if let Some(failure) = self.failure() {
             return Err(RunOutcome::Failed(format!("stop check: {failure}")));
         }
-        parse_reply(self).map_err(|why| RunOutcome::Failed(format!("stop check: {why}")))
+        parse_reply(self).map_err(|why| {
+            RunOutcome::Failed(format!(
+                "stop check: {CODE_HOST_REPLY}: {why}; {STOP_REPLY_RECOVERY}"
+            ))
+        })
     }
 
     /// The outcome of this output of a `cron.tick` hook (REQ-CRON-0013, REQ-CRON-0018).
@@ -358,9 +384,7 @@ impl HookOutput {
         match &self.status {
             HookStatus::Exited(status) if status.success() => None,
             HookStatus::Exited(status) => {
-                let stderr = self.stderr.trim();
-                let cut = stderr.floor_char_boundary(STDERR_IN_MESSAGE);
-                let shown = stderr.get(..cut).unwrap_or_default();
+                let shown = stderr_in_message(&self.stderr);
                 Some(if shown.is_empty() {
                     format!("hook exited with {status}")
                 } else {
@@ -554,6 +578,19 @@ mod tests {
             matches!(&step, Step::Skip(RunOutcome::Failed(why)) if why.contains("exit status: 2")),
             "{step:?}"
         );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_malformed_stop_reply_names_host_reply_and_recovery() {
+        let Err(RunOutcome::Failed(why)) = exited(0, "not-json").stop_decision() else {
+            panic!("a reply that is not JSON does not decide");
+        };
+        let prefix = format!("stop check: {CODE_HOST_REPLY}: reply is not JSON: ");
+        let suffix = format!("; {STOP_REPLY_RECOVERY}");
+        assert!(why.starts_with(&prefix), "{why}");
+        assert!(why.ends_with(&suffix), "{why}");
+        assert!(why.len() > prefix.len() + suffix.len(), "{why}");
     }
 
     #[cfg(unix)]

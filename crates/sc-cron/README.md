@@ -53,12 +53,13 @@ The crate's `Job` trait uses `async-trait`, so a caller needs `async-trait`,
 `serde_json` and `tokio` as well.
 
 ```rust,no_run
+use std::num::NonZeroUsize;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use sc_cron::{
-    Job, RunOutcome, ScheduleSpec, Scheduler, SqliteScheduleStore, StopDecision, SystemClock,
-    SystemJitter,
+    Job, RunOutcome, ScheduleLimits, ScheduleSpec, Scheduler, SqliteScheduleStore, StopDecision,
+    SystemClock, SystemJitter,
 };
 
 struct Sync;
@@ -77,11 +78,10 @@ impl Job for Sync {
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<(), sc_cron::CronError> {
-    let scheduler = Scheduler::new(
-        Arc::new(SqliteScheduleStore::open("cron.db")?),
-        Arc::new(SystemClock),
-        Arc::new(SystemJitter),
-    );
+    let limits = ScheduleLimits {
+        max_schedule_rows: NonZeroUsize::new(10),
+    };
+    let scheduler = Scheduler::open("cron.db", limits, Arc::new(SystemClock), Arc::new(SystemJitter))?;
     // Every 30 seconds; each run (stop check included) is cut off after 25 s.
     let spec = ScheduleSpec::new("sync", "*/30 * * * * *", Duration::from_secs(25), serde_json::json!({}))?;
     scheduler.start_async(spec).await?;
@@ -108,7 +108,9 @@ Runtime notes:
 | Feature | Enables |
 |---|---|
 | `test-utils` | `ManualClock` (a deterministic clock whose parks tell a test the worker has settled) and `SeqJitter` (a scripted jitter source) |
-| `monty` | Trusted in-process Monty source hooks (`HookTarget::Monty`); requires **Rust 1.96.1** to build. Feeds run on the blocking pool in wall time. |
+| `monty` | Trusted in-process Monty source hooks (`HookTarget::Monty`); requires **Rust 1.96.1** to build. Feeds run on the blocking pool in wall time. `render_template` spawns the embedder's compose program (default basename `sc-compose` on `PATH`). |
+
+With feature `monty`, set the compose program with `Scheduler::with_monty_host(MontyHostConfig::new(...)?)`. The default is `sc-compose` on `PATH` (like `PythonHook`'s default `python3`). Hook source cannot override it. Use a basename for `PATH` lookup or an absolute path from your configuration. A missing program records `RunOutcome::Failed` with `COMPOSE_NOT_FOUND`; use `RunOutcome::failure_parts()` to read the code.
 
 ## Links
 

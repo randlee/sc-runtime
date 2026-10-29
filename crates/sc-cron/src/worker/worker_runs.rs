@@ -11,10 +11,11 @@ use tokio::task::JoinError;
 
 use super::*;
 use crate::clock::sleep_until_monotonic;
+
 #[cfg(feature = "monty")]
-use crate::clock::wall_after;
+const CODE_FEED_JOIN_FAILED: &str = "FEED_JOIN_FAILED";
 #[cfg(feature = "monty")]
-use crate::hook::request;
+const FEED_JOIN_RECOVERY: &str = "Fix the panic in the hook or host and retry the schedule.";
 
 impl<S, C> Worker<S, C>
 where
@@ -56,6 +57,7 @@ where
                         wait_shutdown_deadline(deadline).await;
                     }
                 }, if shutdown_at.is_some() => {
+                    self.coord.note_shutdown_deadline();
                     siblings_aborted = true;
                     self.abort_all_abortable().await;
                 }
@@ -157,7 +159,7 @@ where
             .get(index)
             .map(|slot| slot.schedule.spec.name.clone());
         let session = name.as_ref().and_then(|name| self.coord.take_repl(name));
-        let guard = MontyFeedGuard::enter(&self.coord.feeds);
+        let guard = MontyFeedGuard::enter(&self.coord);
         self.spawn_feed(index, crate::monty_run::MontyPhase::Stop, session, guard);
     }
 
@@ -185,35 +187,23 @@ where
         let deadline = monotonic
             .checked_add(schedule.spec.timeout.get())
             .unwrap_or(monotonic);
+        let compose_program = Arc::clone(&self.compose_program);
         let handle = tokio::spawn(async move {
-            let left = deadline.saturating_duration_since(clock.monotonic_now());
-            let stamp = Timestamp::from_datetime(wall_after(clock.now(), left));
-            let event = match phase {
-                crate::monty_run::MontyPhase::Stop => HookEvent::Stop,
-                crate::monty_run::MontyPhase::Tick => HookEvent::Tick,
-            };
-            let call = HookCall {
-                event,
-                schedule: &schedule.spec.name,
-                payload: &schedule.spec.payload,
-                timeout: schedule.spec.timeout,
-                deadline,
-            };
-            let hook = request(&call, stamp);
-            match tokio::task::spawn_blocking(move || {
-                crate::monty_run::execute_feed(session, &source, phase, generation, left, &hook)
-            })
-            .await
-            {
-                Ok(done) => done,
-                Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
-                Err(error) => crate::monty_run::FeedDone {
-                    session: None,
-                    result: crate::monty_run::FeedResult::Outcome(RunOutcome::Failed(format!(
-                        "feed task failed: {error}"
-                    ))),
+            crate::monty_run::drive_feed(
+                clock.as_ref(),
+                crate::monty_run::FeedLaunch {
+                    session,
+                    source,
+                    phase,
+                    generation,
+                    name: schedule.spec.name.clone(),
+                    payload: schedule.spec.payload.clone(),
+                    timeout: schedule.spec.timeout,
+                    deadline,
+                    compose_program,
                 },
-            }
+            )
+            .await
         });
         let Some(slot) = self.slots.get_mut(index) else {
             drop(guard);
@@ -255,7 +245,9 @@ where
                     let schedule = slot.schedule.clone();
                     self.record(
                         &schedule,
-                        RunOutcome::Failed(format!("job panicked: {message}")),
+                        RunOutcome::Failed(format!(
+                            "{CODE_FEED_JOIN_FAILED}: monty feed task panicked: {message}; {FEED_JOIN_RECOVERY}"
+                        )),
                     )
                     .await;
                 }
@@ -310,7 +302,7 @@ where
                 self.settle_queued(index).await;
             }
             FeedResult::Continue => {
-                let tick_guard = MontyFeedGuard::enter(&self.coord.feeds);
+                let tick_guard = MontyFeedGuard::enter(&self.coord);
                 drop(guard);
                 self.spawn_feed(index, MontyPhase::Tick, done.session, tick_guard);
             }

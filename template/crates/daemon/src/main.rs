@@ -17,17 +17,6 @@ struct Args {
     endpoint: Option<String>,
 }
 
-/// Observability failed to start. The cause is the builder error text.
-struct ObservabilityStart {
-    cause: String,
-}
-
-impl std::fmt::Display for ObservabilityStart {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str(&self.cause)
-    }
-}
-
 #[tokio::main]
 async fn main() -> ExitCode {
     let args = match Args::try_parse() {
@@ -61,8 +50,12 @@ async fn main() -> ExitCode {
             );
         }
     };
-    let logger = match init_observability(&config.logging, log_root) {
-        Ok(logger) => logger,
+    let observability = match daemon::observability::Observability::init(
+        daemon::APP_NAME,
+        &config.logging,
+        log_root,
+    ) {
+        Ok(observability) => observability,
         Err(err) => {
             return startup_exit(
                 "DAEMON.OBSERVABILITY",
@@ -81,13 +74,16 @@ async fn main() -> ExitCode {
             );
         }
     };
+    // Library injection: pass `observability.logger()` into `Daemon::builder`
+    // and into `sc_cron::Scheduler` once sc-runtime/sc-cron accept the types
+    // trait (see docs/sc-runtime/observability-injection.md).
     let result = sc_runtime::Daemon::builder(&transport_name, &config.daemon)
         .stores(move || async move { daemon::open_stores(targets).await })
         .routes(daemon::routes::router)
         {% if mcp %}.mcp(daemon::mcp::service){% endif %}
         .run()
         .await;
-    drop(logger);
+    drop(observability);
     match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(err) => startup_exit(err.code(), err, "read the cause and retry"),
@@ -102,33 +98,6 @@ fn log_root(
         return Ok(root.clone());
     }
     daemon::instance_root(config, app)
-}
-
-fn init_observability(
-    logging: &sc_observability::LogSettings,
-    log_root: PathBuf,
-) -> Result<sc_observability::v2::Logger, ObservabilityStart> {
-    let service = sc_observability::ServiceName::new(daemon::APP_NAME).map_err(observe)?;
-    let mut settings = sc_observability::LoggerConfig::default_for(service, log_root);
-    if let Some(level) = logging.level {
-        settings.level = level;
-    }
-    if let Some(enabled) = logging.enable_file_sink {
-        settings.enable_file_sink = enabled;
-    }
-    if let Some(enabled) = logging.enable_console_sink {
-        settings.enable_console_sink = enabled;
-    }
-    sc_observability::v2::LoggerBuilder::new(settings)
-        .map_err(observe)?
-        .build()
-        .map_err(observe)
-}
-
-fn observe(err: impl std::fmt::Display) -> ObservabilityStart {
-    ObservabilityStart {
-        cause: err.to_string(),
-    }
 }
 
 fn startup_exit(code: &str, cause: impl std::fmt::Display, recovery: &str) -> ExitCode {
