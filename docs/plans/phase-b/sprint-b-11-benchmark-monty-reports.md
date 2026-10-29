@@ -46,7 +46,7 @@ directory pair; they do not add a second runner or a second publish path.
 ## Relations
 
 `must_follow` `b-10`. The artifact is `monty_host::render_template`, resumed
-inside `monty_run::execute_feed`. The campaign case `production_bridge` is a
+inside `monty_run::drive_feed` / `execute_feed_with_compose_program`. The campaign case `production_bridge` is a
 Monty `cron_tick` that calls that function and records the CLI render. The
 lab case `monty_host_bridge` is a standalone `MontyRepl::feed_start` in the
 bench and is not that artifact.
@@ -187,7 +187,7 @@ the controlled host: a binary publish cannot proceed unless it passes.
 | `python_render_only` | same render, no sc-cron wrapper |
 | `sc_compose_cli_only` | `sc-compose render` with no Monty |
 | `monty_host_bridge` | lab `MontyRepl::feed_start` plus host resume to the CLI |
-| `production_bridge` | `cron_tick` through `execute_feed` calling `render_template` (the bench must not call `feed_start` itself; `execute_feed` may use `feed_start` internally) |
+| `production_bridge` | `cron_tick` through `Scheduler::run_due` → `drive_feed` → `execute_feed_with_compose_program` calling `render_template` (the bench must not call `feed_start` itself; production may use `feed_start` internally) |
 
 `production_bridge` is skipped, and the campaign JSON records the skip, when
 the `b-10` path is absent, **in a local run**. Under `--gate` that skip is a
@@ -207,7 +207,7 @@ not satisfy this sprint. Required example blocks, per campaign, rendered as
 2. **`feed_start` / resume loop:** the host loop that takes `ReplProgress`,
    matches the `render_template` `FunctionCall`, runs the CLI, and calls
    `resume` until `Complete`. For `monty_host_bridge` it is the lab's loop; for
-   `production_bridge` it is the `execute_feed` excerpt, labelled as the
+   `production_bridge` it is the `execute_feed_with_compose_program` excerpt, labelled as the
    production path.
 3. **`sc-compose` CLI argv:** the exact argv the host spawns
    (`sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json`),
@@ -262,7 +262,7 @@ the preflight gate. It does not edit `hooks-sc-compose.md`.
 
 ## Acceptance criteria
 
-- Root `adr:ADR-RUN-0013`: after `b-10`, `just --justfile scripts/benchmark/justfile benchmark monty` writes a campaign JSON whose `production_bridge` case calls **`execute_feed` only** (the bench source must not call `feed_start`; `feed_start` inside `execute_feed` is allowed) and whose render path is `sc-compose` with no `python3` child. The JSON records git SHA and rustc version.
+- Root `adr:ADR-RUN-0013`: after `b-10`, `just --justfile scripts/benchmark/justfile benchmark monty` writes a campaign JSON whose `production_bridge` case exercises **`Scheduler::run_due` → `drive_feed` → `execute_feed_with_compose_program` only** (the bench source must not call `feed_start`; `feed_start` inside production is allowed) and whose render path is `sc-compose` with no `python3` child. The JSON records git SHA and rustc version.
 - Root `req:NFR-RUN-0005`: the harness uses `tempfile::TempDir`; `cargo test -p sc-cron` exits 0 without `SC_CRON_BENCH`; the ignored test is not part of default CI.
 - Root `req:NFR-RUN-0005`: `just --justfile scripts/benchmark/justfile benchmark-publish monty` rewrites only `site/reports/benchmark-monty/index.html` from the campaign files, and the index links each campaign and shows the `baselines.json` floor.
 - Root `adr:ADR-RUN-0013`: the skill's four steps name `scripts/benchmark/justfile` recipes and `site/reports/benchmark-<subsystem>/`. `docs/sc-cron/benchmark-monty.md` links the skill, the index, and the gate.

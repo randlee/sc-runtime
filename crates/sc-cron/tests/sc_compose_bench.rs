@@ -46,9 +46,9 @@ loop {
         _ => return Err(denied()),
     };
 }"#;
-/// Production path inside `execute_feed`. The bench does not call `feed_start`
-/// itself for `production_bridge`; this is the host loop that does.
-const EXAMPLE_PRODUCTION_RESUME_LOOP: &str = r#"// production path: execute_feed (not the lab feed_start harness)
+/// Production resume loop inside `execute_feed_with_compose_program`. The bench does not call `feed_start`
+/// itself for `production_bridge`; `Scheduler::run_due` → `drive_feed` does.
+const EXAMPLE_PRODUCTION_RESUME_LOOP: &str = r#"// production path: execute_feed_with_compose_program (not the lab feed_start harness)
 let mut progress = match repl.feed_start(
     phase_snippet(phase),
     snippet_inputs(hook),
@@ -641,7 +641,7 @@ pre {{ background:#0b0f14; border:1px solid var(--border); border-radius:6px; pa
 <p class="muted">What each Monty case runs. The timing table above measures this path.</p>
 <h3>Monty hook</h3>
 <pre><code>{ex_hook}</code></pre>
-<h3>production execute_feed resume loop</h3>
+<h3>production drive_feed resume loop</h3>
 <pre><code>{ex_loop}</code></pre>
 <h3>sc-compose CLI argv</h3>
 <pre><code>{ex_argv}</code></pre>
@@ -880,13 +880,13 @@ fn bench_sc_compose_hook_paths() {
             true,
         );
         log_result(
-            "production_bridge (Scheduler::run_due / execute_feed)",
+            "production_bridge (Scheduler::run_due / drive_feed)",
             &result,
         );
         cases.push(BenchCase {
             id: "production_bridge",
             label: "production monty_host bridge",
-            strategy: "Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `execute_feed` resumes `render_template` and spawns `sc-compose` (no lab `feed_start` in this harness).",
+            strategy: "Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `drive_feed` → `execute_feed_with_compose_program` resumes `render_template` and spawns `sc-compose` (no lab `feed_start` in this harness).",
             skipped: false,
             skip_reason: None,
             result: Some(result),
@@ -895,7 +895,7 @@ fn bench_sc_compose_hook_paths() {
         cases.push(BenchCase {
             id: "production_bridge",
             label: "production monty_host bridge",
-            strategy: "Production `execute_feed` + `render_template`.",
+            strategy: "Production `drive_feed` + `render_template`.",
             skipped: true,
             skip_reason: Some("sc-compose CLI missing"),
             result: None,
@@ -906,7 +906,7 @@ fn bench_sc_compose_hook_paths() {
     cases.push(BenchCase {
         id: "production_bridge",
         label: "production monty_host bridge",
-        strategy: "Production `execute_feed` + `render_template`.",
+        strategy: "Production `drive_feed` + `render_template`.",
         skipped: true,
         skip_reason: Some("build without --features monty"),
         result: None,

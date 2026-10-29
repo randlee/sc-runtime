@@ -96,8 +96,10 @@ as `docs/sc-cron/architecture.md` and `crates/sc-cron/src/monty_host.rs`:
 
 `MontyRepl::call_function` cannot resume host functions on monty 1.4.0; only
 `feed_start` yields `ReplProgress`. Production therefore **replaces** the
-`call_function` path inside `execute_feed` with `feed_start` on a one-line
-snippet (`cron_tick(__hook)` or `cron_stop(__hook)`). Compile still uses
+`call_function` path inside `execute_feed_with_compose_program` (via
+`drive_feed`) with `feed_start` on a one-line snippet (`cron_tick(__hook)` or
+`cron_stop(__hook)`). cfg(test) `execute_feed` wraps the same loop with the
+default basename only. Compile still uses
 `feed_run` of the hook source as today. The repl is not dropped while a feed
 is on the stack except on denied paths below (`b-9`). Host work runs on the
 same blocking-pool thread as the feed (ADR-RUN-0007, ADR-RUN-0011): no
@@ -145,7 +147,7 @@ cannot override the path.
 The missing-program unit tests pass a name that is not installed. No
 `std::env::set_var` and no PATH rewrite (`NFR-RUN-0005`).
 
-Progress loop inside `execute_feed` (repl taken by value; state is
+Progress loop inside `execute_feed_with_compose_program` (repl taken by value; state is
 `ReplProgress`, not a single `match` on `feed_start`):
 
 ```rust
@@ -160,7 +162,7 @@ loop {
             let template = template_ref.as_str().ok_or_else(|| denied(...))?;
             let context_ref = call.args.arg(1).ok_or_else(|| denied(...))?;
             let context = monty_host::monty_value_to_json(context_ref)?;
-            let rendered = monty_host::render_template(template, &context, compose_program)?; // ComposeProgram; map Err to FeedDone, do not return it from execute_feed
+            let rendered = monty_host::render_template(template, &context, compose_program)?; // ComposeProgram; map Err to FeedDone, do not return it from execute_feed_with_compose_program
             call.resume(
                 monty_types::ExtFunctionResult::Return(monty_types::MontyObject::string(rendered)),
                 monty_types::PrintWriter::Disabled,
@@ -178,7 +180,7 @@ loop {
 }
 ```
 
-Do not use `?` to return from `execute_feed` (which returns `FeedDone`). Map
+Do not use `?` to return from `execute_feed_with_compose_program` (which returns `FeedDone`). Map
 `ReplStartError` and denied paths to `FeedDone` with `session: None`.
 
 Wrong arity, non-str template, or a context value `monty_value_to_json` cannot

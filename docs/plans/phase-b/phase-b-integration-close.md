@@ -25,7 +25,7 @@ only on `quality-mgr` PASS and green CI.
 
 | Sprint | Doc | Wave | Closes |
 |---|---|---|---|
-| `b-10` | [sprint-b-10-sc-cron-monty-host-bridge.md](sprint-b-10-sc-cron-monty-host-bridge.md) | 4 | `render_template` resumed inside `monty_run::execute_feed` |
+| `b-10` | [sprint-b-10-sc-cron-monty-host-bridge.md](sprint-b-10-sc-cron-monty-host-bridge.md) | 4 | `render_template` resumed inside `monty_run::drive_feed` / `execute_feed_with_compose_program` |
 | `b-11` | [sprint-b-11-benchmark-monty-reports.md](sprint-b-11-benchmark-monty-reports.md) | 5 | multi-subsystem benchmark platform, HTML code examples, publish-preflight `benchmark-pass` gate, and the `monty` campaign including `production_bridge` |
 | `b-12` | [sprint-b-12-sc-cron-schedule-row-limit.md](sprint-b-12-sc-cron-schedule-row-limit.md) | 6 | embedder `max_schedule_rows`, template default 10, ADR-RUN-0014 |
 
