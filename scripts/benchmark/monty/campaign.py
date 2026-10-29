@@ -199,19 +199,32 @@ def assert_examples(payload: dict, *, label: str) -> None:
 
 
 def require_production_resume_loop(examples: dict) -> None:
-    """The published resume loop is the ``execute_feed`` excerpt.
+    """The published resume loop is the production ``execute_feed_with_compose_program`` excerpt.
 
     The lab ``feed_start`` harness stays a separate constant. Packaging
     rejects a resume loop that is not labelled as the production path.
     """
     resume = examples.get("resume_loop")
     if not isinstance(resume, str):
-        raise CampaignError("examples.resume_loop must be the production execute_feed excerpt")
-    lowered = resume.lower()
-    if "execute_feed" not in lowered or "production" not in lowered:
         raise CampaignError(
-            "examples.resume_loop must be the production execute_feed excerpt "
-            "(label it production and name execute_feed; keep the lab loop separate)"
+            "examples.resume_loop must be the production "
+            "execute_feed_with_compose_program excerpt"
+        )
+    lowered = resume.lower()
+    if "production" not in lowered:
+        raise CampaignError(
+            "examples.resume_loop must be labelled as the production path "
+            "(keep the lab feed_start loop separate)"
+        )
+    if "execute_feed_with_compose_program" not in lowered and "drive_feed" not in lowered:
+        raise CampaignError(
+            "examples.resume_loop must name execute_feed_with_compose_program or drive_feed "
+            "(cfg(test) execute_feed is not the production path)"
+        )
+    if "execute_feed_with_compose_program" not in lowered and "execute_feed" in lowered:
+        raise CampaignError(
+            "examples.resume_loop must not label production as execute_feed only; "
+            "name execute_feed_with_compose_program or drive_feed"
         )
 
 
@@ -567,7 +580,7 @@ def self_check() -> None:
         "examples": {
             "hook_source": "def cron_tick(hook):\n    return render_template(hook['payload']['template'], hook['payload']['context'])\n",
             "resume_loop": (
-                "// production execute_feed resume loop\n"
+                "// production path: execute_feed_with_compose_program (not the lab feed_start harness)\n"
                 "let mut progress = repl.feed_start(phase_snippet(phase), snippet_inputs(hook), PrintWriter::Disabled)?;\n"
                 "resume_render(call, stage, compose_program, host_deadline)?;\n"
             ),
@@ -653,7 +666,7 @@ def self_check() -> None:
         for needle in (
             "cron_tick",
             "feed_start",
-            "execute_feed",
+            "execute_feed_with_compose_program",
             "production",
             "sc-compose render --root",
             "max_ms_per_run",
@@ -676,7 +689,7 @@ def self_check() -> None:
                 when=when.replace(minute=2),
             )
         except CampaignError as exc:
-            if "execute_feed" not in str(exc):
+            if "examples.resume_loop" not in str(exc):
                 raise
         else:
             raise CampaignError("lab resume_loop was published as examples.resume_loop")

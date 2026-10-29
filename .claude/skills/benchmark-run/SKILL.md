@@ -75,7 +75,8 @@ campaign file.
 `scripts/benchmark/monty/baselines.json` holds optional `max_ms_per_run`
 floors. A null floor does not fail a case. When a floor is set and a measured
 case is slower, the campaign status is `FAIL`. The result is still written.
-`production_bridge` must run through `execute_feed`. A skip is not a
+`production_bridge` must run through `Scheduler::run_due` → `drive_feed` →
+`execute_feed_with_compose_program` (not cfg(test) `execute_feed`). A skip is not a
 performance result and fails `benchmark-gate`.
 
 `just --justfile scripts/benchmark/justfile benchmark-gate` and

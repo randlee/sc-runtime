@@ -19,7 +19,7 @@ from typing import Any
 REQUIRED_EXAMPLE_KEYS = ("hook_source", "resume_loop", "cli_argv")
 _EXAMPLE_TITLES = {
     "hook_source": "Hook snippet",
-    "resume_loop": "production execute_feed resume loop",
+    "resume_loop": "production drive_feed resume loop",
     "cli_argv": "sc-compose CLI argv",
 }
 _PRE_CODE = re.compile(r"<pre><code>.*?</code></pre>", re.DOTALL)
@@ -72,7 +72,7 @@ def apply_examples_to_html(page: str, examples: dict[str, Any]) -> str:
     The first three example blocks are replaced in ``hook_source``,
     ``resume_loop``, ``cli_argv`` order. A heading immediately before a
     code block is retitled with that block (the resume loop is the
-    production ``execute_feed`` excerpt). A page that does not already
+    production ``execute_feed_with_compose_program`` excerpt). A page that does not already
     have those blocks gains a code-examples section.
     """
     require_examples({"examples": examples}, label="campaign")

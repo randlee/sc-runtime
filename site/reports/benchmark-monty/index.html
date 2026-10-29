@@ -54,8 +54,8 @@
 def cron_tick(hook):
     return render_template(hook[&quot;payload&quot;][&quot;template&quot;], hook[&quot;payload&quot;][&quot;context&quot;])
 </code></pre>
-<h3>production execute_feed resume loop</h3>
-<pre><code>// production path: execute_feed (not the lab feed_start harness)
+<h3>production drive_feed resume loop</h3>
+<pre><code>// production path: execute_feed_with_compose_program (not the lab feed_start harness)
 let mut progress = match repl.feed_start(
     phase_snippet(phase),
     snippet_inputs(hook),

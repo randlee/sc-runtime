@@ -48,7 +48,7 @@ pre { background:#0b0f14; border:1px solid var(--border); border-radius:6px; pad
 <tr id="py_render"><td><strong>python_render_only</strong><p class="strategy">Fresh `python3 -c` each tick: import PyO3 `sc_compose`, call `render_template(str, dict)`. Models per-tick cold subprocess + interpreter startup (worst case for compose in Python).</p></td><td class="num">19.410 ms</td><td class="num">582.29975ms total</td><td class="num">30 + 1 warmup</td><td>13.94 MiB<br><span class="muted">One-shot subprocess via /usr/bin/time -l (peak memory footprint)</span></td></tr>
 <tr id="py_hook"><td><strong>cpython_hook (PythonHook::invoke)</strong><p class="strategy">Full sc-cron path: `PythonHook` spawns `python3 &lt;fixture&gt;` with `cron.tick`, hook JSON on stdin; fixture calls `sc_compose.render_template` from payload. Production `HookTarget::Python` pattern (isolated child + timeout/kill).</p></td><td class="num">21.288 ms</td><td class="num">638.64225ms total</td><td class="num">30 + 1 warmup</td><td>14.12 MiB<br><span class="muted">One-shot subprocess via /usr/bin/time -l (peak memory footprint)</span></td></tr>
 <tr id="monty"><td><strong>monty_host_bridge + sc-compose CLI</strong><p class="strategy">Lab only (not production sc-cron yet): `MontyRepl::feed_start` runs snippet `render_template(...)`; host registers ext fn `render_template`, resumes with output from Rust `sc-compose` CLI (same temp-root files). Hook logic stays in Monty; compose stays out of CPython.</p></td><td class="num">3.139 ms</td><td class="num">94.161792ms total</td><td class="num">30 + 1 warmup</td><td>subprocess 6.11 MiB<br><span class="muted">One-shot subprocess via /usr/bin/time -l (peak memory footprint)</span><br>parent 7.42 MiB<br><span class="muted">getrusage(RUSAGE_SELF) high-water after timed loop (includes cargo test + Monty VM; not an isolated Monty-only process)</span></td></tr>
-<tr id="production_bridge"><td><strong>production monty_host bridge</strong><p class="strategy">Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `execute_feed` resumes `render_template` and spawns `sc-compose` (no lab `feed_start` in this harness).</p></td><td class="num">13.743 ms</td><td class="num">412.283125ms total</td><td class="num">30 + 1 warmup</td><td>subprocess 6.14 MiB<br><span class="muted">One-shot subprocess via /usr/bin/time -l (peak memory footprint)</span><br>parent 10.55 MiB<br><span class="muted">getrusage(RUSAGE_SELF) high-water after timed loop (includes cargo test + Monty VM; not an isolated Monty-only process)</span></td></tr>
+<tr id="production_bridge"><td><strong>production monty_host bridge</strong><p class="strategy">Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `drive_feed` → `execute_feed_with_compose_program` resumes `render_template` and spawns `sc-compose` (no lab `feed_start` in this harness).</p></td><td class="num">13.743 ms</td><td class="num">412.283125ms total</td><td class="num">30 + 1 warmup</td><td>subprocess 6.14 MiB<br><span class="muted">One-shot subprocess via /usr/bin/time -l (peak memory footprint)</span><br>parent 10.55 MiB<br><span class="muted">getrusage(RUSAGE_SELF) high-water after timed loop (includes cargo test + Monty VM; not an isolated Monty-only process)</span></td></tr>
 
 </tbody>
 </table>
@@ -65,8 +65,8 @@ pre { background:#0b0f14; border:1px solid var(--border); border-radius:6px; pad
 def cron_tick(hook):
     return render_template(hook[&quot;payload&quot;][&quot;template&quot;], hook[&quot;payload&quot;][&quot;context&quot;])
 </code></pre>
-<h3>production execute_feed resume loop</h3>
-<pre><code>// production path: execute_feed (not the lab feed_start harness)
+<h3>production drive_feed resume loop</h3>
+<pre><code>// production path: execute_feed_with_compose_program (not the lab feed_start harness)
 let mut progress = match repl.feed_start(
     phase_snippet(phase),
     snippet_inputs(hook),
