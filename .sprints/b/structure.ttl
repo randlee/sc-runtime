@@ -7,6 +7,12 @@
 # b-10 follows b-9 on integrate/phase-b-monty (wave 4).
 # b-11 follows b-10 (wave 5) for render_template, not for a shared path.
 # b-12 follows b-9 (wave 6 on develop); parallel with b-10/b-11 on other branches.
+# Continuation: b-13 and b-16 are parallel in wave 7; b-14/b-15 follow b-13
+# in wave 8; b-17 follows b-14, b-15, and b-16 in wave 9.
+# This registry is consumed by ATM dispatch/QA for branch, criteria, and DAG
+# lookup. It fixes the observed defect that markdown-only sprints are invisible
+# to those consumers. Retain it as the historical dispatch record; retire it
+# only if .sprints is replaced by another authoritative registry.
 
 triage:PhaseB a triage:Phase .
 
@@ -95,3 +101,44 @@ triage:b-12 a triage:Sprint ;
   triage:integrateBranch "develop" ;
   triage:criteria "docs/plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md" ;
   triage:follows triage:b-9 .
+
+triage:b-13 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 13 ;
+  triage:branch "sprint/b-13-observability-contract" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-13-observability-contract.md" .
+
+triage:b-14 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 14 ;
+  triage:branch "sprint/b-14-sc-runtime-observability" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-14-sc-runtime-observability.md" ;
+  triage:follows triage:b-13 .
+
+triage:b-15 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 15 ;
+  triage:branch "sprint/b-15-sc-cron-observability" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md" ;
+  triage:follows triage:b-13 .
+
+triage:b-16 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 16 ;
+  triage:branch "sprint/b-16-monty-template-examples" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-16-monty-template-examples.md" ;
+  triage:follows triage:b-10 .
+
+triage:b-17 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 17 ;
+  triage:branch "sprint/b-17-template-observability-integration" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-17-template-observability-integration.md" ;
+  triage:follows triage:b-14 ;
+  triage:follows triage:b-15 ;
+  triage:follows triage:b-16 .
