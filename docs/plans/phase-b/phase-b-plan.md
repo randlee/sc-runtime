@@ -100,9 +100,9 @@ head; it does not relabel or materially expand b-10 through b-12.
 | `sc-cron` (Monty host bridge) | `b-10` | `render_template` resumed inside `monty_run::drive_feed` / `execute_feed_with_compose_program`; default `sc-compose` on `PATH` | `b-9`, for `HookTarget::Monty`. Branch `integrate/phase-b-monty` |
 | benchmark platform and Monty reports | `b-11` | benchmark-run skill, multi-subsystem layout (`scripts/benchmark/<subsystem>/`, `site/reports/benchmark-<subsystem>/`), HTML code examples, publish-preflight `benchmark-pass` gate, first subsystem `monty` with campaign case `production_bridge` | `b-10`, for the ext fn `render_template` |
 | `sc-cron` (schedule row limit) | `b-12` | optional embedder `max_schedule_rows`, template sc-config default 10, ADR-RUN-0014 implementation | `b-9` (on `develop`; parallel with Monty track) |
-| injected observability contract | `b-13` | upstream types-only contract adoption, ADR/REQ amendments, boundary allowlists, public injection signatures, Noop defaults, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches; PR #84 merge is an external phase-entry gate |
+| injected observability contract | `b-13` | upstream non-blocking types-only contract adoption, ADR/REQ amendments, boundary allowlists, public injection signatures, Noop defaults, whole jitter/store/process/Monty component propagation and events, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches; PR #84 merge is an external phase-entry gate |
 | `sc-runtime` canonical events | `b-14` | HTTP request lifecycle events through the injected handle | `b-13` |
-| `sc-cron` canonical events | `b-15` | due-run/worker/process/store/Monty event taxonomy and residual stable failure tokens | `b-13`, which owns the scheduler interface and its two shutdown events |
+| `sc-cron` canonical events | `b-15` | due-run/worker event taxonomy and residual stable failure tokens | `b-13`, which owns scheduler and component logger seams plus component-owned events |
 | generated Monty product surface | `b-16` | both template dependency inventories, daemon Cargo `cron`/`monty` features, checked hook example, product documentation | merged PR #84; parallel with b-13 through b-15 |
 | generated observability composition and release proof | `b-17` | one Arc-owned logger injected into runtime and real scheduler; HTTP+cron JSONL; exact pinned-kit install and complete installed-output ownership; sc-publish `0.1.1` order/preflight and registry-only release build | `b-14`, `b-15`, `b-16`; human release authorization and credentials |
 
@@ -112,7 +112,7 @@ head; it does not relabel or materially expand b-10 through b-12.
 |---|---|---|---|
 | upstream observability crates | published `CanonicalLog`, `NoopCanonicalLog`, `SharedCanonicalLog`; `CanonicalLog for v2::Logger` | no upstream source path is owned here | external entry prerequisite |
 | `BOUNDARY-sc-runtime` | direct `sc-observability-types`; `DaemonBuilder::logger(SharedCanonicalLog)` with fixed `sc-runtime` Noop | `sc-observability`, OTLP, config, and cron | b-13 contract; b-14 event implementation |
-| `BOUNDARY-sc-cron` | direct `sc-observability-types`; `Scheduler::with_logger(SharedCanonicalLog)` with `sc-cron` Noop | full observability runtime and every other workspace library | b-13 contract; b-15 event implementation |
+| `BOUNDARY-sc-cron` | direct `sc-observability-types`; `LoggedJitter`, `SqliteScheduleStore::open_with_logger`, `Scheduler::open_with_logger`, `supervise_with_logger`, and internal Monty logger propagation, all with source-compatible Noop legacy entry points | full observability runtime and every other workspace library | b-13 contract and component events; b-15 worker/due-run events |
 | generated daemon | full logger in one composition root; Arc coercion and injection to both libraries | libraries do not depend back on daemon | b-16 owns both template Cargo inventories; b-17 owns wiring and registry-release proof |
 | generated Monty example | opt-in `monty` forwards to `sc-cron/monty`; allowed render-only hosts | root selection, arbitrary compose subcommands, or new hosts | b-16 |
 
@@ -152,11 +152,11 @@ is authoritative for its exact `owned_paths`, relations, branch, and model.
 
 | Sprint | Track / target boundary | Ownership class | Consumed artifact |
 |---|---|---|---|
-| b-13 | observability / `observability-injection` | shared library contracts, version/manifests, signatures | matching published types/runtime `1.5.1` pair |
+| b-13 | observability / `observability-injection` | shared contracts, version/manifests, signatures, whole jitter/store/process/Monty components | non-blocking published types/runtime `1.5.1` pair |
 | b-14 | observability / `sc-runtime` | runtime HTTP event sites and tests | `SharedCanonicalLog`, `DaemonBuilder::logger` |
-| b-15 | observability / `sc-cron` | cron worker/process/store event sites and tests | `SharedCanonicalLog` in `RunCoord` |
+| b-15 | observability / `sc-cron` | cron worker and due-run event sites and tests | `SharedCanonicalLog` in `RunCoord` plus b-13 component seams |
 | b-16 | monty-product / `generated-daemon-monty` | checkout/registry template Cargo inventories, example, docs, render test | b-10 `render_template` and render-only `sc_compose_run` |
-| b-17 | observability / `generated-daemon-observability` | generated composition, smoke test, sc-publish input plus every exact pinned-kit installed output | b-14 events, b-15 events, b-16 Cargo features and exact `0.1.1` pins |
+| b-17 | observability / `generated-daemon-observability` | generated composition, smoke test, sc-publish pin/input plus every exact pinned-kit installed output | b-14 events, b-15 events, b-16 Cargo features and exact `0.1.1` pins; a later qualifying kit revision with no `docs/sprints/**` |
 
 Static review must parse the five frontmatter blocks, reject duplicate exact
 owned paths inside a wave, and verify every `.sprints/b/structure.ttl`
@@ -185,19 +185,26 @@ Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Row-limit path 1 (
 
 Post-Track-B continuation critical path is 3
 (`b-13` -> `b-14` or `b-15` -> `b-17`; `b-16` -> `b-17` is length 2).
-Continuation width is 2, continuation sprint count is 5, and the combined
+Continuation width is 3 because b-16 can remain active beside both b-14 and
+b-15 in wave 8; continuation sprint count is 5, and the combined
 Phase B sprint count is 17.
 
 Continuation ownership is disjoint. b-13 exclusively owns shared ADR/REQ,
-boundary, lockfile, library manifests, and public injection signature files.
-b-14 owns runtime event sites; b-13 owns `scheduler.rs` and its two shutdown
-events, while b-15 owns every remaining cron trace site. b-16 exclusively
+boundary, lockfile, library manifests, public injection signatures, and the
+whole jitter/store/process/Monty component files and their events. b-14 owns
+runtime event sites; b-15 owns only worker and due-run trace sites. b-16 exclusively
 owns both template dependency inventories, daemon Cargo, and the Monty
 example. b-17 consumes those artifacts and owns generated composition, the
 integration smoke, the sc-publish consumer input, and every exact output of a
 real install from the pinned kit revision for the `0.1.1` release. Thus b-17
 `must_follow` b-14, b-15, and b-16; b-14 and
 b-15 both `must_follow` b-13.
+
+The current sc-publish pin is not a valid b-17 input because its installer
+package includes upstream sprint history under `docs/sprints/**`. b-17 is
+blocked until an exact later qualifying revision exists; it then owns the pin
+advance and proves the installed inventory exactly matches its explicit
+installed-output paths. This plan does not invent the future revision.
 
 `b-10` and `b-11` are not one wave. Their `owned_paths` are disjoint, so the `must_follow` edge is not a shared file. `b-11` consumes `render_template` from `b-10`. A lab-only publisher in wave 4 would be a thin sprint and would not remove that edge. The cron chain `b-1` → `b-3` → `b-9` → `b-10` → `b-11` is length 5 because waves 4–5 sit after the Monty target. Those waves are not on the phase-close critical path. [phase-b-integration-close.md](phase-b-integration-close.md) records that split.
 
@@ -218,8 +225,8 @@ REQ-RUN-0313 through REQ-RUN-0331 and ADR-RUN-0305 are in [requirements.md](../.
 `b-13` through `b-17` are governed by REQ-RUN-0002 through REQ-RUN-0005,
 REQ-RUN-0309, REQ-RUN-0702, REQ-RT-0001, REQ-RT-0004, REQ-RT-0005, NFR-RT-0001 through
 NFR-RT-0004, REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0005,
-NFR-CRON-0001, NFR-RUN-0005, NFR-RUN-0008, and NFR-RUN-0009. Their decision
-authority is ADR-RUN-0004, ADR-RUN-0013, ADR-RT-0001, and ADR-RT-0004.
+NFR-CRON-0001, NFR-RUN-0002, NFR-RUN-0005, NFR-RUN-0008, and NFR-RUN-0009. Their decision
+authority is ADR-RUN-0004, ADR-RUN-0007, ADR-RUN-0013, ADR-RT-0001, and ADR-RT-0004.
 Matching published patches of `sc-observability-types` and
 `sc-observability` at `1.5.1` are an entry prerequisite, not
 repository-owned work. b-13 establishes but does not publish this repository's
@@ -252,7 +259,8 @@ cargo tree -p sc-cron -e normal --depth 1 --prefix none
 python3 -m unittest tests.unit.generation.test_monty_example
 python3 -m unittest tests.integration.generation.test_observability
 # Run b-17's clean-checkout pinned-kit fetch, real install, repeat dry-run,
-# and clean git-drift block before the generated consumer preflight.
+# inventory rejection of docs/sprints/**, and clean git-drift block before
+# the generated consumer preflight.
 bash .github/scripts/run-consumer-preflight.sh
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
 ```

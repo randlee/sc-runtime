@@ -15,19 +15,17 @@ requirements:
   - REQ-CRON-0005
   - NFR-CRON-0001
   - NFR-RUN-0005
+  - NFR-RUN-0002
   - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
   - ADR-RUN-0004
+  - ADR-RUN-0007
   - ADR-RUN-0013
 owned_paths:
-  - crates/sc-cron/src/process.rs
-  - crates/sc-cron/src/monty_compose.rs
-  - crates/sc-cron/src/jitter.rs
   - crates/sc-cron/src/worker.rs
   - crates/sc-cron/src/worker/worker_runs.rs
   - crates/sc-cron/src/scheduler/run_due.rs
-  - crates/sc-cron/src/sqlite.rs
   - crates/sc-cron/tests/observability.rs
 must_follow: [b-13]
 parallel_safe: [b-14, b-16]
@@ -58,8 +56,6 @@ outcome prose.
 
 | Target | Action | Level | Outcome | `Diagnostic.code` | Required fields / cardinality |
 |---|---|---|---|---|---|
-| `cron.jitter` | `source.unavailable` | warning | `failed` | `JITTER_SOURCE_UNAVAILABLE` | error; once per failed jitter calculation |
-| `cron.store` | `row.corrupt` | warning | `failed` | `CORRUPT_SCHEDULE_ROW` | row id when known, error; once per skipped row id |
 | `cron.worker` | `target.resolve_failed` | warning | `failed` | `TARGET_RESOLVE_FAILED` | schedule, target, error; once per failed resolution |
 | `cron.worker` | `schedule.reload_failed` | error | `failed` | `SCHEDULE_RELOAD_FAILED` | error; once per failed reload attempt |
 | `cron.worker` | `schedule.cancelled` | info | `stopped` | — | schedule, reason; once per cancelled slot |
@@ -91,10 +87,6 @@ outcome prose.
 | `cron.scheduler` | `monty.resolve_failed` | error | `failed` | `MONTY_RESOLVE` | schedule, run when known, error; once at the Monty resolve origin |
 | `cron.scheduler` | `monty.tick_failed` | error | `failed` | `MONTY_TICK` | schedule, run when known, error; once at the Monty tick origin |
 | `cron.monty` | `feed.join_failed` | error | `failed` | `FEED_JOIN_FAILED` | schedule, run when known, error; once at the feed join-failure origin |
-| `cron.process` | `child.kill_failed` | debug | `failed` | `CHILD_KILL_FAILED` | run and pid when known, error; once per failed kill attempt |
-| `cron.process` | `child.reap_timeout` | warning | `timeout` | `CHILD_REAP_TIMEOUT` | run and pid when known, deadline remaining `0`; once per exhausted reap bound |
-| `cron.monty.compose` | `pipe.drain_timeout` | warning | `timeout` | `COMPOSE_PIPE_DRAIN_TIMEOUT` | run and pid when known, deadline remaining `0`; once per exhausted drain bound |
-| `cron.monty.compose` | `child.kill_timeout` | warning | `timeout` | `COMPOSE_CHILD_KILL_TIMEOUT` | run and pid when known, deadline remaining `0`; once per exhausted kill bound |
 
 The two terminal rows use this complete `RunOutcome` mapping:
 
@@ -113,8 +105,9 @@ code, while `TARGET_RESOLVE_FAILED`, `JOB_JOIN_FAILED`, `DUE_JOIN_FAILED`,
 remain explicit origin diagnostics without parsing stored prose.
 
 The interface-owned `cron.scheduler/logger.attached` event is introduced by
-b-13 in `Scheduler::with_logger`; this sprint consumes that contract and owns
-the remaining event sites. Timestamps and service names use the types
+b-13 in `Scheduler::with_logger`; b-13 also owns the jitter/store/process/
+compose propagation and component events. This sprint consumes those seams
+and owns only worker and due-run event sites. Timestamps and service names use the types
 contract. Every field and envelope location follows b-13's canonical mapping:
 stable codes exist only at `diagnostic.code`, run IDs use top-level
 `correlation_id`, and typed elapsed/deadline/attempt/pid values use the fixed
@@ -134,9 +127,11 @@ be migrated and behavior-tested; partial taxonomy coverage cannot close it.
    job-panic prose with exact `CODE: detail; recovery` shapes:
    `TARGET_RESOLVE_FAILED: {detail}; fix hook target configuration and retry`
    and `JOB_JOIN_FAILED: {detail}; fix the job panic and retry`.
-4. NFR-RUN-0005 / NFR-RUN-0009: test native and Monty success/failure paths with a recording emitter and a
-   rejecting emitter; assert event order only where the implementation
-   guarantees it.
+4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0005 / NFR-RUN-0009: test native
+   and Monty success/failure paths with a recording emitter and a rejecting
+   emitter. Queue-full and disconnected rejection returns immediately and
+   cannot change a deadline or scheduler result; assert event order only
+   where the implementation guarantees it.
 5. NFR-CRON-0001: remove direct tracing calls from owned source. The shared manifest remains
    b-13-owned and dependency cleanup is not part of this sprint.
 
@@ -167,7 +162,7 @@ cargo test -p sc-cron
 cargo +1.96.1 test -p sc-cron --features monty
 cargo clippy -p sc-cron --all-targets --all-features -- -D warnings
 cargo check --workspace
-! rg -n 'tracing::|trace!|debug!|info!|warn!|error!' crates/sc-cron/src/process.rs crates/sc-cron/src/monty_compose.rs crates/sc-cron/src/jitter.rs crates/sc-cron/src/worker.rs crates/sc-cron/src/worker/worker_runs.rs crates/sc-cron/src/scheduler/run_due.rs crates/sc-cron/src/sqlite.rs
+! rg -n 'tracing::|trace!|debug!|info!|warn!|error!' crates/sc-cron/src/worker.rs crates/sc-cron/src/worker/worker_runs.rs crates/sc-cron/src/scheduler/run_due.rs
 ! rg -n 'tokio::time::sleep|sleep\(' crates/sc-cron/tests/monty_hook.rs
 sc-lint lint sc-boundary --root . --config sc-lint.toml
 ```

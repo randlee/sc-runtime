@@ -36,11 +36,13 @@ authorization and registry credentials. Merging the release kit onto
 Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL, the adaptor, and the six generation layouts. See [Phase b plan](plans/phase-b/phase-b-plan.md).
 
 The b-13 through b-17 continuation establishes the repository `0.1.1`
-contract. b-13 owns the version/public API boundary but performs no release;
+contract. b-13 owns the non-blocking version/public API boundary and whole
+cron component propagation but performs no release;
 b-16 owns both generated dependency inventories; b-17 owns the sc-publish
 consumer update, a real install and complete synchronization from the exact
 pinned kit revision, the human-authorized five-crate publish order, and the
-registry-only generated proof.
+registry-only generated proof. b-17 is blocked until an exact later kit
+revision excludes `docs/sprints/**`; the current pin is not a valid input.
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |

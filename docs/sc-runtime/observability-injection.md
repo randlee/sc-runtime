@@ -1,7 +1,7 @@
 # Injectable observability for generated projects
 
 **Status:** Phase B b-13 contract (implementation planned)
-**Related:** [ADR-RUN-0004](../architecture.md), [REQ-RUN-0309](../requirements.md), [NFR-RT-0002](requirements.md)
+**Related:** [ADR-RUN-0004](../architecture.md), [ADR-RUN-0007](../architecture.md), [REQ-RUN-0309](../requirements.md), [NFR-RUN-0002](../requirements.md), [NFR-RT-0002](requirements.md)
 
 ## Goal
 
@@ -30,7 +30,11 @@ impl NoopCanonicalLog {
 pub type SharedCanonicalLog = std::sync::Arc<dyn CanonicalLog>;
 ```
 
-`sc-observability` 1.5.1 implements the trait for `v2::Logger`.
+`sc-observability` 1.5.1 implements the trait for `v2::Logger` by calling
+`Logger::try_log`, or an equivalent operation guaranteed never to wait. It
+must not call `Logger::log`, `enqueue_blocking`, or any blocking/backpressure
+path. Queue-full and disconnected rejection returns an immediate
+`EventError`; library callers apply the best-effort policy below.
 This repository consumes those releases; it does not own their source or
 publication. `Logger` is not assumed to be `Clone`.
 
@@ -60,12 +64,18 @@ Order is fixed ([REQ-RUN-0309](../requirements.md)):
    returns, and coerce an Arc clone to `SharedCanonicalLog`.
 5. Pass a **shareable handle** into assembly:
    - **`Daemon::builder(...).logger(handle)`**.
-   - **`Scheduler::open(...).with_logger(handle)`** when `cron` is enabled.
+   - **`SystemJitter::with_logger(handle.clone())`** plus
+     **`Scheduler::open_with_logger(..., handle)`** when `cron` is enabled.
 6. Run the daemon and retain scheduler state for the same lifetime.
 7. Stop/drop runtime and scheduler users, then shut down the original logger.
 
 The template module `daemon::observability` centralises step 3–4 so generated
 `main.rs` stays a thin orchestration layer.
+
+The cron contract also exposes `SqliteScheduleStore::open_with_logger` and
+`supervise_with_logger` and propagates the handle through compose, host, and
+run internals. Existing `open`, jitter, and `supervise` entry points remain
+source-compatible by delegating with the fixed `sc-cron` Noop identity.
 
 ## Default logging layout (initial consumers)
 
@@ -101,7 +111,9 @@ integration test in the **daemon** crate.
 
 Every library emission is best effort. An `EventError` must not replace or
 modify an HTTP response, `RuntimeError`, `CronError`, `RunOutcome`, stop
-decision, or store result. `NoopCanonicalLog` returns `Ok(())`.
+decision, store result, or deadline. Queue-full and disconnected rejection
+returns immediately under ADR-RUN-0007 and NFR-RUN-0002.
+`NoopCanonicalLog` returns `Ok(())`.
 
 ## Canonical event mapping
 
@@ -132,7 +144,8 @@ diagnostics before returning the persisted outcome.
 
 Before library code can accept injection:
 
-1. **Amend ADR-RUN-0004** — allow **`sc-observability-types`** (not the logging
+1. **Amend ADR-RUN-0004 and ADR-RUN-0007** — allow
+   **`sc-observability-types`** (not the logging
    runtime) on `sc-runtime` and `sc-cron`; consume the matching published
    types/runtime **1.5.1** patches. `sc-transport` remains out of this cut.
 2. Update **`REQ-RUN-0005`** forbidden/allowed edges and run `sc-lint-boundary`.
@@ -150,6 +163,10 @@ The repository public crates move to workspace version `0.1.1`; b-13 makes
 sc-publish consumer update, real installation and complete output sync from
 the exact pinned kit revision, authorization/order proof, and registry-only
 generated build.
+The currently pinned kit is not a valid b-17 input because it installs an
+upstream `docs/sprints/**` artifact. b-17 remains blocked until an exact later
+revision excludes that class; its inventory gate must enumerate installed
+destinations and reject any `docs/sprints/**` path.
 This contract does not authorize or perform publication of either upstream
 observability crate.
 

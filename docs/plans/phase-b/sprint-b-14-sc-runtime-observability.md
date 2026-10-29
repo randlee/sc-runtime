@@ -16,10 +16,12 @@ requirements:
   - NFR-RT-0003
   - NFR-RT-0004
   - NFR-RUN-0005
+  - NFR-RUN-0002
   - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
   - ADR-RUN-0004
+  - ADR-RUN-0007
   - ADR-RT-0001
   - ADR-RT-0004
 owned_paths:
@@ -87,8 +89,9 @@ deferred to b-17.
    `RUNTIME.DRAIN_TIMEOUT`.
 3. `boundary:BOUNDARY-sc-runtime`: concurrent requests retain distinct IDs;
    tests use deadlines, not sleeps.
-4. ADR-RUN-0004: a rejecting emitter changes no status, body, header,
-   counter, or error.
+4. ADR-RUN-0004 / ADR-RUN-0007 / NFR-RUN-0002: queue-full and disconnected
+   rejection returns immediately and changes no status, body, header,
+   counter, request deadline, or error.
 5. `boundary:BOUNDARY-sc-runtime`: no test asserts through another crate or a
    full runtime sink.
 6. `boundary:BOUNDARY-sc-runtime`: an arbitrary coded or uncoded application

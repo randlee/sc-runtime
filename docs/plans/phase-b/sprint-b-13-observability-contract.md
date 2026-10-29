@@ -25,10 +25,12 @@ requirements:
   - REQ-CRON-0003
   - REQ-CRON-0005
   - NFR-CRON-0001
+  - NFR-RUN-0002
   - NFR-RUN-0009
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0004
+  - ADR-RUN-0007
   - ADR-RUN-0013
   - ADR-RT-0001
 owned_paths:
@@ -51,7 +53,14 @@ owned_paths:
   - crates/sc-cron/src/lib.rs
   - crates/sc-cron/src/coord.rs
   - crates/sc-cron/src/scheduler.rs
+  - crates/sc-cron/src/jitter.rs
+  - crates/sc-cron/src/sqlite.rs
+  - crates/sc-cron/src/process.rs
+  - crates/sc-cron/src/monty_compose.rs
+  - crates/sc-cron/src/monty_host.rs
+  - crates/sc-cron/src/monty_run.rs
   - crates/sc-cron/tests/observability_contract.rs
+  - crates/sc-cron/tests/observability_components.rs
 must_follow: []
 parallel_safe: [b-16]
 recommended_agent: solar
@@ -103,7 +112,12 @@ pub type SharedCanonicalLog = std::sync::Arc<dyn CanonicalLog>;
 ```
 
 The matching runtime patch implements `CanonicalLog` for
-`sc_observability::v2::Logger`. It does not require `Logger: Clone`.
+`sc_observability::v2::Logger` by calling `Logger::try_log` (or an equivalent
+API contractually guaranteed never to wait for queue capacity). It must never
+call `Logger::log`, `enqueue_blocking`, or any blocking/backpressured path.
+Queue-full and disconnected-sink rejection returns `EventError` immediately
+and remains best effort at every library call site. It does not require
+`Logger: Clone`.
 Applications retain `Arc<Logger>` and coerce an Arc clone to
 `SharedCanonicalLog`. Noop and the upstream recording/test-double contract are
 fixed here so b-14 and b-15 do not renegotiate them.
@@ -169,6 +183,65 @@ worker construction clone the same Arc through `RunCoord`. Libraries never
 construct, flush, or shut down the full logger. Only an injected production
 logger carries the generated application service name.
 
+The component propagation seams are also fixed here and preserve every legacy
+entry point by installing the fixed `sc-cron` Noop:
+
+```rust
+pub struct LoggedJitter<J> { /* inner J plus SharedCanonicalLog */ }
+impl SystemJitter {
+    pub fn with_logger(logger: SharedCanonicalLog) -> LoggedJitter<Self>;
+}
+
+impl SqliteScheduleStore {
+    pub fn open_with_logger(
+        path: impl AsRef<std::path::Path>,
+        limits: ScheduleLimits,
+        logger: SharedCanonicalLog,
+    ) -> Result<Self, CronError>;
+}
+
+impl<C, J> Scheduler<SqliteScheduleStore, C, J> {
+    pub fn open_with_logger(
+        path: impl AsRef<std::path::Path>,
+        limits: ScheduleLimits,
+        clock: Arc<C>,
+        jitter: Arc<J>,
+        logger: SharedCanonicalLog,
+    ) -> Result<Self, CronError>;
+}
+
+pub async fn supervise_with_logger<F>(
+    spec: &ChildSpec<'_>,
+    cap: usize,
+    expiry: F,
+    logger: SharedCanonicalLog,
+) -> std::io::Result<Captured>
+where F: std::future::Future<Output = ()>;
+```
+
+`SqliteScheduleStore::open`, `Scheduler::open`, and `process::supervise`
+delegate with the fixed Noop. Internal `run_compose_*_with_logger`,
+`drive_feed`, and `execute_feed_with_logger` functions carry the same handle
+through `monty_compose.rs`, `monty_host.rs`, and `monty_run.rs`; their legacy
+forms delegate with the Noop. b-15 supplies `RunCoord.logger()` at worker and
+due-run call sites without reopening these component files.
+
+This sprint migrates the component-owned events in its whole-file ownership:
+
+| Target | Action | Level | Outcome | `Diagnostic.code` | Required fields / cardinality |
+|---|---|---|---|---|---|
+| `cron.jitter` | `source.unavailable` | warning | `failed` | `JITTER_SOURCE_UNAVAILABLE` | error; once per random-source failure |
+| `cron.store` | `row.corrupt` | warning | `failed` | `CORRUPT_SCHEDULE_ROW` | schedule id/name when decoded, error; once per skipped corrupt row |
+| `cron.process` | `child.kill_failed` | debug | `failed` | `CHILD_KILL_FAILED` | pid when available, error; once per failed kill attempt |
+| `cron.process` | `child.reap_timeout` | warning | `timeout` | `CHILD_REAP_TIMEOUT` | pid when available, `deadline_remaining_ms = 0`; once per reap deadline |
+| `cron.monty.compose` | `pipe.drain_timeout` | warning | `timeout` | `COMPOSE_PIPE_DRAIN_TIMEOUT` | `deadline_remaining_ms = 0`; once per pipe-drain deadline |
+| `cron.monty.compose` | `child.kill_timeout` | warning | `timeout` | `COMPOSE_CHILD_KILL_TIMEOUT` | pid when available, `deadline_remaining_ms = 0`; once per post-kill deadline |
+
+Component tests assert this exact target/action/level/outcome/code/field/
+cardinality table. Rejecting emission may not
+change jitter fallback, corrupt-row skipping, kill/reap, pipe draining,
+compose exit, or Monty feed results.
+
 ## Canonical `LogEvent` construction
 
 Every b-14/b-15 event uses `OBSERVATION_SCHEMA_VERSION`,
@@ -214,7 +287,7 @@ Every numbered item must land production-ready for contract closure: public
 signatures compile, defaults behave, manifests and decisions agree, and the
 contract tests prove the committed semantics without placeholders.
 
-1. Amend ADR-RUN-0002, ADR-RUN-0004, ADR-RUN-0013, ADR-RT-0001 and the listed REQ/NFRs to
+1. Amend ADR-RUN-0002, ADR-RUN-0004, ADR-RUN-0007, ADR-RUN-0013, ADR-RT-0001 and the listed REQ/NFRs to
    allow only the types-level dependency, define Noop defaults, Arc identity,
    direct canonical emission, best-effort failure semantics, and the internal
    `0.1.1` publication boundary.
@@ -232,8 +305,13 @@ contract tests prove the committed semantics without placeholders.
    per triggered shutdown branch with deadline/worker fields,
    `WORKER_SHUTDOWN_TIMEOUT` / `SHUTDOWN_DEADLINE_EXCEEDED`, and no outcome
    change.
-4. NFR-RT-0002 / NFR-CRON-0001: contract tests prove object safety, Noop compatibility, replacement,
-   Arc identity through `share()`/worker construction, and emitter failure.
+   Implement the fixed jitter/store/scheduler/process/Monty propagation seams,
+   keep every legacy constructor/function source-compatible with a Noop, and
+   migrate the six component-owned event rows above.
+4. NFR-RT-0002 / NFR-CRON-0001 / NFR-RUN-0002: contract tests prove object safety, Noop compatibility, replacement,
+   Arc identity through `share()`/worker construction, immediate queue-full
+   and disconnected rejection, and component propagation. Static assertions
+   forbid `log(` and `enqueue_blocking` in the upstream adapter contract.
 5. NFR-RT-0003 / NFR-RUN-0009: keep `tracing` manifest dependencies during the staged migration. Their
    cleanup is explicitly deferred; b-14 and b-15 remove owned production
    calls without reopening these shared manifests.
@@ -244,7 +322,7 @@ contract tests prove the committed semantics without placeholders.
 
 ## Acceptance criteria
 
-1. ADR-RUN-0004 / ADR-RUN-0013 / ADR-RT-0001: the amended decision and
+1. ADR-RUN-0004 / ADR-RUN-0007 / ADR-RUN-0013 / ADR-RT-0001: the amended decision and
    requirement documents record the exact object-safe trait, Arc ownership,
    Noop defaults, dependency edges, and best-effort failure policy.
 2. ADR-RUN-0004: boundary lint accepts the two types-only
@@ -256,7 +334,10 @@ contract tests prove the committed semantics without placeholders.
 5. `boundary:BOUNDARY-sc-cron`: each scheduler shutdown branch emits its
    fixed target/action/level/code once, and a rejecting emitter does not
    change the returned shutdown result.
-6. ADR-RUN-0004: a rejecting emitter cannot change any primary outcome.
+6. ADR-RUN-0004 / ADR-RUN-0007 / NFR-RUN-0002: a rejecting emitter cannot
+   change any primary outcome; saturated and disconnected production logger
+   paths reject immediately without blocking scheduler, HTTP, process, or
+   Monty execution.
 7. NFR-RT-0004 / NFR-CRON-0001: legacy constructors install fixed
    `sc-runtime` / `sc-cron` Noops without parsing application input or
    panicking; only injection changes the service identity.
@@ -280,6 +361,8 @@ cargo package --list -p sc-runtime
 cargo package --list -p sc-cron
 sc-lint lint sc-boundary --root . --config sc-lint.toml
 ! rg -n 'tracing::|trace!|debug!|info!|warn!|error!' crates/sc-cron/src/scheduler.rs
+! rg -n 'tracing::|trace!|debug!|info!|warn!|error!' crates/sc-cron/src/jitter.rs crates/sc-cron/src/sqlite.rs crates/sc-cron/src/process.rs crates/sc-cron/src/monty_compose.rs crates/sc-cron/src/monty_host.rs crates/sc-cron/src/monty_run.rs
+! rg -n 'enqueue_blocking|\.log\(' crates/sc-runtime crates/sc-cron
 just lint gates
 ```
 

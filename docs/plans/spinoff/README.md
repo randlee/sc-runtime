@@ -18,3 +18,7 @@ the outlines are not implementation authority.
 `owned_paths`, dependencies, agent recommendations, acceptance criteria, and
 exact validation commands. PR #84 merge is an entry prerequisite; its b-10
 through b-12 work is verified rather than replanned.
+The hardened cut assigns cron component logger propagation/events to b-13,
+worker/due-run events to b-15, requires the upstream non-blocking `try_log`
+adapter contract, records continuation width 3, and blocks b-17 until a later
+exact sc-publish kit pin excludes `docs/sprints/**` from its install package.

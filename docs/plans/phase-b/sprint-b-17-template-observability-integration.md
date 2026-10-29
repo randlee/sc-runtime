@@ -21,11 +21,13 @@ requirements:
   - REQ-CRON-0003
   - REQ-CRON-0005
   - NFR-RUN-0005
+  - NFR-RUN-0002
   - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0004
+  - ADR-RUN-0007
   - ADR-RUN-0013
   - ADR-RT-0001
 owned_paths:
@@ -34,6 +36,7 @@ owned_paths:
   - template/crates/daemon/src/cron.rs
   - tests/integration/generation/test_observability.py
   - release/sc-publish-consumer-input.json
+  - release/sc-publish-pin.toml
   - release/publish-preflight.toml
   - release/publish-preflight.toml.j2
   - docs/development/sc-publish.md
@@ -145,11 +148,22 @@ before every fix round. There is no same-wave sibling.
 ## Consumed artifacts
 
 - b-14: `DaemonBuilder::logger` and HTTP events.
-- b-15: cron event taxonomy; b-13 supplies
-  `Scheduler::with_logger` and `cron.scheduler/logger.attached`.
+- b-15: cron worker/due-run event taxonomy; b-13 supplies
+  `Scheduler::open_with_logger`, component propagation/events, and
+  `cron.scheduler/logger.attached`.
 - b-16: the daemon `cron` and `monty` Cargo features. This sprint does not
   edit shared Cargo files. It also consumes the exact `0.1.1` registry pins
   and checkout-patch inventory owned by b-16.
+
+The current pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` is not a valid
+b-17 starting artifact because that kit package includes upstream sprint
+history at `docs/sprints/fix-homebrew-formula-bundled-paths-tojson.md`.
+b-17 is blocked until sc-publish publishes a later qualified exact revision
+whose installer package contains no `docs/sprints/**`. This plan does not
+invent that future SHA. Once available, b-17 updates
+`release/sc-publish-pin.toml`, installs only from that exact revision, and
+proves its installed file inventory equals the explicit `owned_paths` set;
+the leaked upstream sprint-history document is never copied or owned here.
 
 ## Fixed composition signatures
 
@@ -169,20 +183,20 @@ pub fn open(
     config: &CronConfig,
     instance_root: &std::path::Path,
     logger: SharedCanonicalLog,
-) -> Result<Scheduler<SqliteScheduleStore, SystemClock, SystemJitter>, CronError>;
+) -> Result<Scheduler<SqliteScheduleStore, SystemClock, LoggedJitter<SystemJitter>>, CronError>;
 ```
 
 The wrapper resolves `database_path` below `instance_root`, maps config to
 `ScheduleLimits`, and calls exactly:
 
 ```rust
-Scheduler::open(
+Scheduler::open_with_logger(
     database_path,
     limits,
     Arc::new(SystemClock),
-    Arc::new(SystemJitter),
-)?
-.with_logger(logger)
+    Arc::new(SystemJitter::with_logger(logger.clone())),
+    logger,
+)
 ```
 
 `Observability` creates `Arc<Logger>` once and derives `shared` by Arc
@@ -205,14 +219,15 @@ must pass together; a fake-only or test-only wiring cannot close this sprint.
 1. REQ-RUN-0004 / REQ-RUN-0309: change generated `Observability` to Arc ownership and expose only the
    types-level shared handle to library consumers.
 2. REQ-RT-0001 / REQ-RT-0004: inject that handle into `DaemonBuilder` for every layout.
-3. REQ-CRON-0003 / REQ-CRON-0005: under the b-16 `cron` feature, open the scheduler database below the
-   instance root, apply configured limits, attach the same handle, and retain
+3. REQ-CRON-0003 / REQ-CRON-0005: under the b-16 `cron` feature, use b-13's
+   `LoggedJitter` and `Scheduler::open_with_logger` to open the scheduler
+   database below the instance root, apply configured limits, attach the same handle, and retain
    the scheduler. Feature-off behavior is unchanged.
 4. NFR-RUN-0005 / NFR-RUN-0008: add a generated-project smoke test that polls with a deadline, sends a
    health request, enables cron, and parses JSONL. It must observe
    `http.server/request.*` plus the production
    `cron.scheduler/logger.attached` event with one service identity.
-5. NFR-RUN-0009: prove the fixed reachable result/shutdown precedence and that
+5. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: prove the fixed reachable result/shutdown precedence and that
    logger shutdown happens after both library users stop. Do not add a
    post-construction production-logger fault injector: b-14 and b-15 already
    own rejecting-emitter contract tests for emission failure, while this
@@ -221,7 +236,12 @@ must pass together; a fake-only or test-only wiring cannot close this sprint.
    existing sc-publish consumer input for the
    `0.1.1` release. Preserve publish order `sc-config` (1), `sc-transport` (2),
    `sc-command` (3), `sc-runtime` (4), then publish `sc-cron` (5);
-   `sc-runtime-db-sqlite` remains unpublished. From a clean checkout, fetch
+   `sc-runtime-db-sqlite` remains unpublished. Advance the current rejected
+   pin to a later qualified exact kit revision with no `docs/sprints/**`.
+   `test_pinned_publish_kit_inventory` must enumerate installer destination
+   paths and assert exact equality with the installed-output subset of
+   `owned_paths`; any `docs/sprints/**` destination fails closed.
+   From a clean checkout, fetch
    the repository and exact revision in `release/sc-publish-pin.toml`, detach
    at `FETCH_HEAD`, bootstrap the pinned renderer, run the real installer,
    and commit every exact installed output listed in `owned_paths`. Require a
@@ -248,12 +268,14 @@ must pass together; a fake-only or test-only wiring cannot close this sprint.
 3. `REQ-CRON-0003`: opening the real generated scheduler with the injected
    handle writes the real cron attachment event; no fake emitter stands in for
    the production logger in this integration proof.
-4. `NFR-RUN-0009`: b-14/b-15 rejecting-emitter contract tests remain the
-   authoritative best-effort emission proof; this integration test verifies
-   only reachable generated-process result/shutdown precedence and production
-   JSONL output.
+4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: b-14/b-15
+   rejecting-emitter contract tests remain the authoritative immediate,
+   best-effort emission proof; this integration test verifies only reachable
+   generated-process result/shutdown precedence and production JSONL output.
 5. No generated library crate depends on the full observability runtime.
-6. REQ-RUN-0702: the real install from the exact pinned kit revision owns and
+6. REQ-RUN-0702: the current bad pin has been replaced by a qualified exact
+   later revision; its package inventory contains no `docs/sprints/**`. The
+   real install from that exact pinned kit revision owns and
    synchronizes every listed manifest, workflow, script, action, agent, skill,
    and kit document; its repeat dry-run and git drift checks are clean,
    generated preflight passes, the human-authorized publish follows orders 1 through 5,
@@ -265,16 +287,19 @@ must pass together; a fake-only or test-only wiring cannot close this sprint.
 ```sh
 python3 -m unittest tests.integration.generation.test_observability
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_contract_sources
+python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_pinned_publish_kit_inventory
 SC_PUBLISH_REPOSITORY="$(sed -n 's/^repository = "\([^"]*\)"/\1/p' release/sc-publish-pin.toml)"
 SC_PUBLISH_REVISION="$(sed -n 's/^revision = "\([0-9a-f]*\)"/\1/p' release/sc-publish-pin.toml)"
 test -n "$SC_PUBLISH_REPOSITORY"
 test "${#SC_PUBLISH_REVISION}" -eq 40
+test "$SC_PUBLISH_REVISION" != "16457e06ade6c0b003ff75addb7d694e9da41fe2"
 mkdir -p .sc-publish-kit
 git -C .sc-publish-kit init
 git -C .sc-publish-kit remote add origin "$SC_PUBLISH_REPOSITORY"
 git -C .sc-publish-kit fetch --depth 1 origin "$SC_PUBLISH_REVISION"
 git -C .sc-publish-kit checkout --detach FETCH_HEAD
 test "$(git -C .sc-publish-kit rev-parse HEAD)" = "$SC_PUBLISH_REVISION"
+test -z "$(find .sc-publish-kit/plugins/sc-publish/docs/sprints -type f -print -quit 2>/dev/null)"
 python3 .sc-publish-kit/plugins/sc-publish/.github/scripts/bootstrap_sc_compose.py --venv .sc-publish-venv
 .sc-publish-venv/bin/python .sc-publish-kit/plugins/sc-publish/install.py --input release/sc-publish-consumer-input.json .
 .sc-publish-venv/bin/python .sc-publish-kit/plugins/sc-publish/install.py --dry-run --input release/sc-publish-consumer-input.json .
