@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "phase": "b",
+  "lead": "codexis",
+  "governing_skill": ".cursor/skills/cursor-orchestration/SKILL.md",
+  "transport": "native Codex collaboration",
+  "integration_branch": "integrate/phase-b-observability",
+  "integration_path": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/integrate/phase-b-observability",
+  "parallel_execution_authority": "Owner explicitly requested first-wave sprints in parallel; authoritative phase plan parallel_safe b14,b15,b16 overrides skill serial sequence default. Must-follow consumes pushed b13 contract, not QA or merge.",
+  "model_adaptation": "Owner explicitly authorized terra/sol/luna where appropriate after skill adoption. Actual native Codex model IDs recorded per task; no unavailable Grok/Composer claims.",
+  "qa_policy": {
+    "enforcer": "cursor-quality-mgr",
+    "parent_spawns_all_reviewers": true,
+    "full_qa1_before_merge": true,
+    "zero_open_findings_before_merge": true,
+    "green_ci_before_merge": true,
+    "max_native_concurrency_including_parent": 4
+  },
+  "source_artifacts": {
+    "bridge_pr": 88,
+    "bridge_head": "9d1a34091565005103f78eb9aab0f59dd5f1a21f",
+    "b13_head": "0a6a9dcfb6258d06a470154e24e0a2aec915430e"
+  },
+  "sprints": {
+    "b-14": {
+      "task_id": "run-03z.2",
+      "branch": "sprint/b-14-sc-runtime-observability",
+      "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-14-sc-runtime-observability",
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "status": "development_in_progress",
+      "assignment": "/tmp/phaseb-cursor-orchestration/b-14-dev-assignment.xml",
+      "developer_task_id": "/root/phaseb_b14_sol_recovery",
+      "recovered_from": {
+        "task_id": "/root/phaseb_b14_developer",
+        "model": "gpt-6.1-terra",
+        "reason": "Selected model at capacity; partial changes preserved"
+      }
+    },
+    "b-15": {
+      "task_id": "run-03z.3",
+      "branch": "sprint/b-15-sc-cron-observability",
+      "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "status": "development_in_progress",
+      "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
+      "developer_task_id": "/root/phaseb_b15_developer"
+    },
+    "b-16": {
+      "task_id": "run-03z.4",
+      "branch": "sprint/b-16-monty-template-examples",
+      "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "status": "development_in_progress",
+      "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
+      "developer_task_id": "/root/phaseb_b16_developer"
+    },
+    "b-13": {
+      "task_id": "run-03z.1",
+      "branch": "sprint/b-13-observability-contract",
+      "head": "0a6a9dcfb6258d06a470154e24e0a2aec915430e",
+      "status": "development_complete_qa_pending",
+      "developer_task_id": "/root/phaseb_b13_developer"
+    }
+  },
+  "qa_rounds": [],
+  "model_authority": "User: yes, use terra/sol/luna where appropriate",
+  "shared_file_window": {
+    "files": [
+      "crates/sc-cron/src/worker.rs",
+      "crates/sc-cron/src/worker/worker_runs.rs",
+      "crates/sc-cron/src/scheduler/run_due.rs",
+      "crates/sc-cron/src/scheduler.rs"
+    ],
+    "owner": "b-15",
+    "b15_scheduler_limit": "finish_due passes existing coord.logger to record_due only",
+    "handoff": "Parent confirmation after b15 compilable development push; b16 merges before mechanical registry edits; no whole-sprint QA/merge wait"
+  },
+  "scope_extensions": [
+    {
+      "sprint": "b-14",
+      "path": "crates/sc-runtime/src/builder.rs",
+      "scope": "Mechanical existing logger propagation into runtime/middleware, no public builder or typestate changes",
+      "reason": "Consumer developer found inherited seam omission; independent QA must assess baseline and fix."
+    },
+    {
+      "sprint": "b-15",
+      "path": "crates/sc-cron/src/scheduler.rs",
+      "scope": "finish_due passes existing logger Arc to record_due only; joins narrow shared writer window"
+    },
+    {
+      "sprint": "b-16",
+      "path": "crates/sc-cron/tests/observability_components.rs",
+      "scope": "Only compose_pipe_drain_event_survives_rejection migration to new registry/adapters, preserving assertion"
+    }
+  ]
+}
