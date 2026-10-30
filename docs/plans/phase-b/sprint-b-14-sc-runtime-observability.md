@@ -105,6 +105,9 @@ attempt or changes request execution.
 5. `boundary:BOUNDARY-sc-runtime`: the required boundary lint and
    `cargo check --workspace` pass with tests using the types test double, not
    another workspace crate or a full runtime sink.
+   All production release crates exclude sc-compose and ATM crate dependencies
+   and Rust imports, enforced by boundary lint; test/benchmark references are
+   permitted (ANC-031).
 6. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when an
    arbitrary application 5xx has no diagnostic and the two framework timeout
    branches carry exactly their fixed codes.

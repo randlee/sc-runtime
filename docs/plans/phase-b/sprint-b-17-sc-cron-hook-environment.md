@@ -71,10 +71,15 @@ adapters. Daemon inheritance is allowed by name; schedules can deliberately
 persist set values, clear names, load absolute dotenv files, and resolve opaque
 references. Schedule writes never capture ambient process values.
 
-This sprint follows b-15's final worker/due-run paths and b-16's host registry,
-CLI adapters, generated features, and example. b-14 stays independent. b-18
-consumes the completed generated environment policy. No new sprint is created.
-The application supplies source without an MVP signing or approval gate.
+Consume b-15's worker/due-run paths and b-16's registry, adapters, features,
+and example; b-18 consumes this policy.
+sc-runtime remains a cargo-generate template plus published library crates;
+sc-cron remains a general-purpose library for application-defined jobs.
+MVP executes application-supplied Monty source without signature verification,
+a separate approval check, or a consumer option enabling either.
+Update `template/examples/monty/cron.py` to demonstrate this environment policy
+through CLI adapters. `render_template` may remain an internal helper; it is
+not a required sc-cron product API.
 Rust jobs retain their application interface and process environment; nonempty
 schedule environment on a Rust target is InvalidSpec.
 ANC-031 applies to this work: all production release crates continue to exclude
@@ -305,15 +310,18 @@ Configured CLI child working directory remains b-16's independent setting.
 
 Monty answers only Getenv/GetEnviron from the snapshot with normal absent and
 default behavior. Source initialization uses a resumable environment-read
-driver: top-level os.getenv works before hooks; all registered host calls are
-denied during initialization. Other OS calls stay HOST_OS-denied in all stages.
+driver: top-level os.getenv works before hooks. Applications can register
+additional host functions without editing sc-cron; their invocation is denied
+during source initialization and enabled during hooks. Other OS calls stay
+HOST_OS-denied in all stages.
 A retained REPL initializes once per generation: copied module globals retain
 that initialization value; later function-time getenv reads the current
 occurrence snapshot. This does not add mutable os.environ, putenv, or unsetenv.
 
 sc_compose_run and atm_run children receive the same snapshot as Python/Monty,
-with no implicit full-daemon inheritance. They retain b-16's unrestricted argv
-forwarding and common row deadline, process-group kill, and output limits.
+with no implicit full-daemon inheritance. Both adapters forward any command or
+subcommand and its arguments unchanged, with no command allowlist. They retain
+the common row deadline, process-group kill, and output limits.
 Rust jobs retain their ordinary application access; sc-cron never mutates the
 daemon process environment with set_var/remove_var.
 
@@ -346,26 +354,19 @@ consumer tables or create a second environment/secret table.
 ## Required work and deliverables
 
 1. REQ-CRON-0001/0003/0004/0005/0019, ADR-RUN-0013/0016, NFR-CRON-0002:
-   align the public model, resolution, runtime, redaction, and first-release
-   schema in authority docs. Consume b-16's general host registry and both CLI
-   adapters; add environment reads without restoring render-only policy.
-2. NFR-CRON-0001 / NFR-RUN-0009: implement the validated types and private
-   snapshot, resolver seam, safe Debug, crate exports, and boundary facade.
-   Compile-test constructors/accessors and Arc<dyn EnvironmentReferenceResolver>.
-3. REQ-CRON-0004: persist canonical environment JSON and validate it at every
-   model/store/execution boundary. Use the first-release table; skip corrupt
-   rows through the existing bounded decode/store path.
-4. REQ-CRON-0019 / NFR-RUN-0005: carry one resolved snapshot through worker
-   and run_due stop/tick, initialization, and CLI paths. Implement precedence,
-   authorization, bounds, deadlines, and fixed failure codes above.
-5. REQ-CRON-0003 / NFR-CRON-0002: wire ChildEnv::Only, environment-read resume,
-   executable resolution, CLI delivery, and scheduled redaction. Preserve
-   process supervision and sc-cron.hook.v1 input.
-6. REQ-RUN-0301 / REQ-CRON-0019 / ADR-RUN-0014: generate the three empty policy
-   arrays, validated config/schema, prebuilt-policy wiring, and checked example
-   with identity/team, clear, dotenv, and a recording reference resolver.
-   Preserve configured schedule-limit mapping and b-16 Cargo features.
-7. NFR-RUN-0005: add Unix/Windows parity and canary tests below. Production adds
+   implement the model, resolution, runtime, redaction, and first-release schema
+   specified above; align authority docs. Validate JSON at model/store/execution
+   boundaries and skip corrupt rows through the existing bounded path.
+2. NFR-CRON-0001 / NFR-RUN-0009: export the types and boundary facade;
+   compile-test constructors/accessors and Arc<dyn EnvironmentReferenceResolver>.
+3. REQ-CRON-0019 / NFR-RUN-0005: deliver the same snapshot through worker,
+   run_due, initialization, and both CLI paths, retaining process supervision
+   and sc-cron.hook.v1 input.
+4. REQ-RUN-0301 / REQ-CRON-0019 / ADR-RUN-0014: generate the specified empty
+   policy defaults, config/schema, prebuilt-policy wiring, and identity/team,
+   clear, dotenv, and recording-resolver example. Preserve schedule limits and
+   b-16 Cargo features.
+5. NFR-RUN-0005: add Unix/Windows parity and canary tests below. Production adds
    no sleeps/block_on and holds no std::sync::Mutex guard across await;
    condition/deadline test coordination is permitted.
 
@@ -401,6 +402,8 @@ consumer tables or create a second environment/secret table.
 8. test_cron_environment proves empty administrator defaults, absolute paths,
    separately wired exact-file/root policy, prebuilt resolver preservation,
    and checked-example set/clear/reference/dotenv behavior without a real secret.
+   A freshly generated project passes REQ-RUN-0503's setup, lint,
+   test, build-cli, and build-daemon sequence with no generated source edits.
    Default feature builds exclude Monty and boundary lint permits only the
    declared types/dependencies.
 
@@ -419,6 +422,12 @@ just test sc-cron-tree-default
 just test sc-cron-tree-monty
 python3 -m unittest tests.unit.generation.test_cron_environment
 python3 -m unittest tests.unit.generation.test_monty_example
+just new generated/test-cron-env --var-file wizard/fixtures/sqlite-mcp.json
+just --justfile generated/test-cron-env/justfile setup
+just --justfile generated/test-cron-env/justfile lint
+just --justfile generated/test-cron-env/justfile test
+just --justfile generated/test-cron-env/justfile build-cli
+just --justfile generated/test-cron-env/justfile build-daemon
 ! rg -n 'std::env::set_var|std::env::remove_var' crates/sc-cron/src
 sc-lint lint sc-boundary --root . --config sc-lint.toml
 just lint

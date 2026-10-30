@@ -1454,6 +1454,20 @@
           ],
           "previous_context": "requirements register",
           "reason": "Identify approved amendment authority while preserving superseded source quote."
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:05+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1484,6 +1498,14 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures."
         }
       ]
     },
@@ -1597,6 +1619,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1627,6 +1691,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not change the cron expression parser or five-field schedule semantics."
         }
       ]
     },
@@ -1889,6 +1977,41 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1919,6 +2042,26 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes."
         }
       ]
     },
@@ -2022,6 +2165,27 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:05+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:05+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This event-only sprint changes no public fallible function signature or CronError return type.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -2052,6 +2216,18 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures."
+        },
+        {
+          "item": "b-15",
+          "reason": "This event-only sprint changes no public fallible function signature or CronError return type."
         }
       ]
     },
@@ -2181,6 +2357,20 @@
           ],
           "previous_context": "requirements register",
           "reason": "Identify approved amendment authority while preserving superseded source quote."
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:05+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -2211,6 +2401,14 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures."
         }
       ]
     },
@@ -2328,6 +2526,48 @@
           "item": "b-6",
           "reason": "Sprint b-6 does not carry this obligation.",
           "replaced": true
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -2354,6 +2594,30 @@
         {
           "item": "b-6",
           "reason": "Sprint b-6 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -2457,6 +2721,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -2487,6 +2793,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -2590,6 +2920,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -2620,6 +2992,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -2723,6 +3119,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -2753,6 +3191,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -2856,6 +3318,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -2886,6 +3390,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -2989,6 +3517,48 @@
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3019,6 +3589,30 @@
         {
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -3122,6 +3716,48 @@
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3152,6 +3788,30 @@
         {
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -3263,6 +3923,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3293,6 +3995,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -3396,6 +4122,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3426,6 +4194,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -3525,6 +4317,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3547,6 +4381,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -3657,6 +4515,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:54+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3687,6 +4587,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -3790,6 +4714,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3820,6 +4786,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -3923,6 +4913,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -3953,6 +4985,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -4056,6 +5112,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:14+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4086,6 +5184,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -4196,6 +5318,48 @@
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:57+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4226,6 +5390,30 @@
         {
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -4329,6 +5517,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4359,6 +5589,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -4462,6 +5716,48 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4492,6 +5788,30 @@
         {
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores."
         }
       ]
     },
@@ -4611,6 +5931,41 @@
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not change generated package names or their naming algorithm.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not change generated package names or their naming algorithm.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not change generated package names or their naming algorithm.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not change generated package names or their naming algorithm.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not change generated package names or their naming algorithm.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4641,6 +5996,26 @@
         {
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not change generated package names or their naming algorithm."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not change generated package names or their naming algorithm."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not change generated package names or their naming algorithm."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not change generated package names or their naming algorithm."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not change generated package names or their naming algorithm."
         }
       ]
     },
@@ -4749,6 +6124,48 @@
           "at": "2026-10-26T02:47:58+00:00",
           "event": "exclusion_removed",
           "item": "b-4"
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:00+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4775,6 +6192,30 @@
         {
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not add or generate database schema/types crates or relocate row structs."
         }
       ]
     },
@@ -4878,6 +6319,48 @@
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:55+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:56+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:58+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:11:59+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-17",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -4908,6 +6391,30 @@
         {
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-18",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface."
+        },
+        {
+          "item": "b-16",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface."
+        },
+        {
+          "item": "b-17",
+          "reason": "This sprint does not change the generated CLI/MCP/HTTP database command surface."
         }
       ]
     },
@@ -5004,6 +6511,20 @@
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint edits existing library event emission; it adds no library crate and does not edit the cargo-generate template.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint edits existing library event emission; it adds no library crate and does not edit the cargo-generate template.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -5030,6 +6551,14 @@
         {
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint edits existing library event emission; it adds no library crate and does not edit the cargo-generate template."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint edits existing library event emission; it adds no library crate and does not edit the cargo-generate template."
         }
       ]
     },
@@ -5133,6 +6662,27 @@
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -5163,6 +6713,18 @@
         {
           "item": "b-7",
           "reason": "Sprint b-7 does not carry this obligation."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints."
         }
       ]
     },
@@ -5217,6 +6779,30 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes HTTP events in sc-runtime and does not change sc-cron job or Monty execution interfaces.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-18",
+          "reason": "This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes HTTP events in sc-runtime and does not change sc-cron job or Monty execution interfaces."
         }
       ]
     },
@@ -5271,6 +6857,41 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
         }
       ]
     },
@@ -5325,6 +6946,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:17:17+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "b-18 forwards an opaque prebuilt registry; it changes neither CLI adapter, argv dispatch, nor adapter examples.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-18",
+          "reason": "b-18 forwards an opaque prebuilt registry; it changes neither CLI adapter, argv dispatch, nor adapter examples."
         }
       ]
     },
@@ -5388,6 +7055,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:17:17+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "b-18 forwards an opaque prebuilt registry; it changes neither CLI adapter, argv dispatch, nor adapter examples.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-18",
+          "reason": "b-18 forwards an opaque prebuilt registry; it changes neither CLI adapter, argv dispatch, nor adapter examples."
         }
       ]
     },
@@ -5510,6 +7223,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-18",
+          "reason": "This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
         }
       ]
     },
@@ -5571,6 +7330,41 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes HTTP events in sc-runtime and does not change sc-cron job or Monty execution interfaces.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:05+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "Logger propagation/event emission changes no source acquisition or acceptance, signature checks, approval decisions, or Monty authorization policy.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:05+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "Logger propagation/event emission changes no source acquisition or acceptance, signature checks, approval decisions, or Monty authorization policy.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-14",
+          "reason": "This sprint changes HTTP events in sc-runtime and does not change sc-cron job or Monty execution interfaces."
+        },
+        {
+          "item": "b-13",
+          "reason": "Logger propagation/event emission changes no source acquisition or acceptance, signature checks, approval decisions, or Monty authorization policy."
+        },
+        {
+          "item": "b-15",
+          "reason": "Logger propagation/event emission changes no source acquisition or acceptance, signature checks, approval decisions, or Monty authorization policy."
         }
       ]
     },
@@ -5625,6 +7419,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads."
         }
       ]
     },
@@ -5679,6 +7519,41 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
         }
       ]
     },
@@ -5733,6 +7608,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads."
         }
       ]
     },
@@ -5794,6 +7715,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads."
         }
       ]
     },
@@ -5848,6 +7815,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads."
         }
       ]
     },
@@ -5902,6 +7915,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads."
         }
       ]
     },
@@ -5956,6 +8015,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads."
         }
       ]
     },
@@ -6010,6 +8115,52 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads."
         }
       ]
     },
@@ -6064,6 +8215,63 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-10-30T05:11:15+00:00",
+          "event": "excluded",
+          "item": "b-18",
+          "reason": "This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:01+00:00",
+          "event": "excluded",
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:02+00:00",
+          "event": "excluded",
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:03+00:00",
+          "event": "excluded",
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.",
+          "replaced": false
+        },
+        {
+          "at": "2026-10-30T05:12:04+00:00",
+          "event": "excluded",
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "b-18",
+          "reason": "This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema."
+        },
+        {
+          "item": "b-13",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-14",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-15",
+          "reason": "This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema."
+        },
+        {
+          "item": "b-16",
+          "reason": "b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads."
         }
       ]
     }

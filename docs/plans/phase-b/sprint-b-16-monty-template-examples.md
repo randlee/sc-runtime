@@ -138,8 +138,11 @@ string arguments; keyword arguments and other arities/types fail as
 as `atm_run("agent", ["list"])`; the registry does not parse or restrict the
 tool's command grammar. The script decides how to handle a nonzero exit
 returned in the result object.
-The generic registry remains usable with neither tool installed. b-17
-supplies the same resolved environment to both children. `render_template`
+The generic registry remains usable with neither tool installed. Both CLI
+children start with an explicitly empty environment after executable resolution;
+they never inherit the full daemon environment. b-17 replaces the empty map
+with its resolved snapshot: inherited daemon values enter only through names
+explicitly allowed by daemon configuration. `render_template`
 is absent from the required product API and production host registration.
 The production-bridge benchmark and generated example invoke
 `sc_compose_run("render", ...)` through the same optional adapter. Internal
@@ -149,6 +152,8 @@ name; their presence does not create a product requirement.
 The template Cargo files are owned only by this sprint. b-17 consumes the
 resulting registry and `cron`/`monty` feature definitions and does not edit
 those manifests.
+Generated package names retain `<project>-<role>`, including
+`{{project-name}}-daemon`; dependency/feature edits must not rename them.
 
 The generated daemon feature contract is fixed:
 
@@ -185,7 +190,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    adapter described above. Remove the fixed `render_template` host registration, migrate
    `monty_host_bridge`, `sc_compose_bench`, and the campaign source to
    `sc_compose_run("render", ...)`, and keep the b-10 process deadline,
-   output cap and child-environment protections. Implement `atm_run` in this
+   output cap; apply the explicit child-environment restriction above. Implement `atm_run` in this
    same sprint through the identical registry and supervisor. Remove the old
    render-only/temp-root argument rewriting from the general CLI adapters.
 3. REQ-RUN-0301 / REQ-CRON-0001 / ADR-RUN-0303: add optional daemon dependency `sc-cron`, direct
@@ -226,8 +231,10 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    `sc-compose`, `sc-compose-*`, `agent-team-mail`, `agent-team-mail-core`, and
    `atm-*`; the ATM Rust library name `atm_core` is also covered by import
    checks. Renamed dependency fixtures must fail as production edges.
-8. NFR-RUN-0005: add a generation test that renders the example and compiles the generated
-   daemon with and without `monty`. Assert that a checkout render contains the
+8. NFR-RUN-0005 / REQ-RUN-0503: require the freshly generated, unedited checkout
+   to pass `just setup`, `just lint`, `just test`, `just build-cli`, then
+   `just build-daemon`; also compile the daemon with and without `monty`.
+   Assert that a checkout render contains the
    local `sc-cron` patch and a `--release` render contains no
    `[patch.crates-io]` or path dependency; b-18 owns the registry build after
    publication.
@@ -287,6 +294,11 @@ python3 -m unittest tests.unit.generation.test_monty_example tests.unit.test_pro
 cargo +1.96.1 test -p sc-cron --features monty --test monty_host_bridge
 cargo +1.96.1 test -p sc-cron --features monty --test sc_compose_bench
 just new generated/test-monty --var-file wizard/fixtures/sqlite-mcp.json
+just --justfile generated/test-monty/justfile setup
+just --justfile generated/test-monty/justfile lint
+just --justfile generated/test-monty/justfile test
+just --justfile generated/test-monty/justfile build-cli
+just --justfile generated/test-monty/justfile build-daemon
 cargo check --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon
 cargo +1.96.1 check --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon -e features

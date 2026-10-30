@@ -40,6 +40,12 @@ recommended_model: sol
 Implement the `sc-cron` half of the fixed injected handle without changing
 scheduling, lease, jitter, process, Monty, or persistence outcomes. Normalize
 the two residual persisted free-text failures at the sites already owned here.
+Preserve sc-cron as an optional general-purpose SQLite cron library for
+application-defined Rust, Python, and optional Monty jobs. sc-runtime stays
+independent of sc-cron; no default cron feature is enabled. Application-owned
+host registration and the sc_compose_run/atm_run adapters are b-16's work.
+This event migration adds no MVP script signing, separate approval mechanism,
+or consumer option enabling either.
 
 ## Relations
 

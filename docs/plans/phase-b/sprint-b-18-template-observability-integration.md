@@ -153,7 +153,8 @@ recommended_model: terra
 
 Make the generated daemon the sole full-observability composition root. It
 builds one logger, shares the same underlying instance with runtime and cron,
-and proves canonical HTTP and cron events in one JSONL sink.
+and proves canonical HTTP and cron events in one JSONL sink. sc-runtime remains
+a cargo-generate template plus separately published library crates.
 
 ## Relations
 
@@ -173,6 +174,9 @@ every fix round. There is no same-wave sibling.
   component propagation/events, and `cron.scheduler/logger.attached`. This
   sprint does not edit shared Cargo files. It also consumes the exact `0.1.1`
   registry pins and checkout-patch inventory that originated in b-16.
+  All production release crates exclude sc-compose and ATM crate dependencies
+  and Rust imports, enforced by boundary lint; test/benchmark references are
+  permitted (ANC-031).
 
 The current pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` is not a valid
 b-18 starting artifact because that kit package includes upstream sprint
@@ -232,13 +236,18 @@ pair the store and `RunCoord` handle with a differently configured jitter.
 passes it with the application's resolver into `cron::open` unchanged.
 ANC-034/035: Python and Monty use identical schedule-environment settings and
 resolution; daemon values enter only through names explicitly allowed by
-daemon config. Empty defaults, authorized dotenv files/roots, and the resolver
-are preserved. `with_hook_environment` applies for
+daemon config. Load scheduled dotenv sources by absolute path only when
+authorized by `cron.environment.allow_dotenv_files` or `allow_dotenv_roots`;
+both default to empty. Preserve the application's resolver.
+Each schedule's explicit Set and Clear operations survive;
+intentional Set values, including secrets, remain plaintext SQLite schedule
+configuration rather than being forbidden. `with_hook_environment` applies for
 every `cron` build; `with_monty_hosts` is compiled and applied only when the
 generated `monty` feature enables `sc-cron/monty`. The application supplies
 that completed registry, empty by default or explicitly registering b-16's
-compose/ATM adapters and its own handlers. `cron::open` preserves the registry
-instead of recreating a fixed host list or implicitly enabling either CLI.
+compose/ATM adapters and its own handlers. `cron::open` forwards it unchanged:
+applications add handlers without editing sc-cron, and both sc_compose_run and
+atm_run support any CLI command/subcommand. Neither CLI is enabled implicitly.
 
 `Observability` creates `Arc<Logger>` once and derives `shared` by Arc
 coercion; it never clones `Logger`. `main` injects clones of the shared handle,
@@ -282,18 +291,12 @@ the three literal codes above and do not duplicate the layout.
 1. ADR-RUN-0004 / REQ-RUN-0004 / REQ-RUN-0309: change generated `Observability` to Arc ownership and expose only the
    types-level shared handle to library consumers.
 2. ADR-RT-0001 / REQ-RT-0001 / REQ-RT-0004: inject that handle into `DaemonBuilder` for every layout.
-3. ADR-RUN-0013 / REQ-RUN-0301 / REQ-CRON-0003 / REQ-CRON-0004 / REQ-CRON-0005: under the b-16 `cron` feature, use b-13's
-   `Scheduler::open_with_logger`, which internally constructs the concrete
-   logger-aware `SystemJitter`, to open the scheduler
-   database below the instance root, apply configured limits, attach the same handle, and retain
-   the scheduler. Map config `0` or `null` to unlimited (`None`) and every
-   other accepted positive value to `ScheduleLimits` at scheduler open;
-   sc-cron never loads config. Feature-off behavior is unchanged.
-   REQ-CRON-0019 / NFR-CRON-0002 / ADR-RUN-0016: then apply b-17's
-   prebuilt `HookEnvironmentHost`, preserving empty defaults and configured
-   allowlists/resolver without reintroducing daemon environment inheritance in
-   Python, Monty, or compose children. Generated `main` owns construction and
-   resolver injection; `cron::open` accepts the completed policy as an argument.
+3. ADR-RUN-0013 / REQ-RUN-0301 / REQ-CRON-0003/0004/0005/0019 /
+   NFR-CRON-0002 / ADR-RUN-0016: implement the fixed `cron::open` contract above.
+   At scheduler open, map config `0` or `null` to unlimited (`None`) and other
+   accepted positive values to `ScheduleLimits`; sc-cron never loads config.
+   `main` constructs the prebuilt policy/resolver, injects it, and retains the
+   scheduler. Feature-off behavior is unchanged.
 4. NFR-RUN-0005: add a generated-project smoke test that polls with a deadline, sends a
    health request, enables cron, and parses JSONL. It must observe
    `http.server/request.*` plus the production
@@ -370,8 +373,14 @@ the three literal codes above and do not duplicate the layout.
    REQ-CRON-0019 / NFR-CRON-0002 / ADR-RUN-0016:
    `test_observability` carries a recording resolver through generated
    `main`'s builder and the real `cron::open` argument, proving typed policy,
-   all three empty administrator defaults, exact-file/root authorization, and
-   redaction wiring survive final observability composition. b-17's
+   empty administrator defaults, preserved Set/Clear and intentional plaintext
+   Set values, authorized absolute dotenv loading without persisting resolved
+   file values, and identical Python/Monty snapshots. Monty top-level getenv
+   reads that snapshot during source initialization before hooks run.
+   The same integration test registers and invokes an application-defined
+   Monty closure through the real `cron::open` registry argument without
+   changing sc-cron, proving custom handlers survive composition.
+   Exact-file/root authorization and redaction also survive composition. b-17's
    `test_cron_environment` reruns unchanged as a regression root rather than
    becoming a b-18-owned test file.
 4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: b-14/b-15
@@ -382,18 +391,12 @@ the three literal codes above and do not duplicate the layout.
    checks pass only when workspace libraries exclude the full observability
    runtime and the generated daemon remains its sole composition root.
 6. REQ-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0503 / REQ-RUN-0701 /
-   REQ-RUN-0702: the current bad pin has been replaced by a qualified exact
-   later revision; its package inventory contains no `docs/sprints/**`. The
-   `test_pinned_publish_kit_inventory`, the real install/dry-run/drift block,
-   consumer preflight, and the registry-only test pass. Together they prove
-   the exact pinned kit synchronizes its complete package-safe destination
-   inventory, the human-authorized publish follows orders 1 through 5,
-   and a subsequent `--release` generated build resolves all internal crates
-   from the registry with no checkout patch. The PR workflow has exactly one
-   matrix entry per answers fixture, and the sqlite-mcp entry closes the
-   exact generate -> setup -> lint -> test -> build-cli -> build-daemon
-   no-source-edits sequence. `v0.1.1` resolves to the exact
-   publication/proof commit.
+   REQ-RUN-0702: `test_pinned_publish_kit_inventory`, real install/dry-run/drift,
+   consumer preflight, and the registry-only test enforce deliverables 6–8:
+   qualified exact pin with package-safe inventory and no `docs/sprints/**`,
+   authorized publish order 1–5, registry resolution without checkout patches,
+   one CI entry per fixture with the sqlite-mcp no-edits sequence, and
+   `v0.1.1` at the publication/proof commit.
 7. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006:
    `test_signal_shutdown_isolated_ci` passes in the dedicated GitHub-hosted
    ephemeral job for both real SIGINT and SIGTERM paths with

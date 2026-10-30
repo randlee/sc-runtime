@@ -48,30 +48,18 @@ history. Extract it into a fresh temporary directory to inspect the historical
 paths without replacing current reports. No raw response was dropped to reduce
 the review diff.
 
-## Final planning gate state
+## Final planning gate state — PASS
 
-The subsequent owner-requested full gate is recorded in
-approval-gate-20261030/README.md. It selected all 44 locked anchors. b-16
-completed but did not pass; b-13 and b-17 were rejected before execution by
-automatic approval review, which required more explicit external-transfer
-authorization. No alternative execution path or retry was attempted. The
-overall gate remains incomplete and the task remains in progress. The list
-below preserves the earlier scoped-run state rather than describing the new
-all-anchor attempt.
+All six final b-13–b-18 runs pass with all 44 locked anchors selected. All 16
+new anchors are satisfied in the continuation; unchanged parser/store anchors
+have version-matched passing baseline coverage. No locked anchor is uncovered.
 
-- b-13: passed the scoped final gate with deployed questions.
-- b-16: no final verdict. Automatic approval review rejected sending the full
-  sprint and anchors to https://api.typesafe.ai/v1/systemone, even after the
-  agent checked committed allow_remote_judge:true and the owner's instructions
-  to iterate Jev reviews. The rejected export was not retried after that second
-  rejection. Exact rejection evidence is under final-plan-gates/.
-- b-17: the final reviewed variant satisfied nine anchors; ANC-031 was
-  underspecified, leaning satisfied. An explicit inherited production boundary
-  statement now corrects that omission. The changed variant has not received a
-  new final remote gate; earlier outcomes remain unchanged as evidence.
-- b-14, b-15, b-18: local/adversarial review completed; final remote gates pending.
+The owner explicitly authorized the full payload and TypeSafe/Jev destination;
+the earlier automatic approval block is resolved. Clear plan defects were
+fixed, duplicate prose consolidated, and independently audited item exclusions
+recorded. No statement, scope, question wording, version, threshold, or sprint
+count changed. No unresolved product-intent decision remains.
 
-No unresolved product-intent decision was identified. Final remote gate
-completion remains pending the explicit payload/destination authorization that
-automatic approval review requires. The overall final planning gate is not
-reported as passed. The tracking task remains in progress.
+See approval-gate-20261030/README.md for final run IDs, exact validation,
+allowed growth authorities, and complete immutable evidence archive. Historical
+failed/rejected attempts remain in that archive and the earlier raw archive.

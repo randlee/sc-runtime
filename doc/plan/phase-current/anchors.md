@@ -515,6 +515,8 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
+- `b-14`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
 
 Beads: anchor `run-4x5`, plan questions `run-4x5.1`, dev questions `run-4x5.2`
 
@@ -544,6 +546,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-13`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-14`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-15`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-16`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-17`: This sprint does not change the cron expression parser or five-field schedule semantics.
 
 Beads: anchor `run-8n1`, plan questions `run-8n1.1`, dev questions `run-8n1.2`
 
@@ -602,6 +610,11 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
+- `b-13`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
+- `b-14`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
+- `b-15`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
+- `b-16`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
 
 Beads: anchor `run-ec5`, plan questions `run-ec5.1`, dev questions `run-ec5.2`
 
@@ -631,6 +644,9 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
+- `b-14`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
+- `b-15`: This event-only sprint changes no public fallible function signature or CronError return type.
 
 Beads: anchor `run-whn`, plan questions `run-whn.1`, dev questions `run-whn.2`
 
@@ -660,6 +676,8 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
+- `b-14`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
 
 Beads: anchor `run-pny`, plan questions `run-pny.1`, dev questions `run-pny.2`
 
@@ -688,6 +706,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-4`: Sprint b-4 does not carry this obligation.
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-0fr`, plan questions `run-0fr.1`, dev questions `run-0fr.2`
 
@@ -717,6 +741,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-dgl`, plan questions `run-dgl.1`, dev questions `run-dgl.2`
 
@@ -746,6 +776,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-5zk`, plan questions `run-5zk.1`, dev questions `run-5zk.2`
 
@@ -775,6 +811,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-2is`, plan questions `run-2is.1`, dev questions `run-2is.2`
 
@@ -804,6 +846,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-id3`, plan questions `run-id3.1`, dev questions `run-id3.2`
 
@@ -833,6 +881,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-bda`, plan questions `run-bda.1`, dev questions `run-bda.2`
 
@@ -862,6 +916,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-cck`, plan questions `run-cck.1`, dev questions `run-cck.2`
 
@@ -891,6 +951,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-xoo`, plan questions `run-xoo.1`, dev questions `run-xoo.2`
 
@@ -920,6 +986,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-jp8`, plan questions `run-jp8.1`, dev questions `run-jp8.2`
 
@@ -947,6 +1019,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-3`: Sprint b-3 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-iuv`, plan questions `run-iuv.1`, dev questions `run-iuv.2`
 
@@ -976,6 +1054,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-5ds`, plan questions `run-5ds.1`, dev questions `run-5ds.2`
 
@@ -1005,6 +1089,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-8b6`, plan questions `run-8b6.1`, dev questions `run-8b6.2`
 
@@ -1034,6 +1124,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-683`, plan questions `run-683.1`, dev questions `run-683.2`
 
@@ -1063,6 +1159,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-7mk`, plan questions `run-7mk.1`, dev questions `run-7mk.2`
 
@@ -1092,6 +1194,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-a67`, plan questions `run-a67.1`, dev questions `run-a67.2`
 
@@ -1121,6 +1229,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-hpn`, plan questions `run-hpn.1`, dev questions `run-hpn.2`
 
@@ -1150,6 +1264,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-uc6`, plan questions `run-uc6.1`, dev questions `run-uc6.2`
 
@@ -1179,6 +1299,11 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not change generated package names or their naming algorithm.
+- `b-13`: This sprint does not change generated package names or their naming algorithm.
+- `b-14`: This sprint does not change generated package names or their naming algorithm.
+- `b-15`: This sprint does not change generated package names or their naming algorithm.
+- `b-17`: This sprint does not change generated package names or their naming algorithm.
 
 Beads: anchor `run-3q5`, plan questions `run-3q5.1`, dev questions `run-3q5.2`
 
@@ -1207,6 +1332,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-13`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-14`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-15`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-16`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-17`: This sprint does not add or generate database schema/types crates or relocate row structs.
 
 Beads: anchor `run-3mg`, plan questions `run-3mg.1`, dev questions `run-3mg.2`
 
@@ -1236,6 +1367,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-13`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-14`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-15`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-16`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-17`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
 
 Beads: anchor `run-w7j`, plan questions `run-w7j.1`, dev questions `run-w7j.2`
 
@@ -1264,6 +1401,8 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-14`: This sprint edits existing library event emission; it adds no library crate and does not edit the cargo-generate template.
+- `b-15`: This sprint edits existing library event emission; it adds no library crate and does not edit the cargo-generate template.
 
 Beads: anchor `run-o8s`, plan questions `run-o8s.1`, dev questions `run-o8s.2`
 
@@ -1293,6 +1432,9 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-13`: This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.
+- `b-14`: This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.
+- `b-15`: This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.
 
 Beads: anchor `run-bfz`, plan questions `run-bfz.1`, dev questions `run-bfz.2`
 
@@ -1314,6 +1456,10 @@ Scope: edits sc-cron scheduling or job interfaces
 
 Deterministic check to pair with the development gate: A consumer can schedule an application-defined job without a tool-specific payload.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-18`: This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.
+- `b-14`: This sprint changes HTTP events in sc-runtime and does not change sc-cron job or Monty execution interfaces.
+
 Beads: anchor `run-ojx`, plan questions `run-ojx.1`, dev questions `run-ojx.2`
 
 Fixtures:
@@ -1333,6 +1479,11 @@ Summary: Application host extensions
 Scope: edits Monty host registration or dispatch
 
 Deterministic check to pair with the development gate: An integration test registers and invokes a consumer-defined host function.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
 
 Beads: anchor `run-mvj`, plan questions `run-mvj.1`, dev questions `run-mvj.2`
 
@@ -1354,6 +1505,12 @@ Scope: edits sc_compose_run or its examples
 
 Deterministic check to pair with the development gate: Argument-forwarding tests cover render and non-render subcommands.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-18`: b-18 forwards an opaque prebuilt registry; it changes neither CLI adapter, argv dispatch, nor adapter examples.
+
 Beads: anchor `run-uoc`, plan questions `run-uoc.1`, dev questions `run-uoc.2`
 
 Fixtures:
@@ -1373,6 +1530,12 @@ Summary: ATM host integration
 Scope: implements Phase B Monty integrations
 
 Deterministic check to pair with the development gate: An ATM executable fixture is invoked through the same registry as sc_compose_run.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-18`: b-18 forwards an opaque prebuilt registry; it changes neither CLI adapter, argv dispatch, nor adapter examples.
 
 Beads: anchor `run-7l7`, plan questions `run-7l7.1`, dev questions `run-7l7.2`
 
@@ -1414,6 +1577,12 @@ Scope: edits Monty product requirements, examples, or benchmarks
 
 Deterministic check to pair with the development gate: Product requirements and acceptance do not require render_template.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-18`: This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+
 Beads: anchor `run-bn5`, plan questions `run-bn5.1`, dev questions `run-bn5.2`
 
 Fixtures:
@@ -1433,6 +1602,11 @@ Summary: No MVP signing gate
 Scope: edits Monty execution, configuration, or authorization
 
 Deterministic check to pair with the development gate: MVP execution requires neither signatures nor approval configuration.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-14`: This sprint changes HTTP events in sc-runtime and does not change sc-cron job or Monty execution interfaces.
+- `b-13`: Logger propagation/event emission changes no source acquisition or acceptance, signature checks, approval decisions, or Monty authorization policy.
+- `b-15`: Logger propagation/event emission changes no source acquisition or acceptance, signature checks, approval decisions, or Monty authorization policy.
 
 Beads: anchor `run-wdb`, plan questions `run-wdb.1`, dev questions `run-wdb.2`
 
@@ -1454,6 +1628,12 @@ Scope: edits Python or Monty environment delivery
 
 Deterministic check to pair with the development gate: The same environment cases produce equivalent Python and Monty results.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
 Beads: anchor `run-c1j`, plan questions `run-c1j.1`, dev questions `run-c1j.2`
 
 Fixtures:
@@ -1473,6 +1653,11 @@ Summary: Explicit daemon inheritance
 Scope: edits daemon environment configuration or subprocess creation
 
 Deterministic check to pair with the development gate: An allowed daemon value is delivered and an unlisted value is absent.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
 
 Beads: anchor `run-6cy`, plan questions `run-6cy.1`, dev questions `run-6cy.2`
 
@@ -1494,6 +1679,12 @@ Scope: edits schedule environment persistence or resolution
 
 Deterministic check to pair with the development gate: Two schedules set distinct identities and clearing removes a prior value.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
 Beads: anchor `run-89l`, plan questions `run-89l.1`, dev questions `run-89l.2`
 
 Fixtures:
@@ -1513,6 +1704,12 @@ Summary: No implicit environment capture
 Scope: edits schedule creation, updates, or serialization
 
 Deterministic check to pair with the development gate: Ambient canaries are absent from persisted rows without explicit set input.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
 
 Beads: anchor `run-5z3`, plan questions `run-5z3.1`, dev questions `run-5z3.2`
 
@@ -1534,6 +1731,12 @@ Scope: edits schedule environment validation or persistence
 
 Deterministic check to pair with the development gate: An explicit set value round-trips through the registry.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
 Beads: anchor `run-oov`, plan questions `run-oov.1`, dev questions `run-oov.2`
 
 Fixtures:
@@ -1553,6 +1756,12 @@ Summary: Application secret references
 Scope: edits environment reference resolution
 
 Deterministic check to pair with the development gate: A consumer resolver supplies a referenced value without persisting the result.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
 
 Beads: anchor `run-9a5`, plan questions `run-9a5.1`, dev questions `run-9a5.2`
 
@@ -1574,6 +1783,12 @@ Scope: edits schedule environment sources or file loading
 
 Deterministic check to pair with the development gate: An authorized absolute dotenv file supplies hook values.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
 Beads: anchor `run-xaz`, plan questions `run-xaz.1`, dev questions `run-xaz.2`
 
 Fixtures:
@@ -1594,6 +1809,12 @@ Scope: edits Monty source initialization or environment delivery
 
 Deterministic check to pair with the development gate: A top-level getenv reads the configured snapshot before cron_stop or cron_tick.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
 Beads: anchor `run-euz`, plan questions `run-euz.1`, dev questions `run-euz.2`
 
 Fixtures:
@@ -1613,6 +1834,13 @@ Summary: First release schema baseline
 Scope: edits schedule schema versioning or migrations
 
 Deterministic check to pair with the development gate: First-release schema validation does not require a v1-v4 development migration ladder.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-18`: This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
 
 Beads: anchor `run-fv4`, plan questions `run-fv4.1`, dev questions `run-fv4.2`
 

@@ -88,8 +88,12 @@ their publication. If matching releases are unavailable, this sprint is
 blocked at entry; it does not vendor a replacement.
 
 The baseline is `develop` after Track B Monty merged at `240e445`. This sprint
-extends that landed host contract with logger propagation; it does not reopen
-or restate the host allowlist, program-selection, or recovery rules.
+adds logger propagation to sc-cron, a general-purpose optional SQLite cron
+library for application-defined Rust, Python, and optional Monty jobs. It
+preserves execution and recovery behavior and adds no MVP script signing,
+separate approval mechanism, or consumer option enabling either. b-16 owns
+the application host-extension seam and CLI adapters; b-17 owns environment
+policy. Neither feature is implemented by logger propagation.
 
 ## Relations
 
@@ -170,6 +174,8 @@ fresh `v2::EventError::Routing` whose diagnostic code is
 tests.
 
 ## Public signatures fixed here
+
+Every fallible public sc-cron function returns `CronError`.
 
 ```rust
 impl<P, S, StoresFn, RoutesFn> DaemonBuilder<P, S, StoresFn, RoutesFn> {
@@ -292,8 +298,9 @@ event boundary, never a fabricated wall-clock deadline.
 b-13 changes the root workspace version from `0.1.0` to **`0.1.1`**, so the
 new `sc-runtime` API and first publishable `sc-cron` injection API have an
 immutable registry version. It removes `publish = false` from `sc-cron` and
-keeps `sc-runtime-db-sqlite` unpublished. This sprint updates manifests and
-lockfile only; it does not publish any crate. b-18 owns the existing
+keeps `sc-runtime-db-sqlite` unpublished. sc-runtime remains a cargo-generate
+template plus separately published library crates. This sprint updates library
+manifests and lockfile; it does not publish a crate or edit the template. b-18 owns the existing
 sc-publish consumer input, authorization gate, publication order, and
 registry-only generated build.
 
@@ -322,11 +329,6 @@ this sprint; remaining cron taxonomy belongs to b-15.
    envelopes and stable codes. Amend NFR-RUN-0010 to bind the generated real-daemon signal tests to the
    dedicated `ubuntu-latest` GitHub-hosted job and its fail-closed three-value
    detection contract; b-18 remains the sole integration acceptance root.
-   This sprint preserves the landed host behavior while adding observability.
-   Its successor b-16 explicitly amends ADR-RUN-0013 and REQ-CRON-0003 for
-   application-defined host registration and the two CLI adapters. That
-   authorized interface change supersedes the pre-release fixed host list;
-   it is not part of this sprint's logger migration.
 2. Add `sc-observability-types` to both boundary allowlists and crate
    manifests with the caret-compatible requirement `1.5.1`; enable its `test-util` feature only for
    dev-dependencies. Neither library may resolve `sc-observability` or OTLP.
