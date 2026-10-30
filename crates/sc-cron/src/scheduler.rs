@@ -12,8 +12,6 @@
 //! the same calls on tokio's blocking pool so a busy database never blocks
 //! an executor thread.
 
-#[cfg(feature = "monty")]
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
@@ -196,9 +194,7 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource> {
     worker_live: Arc<AtomicBool>,
     coord: Arc<RunCoord>,
     #[cfg(feature = "monty")]
-    monty_host: crate::MontyHostConfig,
-    #[cfg(feature = "monty")]
-    compose_program: Arc<PathBuf>,
+    hosts: Arc<crate::MontyHostRegistry>,
 }
 
 impl<S, C, J> Scheduler<S, C, J>
@@ -217,9 +213,7 @@ where
             Arc::clone(&self.worker_live),
             Arc::clone(&self.coord),
             #[cfg(feature = "monty")]
-            self.monty_host.clone(),
-            #[cfg(feature = "monty")]
-            Arc::clone(&self.compose_program),
+            Arc::clone(&self.hosts),
         )
     }
 
@@ -247,8 +241,7 @@ where
         reload_poll: Duration,
         worker_live: Arc<AtomicBool>,
         coord: Arc<RunCoord>,
-        #[cfg(feature = "monty")] monty_host: crate::MontyHostConfig,
-        #[cfg(feature = "monty")] compose_program: Arc<PathBuf>,
+        #[cfg(feature = "monty")] hosts: Arc<crate::MontyHostRegistry>,
     ) -> Self {
         Self {
             core,
@@ -257,9 +250,7 @@ where
             worker_live,
             coord,
             #[cfg(feature = "monty")]
-            monty_host,
-            #[cfg(feature = "monty")]
-            compose_program,
+            hosts,
         }
     }
 }
@@ -303,8 +294,6 @@ where
             None,
             serde_json::Map::new(),
         );
-        #[cfg(feature = "monty")]
-        let monty_host = crate::MontyHostConfig::default();
         Self {
             core: Arc::new(Core {
                 store,
@@ -317,9 +306,7 @@ where
             worker_live: Arc::new(AtomicBool::new(false)),
             coord: Arc::new(RunCoord::with_logger(logger)),
             #[cfg(feature = "monty")]
-            monty_host: monty_host.clone(),
-            #[cfg(feature = "monty")]
-            compose_program: Arc::new(monty_host.compose_program().to_path_buf()),
+            hosts: Arc::new(crate::MontyHostRegistry::new()),
         }
     }
 
@@ -357,24 +344,15 @@ where
         self
     }
 
-    /// Sets the program spawned for Monty host calls (`render_template`,
-    /// `sc_compose_run`). Hook source cannot override this.
+    /// Installs one immutable registry for subsequent Monty feeds.
     ///
-    /// The default is `sc-compose` on `PATH`, like [`PythonHook::new`]'s
-    /// default of `python3`.
+    /// The default registry is empty; CLI adapters and application handlers
+    /// are registered explicitly by the embedding application.
     #[cfg(feature = "monty")]
     #[must_use]
-    pub fn with_monty_host(mut self, config: crate::MontyHostConfig) -> Self {
-        self.compose_program = Arc::new(config.compose_program().to_path_buf());
-        self.monty_host = config;
+    pub fn with_monty_hosts(mut self, registry: crate::MontyHostRegistry) -> Self {
+        self.hosts = Arc::new(registry);
         self
-    }
-
-    /// Monty host settings (compose program path).
-    #[cfg(feature = "monty")]
-    #[must_use]
-    pub fn monty_host(&self) -> &crate::MontyHostConfig {
-        &self.monty_host
     }
 
     /// Returns the store, for reading schedules and their run state.
@@ -614,7 +592,7 @@ where
             self.reload_poll,
             shutdown_rx,
             #[cfg(feature = "monty")]
-            Arc::clone(&self.compose_program),
+            Arc::clone(&self.hosts),
         );
         let task = tokio::spawn(async move {
             let _live = live;
@@ -829,7 +807,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> std::fmt::Debug for Scheduler<
             )
             .field("worker_live", &self.worker_live.load(Ordering::Acquire));
         #[cfg(feature = "monty")]
-        dbg.field("monty_compose_program", &*self.compose_program);
+        dbg.field("monty_hosts", &*self.hosts);
         dbg.finish_non_exhaustive()
     }
 }

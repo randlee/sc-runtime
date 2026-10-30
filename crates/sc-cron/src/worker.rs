@@ -190,7 +190,7 @@ pub(crate) struct Worker<S, C> {
     policy: MissedTickPolicy,
     coord: Arc<RunCoord>,
     #[cfg(feature = "monty")]
-    compose_program: Arc<std::path::PathBuf>,
+    hosts: Arc<crate::MontyHostRegistry>,
     shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
     /// Tokio instant from [`crate::WorkerHandle::shutdown`]. `None` when the
     /// handle was dropped, which stops the worker without a handle deadline.
@@ -307,7 +307,7 @@ where
         coord: Arc<RunCoord>,
         reload_poll: Duration,
         shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
-        #[cfg(feature = "monty")] compose_program: Arc<std::path::PathBuf>,
+        #[cfg(feature = "monty")] hosts: Arc<crate::MontyHostRegistry>,
     ) -> Self {
         Self {
             store,
@@ -316,7 +316,7 @@ where
             policy,
             coord,
             #[cfg(feature = "monty")]
-            compose_program,
+            hosts,
             shutdown,
             handle_deadline: None,
             stopping: false,

@@ -1,15 +1,7 @@
-//! One in-process Monty feed for a schedule name.
+//! In-process Monty feeds with application-owned host dispatch.
 //!
-//! The repl stays with the caller between feeds. This module never drops a
-//! repl while `feed_run` or `feed_start` is on the stack. A feed-time-limit
-//! error is the only Monty timeout. Time inside `render_template` is measured
-//! with [`std::time::Instant`] and is not a feed-time-limit error. A source
-//! that does not compile, or that lacks `cron_stop` or `cron_tick`, is
-//! [`CronError::HookFailed`] and leaves no repl.
-//!
-//! Production feeds spawn `sc-compose` and register `render_template` and
-//! `sc_compose_run`. Hook source cannot choose the program or another host
-//! function.
+//! Host callbacks run on the blocking feed thread with the same row deadline.
+//! Arbitrary synchronous Rust application code remains cooperative.
 
 use std::fmt;
 use std::time::{Duration, Instant};
@@ -21,13 +13,13 @@ use monty_types::{
 };
 use serde_json::Value;
 
-use crate::monty_host::{ComposeHostError, ComposeProgram};
+use crate::monty_compose_common::ComposeHostError;
+use crate::monty_host::{HostDispatchError, MontyHostCall, MontyHostRegistry};
 use crate::{CronError, Generation, RunOutcome, StopDecision};
 
 const STOP_FN: &str = "cron_stop";
 const TICK_FN: &str = "cron_tick";
-const DENY_RECOVERY: &str =
-    "Fix hook source; only `render_template` and `sc_compose_run` are allowlisted.";
+const DENY_RECOVERY: &str = "Fix hook source or register the required application host function.";
 const CODE_HOST_DENIED: &str = "HOST_DENIED";
 const CODE_HOST_UNDEFINED: &str = "HOST_UNDEFINED";
 #[cfg_attr(feature = "monty-test-handshake", allow(dead_code))]
@@ -95,44 +87,6 @@ impl FeedStage {
     }
 }
 
-/// Why `render_template` arguments were rejected.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum RenderArgError {
-    Arity,
-    Template,
-    Context,
-}
-
-impl fmt::Display for RenderArgError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(match self {
-            Self::Arity => "render_template expects a string template and one context value",
-            Self::Template => "render_template template must be a string",
-            Self::Context => "render_template context is not a JSON value",
-        })
-    }
-}
-
-/// Why `sc_compose_run` arguments were rejected.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum ComposeRunArgError {
-    Arity,
-    Subcommand,
-    Args,
-}
-
-impl fmt::Display for ComposeRunArgError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(match self {
-            Self::Arity => {
-                "sc_compose_run expects a subcommand string and an optional list of argument strings"
-            }
-            Self::Subcommand => "sc_compose_run subcommand must be a string",
-            Self::Args => "sc_compose_run args must be a list of strings",
-        })
-    }
-}
-
 /// Why a stop reply could not be applied.
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum StopReplyError {
@@ -158,32 +112,6 @@ impl fmt::Display for StopReplyError {
     }
 }
 
-/// Compose program and extra host names for one feed.
-///
-/// [`crate::Scheduler::drive_feed`] passes the embedder's
-/// [`crate::MontyHostConfig`]. Tests pass other values to
-/// [`execute_feed_with_compose_program`].
-pub(crate) struct ComposeInjection<'a> {
-    /// Program spawned for `render_template`.
-    pub(crate) program: ComposeProgram<'a>,
-    /// Host function names registered besides `render_template` (unit tests only).
-    #[cfg(test)]
-    pub(crate) extra_host_fns: &'a [&'a str],
-}
-
-impl ComposeInjection<'static> {
-    /// Default test injection: `sc-compose` on `PATH` and no extra host functions.
-    #[cfg(test)]
-    #[must_use]
-    pub(crate) const fn production() -> Self {
-        Self {
-            program: ComposeProgram::SC_COMPOSE,
-            #[cfg(test)]
-            extra_host_fns: &[],
-        }
-    }
-}
-
 /// Inputs for one blocking-pool feed shared by the worker and `run_due`.
 pub(crate) struct FeedLaunch {
     /// Repl from the previous feed of this generation, if any.
@@ -203,8 +131,8 @@ pub(crate) struct FeedLaunch {
     pub(crate) timeout: crate::RunTimeout,
     /// Monotonic deadline for this run.
     pub(crate) deadline: Instant,
-    /// Embedder compose binary (see [`crate::MontyHostConfig`]).
-    pub(crate) compose_program: std::sync::Arc<std::path::PathBuf>,
+    /// Immutable application host registry.
+    pub(crate) hosts: std::sync::Arc<MontyHostRegistry>,
 }
 
 /// Builds the hook request and runs one feed on the blocking pool.
@@ -225,7 +153,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
         payload,
         timeout,
         deadline,
-        compose_program,
+        hosts,
     } = launch;
     let left = deadline.saturating_duration_since(clock.monotonic_now());
     let stamp = crate::Timestamp::from_datetime(crate::clock::wall_after(clock.now(), left));
@@ -241,9 +169,11 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
         deadline,
     };
     let hook = crate::hook::request(&call, stamp);
-    let run_deadline = deadline;
+    // Project the injected clock's remaining row budget onto the host clock.
+    // In production the original deadline is the tighter bound; manual clocks
+    // must not extend a blocking child by the virtual time already advanced.
+    let run_deadline = deadline.min(Instant::now() + left);
     match tokio::task::spawn_blocking(move || {
-        let program = compose_program.to_string_lossy().into_owned();
         execute_feed_with_logger(
             session,
             &source,
@@ -251,11 +181,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
             generation,
             left,
             &hook,
-            ComposeInjection {
-                program: ComposeProgram::new(&program),
-                #[cfg(test)]
-                extra_host_fns: &[],
-            },
+            &hosts,
             run_deadline,
             logger,
         )
@@ -273,13 +199,8 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
     }
 }
 
-/// Runs one Monty feed on the calling thread. Call this from the blocking pool.
-///
-/// The feed calls `cron_stop(__hook)` or `cron_tick(__hook)` through
-/// `feed_start`. Host functions are `render_template` and `sc_compose_run`.
-/// Any other host function or `OsCall` fails the feed and drops the repl.
-/// Hook source does not choose the program.
-#[cfg(test)]
+/// Runs one feed without application hosts; used by interpreter-only tests.
+#[cfg(all(test, feature = "monty-test-handshake"))]
 pub(crate) fn execute_feed(
     session: Option<MontySession>,
     source: &str,
@@ -289,41 +210,6 @@ pub(crate) fn execute_feed(
     hook: &Value,
     run_deadline: Instant,
 ) -> FeedDone {
-    execute_feed_with_compose_program(
-        session,
-        source,
-        phase,
-        generation,
-        budget,
-        hook,
-        ComposeInjection::production(),
-        run_deadline,
-    )
-}
-
-/// Runs one feed with a test-selected compose program and extra host names.
-///
-/// Direct callers use [`ComposeInjection::production`] (default `sc-compose`).
-/// [`crate::Scheduler`] uses [`drive_feed`] with [`crate::MontyHostConfig`]. This function is crate-private so an
-/// embedder cannot select the program. Extra host names are registered only
-/// for this call. Production registers `__hook`, `render_template`, and
-/// `sc_compose_run`. Names that are not identifiers, or that are those
-/// reserved bindings, are ignored.
-#[allow(clippy::too_many_arguments)]
-#[allow(
-    dead_code,
-    reason = "legacy internal feed entry point retained for compatibility"
-)]
-pub(crate) fn execute_feed_with_compose_program(
-    session: Option<MontySession>,
-    source: &str,
-    phase: MontyPhase,
-    generation: Generation,
-    budget: Duration,
-    hook: &Value,
-    injection: ComposeInjection<'_>,
-    run_deadline: Instant,
-) -> FeedDone {
     execute_feed_with_logger(
         session,
         source,
@@ -331,16 +217,16 @@ pub(crate) fn execute_feed_with_compose_program(
         generation,
         budget,
         hook,
-        injection,
+        &MontyHostRegistry::new(),
         run_deadline,
         crate::noop_logger(),
     )
 }
 
-/// Logger-bearing counterpart retaining the embedder-selected compose program.
+/// Runs one blocking feed while preserving the injected logger handle.
 #[allow(
     clippy::too_many_arguments,
-    reason = "preserves the existing internal feed contract plus logger"
+    reason = "one feed carries source, session, run context, registry and logger"
 )]
 pub(crate) fn execute_feed_with_logger(
     session: Option<MontySession>,
@@ -349,7 +235,7 @@ pub(crate) fn execute_feed_with_logger(
     generation: Generation,
     budget: Duration,
     hook: &Value,
-    injection: ComposeInjection<'_>,
+    hosts: &MontyHostRegistry,
     run_deadline: Instant,
     logger: sc_observability_types::SharedCanonicalLog,
 ) -> FeedDone {
@@ -361,7 +247,7 @@ pub(crate) fn execute_feed_with_logger(
         .repl
         .tracker_mut()
         .set_max_feed_duration(feed_budget(call_budget));
-    resume_started_feed(session, phase, hook, injection, run_deadline, &logger)
+    resume_started_feed(session, phase, hook, hosts, run_deadline, &logger)
 }
 
 /// Keeps a repl only when its generation matches, otherwise compiles `source`.
@@ -392,24 +278,18 @@ fn resume_started_feed(
     session: MontySession,
     phase: MontyPhase,
     hook: &Value,
-    injection: ComposeInjection<'_>,
+    hosts: &MontyHostRegistry,
     run_deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
 ) -> FeedDone {
     let stage = FeedStage::from_phase(phase);
+    #[cfg(feature = "monty-test-handshake")]
     let host_deadline = Some(run_deadline);
-    let compose_program = injection.program;
-    #[cfg(test)]
-    let extra_host_fns = injection.extra_host_fns;
     let MontySession { repl, generation } = session;
     let repl = *repl;
     let mut progress = match repl.feed_start(
         phase_snippet(phase),
-        snippet_inputs(
-            hook,
-            #[cfg(test)]
-            extra_host_fns,
-        ),
+        snippet_inputs(hook, hosts),
         PrintWriter::Disabled,
     ) {
         Ok(progress) => progress,
@@ -417,23 +297,14 @@ fn resume_started_feed(
     };
     loop {
         progress = match progress {
-            ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
-                match resume_render(call, stage, compose_program, host_deadline, logger) {
-                    Ok(next) => next,
-                    Err(done) => return done,
-                }
-            }
-            ReplProgress::FunctionCall(call) if call.function_name == "sc_compose_run" => {
-                match resume_compose_run(call, stage, compose_program, host_deadline, logger) {
+            ReplProgress::FunctionCall(call) => {
+                match resume_host(call, stage, phase, hook, hosts, run_deadline, logger) {
                     Ok(next) => next,
                     Err(done) => return done,
                 }
             }
             ReplProgress::Complete { repl, value } => {
                 return finish_phase(phase, generation, repl, &value);
-            }
-            ReplProgress::FunctionCall(call) => {
-                return denied(stage, &format!("host function {}", call.function_name));
             }
             ReplProgress::OsCall(call) => {
                 #[cfg(feature = "monty-test-handshake")]
@@ -567,160 +438,97 @@ fn phase_snippet(phase: MontyPhase) -> &'static str {
     }
 }
 
-fn snippet_inputs(hook: &Value, #[cfg(test)] extra_host_fns: &[&str]) -> NamedValues {
+fn snippet_inputs(hook: &Value, hosts: &MontyHostRegistry) -> NamedValues {
     let mut inputs = NamedValues::new();
     inputs.push("__hook", crate::monty_host::json_to_monty(hook));
-    inputs.push(
-        "render_template",
-        MontyObject::function("render_template", None),
-    );
-    inputs.push(
-        "sc_compose_run",
-        MontyObject::function("sc_compose_run", None),
-    );
-    #[cfg(test)]
-    for name in extra_host_fns {
-        if reserved_host_binding(name) || !crate::is_identifier(name) {
-            continue;
-        }
+    for name in hosts.names() {
         inputs.push(
-            (*name).to_owned(),
-            MontyObject::function((*name).to_owned(), None),
+            name.to_owned(),
+            MontyObject::function(name.to_owned(), None),
         );
     }
     inputs
 }
 
-#[cfg_attr(not(test), allow(dead_code))]
-fn reserved_host_binding(name: &str) -> bool {
-    matches!(name, "render_template" | "sc_compose_run" | "__hook")
-}
-
-fn resume_compose_run(
-    call: monty::ReplFunctionCall,
-    stage: FeedStage,
-    compose_program: ComposeProgram<'_>,
-    host_deadline: Option<Instant>,
-    logger: &sc_observability_types::SharedCanonicalLog,
-) -> Result<ReplProgress, FeedDone> {
-    let (subcommand, args) = match compose_run_arguments(&call) {
-        Ok(ready) => ready,
-        Err(why) => return Err(denied(stage, &why.to_string())),
-    };
-    if crate::monty_host::host_budget_exhausted(host_deadline) {
-        return Err(timed_out());
-    }
-    let result = match crate::monty_host::sc_compose_run_with_logger(
-        &subcommand,
-        &args,
-        compose_program,
-        logger,
-    ) {
-        Ok(result) => result,
-        Err(error) => return Err(after_compose(&error, stage, host_deadline)),
-    };
-    if crate::monty_host::host_budget_exhausted(host_deadline) {
-        return Err(timed_out());
-    }
-    let value = crate::monty_host::compose_run_to_monty(&result);
-    match call.resume(ExtFunctionResult::Return(value), PrintWriter::Disabled) {
-        Ok(next) => Ok(next),
-        Err(error) => Err(from_exception(error.error, stage)),
-    }
-}
-
-fn compose_run_arguments(
+fn host_call(
     call: &monty::ReplFunctionCall,
-) -> Result<(String, Vec<String>), ComposeRunArgError> {
-    let positional_len = call.args.args().len();
-    if positional_len == 0 || positional_len > 2 || call.args.kwargs().len() != 0 {
-        return Err(ComposeRunArgError::Arity);
-    }
-    let subcommand = call
+    phase: MontyPhase,
+    hook: &Value,
+    deadline: Instant,
+) -> Result<MontyHostCall, &'static str> {
+    let args = call
         .args
-        .arg(0)
-        .and_then(|value| value.as_str().map(str::to_owned))
-        .ok_or(ComposeRunArgError::Subcommand)?;
-    let args = if positional_len == 1 {
-        Vec::new()
-    } else {
-        let tail = call.args.arg(1).ok_or(ComposeRunArgError::Arity)?;
-        let json =
-            crate::monty_host::monty_value_to_json(tail).map_err(|_| ComposeRunArgError::Args)?;
-        let Some(items) = json.as_array() else {
-            return Err(ComposeRunArgError::Args);
-        };
-        let mut argv = Vec::with_capacity(items.len());
-        for item in items {
-            let Some(text) = item.as_str() else {
-                return Err(ComposeRunArgError::Args);
-            };
-            argv.push(text.to_owned());
-        }
-        argv
-    };
-    Ok((subcommand, args))
+        .args()
+        .map(crate::monty_host::monty_value_to_json)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| "host positional argument is not JSON")?;
+    let mut kwargs = serde_json::Map::new();
+    for (key, value) in call.args.kwargs() {
+        let key = key.as_str().ok_or("host keyword name is not a string")?;
+        kwargs.insert(
+            key.to_owned(),
+            crate::monty_host::monty_value_to_json(value)
+                .map_err(|_| "host keyword argument is not JSON")?,
+        );
+    }
+    let schedule = crate::ScheduleName::new(
+        hook.get("schedule")
+            .and_then(Value::as_str)
+            .unwrap_or("monty-hook"),
+    )
+    .map_err(|_| "invalid schedule context")?;
+    Ok(MontyHostCall {
+        name: call.function_name.clone(),
+        args,
+        kwargs,
+        schedule,
+        phase: match phase {
+            MontyPhase::Stop => crate::HookEvent::Stop,
+            MontyPhase::Tick => crate::HookEvent::Tick,
+        },
+        deadline,
+    })
 }
 
-fn resume_render(
+#[allow(
+    clippy::too_many_arguments,
+    reason = "dispatch retains row, interpreter and logger context"
+)]
+fn resume_host(
     call: monty::ReplFunctionCall,
     stage: FeedStage,
-    compose_program: ComposeProgram<'_>,
-    host_deadline: Option<Instant>,
+    phase: MontyPhase,
+    hook: &Value,
+    hosts: &MontyHostRegistry,
+    deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
 ) -> Result<ReplProgress, FeedDone> {
-    let (template, context) = match render_arguments(&call) {
-        Ok(ready) => ready,
-        Err(why) => return Err(denied(stage, &why.to_string())),
-    };
-    if crate::monty_host::host_budget_exhausted(host_deadline) {
+    if Instant::now() >= deadline {
         return Err(timed_out());
     }
-    let rendered = match crate::monty_host::render_template_with_logger(
-        &template,
-        &context,
-        compose_program,
-        logger,
-    ) {
-        Ok(rendered) => rendered,
-        Err(error) => return Err(after_compose(&error, stage, host_deadline)),
-    };
-    if crate::monty_host::host_budget_exhausted(host_deadline) {
+    let context = host_call(&call, phase, hook, deadline).map_err(|why| denied(stage, why))?;
+    let result = hosts.invoke(&context, logger);
+    if Instant::now() >= deadline {
         return Err(timed_out());
     }
-    match call.resume(
-        ExtFunctionResult::Return(MontyObject::string(rendered)),
+    let value = match result {
+        Ok(value) => value,
+        Err(HostDispatchError::Undefined) => return Err(undefined_name(stage, &context.name)),
+        Err(HostDispatchError::Denied(why)) => return Err(denied(stage, why)),
+        Err(HostDispatchError::Handler(error)) => {
+            return Err(failed(format!(
+                "HOST_CALL_FAILED: {}: {error}; Fix the registered application handler.",
+                stage.label()
+            )));
+        }
+        Err(HostDispatchError::Child(ComposeHostError::TimedOut)) => return Err(timed_out()),
+        Err(HostDispatchError::Child(error)) => return Err(compose_failed(stage, &error)),
+    };
+    call.resume(
+        ExtFunctionResult::Return(crate::monty_host::json_to_monty(&value)),
         PrintWriter::Disabled,
-    ) {
-        Ok(next) => Ok(next),
-        Err(error) => Err(from_exception(error.error, stage)),
-    }
-}
-
-fn after_compose(
-    error: &ComposeHostError,
-    stage: FeedStage,
-    host_deadline: Option<Instant>,
-) -> FeedDone {
-    if error.child_exited() && crate::monty_host::host_budget_exhausted(host_deadline) {
-        return timed_out();
-    }
-    compose_failed(stage, error)
-}
-
-fn render_arguments(call: &monty::ReplFunctionCall) -> Result<(String, Value), RenderArgError> {
-    if call.args.args().len() != 2 || call.args.kwargs().len() != 0 {
-        return Err(RenderArgError::Arity);
-    }
-    let template = call
-        .args
-        .arg(0)
-        .and_then(|value| value.as_str().map(str::to_owned))
-        .ok_or(RenderArgError::Template)?;
-    let context = call.args.arg(1).ok_or(RenderArgError::Arity)?;
-    crate::monty_host::monty_value_to_json(context)
-        .map(|context| (template, context))
-        .map_err(|_| RenderArgError::Context)
+    )
+    .map_err(|error| from_exception(error.error, stage))
 }
 
 fn finish_phase(
@@ -797,107 +605,15 @@ fn timed_out() -> FeedDone {
 
 #[cfg(test)]
 mod tests {
-    use std::time::{Duration, Instant};
-
-    use super::{FeedResult, FeedStage, after_compose};
-    use crate::RunOutcome;
-    use crate::monty_host::ComposeHostError;
-
     #[test]
-    fn a_missing_program_stays_failed_when_the_host_deadline_has_passed() {
-        let error = ComposeHostError::ProgramNotFound {
-            program: "sc-cron-missing-compose-b10".to_owned(),
-        };
-        let past = Instant::now()
-            .checked_sub(Duration::from_secs(5))
-            .expect("past");
-        let done = after_compose(&error, FeedStage::Tick, Some(past));
-        assert!(done.session.is_none());
-        match done.result {
-            FeedResult::Outcome(RunOutcome::Failed(detail)) => {
-                assert!(detail.contains("COMPOSE_NOT_FOUND"), "{detail}");
-                assert!(detail.contains("sc-cron-missing-compose-b10"), "{detail}");
-            }
-            other => panic!("expected Failed, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn a_compose_error_after_the_deadline_is_timed_out() {
-        let error = ComposeHostError::NonZeroExit {
-            status: Some(1),
-            stderr: "late".to_owned(),
-        };
-        let past = Instant::now()
-            .checked_sub(Duration::from_secs(5))
-            .expect("past");
-        let done = after_compose(&error, FeedStage::Tick, Some(past));
-        assert!(done.session.is_none());
-        assert!(matches!(
-            done.result,
-            FeedResult::Outcome(RunOutcome::TimedOut)
-        ));
-    }
-
-    #[test]
-    fn pre_exit_compose_errors_stay_failed_when_the_host_deadline_has_passed() {
-        let past = Instant::now()
-            .checked_sub(Duration::from_secs(5))
-            .expect("past");
-        let stage = FeedStage::Tick;
-
-        let staged = ComposeHostError::StageFailed {
-            program: "sc-compose".to_owned(),
-            source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
-        };
-        let done = after_compose(&staged, stage, Some(past));
-        assert!(done.session.is_none());
-        match &done.result {
-            FeedResult::Outcome(RunOutcome::Failed(detail)) => {
-                assert!(detail.contains("COMPOSE_SPAWN"), "{detail}");
-            }
-            other => panic!("expected Failed for staging error, got {other:?}"),
-        }
-
-        let not_runnable = ComposeHostError::ProgramNotRunnable {
-            program: "sc-compose".to_owned(),
-            source: std::io::Error::from(std::io::ErrorKind::PermissionDenied),
-        };
-        let done = after_compose(&not_runnable, stage, Some(past));
-        assert!(done.session.is_none());
-        match done.result {
-            FeedResult::Outcome(RunOutcome::Failed(detail)) => {
-                assert!(detail.contains("COMPOSE_NOT_RUNNABLE"), "{detail}");
-            }
-            other => panic!("expected Failed for not-runnable error, got {other:?}"),
-        }
-    }
-
-    /// Production feeds register exactly the ADR host functions.
-    #[cfg(feature = "monty")]
-    #[test]
-    fn production_snippet_inputs_registers_exactly_the_adr_host_functions() {
-        let inputs = super::snippet_inputs(&serde_json::json!({}), &[]);
-        let names: Vec<&str> = inputs.iter().map(|(name, _)| name).collect();
-        assert_eq!(
-            names.as_slice(),
-            ["__hook", "render_template", "sc_compose_run"]
-        );
-    }
-
-    #[test]
-    fn snippet_inputs_keeps_only_crate_identifiers() {
-        let inputs = super::snippet_inputs(
-            &serde_json::json!({}),
-            &["compose_file", "a-b", "2bad", "café"],
-        );
-        let names: Vec<&str> = inputs.iter().map(|(name, _)| name).collect();
-        assert!(names.contains(&"compose_file"));
-        assert!(names.contains(&"render_template"));
-        assert!(names.contains(&"sc_compose_run"));
-        assert!(names.contains(&"__hook"));
-        assert!(!names.contains(&"a-b"));
-        assert!(!names.contains(&"2bad"));
-        assert!(!names.contains(&"café"));
+    fn snippet_inputs_derive_only_configured_names() {
+        let registry = crate::MontyHostRegistry::new()
+            .register("jev_call", |_: &crate::MontyHostCall| {
+                Ok(serde_json::Value::Null)
+            })
+            .expect("registry");
+        let inputs = super::snippet_inputs(&serde_json::json!({}), &registry);
+        let names: Vec<_> = inputs.iter().map(|(name, _)| name).collect();
+        assert_eq!(names, ["__hook", "jev_call"]);
     }
 }

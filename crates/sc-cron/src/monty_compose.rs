@@ -1,257 +1,319 @@
-//! Wait for the spawned `render_template` compose child.
+//! One bounded blocking child driver for both opt-in Monty CLI adapters.
 //!
-//! The call runs on the blocking pool and stalls on [`std::process::Child::wait`]
-//! until the child exits (REQ-CRON-0005). There is no kill at the row or host
-//! deadline and no use of [`crate::process::supervise`]. The caller compares the
-//! host [`std::time::Instant`] with the row budget after this wait returns.
+//! This runs on the feed thread, without an async runtime bridge. The child
+//! gets a process group/job object, explicit cwd, argv, and empty environment.
 
-use std::io::ErrorKind;
-use std::process::{Command, Stdio};
+use std::io;
+use std::path::{Path, PathBuf};
+use std::process::{Command, ExitStatus, Stdio};
 use std::sync::mpsc;
 use std::thread;
+use std::time::{Duration, Instant};
 
-use crate::monty_compose_common::{ComposeHostError, stderr_text};
+#[cfg(windows)]
+use process_wrap::std::JobObject;
+#[cfg(unix)]
+use process_wrap::std::ProcessGroup;
+use process_wrap::std::{ChildWrapper, CommandWrap};
+use sc_observability_types::SharedCanonicalLog;
 
-/// Outcome of one allowlisted `sc-compose` subprocess.
-#[derive(Clone, Debug, PartialEq, Eq)]
+use crate::monty_compose_common::ComposeHostError;
+
+const POLL: Duration = Duration::from_millis(2);
+
+/// Completed children return ordinary results even when their exit is nonzero.
+#[derive(Debug)]
 pub(crate) struct ComposeRunResult {
-    /// Captured stdout (UTF-8 when the child exited zero).
     pub(crate) stdout: String,
-    /// Capped stderr text.
     pub(crate) stderr: String,
-    /// Process exit code, or `None` when ended by signal.
     pub(crate) exit_code: Option<i32>,
 }
 
-impl ComposeRunResult {
-    #[must_use]
-    pub(crate) const fn success(&self) -> bool {
-        matches!(self.exit_code, Some(0))
+/// Resolves the program before clearing the child environment.
+fn resolve_program(program: &Path) -> io::Result<PathBuf> {
+    if program.is_absolute() {
+        return Ok(program.to_path_buf());
+    }
+    if program.components().count() > 1 {
+        return std::env::current_dir().map(|cwd| cwd.join(program));
+    }
+    let path = std::env::var_os("PATH")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "PATH is unavailable"))?;
+    for dir in std::env::split_paths(&path) {
+        let candidate = dir.join(program);
+        if candidate.is_file() {
+            return candidate.canonicalize();
+        }
+        #[cfg(windows)]
+        for extension in ["exe", "com", "cmd", "bat"] {
+            let candidate = candidate.with_extension(extension);
+            if candidate.is_file() {
+                return candidate.canonicalize();
+            }
+        }
+    }
+    Err(io::Error::new(
+        io::ErrorKind::NotFound,
+        "configured executable not found on PATH",
+    ))
+}
+
+/// Owns cleanup on every return, including capture and thread-spawn failures.
+struct ChildGuard(Box<dyn ChildWrapper>);
+impl Drop for ChildGuard {
+    fn drop(&mut self) {
+        let _ = self.0.start_kill();
     }
 }
 
-/// Waits on the spawned compose child until it exits.
-#[allow(
-    dead_code,
-    reason = "legacy internal Noop entry point retained for compatibility"
-)]
-pub(crate) fn run_compose_child(
-    program: &str,
-    root: &std::path::Path,
-) -> Result<String, ComposeHostError> {
-    run_compose_child_with_logger(program, root, &crate::noop_logger())
-}
-
-pub(crate) fn run_compose_child_with_logger(
-    program: &str,
-    root: &std::path::Path,
-    logger: &sc_observability_types::SharedCanonicalLog,
-) -> Result<String, ComposeHostError> {
-    let root_arg = root.to_string_lossy().into_owned();
-    let args = vec![
-        "render".to_owned(),
-        "--root".to_owned(),
-        root_arg,
-        "--mode".to_owned(),
-        "file".to_owned(),
-        "--file".to_owned(),
-        "t.j2".to_owned(),
-        "--var-file".to_owned(),
-        "v.json".to_owned(),
-    ];
-    let result = run_compose_argv_with_logger(program, Some(root), &args, logger)?;
-    if result.success() {
-        return Ok(result.stdout);
-    }
-    Err(ComposeHostError::NonZeroExit {
-        status: result.exit_code,
-        stderr: result.stderr,
-    })
-}
-
-/// Spawns `program` with `args` and blocks in [`std::process::Child::wait`] until it exits.
-///
-/// Non-zero exit is returned in [`ComposeRunResult`]; spawn errors are
-/// [`ComposeHostError`]. On success exit, non-UTF-8 stdout or stdout over the cap is an error.
-#[allow(
-    dead_code,
-    reason = "legacy internal Noop entry point retained for compatibility"
-)]
-pub(crate) fn run_compose_argv(
-    program: &str,
-    cwd: Option<&std::path::Path>,
+pub(crate) fn run_cli(
+    program: &Path,
+    cwd: Option<&Path>,
     args: &[String],
+    deadline: Instant,
+    logger: &SharedCanonicalLog,
 ) -> Result<ComposeRunResult, ComposeHostError> {
-    run_compose_argv_with_logger(program, cwd, args, &crate::noop_logger())
-}
-
-pub(crate) fn run_compose_argv_with_logger(
-    program: &str,
-    cwd: Option<&std::path::Path>,
-    args: &[String],
-    logger: &sc_observability_types::SharedCanonicalLog,
-) -> Result<ComposeRunResult, ComposeHostError> {
-    let mut command = Command::new(program);
-    if let Some(cwd) = cwd {
-        command.current_dir(cwd);
+    if Instant::now() >= deadline {
+        return Err(ComposeHostError::TimedOut);
     }
+    let spawn_error = |source| ComposeHostError::Spawn {
+        program: program.display().to_string(),
+        source,
+    };
+    let resolved = resolve_program(program).map_err(spawn_error)?;
+    let cwd = cwd.ok_or_else(|| {
+        spawn_error(io::Error::other(
+            "working directory unavailable at configuration",
+        ))
+    })?;
+    let mut command = Command::new(resolved);
     command
+        .current_dir(cwd)
         .args(args)
+        .env_clear()
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    let mut child = command
-        .spawn()
-        .map_err(|error| spawn_error(program, error))?;
-    let (Some(stdout), Some(stderr)) = (child.stdout.take(), child.stderr.take()) else {
-        let _ = child.kill();
-        let _ = child.wait();
-        return Err(not_runnable(
-            program,
-            std::io::Error::other("compose child pipe was missing"),
-        ));
-    };
-    let cap = crate::hook::MAX_HOOK_OUTPUT_BYTES;
-    let stdout = match spawn_reader(stdout, cap) {
-        Ok(reader) => reader,
-        Err(source) => {
-            let _ = child.kill();
-            let _ = child.wait();
-            return Err(not_runnable(program, source));
-        }
-    };
-    let stderr = match spawn_reader(stderr, cap) {
-        Ok(reader) => reader,
-        Err(source) => {
-            let _ = child.kill();
-            let _ = child.wait();
-            let _ = join_reader(stdout, logger);
-            return Err(not_runnable(program, source));
-        }
-    };
-    let status = child.wait();
-    let drained = join_reader(stdout, logger);
-    let stderr_drained = join_reader(stderr, logger);
-    let status = status.map_err(|source| not_runnable(program, source))?;
-    let drained = drained.map_err(|source| not_runnable(program, source))?;
-    let stderr_drained = stderr_drained.map_err(|source| not_runnable(program, source))?;
-    let stderr = stderr_text(&stderr_drained.bytes);
-    let exit_code = status.code();
-    if status.success() {
-        if drained.truncated {
-            return Err(ComposeHostError::OutputTooLarge {
-                program: program.to_owned(),
-            });
-        }
-        let stdout =
-            String::from_utf8(drained.bytes).map_err(|_| ComposeHostError::OutputNotUtf8 {
-                program: program.to_owned(),
-            })?;
-        return Ok(ComposeRunResult {
-            stdout,
-            stderr,
-            exit_code,
-        });
+    let mut command = CommandWrap::from(command);
+    #[cfg(unix)]
+    command.wrap(ProcessGroup::leader());
+    #[cfg(windows)]
+    command.wrap(JobObject);
+    let mut child = ChildGuard(command.spawn().map_err(spawn_error)?);
+    let captures = capture_pipes(&mut *child.0).map_err(|source| {
+        reap_after_kill(
+            &mut *child.0,
+            Instant::now() + crate::process::REAP_AFTER_KILL,
+            logger,
+        );
+        spawn_error(source)
+    })?;
+    let status = wait_until(&mut *child.0, deadline).map_err(spawn_error)?;
+    if status.is_none() {
+        reap_after_kill(
+            &mut *child.0,
+            Instant::now() + crate::process::REAP_AFTER_KILL,
+            logger,
+        );
+        return Err(ComposeHostError::TimedOut);
     }
+    let output =
+        collect_pipes(captures, deadline, logger).map_err(|source| ComposeHostError::Output {
+            program: program.display().to_string(),
+            source,
+        });
+    // Kill remaining members even when the leader exited successfully.
+    reap_after_kill(
+        &mut *child.0,
+        Instant::now() + crate::process::REAP_AFTER_KILL,
+        logger,
+    );
+    if Instant::now() >= deadline {
+        return Err(ComposeHostError::TimedOut);
+    }
+    let (stdout, stderr) = output?;
     Ok(ComposeRunResult {
-        stdout: String::from_utf8_lossy(&drained.bytes).into_owned(),
+        stdout,
         stderr,
-        exit_code,
+        exit_code: status.and_then(|status| status.code()),
     })
 }
 
-struct PipeRead {
-    receiver: mpsc::Receiver<std::io::Result<crate::process::Capped>>,
-    handle: thread::JoinHandle<()>,
+type PipeReceiver = mpsc::Receiver<io::Result<crate::process::Capped>>;
+fn capture_pipes(child: &mut dyn ChildWrapper) -> io::Result<(PipeReceiver, PipeReceiver)> {
+    let stdout = child
+        .stdout()
+        .take()
+        .ok_or_else(|| io::Error::other("stdout pipe missing"))?;
+    let stderr = child
+        .stderr()
+        .take()
+        .ok_or_else(|| io::Error::other("stderr pipe missing"))?;
+    Ok((spawn_reader(stdout)?, spawn_reader(stderr)?))
 }
-
-fn spawn_reader(
-    reader: impl std::io::Read + Send + 'static,
-    cap: usize,
-) -> std::io::Result<PipeRead> {
-    let (sender, receiver) = mpsc::channel();
-    let handle = thread::Builder::new()
-        .name("sc-cron-compose-read".to_owned())
+fn spawn_reader(reader: impl io::Read + Send + 'static) -> io::Result<PipeReceiver> {
+    let (sender, receiver) = mpsc::sync_channel(1);
+    thread::Builder::new()
+        .name("sc-cron-cli-read".into())
         .spawn(move || {
-            let _ = sender.send(crate::process::read_pipe_capped(reader, cap));
+            let _ = sender.send(crate::process::read_pipe_capped(
+                reader,
+                crate::MAX_HOOK_OUTPUT_BYTES,
+            ));
         })?;
-    Ok(PipeRead { receiver, handle })
+    Ok(receiver)
 }
-
-/// Collects one pipe after the leader has exited, for at most
-/// [`crate::process::REAP_AFTER_KILL`]. A descendant that keeps the pipe open
-/// past that bound is an error, not an empty success.
-fn join_reader(
-    pipe: PipeRead,
-    logger: &sc_observability_types::SharedCanonicalLog,
-) -> std::io::Result<crate::process::Capped> {
-    match pipe.receiver.recv_timeout(crate::process::REAP_AFTER_KILL) {
-        Ok(drained) => {
-            let _ = pipe.handle.join();
-            drained
+fn collect_pipes(
+    pipes: (PipeReceiver, PipeReceiver),
+    deadline: Instant,
+    logger: &SharedCanonicalLog,
+) -> io::Result<(String, String)> {
+    // One absolute collection bound covers both streams and still respects the row.
+    let bound = deadline.min(Instant::now() + crate::process::REAP_AFTER_KILL);
+    let stdout = read_pipe(pipes.0, bound, logger)?;
+    let stderr = read_pipe(pipes.1, bound, logger)?;
+    Ok((stdout, stderr))
+}
+fn read_pipe(
+    receiver: PipeReceiver,
+    deadline: Instant,
+    logger: &SharedCanonicalLog,
+) -> io::Result<String> {
+    let captured = match receiver.recv_timeout(deadline.saturating_duration_since(Instant::now())) {
+        Ok(result) => result?,
+        Err(mpsc::RecvTimeoutError::Disconnected) => {
+            return Err(io::Error::other("CLI pipe reader disconnected"));
         }
         Err(mpsc::RecvTimeoutError::Timeout) => {
-            crate::emit_event(
+            emit_timeout(
                 logger,
-                "cron.monty.compose",
                 "pipe.drain_timeout",
-                sc_observability_types::Level::Warn,
-                "timeout",
-                Some("COMPOSE_PIPE_DRAIN_TIMEOUT"),
-                serde_json::json!({"deadline_remaining_ms": 0})
-                    .as_object()
-                    .cloned()
-                    .unwrap_or_default(),
+                "COMPOSE_PIPE_DRAIN_TIMEOUT",
+                None,
             );
-            Err(std::io::Error::other(
-                "compose pipe stayed open after the child exited",
-            ))
+            return Err(io::Error::other("CLI pipe drain deadline expired"));
         }
-        Err(mpsc::RecvTimeoutError::Disconnected) => Err(std::io::Error::other(
-            "compose pipe reader exited without sending output",
-        )),
+    };
+    if captured.truncated {
+        return Err(io::Error::other("CLI stream exceeded output cap"));
     }
+    String::from_utf8(captured.bytes)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))
 }
-
-fn not_runnable(program: &str, source: std::io::Error) -> ComposeHostError {
-    ComposeHostError::ProgramNotRunnable {
-        program: program.to_owned(),
-        source,
-    }
-}
-
-fn spawn_error(program: &str, source: std::io::Error) -> ComposeHostError {
-    if source.kind() == ErrorKind::NotFound {
-        ComposeHostError::ProgramNotFound {
-            program: program.to_owned(),
+fn wait_until(child: &mut dyn ChildWrapper, deadline: Instant) -> io::Result<Option<ExitStatus>> {
+    loop {
+        if let Some(status) = child.try_wait()? {
+            return Ok(Some(status));
         }
-    } else {
-        not_runnable(program, source)
+        let left = deadline.saturating_duration_since(Instant::now());
+        if left.is_zero() {
+            return Ok(None);
+        }
+        thread::park_timeout(left.min(POLL));
     }
 }
+fn reap_after_kill(child: &mut dyn ChildWrapper, deadline: Instant, logger: &SharedCanonicalLog) {
+    let _ = child.start_kill();
+    if !matches!(wait_until(child, deadline), Ok(Some(_))) {
+        emit_timeout(
+            logger,
+            "child.kill_timeout",
+            "COMPOSE_CHILD_KILL_TIMEOUT",
+            Some(child.id()),
+        );
+    }
+}
+fn emit_timeout(
+    logger: &SharedCanonicalLog,
+    action: &'static str,
+    code: &'static str,
+    pid: Option<u32>,
+) {
+    let mut fields = serde_json::Map::new();
+    fields.insert("deadline_remaining_ms".into(), serde_json::json!(0));
+    if let Some(pid) = pid {
+        fields.insert("pid".into(), serde_json::json!(pid));
+    }
+    crate::emit_event(
+        logger,
+        "cron.monty.compose",
+        action,
+        sc_observability_types::Level::Warn,
+        "timeout",
+        Some(code),
+        fields,
+    );
+}
 
-#[cfg(all(test, unix))]
+#[cfg(test)]
 mod tests {
-    use std::os::unix::fs::symlink;
-    use std::path::Path;
-    use std::time::{Duration, Instant};
+    use super::*;
+    use sc_observability_types::{
+        Level, RecordingCanonicalLog, RejectingCanonicalLog, ServiceName,
+    };
+    use std::sync::Arc;
 
-    use super::run_compose_child;
+    #[derive(Debug)]
+    struct Unreapable {
+        kills: usize,
+    }
+    impl ChildWrapper for Unreapable {
+        fn inner(&self) -> &dyn ChildWrapper {
+            self
+        }
+        fn inner_mut(&mut self) -> &mut dyn ChildWrapper {
+            self
+        }
+        fn into_inner(self: Box<Self>) -> Box<dyn ChildWrapper> {
+            self
+        }
+        fn id(&self) -> u32 {
+            71
+        }
+        fn start_kill(&mut self) -> io::Result<()> {
+            self.kills += 1;
+            Ok(())
+        }
+        fn try_wait(&mut self) -> io::Result<Option<ExitStatus>> {
+            Ok(None)
+        }
+    }
 
     #[test]
-    fn wait_blocks_until_the_child_exits_and_returns_its_stdout() {
-        let dir = tempfile::TempDir::new().expect("dir");
-        let link = dir.path().join("slow-stub");
-        let fixture = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/compose_slow.sh");
-        symlink(fixture, &link).expect("symlink");
-        let program = link.to_str().expect("utf8 path");
-        let started = Instant::now();
-        let rendered = run_compose_child(program, dir.path()).expect("child exit");
-        assert_eq!(rendered, "rendered");
-        assert!(
-            started.elapsed() >= Duration::from_millis(1500),
-            "returned before the child exited: {:?}",
-            started.elapsed()
+    fn kill_timeout_event_and_rejection_preserve_cleanup() {
+        let recording = Arc::new(RecordingCanonicalLog::new(
+            ServiceName::new("driver-test").expect("service"),
+        ));
+        let logger: SharedCanonicalLog = recording.clone();
+        let mut child = Unreapable { kills: 0 };
+        reap_after_kill(&mut child, Instant::now(), &logger);
+        assert_eq!(child.kills, 1);
+        let events = recording.events();
+        assert_eq!(events.len(), 1);
+        let event = &events[0];
+        assert_eq!(event.target.as_str(), "cron.monty.compose");
+        assert_eq!(event.action.as_str(), "child.kill_timeout");
+        assert_eq!(event.level, Level::Warn);
+        assert_eq!(
+            event.outcome.as_ref().map(|outcome| outcome.as_str()),
+            Some("timeout")
         );
+        assert_eq!(
+            event
+                .diagnostic
+                .as_ref()
+                .map(|diagnostic| diagnostic.code.as_str()),
+            Some("COMPOSE_CHILD_KILL_TIMEOUT")
+        );
+        assert_eq!(event.fields["pid"], serde_json::json!(71));
+        assert_eq!(event.fields["deadline_remaining_ms"], serde_json::json!(0));
+        let rejecting = Arc::new(RejectingCanonicalLog::new(
+            ServiceName::new("reject").expect("service"),
+        ));
+        let logger: SharedCanonicalLog = rejecting.clone();
+        let mut child = Unreapable { kills: 0 };
+        reap_after_kill(&mut child, Instant::now(), &logger);
+        assert_eq!(child.kills, 1);
+        assert_eq!(rejecting.attempts(), 1);
     }
 }

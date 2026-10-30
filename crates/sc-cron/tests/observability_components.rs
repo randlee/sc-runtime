@@ -240,16 +240,21 @@ async fn each_shutdown_branch_emits_once_and_returns_false() {
 #[cfg(all(feature = "monty", unix))]
 #[tokio::test]
 async fn production_monty_pipe_deadline_uses_injected_logger_and_preserves_failure() {
-    use sc_cron::{HookTarget, ManualClock, MontyHostConfig, RunOutcome};
+    use sc_cron::{HookTarget, ManualClock, MontyHostRegistry, RunOutcome, ScComposeHostConfig};
     use std::os::unix::fs::PermissionsExt;
 
     let root = tempfile::tempdir().unwrap();
     let program = root.path().join("compose-pipe-holder.py");
     // The leader exits, while one bounded descendant holds stdout past the
     // existing pipe-drain bound. No global environment or PATH is modified.
-    std::fs::write(&program, "#!/usr/bin/env python3\nimport subprocess, sys\nsubprocess.Popen([sys.executable, '-c', 'import time; time.sleep(6)'], stdout=sys.stdout, stderr=subprocess.DEVNULL)\nprint('rendered', flush=True)\n").unwrap();
+    let python = std::process::Command::new("python3")
+        .args(["-c", "import sys; print(sys.executable)"])
+        .output()
+        .unwrap();
+    let interpreter = String::from_utf8(python.stdout).unwrap();
+    std::fs::write(&program, format!("#!{}\nimport subprocess, sys\nsubprocess.Popen([sys.executable, '-c', 'import time; time.sleep(6)'], stdout=sys.stdout, stderr=subprocess.DEVNULL)\nprint('rendered', flush=True)\n", interpreter.trim())).unwrap();
     std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o700)).unwrap();
-    let source = "def cron_stop(hook):\n    return {'action': 'continue'}\ndef cron_tick(hook):\n    render_template('x', {})\n";
+    let source = "def cron_stop(hook):\n    return {'action': 'continue'}\ndef cron_tick(hook):\n    sc_compose_run('render', [])\n";
 
     for rejecting in [false, true] {
         let recording = recorder();
@@ -268,7 +273,11 @@ async fn production_monty_pipe_deadline_uses_injected_logger_and_preserves_failu
             Arc::new(SeqJitter::new([])),
             logger,
         )
-        .with_monty_host(MontyHostConfig::new(&program).unwrap());
+        .with_monty_hosts(
+            MontyHostRegistry::new()
+                .with_sc_compose(ScComposeHostConfig::new(&program).unwrap())
+                .unwrap(),
+        );
         scheduler
             .start(
                 ScheduleSpec::with_hook(
@@ -298,7 +307,7 @@ async fn production_monty_pipe_deadline_uses_injected_logger_and_preserves_failu
             .unwrap();
         assert_eq!(runs.len(), 1);
         assert!(
-            matches!(&runs[0].outcome, RunOutcome::Failed(message) if message.contains("COMPOSE_NOT_RUNNABLE"))
+            matches!(&runs[0].outcome, RunOutcome::Failed(message) if message.contains("HOST_OUTPUT"))
         );
         if rejecting {
             assert_eq!(rejected.attempts(), 2); // attachment and pipe deadline

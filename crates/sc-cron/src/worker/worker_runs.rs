@@ -189,7 +189,7 @@ where
         let deadline = monotonic
             .checked_add(schedule.spec.timeout.get())
             .unwrap_or(monotonic);
-        let compose_program = Arc::clone(&self.compose_program);
+        let hosts = Arc::clone(&self.hosts);
         let launching = phase == crate::monty_run::MontyPhase::Stop;
         let logger = Arc::clone(&self.coord.logger);
         let handle = tokio::spawn(async move {
@@ -205,7 +205,7 @@ where
                     payload: schedule.spec.payload.clone(),
                     timeout: schedule.spec.timeout,
                     deadline,
-                    compose_program,
+                    hosts,
                 },
             )
             .await
@@ -1165,7 +1165,7 @@ mod event_contract_tests {
             coord.clone(),
             std::time::Duration::from_secs(30),
             shutdown,
-            Arc::new(std::path::PathBuf::from("sc-compose")),
+            Arc::new(crate::MontyHostRegistry::new()),
         );
         worker.slots.push(Slot {
             schedule: row.clone(),
