@@ -798,7 +798,10 @@ async fn panicking_run_records_failed_and_the_worker_keeps_ticking() {
     fixture.step(60).await;
     fixture
         .store
-        .wait_recorded(&schedule, RunOutcome::Failed("job panicked: boom".into()))
+        .wait_recorded(
+            &schedule,
+            RunOutcome::Failed("JOB_JOIN_FAILED: boom; fix the job panic and retry".into()),
+        )
         .await;
     fixture.step(60).await;
     fixture.job.wait_entered(2).await;

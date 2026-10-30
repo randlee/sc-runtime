@@ -793,7 +793,14 @@ where
         report: Report,
         next: Option<DateTime<Utc>>,
     ) -> DueRun {
-        record_due(Arc::clone(&self.core), row, report, next).await
+        record_due(
+            Arc::clone(&self.core),
+            Arc::clone(&self.coord.logger),
+            row,
+            report,
+            next,
+        )
+        .await
     }
 }
 

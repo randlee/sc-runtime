@@ -95,8 +95,9 @@ where
                 continue;
             };
             log(
+                &self.coord.logger,
                 &self.slots[index].schedule,
-                "timed_out",
+                Event::RunTimedOut,
                 "run deadline passed",
             );
             let result = await_aborted(run).await;
@@ -122,8 +123,9 @@ where
                 continue;
             };
             log(
+                &self.coord.logger,
                 &self.slots[index].schedule,
-                "timed_out",
+                Event::RunTimedOut,
                 "shutdown deadline passed while a Monty feed is in flight",
             );
             let result = await_aborted(run).await;
@@ -188,6 +190,7 @@ where
             .checked_add(schedule.spec.timeout.get())
             .unwrap_or(monotonic);
         let compose_program = Arc::clone(&self.compose_program);
+        let launching = phase == crate::monty_run::MontyPhase::Stop;
         let logger = Arc::clone(&self.coord.logger);
         let handle = tokio::spawn(async move {
             crate::monty_run::drive_feed(
@@ -211,7 +214,14 @@ where
             drop(guard);
             return;
         };
-        log(&slot.schedule, "launched", "monty feed started");
+        if launching {
+            emit(
+                &self.coord.logger,
+                Event::RunLaunched,
+                Some(&slot.schedule),
+                serde_json::json!({"deadline_remaining_ms": deadline.saturating_duration_since(self.clock.monotonic_now()).as_millis() as u64}),
+            );
+        }
         slot.run = Some(InFlight {
             handle: Some(RunHandle::Monty(handle)),
             deadline,
@@ -245,6 +255,12 @@ where
                 let message = panic_message(error);
                 if let Some(slot) = self.slots.get(index) {
                     let schedule = slot.schedule.clone();
+                    emit(
+                        &self.coord.logger,
+                        Event::FeedJoinFailed,
+                        Some(&schedule),
+                        serde_json::json!({"error": message}),
+                    );
                     self.record(
                         &schedule,
                         RunOutcome::Failed(format!(
@@ -259,7 +275,12 @@ where
             }
             Err(error) => {
                 if let Some(slot) = self.slots.get(index) {
-                    log(&slot.schedule, "cancelled", &error.to_string());
+                    log(
+                        &self.coord.logger,
+                        &slot.schedule,
+                        Event::ScheduleCancelled,
+                        &error.to_string(),
+                    );
                 }
                 drop(guard);
                 None
@@ -433,4 +454,771 @@ pub(super) fn panic_message(error: JoinError) -> String {
         .map(|message| (*message).to_owned())
         .or_else(|| payload.downcast_ref::<String>().cloned())
         .unwrap_or_else(|| "non-string panic".to_owned())
+}
+
+/// Typed worker-origin failures keep the persisted consumer format in one place.
+pub(super) enum WorkerFailure {
+    TargetResolve,
+    JobJoin,
+}
+impl WorkerFailure {
+    pub(super) fn outcome(self, detail: impl std::fmt::Display) -> RunOutcome {
+        let (code, recovery) = match self {
+            Self::TargetResolve => (
+                "TARGET_RESOLVE_FAILED",
+                "fix hook target configuration and retry",
+            ),
+            Self::JobJoin => ("JOB_JOIN_FAILED", "fix the job panic and retry"),
+        };
+        RunOutcome::Failed(format!("{code}: {detail}; {recovery}"))
+    }
+}
+
+/// Fixed event origins: application prose is never used to choose a diagnostic.
+#[derive(Clone, Copy)]
+pub(crate) enum Event {
+    TargetResolveFailed,
+    ScheduleReloadFailed,
+    ScheduleCancelled,
+    RunTimedOut,
+    RunSkippedInFlight,
+    RunMissedSkipped,
+    RunMissedReplayed,
+    RunLaunched,
+    RunFinished,
+    RunRecordFailed,
+    ScheduleNextFailed,
+    ScheduleStopped,
+    ScheduleStopFailed,
+    ScheduleDisabled,
+    ScheduleDisableFailed,
+    RunFenced,
+    DueLaunched,
+    DueFinished,
+    DueFenced,
+    DuePartialWrite,
+    DueFollowUpFailed,
+    DueRecordFailed,
+    DueStopped,
+    DueStopFailed,
+    DueNextFailed,
+    JobJoinFailed,
+    #[cfg(feature = "monty")]
+    DueJoinFailed,
+    DueTaskFailed,
+    #[cfg(feature = "monty")]
+    MontyResolveFailed,
+    #[cfg(feature = "monty")]
+    MontyTickFailed,
+    #[cfg(feature = "monty")]
+    FeedJoinFailed,
+}
+impl Event {
+    fn row(self) -> EventRow {
+        use sc_observability_types::Level;
+        match self {
+            Self::TargetResolveFailed => (
+                "cron.worker",
+                "target.resolve_failed",
+                Level::Warn,
+                Some("failed"),
+                Some("TARGET_RESOLVE_FAILED"),
+            ),
+            Self::ScheduleReloadFailed => (
+                "cron.worker",
+                "schedule.reload_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_RELOAD_FAILED"),
+            ),
+            Self::ScheduleCancelled => (
+                "cron.worker",
+                "schedule.cancelled",
+                Level::Info,
+                Some("stopped"),
+                None,
+            ),
+            Self::RunTimedOut => (
+                "cron.worker",
+                "run.timed_out",
+                Level::Warn,
+                Some("timeout"),
+                Some("RUN_TIMEOUT"),
+            ),
+            Self::RunSkippedInFlight => (
+                "cron.worker",
+                "run.skipped_in_flight",
+                Level::Info,
+                None,
+                None,
+            ),
+            Self::RunMissedSkipped => {
+                ("cron.worker", "run.missed_skipped", Level::Info, None, None)
+            }
+            Self::RunMissedReplayed => (
+                "cron.worker",
+                "run.missed_replayed",
+                Level::Info,
+                None,
+                None,
+            ),
+            Self::RunLaunched => ("cron.worker", "run.launched", Level::Info, None, None),
+            Self::RunFinished => ("cron.worker", "run.finished", Level::Info, None, None),
+            Self::RunRecordFailed => (
+                "cron.worker",
+                "run.record_failed",
+                Level::Error,
+                Some("failed"),
+                Some("RUN_RECORD_FAILED"),
+            ),
+            Self::ScheduleNextFailed => (
+                "cron.worker",
+                "schedule.next_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_NEXT_FAILED"),
+            ),
+            Self::ScheduleStopped => (
+                "cron.worker",
+                "schedule.stopped",
+                Level::Info,
+                Some("stopped"),
+                None,
+            ),
+            Self::ScheduleStopFailed => (
+                "cron.worker",
+                "schedule.stop_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_STOP_FAILED"),
+            ),
+            Self::ScheduleDisabled => (
+                "cron.worker",
+                "schedule.disabled",
+                Level::Info,
+                Some("stopped"),
+                None,
+            ),
+            Self::ScheduleDisableFailed => (
+                "cron.worker",
+                "schedule.disable_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_DISABLE_FAILED"),
+            ),
+            Self::RunFenced => (
+                "cron.worker",
+                "run.fenced",
+                Level::Warn,
+                Some("fenced"),
+                Some("SCHEDULE_FENCED"),
+            ),
+            Self::DueLaunched => ("cron.scheduler", "due.launched", Level::Info, None, None),
+            Self::DueFinished => ("cron.scheduler", "due.finished", Level::Info, None, None),
+            Self::DueFenced => (
+                "cron.scheduler",
+                "due.fenced",
+                Level::Warn,
+                Some("fenced"),
+                Some("SCHEDULE_FENCED"),
+            ),
+            Self::DuePartialWrite => (
+                "cron.scheduler",
+                "due.partial_write",
+                Level::Warn,
+                Some("partial"),
+                Some("FOLLOW_UP_FENCED"),
+            ),
+            Self::DueFollowUpFailed => (
+                "cron.scheduler",
+                "due.follow_up_failed",
+                Level::Error,
+                Some("partial"),
+                Some("FOLLOW_UP_WRITE_FAILED"),
+            ),
+            Self::DueRecordFailed => (
+                "cron.scheduler",
+                "due.record_failed",
+                Level::Error,
+                Some("failed"),
+                Some("RUN_RECORD_FAILED"),
+            ),
+            Self::DueStopped => (
+                "cron.scheduler",
+                "due.stopped",
+                Level::Info,
+                Some("stopped"),
+                None,
+            ),
+            Self::DueStopFailed => (
+                "cron.scheduler",
+                "due.stop_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_STOP_FAILED"),
+            ),
+            Self::DueNextFailed => (
+                "cron.scheduler",
+                "due.next_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_NEXT_FAILED"),
+            ),
+            Self::JobJoinFailed => (
+                "cron.worker",
+                "job.join_failed",
+                Level::Error,
+                Some("failed"),
+                Some("JOB_JOIN_FAILED"),
+            ),
+            #[cfg(feature = "monty")]
+            Self::DueJoinFailed => (
+                "cron.scheduler",
+                "due.join_failed",
+                Level::Error,
+                Some("failed"),
+                Some("DUE_JOIN_FAILED"),
+            ),
+            Self::DueTaskFailed => (
+                "cron.scheduler",
+                "due.task_failed",
+                Level::Error,
+                Some("failed"),
+                Some("RUN_TASK_FAILED"),
+            ),
+            #[cfg(feature = "monty")]
+            Self::MontyResolveFailed => (
+                "cron.scheduler",
+                "monty.resolve_failed",
+                Level::Error,
+                Some("failed"),
+                Some("MONTY_RESOLVE"),
+            ),
+            #[cfg(feature = "monty")]
+            Self::MontyTickFailed => (
+                "cron.scheduler",
+                "monty.tick_failed",
+                Level::Error,
+                Some("failed"),
+                Some("MONTY_TICK"),
+            ),
+            #[cfg(feature = "monty")]
+            Self::FeedJoinFailed => (
+                "cron.monty",
+                "feed.join_failed",
+                Level::Error,
+                Some("failed"),
+                Some("FEED_JOIN_FAILED"),
+            ),
+        }
+    }
+}
+
+pub(crate) fn emit(
+    logger: &sc_observability_types::SharedCanonicalLog,
+    event: Event,
+    schedule: Option<&Schedule>,
+    fields: serde_json::Value,
+) {
+    let (target, action, level, outcome, code) = event.row();
+    emit_row(
+        logger,
+        (target, action, level, outcome, code),
+        schedule,
+        fields,
+    );
+}
+
+type EventRow = (
+    &'static str,
+    &'static str,
+    sc_observability_types::Level,
+    Option<&'static str>,
+    Option<&'static str>,
+);
+fn emit_row(
+    logger: &sc_observability_types::SharedCanonicalLog,
+    row: EventRow,
+    schedule: Option<&Schedule>,
+    fields: serde_json::Value,
+) {
+    use sc_observability_types::{
+        ActionName, ErrorCode, ErrorContext, LogEvent, OBSERVATION_SCHEMA_VERSION, OutcomeLabel,
+        ProcessIdentity, Remediation, TargetCategory, Timestamp,
+    };
+    let (target, action, level, outcome, code) = row;
+    let (Ok(target), Ok(action)) = (TargetCategory::new(target), ActionName::new(action)) else {
+        return;
+    };
+    let mut fields = fields.as_object().cloned().unwrap_or_default();
+    if let Some(schedule) = schedule {
+        fields.insert("schedule".into(), schedule.id.to_string().into());
+    }
+    let timestamp = Timestamp::now_utc();
+    let diagnostic = code.map(|code| {
+        let context = ErrorContext::new(
+            ErrorCode::new_static(code),
+            action.as_str(),
+            Remediation::recoverable(
+                "Resolve the job or store failure and retry.",
+                [] as [&str; 0],
+            ),
+        );
+        let mut diagnostic = context.diagnostic().clone();
+        diagnostic.timestamp = timestamp;
+        diagnostic
+    });
+    let _ = logger.emit(LogEvent {
+        version: (*OBSERVATION_SCHEMA_VERSION).clone(),
+        timestamp,
+        level,
+        service: logger.service_name().clone(),
+        target,
+        action,
+        message: None,
+        identity: ProcessIdentity::default(),
+        trace: None,
+        request_id: None,
+        correlation_id: None,
+        outcome: outcome.and_then(|label| OutcomeLabel::new(label).ok()),
+        diagnostic,
+        state_transition: None,
+        fields,
+    });
+}
+
+pub(crate) fn terminal(
+    logger: &sc_observability_types::SharedCanonicalLog,
+    event: Event,
+    schedule: &Schedule,
+    outcome: &RunOutcome,
+) {
+    use sc_observability_types::Level;
+    let (level, label, code, fields) = match outcome {
+        RunOutcome::Ok => (Level::Info, "success", None, serde_json::json!({})),
+        RunOutcome::Refused(reason) => (
+            Level::Info,
+            "refused",
+            None,
+            serde_json::json!({"reason": reason}),
+        ),
+        RunOutcome::Failed(error) => (
+            Level::Error,
+            "failed",
+            Some("JOB_FAILED"),
+            serde_json::json!({"error": error}),
+        ),
+        RunOutcome::TimedOut => (
+            Level::Warn,
+            "timeout",
+            Some("RUN_TIMEOUT"),
+            serde_json::json!({"deadline_remaining_ms": 0}),
+        ),
+    };
+    let (target, action, _, _, _) = event.row();
+    emit_row(
+        logger,
+        (target, action, level, Some(label), code),
+        Some(schedule),
+        fields,
+    );
+}
+
+#[cfg(test)]
+mod event_contract_tests {
+    use super::*;
+    use sc_observability_types::{Level, RecordingCanonicalLog, ServiceName, SharedCanonicalLog};
+
+    #[test]
+    fn fixed_origin_rows_use_exact_taxonomy_and_best_effort_envelope() {
+        let recorder = Arc::new(RecordingCanonicalLog::new(
+            ServiceName::new("worker-test").unwrap(),
+        ));
+        let logger: SharedCanonicalLog = recorder.clone();
+        let rows = [
+            (
+                Event::TargetResolveFailed,
+                "cron.worker",
+                "target.resolve_failed",
+                Level::Warn,
+                Some("failed"),
+                Some("TARGET_RESOLVE_FAILED"),
+            ),
+            (
+                Event::ScheduleReloadFailed,
+                "cron.worker",
+                "schedule.reload_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_RELOAD_FAILED"),
+            ),
+            (
+                Event::ScheduleCancelled,
+                "cron.worker",
+                "schedule.cancelled",
+                Level::Info,
+                Some("stopped"),
+                None,
+            ),
+            (
+                Event::RunTimedOut,
+                "cron.worker",
+                "run.timed_out",
+                Level::Warn,
+                Some("timeout"),
+                Some("RUN_TIMEOUT"),
+            ),
+            (
+                Event::RunSkippedInFlight,
+                "cron.worker",
+                "run.skipped_in_flight",
+                Level::Info,
+                None,
+                None,
+            ),
+            (
+                Event::RunMissedSkipped,
+                "cron.worker",
+                "run.missed_skipped",
+                Level::Info,
+                None,
+                None,
+            ),
+            (
+                Event::RunMissedReplayed,
+                "cron.worker",
+                "run.missed_replayed",
+                Level::Info,
+                None,
+                None,
+            ),
+            (
+                Event::RunLaunched,
+                "cron.worker",
+                "run.launched",
+                Level::Info,
+                None,
+                None,
+            ),
+            (
+                Event::RunRecordFailed,
+                "cron.worker",
+                "run.record_failed",
+                Level::Error,
+                Some("failed"),
+                Some("RUN_RECORD_FAILED"),
+            ),
+            (
+                Event::ScheduleNextFailed,
+                "cron.worker",
+                "schedule.next_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_NEXT_FAILED"),
+            ),
+            (
+                Event::ScheduleStopped,
+                "cron.worker",
+                "schedule.stopped",
+                Level::Info,
+                Some("stopped"),
+                None,
+            ),
+            (
+                Event::ScheduleStopFailed,
+                "cron.worker",
+                "schedule.stop_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_STOP_FAILED"),
+            ),
+            (
+                Event::ScheduleDisabled,
+                "cron.worker",
+                "schedule.disabled",
+                Level::Info,
+                Some("stopped"),
+                None,
+            ),
+            (
+                Event::ScheduleDisableFailed,
+                "cron.worker",
+                "schedule.disable_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_DISABLE_FAILED"),
+            ),
+            (
+                Event::RunFenced,
+                "cron.worker",
+                "run.fenced",
+                Level::Warn,
+                Some("fenced"),
+                Some("SCHEDULE_FENCED"),
+            ),
+            (
+                Event::DueLaunched,
+                "cron.scheduler",
+                "due.launched",
+                Level::Info,
+                None,
+                None,
+            ),
+            (
+                Event::DueFenced,
+                "cron.scheduler",
+                "due.fenced",
+                Level::Warn,
+                Some("fenced"),
+                Some("SCHEDULE_FENCED"),
+            ),
+            (
+                Event::DuePartialWrite,
+                "cron.scheduler",
+                "due.partial_write",
+                Level::Warn,
+                Some("partial"),
+                Some("FOLLOW_UP_FENCED"),
+            ),
+            (
+                Event::DueFollowUpFailed,
+                "cron.scheduler",
+                "due.follow_up_failed",
+                Level::Error,
+                Some("partial"),
+                Some("FOLLOW_UP_WRITE_FAILED"),
+            ),
+            (
+                Event::DueRecordFailed,
+                "cron.scheduler",
+                "due.record_failed",
+                Level::Error,
+                Some("failed"),
+                Some("RUN_RECORD_FAILED"),
+            ),
+            (
+                Event::DueStopped,
+                "cron.scheduler",
+                "due.stopped",
+                Level::Info,
+                Some("stopped"),
+                None,
+            ),
+            (
+                Event::DueStopFailed,
+                "cron.scheduler",
+                "due.stop_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_STOP_FAILED"),
+            ),
+            (
+                Event::DueNextFailed,
+                "cron.scheduler",
+                "due.next_failed",
+                Level::Error,
+                Some("failed"),
+                Some("SCHEDULE_NEXT_FAILED"),
+            ),
+            (
+                Event::JobJoinFailed,
+                "cron.worker",
+                "job.join_failed",
+                Level::Error,
+                Some("failed"),
+                Some("JOB_JOIN_FAILED"),
+            ),
+            #[cfg(feature = "monty")]
+            (
+                Event::DueJoinFailed,
+                "cron.scheduler",
+                "due.join_failed",
+                Level::Error,
+                Some("failed"),
+                Some("DUE_JOIN_FAILED"),
+            ),
+            (
+                Event::DueTaskFailed,
+                "cron.scheduler",
+                "due.task_failed",
+                Level::Error,
+                Some("failed"),
+                Some("RUN_TASK_FAILED"),
+            ),
+            #[cfg(feature = "monty")]
+            (
+                Event::MontyResolveFailed,
+                "cron.scheduler",
+                "monty.resolve_failed",
+                Level::Error,
+                Some("failed"),
+                Some("MONTY_RESOLVE"),
+            ),
+            #[cfg(feature = "monty")]
+            (
+                Event::MontyTickFailed,
+                "cron.scheduler",
+                "monty.tick_failed",
+                Level::Error,
+                Some("failed"),
+                Some("MONTY_TICK"),
+            ),
+            #[cfg(feature = "monty")]
+            (
+                Event::FeedJoinFailed,
+                "cron.monty",
+                "feed.join_failed",
+                Level::Error,
+                Some("failed"),
+                Some("FEED_JOIN_FAILED"),
+            ),
+        ];
+        for (event, target, action, level, outcome, code) in rows {
+            recorder.clear();
+            emit(&logger, event, None, serde_json::json!({"error": "opaque"}));
+            let events = recorder.events();
+            assert_eq!(events.len(), 1);
+            let actual = &events[0];
+            assert_eq!(
+                (actual.target.as_str(), actual.action.as_str(), actual.level),
+                (target, action, level)
+            );
+            assert_eq!(actual.outcome.as_ref().map(|v| v.as_str()), outcome);
+            assert_eq!(actual.diagnostic.as_ref().map(|v| v.code.as_str()), code);
+            assert_eq!(actual.service.as_str(), "worker-test");
+            assert!(actual.trace.is_none() && actual.state_transition.is_none());
+            assert!(!actual.fields.contains_key("code"));
+            if let Some(diagnostic) = &actual.diagnostic {
+                assert_eq!(diagnostic.timestamp, actual.timestamp);
+            }
+        }
+    }
+
+    #[test]
+    fn python_resolved_target_carries_the_same_arc_through_run_target() {
+        let recorder = Arc::new(RecordingCanonicalLog::new(
+            ServiceName::new("python").unwrap(),
+        ));
+        let logger: SharedCanonicalLog = recorder;
+        let store = Arc::new(
+            crate::SqliteScheduleStore::open_in_memory(crate::ScheduleLimits::default()).unwrap(),
+        );
+        let clock = Arc::new(crate::SystemClock);
+        let scheduler = crate::Scheduler::new_with_logger(
+            store,
+            clock.clone(),
+            Arc::new(crate::SystemJitter),
+            logger.clone(),
+        );
+        let mut spec = crate::ScheduleSpec::new(
+            "python",
+            "* * * * *",
+            std::time::Duration::from_secs(1),
+            serde_json::json!({}),
+        )
+        .unwrap();
+        spec.hook = crate::HookTarget::python("/tmp/b15-hook.py").unwrap();
+        let row = scheduler.start(spec).unwrap();
+        let job: Arc<dyn crate::Job> = Arc::new(Idle);
+        let before = Arc::strong_count(&logger);
+        let target = resolve(&job, &row, &logger).unwrap();
+        assert_eq!(Arc::strong_count(&logger), before + 1);
+        let future = run_target(target, clock, &row, std::time::Instant::now());
+        assert_eq!(Arc::strong_count(&logger), before + 1);
+        drop(future);
+        assert_eq!(Arc::strong_count(&logger), before);
+    }
+    #[cfg(feature = "monty")]
+    #[tokio::test]
+    async fn feed_join_panic_emits_origin_then_one_recorded_terminal_and_drops_guard() {
+        let recorder = Arc::new(RecordingCanonicalLog::new(
+            ServiceName::new("feed").unwrap(),
+        ));
+        let store = Arc::new(
+            crate::SqliteScheduleStore::open_in_memory(crate::ScheduleLimits::default()).unwrap(),
+        );
+        let clock = Arc::new(crate::SystemClock);
+        let scheduler = crate::Scheduler::new_with_logger(
+            store.clone(),
+            clock.clone(),
+            Arc::new(crate::SystemJitter),
+            recorder.clone(),
+        );
+        let row = scheduler
+            .start(
+                crate::ScheduleSpec::new(
+                    "feed-panic",
+                    "* * * * *",
+                    std::time::Duration::from_secs(1),
+                    serde_json::json!({}),
+                )
+                .unwrap(),
+            )
+            .unwrap();
+        let coord = Arc::new(RunCoord::with_logger(recorder.clone()));
+        let (_, shutdown) = tokio::sync::oneshot::channel();
+        let mut worker = Worker::new(
+            store.clone(),
+            clock,
+            Arc::new(Idle),
+            MissedTickPolicy::Coalesce,
+            coord.clone(),
+            std::time::Duration::from_secs(30),
+            shutdown,
+            Arc::new(std::path::PathBuf::from("sc-compose")),
+        );
+        worker.slots.push(Slot {
+            schedule: row.clone(),
+            next: None,
+            run: None,
+            queued: Queued::None,
+            last_skipped: None,
+        });
+        let guard = MontyFeedGuard::enter(&coord);
+        let result = tokio::spawn(async {
+            panic!("feed panic");
+            #[allow(unreachable_code)]
+            crate::monty_run::FeedDone {
+                session: None,
+                result: crate::monty_run::FeedResult::Continue,
+            }
+        })
+        .await;
+        recorder.clear();
+        assert!(
+            worker
+                .monty_feed_from_join(0, result, Some(guard))
+                .await
+                .is_none()
+        );
+        assert_eq!(coord.feeds.load(std::sync::atomic::Ordering::Acquire), 0);
+        let events = recorder.events();
+        assert_eq!(
+            events.iter().map(|e| e.action.as_str()).collect::<Vec<_>>(),
+            ["feed.join_failed", "run.finished"]
+        );
+        assert_eq!(
+            events[0].diagnostic.as_ref().unwrap().code.as_str(),
+            "FEED_JOIN_FAILED"
+        );
+        assert_eq!(
+            events[1].diagnostic.as_ref().unwrap().code.as_str(),
+            "JOB_FAILED"
+        );
+        let persisted = store.get(row.id).unwrap().unwrap().last_outcome.unwrap();
+        assert_eq!(
+            persisted.failure_parts().unwrap().code,
+            Some("FEED_JOIN_FAILED")
+        );
+    }
+    struct Idle;
+    #[async_trait::async_trait]
+    impl crate::Job for Idle {
+        async fn should_stop(&self, _: &serde_json::Value) -> StopDecision {
+            StopDecision::Continue
+        }
+        async fn run(&self, _: &serde_json::Value, _: std::time::Instant) -> RunOutcome {
+            RunOutcome::Ok
+        }
+    }
 }
