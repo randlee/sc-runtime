@@ -515,7 +515,61 @@
         ".triage/b/findings/FTQ-001.ttl"
       ],
       "fix_task_id": "/root/phaseb_b13_qa1_fixes",
-      "fix_bead": "run-03z.12"
+      "fix_bead": "run-03z.12",
+      "fix_branch": "fix/b-13-qa1",
+      "fix_head": "c00cb59",
+      "fix_status": "all_six_fixes_pushed_full_validation_running"
+    },
+    "b-14": {
+      "task_id": "run-03z.13",
+      "qa_pass": "qa-b-14-1",
+      "commit": "e47ce120dd24035a6bbcb9ec67cc028c47181fdf",
+      "status": "parent_reviewers_capacity_bounded",
+      "required_reviewers": [
+        "req-qa",
+        "arch-qa",
+        "extensibility-qa",
+        "ruthless-boundary-qa",
+        "rust-qa-agent",
+        "rust-best-practices-agent",
+        "rust-service-hardening-agent",
+        "flaky-test-qa"
+      ],
+      "spawn_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b14_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "completed",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b14-qa1/req-qa-assignment.json",
+          "fenced_json_received": true,
+          "result_path": "/tmp/phaseb-cursor-orchestration/b14-qa1/req-qa-result.md",
+          "verdict": "FAIL"
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b14_qa1_arch",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b14-qa1/arch-qa-assignment.json",
+          "fenced_json_received": true,
+          "result_path": "/tmp/phaseb-cursor-orchestration/b14-qa1/arch-qa-result.md",
+          "verdict": "FAIL"
+        },
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/cursor_b14_qa1_ext",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "running",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b14-qa1/extensibility-qa-assignment.json"
+        }
+      ]
     }
   }
 }
