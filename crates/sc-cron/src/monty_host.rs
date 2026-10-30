@@ -180,6 +180,11 @@ impl CliConfig {
         let cwd = std::env::current_dir().map_err(|error| {
             CronError::InvalidSpec(format!("cannot capture host working directory: {error}"))
         })?;
+        let program = if program.is_relative() && program.components().count() > 1 {
+            cwd.join(program)
+        } else {
+            program
+        };
         Ok(Self {
             program,
             cwd: Some(cwd),

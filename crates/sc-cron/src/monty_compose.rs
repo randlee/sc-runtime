@@ -108,7 +108,17 @@ pub(crate) fn run_cli(
         );
         spawn_error(source)
     })?;
-    let status = wait_until(&mut *child.0, deadline).map_err(spawn_error)?;
+    let status = match wait_until(&mut *child.0, deadline) {
+        Ok(status) => status,
+        Err(source) => {
+            reap_after_kill(
+                &mut *child.0,
+                Instant::now() + crate::process::REAP_AFTER_KILL,
+                logger,
+            );
+            return Err(spawn_error(source));
+        }
+    };
     if status.is_none() {
         reap_after_kill(
             &mut *child.0,
@@ -315,5 +325,55 @@ mod tests {
         reap_after_kill(&mut child, Instant::now(), &logger);
         assert_eq!(child.kills, 1);
         assert_eq!(rejecting.attempts(), 1);
+    }
+    #[cfg(unix)]
+    #[test]
+    fn a_started_group_is_killed_when_its_row_deadline_expires() {
+        use std::io::BufRead;
+        let dir = tempfile::tempdir().expect("fixture root");
+        let mut command = Command::new("/bin/sh");
+        command
+            .current_dir(dir.path())
+            .env_clear()
+            .args([
+                "-c",
+                "/bin/sleep 20 & printf 'ready\\n'; wait; printf 'finished' > finished",
+            ])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .stdin(Stdio::null());
+        let mut command = CommandWrap::from(command);
+        command.wrap(ProcessGroup::leader());
+        let mut child = ChildGuard(command.spawn().expect("spawn group"));
+        let stdout = child.0.stdout().take().expect("startup pipe");
+        let (ready, observed) = mpsc::sync_channel(1);
+        let reader = thread::spawn(move || {
+            let mut line = String::new();
+            let result = io::BufReader::new(stdout).read_line(&mut line);
+            let _ = ready.send((result, line));
+        });
+        let (read, line) = observed
+            .recv_timeout(Duration::from_secs(30))
+            .expect("bounded startup handshake");
+        read.expect("read handshake");
+        assert_eq!(line, "ready\n");
+        reader.join().expect("startup reader");
+        // Startup is established independently of the expiration assertion.
+        // These are the same wait/cleanup helpers used by run_cli; the test
+        // never extends a production row deadline or assumes startup latency.
+        let deadline = Instant::now() + Duration::from_millis(100);
+        assert!(
+            wait_until(&mut *child.0, deadline)
+                .expect("wait child")
+                .is_none()
+        );
+        let logger = crate::noop_logger();
+        reap_after_kill(
+            &mut *child.0,
+            Instant::now() + crate::process::REAP_AFTER_KILL,
+            &logger,
+        );
+        assert!(child.0.try_wait().expect("reaped child").is_some());
+        assert!(!dir.path().join("finished").exists());
     }
 }
