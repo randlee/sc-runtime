@@ -35,6 +35,11 @@ authorization and registry credentials. Merging the release kit onto
 
 Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL, the adaptor, and the six generation layouts. See [Phase b plan](plans/phase-b/phase-b-plan.md).
 
+Continuation execution lead: `codexis`. The b-13 through b-18 integration
+branch is `integrate/phase-b-observability`; its dependency and execution
+ledger is Beads epic `run-03z`. Sprint scope and ownership remain defined by
+the approved sprint documents.
+
 The b-13 through b-18 continuation establishes the repository `0.1.1`
 contract. b-13 owns the non-blocking version/public API boundary and whole
 cron component propagation but performs no release;
