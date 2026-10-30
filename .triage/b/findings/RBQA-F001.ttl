@@ -1,0 +1,9 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+"RBQA-F001" qa:sprint "b-13" ;
+  qa:severity "important" ;
+  qa:reviewer "ruthless-boundary-qa" ;
+  qa:location "crates/sc-runtime/tests/observability_contract.rs:80" ;
+  qa:issue "The promised types-only dependency enforcement does not inspect resolved package identities, leaving full logger and OTLP dependencies undetected through aliases or transitive edges." ;
+  qa:remedy "Add one shared resolved-normal-dependency check for sc-runtime and sc-cron to the existing test/CI path. Reject sc-observability, sc-observability-otlp, and sc-observability-dev-adapter by actual package identity anywhere reachable, while permitting the authorized types facade. Reuse that check for both libraries and make the boundary-manifest enforcement comment accurate." ;
+  qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
+  qa:status "open" .

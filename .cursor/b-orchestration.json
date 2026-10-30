@@ -48,11 +48,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "waiting_b16_minimal_deadline_fixture",
+      "status": "development_complete_qa_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b15_developer",
       "pr_number": 91,
-      "head": "c897085033d4e6dfbe638f83d3c1d5992671cef5",
+      "head": "9452d80732921dcd9b4c343e1837e4b1fbf3e22a",
       "state_path": "/tmp/phaseb-cursor-orchestration/b-15-developer-state.json"
     },
     "b-16": {
@@ -61,11 +61,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "development_in_progress",
+      "status": "development_complete_qa_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
-      "head": "c897085033d4e6dfbe638f83d3c1d5992671cef5"
+      "head": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2"
     },
     "b-13": {
       "task_id": "run-03z.1",
@@ -74,6 +74,17 @@
       "status": "development_complete_qa_pending",
       "developer_task_id": "/root/phaseb_b13_developer",
       "pr_number": 89
+    },
+    "b-17": {
+      "task_id": "run-03z.5",
+      "branch": "sprint/b-17-sc-cron-hook-environment",
+      "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-17-sc-cron-hook-environment",
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "status": "development_in_progress",
+      "developer_task_id": "/root/phaseb_b17_developer",
+      "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
+      "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2"
     }
   },
   "qa_rounds": [],
@@ -86,11 +97,11 @@
       "crates/sc-cron/src/scheduler.rs",
       "crates/sc-cron/tests/observability_components.rs"
     ],
-    "owner": "b-16",
+    "owner": null,
     "b15_scheduler_limit": "finish_due passes existing coord.logger to record_due only",
     "handoff": "Parent confirmation after b15 compilable development push; b16 merges before mechanical registry edits; no whole-sprint QA/merge wait",
     "consumed_b15_head": "d64be138e3461cf8743cd0ec17cf3c65cc430a76",
-    "status": "b16_deterministic_deadline_fixture_needed_b15_yielded_capacity",
+    "status": "development_complete_shared_source_frozen",
     "queued_b15_fixes": [
       "worker::disable successful refused terminal event",
       "production_monty_pipe_deadline rejection attempts2->4 for added due events"
@@ -119,7 +130,7 @@
       "task_id": "run-03z.11",
       "qa_pass": "qa-b-13-1",
       "commit": "0a6a9dcfb6258d06a470154e24e0a2aec915430e",
-      "status": "reviewers_running_in_capacity_bounded_batches",
+      "status": "enforcer_publication_repair_network_escalation",
       "required_reviewers": [
         "req-qa",
         "arch-qa",
@@ -133,38 +144,110 @@
       "spawn_manifest": [
         {
           "agent": "req-qa",
+          "status": "completed",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/req-qa-assignment.json",
+          "fenced_assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/req-qa-assignment-fenced.md",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/req-qa-result.md",
           "task_id": "/root/cursor_b13_qa1_req",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6-luna",
-          "effort": "high",
-          "status": "completed",
-          "fenced_json_received": true,
-          "verdict": "PASS",
-          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/req-qa-result.md",
-          "findings": {
-            "blocking": 0,
-            "important": 0,
-            "minor": 0
-          }
-        },
-        {
-          "agent": "rust-qa-agent",
-          "task_id": "/root/cursor_b13_qa1_rust",
-          "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6-luna",
-          "effort": "high",
-          "status": "running",
-          "fenced_json_received": false
+          "fenced_json_received": true
         },
         {
           "agent": "arch-qa",
-          "task_id": "/root/cursor_b13_qa1_arch",
-          "spawn_actor": "parent-orchestrator",
+          "status": "completed",
           "model": "gpt-6.1-sol",
           "effort": "high",
-          "status": "running",
-          "fenced_json_received": false
+          "assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/arch-qa-assignment.json",
+          "fenced_assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/arch-qa-assignment-fenced.md",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/arch-qa-result.md",
+          "task_id": "/root/cursor_b13_qa1_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "extensibility-qa",
+          "status": "completed",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/extensibility-qa-assignment.json",
+          "fenced_assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/extensibility-qa-assignment-fenced.md",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/extensibility-qa-result.md",
+          "task_id": "/root/cursor_b13_qa1_ext",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "status": "completed",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/ruthless-boundary-qa-assignment.json",
+          "fenced_assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/ruthless-boundary-qa-assignment-fenced.md",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/ruthless-boundary-qa-result.md",
+          "task_id": "/root/cursor_b13_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "rust-qa-agent",
+          "status": "completed",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-qa-agent-assignment.json",
+          "fenced_assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-qa-agent-assignment-fenced.md",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-qa-agent-result.md",
+          "task_id": "/root/cursor_b13_qa1_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "status": "completed",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-best-practices-agent-assignment.json",
+          "fenced_assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-best-practices-agent-assignment-fenced.md",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-best-practices-agent-result.md",
+          "task_id": "/root/cursor_b13_qa1_rbp",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "status": "completed",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-service-hardening-agent-assignment.json",
+          "fenced_assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-service-hardening-agent-assignment-fenced.md",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/rust-service-hardening-agent-result.md",
+          "task_id": "/root/cursor_b13_qa1_service",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "flaky-test-qa",
+          "status": "completed",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/flaky-test-qa-assignment.json",
+          "fenced_assignment": "/tmp/phaseb-cursor-orchestration/b13-qa1/flaky-test-qa-assignment-fenced.md",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/flaky-test-qa-result.md",
+          "task_id": "/root/cursor_b13_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true
         }
+      ],
+      "coordinator_task_id": "/root/cursor_b13_qa1_enforcer",
+      "ceremony_task_id": "/root/cursor_b13_qa1_ceremony",
+      "triage_ttl_paths": [
+        ".triage/b/findings/ARCH-001.ttl",
+        ".triage/b/findings/ARCH-002.ttl",
+        ".triage/b/findings/RBQA-F001.ttl",
+        ".triage/b/findings/QA-001.ttl",
+        ".triage/b/findings/RSH-001.ttl",
+        ".triage/b/findings/FTQ-001.ttl"
       ]
     }
   }

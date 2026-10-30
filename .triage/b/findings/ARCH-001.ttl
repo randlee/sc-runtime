@@ -1,0 +1,9 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+"ARCH-001" qa:sprint "b-13" ;
+  qa:severity "BLOCKING" ;
+  qa:reviewer "arch-qa" ;
+  qa:location "docs/plans/phase-b/sprint-b-13-observability-contract.md:36" ;
+  qa:issue "The sprint adrs list omits ADR-RT-0002, ADR-RT-0003 and ADR-RT-0004 from its owned sc-runtime architecture file, and ADR-CMD-0002/0003 from the sc-command architecture file it declares owned at line 56. RULE-ADR-PLAN explicitly requires every binding ADR from each owned crate architecture file. The phase plan narrows runtime ADR applicability at lines 300-305, but that does not satisfy this separate per-sprint enumeration rule; no code violation of these omitted ADRs was found." ;
+  qa:remedy "Complete the existing adrs list with the missing owned-crate ADR IDs and preserve the phase plan's applicability notes. No extra tests, gates, manifests, or broader implementation scope are required." ;
+  qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
+  qa:status "open" .

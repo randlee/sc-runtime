@@ -1,0 +1,9 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+"RSH-001" qa:sprint "b-13" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-service-hardening-agent" ;
+  qa:location "crates/sc-cron/src/process.rs:356" ;
+  qa:issue "Failure to create the reap timer thread disables the documented post-kill bound. If thread::Builder::spawn returns Err while the killed child cannot be reaped, the public supervisor remains pending indefinitely after expiry instead of returning after REAP_AFTER_KILL." ;
+  qa:remedy "Handle timer creation failure by completing supervision through a bounded fail-closed cleanup/error path rather than awaiting pending forever. Preserve the existing monotonic/realtime timing semantics and distinguish timer-start failure from a genuinely elapsed reap deadline. Add deterministic coverage through an injectable timer-start failure seam with an unreapable child." ;
+  qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
+  qa:status "open" .
