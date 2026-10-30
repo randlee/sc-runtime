@@ -18,8 +18,8 @@ test-util = ["dep:tempfile"]
 
 [dependencies]
 sc-observability-types.workspace = true
-sc-transport = { path = "../sc-transport", version = "0.1.0", features = ["server"] }
-sc-command = { path = "../sc-command", version = "0.1.0", features = ["server"] }
+sc-transport = { path = "../sc-transport", version = "0.1.1", features = ["server"] }
+sc-command = { path = "../sc-command", version = "0.1.1", features = ["server"] }
 axum = { version = "0.8.9", features = ["http1", "json", "macros", "tokio"] }
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "signal", "sync", "time"] }
 fd-lock = "4"

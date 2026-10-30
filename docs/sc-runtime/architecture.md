@@ -32,6 +32,12 @@ generated daemon constructs `sc-observability` and will inject a handle into
 the builder and into `sc-cron` per
 [observability-injection.md](observability-injection.md).
 
+The injection boundary stores only an Arc to the types-level `CanonicalLog`.
+`DaemonBuilder::logger` is available in every existing phase, preserves that
+phase and replaces the previous handle. The handle lives through assembly and
+serving; ownership of configuration, sinks, flushing and shutdown stays with
+the application. Emission rejection never changes assembly or HTTP results.
+
 ## Public surface
 
 | Item | Purpose |

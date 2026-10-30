@@ -1,7 +1,7 @@
 ---
 id: b-13
 phase: b
-status: planned
+status: complete
 closure_type: contract
 target_boundary: observability-injection
 track: observability
@@ -135,6 +135,12 @@ policy. Neither feature is implemented by logger propagation.
 b-10 through b-12 are already part of the baseline. b-13 establishes the
 graph and requirement authority that b-14, b-15, and b-16 consume in the next
 wave without replanning that closed work.
+
+The b-13 implementation includes a narrow mechanical handoff in
+`worker/worker_runs.rs` and `scheduler/run_due.rs`: the existing production
+`FeedLaunch` constructions receive the shared `RunCoord` logger. No worker
+event taxonomy or execution policy changes in that handoff; b-15 owns later
+changes to those files after consuming the pushed contract.
 
 ## Upstream artifact consumed
 

@@ -41,7 +41,7 @@
 //! # Examples
 //!
 //! ```no_run
-//! # async fn example() -> std::io::Result<()> {
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! use std::path::Path;
 //! use std::time::Duration;
 //!
@@ -241,8 +241,8 @@ pub async fn supervise(
     spec: &ChildSpec<'_>,
     cap: usize,
     expiry: impl Future<Output = ()>,
-) -> io::Result<Captured> {
-    supervise_inner(spec, cap, expiry, crate::noop_logger()).await
+) -> Result<Captured, crate::CronError> {
+    supervise_with_logger(spec, cap, expiry, crate::noop_logger()).await
 }
 
 /// Supervises a child using a shared best-effort canonical logger.
@@ -341,9 +341,7 @@ async fn supervise_inner(
 /// must not cut the reap short. A group that is not reaped in time is logged
 /// and left; drop kills it again.
 async fn reap_killed(tree: &mut Tree, logger: &sc_observability_types::SharedCanonicalLog) {
-    if let Err(error) = tree.child.start_kill() {
-        kill_failed(logger, tree.child.id(), &error);
-    }
+    try_kill(tree, logger);
     let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
     let timer = std::thread::Builder::new()
         .name("sc-cron-reap-bound".to_owned())
@@ -358,6 +356,14 @@ async fn reap_killed(tree: &mut Tree, logger: &sc_observability_types::SharedCan
             std::future::pending::<()>().await;
         }
     };
+    await_reap(tree, logger, bounded).await;
+}
+
+async fn await_reap(
+    tree: &mut Tree,
+    logger: &sc_observability_types::SharedCanonicalLog,
+    bounded: impl Future<Output = ()>,
+) {
     tokio::select! {
         biased;
         _ = tree.child.wait() => tree.reaped = true,
@@ -368,6 +374,12 @@ async fn reap_killed(tree: &mut Tree, logger: &sc_observability_types::SharedCan
             crate::emit_event(logger, "cron.process", "child.reap_timeout",
                 sc_observability_types::Level::Warn, "timeout", Some("CHILD_REAP_TIMEOUT"), fields);
         }
+    }
+}
+
+fn try_kill(tree: &mut Tree, logger: &sc_observability_types::SharedCanonicalLog) {
+    if let Err(error) = tree.child.start_kill() {
+        kill_failed(logger, tree.child.id(), &error);
     }
 }
 
@@ -390,6 +402,49 @@ fn kill_failed(
         Some("CHILD_KILL_FAILED"),
         fields,
     );
+}
+
+/// Deterministic process faults for component-contract tests only.
+#[cfg(feature = "test-utils")]
+#[doc(hidden)]
+pub mod testing {
+    use super::*;
+
+    #[derive(Debug)]
+    struct Unreapable;
+    impl ChildWrapper for Unreapable {
+        fn inner(&self) -> &dyn ChildWrapper {
+            self
+        }
+        fn inner_mut(&mut self) -> &mut dyn ChildWrapper {
+            self
+        }
+        fn into_inner(self: Box<Self>) -> Box<dyn ChildWrapper> {
+            self
+        }
+        fn id(&self) -> Option<u32> {
+            Some(42)
+        }
+        fn start_kill(&mut self) -> io::Result<()> {
+            Err(io::Error::other("injected kill failure"))
+        }
+        fn wait(
+            &mut self,
+        ) -> std::pin::Pin<Box<dyn Future<Output = io::Result<ExitStatus>> + Send + '_>> {
+            Box::pin(std::future::pending())
+        }
+    }
+
+    /// Returns whether an unreapable fake child was reaped after an immediate bound.
+    pub async fn failed_kill_and_reap(logger: sc_observability_types::SharedCanonicalLog) -> bool {
+        let mut tree = Tree {
+            child: Box::new(Unreapable),
+            reaped: false,
+        };
+        try_kill(&mut tree, &logger);
+        await_reap(&mut tree, &logger, std::future::ready(())).await;
+        tree.reaped
+    }
 }
 
 /// Writes `input` to the child and closes its stdin.

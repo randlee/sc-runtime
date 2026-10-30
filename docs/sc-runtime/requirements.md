@@ -52,6 +52,14 @@ typestate, [ADR-RT-0001](architecture.md)).
 | `.logger(handle)` | a `sc_observability_types::SharedCanonicalLog`; optional in every builder state and replaces the fixed `sc-runtime` Noop | no |
 | `.run().await` | none; returns `Result<(), RuntimeError>` | yes |
 
+The optional logger is a `SharedCanonicalLog` retained through `stores`,
+`routes`, and `run` without adding a typestate. Repeated `.logger()` calls
+replace and drop the prior handle; only explicit injection changes the fixed
+`sc-runtime` identity. Library code never flushes or shuts down the logger.
+Emission errors are best effort and cannot replace an HTTP or `RuntimeError`
+result. `observability_contract` proves phase preservation, Arc ownership,
+replacement, identity and unchanged failure behavior.
+
 Intended use, in the `daemon/src/main.rs` of a generated project:
 
 ```rust

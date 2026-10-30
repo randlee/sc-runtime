@@ -859,6 +859,27 @@ impl std::fmt::Debug for WorkerHandle {
 }
 
 impl WorkerHandle {
+    /// Constructs a gated worker owner to exercise shutdown deadline branches.
+    #[cfg(feature = "test-utils")]
+    #[doc(hidden)]
+    pub fn shutdown_probe(
+        logger: SharedCanonicalLog,
+        outstanding_feeds: usize,
+    ) -> (Self, tokio::sync::oneshot::Sender<()>) {
+        let (release, wait) = tokio::sync::oneshot::channel();
+        let task = tokio::spawn(async move {
+            let _ = wait.await;
+        });
+        (
+            Self {
+                shutdown: None,
+                task: Some(task),
+                feeds: Arc::new(AtomicUsize::new(outstanding_feeds)),
+                logger,
+            },
+            release,
+        )
+    }
     /// Stops the worker, waiting for in-flight runs until `deadline`.
     ///
     /// The worker stops launching runs, then waits for each in-flight run

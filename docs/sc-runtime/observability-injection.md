@@ -1,6 +1,6 @@
 # Injectable observability for generated projects
 
-**Status:** Phase B b-13 contract (implementation planned; development-only shim authorized)
+**Status:** Phase B b-13 contract (library contract implemented; development-only bridge active)
 **Related:** [ADR-RUN-0003](../architecture.md), [ADR-RUN-0004](../architecture.md), [ADR-RUN-0007](../architecture.md), [ADR-RUN-0011](../architecture.md), [ADR-RUN-0014](../architecture.md), [ADR-RUN-0303](../architecture.md), [ADR-RT-0002](architecture.md), [ADR-TRN-0006](../sc-transport/architecture.md), [REQ-RUN-0309](../requirements.md), [NFR-RUN-0002](../requirements.md), [NFR-RUN-0010](../requirements.md), [NFR-RT-0002](requirements.md)
 
 ## Goal
@@ -136,8 +136,10 @@ The generic constructor emits `logger.attached` once; the helper does not
 duplicate it. There is no public wrapper jitter or post-construction setter.
 Existing `new`, `open`, jitter, and
 `supervise` entry points remain source-compatible by delegating with the
-fixed `sc-cron` Noop identity. Both supervision functions return
-`Result<Captured, CronError>`.
+fixed `sc-cron` Noop identity. Both supervision functions return `Result<Captured, CronError>` and use the
+same supervision implementation. Their legacy argument lists remain unchanged.
+`PythonHook::new_with_logger(module, handle)` installs the handle before
+invocation; legacy `PythonHook::new` installs the fixed `sc-cron` Noop.
 
 Generated stderr errors are stable agent-facing strings in the established
 `CODE cause — recovery` form:

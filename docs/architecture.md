@@ -204,8 +204,8 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 
 ### Context
 
-`sc-runtime` is a `cargo-generate` template plus four published library crates
-(`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`) that together give a
+`sc-runtime` is a `cargo-generate` template plus five published library crates
+(`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`) that together give a
 new project a working daemon: an Axum HTTP server, an MCP server (the `rmcp`
 crate), a clap CLI and sqlx stores. Every operation of such a project must be
 reachable from three surfaces: a REST route, an MCP tool and a CLI command.
@@ -870,6 +870,16 @@ any request exists, and must stay usable by programs that have no async
 runtime.
 
 ### Decision
+
+The `0.1.1` types-only injection contract uses object-safe `CanonicalLog`
+behind `SharedCanonicalLog`. Legacy library constructors install fixed
+`sc-runtime` or `sc-cron` Noops; injected Arc identity survives builder phases,
+shared scheduler handles, workers and component propagation. Canonical events
+are emitted directly and rejection cannot replace application, HTTP, store,
+process or scheduler outcomes. No library owns logger flush or shutdown.
+During development the explicit local facade path preserves registry `1.5.0`
+value/error identity; the matching real registry `1.5.1` pair and removal of
+local paths remain publication requirements under b-18.
 
 1. The generated daemon MUST run on the Tokio runtime
    (`#[tokio::main] async fn main`).

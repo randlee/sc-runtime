@@ -89,8 +89,12 @@ impl SystemJitter {
     }
 }
 
-impl JitterSource for SystemJitter {
-    fn jitter(&self, max: Duration) -> Duration {
+impl SystemJitter {
+    fn sample(
+        &self,
+        max: Duration,
+        mut random: impl FnMut() -> Result<u64, getrandom::Error>,
+    ) -> Duration {
         let upper = u64::try_from(max.as_millis()).unwrap_or(u64::MAX);
         if upper == 0 {
             return Duration::ZERO;
@@ -98,7 +102,7 @@ impl JitterSource for SystemJitter {
         // Rejection sampling: drop the low values that would bias `% upper`.
         let threshold = upper.wrapping_neg() % upper;
         loop {
-            match getrandom::u64() {
+            match random() {
                 Ok(value) if value >= threshold => {
                     return Duration::from_millis(value % upper);
                 }
@@ -109,6 +113,19 @@ impl JitterSource for SystemJitter {
                 }
             }
         }
+    }
+
+    /// Exercises the real entropy-failure fallback without relying on OS failure.
+    #[cfg(feature = "test-utils")]
+    #[doc(hidden)]
+    pub fn jitter_without_entropy(&self, max: Duration) -> Duration {
+        self.sample(max, || Err(getrandom::Error::UNSUPPORTED))
+    }
+}
+
+impl JitterSource for SystemJitter {
+    fn jitter(&self, max: Duration) -> Duration {
+        self.sample(max, getrandom::u64)
     }
 }
 
