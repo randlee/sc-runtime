@@ -19,7 +19,15 @@ A schedule uses a normal crontab string of five fields: minute, hour, day of mon
 
 ## REQ-CRON-0003: Rust, Python, or Monty hook
 
-A schedule row names the in-process `Job`, a Python module, or a third target, `Monty { source }`, when the crate is built with feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`; it has no beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. A consumer may build one that inserts rows. The embedder may pass an optional maximum number of schedule rows when it opens the scheduler; this crate does not read sc-config. Writers that share one schedule database must open it with the same maximum. A Monty `cron_tick` or `cron_stop` may call the host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)`, as amended [ADR-RUN-0013](../architecture.md) decision point 4 names them. `sc_compose_run` allows only subcommand `render` on the same temp-root path as `render_template`; `bead`, `init`, and `extract` fail with `COMPOSE_SUBCOMMAND`. The host runs the embedder-configured compose program (default basename `sc-compose` on `PATH`, set via [`MontyHostConfig`](../../crates/sc-cron/src/monty_host.rs) on [`Scheduler::with_monty_host`](../../crates/sc-cron/src/scheduler.rs); hook source cannot override it) and does not start CPython. The blocking-pool thread stalls until that child exits. After the child exits, a host `Instant` past the row budget records `RunOutcome::TimedOut`. Stdout longer than the hook output cap records `Failed`. A missing compose program during `render_template` records `RunOutcome::Failed` naming the program (not `HookFailed`). A Monty feed that raises still lets worker shutdown finish. The library does not panic from hook source.
+sc-cron is a general-purpose scheduler for application-defined jobs. A schedule row names an in-process `Job`, a Python module, or `Monty { source }` under optional feature `monty`. Python and Monty receive the `sc-cron.hook.v1` object with `protocol`, `event`, `schedule`, `payload`, and `deadline`. It has no consumer-specific beads, bd-cache, or ATM field. The crate exposes no HTTP route, MCP tool, or binary. The consumer owns that API and configures schedule limits; sc-cron does not read sc-config.
+
+Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its name, positional/keyword JSON arguments, schedule name, hook phase, and row deadline and returns `Result<serde_json::Value, CronError>`; matching closures are supported. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`; invalid call arguments fail with `HOST_DENIED`; handler failure records `HOST_CALL_FAILED` after configured-value redaction. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
+
+Phase B supplies opt-in `sc_compose_run(subcommand, args)` and `atm_run(subcommand, args)` adapters through this same registry. `ScComposeHostConfig` and `AtmHostConfig` select non-empty executable paths (defaults `sc-compose` and `atm`) and working directories (default the daemon directory captured at configuration). Each adapter accepts one command/subcommand string and an optional list of string arguments, with no keyword arguments. It forwards the non-empty command/subcommand followed by those ordered arguments directly as argv, never through a shell. Every command/subcommand is supported; flags including `--root` are forwarded unchanged. Neither adapter forces render arguments or temp-root staging. Scripts choose arguments, not the configured executable or working directory. Both adapters reuse one process supervisor with row deadline, process-group termination, and `MAX_HOOK_OUTPUT_BYTES` per stream. A completed child returns `{stdout, stderr, exit_code}`, including nonzero exits; script code decides how that result affects its hook. A deadline expiration records `TimedOut`; spawn, decoding, and capture-limit failures record stable host errors. The adapters receive the resolved environment snapshot from ADR-RUN-0016. Neither CLI is required when its adapter is unused. `render_template` is not a product requirement; an internal helper may remain an implementation convenience without becoming a mandatory registered host function.
+
+MVP accepts application-supplied Monty source without signatures, a separate script-approval mechanism, or a consumer option enabling such a mechanism. Capability registration and environment policy are enforced independently. In-process Monty and custom Rust handlers retain stack-overflow, allocator-abort, panic, and non-cooperative deadline risks; they are not an isolation boundary for hostile code.
+
+The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoint VM limits, and joined shutdown behavior remain as specified by ADR-RUN-0013. Host calls use the production `drive_feed` resume loop; the cfg(test) helper is not a separate production path.
 
 ## REQ-CRON-0004: One configuration table
 
@@ -31,21 +39,17 @@ Fallible public functions return `CronError`, including both
 `process::supervise` and `process::supervise_with_logger`, which return
 `Result<Captured, CronError>`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.
 
-With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::TimedOut` instead of returning `CronError`. Stable code tokens appear in `Failed` detail strings as `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) and [`RunFailureParts`](../../crates/sc-cron/src/run_failure.rs) parse that form for agents and UIs. `ComposeHostError` is crate-private and is not an eighth public variant. The inventory matches [architecture.md](architecture.md):
+With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::TimedOut` instead of returning `CronError`. Stable code tokens appear in `Failed` detail strings as `CODE: message; recovery`. [`RunOutcome::failure_parts`](../../crates/sc-cron/src/run_failure.rs) and [`RunFailureParts`](../../crates/sc-cron/src/run_failure.rs) parse that form for agents and UIs. Host-adapter errors remain internal and do not add a public CronError variant. The inventory matches [architecture.md](architecture.md):
 
 | Condition | Code | `RunOutcome` | Operator recovery |
 |---|---|---|---|
-| Compose program not found (`ProgramNotFound`) | `COMPOSE_NOT_FOUND` | `Failed` — detail names the program (not `HookFailed`). A passed host deadline does not turn this into `TimedOut`. | Install `sc-compose` on PATH or fix the injected program name in tests. |
-| Temp root or staged file I/O (`TempRootFailed`, `StageFailed`) | `COMPOSE_SPAWN` | `Failed` | Check permissions and disk space for temp roots under `tempfile::TempDir`. |
-| Context JSON encode (`ContextEncodeFailed`) | `COMPOSE_CONTEXT` | `Failed` | Fix the template context; it could not be encoded as JSON. |
-| Program cannot be executed (`ProgramNotRunnable`) | `COMPOSE_NOT_RUNNABLE` | `Failed` | Check that the compose program is executable and allowed to start. |
-| Stdout is not UTF-8 (`OutputNotUtf8`) | `COMPOSE_OUTPUT` | `Failed` | Fix the compose program so its stdout is UTF-8. |
-| Stdout longer than the hook output cap (`OutputTooLarge`) | `COMPOSE_OUTPUT` | `Failed` | Shrink the rendered output. |
-| CLI exits non-zero (`NonZeroExit`) | `COMPOSE_EXIT` | `Failed` | Fix template/context or run `sc-compose render` manually with the logged stderr. |
-| Denied `sc-compose` subcommand (`SubcommandDenied`) | `COMPOSE_SUBCOMMAND` | `Failed` | Call `sc_compose_run` with subcommand `render` only. `bead`, `init`, and `extract` are denied. |
-| Denied host call (wrong arity, type, or name) | `HOST_DENIED` | `Failed` | Fix hook source; only `render_template` and `sc_compose_run` are allowlisted. |
+| Invalid registered call arguments | `HOST_DENIED` | `Failed` | Fix the call to match the registered handler's JSON argument contract. |
+| Registered application handler fails | `HOST_CALL_FAILED` | `Failed` | Fix the application handler; configured environment values are redacted from the recorded detail. |
+| CLI executable missing or not runnable | `HOST_SPAWN` | `Failed` | Fix the configured executable path or install the external CLI. |
+| CLI output is invalid UTF-8 or exceeds the per-stream cap | `HOST_OUTPUT` | `Failed` | Return bounded UTF-8 stdout and stderr. |
+| CLI exits nonzero | — | Script receives result | Inspect `exit_code` and bounded `stderr`; the adapter does not turn an application CLI result into an automatic hook failure. |
 | Undefined name | `HOST_UNDEFINED` | `Failed` | Fix hook source; that name is not defined. |
-| Monty `OsCall` other than `Getenv` or `GetEnviron` | `HOST_OS` | `Failed` — detail names the operation | Fix hook source; only the two environment reads plus `render_template` and `sc_compose_run` are allowlisted. |
+| Monty `OsCall` other than `Getenv` or `GetEnviron` | `HOST_OS` | `Failed` — detail names the operation | Use the configured host registry and Getenv/GetEnviron; other OS operations remain denied. |
 | Allowlisted daemon variable is not Unicode or exceeds the value cap | `ENV_PROCESS_INVALID` | `Failed` — value-free detail | Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist. |
 | `.env` path outside daemon policy | `ENV_FILE_DENIED` | `Failed` — value-free detail | Authorize the canonical file/root or remove the schedule source. |
 | Required `.env` file missing | `ENV_FILE_MISSING` | `Failed` — value-free detail | Restore the absolute file or mark the source optional. |
@@ -59,8 +63,8 @@ With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::Tim
 | Monty due task panicked or was cancelled | `DUE_JOIN_FAILED` | `Failed` | Retry the schedule; if it persists, inspect the Monty due task and hook source. |
 | Monty due path used for a non-Monty hook | `MONTY_RESOLVE` | `Failed` | Run this row on its Rust or Python target, or set `HookTarget::Monty`. |
 | `cron_tick` returned a stop action (disable/delete) | `MONTY_TICK` | `Failed` | Return normally from `cron_tick`; disable and delete belong in `cron_stop`. |
-| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce compose work or raise the row deadline; the VM clock was paused during the host call. |
-| Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Same checkpoint path as a Monty feed that never calls `render_template`. |
+| After the CLI returns, host `Instant` exceeds the row budget |  | `TimedOut`, session dropped | Reduce CLI work or raise the row deadline; the VM clock was paused during the host call. |
+| Monty feed-time-limit while the VM is executing (not during the host suspend) |  | `TimedOut` | Interpreter checkpoints govern VM execution; host handlers use the row deadline. |
 
 Host-deadline paths record bare `RunOutcome::TimedOut` with no code token in the stored outcome.
 
@@ -99,7 +103,7 @@ block is at most 32,000 UTF-8 bytes. Per-source oversize failures and aggregate
 Python starts with exactly the resolved map rather than the daemon's complete
 environment. Monty source initialization and hook feeds answer `Getenv` and
 `GetEnviron` from the same map with ordinary absent/default behavior; every
-other OS call remains denied. Render-only compose children receive that map
+other OS call remains denied. Both sc_compose_run and atm_run children receive that map
 and do not inherit the daemon environment. sc-cron never mutates the daemon
 process environment. Full semantics, limits, file authorization, and the
 release-v1 schema baseline are [ADR-RUN-0016](../architecture.md).
@@ -109,7 +113,7 @@ non-empty resolved value replaced with `[REDACTED_ENV]` before byte capping and
 before fixed codes/recovery, outcomes, events, traces, or persisted reasons are
 assembled. Stable text, metadata, and the canonical environment configuration
 write are exempt; deliberate set values remain plaintext schedule data. Python
-output, Monty exception/return text, and compose stderr are included. Trusted
+output, Monty exception/return text, and both CLI adapters' stdout/stderr are included. Trusted
 direct callers may read raw public `HookOutput` fields, but `HookOutput` debug
 formatting omits their contents. This exact-value replacement mitigates
 accidental propagation; trusted hooks can transform or exfiltrate values and
@@ -118,6 +122,8 @@ remain outside an untrusted-code boundary.
 ## NFR-CRON-0001: Allowed third-party dependencies
 
 This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. No other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
+
+The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM crates are forbidden in production dependencies/imports; test and benchmark references are permitted. CLI process invocation does not create a crate dependency.
 
 ## NFR-CRON-0002: Environment isolation and redaction
 
@@ -133,7 +139,7 @@ Canonical path authorization follows symlinks before checking an exact
 file/root policy; authorization precedes missing classification. Lookup and
 enumeration preserve spelling on Unix; Windows runtime keys are uppercased for
 both Python and Monty and lookup is case-insensitive, while stored config keeps
-the original spelling. Python and compose executables are resolved before
+the original spelling. Python, sc-compose, and ATM executables are resolved before
 child `PATH` is cleared: basenames use daemon launch `PATH`/Windows `PATHEXT`,
 absolute paths are retained, and relative paths with components use the
 daemon current directory captured when hook/host configuration is built.
@@ -145,7 +151,7 @@ reasons. Stable metadata that happens to equal a short value is not rewritten.
 `ChildEnv`, `ChildSpec`, and `PythonHook` use value-free custom `Debug` just
 like the environment model. Direct `HookOutput` field access is the sole
 trusted raw-output exception. Tests make Python,
-Monty, compose, and resolver paths echo canaries and prove redaction, positive
+Monty, both CLI adapter, and resolver paths echo canaries and prove redaction, positive
 delivery, and absence of a non-allowlisted daemon secret. Resolution performs
 file I/O off the async hot path, holds no store connection or synchronous lock
 across await, and calls no `std::env::set_var` or `std::env::remove_var`.

@@ -2,11 +2,13 @@
 
 **Audience:** Codex / plan-hardening agent  
 **Status:** Planning input only  
-**Bead:** (create epic when plan exists)
+**Bead:** Provenance only; do not create an epic or sprint from this outline.
 
 > Historical discovery snapshot: Track B Monty is now on `develop` at merge
 > `240e445`. For binding host behavior use the landed b-10/b-11 documents,
 > ADR-RUN-0013 section 4, and REQ-CRON-0003; this outline is not authority.
+> The hardened disposition is already represented by b-13 through b-18.
+> Historical candidate ids below must not be dispatched as additional work.
 
 ## One-line goal
 
@@ -17,28 +19,56 @@ Take `HookTarget::Monty` from “works in lab + minimal production bridge” to 
 | Layer | Source | State on `develop` / integration |
 |-------|--------|-----------------------------------|
 | Monty schedule target | [sprint-b-9](../phase-b/sprint-b-9-sc-cron-monty-hooks.md) | On **`develop`**: `HookTarget::Monty`, REPL per schedule, `execute_feed`, worker stop/tick gating, `monty_hook.rs` integration tests |
-| Host bridge | [sprint-b-10](../phase-b/sprint-b-10-sc-cron-monty-host-bridge.md) | On **`integrate/phase-b-monty`**: `render_template` via `feed_start` loop in `monty_run::execute_feed`, temp-root compose, `monty_host_bridge` tests |
+| Host bridge | [sprint-b-10](../phase-b/sprint-b-10-sc-cron-monty-host-bridge.md) | Landed implementation: hard-coded `render_template` and render-only `sc_compose_run`; b-16 must generalize this pre-release interface for application-owned host functions |
 | Benchmarks | [sprint-b-11](../phase-b/sprint-b-11-benchmark-monty-reports.md) | Campaign platform + `production_bridge` case (scheduler path, not lab `feed_start`) |
 | Row limit | [sprint-b-12](../phase-b/sprint-b-12-sc-cron-schedule-row-limit.md) | `ScheduleLimits` / template default |
 | Docs | `docs/sc-cron/hooks-sc-compose.md`, `docs/sc-cron/architecture.md` | Python + Monty compose patterns |
 
-**Integration branch extras (verify at plan time):** `sc_compose_run(subcommand, args)` host function, benchmark `examples.*` blocks, template observability init (unrelated to Monty logic but same PR line).
+**Reconciled integration facts:** b-10 proves host suspension and resume, but
+its fixed two-function registry is not the final general-library contract.
+`sc_compose_run(subcommand, args)` and `atm_run(subcommand, args)` are supplied
+as opt-in adapters through the shared extension interface;
+`render_template` is benchmark convenience, not a product requirement.
 
-## Gaps this spinoff should close (from phase-end QA on integration)
+## Historical QA findings and reconciled disposition
 
-Planner should turn each bucket into deliverables + acceptance tests.
+These findings explain why the hardened plan has its present acceptance tests.
+They are not a queue from which to create more sprints.
 
-### 1. ADR and contract alignment (merge-blocker class)
+### 1. ADR and contract alignment — live, owned by b-16
 
-- **ADR-RUN-0013 point 4** still describes only `render_template` on some revisions; code and **REQ-CRON-0003** also allow **`sc_compose_run`**. Sprint must either:
-  - **Amend ADR** (preferred if product keeps both): name both host functions, deny all other names, temp-root rules for render paths, subcommand policy; update consequences and `docs/sc-cron/architecture.md` in lockstep; or
-  - **Remove** `sc_compose_run` from production and docs (only if owner reverses REQ-CRON-0003).
-- **Subcommand policy (security):** phase-end **ruthless-boundary-qa** flagged hook-chosen argv to `bead`/`init`/`extract` without temp-root isolation. Plan must specify allowed subcommands (likely **`render` only** through same staging as `render_template`) and `COMPOSE_SUBCOMMAND` behavior.
-- **Mechanical gate:** unit test that production `snippet_inputs` registers exactly `__hook`, `render_template`, and (if ADR allows) `sc_compose_run`—no drift encoded in tests (see triage `RBQA-F003` on integration branch).
+The landed b-10 code and documents agree with each other, but the hard-coded
+allowlist does not satisfy the owner requirement that `sc-cron` be reusable by
+applications with their own Monty host calls. Resolve this inside existing
+sprint b-16 rather than adding another sprint:
+
+- Amend **ADR-RUN-0013 point 4**, **REQ-CRON-0003**, and
+  `docs/sc-cron/architecture.md` in lockstep around an embedder-owned registry
+  of validated Monty host names and synchronous handlers.
+- Default to no registered application calls. Deny names that the embedding
+  application did not register; hook source can invoke but cannot register or
+  replace handlers.
+- Supply `sc_compose_run` and `atm_run` as opt-in CLI adapters supporting any
+  command/subcommand. They share argv forwarding and process supervision;
+  no forced render-only or temp-root policy narrows the general interface.
+  Neither tool's Rust crates may be linked/imported by any production release
+  crate; boundary lint enforces this while allowing tests and benchmarks.
+- MVP source is application-supplied. Script signing and a separate approval
+  mechanism have no consumer-facing MVP configuration option.
+- Remove `render_template` as a mandatory product host and migrate the
+  production-bridge benchmark/example to `sc_compose_run("render", ...)`.
+  Internal helpers and lab benchmark references may retain the name.
+- Replace the fixed-name registration assertion with tests for empty-default,
+  custom registration/call/result/error, invalid/duplicate/reserved names,
+  unregistered denial, and the optional compose adapter.
+
+This does not create a new b-13-style host sprint. b-16 already owns the Monty
+product surface and is widened to close the general-library interface before
+the environment work in b-17 consumes it.
 
 **Authority files:** `docs/architecture.md` (ADR-RUN-0013), `docs/sc-cron/requirements.md` (REQ-CRON-0003), `docs/plans/phase-b/sprint-b-10-sc-cron-monty-host-bridge.md` non-goals vs current product.
 
-### 2. Operational error surfaces (rust-best-practices phase-end)
+### 2. Operational error surfaces — owned by b-15
 
 Monty compose/host paths use stable `CODE: …; recovery` strings in `monty_run`; **scheduler/worker** paths still record plain English `RunOutcome::Failed` for:
 
@@ -46,36 +76,45 @@ Monty compose/host paths use stable `CODE: …; recovery` strings in `monty_run`
 - internal resolver mismatch
 - Monty join panic/cancel (`run_due`, `worker_runs.rs`)
 
-Plan should unify **RBP-001** style detail strings across all Monty outcomes that persist to `last_outcome`.
+Sprint b-15 owns the stable origin diagnostics and persisted failure shapes;
+this outline creates no separate error-surface sprint.
 
-### 3. Test hardening (flaky-test-qa)
+### 3. Test hardening — owned by b-15
 
-`crates/sc-cron/tests/monty_hook.rs` uses **fixed `tokio::time::sleep`** (300ms/500ms/100ms) under the **`sc-cron-monty`** CI feature gate. Replace with:
+The phase-end finding was that `crates/sc-cron/tests/monty_hook.rs` used fixed
+`tokio::time::sleep` calls under the `sc-cron-monty` CI feature gate. Sprint
+b-15 owns the condition/deadline coordination and the no-fixed-sleep gate:
 
 - `RecordingStore` / watch-channel waits
 - `common::WAIT` + `timeout` on conditions tied to feed completion, disable, delete, shutdown
 - Avoid coupling correctness to wall-clock upper bounds in unit tests (`monty_compose.rs` deadline test slack)
 
-Acceptance: no fixed sleeps in `monty_hook.rs` (or justify each with injected clock); Monty job green under load.
+Its acceptance requires no fixed sleeps in `monty_hook.rs` and a green Monty
+job under load. No additional test-hardening sprint is implied.
 
-### 4. Compose stall / timeout (deferred from b-10)
+### 4. Compose stall / timeout — resolved baseline, verified by b-15
 
-**NFR-RUN-0004 / b-10 non-goals:** production waits on `Child::wait` without killing compose at row budget; **FTQ-003** asked for production-side kill of stalled `sc-compose`. Plan whether this spinoff:
+The later Track B baseline includes the process-group deadline/kill behavior
+that FTQ-003 requested. The phase plan explicitly forbids reopening that
+implementation; b-15 verifies the landed deadline, kill, output-cap, and
+the landed baseline while adding observability. b-16 then generalizes the
+host policy without reimplementing process limits.
 
-- documents accepted risk only, or
-- adds process-group kill after host deadline (without `block_on` / `supervise` on blocking pool—see b-10 architecture note), with tests on Unix.
+### 5. Product and template surfaces — owned by b-16
 
-### 5. Product and template surfaces
+- **Template:** b-16 owns the checked `cron_tick` / `cron_stop` example and
+  opt-in generated Cargo feature.
+- **Operator docs:** b-16 owns the Monty/Python/Rust guidance and security
+  boundary.
+- **beads-cache:** remains an explicit non-goal; Monty stays sc-runtime-only
+  ([decision-sync-scheduling-at-api.md](../phase-b/decision-sync-scheduling-at-api.md)).
 
-- **Template:** example Monty `cron_tick` / `cron_stop` source in generated projects (schema + `default.json` or docs-only first).
-- **Operator docs:** when to use Monty vs Python vs Rust; feature `monty` in generated daemon `Cargo.toml` behind flag.
-- **beads-cache:** explicit **non-goal**—Monty stays sc-runtime-only ([decision-sync-scheduling-at-api.md](../phase-b/decision-sync-scheduling-at-api.md)).
-
-### 6. CI and release discipline
+### 6. CI and release discipline — existing sprint acceptance
 
 - Keep **`required-features = ["monty"]`** on `monty_hook`, `monty_host_bridge`, `sc_compose_bench` (`#[ignore]` bench).
 - Rust **1.96.1** for Monty tests; default workspace **1.94.1** without feature.
-- No new workspace deps; boundaries unchanged unless ADR amends host contract only.
+- No new workspace deps for the landed host bridge. The continuation sprint
+  files contain their own exact dependency, boundary, and release gates.
 
 ### 7. Shared Python/Monty hook environment (owner-promoted 2026-10-28)
 
@@ -84,37 +123,37 @@ started under one agent's `ATM_IDENTITY` / `ATM_TEAM` must not leak that
 identity into another agent's schedule. The hardened plan therefore adds a
 shared Python/Monty environment boundary before release:
 
-- daemon configuration allowlists process variables by name for all trusted
+- daemon configuration allowlists process variables by name for application
   hooks (for example `JEV_API_KEY`), with empty defaults;
 - each schedule may load authorized full-path `.env` files and then `set`,
   resolve a provider `reference`, or `clear` individual names;
-- one resolved snapshot is used for Python and Monty stop/tick; Python and the
-  render-only compose child do not inherit the complete daemon environment;
+- one resolved snapshot is used for Python and Monty stop/tick; Python and
+  both compose/ATM CLI children receive it without full daemon inheritance;
 - Monty permits its existing `Getenv` / `GetEnviron` calls and denies every
   other OS call; source initialization can read the snapshot;
 - explicit `set` values are deliberate plaintext registry data, while daemon,
   file, and reference values are never persisted or logged;
 - Rust jobs remain trusted application code and keep their existing interface;
 - because no binary or package schema has shipped, the development v1-v4
-  migration ladder is consolidated into a fingerprinted release-v1 schema
+  migration ladder is replaced by one first-release schema
   rather than extended to v5.
 
 Binding authority is [ADR-RUN-0016](../../architecture.md),
 [REQ-CRON-0019](../../sc-cron/requirements.md), and
 [sprint b-17](../phase-b/sprint-b-17-sc-cron-hook-environment.md).
 
-## Suggested sprint split (planner may merge/split)
+## Reconciled ownership — not a sprint generator
 
-| Candidate id | Focus | Depends on |
-|--------------|-------|------------|
-| **b-13** (name TBD) | ADR + `sc_compose_run` policy + host-fn lint test + doc sync | PR #84 / Track B merged |
-| **b-14** (name TBD) | RBP error strings on scheduler/worker Monty paths | b-13 or parallel if touch disjoint files |
-| **b-15** (name TBD) | `monty_hook` flake fixes + optional compose-kill | b-13 |
-| **b-16** (name TBD) | Template Monty cron examples + generation flag | template + sc-cron schema |
-| **b-17** | Shared Python/Monty hook environment and release-v1 schema | final cron call sites + generated Monty feature/example |
-| **b-18** | Generated observability composition and release proof | b-14 + b-17 |
+| Discovery bucket | Binding owner | Disposition |
+|------------------|---------------|-------------|
+| General host registry + `sc_compose_run` and `atm_run` adapters | **b-16** | Amend the b-10 baseline; no new sprint |
+| Canonical cron errors and events | **b-13 / b-15** | Existing continuation ownership |
+| Generated Monty example and feature surface | **b-16** | Existing continuation ownership |
+| Shared Python/Monty environment and release-v1 schema | **b-17** | Existing continuation ownership |
+| Generated observability composition and release proof | **b-18** | Existing continuation ownership |
 
-Planner should assign **REQ-CRON-0003/0019**, **NFR-RUN-0004/0008/0009**, **ADR-RUN-0013/0016**, **REQ-RUN-0005**, **NFR-CRON-0001/0002** and owned_paths under `crates/sc-cron/`, `docs/sc-cron/`, `docs/architecture.md`, `template/`.
+The authoritative phase plan already assigns the listed REQ/NFR/ADR ids and
+`owned_paths`. Do not append another sprint from this historical split.
 
 ## Acceptance themes (for hardened plan)
 

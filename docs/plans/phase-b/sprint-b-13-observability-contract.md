@@ -322,13 +322,18 @@ this sprint; remaining cron taxonomy belongs to b-15.
    envelopes and stable codes. Amend NFR-RUN-0010 to bind the generated real-daemon signal tests to the
    dedicated `ubuntu-latest` GitHub-hosted job and its fail-closed three-value
    detection contract; b-18 remains the sole integration acceptance root.
-   These are observability and release amendments only: do not remove,
-   shorten, or replace ADR-RUN-0013 section 4 or REQ-CRON-0003's landed host
-   bridge, `MontyHostConfig`, `drive_feed` /
-   `execute_feed_with_compose_program`, or recovery text.
+   This sprint preserves the landed host behavior while adding observability.
+   Its successor b-16 explicitly amends ADR-RUN-0013 and REQ-CRON-0003 for
+   application-defined host registration and the two CLI adapters. That
+   authorized interface change supersedes the pre-release fixed host list;
+   it is not part of this sprint's logger migration.
 2. Add `sc-observability-types` to both boundary allowlists and crate
    manifests with the caret-compatible requirement `1.5.1`; enable its `test-util` feature only for
    dev-dependencies. Neither library may resolve `sc-observability` or OTLP.
+   ANC-031 / REQ-RUN-0005 applies throughout: this sprint adds no production
+   sc-compose or ATM crate dependency/import to any of the five release
+   crates. Test/benchmark-only references remain allowed. b-16 owns the
+   complete cross-crate enforcement fixtures and package-identity checks.
    `Cargo.lock` proves the exact resolved `1.5.1` pair.
 3. Implement the public signatures fixed above, propagate one handle through runtime
    state and `RunCoord`, and preserve all old constructor calls.

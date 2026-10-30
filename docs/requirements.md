@@ -477,6 +477,22 @@ state it.
 `sc-runtime`, and `sc-cron`; the latter two use only the types-level injected
 logger contract. The full `sc-observability` runtime remains forbidden in
 every library crate.
+In addition to the table, every production release crate (`sc-config`,
+`sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron`) MUST exclude
+sc-compose and ATM crate dependencies and Rust imports. Boundary lint rejects
+production edges/imports; companion production cargo-tree checks cover renamed
+or transitive external packages that the workspace-only boundary tool cannot
+inspect. The rule applies to every supported production feature combination
+and to normal/build dependency edges. Dev-only test and benchmark references
+are permitted. Invoking either external CLI through an application-configured
+host adapter remains permitted and does not link its Rust crate.
+Package identity, rather than dependency-key spelling, governs this rule:
+known tool packages include `sc-compose`, `sc-compose-*`, `agent-team-mail`,
+`agent-team-mail-core`, and `atm-*`; imports include the corresponding Rust
+library names such as `sc_compose` and `atm_core`. Renaming a dependency must
+not bypass the production exclusion. Test fixtures exercise those names and
+renamed equivalents instead of relying only on an `atm` prefix match.
+
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only workspace-member targets in that lint tree; crates.io names use
 criterion 5 `cargo tree` checks. sc-lint 0.8.0 cannot fail a crates.io edge,

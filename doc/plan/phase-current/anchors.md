@@ -32,12 +32,12 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-024 | retired | sc-cron is a phase-b sprint | 2026-10-25 |
 | ANC-025 | retired | sc-cron decisions stay in the ADR or reqs | 2026-10-25 |
 | ANC-026 | retired | SQLite cron runs a Rust job or python3 | 2026-10-25 |
-| REQ-CRON-0001 | locked | sc-cron is a workspace member | 2026-10-25 |
+| REQ-CRON-0001 | locked | Optional reusable cron dependency | 2026-10-25 |
 | REQ-CRON-0002 | locked | Normal five-field crontab | 2026-10-25 |
-| REQ-CRON-0003 | locked | Rust job or Python module | 2026-10-25 |
+| REQ-CRON-0003 | locked | Application-defined jobs and extensible Monty hosts | 2026-10-25 |
 | REQ-CRON-0004 | locked | One schedule table | 2026-10-25 |
 | REQ-CRON-0005 | locked | One CronError enum | 2026-10-25 |
-| ADR-RUN-0013 | locked | ADR-RUN-0013 sc-cron decision | 2026-10-25 |
+| ADR-RUN-0013 | locked | General-purpose cron and application host capabilities | 2026-10-25 |
 | ADR-RUN-0305 | locked | Generated consumer store adaptor | 2026-10-25 |
 | REQ-RUN-0313 | locked | Adaptor crate defines the stores | 2026-10-25 |
 | REQ-RUN-0314 | locked | Copy adaptor matches the remote schema | 2026-10-25 |
@@ -495,17 +495,17 @@ Beads: anchor `run-oez`, plan questions `run-oez.1`, dev questions `run-oez.2`
 
 ## REQ-CRON-0001
 
-Anchor: crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
+Anchor: sc-cron must remain an optional workspace crate; the generated daemon may enable it through cron/monty features while sc-runtime remains independent of sc-cron.
 
 > crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, Historical register quote retained as immutable provenance. Current statement follows the amended REQ-CRON-0001 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract., 2026-10-25. Status: locked. Version 5.
 
-Summary: sc-cron is a workspace member
+Summary: Optional reusable cron dependency
 
 Scope: a bead that edits Cargo.toml or crates/sc-cron
 
-Deterministic check to pair with the development gate: Cargo.toml members include crates/sc-cron, and that crate depends on no other workspace crate.
+Deterministic check to pair with the development gate: Cargo manifests keep sc-cron optional in generated daemons and absent from sc-runtime dependencies.
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `b-1`: Sprint b-1 does not carry this obligation.
@@ -519,8 +519,8 @@ Excluded from (not judged; the cell passes as `excluded`):
 Beads: anchor `run-4x5`, plan questions `run-4x5.1`, dev questions `run-4x5.2`
 
 Fixtures:
-- pass: crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
-- fail: crates/sc-cron depends on the sc-runtime library crate, and the template names sc-cron.
+- pass: The generated daemon optionally enables sc-cron through cron/monty features, and sc-runtime remains independent.
+- fail: Every generated application must link sc-cron.
 
 ## REQ-CRON-0002
 
@@ -553,17 +553,17 @@ Fixtures:
 
 ## REQ-CRON-0003
 
-Anchor: A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
+Anchor: sc-cron must run application-defined Rust, Python, and optional Monty jobs; applications can extend Monty host calls, including sc_compose_run and atm_run CLI adapters, without changing sc-cron.
 
 > A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, Historical register quote retained as immutable provenance. Current statement follows the amended REQ-CRON-0003 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract., 2026-10-25. Status: locked. Version 5.
 
-Summary: Rust job or Python module
+Summary: Application-defined jobs and extensible Monty hosts
 
 Scope: a bead that adds or edits crates/sc-cron
 
-Deterministic check to pair with the development gate: crates/sc-cron runs a Rust job or python3 <module> cron.tick or cron.stop with JSON on stdin, and has no HTTP route, MCP tool, or binary.
+Deterministic check to pair with the development gate: Host registry integration tests invoke custom, sc-compose, and ATM functions through one extension interface.
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `b-1`: Sprint b-1 does not carry this obligation.
@@ -577,8 +577,8 @@ Excluded from (not judged; the cell passes as `excluded`):
 Beads: anchor `run-anr`, plan questions `run-anr.1`, dev questions `run-anr.2`
 
 Fixtures:
-- pass: A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
-- fail: A Python schedule row is served by an HTTP route on the sc-cron crate, and the crate does not run python3.
+- pass: A consumer registers its own Monty function beside sc_compose_run and atm_run while Rust/Python jobs remain supported.
+- fail: Monty exposes only the fixed render_template function and cannot register application calls.
 
 ## REQ-CRON-0004
 
@@ -640,17 +640,17 @@ Fixtures:
 
 ## ADR-RUN-0013
 
-Anchor: sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+Anchor: sc-cron is an optional general-purpose SQLite cron library with Rust/Python/Monty hooks, application-owned host registration, and no MVP script signing or separate approval mechanism.
 
 > sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, Historical register quote retained as immutable provenance. Current statement follows the amended ADR-RUN-0013 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract., 2026-10-25. Status: locked. Version 5.
 
-Summary: ADR-RUN-0013 sc-cron decision
+Summary: General-purpose cron and application host capabilities
 
 Scope: a bead that adds or edits crates/sc-cron
 
-Deterministic check to pair with the development gate: docs/architecture.md contains ADR-RUN-0013 and docs/sc-cron/requirements.md contains REQ-CRON-0001 through REQ-CRON-0005.
+Deterministic check to pair with the development gate: The optional library provides application-defined job and Monty registration tests, and no MVP signing configuration.
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `b-1`: Sprint b-1 does not carry this obligation.
@@ -664,8 +664,8 @@ Excluded from (not judged; the cell passes as `excluded`):
 Beads: anchor `run-pny`, plan questions `run-pny.1`, dev questions `run-pny.2`
 
 Fixtures:
-- pass: sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
-- fail: sc-cron is required for every application, and a schedule string is six fields with seconds first.
+- pass: The optional SQLite cron library runs Rust/Python/Monty jobs with application-owned host registration and no MVP signing gate.
+- fail: Consumers must sign scripts before the SQLite scheduler runs them.
 
 ## ADR-RUN-0305
 
@@ -1354,7 +1354,7 @@ Anchor: Phase B provides an atm_run host integration supporting any ATM CLI comm
 
 > i am in agreement.
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Owner approved the preceding proposal: "Phase B provides an atm_run host integration supporting any ATM CLI command/subcommand through the same extension interface used by sc_compose_run." The immutable quote "i am in agreement." is the owner's response approving that exact statement., 2026-10-29. Status: locked. Version 2.
 
 Summary: ATM host integration
 
@@ -1370,7 +1370,7 @@ Anchor: Every production release crate excludes sc-compose and ATM crate depende
 
 > sc-compose and atm crates should be blocked from any production release crate.  sc-compose and atm can be referenced for tests i.e. benchmark tests
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Production tool crate boundary
 
@@ -1386,7 +1386,7 @@ Anchor: render_template is not required by the sc-cron product contract.
 
 > render_template is not a product requirement
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: No mandatory render helper
 
@@ -1402,7 +1402,7 @@ Anchor: MVP executes application-supplied Monty scripts without script signing o
 
 > for mvp this is not something available for consumers to do.
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: No MVP signing gate
 
@@ -1466,7 +1466,7 @@ Anchor: Schedule creation and updates never implicitly capture environment value
 
 > Never capture or persist inherited host values accidentally
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: No implicit environment capture
 

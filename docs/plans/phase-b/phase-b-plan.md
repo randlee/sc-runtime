@@ -109,7 +109,7 @@ head; it does not relabel or materially expand b-10 through b-12.
 | injected observability contract | `b-13` | upstream non-blocking types-only contract adoption, generated-workspace and timeout authority amendments, boundary allowlists, public injection signatures, Noop defaults, whole jitter/store/process/Monty component propagation and events, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches; Track B Monty is already present in the `develop` baseline |
 | `sc-runtime` canonical events | `b-14` | HTTP request lifecycle events through the injected handle | `b-13` |
 | `sc-cron` canonical events | `b-15` | due-run/worker event taxonomy and residual stable failure tokens | `b-13`, which owns scheduler and component logger seams plus component-owned events |
-| generated Monty product surface | `b-16` | both template dependency inventories, daemon Cargo `cron`/`monty` features, checked trusted-source hook example, product documentation | `b-10` host artifact and b-13 graph/REQ amendments; parallel with b-14 and b-15 |
+| extensible Monty product surface | `b-16` | application-defined host registry, `sc_compose_run` and `atm_run` CLI adapters, production tool-crate exclusion, both template dependency inventories, opt-in Cargo features, checked examples | `b-10` resume-loop artifact and b-13 graph/REQ amendments; parallel with b-14 and b-15 |
 | shared Python/Monty hook environment | `b-17` | daemon process-name allowlist; per-schedule absolute `.env`, set, reference, and clear operations; one Python/Monty snapshot; release-v1 schema consolidation; generated config wiring | `b-15` final cron call sites and b-16 generated feature/example |
 | generated observability composition and release proof | `b-18` | one Arc-owned logger injected into runtime and real scheduler; HTTP+cron JSONL; exact pinned-kit install and complete installed-output ownership; sc-publish `0.1.1` order/preflight, registry-only release build, and same-commit `v0.1.1` tag | `b-14`, `b-17`; human release authorization and credentials |
 
@@ -122,7 +122,7 @@ head; it does not relabel or materially expand b-10 through b-12.
 | `BOUNDARY-sc-cron` | direct `sc-observability-types`; `SqliteScheduleStore::open_with_logger`, the sole coherent `Scheduler::open_with_logger` that internally constructs logger-aware `SystemJitter`, `supervise_with_logger`, logger-aware Python hook API, and internal Monty propagation, all with source-compatible Noop legacy entry points | full observability runtime and every other workspace library | b-13 contract/component/hook API; b-15 worker call site and worker/due-run events |
 | generated daemon | direct full logger/types/transport/command edges in one composition root; Arc coercion and injection to both libraries; optional cron/monty features | libraries do not depend back on daemon | b-13 owns graph authority; b-16 owns both template Cargo inventories; b-17 owns hook-environment config; b-18 owns observability wiring and registry-release proof |
 | Python/Monty hook environment | daemon-scoped process-name and exact-file/root allowlists plus schedule `.env`, set, reference, and clear operations; three empty generated defaults; identical resolved snapshot for Python and Monty | implicit caller capture, full daemon inheritance, value-bearing debug/log paths, relative `.env` paths, Rust pseudo-sandboxing | b-17 |
-| generated Monty example | opt-in `monty` forwards trusted embedding-chosen in-process source to `sc-cron/monty`; allowed render-only hosts and filtered `Getenv`/`GetEnviron` | untrusted source, any sandbox claim, root selection, arbitrary compose subcommands, or other OS calls; host allowlisting does not remove abort risk | b-16 feature/example; b-17 environment extension |
+| Monty host extensions and examples | opt-in `monty`, application-defined host registration, `sc_compose_run` and `atm_run` supporting any command/subcommand, filtered `Getenv`/`GetEnviron` | no MVP signing/approval gate or consumer option; no implicit host registration, tool-crate production linkage, or sandbox claim | b-16 registry/adapters/features/examples; b-17 environment extension |
 
 At the planning baseline, both library boundary manifests allow `tracing` and
 neither allows `sc-observability-types`; their test-double lists are empty.
@@ -150,7 +150,7 @@ and b-15.
 | `b-13` | [sprint-b-13-observability-contract.md](sprint-b-13-observability-contract.md) | `contract` | observability | 7 |
 | `b-14` | [sprint-b-14-sc-runtime-observability.md](sprint-b-14-sc-runtime-observability.md) | `boundary` | observability | 8 |
 | `b-15` | [sprint-b-15-sc-cron-observability.md](sprint-b-15-sc-cron-observability.md) | `boundary` | observability | 8 |
-| `b-16` | [sprint-b-16-monty-template-examples.md](sprint-b-16-monty-template-examples.md) | `integration` | monty-product | 8 |
+| `b-16` | [sprint-b-16-monty-template-examples.md](sprint-b-16-monty-template-examples.md) | `boundary` | monty-product | 8 |
 | `b-17` | [sprint-b-17-sc-cron-hook-environment.md](sprint-b-17-sc-cron-hook-environment.md) | `boundary` | hook-environment | 9 |
 | `b-18` | [sprint-b-18-template-observability-integration.md](sprint-b-18-template-observability-integration.md) | `integration` | observability | 10 |
 
@@ -164,17 +164,20 @@ is authoritative for its exact `owned_paths`, relations, branch, and model.
 | b-13 | observability / `observability-injection` | shared contracts, version/manifests, signatures, whole jitter/store/process/hook/Monty components | non-blocking published types/runtime `1.5.1` pair |
 | b-14 | observability / `sc-runtime` | runtime HTTP event sites and tests | `SharedCanonicalLog`, `DaemonBuilder::logger` |
 | b-15 | observability / `sc-cron` | cron worker and due-run event sites and tests | `SharedCanonicalLog` in `RunCoord` plus b-13 component seams |
-| b-16 | monty-product / `generated-daemon-monty` | checkout/registry template Cargo inventories, trusted-source example, docs, render test | b-10 `render_template`/render-only `sc_compose_run` plus b-13 graph authority |
+| b-16 | monty-product / `monty-host-extensibility` | generic host registry, both CLI adapters, release-crate tool boundary, template Cargo inventories, checked examples | b-10 production resume loop plus b-13 graph authority; replaces its pre-release fixed two-function policy |
 | b-17 | hook-environment / `sc-cron-hook-environment` | shared persisted environment model, resolver/security policy, Python/Monty delivery, generated config/example | b-15 final cron paths plus b-16 Cargo features and example |
 | b-18 | observability / `generated-daemon-observability` | generated composition, smoke test, sc-publish pin/input plus every exact pinned-kit installed output | b-14 events and b-17 completed cron environment/product surface; a later qualifying kit revision with no `docs/sprints/**` |
 
-The compose program is embedder policy. Host resume spawns the program selected
-by `MontyHostConfig`; its default is the basename `sc-compose` on `PATH`.
-`sc-compose` is this repository's reference CLI for benchmarks, integration
-tests, and examples, while a consumer application may select another binary
-that implements the same host contract. The `production_bridge` benchmark
-demonstrates `Scheduler::run_due` -> `drive_feed` with the default program; it
-does not require every embedder to ship `sc-compose`.
+The application supplies host functions through `MontyHostRegistry` and opts
+into `sc_compose_run` and `atm_run` through `ScComposeHostConfig` and
+`AtmHostConfig`. Each adapter invokes an embedder-selected external executable
+with unchanged command/subcommand arguments and the configured working
+directory. Defaults are `sc-compose` and `atm` on `PATH`. Enabling Monty does
+not register either adapter, require either executable, or link either tool's
+Rust crates. The `production_bridge` benchmark demonstrates the scheduler's
+production resume loop with the compose adapter; b-16 also proves ATM and a
+custom application handler through the same extension interface. The adapters
+support all command/subcommands rather than a render-only library policy.
 
 ### Continuation acceptance roots
 
@@ -183,7 +186,7 @@ does not require every embedder to ship `sc-compose`.
 | injected types edge, Noop compatibility, and public library injection seams | b-13 contract tests plus boundary lint | b-14, b-15, b-17, and b-18 consume; they do not redefine the seams |
 | canonical HTTP event taxonomy | b-14 `observability_http` test | b-18 consumes the events in its generated-process proof |
 | canonical cron event taxonomy | b-15 `observability` test | b-17 preserves and b-18 consumes the events |
-| generated `cron`/`monty` product surface and trusted-source example | b-16 `test_monty_example` | b-17 extends the example for environment inputs without reopening its Cargo features |
+| host registration, both CLI adapters, production tool-crate exclusion, and generated features/examples | b-16 `monty_host_bridge`, `test_production_tool_boundary`, and `test_monty_example` | b-17 supplies environment inputs through the completed registry/adapters without reopening Cargo features |
 | shared Python/Monty hook environment and release-v1 schedule schema | b-17 `hook_environment`, `monty_host_bridge`, `test_cron_environment`, and the `windows-latest` parity job | b-18 consumes the generated configuration and real scheduler path |
 | generated composition, JSONL, release, and signal-shutdown proof | b-18 `test_observability` and consumer preflight | none; this is the continuation integration close |
 
@@ -224,8 +227,11 @@ boundary, lockfile, library manifests, public injection signatures, and the
 whole jitter/store/process/hook/Monty component files and their events/API.
 b-14 owns runtime event sites; b-15 owns only worker and due-run trace sites
 and the worker call passing the handle into b-13's hook API. b-16 exclusively
-owns both template dependency inventories, daemon Cargo, and the first Monty
-example. Serial consumer sprints intentionally extend predecessor-owned paths:
+owns the host registry/adapters, all production tool-crate boundary checks,
+both template dependency inventories, daemon Cargo, and the first Monty
+example. Its shared authority and library paths are serial successors of
+b-13 and remain disjoint from its wave-8 siblings. Serial consumer sprints
+intentionally extend predecessor-owned paths:
 b-17 follows b-15 and b-16 and then amends the environment model, storage,
 final cron call sites, generated environment configuration, and the example;
 b-18 follows b-17 and amends the generated cron composition without weakening
@@ -288,9 +294,10 @@ commit tagged `v0.1.1` before any further source or manifest change.
 - SQL Server. sqlx has no driver for it.
 - A checkpoint that re-runs every earlier sprint. `b-8` is the generation integration sprint for the six layouts.
 - Treating `b-11` as a second phase-wide integration checkpoint. It closes the Monty campaign only. `b-8` still closes the six layouts.
-- Reopening b-10 through b-12 render-only compose, fixed-wait,
-  process-group deadline, benchmark, or row-limit work. The continuation only
-  verifies those merged results.
+- Reimplementing b-10 through b-12 fixed-wait, process-group deadline, benchmark
+  platform, or row-limit work. b-16 deliberately replaces the pre-release
+  fixed host list and render-only policy with the approved extensible interface;
+  it consumes the existing process limits rather than redesigning them.
 - Owning upstream observability source/publication, default OTLP, a tracing
   bridge, Monty OS calls beyond b-17's `Getenv`/`GetEnviron`, or injection into
   every workspace crate.

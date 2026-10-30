@@ -1332,25 +1332,25 @@
       "id": "REQ-CRON-0001",
       "source_type": "REQ",
       "source_ref": "REQ-CRON-0001",
-      "statement": "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.",
+      "statement": "sc-cron must remain an optional workspace crate; the generated daemon may enable it through cron/monty features while sc-runtime remains independent of sc-cron.",
       "quote": "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-10-25",
-      "context": "requirements register",
-      "summary": "sc-cron is a workspace member",
+      "context": "Historical register quote retained as immutable provenance. Current statement follows the amended REQ-CRON-0001 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract.",
+      "summary": "Optional reusable cron dependency",
       "scope": "a bead that edits Cargo.toml or crates/sc-cron",
-      "deterministic_check": "Cargo.toml members include crates/sc-cron, and that crate depends on no other workspace crate.",
+      "deterministic_check": "Cargo manifests keep sc-cron optional in generated daemons and absent from sc-runtime dependencies.",
       "fixtures": {
         "pass": [
-          "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it."
+          "The generated daemon optionally enables sc-cron through cron/monty features, and sc-runtime remains independent."
         ],
         "fail": [
-          "crates/sc-cron depends on the sc-runtime library crate, and the template names sc-cron."
+          "Every generated application must link sc-cron."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 5,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -1428,6 +1428,32 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T00:58:12+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary"
+          ],
+          "previous_statement": "crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it."
+        },
+        {
+          "at": "2026-10-30T00:58:54+00:00",
+          "event": "updated",
+          "fields": [
+            "deterministic_check",
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-30T01:00:28.006Z",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "requirements register",
+          "reason": "Identify approved amendment authority while preserving superseded source quote."
         }
       ],
       "exclude": [
@@ -1608,25 +1634,25 @@
       "id": "REQ-CRON-0003",
       "source_type": "REQ",
       "source_ref": "REQ-CRON-0003",
-      "statement": "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.",
+      "statement": "sc-cron must run application-defined Rust, Python, and optional Monty jobs; applications can extend Monty host calls, including sc_compose_run and atm_run CLI adapters, without changing sc-cron.",
       "quote": "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-10-25",
-      "context": "requirements register",
-      "summary": "Rust job or Python module",
+      "context": "Historical register quote retained as immutable provenance. Current statement follows the amended REQ-CRON-0003 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract.",
+      "summary": "Application-defined jobs and extensible Monty hosts",
       "scope": "a bead that adds or edits crates/sc-cron",
-      "deterministic_check": "crates/sc-cron runs a Rust job or python3 <module> cron.tick or cron.stop with JSON on stdin, and has no HTTP route, MCP tool, or binary.",
+      "deterministic_check": "Host registry integration tests invoke custom, sc-compose, and ATM functions through one extension interface.",
       "fixtures": {
         "pass": [
-          "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary."
+          "A consumer registers its own Monty function beside sc_compose_run and atm_run while Rust/Python jobs remain supported."
         ],
         "fail": [
-          "A Python schedule row is served by an HTTP route on the sc-cron crate, and the crate does not run python3."
+          "Monty exposes only the fixed render_template function and cannot register application calls."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 5,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -1704,6 +1730,32 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T00:58:12+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary"
+          ],
+          "previous_statement": "A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary."
+        },
+        {
+          "at": "2026-10-30T00:58:54+00:00",
+          "event": "updated",
+          "fields": [
+            "deterministic_check",
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-30T01:00:28.012Z",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "requirements register",
+          "reason": "Identify approved amendment authority while preserving superseded source quote."
         }
       ],
       "exclude": [
@@ -2007,25 +2059,25 @@
       "id": "ADR-RUN-0013",
       "source_type": "ADR",
       "source_ref": "ADR-RUN-0013",
-      "statement": "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
+      "statement": "sc-cron is an optional general-purpose SQLite cron library with Rust/Python/Monty hooks, application-owned host registration, and no MVP script signing or separate approval mechanism.",
       "quote": "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-10-25",
-      "context": "requirements register",
-      "summary": "ADR-RUN-0013 sc-cron decision",
+      "context": "Historical register quote retained as immutable provenance. Current statement follows the amended ADR-RUN-0013 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract.",
+      "summary": "General-purpose cron and application host capabilities",
       "scope": "a bead that adds or edits crates/sc-cron",
-      "deterministic_check": "docs/architecture.md contains ADR-RUN-0013 and docs/sc-cron/requirements.md contains REQ-CRON-0001 through REQ-CRON-0005.",
+      "deterministic_check": "The optional library provides application-defined job and Monty registration tests, and no MVP signing configuration.",
       "fixtures": {
         "pass": [
-          "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin."
+          "The optional SQLite cron library runs Rust/Python/Monty jobs with application-owned host registration and no MVP signing gate."
         ],
         "fail": [
-          "sc-cron is required for every application, and a schedule string is six fields with seconds first."
+          "Consumers must sign scripts before the SQLite scheduler runs them."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 5,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -2103,6 +2155,32 @@
           "item": "b-8",
           "reason": "Sprint b-8 does not carry this obligation.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T00:58:12+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary"
+          ],
+          "previous_statement": "sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin."
+        },
+        {
+          "at": "2026-10-30T00:58:54+00:00",
+          "event": "updated",
+          "fields": [
+            "deterministic_check",
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-10-30T01:00:28.012Z",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "requirements register",
+          "reason": "Identify approved amendment authority while preserving superseded source quote."
         }
       ],
       "exclude": [
@@ -5226,7 +5304,7 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-10-29",
-      "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+      "context": "Owner approved the preceding proposal: \"Phase B provides an atm_run host integration supporting any ATM CLI command/subcommand through the same extension interface used by sc_compose_run.\" The immutable quote \"i am in agreement.\" is the owner's response approving that exact statement.",
       "summary": "ATM host integration",
       "scope": "implements Phase B Monty integrations",
       "deterministic_check": "An ATM executable fixture is invoked through the same registry as sc_compose_run.",
@@ -5235,7 +5313,7 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5257,6 +5335,15 @@
             "plan_questions": "run-7l7.1",
             "dev_questions": "run-7l7.2"
           }
+        },
+        {
+          "at": "2026-10-29T18:00:00-07:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
+          "reason": "Restore explicit antecedent of the owner's approval without changing quote or approved statement."
         }
       ]
     },
@@ -5266,7 +5353,7 @@
       "source_ref": null,
       "statement": "Every production release crate excludes sc-compose and ATM crate dependencies and Rust imports, enforced by boundary lint; test and benchmark references are permitted.",
       "quote": "sc-compose and atm crates should be blocked from any production release crate.  sc-compose and atm can be referenced for tests i.e. benchmark tests",
-      "kind": "directive",
+      "kind": "prohibition",
       "stated_by": "randlee",
       "stated_at": "2026-10-29",
       "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
@@ -5278,7 +5365,7 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5300,6 +5387,13 @@
             "plan_questions": "run-z1z.1",
             "dev_questions": "run-z1z.2"
           }
+        },
+        {
+          "at": "2026-10-30T00:59:41+00:00",
+          "event": "updated",
+          "fields": [
+            "kind"
+          ]
         }
       ]
     },
@@ -5309,7 +5403,7 @@
       "source_ref": null,
       "statement": "render_template is not required by the sc-cron product contract.",
       "quote": "render_template is not a product requirement",
-      "kind": "directive",
+      "kind": "prohibition",
       "stated_by": "randlee",
       "stated_at": "2026-10-29",
       "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
@@ -5321,7 +5415,7 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5343,6 +5437,13 @@
             "plan_questions": "run-bn5.1",
             "dev_questions": "run-bn5.2"
           }
+        },
+        {
+          "at": "2026-10-30T00:59:41+00:00",
+          "event": "updated",
+          "fields": [
+            "kind"
+          ]
         }
       ]
     },
@@ -5352,7 +5453,7 @@
       "source_ref": null,
       "statement": "MVP executes application-supplied Monty scripts without script signing or a separate approval mechanism.",
       "quote": "for mvp this is not something available for consumers to do.",
-      "kind": "directive",
+      "kind": "prohibition",
       "stated_by": "randlee",
       "stated_at": "2026-10-29",
       "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
@@ -5364,7 +5465,7 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5386,6 +5487,13 @@
             "plan_questions": "run-wdb.1",
             "dev_questions": "run-wdb.2"
           }
+        },
+        {
+          "at": "2026-10-30T00:59:41+00:00",
+          "event": "updated",
+          "fields": [
+            "kind"
+          ]
         }
       ]
     },
@@ -5524,7 +5632,7 @@
       "source_ref": null,
       "statement": "Schedule creation and updates never implicitly capture environment values from the caller or daemon process.",
       "quote": "Never capture or persist inherited host values accidentally",
-      "kind": "directive",
+      "kind": "prohibition",
       "stated_by": "randlee",
       "stated_at": "2026-10-29",
       "context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
@@ -5536,7 +5644,7 @@
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5558,6 +5666,13 @@
             "plan_questions": "run-5z3.1",
             "dev_questions": "run-5z3.2"
           }
+        },
+        {
+          "at": "2026-10-30T00:59:41+00:00",
+          "event": "updated",
+          "fields": [
+            "kind"
+          ]
         }
       ]
     },

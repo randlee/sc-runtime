@@ -102,7 +102,11 @@ Deliverable: semver story, changelog, and sc-runtime dependency bump plan.
 - **beads-cache / external consumers:** document that injection is **embedder responsibility**; libraries remain usable without logger (Noop default?)
 - Publish order: **types patch** → **sc-runtime / sc-cron** → template
 
-## Suggested sprint split (planner may merge)
+## Historical suggested split — superseded by b-13 through b-18
+
+This table records discovery provenance. The phase plan and approved anchors
+define current ownership; do not dispatch these candidate ids or create more
+sprints from this outline.
 
 | Candidate id | Focus | Depends on |
 |--------------|-------|------------|
@@ -111,7 +115,8 @@ Deliverable: semver story, changelog, and sc-runtime dependency bump plan.
 | **obs-3** | sc-cron injection + cron target taxonomy | obs-1; parallel with obs-2 if paths disjoint |
 | **obs-4** | Template wire-up + e2e log assertion | obs-2, obs-3 |
 
-Single sprint is possible if one implementer and narrow scope (template + sc-runtime only, cron deferred)—planner should use **plan-scope-reviewer** if width > 2 parallel tracks.
+The hardened continuation includes both runtime and cron injection. The
+historical option to defer cron is not an active scope choice.
 
 ## Acceptance themes
 

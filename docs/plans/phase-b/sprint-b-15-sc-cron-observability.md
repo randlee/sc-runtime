@@ -46,7 +46,8 @@ the two residual persisted free-text failures at the sites already owned here.
 `must_follow` b-13 because this sprint consumes `SharedCanonicalLog` from
 `RunCoord` and the fixed scheduler injection contract. Merge b-13 into this
 branch before every development or fix round. It is `parallel_safe` with b-14
-and b-16 because their runtime/template paths do not intersect this crate.
+and b-16 because its worker/due-run paths are disjoint from b-16's
+host-registry, CLI-adapter, authority, and template paths.
 
 ## Event contract
 
@@ -162,8 +163,9 @@ field keys. Every failed emission is ignored after the attempt.
    values are absent; arbitrary consumer prose remains trusted input rather
    than an unimplementable claim that all possible secrets are detected.
 5. `cargo +1.96.1 test -p sc-cron --features monty` passes against the landed
-   allowlist, host deadline, process-group kill, and render-only host behavior
-   without this sprint reimplementing those components.
+   host deadline and process-group kill behavior without this sprint
+   reimplementing those components. The pre-release render-only host list is
+   b-16-owned successor work; this sprint does not freeze it as a product rule.
 6. `boundary:BOUNDARY-sc-cron`: the table-driven `observability` test passes
    every exact event row and cardinality, and the owned-file tracing grep
    returns no match.

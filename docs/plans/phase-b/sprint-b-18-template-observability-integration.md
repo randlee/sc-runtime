@@ -203,6 +203,7 @@ pub fn open(
     instance_root: &std::path::Path,
     logger: SharedCanonicalLog,
     hook_environment: HookEnvironmentHost,
+    #[cfg(feature = "monty")] monty_hosts: sc_cron::MontyHostRegistry,
 ) -> Result<Scheduler<SqliteScheduleStore, SystemClock, SystemJitter>, CronError>;
 ```
 
@@ -219,7 +220,7 @@ let scheduler = Scheduler::open_with_logger(
 .with_hook_environment(hook_environment);
 
 #[cfg(feature = "monty")]
-let scheduler = scheduler.with_monty_host(monty_host);
+let scheduler = scheduler.with_monty_hosts(monty_hosts);
 
 Ok(scheduler)
 ```
@@ -227,14 +228,17 @@ Ok(scheduler)
 `Scheduler::open_with_logger` constructs
 `SystemJitter::with_logger(logger.clone())` internally, so callers cannot
 pair the store and `RunCoord` handle with a differently configured jitter.
-`main` builds `hook_environment` from generated daemon config through b-17's
-typed builder, attaches the application's reference resolver when it has one,
-and passes the completed host policy into `cron::open`. It retains empty
-defaults, daemon-name allowlist, authorized exact dotenv files/roots, and the
-resolver; `cron::open` does not recreate or overwrite that policy. Final
-composition does not weaken it. `with_hook_environment` applies for
-every `cron` build; `with_monty_host` is compiled and applied only when the
-generated `monty` feature enables `sc-cron/monty`.
+`main` builds `hook_environment` through b-17's typed config builder and
+passes it with the application's resolver into `cron::open` unchanged.
+ANC-034/035: Python and Monty use identical schedule-environment settings and
+resolution; daemon values enter only through names explicitly allowed by
+daemon config. Empty defaults, authorized dotenv files/roots, and the resolver
+are preserved. `with_hook_environment` applies for
+every `cron` build; `with_monty_hosts` is compiled and applied only when the
+generated `monty` feature enables `sc-cron/monty`. The application supplies
+that completed registry, empty by default or explicitly registering b-16's
+compose/ATM adapters and its own handlers. `cron::open` preserves the registry
+instead of recreating a fixed host list or implicitly enabling either CLI.
 
 `Observability` creates `Arc<Logger>` once and derives `shared` by Arc
 coercion; it never clones `Logger`. `main` injects clones of the shared handle,
