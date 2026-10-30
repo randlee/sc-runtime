@@ -80,8 +80,8 @@ sc-cron remains a general-purpose library for application-defined jobs.
 MVP executes application-supplied Monty source without signature verification,
 a separate approval check, or a consumer option enabling either.
 Update `template/examples/monty/cron.py` to demonstrate this environment policy
-through CLI adapters. `render_template` may remain an internal helper; it is
-not a required sc-cron product API.
+through CLI adapters. ANC-032 applies: this example and its tests must work
+without `render_template`, an optional helper rather than a required product API.
 Rust jobs retain their application interface and process environment; nonempty
 schedule environment on a Rust target is InvalidSpec.
 ANC-031 applies to this work: all production release crates continue to exclude
