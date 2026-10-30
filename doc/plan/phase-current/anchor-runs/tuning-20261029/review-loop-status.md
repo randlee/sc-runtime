@@ -50,6 +50,15 @@ the review diff.
 
 ## Final planning gate state
 
+The subsequent owner-requested full gate is recorded in
+approval-gate-20261030/README.md. It selected all 44 locked anchors. b-16
+completed but did not pass; b-13 and b-17 were rejected before execution by
+automatic approval review, which required more explicit external-transfer
+authorization. No alternative execution path or retry was attempted. The
+overall gate remains incomplete and the task remains in progress. The list
+below preserves the earlier scoped-run state rather than describing the new
+all-anchor attempt.
+
 - b-13: passed the scoped final gate with deployed questions.
 - b-16: no final verdict. Automatic approval review rejected sending the full
   sprint and anchors to https://api.typesafe.ai/v1/systemone, even after the
