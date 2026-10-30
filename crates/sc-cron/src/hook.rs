@@ -36,7 +36,7 @@ use std::time::{Duration, Instant};
 use serde_json::{Value, json};
 
 use crate::clock::wall_after;
-use crate::process::{Capped, ChildEnv, ChildSpec, TempCwd, supervise};
+use crate::process::{Capped, ChildEnv, ChildSpec, TempCwd, supervise_with_logger};
 use crate::{Clock, CronError, Job, RunOutcome, RunTimeout, ScheduleName, StopDecision, Timestamp};
 
 /// The `protocol` member of every hook request.
@@ -115,8 +115,9 @@ impl HookEvent {
 /// assert!(PythonHook::new("-c").is_err());
 /// # Ok::<(), sc_cron::CronError>(())
 /// ```
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone)]
 pub struct PythonHook {
+    logger: sc_observability_types::SharedCanonicalLog,
     program: PathBuf,
     module: PathBuf,
     env: ChildEnv,
@@ -145,6 +146,22 @@ pub fn is_identifier(text: &str) -> bool {
         && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
 }
 
+impl std::fmt::Debug for PythonHook {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PythonHook")
+            .field("program", &self.program)
+            .field("module", &self.module)
+            .field("env", &self.env)
+            .finish_non_exhaustive()
+    }
+}
+impl PartialEq for PythonHook {
+    fn eq(&self, other: &Self) -> bool {
+        self.program == other.program && self.module == other.module && self.env == other.env
+    }
+}
+impl Eq for PythonHook {}
+
 impl PythonHook {
     /// Validates `module` and makes a relative path absolute.
     ///
@@ -156,6 +173,17 @@ impl PythonHook {
     /// [`CronError::InvalidSpec`] if `module` breaks [`HookTarget::python`]'s
     /// rules, or the working directory cannot be read for a relative path.
     pub fn new(module: impl AsRef<Path>) -> Result<Self, CronError> {
+        Self::new_with_logger(module, crate::noop_logger())
+    }
+
+    /// Validates a Python hook using a shared best-effort canonical logger.
+    ///
+    /// # Errors
+    /// Returns the same validation errors as `new`.
+    pub fn new_with_logger(
+        module: impl AsRef<Path>,
+        logger: sc_observability_types::SharedCanonicalLog,
+    ) -> Result<Self, CronError> {
         let crate::HookTarget::Python { module } = crate::HookTarget::python(module)? else {
             return Err(CronError::InvalidSpec("module path is empty".to_owned()));
         };
@@ -172,6 +200,7 @@ impl PythonHook {
         };
         Ok(Self {
             program: PathBuf::from("python3"),
+            logger,
             module,
             env: ChildEnv::Inherit,
         })
@@ -266,16 +295,21 @@ impl PythonHook {
             input: input.as_bytes(),
             env: self.env.clone(),
         };
-        let captured = supervise(&spec, MAX_HOOK_OUTPUT_BYTES, expiry)
-            .await
-            .map_err(|error| {
-                CronError::HookFailed(format!(
-                    "{} {} {}: {error}",
-                    self.program.display(),
-                    self.module.display(),
-                    call.event.as_str()
-                ))
-            })?;
+        let captured = supervise_with_logger(
+            &spec,
+            MAX_HOOK_OUTPUT_BYTES,
+            expiry,
+            Arc::clone(&self.logger),
+        )
+        .await
+        .map_err(|error| {
+            CronError::HookFailed(format!(
+                "{} {} {}: {error}",
+                self.program.display(),
+                self.module.display(),
+                call.event.as_str()
+            ))
+        })?;
         let text = |capped: Capped| {
             (
                 String::from_utf8_lossy(&capped.bytes).into_owned(),

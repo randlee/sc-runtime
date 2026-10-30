@@ -3,6 +3,9 @@
 use std::future::{Future, IntoFuture};
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+
+use sc_observability_types::{NoopCanonicalLog, SharedCanonicalLog};
 
 use rmcp::transport::streamable_http_server::StreamableHttpService;
 use sc_transport::{AppName, Endpoint};
@@ -65,7 +68,16 @@ pub struct DaemonBuilder<Phase, S = (), StoresFn = (), RoutesFn = ()> {
     /// Erased inside `mcp` so the public builder does not grow a public trait.
     mount: Option<Box<dyn FnOnce(axum::Router, S) -> axum::Router + Send>>,
     control: RunControl,
+    pub(crate) logger: SharedCanonicalLog,
     _phase: PhantomData<fn() -> (Phase, S)>,
+}
+
+impl<P, S, F, R> std::fmt::Debug for DaemonBuilder<P, S, F, R> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DaemonBuilder")
+            .field("service", self.logger.service_name())
+            .finish_non_exhaustive()
+    }
 }
 
 impl Daemon {
@@ -82,12 +94,23 @@ impl Daemon {
             routes: (),
             mount: None,
             control: RunControl::production(),
+            logger: Arc::new(NoopCanonicalLog::named_or_default("sc-runtime")),
             _phase: PhantomData,
         }
     }
 }
 
 impl<Phase, S, StoresFn, RoutesFn> DaemonBuilder<Phase, S, StoresFn, RoutesFn> {
+    /// Replaces the canonical logger without changing the builder state.
+    ///
+    /// Logging is optional and best effort. The application owns the logger's
+    /// construction, flushing and shutdown; a legacy builder uses `sc-runtime`.
+    #[must_use]
+    pub fn logger(mut self, logger: SharedCanonicalLog) -> Self {
+        self.logger = logger;
+        self
+    }
+
     #[cfg(feature = "test-util")]
     pub(crate) fn with_control(mut self, control: RunControl) -> Self {
         self.control = control;
@@ -114,6 +137,7 @@ impl DaemonBuilder<NeedStores> {
             routes: (),
             mount: None,
             control: self.control,
+            logger: self.logger,
             _phase: PhantomData,
         }
     }
@@ -142,6 +166,7 @@ where
             routes,
             mount: None,
             control: self.control,
+            logger: self.logger,
             _phase: PhantomData,
         }
     }
@@ -210,6 +235,7 @@ where
             routes,
             mount,
             control,
+            logger,
             ..
         } = self;
         let check_mcp = mount.is_some();
@@ -217,6 +243,7 @@ where
             &app,
             &config,
             control,
+            logger,
             stores,
             routes,
             check_mcp,
@@ -229,10 +256,15 @@ where
     }
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "assembly retains the existing closures and control plus shared logger"
+)]
 async fn drive<S, FStores, Fut, FRoutes, Apply>(
     app: &AppName,
     config: &DaemonConfig,
     mut control: RunControl,
+    _logger: SharedCanonicalLog,
     stores_fn: FStores,
     routes_fn: FRoutes,
     check_mcp: bool,

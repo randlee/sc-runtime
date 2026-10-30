@@ -466,6 +466,7 @@ async fn run_monty_due<C: Clock + 'static>(
         &schedule,
         deadline,
         Arc::clone(&compose_program),
+        Arc::clone(&coord.logger),
     )
     .await;
     match stop.result {
@@ -521,6 +522,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
         &schedule,
         deadline,
         compose_program,
+        Arc::clone(&coord.logger),
     )
     .await;
     let report = match tick.result {
@@ -554,10 +556,12 @@ async fn feed_once<C: Clock + ?Sized>(
     schedule: &Schedule,
     deadline: std::time::Instant,
     compose_program: Arc<std::path::PathBuf>,
+    logger: sc_observability_types::SharedCanonicalLog,
 ) -> crate::monty_run::FeedDone {
     crate::monty_run::drive_feed(
         clock,
         crate::monty_run::FeedLaunch {
+            logger,
             session,
             source,
             phase,

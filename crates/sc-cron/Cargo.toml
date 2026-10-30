@@ -10,7 +10,6 @@ authors.workspace = true
 homepage.workspace = true
 readme = "README.md"
 documentation = "https://docs.rs/sc-cron"
-publish = false
 keywords = ["cron", "scheduler", "sqlite", "tokio"]
 categories = ["date-and-time", "asynchronous"]
 
@@ -25,6 +24,7 @@ monty = ["dep:monty", "dep:monty-types"]
 monty-test-handshake = ["monty"]
 
 [dependencies]
+sc-observability-types.workspace = true
 async-trait = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
 cron = "0.17"
@@ -46,9 +46,10 @@ monty = { version = "1.4.0", optional = true }
 monty-types = { version = "1.4.0", optional = true }
 
 [dev-dependencies]
+sc-observability-types = { workspace = true, features = ["test-util"] }
 # Self-reference so a plain `cargo test` builds the integration tests with
 # `test-utils`; no `required-features` gate silently skips them.
-sc-cron = { version = "0.1.0", path = ".", features = ["test-utils"] }
+sc-cron = { version = "0.1.1", path = ".", features = ["test-utils"] }
 libc = "0.2"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util", "time"] }
 

@@ -19,6 +19,7 @@ roots = ["Daemon", "DaemonBuilder", "DaemonConfig", "RuntimeError", "testing"]
 [dependencies]
 allowed_dependents = []
 allowed_dependencies = [
+  "sc-observability-types",
   "sc-transport",
   "sc-command",
   "axum",
@@ -30,11 +31,8 @@ allowed_dependencies = [
   "rmcp",
   "tracing",
 ]
-# sqlx, sc-observability, and sc-observability-otlp are not workspace members.
-# sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree
-# enforces those edges. sc-observability-types is direct-only: a transitive
-# line through sc-command is allowed, and a direct dependency is rejected by
-# cargo tree rather than a forbidden edge that would also fail that crate.
+# Full observability runtime and OTLP remain forbidden; cargo-tree contract
+# tests enforce external package identities that sc-boundary cannot target.
 forbidden_edges = [
   "sc-runtime -> sc-config",
   "sc-runtime -> sc-runtime-db-sqlite",

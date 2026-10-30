@@ -16,6 +16,7 @@ use crate::ScheduleName;
 
 /// Claims shared by a scheduler, its worker, and `run_due`.
 pub(crate) struct RunCoord {
+    pub logger: sc_observability_types::SharedCanonicalLog,
     /// Monty joins whose feed has not yet finished its outcome write.
     pub feeds: Arc<AtomicUsize>,
     /// Serializes the atomic update with [`Self::feed_level`] so a waiter cannot observe a stale count.
@@ -32,8 +33,14 @@ pub(crate) struct RunCoord {
 }
 
 impl RunCoord {
+    #[cfg(test)]
     pub(crate) fn new() -> Self {
+        Self::with_logger(crate::noop_logger())
+    }
+
+    pub(crate) fn with_logger(logger: sc_observability_types::SharedCanonicalLog) -> Self {
         Self {
+            logger,
             feeds: Arc::new(AtomicUsize::new(0)),
             feed_lock: Mutex::new(()),
             feed_level: watch::channel(0).0,

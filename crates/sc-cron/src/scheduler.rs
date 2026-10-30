@@ -30,6 +30,7 @@ use crate::{
     Clock, CronError, Generation, JitterSource, Job, NewSchedule, RunOutcome, Schedule, ScheduleId,
     ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp, jitter,
 };
+use sc_observability_types::{Level, SharedCanonicalLog};
 
 mod run_due;
 
@@ -279,6 +280,29 @@ where
     /// policy is [`MissedTickPolicy::Coalesce`].
     #[must_use]
     pub fn new(store: Arc<S>, clock: Arc<C>, jitter: Arc<J>) -> Self {
+        Self::new_with_logger(store, clock, jitter, crate::noop_logger())
+    }
+
+    /// Creates a scheduler with a shared, best-effort canonical logger.
+    ///
+    /// The supplied store, clock and jitter remain unchanged and own their
+    /// internal logging. Application code owns logger flush and shutdown.
+    #[must_use]
+    pub fn new_with_logger(
+        store: Arc<S>,
+        clock: Arc<C>,
+        jitter: Arc<J>,
+        logger: SharedCanonicalLog,
+    ) -> Self {
+        crate::emit_event(
+            &logger,
+            "cron.scheduler",
+            "logger.attached",
+            Level::Info,
+            "success",
+            None,
+            serde_json::Map::new(),
+        );
         #[cfg(feature = "monty")]
         let monty_host = crate::MontyHostConfig::default();
         Self {
@@ -291,7 +315,7 @@ where
             policy: MissedTickPolicy::default(),
             reload_poll: DEFAULT_RELOAD_POLL,
             worker_live: Arc::new(AtomicBool::new(false)),
-            coord: Arc::new(RunCoord::new()),
+            coord: Arc::new(RunCoord::with_logger(logger)),
             #[cfg(feature = "monty")]
             monty_host: monty_host.clone(),
             #[cfg(feature = "monty")]
@@ -600,6 +624,7 @@ where
             shutdown: Some(shutdown),
             task: Some(task),
             feeds: Arc::clone(&self.coord.feeds),
+            logger: Arc::clone(&self.coord.logger),
         }
     }
 }
@@ -678,6 +703,28 @@ where
             )));
         }
         Ok(Self::new(Arc::new(store), clock, jitter))
+    }
+}
+
+impl<C: Clock + 'static> Scheduler<SqliteScheduleStore, C, crate::SystemJitter> {
+    /// Opens built-in components sharing one canonical logger.
+    ///
+    /// # Errors
+    /// Returns `CronError` when the store cannot be opened or validated.
+    pub fn open_with_logger(
+        path: impl AsRef<std::path::Path>,
+        limits: ScheduleLimits,
+        clock: Arc<C>,
+        logger: SharedCanonicalLog,
+    ) -> Result<Self, CronError> {
+        let store = SqliteScheduleStore::open_with_logger(path, limits, Arc::clone(&logger))?;
+        let jitter = crate::SystemJitter::with_logger(Arc::clone(&logger));
+        Ok(Self::new_with_logger(
+            Arc::new(store),
+            clock,
+            Arc::new(jitter),
+            logger,
+        ))
     }
 }
 
@@ -767,7 +814,8 @@ pub(super) async fn blocking<T: Send + 'static>(
 impl<S: ScheduleStore, C: Clock, J: JitterSource> std::fmt::Debug for Scheduler<S, C, J> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut dbg = f.debug_struct("Scheduler");
-        dbg.field("policy", &self.policy)
+        dbg.field("service", self.coord.logger.service_name())
+            .field("policy", &self.policy)
             .field(
                 "max_schedule_rows",
                 &self.core.store.limits().max_schedule_rows,
@@ -794,11 +842,20 @@ impl Drop for LiveGuard {
 /// the handle signals the worker to stop and does not wait. The worker then
 /// drains its in-flight runs detached, and their outcomes are lost if the
 /// process exits first.
-#[derive(Debug)]
 pub struct WorkerHandle {
     shutdown: Option<oneshot::Sender<Option<tokio::time::Instant>>>,
     task: Option<JoinHandle<()>>,
     feeds: Arc<AtomicUsize>,
+    logger: SharedCanonicalLog,
+}
+
+impl std::fmt::Debug for WorkerHandle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WorkerHandle")
+            .field("service", self.logger.service_name())
+            .field("feeds", &self.feeds)
+            .finish_non_exhaustive()
+    }
 }
 
 impl WorkerHandle {
@@ -823,19 +880,34 @@ impl WorkerHandle {
             return true;
         }
         if self.feeds.load(Ordering::Acquire) == 0 {
-            tracing::error!(
-                subsystem = "sc_cron",
-                action = "shutdown_deadline",
-                "worker did not stop before the shutdown deadline; aborting"
+            crate::emit_event(
+                &self.logger,
+                "cron.scheduler",
+                "shutdown.worker_timeout",
+                Level::Error,
+                "timeout",
+                Some("WORKER_SHUTDOWN_TIMEOUT"),
+                serde_json::json!({"deadline_remaining_ms": 0, "worker_count": 1})
+                    .as_object()
+                    .cloned()
+                    .unwrap_or_default(),
             );
             task.abort();
             let _ = task.await;
             return false;
         }
-        tracing::warn!(
-            subsystem = "sc_cron",
-            action = "shutdown_deadline",
-            "shutdown deadline passed during a Monty feed; waiting for the feed"
+        crate::emit_event(
+            &self.logger,
+            "cron.scheduler",
+            "shutdown.deadline_exceeded",
+            Level::Warn,
+            "timeout",
+            Some("SHUTDOWN_DEADLINE_EXCEEDED"),
+            serde_json::json!({"deadline_remaining_ms": 0, "worker_count": 1,
+                "feed_count": self.feeds.load(Ordering::Acquire)})
+            .as_object()
+            .cloned()
+            .unwrap_or_default(),
         );
         let _ = task.await;
         false

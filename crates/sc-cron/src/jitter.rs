@@ -30,8 +30,64 @@ pub trait JitterSource: Send + Sync {
 ///
 /// If the operating system cannot supply random bytes the offset is zero:
 /// jitter spreads load, it is not a correctness property.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct SystemJitter;
+#[derive(Clone, Default)]
+pub struct SystemJitter {
+    logger: Option<sc_observability_types::SharedCanonicalLog>,
+}
+
+/// Legacy value constructor, retaining the fixed `sc-cron` Noop identity.
+#[allow(
+    non_upper_case_globals,
+    reason = "preserves existing unit-value constructor calls"
+)]
+pub const SystemJitter: SystemJitter = SystemJitter { logger: None };
+
+impl std::fmt::Debug for SystemJitter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SystemJitter")
+            .field(
+                "service",
+                &self
+                    .logger
+                    .as_ref()
+                    .map_or("sc-cron", |log| log.service_name().as_str()),
+            )
+            .finish_non_exhaustive()
+    }
+}
+
+impl SystemJitter {
+    /// Creates system jitter using the supplied best-effort logger.
+    #[must_use]
+    pub fn with_logger(logger: sc_observability_types::SharedCanonicalLog) -> Self {
+        Self {
+            logger: Some(logger),
+        }
+    }
+
+    fn unavailable(&self, error: &getrandom::Error) {
+        let default;
+        let logger = match &self.logger {
+            Some(logger) => logger,
+            None => {
+                default = crate::noop_logger();
+                &default
+            }
+        };
+        crate::emit_event(
+            logger,
+            "cron.jitter",
+            "source.unavailable",
+            sc_observability_types::Level::Warn,
+            "failed",
+            Some("JITTER_SOURCE_UNAVAILABLE"),
+            serde_json::json!({"error": error.to_string()})
+                .as_object()
+                .cloned()
+                .unwrap_or_default(),
+        );
+    }
+}
 
 impl JitterSource for SystemJitter {
     fn jitter(&self, max: Duration) -> Duration {
@@ -48,7 +104,7 @@ impl JitterSource for SystemJitter {
                 }
                 Ok(_) => {}
                 Err(error) => {
-                    tracing::warn!(subsystem = "sc_cron", %error, "no random source; jitter is zero");
+                    self.unavailable(&error);
                     return Duration::ZERO;
                 }
             }

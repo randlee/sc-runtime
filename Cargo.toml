@@ -4,7 +4,7 @@ members = ["crates/*"]
 exclude = ["dev/observability-types-shim", "dev/observability-logger-adapter"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Rand Lee"]
 edition = "2024"
 homepage = "https://github.com/randlee/sc-runtime"

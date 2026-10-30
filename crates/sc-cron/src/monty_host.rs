@@ -125,10 +125,23 @@ pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
 /// stdout is not UTF-8, [`ComposeHostError::OutputTooLarge`] when stdout
 /// exceeds the hook output cap, and
 /// [`ComposeHostError::NonZeroExit`] when the child exits non-zero.
+#[allow(
+    dead_code,
+    reason = "legacy internal Noop entry point retained for compatibility"
+)]
 pub(crate) fn render_template(
     template: &str,
     context: &Value,
     compose_program: ComposeProgram<'_>,
+) -> Result<String, ComposeHostError> {
+    render_template_with_logger(template, context, compose_program, &crate::noop_logger())
+}
+
+pub(crate) fn render_template_with_logger(
+    template: &str,
+    context: &Value,
+    compose_program: ComposeProgram<'_>,
+    logger: &sc_observability_types::SharedCanonicalLog,
 ) -> Result<String, ComposeHostError> {
     let program = compose_program.as_str();
     let dir = tempfile::TempDir::new().map_err(|source| ComposeHostError::TempRootFailed {
@@ -144,7 +157,7 @@ pub(crate) fn render_template(
         })?;
     std::fs::write(root.join("v.json"), context_bytes)
         .map_err(|source| stage_failed(program, source))?;
-    crate::monty_compose::run_compose_child(program, root)
+    crate::monty_compose::run_compose_child_with_logger(program, root, logger)
 }
 
 /// The only [`sc_compose_run`] subcommand production feeds spawn.
@@ -170,10 +183,23 @@ pub(crate) fn sc_compose_subcommand_allowed(subcommand: &str) -> bool {
 /// `args` contain a CLI flag. [`ComposeHostError::ContextEncodeFailed`] when
 /// the optional context is not JSON. The same errors as [`render_template`]
 /// when staging or the child fails.
+#[allow(
+    dead_code,
+    reason = "legacy internal Noop entry point retained for compatibility"
+)]
 pub(crate) fn sc_compose_run(
     subcommand: &str,
     args: &[String],
     compose_program: ComposeProgram<'_>,
+) -> Result<crate::monty_compose::ComposeRunResult, ComposeHostError> {
+    sc_compose_run_with_logger(subcommand, args, compose_program, &crate::noop_logger())
+}
+
+pub(crate) fn sc_compose_run_with_logger(
+    subcommand: &str,
+    args: &[String],
+    compose_program: ComposeProgram<'_>,
+    logger: &sc_observability_types::SharedCanonicalLog,
 ) -> Result<crate::monty_compose::ComposeRunResult, ComposeHostError> {
     if !sc_compose_subcommand_allowed(subcommand) {
         return Err(ComposeHostError::SubcommandDenied {
@@ -182,7 +208,7 @@ pub(crate) fn sc_compose_run(
     }
     let staged = strip_hook_chosen_root(args);
     let (template, context) = staged_render_inputs(compose_program.as_str(), &staged)?;
-    let stdout = render_template(&template, &context, compose_program)?;
+    let stdout = render_template_with_logger(&template, &context, compose_program, logger)?;
     Ok(crate::monty_compose::ComposeRunResult {
         stdout,
         stderr: String::new(),

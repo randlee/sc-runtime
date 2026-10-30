@@ -242,6 +242,30 @@ pub async fn supervise(
     cap: usize,
     expiry: impl Future<Output = ()>,
 ) -> io::Result<Captured> {
+    supervise_inner(spec, cap, expiry, crate::noop_logger()).await
+}
+
+/// Supervises a child using a shared best-effort canonical logger.
+///
+/// # Errors
+/// Returns `CronError::HookFailed` for spawn or wait failures.
+pub async fn supervise_with_logger<F: Future<Output = ()>>(
+    spec: &ChildSpec<'_>,
+    cap: usize,
+    expiry: F,
+    logger: sc_observability_types::SharedCanonicalLog,
+) -> Result<Captured, crate::CronError> {
+    supervise_inner(spec, cap, expiry, logger)
+        .await
+        .map_err(|error| crate::CronError::HookFailed(error.to_string()))
+}
+
+async fn supervise_inner(
+    spec: &ChildSpec<'_>,
+    cap: usize,
+    expiry: impl Future<Output = ()>,
+    logger: sc_observability_types::SharedCanonicalLog,
+) -> io::Result<Captured> {
     let mut command = CommandWrap::with_new(spec.program, |command| {
         command
             .args(&spec.args)
@@ -297,12 +321,11 @@ pub async fn supervise(
         // group or job may be left, having let go of the pipes: end it, so
         // nothing outlives the run. An empty group is fine (nothing to kill).
         if let Err(error) = tree.child.start_kill() {
-            tracing::debug!(subsystem = "sc_cron", action = "child_kill", %error,
-                "kill after exit found nothing left to kill: {error}");
+            kill_failed(&logger, tree.child.id(), &error);
         }
         Some(status)
     } else {
-        reap_killed(&mut tree).await;
+        reap_killed(&mut tree, &logger).await;
         None
     };
     Ok(Captured {
@@ -317,10 +340,9 @@ pub async fn supervise(
 /// The bound is a thread timer, not tokio's: a paused or manual tokio clock
 /// must not cut the reap short. A group that is not reaped in time is logged
 /// and left; drop kills it again.
-async fn reap_killed(tree: &mut Tree) {
+async fn reap_killed(tree: &mut Tree, logger: &sc_observability_types::SharedCanonicalLog) {
     if let Err(error) = tree.child.start_kill() {
-        tracing::debug!(subsystem = "sc_cron", action = "child_kill", %error,
-            "kill at expiry found nothing to kill: {error}");
+        kill_failed(logger, tree.child.id(), &error);
     }
     let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
     let timer = std::thread::Builder::new()
@@ -340,11 +362,34 @@ async fn reap_killed(tree: &mut Tree) {
         biased;
         _ = tree.child.wait() => tree.reaped = true,
         () = bounded => {
-            tracing::warn!(subsystem = "sc_cron", action = "child_reap",
-                after_ms = u64::try_from(REAP_AFTER_KILL.as_millis()).unwrap_or(u64::MAX),
-                "a killed child's group was not reaped in time; it is left (killed again on drop)");
+            let mut fields = serde_json::Map::new();
+            fields.insert("deadline_remaining_ms".into(), 0.into());
+            if let Some(pid) = tree.child.id() { fields.insert("pid".into(), pid.into()); }
+            crate::emit_event(logger, "cron.process", "child.reap_timeout",
+                sc_observability_types::Level::Warn, "timeout", Some("CHILD_REAP_TIMEOUT"), fields);
         }
     }
+}
+
+fn kill_failed(
+    logger: &sc_observability_types::SharedCanonicalLog,
+    pid: Option<u32>,
+    error: &io::Error,
+) {
+    let mut fields = serde_json::Map::new();
+    fields.insert("error".into(), error.to_string().into());
+    if let Some(pid) = pid {
+        fields.insert("pid".into(), pid.into());
+    }
+    crate::emit_event(
+        logger,
+        "cron.process",
+        "child.kill_failed",
+        sc_observability_types::Level::Debug,
+        "failed",
+        Some("CHILD_KILL_FAILED"),
+        fields,
+    );
 }
 
 /// Writes `input` to the child and closes its stdin.
