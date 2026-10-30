@@ -27,6 +27,7 @@ owned_paths:
   - crates/sc-cron/src/worker/worker_runs.rs
   - crates/sc-cron/src/scheduler/run_due.rs
   - crates/sc-cron/src/scheduler.rs # finish_due logger forwarding only; then b-16 window
+  - crates/sc-cron/tests/observability_components.rs # production pipe rejection count only after b-16 handoff
   - crates/sc-cron/tests/observability.rs
   - crates/sc-cron/tests/target_resolver.rs
   - crates/sc-cron/tests/worker.rs

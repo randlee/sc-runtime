@@ -904,6 +904,12 @@ where
                     Event::ScheduleDisabled,
                     reason,
                 );
+                terminal(
+                    &self.coord.logger,
+                    Event::RunFinished,
+                    schedule,
+                    &RunOutcome::Refused(reason.to_owned()),
+                );
                 self.write_answered();
             }
             Ok(false) => self.fenced(schedule, "disable"),

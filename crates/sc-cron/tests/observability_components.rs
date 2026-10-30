@@ -310,7 +310,7 @@ async fn production_monty_pipe_deadline_uses_injected_logger_and_preserves_failu
             matches!(&runs[0].outcome, RunOutcome::Failed(message) if message.contains("HOST_OUTPUT"))
         );
         if rejecting {
-            assert_eq!(rejected.attempts(), 2); // attachment and pipe deadline
+            assert_eq!(rejected.attempts(), 4); // attached + due.launched + pipe deadline + due.finished
         } else {
             let events: Vec<_> = recording
                 .events()
