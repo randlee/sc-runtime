@@ -1306,7 +1306,7 @@ Anchor: sc-cron is a general-purpose cron library supporting application-defined
 
 > sc-cron is a general-purpose cron library.
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: General-purpose scheduler
 
@@ -1316,13 +1316,17 @@ Deterministic check to pair with the development gate: A consumer can schedule a
 
 Beads: anchor `run-ojx`, plan questions `run-ojx.1`, dev questions `run-ojx.2`
 
+Fixtures:
+- pass: The sc-cron scheduler accepts application-defined job payloads without a tool-specific registry. Evidence: tests/anc_027.rs::compliant passed.
+- fail: Make sc-cron accept only built-in sc-compose job types.
+
 ## ANC-028
 
 Anchor: Embedding applications can register additional Monty host functions without modifying sc-cron.
 
 > the primary requirement of being able to be extensible w/ other apps/calls is supported.
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Application host extensions
 
@@ -1332,13 +1336,17 @@ Deterministic check to pair with the development gate: An integration test regis
 
 Beads: anchor `run-mvj`, plan questions `run-mvj.1`, dev questions `run-mvj.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Expose a consumer registration hook; a custom application Monty host function runs without patching sc-cron. Evidence: tests/anc_028.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Add new Monty host calls only by editing sc-cron source.
+
 ## ANC-029
 
 Anchor: The sc_compose_run integration supports any sc-compose command/subcommand supplied by an application script.
 
 > sc_compose_run (any subcommand) would be a useful working example for showing how to use sc-cron
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Compose command coverage
 
@@ -1348,13 +1356,17 @@ Deterministic check to pair with the development gate: Argument-forwarding tests
 
 Beads: anchor `run-uoc`, plan questions `run-uoc.1`, dev questions `run-uoc.2`
 
+Fixtures:
+- pass: Delivered the required behavior: sc_compose_run forwards arbitrary sc-compose command and subcommand arguments to the external executable. Evidence: tests/anc_029.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Limit sc_compose_run to render and reject other sc-compose commands.
+
 ## ANC-030
 
 Anchor: Phase B provides an atm_run host integration supporting any ATM CLI command/subcommand through the same extension interface used by sc_compose_run.
 
 > i am in agreement.
 
-Said by randlee, Owner approved the preceding proposal: "Phase B provides an atm_run host integration supporting any ATM CLI command/subcommand through the same extension interface used by sc_compose_run." The immutable quote "i am in agreement." is the owner's response approving that exact statement., 2026-10-29. Status: locked. Version 2.
+Said by randlee, Owner approved the preceding proposal: "Phase B provides an atm_run host integration supporting any ATM CLI command/subcommand through the same extension interface used by sc_compose_run." The immutable quote "i am in agreement." is the owner's response approving that exact statement., 2026-10-29. Status: locked. Version 3.
 
 Summary: ATM host integration
 
@@ -1364,13 +1376,17 @@ Deterministic check to pair with the development gate: An ATM executable fixture
 
 Beads: anchor `run-7l7`, plan questions `run-7l7.1`, dev questions `run-7l7.2`
 
+Fixtures:
+- pass: Delivered the required behavior: atm_run is registered through the same host extension interface as sc_compose_run and forwards any ATM CLI command or subcommand. Evidence: tests/anc_030.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Implement atm_run as a hardcoded single-command wrapper outside the shared host extension interface.
+
 ## ANC-031
 
 Anchor: Every production release crate excludes sc-compose and ATM crate dependencies and Rust imports, enforced by boundary lint; test and benchmark references are permitted.
 
 > sc-compose and atm crates should be blocked from any production release crate.  sc-compose and atm can be referenced for tests i.e. benchmark tests
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 3.
 
 Summary: Production tool crate boundary
 
@@ -1380,13 +1396,17 @@ Deterministic check to pair with the development gate: Boundary lint rejects pro
 
 Beads: anchor `run-z1z`, plan questions `run-z1z.1`, dev questions `run-z1z.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Boundary lint rejects sc-compose and ATM dependencies or Rust imports in release crates while test and benchmark references are allowed. Evidence: tests/anc_031.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Add an ATM crate dependency to a production release crate and exempt it from boundary lint.
+
 ## ANC-032
 
 Anchor: render_template is not required by the sc-cron product contract.
 
 > render_template is not a product requirement
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 3.
 
 Summary: No mandatory render helper
 
@@ -1396,13 +1416,17 @@ Deterministic check to pair with the development gate: Product requirements and 
 
 Beads: anchor `run-bn5`, plan questions `run-bn5.1`, dev questions `run-bn5.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Treat render_template as an optional example, with no release acceptance criterion requiring it. Evidence: tests/anc_032.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Make render_template mandatory for sc-cron release acceptance.
+
 ## ANC-033
 
 Anchor: MVP executes application-supplied Monty scripts without script signing or a separate approval mechanism.
 
 > for mvp this is not something available for consumers to do.
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 3.
 
 Summary: No MVP signing gate
 
@@ -1412,13 +1436,17 @@ Deterministic check to pair with the development gate: MVP execution requires ne
 
 Beads: anchor `run-wdb`, plan questions `run-wdb.1`, dev questions `run-wdb.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Run application-supplied Monty source in MVP without a signature or separate approval gate. Evidence: tests/anc_033.rs::compliant asserts the behavior and passed.
+- fail: Delivered an MVP runner that requires a valid script signature and a separate human approval before executing every Monty script.
+
 ## ANC-034
 
 Anchor: Python and Monty hooks use the same schedule-environment configuration and resolution rules.
 
 > python/monty having consistent settings would be least confusing
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Shared hook environment
 
@@ -1428,13 +1456,17 @@ Deterministic check to pair with the development gate: The same environment case
 
 Beads: anchor `run-c1j`, plan questions `run-c1j.1`, dev questions `run-c1j.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Resolve the same explicit schedule environment specification identically for Python and Monty hooks. Evidence: tests/anc_034.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Apply set and clear directives to Python hooks but ignore them for Monty hooks.
+
 ## ANC-035
 
 Anchor: Hooks inherit daemon-process environment values only through variable names explicitly allowed by daemon configuration.
 
 > whitelisting api keys globally (by name) in config file (this is really a daemon scope decision)
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Explicit daemon inheritance
 
@@ -1444,13 +1476,17 @@ Deterministic check to pair with the development gate: An allowed daemon value i
 
 Beads: anchor `run-6cy`, plan questions `run-6cy.1`, dev questions `run-6cy.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Only daemon environment names on the configured allow list are inherited by hook processes. Evidence: tests/anc_035.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Pass the full daemon environment into each hook process by default.
+
 ## ANC-036
 
 Anchor: Each schedule can explicitly set or clear its own environment variables.
 
 > having each entry having the ability to set or clear specific environment variables
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Schedule environment overrides
 
@@ -1460,13 +1496,17 @@ Deterministic check to pair with the development gate: Two schedules set distinc
 
 Beads: anchor `run-89l`, plan questions `run-89l.1`, dev questions `run-89l.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Each schedule can set a value or clear a named environment variable independently. Evidence: tests/anc_036.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Schedules cannot clear an inherited environment variable.
+
 ## ANC-037
 
 Anchor: Schedule creation and updates never implicitly capture environment values from the caller or daemon process.
 
 > Never capture or persist inherited host values accidentally
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 3.
 
 Summary: No implicit environment capture
 
@@ -1476,13 +1516,17 @@ Deterministic check to pair with the development gate: Ambient canaries are abse
 
 Beads: anchor `run-5z3`, plan questions `run-5z3.1`, dev questions `run-5z3.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Schedule writes persist only explicitly supplied environment values, never ambient caller or daemon values. Evidence: tests/anc_037.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: On schedule creation, serialize the daemon process environment into the schedule row by default.
+
 ## ANC-038
 
 Anchor: The schedule registry permits deliberately supplied environment values as plaintext configuration.
 
 > why can we never add values?  all environment variables are not api keys?
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Explicit plaintext values
 
@@ -1492,13 +1536,17 @@ Deterministic check to pair with the development gate: An explicit set value rou
 
 Beads: anchor `run-oov`, plan questions `run-oov.1`, dev questions `run-oov.2`
 
+Fixtures:
+- pass: Delivered a schedule registry accepting deliberately supplied secret and nonsecret plaintext Set values. Evidence: tests/anc_038.rs::plaintext_secret_and_nonsecret_roundtrip asserts both values persist and round-trip and passed.
+- fail: Delivered this incompatible behavior: Reject every plaintext environment set value, including deliberate nonsensitive configuration.
+
 ## ANC-039
 
 Anchor: Schedules can resolve environment values through an application-provided resolver for opaque references.
 
 > I also like allowing this:   "OTHER_API_KEY": { "reference": "keychain://agents/planner-7/api-key" }
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Application secret references
 
@@ -1508,13 +1556,17 @@ Deterministic check to pair with the development gate: A consumer resolver suppl
 
 Beads: anchor `run-9a5`, plan questions `run-9a5.1`, dev questions `run-9a5.2`
 
+Fixtures:
+- pass: Resolve opaque schedule environment references through a consumer-supplied resolver at execution time. Evidence: tests/anc_039.rs::compliant passed.
+- fail: Store an opaque reference string as the hook value without invoking the application resolver.
+
 ## ANC-040
 
 Anchor: Schedules can load environment variables from full-path .env files.
 
 > Another useful way to specify would be loading from a full-path .env file.
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Absolute dotenv sources
 
@@ -1524,13 +1576,17 @@ Deterministic check to pair with the development gate: An authorized absolute do
 
 Beads: anchor `run-xaz`, plan questions `run-xaz.1`, dev questions `run-xaz.2`
 
+Fixtures:
+- pass: Delivered the required behavior: Load a schedule environment source from an absolute .env file path. Evidence: tests/anc_040.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Accept only a relative .env path and resolve it against the daemon working directory.
+
 ## ANC-041
 
 Anchor: Monty scripts can read their configured environment during source initialization, before hook functions run.
 
 > there should also be the ability to set environment variables in a monty script before it runs.
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: Environment before initialization
 
@@ -1540,13 +1596,17 @@ Deterministic check to pair with the development gate: A top-level getenv reads 
 
 Beads: anchor `run-euz`, plan questions `run-euz.1`, dev questions `run-euz.2`
 
+Fixtures:
+- pass: Delivered the required behavior: A top-level Monty source expression reads the configured environment before cron_tick or cron_stop runs. Evidence: tests/anc_041.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Inject configured environment variables only after Monty source initialization finishes.
+
 ## ANC-042
 
 Anchor: The first released schedule schema establishes one baseline without requiring migrations among unreleased development schemas.
 
 > i don't know why we are on schema v4 when we haven't even released binaries yet.
 
-Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 1.
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
 
 Summary: First release schema baseline
 
@@ -1555,3 +1615,7 @@ Scope: edits schedule schema versioning or migrations
 Deterministic check to pair with the development gate: First-release schema validation does not require a v1-v4 development migration ladder.
 
 Beads: anchor `run-fv4`, plan questions `run-fv4.1`, dev questions `run-fv4.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Ship the first schedule schema as one baseline without requiring migration from unreleased development schemas. Evidence: tests/anc_042.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Require users of the first binary release to migrate sequentially through unreleased schema v1, v2, v3, and v4.

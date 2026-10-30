@@ -22,6 +22,7 @@ requirements:
   - NFR-RUN-0005
 adrs:
   - ADR-RUN-0002
+  - ADR-RUN-0011
   - ADR-RUN-0013
   - ADR-RUN-0303
 owned_paths:
@@ -91,6 +92,16 @@ arguments, schedule name, hook phase, and row deadline. b-17 adds read-only
 access to that run's resolved environment snapshot without changing handler
 registration or allowing process-global reads.
 
+The object-safe callback signature is fixed here so consumers and implementers
+use the same seam:
+
+```rust
+pub trait MontyHostHandler: Send + Sync {
+    fn call(&self, call: &MontyHostCall) -> Result<serde_json::Value, CronError>;
+}
+// Matching closures implement Fn(&MontyHostCall) -> Result<Value, CronError>.
+```
+
 `MontyHostRegistry::new()` is empty. Its consuming `register(name, handler)`
 builder returns `CronError::InvalidSpec` for a non-identifier, `__hook`,
 `cron_stop`, `cron_tick`, or a duplicate name. Registration order does not
@@ -115,7 +126,9 @@ No subcommand allowlist, forced render arguments, ignored flags, or mandatory
 temp-root staging narrows either integration. The embedding application sets
 the executable and working directory; script arguments are forwarded unchanged.
 The working directory defaults to the daemon directory captured at adapter
-configuration. Both adapters share one process supervisor, return
+configuration. Both adapters share the existing blocking child driver in `monty_compose`,
+generalized for argv/cwd. They do not call async `process::supervise` from the
+blocking feed thread or add a runtime/`block_on` bridge. They return
 `{stdout, stderr, exit_code}` for completed children (including nonzero exits),
 and use the row deadline, process-group termination, and per-stream output cap.
 Spawn/capture errors fail the hook; deadline expiration records `TimedOut`.
@@ -168,7 +181,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    `ScComposeHostConfig`, `AtmHostConfig`, `MontyHostRegistry`, and
    `Scheduler::with_monty_hosts`. There is no compatibility alias because no
    binary or crate carrying the b-10 development API has been released.
-2. REQ-CRON-0003 / ADR-RUN-0013: retain `sc_compose_run` only as the opt-in
+2. REQ-CRON-0003 / ADR-RUN-0011 / ADR-RUN-0013: retain `sc_compose_run` only as the opt-in
    adapter described above. Remove the fixed `render_template` host registration, migrate
    `monty_host_bridge`, `sc_compose_bench`, and the campaign source to
    `sc_compose_run("render", ...)`, and keep the b-10 process deadline,
@@ -282,6 +295,7 @@ rg -n 'sc_compose_run|cron_stop|cron_tick' generated/test-monty/examples/monty/c
 rg -n 'MontyHostRegistry|MontyHostHandler|MontyHostCall|ScComposeHostConfig|AtmHostConfig|with_monty_hosts' crates/sc-cron/src/lib.rs crates/sc-cron/src/scheduler.rs crates/sc-cron/src/monty_host.rs boundaries/sc-cron/sc-cron.toml docs/sc-cron
 rg -n 'sc-(config|transport|command|runtime|cron).*0\.1\.1|sc-observability(-types)?.*1\.5\.1' template/Cargo.toml template/workspace.template.toml
 just lint gates
+just adr-run-0011
 ```
 
 The generation test owns cleanup of its temporary output; the literal

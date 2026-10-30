@@ -5180,11 +5180,15 @@
       "scope": "edits sc-cron scheduling or job interfaces",
       "deterministic_check": "A consumer can schedule an application-defined job without a tool-specific payload.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "The sc-cron scheduler accepts application-defined job payloads without a tool-specific registry. Evidence: tests/anc_027.rs::compliant passed."
+        ],
+        "fail": [
+          "Make sc-cron accept only built-in sc-compose job types."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5206,6 +5210,13 @@
             "plan_questions": "run-ojx.1",
             "dev_questions": "run-ojx.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5223,11 +5234,15 @@
       "scope": "edits Monty host registration or dispatch",
       "deterministic_check": "An integration test registers and invokes a consumer-defined host function.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Expose a consumer registration hook; a custom application Monty host function runs without patching sc-cron. Evidence: tests/anc_028.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Add new Monty host calls only by editing sc-cron source."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5249,6 +5264,13 @@
             "plan_questions": "run-mvj.1",
             "dev_questions": "run-mvj.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5266,11 +5288,15 @@
       "scope": "edits sc_compose_run or its examples",
       "deterministic_check": "Argument-forwarding tests cover render and non-render subcommands.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: sc_compose_run forwards arbitrary sc-compose command and subcommand arguments to the external executable. Evidence: tests/anc_029.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Limit sc_compose_run to render and reject other sc-compose commands."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5292,6 +5318,13 @@
             "plan_questions": "run-uoc.1",
             "dev_questions": "run-uoc.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5309,11 +5342,15 @@
       "scope": "implements Phase B Monty integrations",
       "deterministic_check": "An ATM executable fixture is invoked through the same registry as sc_compose_run.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: atm_run is registered through the same host extension interface as sc_compose_run and forwards any ATM CLI command or subcommand. Evidence: tests/anc_030.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Implement atm_run as a hardcoded single-command wrapper outside the shared host extension interface."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5344,6 +5381,13 @@
           ],
           "previous_context": "Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected.",
           "reason": "Restore explicit antecedent of the owner's approval without changing quote or approved statement."
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5361,11 +5405,15 @@
       "scope": "edits production release manifests, imports, features, or boundary lint",
       "deterministic_check": "Boundary lint rejects production imports/dependencies while permitting test-only references.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Boundary lint rejects sc-compose and ATM dependencies or Rust imports in release crates while test and benchmark references are allowed. Evidence: tests/anc_031.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Add an ATM crate dependency to a production release crate and exempt it from boundary lint."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5394,6 +5442,13 @@
           "fields": [
             "kind"
           ]
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5411,11 +5466,15 @@
       "scope": "edits Monty product requirements, examples, or benchmarks",
       "deterministic_check": "Product requirements and acceptance do not require render_template.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Treat render_template as an optional example, with no release acceptance criterion requiring it. Evidence: tests/anc_032.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Make render_template mandatory for sc-cron release acceptance."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5444,6 +5503,13 @@
           "fields": [
             "kind"
           ]
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5461,11 +5527,15 @@
       "scope": "edits Monty execution, configuration, or authorization",
       "deterministic_check": "MVP execution requires neither signatures nor approval configuration.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Run application-supplied Monty source in MVP without a signature or separate approval gate. Evidence: tests/anc_033.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered an MVP runner that requires a valid script signature and a separate human approval before executing every Monty script."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5494,6 +5564,13 @@
           "fields": [
             "kind"
           ]
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5511,11 +5588,15 @@
       "scope": "edits Python or Monty environment delivery",
       "deterministic_check": "The same environment cases produce equivalent Python and Monty results.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Resolve the same explicit schedule environment specification identically for Python and Monty hooks. Evidence: tests/anc_034.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Apply set and clear directives to Python hooks but ignore them for Monty hooks."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5537,6 +5618,13 @@
             "plan_questions": "run-c1j.1",
             "dev_questions": "run-c1j.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5554,11 +5642,15 @@
       "scope": "edits daemon environment configuration or subprocess creation",
       "deterministic_check": "An allowed daemon value is delivered and an unlisted value is absent.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Only daemon environment names on the configured allow list are inherited by hook processes. Evidence: tests/anc_035.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Pass the full daemon environment into each hook process by default."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5580,6 +5672,13 @@
             "plan_questions": "run-6cy.1",
             "dev_questions": "run-6cy.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5597,11 +5696,15 @@
       "scope": "edits schedule environment persistence or resolution",
       "deterministic_check": "Two schedules set distinct identities and clearing removes a prior value.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Each schedule can set a value or clear a named environment variable independently. Evidence: tests/anc_036.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Schedules cannot clear an inherited environment variable."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5623,6 +5726,13 @@
             "plan_questions": "run-89l.1",
             "dev_questions": "run-89l.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:41+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5640,11 +5750,15 @@
       "scope": "edits schedule creation, updates, or serialization",
       "deterministic_check": "Ambient canaries are absent from persisted rows without explicit set input.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Schedule writes persist only explicitly supplied environment values, never ambient caller or daemon values. Evidence: tests/anc_037.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: On schedule creation, serialize the daemon process environment into the schedule row by default."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5673,6 +5787,13 @@
           "fields": [
             "kind"
           ]
+        },
+        {
+          "at": "2026-10-30T01:18:42+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5690,11 +5811,15 @@
       "scope": "edits schedule environment validation or persistence",
       "deterministic_check": "An explicit set value round-trips through the registry.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered a schedule registry accepting deliberately supplied secret and nonsecret plaintext Set values. Evidence: tests/anc_038.rs::plaintext_secret_and_nonsecret_roundtrip asserts both values persist and round-trip and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Reject every plaintext environment set value, including deliberate nonsensitive configuration."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5716,6 +5841,13 @@
             "plan_questions": "run-oov.1",
             "dev_questions": "run-oov.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:42+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5733,11 +5865,15 @@
       "scope": "edits environment reference resolution",
       "deterministic_check": "A consumer resolver supplies a referenced value without persisting the result.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Resolve opaque schedule environment references through a consumer-supplied resolver at execution time. Evidence: tests/anc_039.rs::compliant passed."
+        ],
+        "fail": [
+          "Store an opaque reference string as the hook value without invoking the application resolver."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5759,6 +5895,13 @@
             "plan_questions": "run-9a5.1",
             "dev_questions": "run-9a5.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:42+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5776,11 +5919,15 @@
       "scope": "edits schedule environment sources or file loading",
       "deterministic_check": "An authorized absolute dotenv file supplies hook values.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Load a schedule environment source from an absolute .env file path. Evidence: tests/anc_040.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Accept only a relative .env path and resolve it against the daemon working directory."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5802,6 +5949,13 @@
             "plan_questions": "run-xaz.1",
             "dev_questions": "run-xaz.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:42+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5819,11 +5973,15 @@
       "scope": "edits Monty source initialization or environment delivery",
       "deterministic_check": "A top-level getenv reads the configured snapshot before cron_stop or cron_tick.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: A top-level Monty source expression reads the configured environment before cron_tick or cron_stop runs. Evidence: tests/anc_041.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Inject configured environment variables only after Monty source initialization finishes."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5845,6 +6003,13 @@
             "plan_questions": "run-euz.1",
             "dev_questions": "run-euz.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:42+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     },
@@ -5862,11 +6027,15 @@
       "scope": "edits schedule schema versioning or migrations",
       "deterministic_check": "First-release schema validation does not require a v1-v4 development migration ladder.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Delivered the required behavior: Ship the first schedule schema as one baseline without requiring migration from unreleased development schemas. Evidence: tests/anc_042.rs::compliant asserts the behavior and passed."
+        ],
+        "fail": [
+          "Delivered this incompatible behavior: Require users of the first binary release to migrate sequentially through unreleased schema v1, v2, v3, and v4."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -5888,6 +6057,13 @@
             "plan_questions": "run-fv4.1",
             "dev_questions": "run-fv4.2"
           }
+        },
+        {
+          "at": "2026-10-30T01:18:42+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     }

@@ -77,6 +77,9 @@ consumes the completed generated environment policy. No new sprint is created.
 The application supplies source without an MVP signing or approval gate.
 Rust jobs retain their application interface and process environment; nonempty
 schedule environment on a Rust target is InvalidSpec.
+ANC-031 applies to this work: all production release crates continue to exclude
+sc-compose and ATM crate dependencies and Rust imports. Test and benchmark
+references remain permitted; this sprint preserves b-16's boundary enforcement.
 
 ## Public model
 

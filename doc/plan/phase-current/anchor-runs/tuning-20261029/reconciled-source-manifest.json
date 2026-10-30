@@ -1,0 +1,16 @@
+{
+  "doc/plan/phase-current/anchors.json": "f33e552513965b2c15a8dcbed585fb4e529d2511a43dc8f31b4edc00d101502c",
+  "doc/plan/phase-current/anchors.md": "fed96b3f5b9d10b1a10c93fd7f926ff25a65e4957361e7ba3b6081bcec1d29ba",
+  "doc/plan/phase-current/intent.md": "357963619d20fa0043039aa18fa2539526e6a235e7481a41fdf8e58b52ef4df1",
+  "docs/architecture.md": "0b10cb9cffee32ccc7a37a439f757a40c2003a673e1c29384a8f0a1c60085de7",
+  "docs/requirements.md": "8c2bdb5fe45fdc7da85752f86e2100911251059c6324c15436ff18c475210341",
+  "docs/sc-cron/requirements.md": "dd50ffdf8d3223f283d64e3830cf96187ffe5cee16c3d528d2d7e1875bed7071",
+  "docs/sc-cron/architecture.md": "73ad59db8d1eb2e235d83bf659d74ff62b3d9c2b99012ffe95e66ffda1eda5f1",
+  "docs/sc-cron/hooks-sc-compose.md": "5ea337ffce8aa312d3f95203f17b2ab9323e151b96f35448e5db9c810051b7c2",
+  "docs/plans/phase-b/sprint-b-13-observability-contract.md": "a26997b8a0db7d221c73c3fb3e54abc0efb68549ee3f90e53f3b496135c10de8",
+  "docs/plans/phase-b/sprint-b-14-sc-runtime-observability.md": "bcfa43176a3f6f63f655dd396744c5c8188d05cf79b97a01377780e349797837",
+  "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md": "1d37777bb2c955698c0bf1558ead5678e97b21de5e69b83e4563dbe2885724e0",
+  "docs/plans/phase-b/sprint-b-16-monty-template-examples.md": "c77d369b0c47450eea83a4fff2a57f318221334eebd2c47dfe8abf92e177d15e",
+  "docs/plans/phase-b/sprint-b-17-sc-cron-hook-environment.md": "e94bb3af4b25384f9b713747596e748e55c0a5afbed35c503b66a8f035fd91e8",
+  "docs/plans/phase-b/sprint-b-18-template-observability-integration.md": "83138c64b98cb99053d2c1b85d09c80118901306b1efff29765c385ec33b79b3"
+}
