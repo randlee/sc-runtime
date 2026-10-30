@@ -1,0 +1,9 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:qa:b-13:QA-001> qa:sprint "b-13" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs:21" ;
+  qa:issue "The full workspace test suite fails in rusqlite_0_39_resolves_one_libsqlite3_sys_with_sqlx_0_9_sqlite because the nested sqlx-resolve fixture lockfile cannot satisfy Cargo's --locked metadata run. The same failure is present in GitHub Actions run 41142440997, job 124359719834." ;
+  qa:remedy "Refresh and commit crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.lock for the fixture's current path dependency and supported Cargo version, then rerun the workspace test suite." ;
+  qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
+  qa:status "open" .

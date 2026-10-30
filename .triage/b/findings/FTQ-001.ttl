@@ -1,0 +1,9 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:qa:b-13:FTQ-001> qa:sprint "b-13" ;
+  qa:severity "important" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:location "crates/sc-cron/tests/observability_components.rs:250" ;
+  qa:issue "The pipe-timeout witness depends on a descendant sleeping six seconds while the parent starts a five-second drain timeout only after child.wait returns. A scheduling delay at that boundary lets the descendant close stdout first, so correct production behavior produces success and the test intermittently fails its required COMPOSE_NOT_RUNNABLE outcome. The 15-second outer timeout does not establish the intended ordering." ;
+  qa:remedy "Replace the timed descendant sleep with explicit readiness and release handshakes. Keep stdout open until an observed pipe.drain_timeout event releases the descendant, including for the rejecting logger, and give the owning test a hard watchdog plus unconditional child/group kill and reap on failure. Preserve the production-path assertion; increasing either timeout or sleep does not remove this race." ;
+  qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
+  qa:status "open" .
