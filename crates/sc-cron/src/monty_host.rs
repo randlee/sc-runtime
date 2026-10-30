@@ -135,6 +135,7 @@ impl MontyHostRegistry {
         &self,
         call: &MontyHostCall,
         logger: &SharedCanonicalLog,
+        environment: &crate::environment::EnvironmentSnapshot,
     ) -> Result<Value, HostDispatchError> {
         match self.entries.get(&call.name) {
             None => Err(HostDispatchError::Undefined),
@@ -149,6 +150,7 @@ impl MontyHostRegistry {
                     &args,
                     call.deadline,
                     logger,
+                    environment,
                 )
                 .map_err(HostDispatchError::Child)?;
                 Ok(
@@ -185,6 +187,7 @@ impl CliConfig {
         } else {
             program
         };
+        let program = crate::process::resolve_program(&program).unwrap_or(program);
         Ok(Self {
             program,
             cwd: Some(cwd),
@@ -192,7 +195,8 @@ impl CliConfig {
     }
     fn default_program(program: &str) -> Self {
         Self {
-            program: PathBuf::from(program),
+            program: crate::process::resolve_program(Path::new(program))
+                .unwrap_or_else(|_| PathBuf::from(program)),
             cwd: std::env::current_dir().ok(),
         }
     }

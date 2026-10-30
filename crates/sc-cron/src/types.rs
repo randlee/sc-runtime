@@ -337,9 +337,34 @@ pub struct ScheduleSpec {
     pub payload: serde_json::Value,
     /// Rust job or Python file for this row.
     pub hook: HookTarget,
+    /// Explicit shared Python/Monty environment policy; empty for Rust jobs.
+    pub environment: crate::HookEnvironment,
 }
 
 impl ScheduleSpec {
+    /// Attaches explicit policy without capturing ambient process values.
+    ///
+    /// # Errors
+    /// Nonempty policy on a Rust target or an oversized document is InvalidSpec.
+    pub fn with_environment(
+        mut self,
+        environment: crate::HookEnvironment,
+    ) -> Result<Self, CronError> {
+        self.environment = environment;
+        self.validate_environment()?;
+        Ok(self)
+    }
+
+    pub(crate) fn validate_environment(&self) -> Result<(), CronError> {
+        self.environment.validate()?;
+        if matches!(self.hook, HookTarget::Rust) && !self.environment.is_empty() {
+            return Err(CronError::InvalidSpec(
+                "Rust targets require an empty hook environment".into(),
+            ));
+        }
+        Ok(())
+    }
+
     /// Validates every field and builds a spec.
     ///
     /// # Examples
@@ -400,6 +425,7 @@ impl ScheduleSpec {
             timeout: RunTimeout::new(timeout)?,
             payload,
             hook,
+            environment: crate::HookEnvironment::new(),
         };
         crate::limits::encode_payload(&spec.payload)?;
         Ok(spec)

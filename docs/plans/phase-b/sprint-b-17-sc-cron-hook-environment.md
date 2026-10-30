@@ -1,7 +1,7 @@
 ---
 id: b-17
 phase: b
-status: planned
+status: in_progress
 closure_type: boundary
 target_boundary: sc-cron-hook-environment
 track: hook-environment
@@ -444,3 +444,18 @@ Windows execution evidence.
 Excluded: Rust JobContext/isolation, writable Monty os.environ, caller capture,
 built-in secret providers, agent-to-agent file authorization, new CLI/network
 adapters, and signing/approval mechanisms.
+
+
+## Development artifact
+
+The implementation now provides the validated public model, strict canonical
+wire form, immutable deadline-bounded occurrence resolver, normalized dotenv
+authorization/parser, complete first-release schema, Python/Monty/CLI delivery,
+resumable Monty initialization, generated daemon policy, checked example and
+Windows execution job. Runtime production modules remain below 1000 lines;
+worker assertions are separated into test-only modules.
+
+Initial focused evidence: hook_environment with Monty 23/23, monty_host_bridge
+16/16, generated environment/example Python tests 9/9, sc-cron all-feature
+Clippy and workspace default Clippy PASS. Full sprint validation follows the
+first push. Parent owns independent QA/CI/merge and project-plan status.

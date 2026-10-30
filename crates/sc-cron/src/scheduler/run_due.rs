@@ -13,7 +13,7 @@ use crate::clock::sleep_until_monotonic;
 use crate::coord::NameInFlightGuard;
 #[cfg(feature = "monty")]
 use crate::coord::RunCoord;
-use crate::worker::{Event, emit, resolve, run_target, terminal};
+use crate::worker::{Event, emit, resolve, run_target_with_environment, terminal};
 
 #[cfg(feature = "monty")]
 const CODE_DUE_JOIN_FAILED: &str = "DUE_JOIN_FAILED";
@@ -301,6 +301,7 @@ where
         deadline,
         clock,
         Arc::clone(&scheduler.coord.logger),
+        Arc::clone(&scheduler.environment),
     ))
 }
 
@@ -350,6 +351,7 @@ fn spawn_abortable_due<C: Clock + 'static>(
     deadline: std::time::Instant,
     clock: Arc<C>,
     logger: sc_observability_types::SharedCanonicalLog,
+    environment: Arc<crate::HookEnvironmentHost>,
 ) -> Launched {
     let target = resolve(job, &row, &logger);
     let schedule = row.clone();
@@ -358,7 +360,13 @@ fn spawn_abortable_due<C: Clock + 'static>(
             Ok(target) => target,
             Err(outcome) => return Report::Ran(outcome),
         };
-        let run = run_target(target, Arc::clone(&clock), &schedule, deadline);
+        let run = run_target_with_environment(
+            target,
+            Arc::clone(&clock),
+            &schedule,
+            deadline,
+            &environment,
+        );
         tokio::select! {
             report = run => report,
             () = sleep_until_monotonic(clock.as_ref(), deadline) => Report::Ran(RunOutcome::TimedOut),
@@ -384,13 +392,22 @@ where
     let coord = Arc::clone(&scheduler.coord);
     let core = Arc::clone(&scheduler.core);
     let hosts = Arc::clone(&scheduler.hosts);
+    let environment_host = Arc::clone(&scheduler.environment);
     let schedule = row.clone();
     let feed_guard = crate::coord::MontyFeedGuard::enter(&scheduler.coord);
     let logger = Arc::clone(&coord.logger);
     let handle = tokio::spawn(async move {
         let _name = name_guard;
-        let (report, feed_guard) =
-            run_monty_due(coord, clock, schedule.clone(), deadline, feed_guard, hosts).await;
+        let (report, feed_guard) = run_monty_due(
+            coord,
+            clock,
+            schedule.clone(),
+            deadline,
+            feed_guard,
+            hosts,
+            environment_host,
+        )
+        .await;
         let recorded = record_due(core, logger, &schedule, report, next).await;
         drop(feed_guard);
         recorded
@@ -501,6 +518,7 @@ async fn run_monty_due<C: Clock + 'static>(
     deadline: std::time::Instant,
     stop_guard: crate::coord::MontyFeedGuard,
     hosts: Arc<crate::MontyHostRegistry>,
+    environment_host: Arc<crate::HookEnvironmentHost>,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::{FeedResult, MontyPhase};
     let HookTarget::Monty { source } = schedule.spec.hook.clone() else {
@@ -519,6 +537,13 @@ async fn run_monty_due<C: Clock + 'static>(
             stop_guard,
         );
     };
+    let environment = match environment_host
+        .snapshot(clock.as_ref(), &schedule, deadline)
+        .await
+    {
+        Ok(environment) => environment,
+        Err(outcome) => return (Report::Ran(outcome), stop_guard),
+    };
     let generation = schedule.generation;
     let session = coord.take_repl(&schedule.spec.name);
     let stop = feed_once(
@@ -530,6 +555,7 @@ async fn run_monty_due<C: Clock + 'static>(
         &schedule,
         deadline,
         Arc::clone(&hosts),
+        Arc::clone(&environment),
         Arc::clone(&coord.logger),
     )
     .await;
@@ -551,12 +577,26 @@ async fn run_monty_due<C: Clock + 'static>(
             (Report::Ran(outcome), stop_guard)
         }
         FeedResult::Continue => {
-            run_monty_tick_after_stop(coord, clock, schedule, deadline, stop, source, hosts).await
+            run_monty_tick_after_stop(
+                coord,
+                clock,
+                schedule,
+                deadline,
+                stop,
+                source,
+                hosts,
+                environment,
+            )
+            .await
         }
     }
 }
 
 #[cfg(feature = "monty")]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "tick retains the stop snapshot and original deadline"
+)]
 async fn run_monty_tick_after_stop<C: Clock + 'static>(
     coord: Arc<RunCoord>,
     clock: Arc<C>,
@@ -565,6 +605,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
     stop: crate::monty_run::FeedDone,
     source: String,
     hosts: Arc<crate::MontyHostRegistry>,
+    environment: Arc<crate::environment::EnvironmentSnapshot>,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::MontyPhase;
     let tick_guard = crate::coord::MontyFeedGuard::enter(&coord);
@@ -577,6 +618,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
         &schedule,
         deadline,
         hosts,
+        environment,
         Arc::clone(&coord.logger),
     )
     .await;
@@ -625,6 +667,7 @@ async fn feed_once<C: Clock + ?Sized>(
     schedule: &Schedule,
     deadline: std::time::Instant,
     hosts: Arc<crate::MontyHostRegistry>,
+    environment: Arc<crate::environment::EnvironmentSnapshot>,
     logger: sc_observability_types::SharedCanonicalLog,
 ) -> crate::monty_run::FeedDone {
     crate::monty_run::drive_feed(
@@ -640,6 +683,7 @@ async fn feed_once<C: Clock + ?Sized>(
             timeout: schedule.spec.timeout,
             deadline,
             hosts,
+            environment,
         },
     )
     .await
@@ -835,6 +879,7 @@ mod tests {
             std::time::Instant::now(),
             guard,
             Arc::clone(&scheduler.hosts),
+            Arc::clone(&scheduler.environment),
         )
         .await;
         assert!(matches!(report, super::Report::Ran(RunOutcome::Failed(_))));

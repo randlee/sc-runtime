@@ -59,8 +59,7 @@ after callbacks but cannot preempt arbitrary Rust. Stack overflow, allocator
 abort, panic, and non-cooperative deadline risks remain those of a Rust Job.
 CLI children have row deadlines, process-group/job termination, and
 `MAX_HOOK_OUTPUT_BYTES` per stream. A descendant that leaves its process group
-can escape group cleanup. Both adapters start with an explicitly empty child
-environment here; b-17 supplies its resolved environment snapshot and redaction.
+can escape group cleanup. Both adapters receive the same resolved immutable environment snapshot as Python and Monty, with no implicit full-daemon inheritance.
 
 For an explicitly requested development checkout before upstream 1.5.1 is
 available, generate with:
@@ -77,3 +76,76 @@ and release-mode environment selection before output is created. Canonical
 template manifests retain the matching `1.5.1` requirements. Development builds
 and benchmarks are permitted; the publication guard remains active. b-18 owns
 removal of development paths/adapter and the real registry-only release proof.
+
+The shared environment is built independently of the registry. Empty administrator
+allowlists are generated under `cron.environment.allow_process`,
+`allow_dotenv_files`, and `allow_dotenv_roots`. The following recording example
+uses an invented value, with no real credential or implicit daemon capture:
+
+```rust,ignore
+use std::sync::{Arc, Mutex};
+use sc_cron::{EnvironmentReferenceError, EnvironmentReferenceRequest,
+    EnvironmentReferenceResolver, HookEnvironment, HookTarget, ScheduleSpec};
+
+struct RecordingResolver(Mutex<Vec<String>>);
+#[async_trait::async_trait]
+impl EnvironmentReferenceResolver for RecordingResolver {
+    async fn resolve(&self, request: EnvironmentReferenceRequest<'_>)
+        -> Result<Option<String>, EnvironmentReferenceError>
+    {
+        // Application authorization checks schedule + variable + locator here.
+        if request.schedule().as_str() != "planner" ||
+            request.variable().as_str() != "OTHER_API_KEY" ||
+            request.reference() != "recording://planner/key" {
+            return Err(EnvironmentReferenceError::Denied);
+        }
+        self.0.lock().expect("recording lock").push(request.variable().to_string());
+        Ok(Some("recording-value".to_owned()))
+    }
+}
+let resolver = Arc::new(RecordingResolver(Mutex::new(Vec::new())));
+let host = config.cron.hook_environment_host()?
+    .with_reference_resolver(resolver.clone());
+// Retain the resolver object in application ownership. cron::open takes the
+// prebuilt policy, preserving that resolver instead of rebuilding defaults.
+let scheduler = cron::open("/var/lib/widget-app/cron.db", &config.cron, host, logger)?
+    .with_monty_hosts(registry);
+let environment = HookEnvironment::new()
+    .dotenv("/var/lib/widget-app/agents/planner-7/.env", true)?
+    .set("ATM_IDENTITY", "planner-7")?
+    .set("ATM_TEAM", "runtime")?
+    .clear("OPENAI_API_KEY")?
+    .reference("OTHER_API_KEY", "recording://planner/key")?;
+let spec = ScheduleSpec::with_hook("planner", "* * * * *",
+    std::time::Duration::from_secs(20),
+    serde_json::json!({"identity": "planner-7", "team": "runtime",
+        "compose_args": ["--root", "/app/templates", "--file", "note.j2"]}),
+    HookTarget::monty(include_str!("examples/monty/cron.py"))?)?
+    .with_environment(environment)?;
+scheduler.start(spec)?;
+```
+
+The administrator separately authorizes the exact dotenv file or its parent
+root. The example file contains `AGENT_MODE=recording`. Resolution happens once
+per occurrence: allowlisted daemon values, then files in declaration order,
+then schedule Set/Reference/Clear operations. Both hooks and both CLI children
+share that immutable map. Schedule identity/team Set values replace daemon
+values, and Clear removes names. The checked example needs no `render_template`.
+
+Python defaults to an empty `ChildEnv::Only`; trusted direct callers may choose
+`ChildEnv::Inherit` explicitly. Executables resolve against daemon launch
+PATH/PATHEXT and captured cwd before clearing the child environment. Monty source
+initialization may read `os.getenv`/`os.environ`, but application host invocations
+are denied during initialization. A retained generation initializes once;
+module globals retain that value while function-time reads use each occurrence.
+All other suspended OS operations remain `HOST_OS` denied. Windows snapshots
+uppercase names and perform case-insensitive getenv lookup; stored spelling is
+preserved and ASCII case collisions are rejected everywhere.
+
+Set values are deliberate plaintext SQLite configuration. Process/file/resolved
+reference values are never copied into registry data. Runtime details and stop
+reasons replace distinct nonempty snapshot values with `[REDACTED_ENV]`, longest
+first, before detail caps and fixed diagnostic codes/recovery are assembled.
+Debug output exposes names/kinds/counts only. Trusted direct `HookOutput` fields
+remain raw. Exact replacement reduces accidental propagation; application source
+can transform or transmit values, so this contract is not hostile-code isolation.

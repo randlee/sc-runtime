@@ -95,7 +95,14 @@
 
 mod clock;
 mod coord;
+mod environment;
 mod error;
+pub use environment::{
+    DotenvSource, EnvName, EnvOperationRef, EnvironmentReferenceError, EnvironmentReferenceRequest,
+    EnvironmentReferenceResolver, HookEnvironment, HookEnvironmentHost, MAX_ENV_DOCUMENT_BYTES,
+    MAX_ENV_DOTENV_SOURCES, MAX_ENV_ENTRIES, MAX_ENV_FILE_BYTES, MAX_ENV_NAME_BYTES,
+    MAX_ENV_PATH_BYTES, MAX_ENV_REFERENCE_BYTES, MAX_ENV_SNAPSHOT_BYTES, MAX_ENV_VALUE_BYTES,
+};
 mod expr;
 mod hook;
 mod jitter;

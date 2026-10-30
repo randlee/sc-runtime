@@ -147,3 +147,22 @@ jobs:
             cargo test --manifest-path "$manifest" --all-features
             cargo clippy --manifest-path "$manifest" --all-targets --all-features -- -D warnings
           done
+
+  cron-environment-windows:
+    name: Windows hook environment execution
+    needs: ci-scope
+    if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: dtolnay/rust-toolchain@1.94.1
+      - name: Execute default shared hook environment root
+        run: cargo +1.94.1 test -p sc-cron --test hook_environment
+      - uses: dtolnay/rust-toolchain@1.96.1
+      - name: Execute Monty shared hook environment root
+        run: cargo +1.96.1 test -p sc-cron --features monty --test hook_environment
+      - name: Execute Monty host bridge root
+        run: cargo +1.96.1 test -p sc-cron --features monty --test monty_host_bridge
