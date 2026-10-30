@@ -1,4 +1,4 @@
-# Final scoped planning QA — verification in progress
+# Final scoped planning QA — PASS
 
 Task: run-ogi. PR: https://github.com/randlee/sc-runtime/pull/85.
 
@@ -22,12 +22,21 @@ Local lint gates, ADR concurrency scanner, diff check, exact ID traceability,
 canonical ID resolution, same-wave ownership, and relative links pass.
 This is pre-implementation planning QA; no runtime delivery is claimed.
 
-Owning reviewers must now verify only their assigned corrections. Source
-hashes in candidate-source-manifest.json bind that verification. Do not treat
-the earlier 67c9dc2 PASS report as final scoped QA approval of the corrections.
+Req-qa, arch-qa, and extensibility-qa independently verified their assigned
+corrections on defb25307fe56f03b39f8833121064682ccb86c7. All 11 findings are
+closed; no blocking, important, or minor finding remains. All 23 reviewed
+source hashes match candidate-source-manifest.json. The reviewed commit has
+15 successful CI checks. See final-quality-report.md and
+final-review-summary.json. The later report-only commit changes no reviewed
+product/plan source; its source-manifest equality is checked separately.
 
 Round-1 raw results, assignments, screen, fixture predecessors, dry-run size
 diagnostics, actual gate responses, and corrected-run history are preserved in
 round1-evidence.tar.gz with round1-evidence.sha256. Exclude the invalid b-16
 no-overrides attempt and failed b-17 TLS attempt from approval coverage; their
 evidence is retained. All original working files remain available locally.
+
+Round-2 assignments and complete reviewer JSON/fenced outputs are in
+round2-evidence.tar.gz, verified by round2-evidence.sha256. No open-ended
+third review round was needed. The plan is ready to merge into develop;
+b-13/b-18's explicit external implementation entry prerequisites still apply.

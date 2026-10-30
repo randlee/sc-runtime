@@ -57,7 +57,9 @@ REQ-CRON-0005 snapshot now distinguishes library entry points from external
 callback protocols, preserving its original quote; its planning/development
 fixtures pass with concrete existing-signature evidence. The original gate
 archive below remains the immutable 67c9dc2-era snapshot. Final scoped QA
-verification is recorded separately in the current qa-runs directory.
+verification passed for req-qa, arch-qa, and extensibility-qa on defb2530,
+closing all 11 findings. The current qa-runs directory contains the exact
+source hashes, full reports, and preserved reviewer evidence.
 
 All six final b-13–b-18 runs pass with all 44 locked anchors selected. All 16
 new anchors are satisfied in the continuation; unchanged parser/store anchors

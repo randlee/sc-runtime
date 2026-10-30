@@ -1,0 +1,76 @@
+{
+  "status": "PASS",
+  "reviewed_source_commit": "defb25307fe56f03b39f8833121064682ccb86c7",
+  "branch": "plan/spinoff-monty-observability",
+  "pr": 85,
+  "rounds": 2,
+  "source_files_verified": 23,
+  "source_manifest": "candidate-source-manifest.json",
+  "reviewers": [
+    {
+      "agent": "req-qa",
+      "task_id": "/root/final_scoped_req_qa",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "PASS",
+      "reviewed_commit": "defb25307fe56f03b39f8833121064682ccb86c7",
+      "verified_findings": [
+        "REQ-QA-FINAL-001",
+        "REQ-QA-FINAL-002",
+        "REQ-QA-FINAL-003",
+        "REQ-QA-FINAL-004",
+        "REQ-QA-FINAL-005",
+        "REQ-QA-FINAL-006"
+      ],
+      "result_file": "req-qa-round2-result.json"
+    },
+    {
+      "agent": "arch-qa",
+      "task_id": "/root/final_scoped_arch_qa",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "PASS",
+      "reviewed_commit": "defb25307fe56f03b39f8833121064682ccb86c7",
+      "verified_findings": [
+        "ARCH-001",
+        "ARCH-002",
+        "ARCH-003",
+        "ARCH-004"
+      ],
+      "result_file": "arch-qa-round2-result.json"
+    },
+    {
+      "agent": "extensibility-qa",
+      "task_id": "/root/final_scoped_extensibility_qa",
+      "spawn_actor": "parent-orchestrator",
+      "fenced_json_received": true,
+      "verdict": "PASS",
+      "reviewed_commit": "defb25307fe56f03b39f8833121064682ccb86c7",
+      "verified_findings": [
+        "EXT-001"
+      ],
+      "result_file": "extensibility-qa-round2-result.json"
+    }
+  ],
+  "closed_findings": [
+    "REQ-QA-FINAL-001",
+    "REQ-QA-FINAL-002",
+    "REQ-QA-FINAL-003",
+    "REQ-QA-FINAL-004",
+    "REQ-QA-FINAL-005",
+    "REQ-QA-FINAL-006",
+    "ARCH-001",
+    "ARCH-002",
+    "ARCH-003",
+    "ARCH-004",
+    "EXT-001"
+  ],
+  "open_findings": [],
+  "new_product_decisions_required": [],
+  "runtime_implementation_claimed": false,
+  "ci": {
+    "commit": "defb25307fe56f03b39f8833121064682ccb86c7",
+    "checks": 15,
+    "all_success": true
+  }
+}
