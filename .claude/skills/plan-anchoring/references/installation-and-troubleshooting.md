@@ -1,6 +1,6 @@
 ---
 name: installation-and-troubleshooting
-version: 0.8.5
+version: 0.8.6
 description: Installing plan-anchor into a repository or a parent folder with the plan-anchor-installer skill (install.py), per-repository overrides and per-folder upgrades, the anchor tracker this install is rendered for and how to switch it, the CLIs and credentials plan-anchoring depends on (python3, PyYAML, bd, sc-compose, jq, TypeSafe API key), minimum versions, PATH issues in Claude Code, Codex and Cursor environment policy, validation, and known issues.
 ---
 
@@ -59,9 +59,11 @@ Exit codes follow the plugin convention shared by every script: 0 the command ra
 # Repository settings for the sc-plan-anchor plugin; commit this file, never put secrets in it.
 schema_version: 1
 anchor_tracker: bd
+# plan_dir: the current phase's plan folder (anchors.json, intent.md, anchor-runs/). Set it again when the phase changes.
+plan_dir: "docs/plans/phase-b"
 ```
 
-`schema_version` must be `1`. Unknown or duplicate keys are rejected (`SETTINGS.UNKNOWN_KEY`, `SETTINGS.MALFORMED`) so a typo never falls back silently. When the file or its `anchor_tracker` key is absent, the installer detects (rule 2) and the installed `anchor_tracker.py` selects `bd`, checked against disk. `.gitignore` may ignore `.sc/sessions/` and `.sc/*/cache/`, never this file; `write` reports `settings_ignored_by_git` when it is.
+`plan_dir` names the current phase folder, `docs/plans/phase-<current>` with the phase id written out: a relative path with forward slashes and no `..` or `<placeholder>` (`SETTINGS.INVALID_PLAN_DIR`). Set it with `plan_anchor_settings.py set plan_dir docs/plans/phase-<id>`; the installer and `anchor_tracker.py write` keep it. `schema_version` must be `1`. Unknown or duplicate keys are rejected (`SETTINGS.UNKNOWN_KEY`, `SETTINGS.MALFORMED`) so a typo never falls back silently. When the file or its `anchor_tracker` key is absent, the installer detects (rule 2) and the installed `anchor_tracker.py` selects `bd`, checked against disk. `.gitignore` may ignore `.sc/sessions/` and `.sc/*/cache/`, never this file; `write` reports `settings_ignored_by_git` when it is.
 
 This install is rendered for `bd`; both gates read anchor and question beads with it. The sprint text comes from the caller, from wherever it wrote it (`item_file`).
 
@@ -172,7 +174,7 @@ The smoke `judge` runs the full gating path offline: expect `not_addressed` for 
 - `bd comment --body-file`: does not exist; use `--file` (or `--stdin`).
 - `TRACKER.MISMATCH`, `TRACKER.DOLT_REQUIRED`: the settings file in effect (possibly a parent folder's) and the repository's `.beads/` disagree. Dolt provisioning is outside this skill; give the repository its own `.sc/plan-anchor/settings.yaml`, or rerun the installer with the `--tracker` that matches it.
 - `TRACKER.CLI_MISSING`: the selected tracker is not on PATH; see Find an existing install.
-- `SETTINGS.UNKNOWN_KEY`, `SETTINGS.SCHEMA_VERSION`, `SETTINGS.INVALID_TRACKER`, `SETTINGS.MALFORMED`: fix `.sc/plan-anchor/settings.yaml` to the form above.
+- `SETTINGS.UNKNOWN_KEY`, `SETTINGS.SCHEMA_VERSION`, `SETTINGS.INVALID_TRACKER`, `SETTINGS.INVALID_PLAN_DIR`, `SETTINGS.MALFORMED`: fix `.sc/plan-anchor/settings.yaml` to the form above.
 - `BEADS.METADATA_INVALID`: `.beads/metadata.json` is not a readable JSON object; repair it before selection can run.
 - Installer `INSTALL.DEST_GLOBAL`: `--dest` named the home directory, a global harness directory or a plugin cache; pass a repository or a parent folder of repositories.
 - `VALIDATION.PATH` from a gate with plan-anchor installed: the script passed is not the nearest per-folder copy (or is a global one); pass the `jev_judge.py` of the install at or above the repository.

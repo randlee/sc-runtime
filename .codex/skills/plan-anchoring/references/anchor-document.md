@@ -1,12 +1,12 @@
 ---
 name: anchor-document
-version: 0.8.5
+version: 0.8.6
 description: The intent document, the anchors.json record of truth and its rendered anchors.md, ID rules, provenance, versioning, promotion, and retirement.
 ---
 
 # The anchor documents
 
-Two documents in `doc/plan/phase-current/` are for people; one machine record feeds everything else. Keep all of them in git with the plan.
+Two documents in the current phase folder, `docs/plans/phase-<current>/` (`$P`: `plan_dir` in `.sc/plan-anchor/settings.yaml`), are for people; one machine record feeds everything else. Keep all of them in git with the plan.
 
 | File | Who edits | Purpose |
 | --- | --- | --- |
@@ -20,8 +20,8 @@ Two documents in `doc/plan/phase-current/` are for people; one machine record fe
 ```json
 {
   "schema": "plan-anchoring/anchors/1",
-  "plan": "phase-current",
-  "intent_ref": "doc/plan/phase-current/intent.md",
+  "plan": "phase-b",
+  "intent_ref": "docs/plans/phase-b/intent.md",
   "anchors": [ { ...anchor record... } ]
 }
 ```

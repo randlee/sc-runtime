@@ -64,7 +64,8 @@ observability directly).
 ### Decision
 
 `OpError.code` is `sc_observability_types::ErrorCode` from
-`sc-observability-types` 1.5.0, the pin sprint a-1 recorded.
+`sc-observability-types` under the tested-minimum caret-compatible
+requirement `1.5.0`.
 `sc-command` defines no error-code type and no remediation type of its own.
 `OpError.remediation` is `Option<sc_observability_types::Remediation>`.
 `None` is the empty variant. A custom serializer writes the wire key
@@ -151,16 +152,19 @@ or text that is empty after trimming, leaves remediation unset. The crate
 does not write a placeholder application name. The application name and the
 daemon verb are caller policy. This closes EXT-003.
 
-`sc-command` depends on `sc-observability-types` 1.5.0 as an ordinary,
-non-optional dependency. The Cargo requirement is the caret `1.5.0`, the
-tested minimum. `ErrorCode` is a string newtype on the 1.x line, and
-`sc-observability` 1.5.0 requires the types crate with a caret, so an exact
+`sc-command` depends on `sc-observability-types` as an ordinary,
+non-optional dependency. Its tested-minimum Cargo requirement remains the
+caret-compatible `1.5.0`; the workspace lockfile may unify that requirement
+with the continuation crates at exact `1.5.1`. `ErrorCode` is a string
+newtype on the 1.x line, and `sc-observability` 1.5.1 requires the types
+crate compatibly, so an exact
 `=` pin on this library would make a generated daemon that uses both crates
 fail to resolve on the next compatible types release. It does not depend on
 `sc-observability` or on `sc-observability-otlp`. `sc-command` remains the
-only library in this repository that depends on `sc-observability-types`.
-`sc-transport` does not. This closes EXT-004.
-The logging runtime stays forbidden on all four libraries.
+only library using its error/remediation surface. `sc-runtime` and `sc-cron`
+also depend on the types crate, but only for injected canonical logging;
+`sc-config` and `sc-transport` do not. This closes EXT-004.
+The logging runtime stays forbidden on all library crates.
 
 #### Library wire-failure inventory
 
@@ -226,10 +230,12 @@ is absent, so `cargo tree` enforces the logging crates. Sprint a-5 deleted
 `sc-command`. `boundaries/planning.toml` exists because `sc-lint` requires
 planning metadata next to the workspace.
 `cargo tree -p sc-command -e normal --prefix none`, with default features and
-with `--features server`, prints a `sc-observability-types ` line at 1.5.0
+with `--features server`, may print a `sc-observability-types ` line at the
+workspace-lock resolution `1.5.1`
 and no line beginning with `sc-observability ` or `sc-observability-otlp `
 (name then a space). `crates/sc-command/Cargo.toml` lists
-`sc-observability-types` caret `1.5.0` under `[dependencies]` without `optional`.
+`sc-observability-types` caret-compatible `1.5.0` under `[dependencies]`
+without `optional`.
 `axum` is optional at 0.8.9 with `default-features = false`.
 A test binds `OpError`'s `code` to `sc_observability_types::ErrorCode`, and
 a test asserts that a supplied suggestion serialises as a JSON string
@@ -370,7 +376,8 @@ Everything else (`Envelope<T>`, `OpError`, `ErrorKind`,
 
 With default features the crate's direct dependencies are `serde`,
 `serde_json`, and `sc-observability-types` at the caret requirement
-`1.5.0`. `server` adds `axum` 0.8.9 and `rmcp` `~3.7` and nothing else.
+`1.5.0`; the workspace lockfile may resolve it to exact `1.5.1`. `server`
+adds `axum` 0.8.9 and `rmcp` `~3.7` and nothing else.
 `axum` is declared with `default-features = false`. The conversion uses
 `IntoResponse`, `Body`, and `http`. Axum's default features stay off so a
 daemon does not enable `form`, `query`, or `tower-log` through feature

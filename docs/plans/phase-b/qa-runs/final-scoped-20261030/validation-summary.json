@@ -1,0 +1,24 @@
+[
+  {
+    "command": "just lint gates",
+    "exit": 0
+  },
+  {
+    "command": "just adr-run-0011",
+    "exit": 0
+  },
+  {
+    "command": "git diff --check",
+    "exit": 0
+  },
+  {
+    "checks": [
+      "six frontmatters",
+      "exact body/frontmatter IDs",
+      "canonical ID resolution",
+      "same-wave owned paths",
+      "relative links"
+    ],
+    "pass": true
+  }
+]

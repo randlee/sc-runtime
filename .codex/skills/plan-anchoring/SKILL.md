@@ -2,7 +2,7 @@
 name: plan-anchoring
 description: Capture the facts a user states while planning as numbered anchors (ANC-001...), one clear, testable requirement each, with the user's verbatim words kept as provenance, alongside existing requirements (REQ) and ADRs. Turn them into Jev-judged questions, tune and test the questions per anchor, and enforce them at two gates with a triage-apply-rerun loop. The planning gate checks each plan bead still says what the user said; the development gate checks the delivered sprint work followed it. Use when planning a phase or sprint with beads, when the user says "anchor this", "lock this", "don't let this drift", or "remember I said", when re-opening a plan after context compression, or when reviewing a sprint against its plan. Not for general code review, and not a replacement for plan hardening.
 metadata:
-  version: "0.8.5"
+  version: "0.8.6"
 ---
 
 # Plan Anchoring
@@ -49,11 +49,14 @@ Then resolve the script once. It sits next to this file:
 
 ```bash
 S="<this skill's directory>/scripts/jev_judge.py"   # absolute: <install folder>/.<harness>/skills/plan-anchoring/scripts/jev_judge.py
-A=doc/plan/phase-current/anchors.json
+P="$(python3 "<this skill's directory>/scripts/plan_anchor_settings.py" show | jq -r '.data.plan_dir // empty')"   # e.g. docs/plans/phase-b
+A="$P/anchors.json"
 python3 "$S" --help
 ```
 
-Every command below uses `$S` and `$A`; every agent invocation passes `$S` as `script`.
+`P` is the current phase's plan folder, `docs/plans/phase-<current>`, where `<current>` is the phase id (`docs/plans/phase-b`); it holds `intent.md`, `anchors.json`, `anchors.md` and `anchor-runs/`. It is `plan_dir` in the committed `.sc/plan-anchor/settings.yaml`. Empty (never set): ask the user which phase is current, record it with `python3 "<this skill's directory>/scripts/plan_anchor_settings.py" set plan_dir docs/plans/phase-<id>`, commit the file, then continue. When the phase changes, set it again. Never write anchors to a folder the user has not named.
+
+Every command below uses `$S`, `$P` and `$A`; every agent invocation passes `$S` as `script` and `$A` as `anchors_path`.
 
 ## Select the workflow
 

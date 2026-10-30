@@ -1,0 +1,228 @@
+{
+  "status": "pass",
+  "gate": "planning",
+  "threshold": 0.6,
+  "anchors_selected_per_sprint": 44,
+  "new_anchors_satisfied": [
+    "ANC-027",
+    "ANC-028",
+    "ANC-029",
+    "ANC-030",
+    "ANC-031",
+    "ANC-032",
+    "ANC-033",
+    "ANC-034",
+    "ANC-035",
+    "ANC-036",
+    "ANC-037",
+    "ANC-038",
+    "ANC-039",
+    "ANC-040",
+    "ANC-041",
+    "ANC-042"
+  ],
+  "continuation_runs": [
+    {
+      "item": "b-13",
+      "run_id": "plan-20261030T051342Z-b-13",
+      "run": "doc/plan/phase-current/anchor-runs/tuning-20261029/approval-gate-20261030/plan-20261030T051342Z-b-13.json",
+      "source": "docs/plans/phase-b/sprint-b-13-observability-contract.md",
+      "source_sha256": "632a66a8350098494115af0fd346e8ed4d71fe1cc99defa94fba835f41f60c11",
+      "counts": {
+        "satisfied": 7,
+        "excluded": 37
+      },
+      "pass": true
+    },
+    {
+      "item": "b-14",
+      "run_id": "plan-20261030T051435Z-b-14",
+      "run": "doc/plan/phase-current/anchor-runs/tuning-20261029/approval-gate-20261030/plan-20261030T051435Z-b-14.json",
+      "source": "docs/plans/phase-b/sprint-b-14-sc-runtime-observability.md",
+      "source_sha256": "5a27b92836dc13cfae87e94a1e5fd31b617bc75ed5a69b1a4d60c31203dd874e",
+      "counts": {
+        "satisfied": 1,
+        "not_applicable": 1,
+        "excluded": 42
+      },
+      "pass": true
+    },
+    {
+      "item": "b-15",
+      "run_id": "plan-20261030T051443Z-b-15",
+      "run": "doc/plan/phase-current/anchor-runs/tuning-20261029/approval-gate-20261030/plan-20261030T051443Z-b-15.json",
+      "source": "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md",
+      "source_sha256": "9e09ec1b60bf896aab50150073c38e0914d439f53c8c0ee4f01f701f9c85e6bf",
+      "counts": {
+        "satisfied": 4,
+        "not_applicable": 1,
+        "excluded": 39
+      },
+      "pass": true
+    },
+    {
+      "item": "b-16",
+      "run_id": "plan-20261030T051942Z-b-16",
+      "run": "doc/plan/phase-current/anchor-runs/tuning-20261029/approval-gate-20261030/plan-20261030T051942Z-b-16.json",
+      "source": "docs/plans/phase-b/sprint-b-16-monty-template-examples.md",
+      "source_sha256": "2c4effcc89d2b4a123969589834f8b01146bb9be697b19bb640160f371bc7060",
+      "counts": {
+        "satisfied": 15,
+        "excluded": 29
+      },
+      "pass": true
+    },
+    {
+      "item": "b-17",
+      "run_id": "plan-20261030T051349Z-b-17",
+      "run": "doc/plan/phase-current/anchor-runs/tuning-20261029/approval-gate-20261030/plan-20261030T051349Z-b-17.json",
+      "source": "docs/plans/phase-b/sprint-b-17-sc-cron-hook-environment.md",
+      "source_sha256": "1a5aed16a13e084747283907892af8607d7bb0ef3f94f937a4ac869d8a92fe5b",
+      "counts": {
+        "satisfied": 23,
+        "excluded": 21
+      },
+      "pass": true
+    },
+    {
+      "item": "b-18",
+      "run_id": "plan-20261030T051749Z-b-18",
+      "run": "doc/plan/phase-current/anchor-runs/tuning-20261029/approval-gate-20261030/plan-20261030T051749Z-b-18.json",
+      "source": "docs/plans/phase-b/sprint-b-18-template-observability-integration.md",
+      "source_sha256": "71ab4c1ee3778bbb6ef63c862e3f97edaf83145471f02198a66091c6cbbf39f3",
+      "counts": {
+        "satisfied": 14,
+        "excluded": 30
+      },
+      "pass": true
+    }
+  ],
+  "baseline_coverage": {
+    "description": "Unchanged requirements covered by earlier passing Phase B plans; versions match current authority. This does not substitute for any new ANC027-042 requirement.",
+    "coverage": {
+      "REQ-RUN-0321": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032457Z-b-4.json",
+        "run_id": "plan-20261026T032457Z-b-4",
+        "anchor_version": 3,
+        "item": "b-4"
+      },
+      "REQ-RUN-0327": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032457Z-b-4.json",
+        "run_id": "plan-20261026T032457Z-b-4",
+        "anchor_version": 2,
+        "item": "b-4"
+      },
+      "REQ-RUN-0328": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032457Z-b-4.json",
+        "run_id": "plan-20261026T032457Z-b-4",
+        "anchor_version": 2,
+        "item": "b-4"
+      },
+      "REQ-RUN-0330": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032457Z-b-4.json",
+        "run_id": "plan-20261026T032457Z-b-4",
+        "anchor_version": 2,
+        "item": "b-4"
+      },
+      "ADR-RUN-0305": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032449Z-b-8.json",
+        "run_id": "plan-20261026T032449Z-b-8",
+        "anchor_version": 2,
+        "item": "b-8"
+      },
+      "REQ-RUN-0317": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032449Z-b-8.json",
+        "run_id": "plan-20261026T032449Z-b-8",
+        "anchor_version": 2,
+        "item": "b-8"
+      },
+      "REQ-RUN-0318": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032449Z-b-8.json",
+        "run_id": "plan-20261026T032449Z-b-8",
+        "anchor_version": 2,
+        "item": "b-8"
+      },
+      "REQ-RUN-0326": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032449Z-b-8.json",
+        "run_id": "plan-20261026T032449Z-b-8",
+        "anchor_version": 3,
+        "item": "b-8"
+      },
+      "REQ-RUN-0331": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032449Z-b-8.json",
+        "run_id": "plan-20261026T032449Z-b-8",
+        "anchor_version": 2,
+        "item": "b-8"
+      },
+      "REQ-RUN-0313": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 2,
+        "item": "b-7"
+      },
+      "REQ-RUN-0314": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 2,
+        "item": "b-7"
+      },
+      "REQ-RUN-0315": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 2,
+        "item": "b-7"
+      },
+      "REQ-RUN-0316": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 2,
+        "item": "b-7"
+      },
+      "REQ-RUN-0319": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 3,
+        "item": "b-7"
+      },
+      "REQ-RUN-0320": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 2,
+        "item": "b-7"
+      },
+      "REQ-RUN-0322": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 3,
+        "item": "b-7"
+      },
+      "REQ-RUN-0323": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 2,
+        "item": "b-7"
+      },
+      "REQ-RUN-0324": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 2,
+        "item": "b-7"
+      },
+      "REQ-RUN-0325": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032445Z-b-7.json",
+        "run_id": "plan-20261026T032445Z-b-7",
+        "anchor_version": 2,
+        "item": "b-7"
+      },
+      "REQ-CRON-0002": {
+        "run": "doc/plan/phase-current/anchor-runs/plan-20261026T032124Z-b-3.json",
+        "run_id": "plan-20261026T032124Z-b-3",
+        "anchor_version": 3,
+        "item": "b-3"
+      }
+    },
+    "uncovered": []
+  },
+  "uncovered_anchors": [],
+  "new_product_decisions_required": []
+}

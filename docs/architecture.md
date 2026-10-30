@@ -36,14 +36,20 @@ many independent consumer projects (agent-first JSON CLI, mandatory actionable
 errors, MCP on the same router, SQLite locally with a path to additional sqlx
 store backends). See [`framework-charter.md`](framework-charter.md).
 
-`sc-runtime` produces two kinds of thing: four library crates that are
-published and versioned, and a template that is rendered once into a project
-and then belongs to that project.
+`sc-runtime` produces two kinds of thing: reusable library crates and a
+template that is rendered once into a project and then belongs to that
+project. The `0.1.1` target has five independently versioned public release
+artifacts (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and
+optional `sc-cron`); the workspace also holds the intentionally unpublished
+`sc-runtime-db-sqlite` building block. Actual publication remains the gated
+b-18 release step rather than an assumed current state.
 
 | Layer | What it holds | Owner | Lives in |
 |---|---|---|---|
-| Standalone crates | config loading; listener and client connector; response envelope | this repo, published | `crates/sc-config`, `crates/sc-transport`, `crates/sc-command` |
-| Assembly crate | singleton lock, router merge, serve, graceful shutdown, test fixture | this repo, published | `crates/sc-runtime` |
+| Standalone crates | config loading; listener and client connector; response envelope | this repo, public release artifacts | `crates/sc-config`, `crates/sc-transport`, `crates/sc-command` |
+| Assembly crate | singleton lock, router merge, serve, graceful shutdown, test fixture | this repo, public release artifact | `crates/sc-runtime` |
+| Optional reusable scheduler | SQLite-backed Rust/Python/Monty cron hooks | this repo, public release artifact | `crates/sc-cron` |
+| Internal SQLite writer building block | one rusqlite writer connection/thread | this repo, unpublished | `crates/sc-runtime-db-sqlite` |
 | Application layer | operations, routes, MCP tools, CLI commands, stores, schemas | the generated project | rendered from `template/` |
 | Generation tooling | options contract, fixtures, driver, wizard | this repo, not published | `wizard/`, `scripts/`, `tests/unit/` |
 
@@ -104,20 +110,21 @@ workspace-internal edges and the forbidden edges.
 | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
 | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
 | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+| `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron` | MUST: `sc-observability-types` for injected canonical events | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
-`sc-observability-types` is an allowed dependency of `sc-command` only.
+`sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
+`sc-cron`; the latter two use only the injected canonical logger contract.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only targets that are workspace members in that crate's lint tree;
 crates.io names and other non-member targets are enforced by criterion 5 of
 [REQ-RUN-0005](requirements.md) (`cargo tree`). sc-lint 0.8.0 cannot fail a
-crates.io edge, so the `sc-runtime` direct-only rule is
-`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no line
-beginning with `sc-observability-types `. A transitive line through
-`sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
-`sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
+crates.io edge, so direct-depth cargo-tree checks prove `sc-runtime` and
+`sc-cron` link the types crate but not the full logging runtime.
+`allowed_dependents` is empty for `sc-config`, `sc-runtime`,
+`sc-runtime-db-sqlite`, and `sc-cron`, and is `sc-runtime` only for
+`sc-transport` and `sc-command`. The
 edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
 entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
 `sc-runtime` does not depend on `sc-config` and does not load configuration
@@ -169,6 +176,9 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0011 | No sleep or `block_on` on the hot path; no `Mutex` guard across `.await` | Active |
 | ADR-RUN-0012 | Rusqlite writer is its own crate; template stores stay sqlx | Active |
 | ADR-RUN-0013 | sc-cron is the SQLite cron crate; normal crontab strings; app-owned hooks | Active |
+| ADR-RUN-0014 | Optional embedder-supplied schedule row limit | Active |
+| ADR-RUN-0015 | Benchmark campaigns in a controlled environment | Active |
+| ADR-RUN-0016 | Explicit Python and Monty hook environments | Active |
 | ADR-RUN-0201 | Daemon owns the database; all clients use HTTP | Active |
 | ADR-RUN-0202 | One Axum router carries REST, OpenAPI and MCP | Active |
 | ADR-RUN-0203 | Library versions on one router; one struct for both schemas | Active |
@@ -230,7 +240,7 @@ command is. A project could then do only what the wrappers expose.
    merge the project's router, the OpenAPI document route, a health route and
    the MCP service if one was given; bind the listener through `sc-transport`
    and serve with graceful shutdown on SIGINT and SIGTERM.
-4. The four library crates MUST NOT contain a command registry, a proc-macro,
+4. The workspace library crates MUST NOT contain a command registry, a proc-macro,
    a code generator, or a public type that wraps or re-exports an Axum, rmcp or
    sqlx type.
 5. The project MUST pass the builder an ordinary `utoipa_axum::OpenApiRouter`
@@ -438,19 +448,20 @@ as its own selection.
    | `sc-config` | none | `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types`, `tokio` |
    | `sc-transport` | none | `sc-config`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp`, `sc-observability-types` |
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
-   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
+   | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-   | `sc-cron` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`. `sqlx` is absent and is checked with `cargo tree` |
+   | `sc-cron` | MUST: `sc-observability-types` for injected canonical events | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
-`sc-observability-types` is an allowed dependency of `sc-command` only.
+`sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
+`sc-cron`; the latter two use only the injected canonical logger contract.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only workspace-member targets in that lint tree; crates.io names use
 criterion 5 `cargo tree` checks (see sprint a-1 evidence). sc-lint 0.8.0
-cannot fail a crates.io edge, so the `sc-runtime` direct-only rule is
-`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no
-line beginning with `sc-observability-types `. A transitive line through
-`sc-command` is allowed. `allowed_dependents` is empty for `sc-config` and
-`sc-runtime`, and `sc-runtime` only for `sc-transport` and `sc-command`. The
+cannot fail a crates.io edge, so direct-depth cargo-tree checks prove that
+`sc-runtime` and `sc-cron` contain the types crate but not the full runtime.
+`allowed_dependents` is empty for `sc-config`, `sc-runtime`,
+`sc-runtime-db-sqlite`, and `sc-cron`, and is `sc-runtime` only for
+`sc-transport` and `sc-command`. The
 edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
 entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
 
@@ -579,9 +590,12 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 
 ### Context
 
-`sc-observability` 1.5.0 and `sc-observability-types` 1.5.0 are the Phase A
-pin recorded by sprint a-1. Every generated daemon uses `sc-observability`
-at that pin. The tempting design is to have `sc-config` or `sc-runtime`
+The Phase B contract advances the generated daemon's `sc-observability`
+requirement and the `sc-runtime`/`sc-cron` types-only requirements to the
+normal caret-compatible `1.5.1`; `sc-command` retains its tested-minimum
+caret requirement `1.5.0`, and the lockfile may unify it at exact `1.5.1`.
+Every generated daemon uses the full runtime. The tempting design is to have
+`sc-config` or `sc-runtime`
 initialise it. That would make those crates depend on the observability
 stack, so `sc-config` could no longer be used by a program that does not use
 `sc-observability`, and observability would in turn be tied to how config is
@@ -589,17 +603,17 @@ loaded.
 
 ### Decision
 
-1. `sc-config`, `sc-transport`, `sc-command` and `sc-runtime` MUST NOT depend
+1. Library crates MUST NOT depend
    on `sc-observability` or on its OTel export crate `sc-observability-otlp`.
-2. Those four crates MUST NOT wrap `sc-observability`, re-export it, or define
+2. Library crates MUST NOT wrap `sc-observability`, re-export it, or define
    logging wrapper functions.
-3. The only observability dependency allowed inside the four crates is
-   `sc-observability-types` on `sc-command`. It is not allowed on
-   `sc-transport`. The logging runtime `sc-observability` and
-   `sc-observability-otlp` stay forbidden on all four libraries.
-   `Remediation` stays on `sc-command` only.
+3. `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
+   `sc-cron`. Runtime and cron use only `CanonicalLog`/`SharedCanonicalLog`
+   and canonical event types; error remediation stays on `sc-command`.
+   It is not allowed on `sc-config` or `sc-transport`. The logging runtime
+   and OTel export stay forbidden on all library crates.
 4. The generated `daemon/src/main.rs` MUST, in this order: load config with
-   `sc-config`; initialise `sc-observability` 1.5.0 directly with plain values
+   `sc-config`; initialise `sc-observability` 1.5.1 directly with plain values
    taken from that config; then call `sc_runtime::Daemon::builder()`.
 5. `TransportError::DaemonNotRunning` is owned by
    [ADR-TRN-0003](sc-transport/architecture.md). It carries
@@ -620,10 +634,8 @@ loaded.
 program. A project chooses its own log sinks and adds the OTel export crate
 itself if it wants export.
 
-How much daemon-internal logging the four crates emit in v0.1 depends on a
-question that is undecided: whether a `tracing` bridge into
-`sc-observability` is acceptable. Until it is decided, no code or plan may
-assume such a bridge exists.
+Library lifecycle events use direct injected `LogEvent` emission; no
+`tracing` bridge into `sc-observability` is assumed or added.
 
 ### Alternatives Considered
 
@@ -637,7 +649,7 @@ assume such a bridge exists.
 ### Implementation
 
 **Enforced by:** `forbidden_edges` entries for `sc-observability` and
-`sc-observability-otlp` in each of the four crates' boundary manifests under
+`sc-observability-otlp` in each library crate's boundary manifest under
 `boundaries/<crate>/` (the forbidden-edge table is owned by
 [REQ-RUN-0005](requirements.md)), checked by `sc-lint-boundary` through `just lint`;
 `arch-qa` review of points 2 and 3 and of the generated `daemon/src/main.rs`
@@ -646,9 +658,9 @@ for the order in point 4.
 ### Related Documents
 
 - [REQ-RUN-0005](requirements.md): owner of the forbidden-edge table; `sc-observability`
-  and `sc-observability-otlp` are forbidden for all four crates.
-- [REQ-RUN-0309](requirements.md): the generated daemon initialises `sc-observability` 1.5.0
-  directly in `main.rs`. `sc-observability-types` 1.5.0 is the matching pin.
+  and `sc-observability-otlp` are forbidden for all library crates.
+- [REQ-RUN-0309](requirements.md): the generated daemon uses caret-compatible
+  `1.5.1` requirements; its lockfile proves the exact matching resolution.
 - [NFR-CFG-0002](sc-config/requirements.md): `sc-config` has minimal dependencies and none on
   observability.
 - [NFR-CMD-0002](sc-command/requirements.md): `sc-command` takes only types from
@@ -1048,9 +1060,12 @@ virtual-machine runtime for macOS.
    records the rule in this repository; generated-project wording is deferred
    with REQ-RUN-0311.
 
-**OPEN:** how daemon-process tests are selected and how they detect an
-isolated machine is undecided; [NFR-RUN-0010](requirements.md) owns the
-question. The launchd comparison belongs to deferred ADR-RUN-0204.
+**OPEN:** beyond Phase B's fixed generated SIGINT/SIGTERM job, how other
+daemon-process tests are selected and detect an isolated machine remains
+undecided; [NFR-RUN-0010](requirements.md) owns the question. The Phase B job
+requires its dedicated marker plus GitHub Actions' hosted-runner values and
+fails closed before spawn. The launchd comparison belongs to deferred
+ADR-RUN-0204.
 
 ### Consequences
 
@@ -1873,13 +1888,13 @@ The owner of these edges and of their criteria is
    | `store-*` | `sqlx` with exactly one driver feature | design table |
    | `service` | the adaptor, `api-types`; `sc-command` with default features | design table; `sc-command` follows from service functions returning `OpError` |
    | adaptor | `<project>-schema` and the `store-*` crates whose rows it moves | [ADR-RUN-0305](architecture.md), [REQ-RUN-0324](requirements.md) |
-   | `daemon` | `service`, `sc-runtime`, `sc-config`; `api-types`; `sc-command` with its `server` cargo feature | design table; the last two follow from handlers naming `api-types` structs, `Envelope<T>` and `into_mcp()` |
+   | `daemon` | `service`, `sc-runtime`, `sc-config`, `sc-transport`, `sc-observability`, and `sc-observability-types`; `api-types`; direct `sc-command` with its `server` cargo feature; optional `sc-cron` behind generated feature `cron` | design table and composition-root contract; handler/configuration types require the direct command/transport/types edges; the embedding application owns optional cron |
    | `cli` | `api-types`, `sc-transport`, `sc-command`, `sc-config`, none with the `server` cargo feature | design table |
 
 2. Only `store-*` crates depend on sqlx. Only `service` and the adaptor depend on `store-*` crates. `service` depends on the adaptor. `daemon` and `cli` do not. Amended 2026-10-25.
 3. The project's `Stores` struct MUST be defined in `service`. Request handlers take `&Stores`. The adaptor holds the store handles it uses to move rows. Amended 2026-10-25: the adaptor, as well as `service`, may depend on `store-*`.
 4. `api-types` MUST NOT depend on any other crate of the generated workspace
-   or on any of the four library crates.
+   or on any framework crate from this repository.
 5. `cli` MUST NOT have a normal (non-dev) dependency, direct or transitive,
    on `service`, `daemon`, any `store-*` crate, `sc-runtime`, `sqlx`, `axum`
    or `rmcp`. The rule and its scope are owned by
@@ -1888,20 +1903,18 @@ The owner of these edges and of their criteria is
 7. Only `daemon` may have a normal (non-dev) dependency on `sc-runtime`. A
    dev-dependency for the example test is covered by the OPEN in
    [REQ-RUN-0302](requirements.md) on which crate hosts that test.
+8. Generated feature `cron` enables the optional daemon dependency on
+   `sc-cron`; generated feature `monty` implies `cron` and enables
+   `sc-cron/monty`. Feature-off generated builds do not link `sc-cron`.
+   `sc-cron` remains independent of the generated workspace and never loads
+   application configuration.
 
 `service` takes `sc-command` as a direct dependency: by point 7 it may not
-depend on `sc-runtime`, so a re-export cannot reach it.
-
-**OPEN:** whether `daemon` takes `sc-command` as a direct dependency, or
-through a re-export from `sc-runtime`, is undecided. A re-export would have
-to be added to the public surface of `sc-runtime`
-([NFR-RT-0001](sc-runtime/requirements.md)). Until this is decided, point 1
-fixes only that the `sc-command` items are reachable from those crates, with
-`server` enabled for `daemon` only.
-
-**OPEN:** which generated crate defines the project's configuration struct
-`AppConfig` is undecided. Both `daemon` and `cli` load configuration with
-`sc-config`.
+depend on `sc-runtime`, so a re-export cannot reach it. The generated daemon
+also takes `sc-command` directly with `server`; `sc-runtime` does not re-export
+it. The daemon crate defines `AppConfig` and owns full-observability/optional
+cron composition. The CLI loads its own client configuration and does not
+depend on the daemon crate for that type.
 
 ### Consequences
 
@@ -1934,8 +1947,8 @@ crate name followed by a space; `arch-qa` review of `template/` for point 3.
 
 - [REQ-RUN-0301](requirements.md): owner of the generated workspace layout, its edges and
   the two OPEN questions.
-- [REQ-RUN-0003](requirements.md): generated projects name the four library crates by
-  version.
+- [REQ-RUN-0003](requirements.md): generated projects name framework crates by
+  version, including optional `sc-cron` when selected.
 - [NFR-RUN-0001](requirements.md): a CLI built as its own selection links none of axum, rmcp
   or sqlx.
 - [ADR-RUN-0003](architecture.md): the `server` cargo feature and the library crate graph.
@@ -2410,7 +2423,7 @@ Sprint `b-1` lands the crate, its boundary manifest, and the rewritten crate doc
 
 **Status:** Active  
 **Decision Date:** 2026-10-25  
-**Amended:** 2026-10-28. Point 4 and the `b-10` consequence authorize embedder `MontyHostConfig` / `Scheduler::with_monty_host`.  
+**Amended:** 2026-10-29. Point 3 records the pre-release schema baseline; point 4 and the consequences define the b-16 extensible host interface and b-17 hook environment; approved ANC-027 through ANC-042 govern this amendment.
 **Source:** Owner, 2026-10-25. Port beads-cache `crates/sc-cron` as an optional drop-in. Configuration is one SQLite table. Schedules are cron strings. The hook is Rust or a Python module, as atm-core does with `atm-cron`. A richer scheduling API is the consumer's.
 
 ### Context
@@ -2421,24 +2434,35 @@ The expression parser on that branch refuses a five-field string. A normal cront
 
 ### Decision
 
-1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The template does not depend on it in any Cargo manifest unless a later generation flag says so. Comments and schema descriptions may name the crate; that is not a manifest dependency. `sc-runtime` does not start it.
+1. `sc-cron` is an optional workspace crate, ported from beads-cache `crates/sc-cron`. It depends on no other workspace crate. No other workspace crate depends on it. The generated daemon names it as an optional dependency only: feature `cron` enables it and feature `monty` implies `cron` plus `sc-cron/monty`; neither is a default feature. Comments and schema descriptions may name the crate without adding another manifest edge. `sc-runtime` does not start it.
 2. A normal schedule string is five fields in UTC: minute, hour, day of month, month, day of week. `@yearly`, `@monthly`, `@weekly`, `@daily`, and `@hourly` stay valid. A six-field string, seconds first, stays valid so a spec already written that way still parses. A five-field string is minute-first and is not read as seconds.
-3. Configuration is one SQLite table in its own database file. That path is not the application `store-sqlite` file. A row holds the name, the cron string, the timeout, a JSON payload, and the hook target. The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`. Amended 2026-10-25.
-4. The hook target is a Rust function, a Python module, or trusted in-process Monty source under feature `monty`. Monty source is embedding-chosen text, not a cache file, and does not use `monty-pool`, `monty-fs`, or `monty-runtime`. The hook names are `cron.tick` and `cron.stop`. Python and Monty receive the `sc-cron.hook.v1` JSON object with required `protocol`, `event`, `schedule`, `payload`, and `deadline` members; it has no beads, bd-cache, or ATM field. One Monty REPL is retained per schedule name and is not dropped or replaced until the feed inside it returns. The worker gates stop then tick: a `disable` or `delete` answer skips `cron_tick`, and a `continue` answer plus a queued replace, external delete, external disable, or shutdown skips `cron_tick` and writes no outcome. `monty_feeds_outstanding` counts feeds whose outcome write has not finished. Shutdown drains every in-flight join at once and does not abort a Monty join. When that count is above zero at the handle deadline, in-flight Rust or Python joins are aborted and recorded `TimedOut`; the worker task is aborted only when the count is zero. `run_due` publishes a per-name in-flight mark before it spawns a Monty feed. Monty timeout for VM execution is `max_feed_duration`, observed only at interpreter checkpoints, with `max_memory` unset. Under feature `monty`, a hook may call the host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)`. sc-cron resumes those calls inside `drive_feed` via `execute_feed_with_compose_program` by spawning the compose program the embedder set with `Scheduler::with_monty_host` and `MontyHostConfig` (feature `monty`). The cfg(test) helper `execute_feed` wraps the same resume loop with the default basename only. The default, when the embedder does not call `with_monty_host`, is the basename `sc-compose` on `PATH` (install that binary or symlink the name). `MontyHostConfig::new` accepts any non-empty path and returns `CronError::InvalidSpec` when the path is empty. A basename is resolved on `PATH`; an absolute path, or any other non-empty path, is spawned as given. Hook source cannot choose the program or the temp root. Render paths (`render_template`, and `sc_compose_run` when `subcommand` is `render`) stage a temp root the hook cannot choose and run that program as `render --root <temp> --mode file --file t.j2 --var-file v.json`. Any other subcommand, including `bead`, `init`, and `extract`, fails the feed with `COMPOSE_SUBCOMMAND`. `OsCall` and any other host function name fail the feed. The tick does not start CPython. `ResourceTracker` pauses `max_feed_duration` while the feed is suspended on that host call; the blocking-pool thread stalls until the compose `Command` returns; after that child exits, a host `Instant` past the row budget records `RunOutcome::TimedOut` and drops the repl (this is not a Monty feed-time-limit error). Stdout past the hook output cap fails the feed with `COMPOSE_OUTPUT`. A stack overflow or allocator abort from this trusted in-process code is accepted, the same class of risk as a Rust `Job`. The crate ships no HTTP, MCP, or CLI API.
+3. Configuration is one SQLite table in its own database file. That path is not the application `store-sqlite` file. A row holds the name, the cron string, the timeout, a JSON payload, the hook target, and the canonical Python/Monty hook-environment document from [ADR-RUN-0016](architecture.md). The crate creates that table. It does not own the rest of the database. Schedule writes do not go through `SqliteWriter`. Sprint b-17 defines the first published schema at `SCHEMA_VERSION = 1`; it has no compatibility obligation or migration ladder for unreleased development cuts. Amended 2026-10-28.
+4. The hook target is a Rust function, a Python module, or application-supplied in-process Monty source under feature `monty`. Monty source is embedding-chosen text, not a cache file, and does not use `monty-pool`, `monty-fs`, or `monty-runtime`. The hook names are `cron.tick` and `cron.stop`. Python and Monty receive the `sc-cron.hook.v1` JSON object with required `protocol`, `event`, `schedule`, `payload`, and `deadline` members; it has no beads, bd-cache, or ATM field. One Monty REPL is retained per schedule name and is not dropped or replaced until the feed inside it returns. The worker gates stop then tick: a `disable` or `delete` answer skips `cron_tick`, and a `continue` answer plus a queued replace, external delete, external disable, or shutdown skips `cron_tick` and writes no outcome. `monty_feeds_outstanding` counts feeds whose outcome write has not finished. Shutdown drains every in-flight join at once and does not abort a Monty join. When that count is above zero at the handle deadline, in-flight Rust or Python joins are aborted and recorded `TimedOut`; the worker task is aborted only when the count is zero. `run_due` publishes a per-name in-flight mark before it spawns a Monty feed. Monty timeout for VM execution is `max_feed_duration`, observed only at interpreter checkpoints, with `max_memory` unset.
+
+   Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its name, positional/keyword JSON arguments, schedule name, hook phase, and row deadline and returns `Result<serde_json::Value, CronError>`; matching closures are supported. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`. Bridge argument conversion and supplied CLI adapter shape rejection fail with `HOST_DENIED`; a custom handler's returned error, including `CronError::InvalidSpec`, records `HOST_CALL_FAILED` after configured-value redaction. Private typed dispatch preserves supplied-adapter errors without parsing custom error prose. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
+
+   Phase B supplies opt-in `sc_compose_run(subcommand, args)` and `atm_run(subcommand, args)` adapters through this same registry. `ScComposeHostConfig` and `AtmHostConfig` select non-empty executable paths (defaults `sc-compose` and `atm`) and working directories (default the daemon directory captured at configuration). Each adapter accepts one command/subcommand string and an optional list of string arguments, with no keyword arguments. It forwards the non-empty command/subcommand followed by those ordered arguments directly as argv, never through a shell. Every command/subcommand is supported; flags including `--root` are forwarded unchanged. Neither adapter forces render arguments or temp-root staging. Scripts choose arguments, not the configured executable or working directory. Both adapters share the existing blocking child driver in `monty_compose`, generalized for argv/cwd, with row deadline, process-group termination, and `MAX_HOOK_OUTPUT_BYTES` per stream. They do not call the async `process::supervise` from the blocking feed thread or introduce a runtime/`block_on` bridge. A completed child returns `{stdout, stderr, exit_code}`, including nonzero exits; script code decides how that result affects its hook. A deadline expiration records `TimedOut`; spawn, decoding, and capture-limit failures record stable host errors. The adapters receive the resolved environment snapshot from ADR-RUN-0016. Neither CLI is required when its adapter is unused. `render_template` is not a product requirement; an internal helper may remain an implementation convenience without becoming a mandatory registered host function.
+
+   MVP accepts application-supplied Monty source without signatures, a separate script-approval mechanism, or a consumer option enabling such a mechanism. Capability registration and environment policy are enforced independently. In-process Monty and custom Rust handlers retain stack-overflow, allocator-abort, panic, and non-cooperative deadline risks; they are not an isolation boundary for hostile code.
+
+   `ResourceTracker` pauses VM feed-time accounting during host suspension; the row deadline applies to CLI supervision and is checked around custom synchronous handlers. Monty feeds retain their REPL until returning, and the tick does not start CPython. `Getenv` and `GetEnviron` use the ADR-RUN-0016 snapshot; every other OS call remains denied. Executable basenames resolve through daemon launch `PATH`/Windows `PATHEXT` before child environment clearing; relative executable paths with components resolve against the daemon current directory captured when adapter configuration is built. The child uses the independently configured working directory.
 5. A cache-sync adaptor lives in the consumer repo. It exposes the sync methods. A schedule row points at one of those methods, in Rust or in Python. `sc-cron` only fires the row. The consumer may wrap start, stop, and list in a richer HTTP, MCP, or CLI API. This crate does not ship that API.
 6. `CronError` is the crate's one error enum. Its variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`. `BadExpression`'s recovery text names the five-field form.
 7. beads-cache remains a SQLite-only consumer. Its scheduled hook syncs through beads to Dolt. Postgres and the copy or host-plus-aggregate adaptors are other consumers' hooks, not part of this crate. After this crate is published, beads-cache depends on it from crates.io instead of carrying its own copy. That dependency change is beads-cache's work.
 
 ### Consequences
 
-Sprint `b-3` ports the crate, applies the five-field rule, adds the Python hook runner, and adds the boundary manifest. Sprint `b-9` adds `HookTarget::Monty` behind feature `monty`; beads-cache does not gain this target. Sprint `b-10` resumes host functions `render_template(template, context)` and `sc_compose_run(subcommand, args)` inside `drive_feed` via `execute_feed_with_compose_program` by spawning the compose program the embedder set with `Scheduler::with_monty_host` and `MontyHostConfig` (feature `monty`); cfg(test) `execute_feed` wraps the same loop with the default basename only. The default is the basename `sc-compose` on `PATH` (install that binary or symlink the name). `MontyHostConfig::new` accepts any non-empty path and returns `CronError::InvalidSpec` when the path is empty; a basename is resolved on `PATH`, and an absolute path or any other non-empty path is spawned as given. Hook source cannot choose the program or the temp root. Render paths stage a temp root the hook cannot choose; `sc_compose_run` allows only subcommand `render` on that path. The blocking-pool thread stalls until that compose child exits. After the child exits, a host `Instant` past the row budget records `TimedOut` and drops the repl. sc-cron has no built-in row cap (the embedder may pass one per [ADR-RUN-0014](architecture.md)), no global in-flight lock, and no two-row mutex. Sprint `b-7` generates the adaptor. The adaptor exposes the sync method and starts no timer. The application inserts the schedule row. Sprint `b-8` generates the application layouts. Amended 2026-10-28.
+Sprint b-3 ports the scheduler, b-9 adds Monty, and b-10 proves production host suspension/resume. Those development artifacts do not freeze the final product API. Sprint b-16 implements the application-owned registry and the sc_compose_run/atm_run CLI adapters, removes the mandatory render_template surface, and enforces the production tool-crate exclusion in REQ-RUN-0005. Sprint b-17 supplies one Python/Monty/CLI environment snapshot and the first released schema baseline. No released API or database requires a compatibility alias or a migration ladder for development cuts. Schedule limits remain embedder-supplied under ADR-RUN-0014; sc-cron starts no timer inside a consumer adaptor, owns no consumer API, and ships no HTTP/MCP/CLI surface. In-process handler resource limits are cooperative; spawned CLI children retain bounded process supervision.
 
 ### Related Documents
 
 - beads-cache ADR-BDC-0006.
 - [ADR-RUN-0012](architecture.md). The writer and the cron store are separate rusqlite connections.
 - [ADR-RUN-0014](architecture.md). Optional embedder-supplied schedule row limit.
+- [ADR-RUN-0016](architecture.md). Explicit Python and Monty hook environments.
 - [REQ-RUN-0001](requirements.md), [REQ-RUN-0005](requirements.md).
+
+All production release crates (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron`) exclude sc-compose and ATM crate dependencies and Rust imports. Boundary lint enforces the restriction, with production dependency-tree checks for external/transitive packages outside the boundary tool's workspace view. Dev-only test and benchmark references are allowed. External executable invocation is permitted.
 
 ## ADR-RUN-0014: Optional embedder-supplied schedule row limit
 
@@ -2493,6 +2517,127 @@ Sprint `b-11` implements the skill, layout, `benchmark-gate`, and the `benchmark
 
 - [ADR-RUN-0011](architecture.md), [ADR-RUN-0013](architecture.md).
 - [NFR-RUN-0005](requirements.md), [REQ-RUN-0005](requirements.md).
+
+## ADR-RUN-0016: Explicit Python and Monty hook environments
+
+**Status:** Active
+**Decision Date:** 2026-10-28
+**Source:** Owner, 2026-10-28. A daemon's ambient identity/team is not the
+invoking agent's context. Daemon-scope API keys may be exposed by name, while
+each schedule must be able to set or clear its own environment and resolve
+authorized secret references or absolute `.env` files.
+
+### Context
+
+The Python hook currently inherits the complete daemon environment. Monty
+denies all OS calls, including its existing `Getenv` and `GetEnviron` calls,
+while the compose child inherits the complete daemon environment. That is an
+inconsistent capability boundary and has caused difficult identity/team bugs
+when a daemon starts under one agent and later executes another agent's
+schedule. The invoking agent process may not even exist when a durable cron
+entry runs.
+
+Environment variables are not uniformly secrets. Durable values such as
+`ATM_IDENTITY` and `ATM_TEAM` belong with a schedule. API keys may instead be
+daemon-wide inherited values, explicit schedule values, references resolved
+by an application secret provider, or values loaded from an authorized
+absolute `.env` file. The library must support those choices without silently
+capturing host values.
+
+### Decision
+
+1. `HookEnvironment` is one schedule-level contract for Python and Monty.
+   Existing constructors default to empty. It contains ordered absolute
+   `.env` sources and a name-keyed map whose operation is exactly one of
+   `Set(String)`, `Reference(String)`, or `Clear`. A non-empty environment on
+   a Rust target is invalid; trusted in-process Rust jobs keep the existing
+   `Job` trait and may use the application/daemon environment directly.
+2. `HookEnvironmentHost` is daemon scope. It names daemon-process variables
+   that may be inherited, authorizes exact `.env` files or canonical roots,
+   and holds an embedder-provided reference resolver. Every default is empty.
+   The library never infers or captures an invoking caller's environment. The
+   generated composition accepts a prebuilt host policy so an application can
+   attach its resolver; config parsing never overwrites the trait object.
+   Generated configuration exposes all three administrator lists:
+   `allow_process`, `allow_dotenv_files`, and `allow_dotenv_roots`, each empty
+   by default.
+3. One immutable snapshot is resolved before `cron.stop` and shared with
+   `cron.tick`: daemon allowlisted values first, `.env` files in declared
+   order second, and schedule operations last. Set and a resolved reference
+   replace prior values; clear removes a value. Missing daemon values and
+   missing optional files are absent. Required-file, path-policy, parse, and
+   reference failures fail closed before hook source runs. A reference request
+   includes schedule identity, variable name, opaque reference, and the row
+   deadline so the application can authorize per-schedule access. Resolution
+   is deadline-bounded; expiration records `TimedOut`.
+4. Python starts from an empty child environment and receives exactly that
+   snapshot. Ambient inheritance remains possible only through an explicit
+   direct-call `ChildEnv::Inherit`. Monty resumes only `Getenv` and
+   `GetEnviron` against the same snapshot; missing or cleared names behave as
+   absent and every other OS call remains denied. Source initialization is
+   resumable only for environment reads so top-level `os.getenv` works while
+   top-level registered host calls remain denied. Both sc_compose_run and
+   atm_run children receive the snapshot and never inherit the daemon environment.
+5. `.env` sources are full absolute paths, read at execution, capped, parsed
+   as data rather than shell, and authorized after canonicalization so a
+   symlink cannot escape an allowed file/root policy. Interpolation, command
+   substitution, duplicate keys, and NUL are invalid. Authorization precedes
+   missing-file classification; a missing optional file is accepted only when
+   its expected canonical path is covered by an exact-file or canonical-root
+   policy. Reference strings are opaque, persisted plaintext non-secret
+   locators; the default resolver resolves none.
+6. Explicit `Set` values are intentionally persisted as plaintext SQLite
+   data. Values resolved from the daemon, a reference, or a file are never
+   persisted. Every hook/provider-controlled detail or stop reason has each
+   distinct non-empty resolved value replaced with `[REDACTED_ENV]` before its
+   byte cap and before fixed codes/recovery, diagnostics, traces, outcomes,
+   events, or persisted reasons are assembled. Stable codes, recovery text,
+   metadata, and the canonical environment configuration write are never
+   substituted; deliberate `Set` values remain plaintext schedule data. This
+   covers Python output, Monty exception/return text, and both CLI adapters' stdout/stderr. Raw
+   `HookOutput` remains available to a trusted direct PythonHook caller, but
+   its `Debug` omits output content. Reference strings and provider error prose
+   are never emitted.
+7. sc-cron has not shipped a binary or package schema. Sprint b-17 therefore
+   defines one first-release schema at `SCHEMA_VERSION = 1`. It validates
+   the version and required usable columns/defaults/constraints/indexes;
+   byte-for-byte SQL equality and exact column ordering are not gates.
+   Incompatible development files are rejected without mutation with recreate
+   guidance; there is no unreleased migration ladder to implement.
+8. Environment names and values are UTF-8 and NUL-free. ASCII case-fold name
+   collisions are rejected on every platform. An allowlisted non-Unicode
+   daemon value fails closed rather than becoming absent. Runtime lookup and
+   enumeration preserve spelling on Unix; Windows runtime keys are uppercased
+   for both Python and Monty and lookup is case-insensitive, while persisted
+   configuration retains original spelling. `MAX_ENV_NAME_BYTES` is 256,
+   `MAX_ENV_DOTENV_SOURCES` is 16, every intermediate/final map is capped at
+   `MAX_ENV_ENTRIES` (128), every stored/resolved value at 16 KiB, and the
+   encoded block at 32,000 UTF-8 bytes. Python and both CLI adapter basenames are
+   resolved to absolute programs from daemon launch policy before the child's
+   `PATH` is cleared; relative program paths with components are absolutized
+   against the captured daemon current directory. Secret-bearing `ChildEnv`,
+   `ChildSpec`, and `PythonHook` debug output is value-free just like the
+   environment model itself. The
+   canonical JSON ordering and required first-release SQLite structure are
+   tested as persistence behavior.
+
+### Consequences
+
+Sprint b-17 implements [REQ-CRON-0019](sc-cron/requirements.md) and
+[NFR-CRON-0002](sc-cron/requirements.md), updates the generated daemon's
+empty-default policy, and tests identical Python/Monty resolution. sc-cron
+still reads no `sc-config` file and implements no secret backend. Applications
+authorize agent-to-file access and provide reference resolvers. Monty
+write-through `os.environ` mutation remains unsupported until Monty exposes
+set/unset OS calls; sc-cron never mutates the daemon process environment.
+Exact-value redaction mitigates accidental propagation, not transformation or
+exfiltration by trusted hook code.
+
+### Related Documents
+
+- [ADR-RUN-0013](architecture.md).
+- [sprint b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md).
+- [REQ-CRON-0019](sc-cron/requirements.md), [NFR-CRON-0002](sc-cron/requirements.md).
 
 ## ADR-RUN-0306: General database commands ship on CLI, MCP, and HTTP
 
@@ -2689,4 +2834,3 @@ those edges, because the analyzer will not.
 a-2, a-3, a-4, and a-5 read this record before writing a manifest. Exit 0 on
 a single crate needs a `[workspace]` with `[workspace.package].version`. A
 tree with no `[workspace]` exits 3.
-

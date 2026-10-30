@@ -1,6 +1,6 @@
 ---
 name: bead-layout
-version: 0.8.5
+version: 0.8.6
 description: The anchor bead tree in beads (bd), the commands to create it, labels, how question overrides live in the child beads, how agents read beads, and how reports are posted back.
 ---
 
@@ -73,7 +73,7 @@ All read-only. Agents never create, update, close or comment on beads.
 The planning gate posts its report on the judged planning bead; the development gate on the sprint bead or the PR. Done in the main session after the agent returns:
 
 ```bash
-python3 "$S" report --run doc/plan/phase-current/anchor-runs/<run>.json --format md > "$W/report.md"
+python3 "$S" report --run "$P/anchor-runs/<run>.json" --format md > "$W/report.md"
 bd comment <bead> --file "$W/report.md"          # or: bd comment <bead> "$(cat "$W/report.md")"
 ```
 

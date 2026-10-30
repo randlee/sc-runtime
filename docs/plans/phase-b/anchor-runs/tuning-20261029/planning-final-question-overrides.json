@@ -1,0 +1,498 @@
+{
+  "ANC-027": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item is silent, merely topical, or includes only the opposite behavior.",
+          "unclear": "The text might include the requirement but is too indefinite to tell.",
+          "yes": "The item explicitly plans or preserves the required behavior or boundary."
+        },
+        "instructions": "Is the requirement itself carried into the plan item, using equivalent words if needed? Judge its presence independently of contradiction elsewhere.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item can coexist with the anchor, including when silent.",
+          "unclear": "The item leaves a potentially decisive choice unspecified.",
+          "yes": "A stated plan would violate the anchor."
+        },
+        "instructions": "Compare the proposed item with the anchor obligation for an explicit incompatible choice. Treat allowed exceptions as allowed.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The anchor does not apply to this item.",
+          "unclear": "The item does not identify enough work to decide applicability.",
+          "yes": "The anchor applies to this item."
+        },
+        "instructions": "Would completing item.text exercise, change, or depend on the subject of anchor.statement? Do not use compliance as evidence of relevance.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-028": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item is silent, merely topical, or includes only the opposite behavior.",
+          "unclear": "The text might include the requirement but is too indefinite to tell.",
+          "yes": "The item explicitly plans or preserves the required behavior or boundary."
+        },
+        "instructions": "Is the requirement itself carried into the plan item, using equivalent words if needed? Judge its presence independently of contradiction elsewhere.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item can coexist with the anchor, including when silent.",
+          "unclear": "The item leaves a potentially decisive choice unspecified.",
+          "yes": "A stated plan would violate the anchor."
+        },
+        "instructions": "Compare the proposed item with the anchor obligation for an explicit incompatible choice. Treat allowed exceptions as allowed.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The anchor does not apply to this item.",
+          "unclear": "The item does not identify enough work to decide applicability.",
+          "yes": "The anchor applies to this item."
+        },
+        "instructions": "Would completing item.text exercise, change, or depend on the subject of anchor.statement? Do not use compliance as evidence of relevance.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-029": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item is silent, merely topical, or includes only the opposite behavior.",
+          "unclear": "The text might include the requirement but is too indefinite to tell.",
+          "yes": "The item explicitly plans or preserves the required behavior or boundary."
+        },
+        "instructions": "Is the requirement itself carried into the plan item, using equivalent words if needed? Judge its presence independently of contradiction elsewhere.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item can coexist with the anchor, including when silent.",
+          "unclear": "The item leaves a potentially decisive choice unspecified.",
+          "yes": "A stated plan would violate the anchor."
+        },
+        "instructions": "Compare the proposed item with the anchor obligation for an explicit incompatible choice. Treat allowed exceptions as allowed.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The anchor does not apply to this item.",
+          "unclear": "The item does not identify enough work to decide applicability.",
+          "yes": "The anchor applies to this item."
+        },
+        "instructions": "Would completing item.text exercise, change, or depend on the subject of anchor.statement? Do not use compliance as evidence of relevance.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-030": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item is silent, merely topical, or includes only the opposite behavior.",
+          "unclear": "The text might include the requirement but is too indefinite to tell.",
+          "yes": "The item explicitly plans or preserves the required behavior or boundary."
+        },
+        "instructions": "Is the requirement itself carried into the plan item, using equivalent words if needed? Judge its presence independently of contradiction elsewhere.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item can coexist with the anchor, including when silent.",
+          "unclear": "The item leaves a potentially decisive choice unspecified.",
+          "yes": "A stated plan would violate the anchor."
+        },
+        "instructions": "Compare the proposed item with the anchor obligation for an explicit incompatible choice. Treat allowed exceptions as allowed.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The anchor does not apply to this item.",
+          "unclear": "The item does not identify enough work to decide applicability.",
+          "yes": "The anchor applies to this item."
+        },
+        "instructions": "Would completing item.text exercise, change, or depend on the subject of anchor.statement? Do not use compliance as evidence of relevance.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-031": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item is silent, merely topical, or includes only the opposite behavior.",
+          "unclear": "The text might include the requirement but is too indefinite to tell.",
+          "yes": "The item explicitly plans or preserves the required behavior or boundary."
+        },
+        "instructions": "Is the requirement itself carried into the plan item, using equivalent words if needed? Judge its presence independently of contradiction elsewhere.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item can coexist with the anchor, including when silent.",
+          "unclear": "The item leaves a potentially decisive choice unspecified.",
+          "yes": "A stated plan would violate the anchor."
+        },
+        "instructions": "Compare the proposed item with the anchor obligation for an explicit incompatible choice. Treat allowed exceptions as allowed.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The anchor does not apply to this item.",
+          "unclear": "The item does not identify enough work to decide applicability.",
+          "yes": "The anchor applies to this item."
+        },
+        "instructions": "Would completing item.text exercise, change, or depend on the subject of anchor.statement? Do not use compliance as evidence of relevance.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-032": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item omits the obligation or describes only a conflicting action.",
+          "unclear": "The item gestures at the obligation but does not settle whether it is included.",
+          "yes": "The required action or constraint is explicitly included."
+        },
+        "instructions": "Does item.text expressly include the specific obligation in anchor.statement as a planned step or constraint? A subject mention, silence, or opposing action does not satisfy the obligation.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No incompatible behavior is proposed.",
+          "unclear": "A possible conflict depends on an unresolved detail.",
+          "yes": "The item commits to an incompatible behavior or boundary."
+        },
+        "instructions": "Does item.text commit to behavior that cannot coexist with anchor.statement? Silence, topical mention, and an expressly permitted exception are not conflicts.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is independent of the governed subject.",
+          "unclear": "The work area is too vague to determine applicability.",
+          "yes": "The work touches the governed subject directly or as a clear prerequisite."
+        },
+        "instructions": "Does item.text plan work on the governed activity, component, or artifact named by anchor.statement and anchor.scope? Judge applicability only, including dependencies.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-033": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item omits this complete rule or retains either gate.",
+          "unclear": "The item names the gates but leaves whether either is mandatory unresolved.",
+          "yes": "The item explicitly permits MVP execution without signatures and without separate approval."
+        },
+        "instructions": "Does item.text explicitly preserve BOTH parts of the MVP execution rule in anchor.statement: no mandatory script signing and no separate approval mechanism? A plan that retains either gate does not carry the complete rule forward.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "Nothing in the item text conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The item text is ambiguous enough that it might or might not conflict with the directive.",
+          "yes": "The item text states a plan, approach, or decision that cannot be reconciled with the directive in the anchor statement."
+        },
+        "instructions": "Does `item.text` propose doing something that `anchor.statement` rules out, or propose a different approach than the one `anchor.statement` requires? Examples of contradiction: the anchor says to start from an existing implementation and the item plans a fresh implementation; the anchor forbids a dependency and the item adds it; the anchor fixes an order of work and the item reverses it. Silence about the directive is not a contradiction. Judge conflict only.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The item is about a different part of the system or a different activity, and completing it would neither follow nor break the anchor.",
+          "unclear": "The item text is too vague to tell what part of the system it touches.",
+          "yes": "The item plans, changes, or depends on the thing the anchor statement is about, directly or as a clear prerequisite."
+        },
+        "instructions": "The state holds one planning item (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge whether the item obeys the anchor.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-034": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item is silent, merely topical, or includes only the opposite behavior.",
+          "unclear": "The text might include the requirement but is too indefinite to tell.",
+          "yes": "The item explicitly plans or preserves the required behavior or boundary."
+        },
+        "instructions": "Is the requirement itself carried into the plan item, using equivalent words if needed? Judge its presence independently of contradiction elsewhere.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item can coexist with the anchor, including when silent.",
+          "unclear": "The item leaves a potentially decisive choice unspecified.",
+          "yes": "A stated plan would violate the anchor."
+        },
+        "instructions": "Compare the proposed item with the anchor obligation for an explicit incompatible choice. Treat allowed exceptions as allowed.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The anchor does not apply to this item.",
+          "unclear": "The item does not identify enough work to decide applicability.",
+          "yes": "The anchor applies to this item."
+        },
+        "instructions": "Would completing item.text exercise, change, or depend on the subject of anchor.statement? Do not use compliance as evidence of relevance.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-035": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item omits the obligation or describes only a conflicting action.",
+          "unclear": "The item gestures at the obligation but does not settle whether it is included.",
+          "yes": "The required action or constraint is explicitly included."
+        },
+        "instructions": "Does item.text expressly include the specific obligation in anchor.statement as a planned step or constraint? A subject mention, silence, or opposing action does not satisfy the obligation.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No incompatible behavior is proposed.",
+          "unclear": "A possible conflict depends on an unresolved detail.",
+          "yes": "The item commits to an incompatible behavior or boundary."
+        },
+        "instructions": "Does item.text commit to behavior that cannot coexist with anchor.statement? Silence, topical mention, and an expressly permitted exception are not conflicts.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is independent of the governed subject.",
+          "unclear": "The work area is too vague to determine applicability.",
+          "yes": "The work touches the governed subject directly or as a clear prerequisite."
+        },
+        "instructions": "Does item.text plan work on the governed activity, component, or artifact named by anchor.statement and anchor.scope? Judge applicability only, including dependencies.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-036": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item is silent, merely topical, or includes only the opposite behavior.",
+          "unclear": "The text might include the requirement but is too indefinite to tell.",
+          "yes": "The item explicitly plans or preserves the required behavior or boundary."
+        },
+        "instructions": "Is the requirement itself carried into the plan item, using equivalent words if needed? Judge its presence independently of contradiction elsewhere.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item can coexist with the anchor, including when silent.",
+          "unclear": "The item leaves a potentially decisive choice unspecified.",
+          "yes": "A stated plan would violate the anchor."
+        },
+        "instructions": "Compare the proposed item with the anchor obligation for an explicit incompatible choice. Treat allowed exceptions as allowed.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The anchor does not apply to this item.",
+          "unclear": "The item does not identify enough work to decide applicability.",
+          "yes": "The anchor applies to this item."
+        },
+        "instructions": "Would completing item.text exercise, change, or depend on the subject of anchor.statement? Do not use compliance as evidence of relevance.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-037": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item omits the obligation or describes only a conflicting action.",
+          "unclear": "The item gestures at the obligation but does not settle whether it is included.",
+          "yes": "The required action or constraint is explicitly included."
+        },
+        "instructions": "Does item.text expressly include the specific obligation in anchor.statement as a planned step or constraint? A subject mention, silence, or opposing action does not satisfy the obligation.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No incompatible behavior is proposed.",
+          "unclear": "A possible conflict depends on an unresolved detail.",
+          "yes": "The item commits to an incompatible behavior or boundary."
+        },
+        "instructions": "Does item.text commit to behavior that cannot coexist with anchor.statement? Silence, topical mention, and an expressly permitted exception are not conflicts.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is independent of the governed subject.",
+          "unclear": "The work area is too vague to determine applicability.",
+          "yes": "The work touches the governed subject directly or as a clear prerequisite."
+        },
+        "instructions": "Does item.text plan work on the governed activity, component, or artifact named by anchor.statement and anchor.scope? Judge applicability only, including dependencies.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-038": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The plan is silent or denies any permitted class, even if it mentions plaintext.",
+          "unclear": "The plan names plaintext values but leaves the allowed class unresolved.",
+          "yes": "The plan explicitly preserves the full permitted class of deliberate plaintext set values."
+        },
+        "instructions": "Does item.text expressly preserve the schedule registry permission to accept every deliberately supplied plaintext environment value, including secret and nonsecret values? Merely mentioning plaintext while banning a value class does not carry the permission forward.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No incompatible restriction is planned.",
+          "unclear": "The planned restriction or its applicability to deliberate set values is unresolved.",
+          "yes": "The plan denies or narrows the anchor-permitted plaintext set-value capability."
+        },
+        "instructions": "Does item.text prohibit or narrow a class of deliberately supplied plaintext environment values that anchor.statement permits in the schedule registry? Treat an explicit secret-only ban as a conflict; silence and permitted handling are not conflicts.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The item is about a different part of the system or a different activity, and completing it would neither follow nor break the anchor.",
+          "unclear": "The item text is too vague to tell what part of the system it touches.",
+          "yes": "The item plans, changes, or depends on the thing the anchor statement is about, directly or as a clear prerequisite."
+        },
+        "instructions": "The state holds one planning item (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge whether the item obeys the anchor.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-039": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item is silent, merely topical, or includes only the opposite behavior.",
+          "unclear": "The text might include the requirement but is too indefinite to tell.",
+          "yes": "The item explicitly plans or preserves the required behavior or boundary."
+        },
+        "instructions": "Is the requirement itself carried into the plan item, using equivalent words if needed? Judge its presence independently of contradiction elsewhere.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item can coexist with the anchor, including when silent.",
+          "unclear": "The item leaves a potentially decisive choice unspecified.",
+          "yes": "A stated plan would violate the anchor."
+        },
+        "instructions": "Compare the proposed item with the anchor obligation for an explicit incompatible choice. Treat allowed exceptions as allowed.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The anchor does not apply to this item.",
+          "unclear": "The item does not identify enough work to decide applicability.",
+          "yes": "The anchor applies to this item."
+        },
+        "instructions": "Would completing item.text exercise, change, or depend on the subject of anchor.statement? Do not use compliance as evidence of relevance.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-040": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item omits the obligation or describes only a conflicting action.",
+          "unclear": "The item gestures at the obligation but does not settle whether it is included.",
+          "yes": "The required action or constraint is explicitly included."
+        },
+        "instructions": "Does item.text expressly include the specific obligation in anchor.statement as a planned step or constraint? A subject mention, silence, or opposing action does not satisfy the obligation.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No incompatible behavior is proposed.",
+          "unclear": "A possible conflict depends on an unresolved detail.",
+          "yes": "The item commits to an incompatible behavior or boundary."
+        },
+        "instructions": "Does item.text commit to behavior that cannot coexist with anchor.statement? Silence, topical mention, and an expressly permitted exception are not conflicts.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is independent of the governed subject.",
+          "unclear": "The work area is too vague to determine applicability.",
+          "yes": "The work touches the governed subject directly or as a clear prerequisite."
+        },
+        "instructions": "Does item.text plan work on the governed activity, component, or artifact named by anchor.statement and anchor.scope? Judge applicability only, including dependencies.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-041": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item omits the obligation or describes only a conflicting action.",
+          "unclear": "The item gestures at the obligation but does not settle whether it is included.",
+          "yes": "The required action or constraint is explicitly included."
+        },
+        "instructions": "Does item.text expressly include the specific obligation in anchor.statement as a planned step or constraint? A subject mention, silence, or opposing action does not satisfy the obligation.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No incompatible behavior is proposed.",
+          "unclear": "A possible conflict depends on an unresolved detail.",
+          "yes": "The item commits to an incompatible behavior or boundary."
+        },
+        "instructions": "Does item.text commit to behavior that cannot coexist with anchor.statement? Silence, topical mention, and an expressly permitted exception are not conflicts.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is independent of the governed subject.",
+          "unclear": "The work area is too vague to determine applicability.",
+          "yes": "The work touches the governed subject directly or as a clear prerequisite."
+        },
+        "instructions": "Does item.text plan work on the governed activity, component, or artifact named by anchor.statement and anchor.scope? Judge applicability only, including dependencies.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-042": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The item omits the obligation or describes only a conflicting action.",
+          "unclear": "The item gestures at the obligation but does not settle whether it is included.",
+          "yes": "The required action or constraint is explicitly included."
+        },
+        "instructions": "Does item.text expressly include the specific obligation in anchor.statement as a planned step or constraint? A subject mention, silence, or opposing action does not satisfy the obligation.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No incompatible behavior is proposed.",
+          "unclear": "A possible conflict depends on an unresolved detail.",
+          "yes": "The item commits to an incompatible behavior or boundary."
+        },
+        "instructions": "Does item.text commit to behavior that cannot coexist with anchor.statement? Silence, topical mention, and an expressly permitted exception are not conflicts.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is independent of the governed subject.",
+          "unclear": "The work area is too vague to determine applicability.",
+          "yes": "The work touches the governed subject directly or as a clear prerequisite."
+        },
+        "instructions": "Does item.text plan work on the governed activity, component, or artifact named by anchor.statement and anchor.scope? Judge applicability only, including dependencies.",
+        "type": "choice"
+      }
+    }
+  }
+}

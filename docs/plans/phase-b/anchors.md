@@ -1,8 +1,8 @@
-# Anchors - phase-current
+# Anchors - phase-b
 
 Constraints captured during planning. Each anchor is a testable statement written by the orchestrator and approved by the user; the user's verbatim words are kept beneath it as provenance. Every anchor is judged at the planning gate and again at the development gate. Edit `anchors.json`, not this file; this file is rendered.
 
-Intent: `doc/plan/phase-current/intent.md`
+Intent: `docs/plans/phase-b/intent.md`
 
 | ID | Status | Summary | Stated |
 | --- | --- | --- | --- |
@@ -32,12 +32,12 @@ Intent: `doc/plan/phase-current/intent.md`
 | ANC-024 | retired | sc-cron is a phase-b sprint | 2026-10-25 |
 | ANC-025 | retired | sc-cron decisions stay in the ADR or reqs | 2026-10-25 |
 | ANC-026 | retired | SQLite cron runs a Rust job or python3 | 2026-10-25 |
-| REQ-CRON-0001 | locked | sc-cron is a workspace member | 2026-10-25 |
+| REQ-CRON-0001 | locked | Optional reusable cron dependency | 2026-10-25 |
 | REQ-CRON-0002 | locked | Normal five-field crontab | 2026-10-25 |
-| REQ-CRON-0003 | locked | Rust job or Python module | 2026-10-25 |
+| REQ-CRON-0003 | locked | Application-defined jobs and extensible Monty hosts | 2026-10-25 |
 | REQ-CRON-0004 | locked | One schedule table | 2026-10-25 |
 | REQ-CRON-0005 | locked | One CronError enum | 2026-10-25 |
-| ADR-RUN-0013 | locked | ADR-RUN-0013 sc-cron decision | 2026-10-25 |
+| ADR-RUN-0013 | locked | General-purpose cron and application host capabilities | 2026-10-25 |
 | ADR-RUN-0305 | locked | Generated consumer store adaptor | 2026-10-25 |
 | REQ-RUN-0313 | locked | Adaptor crate defines the stores | 2026-10-25 |
 | REQ-RUN-0314 | locked | Copy adaptor matches the remote schema | 2026-10-25 |
@@ -60,6 +60,22 @@ Intent: `doc/plan/phase-current/intent.md`
 | REQ-RUN-0331 | locked | Disableable database commands | 2026-10-25 |
 | ADR-RUN-0002 | locked | Template plus published crates | 2026-10-25 |
 | REQ-RUN-0503 | locked | Generated project is green | 2026-10-25 |
+| ANC-027 | locked | General-purpose scheduler | 2026-10-29 |
+| ANC-028 | locked | Application host extensions | 2026-10-29 |
+| ANC-029 | locked | Compose command coverage | 2026-10-29 |
+| ANC-030 | locked | ATM host integration | 2026-10-29 |
+| ANC-031 | locked | Production tool crate boundary | 2026-10-29 |
+| ANC-032 | locked | No mandatory render helper | 2026-10-29 |
+| ANC-033 | locked | No MVP signing gate | 2026-10-29 |
+| ANC-034 | locked | Shared hook environment | 2026-10-29 |
+| ANC-035 | locked | Explicit daemon inheritance | 2026-10-29 |
+| ANC-036 | locked | Schedule environment overrides | 2026-10-29 |
+| ANC-037 | locked | No implicit environment capture | 2026-10-29 |
+| ANC-038 | locked | Explicit plaintext values | 2026-10-29 |
+| ANC-039 | locked | Application secret references | 2026-10-29 |
+| ANC-040 | locked | Absolute dotenv sources | 2026-10-29 |
+| ANC-041 | locked | Environment before initialization | 2026-10-29 |
+| ANC-042 | locked | First release schema baseline | 2026-10-29 |
 
 ## ANC-001
 
@@ -479,17 +495,17 @@ Beads: anchor `run-oez`, plan questions `run-oez.1`, dev questions `run-oez.2`
 
 ## REQ-CRON-0001
 
-Anchor: crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
+Anchor: sc-cron must remain an optional workspace crate; the generated daemon may enable it through cron/monty features while sc-runtime remains independent of sc-cron.
 
 > crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, Historical register quote retained as immutable provenance. Current statement follows the amended REQ-CRON-0001 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract., 2026-10-25. Status: locked. Version 5.
 
-Summary: sc-cron is a workspace member
+Summary: Optional reusable cron dependency
 
 Scope: a bead that edits Cargo.toml or crates/sc-cron
 
-Deterministic check to pair with the development gate: Cargo.toml members include crates/sc-cron, and that crate depends on no other workspace crate.
+Deterministic check to pair with the development gate: Cargo manifests keep sc-cron optional in generated daemons and absent from sc-runtime dependencies.
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `b-1`: Sprint b-1 does not carry this obligation.
@@ -499,12 +515,14 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
+- `b-14`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
 
 Beads: anchor `run-4x5`, plan questions `run-4x5.1`, dev questions `run-4x5.2`
 
 Fixtures:
-- pass: crates/sc-cron is a workspace member. It depends on no other workspace crate. The template does not name it. The sc-runtime library crate does not name it.
-- fail: crates/sc-cron depends on the sc-runtime library crate, and the template names sc-cron.
+- pass: The generated daemon optionally enables sc-cron through cron/monty features, and sc-runtime remains independent.
+- fail: Every generated application must link sc-cron.
 
 ## REQ-CRON-0002
 
@@ -528,6 +546,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-13`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-14`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-15`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-16`: This sprint does not change the cron expression parser or five-field schedule semantics.
+- `b-17`: This sprint does not change the cron expression parser or five-field schedule semantics.
 
 Beads: anchor `run-8n1`, plan questions `run-8n1.1`, dev questions `run-8n1.2`
 
@@ -537,17 +561,17 @@ Fixtures:
 
 ## REQ-CRON-0003
 
-Anchor: A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
+Anchor: sc-cron must run application-defined Rust, Python, and optional Monty jobs; applications can extend Monty host calls, including sc_compose_run and atm_run CLI adapters, without changing sc-cron.
 
 > A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, Historical register quote retained as immutable provenance. Current statement follows the amended REQ-CRON-0003 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract., 2026-10-25. Status: locked. Version 5.
 
-Summary: Rust job or Python module
+Summary: Application-defined jobs and extensible Monty hosts
 
 Scope: a bead that adds or edits crates/sc-cron
 
-Deterministic check to pair with the development gate: crates/sc-cron runs a Rust job or python3 <module> cron.tick or cron.stop with JSON on stdin, and has no HTTP route, MCP tool, or binary.
+Deterministic check to pair with the development gate: Host registry integration tests invoke custom, sc-compose, and ATM functions through one extension interface.
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `b-1`: Sprint b-1 does not carry this obligation.
@@ -561,8 +585,8 @@ Excluded from (not judged; the cell passes as `excluded`):
 Beads: anchor `run-anr`, plan questions `run-anr.1`, dev questions `run-anr.2`
 
 Fixtures:
-- pass: A schedule row names either an in-process Rust job or a Python module. For Python, the crate runs python3 <module> cron.tick or python3 <module> cron.stop and writes one JSON object to stdin. The crate exposes no HTTP route, MCP tool, or binary.
-- fail: A Python schedule row is served by an HTTP route on the sc-cron crate, and the crate does not run python3.
+- pass: A consumer registers its own Monty function beside sc_compose_run and atm_run while Rust/Python jobs remain supported.
+- fail: Monty exposes only the fixed render_template function and cannot register application calls.
 
 ## REQ-CRON-0004
 
@@ -586,6 +610,11 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
+- `b-13`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
+- `b-14`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
+- `b-15`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
+- `b-16`: This sprint does not add the schedule table or change table creation, consumer-table migrations, or SqliteWriter-independent row writes.
 
 Beads: anchor `run-ec5`, plan questions `run-ec5.1`, dev questions `run-ec5.2`
 
@@ -595,11 +624,11 @@ Fixtures:
 
 ## REQ-CRON-0005
 
-Anchor: Fallible public functions in sc-cron return CronError.
+Anchor: Fallible public library entry points in sc-cron must return CronError.
 
 > Fallible public functions in sc-cron return CronError.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 5.
 
 Summary: One CronError enum
 
@@ -615,26 +644,29 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
+- `b-14`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
+- `b-15`: This event-only sprint changes no public fallible function signature or CronError return type.
 
 Beads: anchor `run-whn`, plan questions `run-whn.1`, dev questions `run-whn.2`
 
 Fixtures:
-- pass: Fallible public functions in sc-cron return CronError.
+- pass: Fallible public library entry points in sc-cron return CronError. The signatures in crates/sc-cron/src/expr.rs (CronExpr::parse) and crates/sc-cron/src/scheduler.rs (Scheduler::open) return Result<Self, CronError>, providing checkable evidence for this library error contract.
 - fail: Fallible public functions in sc-cron return a type other than CronError.
 
 ## ADR-RUN-0013
 
-Anchor: sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
+Anchor: sc-cron is an optional general-purpose SQLite cron library with Rust/Python/Monty hooks, application-owned host registration, and no MVP script signing or separate approval mechanism.
 
 > sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, Historical register quote retained as immutable provenance. Current statement follows the amended ADR-RUN-0013 authority and owner-approved Phase B continuation ANC-027 through ANC-042 (2026-10-29); the historical quote is not the current normative contract., 2026-10-25. Status: locked. Version 5.
 
-Summary: ADR-RUN-0013 sc-cron decision
+Summary: General-purpose cron and application host capabilities
 
 Scope: a bead that adds or edits crates/sc-cron
 
-Deterministic check to pair with the development gate: docs/architecture.md contains ADR-RUN-0013 and docs/sc-cron/requirements.md contains REQ-CRON-0001 through REQ-CRON-0005.
+Deterministic check to pair with the development gate: The optional library provides application-defined job and Monty registration tests, and no MVP signing configuration.
 
 Excluded from (not judged; the cell passes as `excluded`):
 - `b-1`: Sprint b-1 does not carry this obligation.
@@ -644,12 +676,14 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
+- `b-14`: This sprint edits HTTP events or generated-daemon integration, not Cargo manifests or sc-cron library implementations/public fallible signatures.
 
 Beads: anchor `run-pny`, plan questions `run-pny.1`, dev questions `run-pny.2`
 
 Fixtures:
-- pass: sc-cron is an optional SQLite cron crate. A normal schedule string is five fields, minute first. The hook target is a Rust function or a Python module run as python3 <module> cron.tick or cron.stop with one JSON object on stdin.
-- fail: sc-cron is required for every application, and a schedule string is six fields with seconds first.
+- pass: The optional SQLite cron library runs Rust/Python/Monty jobs with application-owned host registration and no MVP signing gate.
+- fail: Consumers must sign scripts before the SQLite scheduler runs them.
 
 ## ADR-RUN-0305
 
@@ -672,6 +706,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-4`: Sprint b-4 does not carry this obligation.
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-0fr`, plan questions `run-0fr.1`, dev questions `run-0fr.2`
 
@@ -701,6 +741,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-dgl`, plan questions `run-dgl.1`, dev questions `run-dgl.2`
 
@@ -730,6 +776,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-5zk`, plan questions `run-5zk.1`, dev questions `run-5zk.2`
 
@@ -759,6 +811,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-2is`, plan questions `run-2is.1`, dev questions `run-2is.2`
 
@@ -788,6 +846,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-id3`, plan questions `run-id3.1`, dev questions `run-id3.2`
 
@@ -817,6 +881,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-bda`, plan questions `run-bda.1`, dev questions `run-bda.2`
 
@@ -846,6 +916,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-cck`, plan questions `run-cck.1`, dev questions `run-cck.2`
 
@@ -875,6 +951,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-xoo`, plan questions `run-xoo.1`, dev questions `run-xoo.2`
 
@@ -904,6 +986,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-jp8`, plan questions `run-jp8.1`, dev questions `run-jp8.2`
 
@@ -931,6 +1019,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-3`: Sprint b-3 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-iuv`, plan questions `run-iuv.1`, dev questions `run-iuv.2`
 
@@ -960,6 +1054,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-5ds`, plan questions `run-5ds.1`, dev questions `run-5ds.2`
 
@@ -989,6 +1089,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-8b6`, plan questions `run-8b6.1`, dev questions `run-8b6.2`
 
@@ -1018,6 +1124,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-683`, plan questions `run-683.1`, dev questions `run-683.2`
 
@@ -1047,6 +1159,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-7mk`, plan questions `run-7mk.1`, dev questions `run-7mk.2`
 
@@ -1076,6 +1194,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-a67`, plan questions `run-a67.1`, dev questions `run-a67.2`
 
@@ -1105,6 +1229,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-hpn`, plan questions `run-hpn.1`, dev questions `run-hpn.2`
 
@@ -1134,6 +1264,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
 - `b-8`: Sprint b-8 does not carry this obligation.
+- `b-18`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-13`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-14`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-15`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-16`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
+- `b-17`: This sprint does not add, remove, or generate store adaptors, change store schemas/traits or database choices, or move rows between stores.
 
 Beads: anchor `run-uc6`, plan questions `run-uc6.1`, dev questions `run-uc6.2`
 
@@ -1163,6 +1299,11 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not change generated package names or their naming algorithm.
+- `b-13`: This sprint does not change generated package names or their naming algorithm.
+- `b-14`: This sprint does not change generated package names or their naming algorithm.
+- `b-15`: This sprint does not change generated package names or their naming algorithm.
+- `b-17`: This sprint does not change generated package names or their naming algorithm.
 
 Beads: anchor `run-3q5`, plan questions `run-3q5.1`, dev questions `run-3q5.2`
 
@@ -1191,6 +1332,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-13`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-14`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-15`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-16`: This sprint does not add or generate database schema/types crates or relocate row structs.
+- `b-17`: This sprint does not add or generate database schema/types crates or relocate row structs.
 
 Beads: anchor `run-3mg`, plan questions `run-3mg.1`, dev questions `run-3mg.2`
 
@@ -1220,6 +1367,12 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-18`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-13`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-14`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-15`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-16`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
+- `b-17`: This sprint does not change the generated CLI/MCP/HTTP database command surface.
 
 Beads: anchor `run-w7j`, plan questions `run-w7j.1`, dev questions `run-w7j.2`
 
@@ -1248,6 +1401,8 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-14`: This sprint edits existing library event emission; it adds no library crate and does not edit the cargo-generate template.
+- `b-15`: This sprint edits existing library event emission; it adds no library crate and does not edit the cargo-generate template.
 
 Beads: anchor `run-o8s`, plan questions `run-o8s.1`, dev questions `run-o8s.2`
 
@@ -1277,9 +1432,418 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `b-5`: Sprint b-5 does not carry this obligation.
 - `b-6`: Sprint b-6 does not carry this obligation.
 - `b-7`: Sprint b-7 does not carry this obligation.
+- `b-13`: This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.
+- `b-14`: This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.
+- `b-15`: This sprint does not edit the template or project generator; generated-project acceptance is owned by the later template-editing sprints.
 
 Beads: anchor `run-bfz`, plan questions `run-bfz.1`, dev questions `run-bfz.2`
 
 Fixtures:
 - pass: A project generated by just new passes lint, test, and both builds with no file edited.
 - fail: A project generated by just new fails lint until a source file is edited.
+
+## ANC-027
+
+Anchor: sc-cron is a general-purpose cron library supporting application-defined jobs.
+
+> sc-cron is a general-purpose cron library.
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: General-purpose scheduler
+
+Scope: edits sc-cron scheduling or job interfaces
+
+Deterministic check to pair with the development gate: A consumer can schedule an application-defined job without a tool-specific payload.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-18`: This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.
+- `b-14`: This sprint changes HTTP events in sc-runtime and does not change sc-cron job or Monty execution interfaces.
+
+Beads: anchor `run-ojx`, plan questions `run-ojx.1`, dev questions `run-ojx.2`
+
+Fixtures:
+- pass: The sc-cron scheduler accepts application-defined job payloads without a tool-specific registry. Evidence: tests/anc_027.rs::compliant passed.
+- fail: Make sc-cron accept only built-in sc-compose job types.
+
+## ANC-028
+
+Anchor: Embedding applications can register additional Monty host functions without modifying sc-cron.
+
+> the primary requirement of being able to be extensible w/ other apps/calls is supported.
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Application host extensions
+
+Scope: edits Monty host registration or dispatch
+
+Deterministic check to pair with the development gate: An integration test registers and invokes a consumer-defined host function.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+
+Beads: anchor `run-mvj`, plan questions `run-mvj.1`, dev questions `run-mvj.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Expose a consumer registration hook; a custom application Monty host function runs without patching sc-cron. Evidence: tests/anc_028.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Add new Monty host calls only by editing sc-cron source.
+
+## ANC-029
+
+Anchor: The sc_compose_run integration supports any sc-compose command/subcommand supplied by an application script.
+
+> sc_compose_run (any subcommand) would be a useful working example for showing how to use sc-cron
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Compose command coverage
+
+Scope: edits sc_compose_run or its examples
+
+Deterministic check to pair with the development gate: Argument-forwarding tests cover render and non-render subcommands.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-18`: b-18 forwards an opaque prebuilt registry; it changes neither CLI adapter, argv dispatch, nor adapter examples.
+
+Beads: anchor `run-uoc`, plan questions `run-uoc.1`, dev questions `run-uoc.2`
+
+Fixtures:
+- pass: Delivered the required behavior: sc_compose_run forwards arbitrary sc-compose command and subcommand arguments to the external executable. Evidence: tests/anc_029.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Limit sc_compose_run to render and reject other sc-compose commands.
+
+## ANC-030
+
+Anchor: Phase B provides an atm_run host integration supporting any ATM CLI command/subcommand through the same extension interface used by sc_compose_run.
+
+> i am in agreement.
+
+Said by randlee, Owner approved the preceding proposal: "Phase B provides an atm_run host integration supporting any ATM CLI command/subcommand through the same extension interface used by sc_compose_run." The immutable quote "i am in agreement." is the owner's response approving that exact statement., 2026-10-29. Status: locked. Version 3.
+
+Summary: ATM host integration
+
+Scope: implements Phase B Monty integrations
+
+Deterministic check to pair with the development gate: An ATM executable fixture is invoked through the same registry as sc_compose_run.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-18`: b-18 forwards an opaque prebuilt registry; it changes neither CLI adapter, argv dispatch, nor adapter examples.
+
+Beads: anchor `run-7l7`, plan questions `run-7l7.1`, dev questions `run-7l7.2`
+
+Fixtures:
+- pass: Delivered the required behavior: atm_run is registered through the same host extension interface as sc_compose_run and forwards any ATM CLI command or subcommand. Evidence: tests/anc_030.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Implement atm_run as a hardcoded single-command wrapper outside the shared host extension interface.
+
+## ANC-031
+
+Anchor: Every production release crate excludes sc-compose and ATM crate dependencies and Rust imports, enforced by boundary lint; test and benchmark references are permitted.
+
+> sc-compose and atm crates should be blocked from any production release crate.  sc-compose and atm can be referenced for tests i.e. benchmark tests
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 3.
+
+Summary: Production tool crate boundary
+
+Scope: edits production release manifests, imports, features, or boundary lint
+
+Deterministic check to pair with the development gate: Boundary lint rejects production imports/dependencies while permitting test-only references.
+
+Beads: anchor `run-z1z`, plan questions `run-z1z.1`, dev questions `run-z1z.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Boundary lint rejects sc-compose and ATM dependencies or Rust imports in release crates while test and benchmark references are allowed. Evidence: tests/anc_031.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Add an ATM crate dependency to a production release crate and exempt it from boundary lint.
+
+## ANC-032
+
+Anchor: render_template is not required by the sc-cron product contract.
+
+> render_template is not a product requirement
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 3.
+
+Summary: No mandatory render helper
+
+Scope: edits Monty product requirements, examples, or benchmarks
+
+Deterministic check to pair with the development gate: Product requirements and acceptance do not require render_template.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-18`: This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+
+Beads: anchor `run-bn5`, plan questions `run-bn5.1`, dev questions `run-bn5.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Treat render_template as an optional example, with no release acceptance criterion requiring it. Evidence: tests/anc_032.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Make render_template mandatory for sc-cron release acceptance.
+
+## ANC-033
+
+Anchor: MVP executes application-supplied Monty scripts without script signing or a separate approval mechanism.
+
+> for mvp this is not something available for consumers to do.
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 3.
+
+Summary: No MVP signing gate
+
+Scope: edits Monty execution, configuration, or authorization
+
+Deterministic check to pair with the development gate: MVP execution requires neither signatures nor approval configuration.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-14`: This sprint changes HTTP events in sc-runtime and does not change sc-cron job or Monty execution interfaces.
+- `b-13`: Logger propagation/event emission changes no source acquisition or acceptance, signature checks, approval decisions, or Monty authorization policy.
+- `b-15`: Logger propagation/event emission changes no source acquisition or acceptance, signature checks, approval decisions, or Monty authorization policy.
+
+Beads: anchor `run-wdb`, plan questions `run-wdb.1`, dev questions `run-wdb.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Run application-supplied Monty source in MVP without a signature or separate approval gate. Evidence: tests/anc_033.rs::compliant asserts the behavior and passed.
+- fail: Delivered an MVP runner that requires a valid script signature and a separate human approval before executing every Monty script.
+
+## ANC-034
+
+Anchor: Python and Monty hooks use the same schedule-environment configuration and resolution rules.
+
+> python/monty having consistent settings would be least confusing
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Shared hook environment
+
+Scope: edits Python or Monty environment delivery
+
+Deterministic check to pair with the development gate: The same environment cases produce equivalent Python and Monty results.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
+Beads: anchor `run-c1j`, plan questions `run-c1j.1`, dev questions `run-c1j.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Resolve the same explicit schedule environment specification identically for Python and Monty hooks. Evidence: tests/anc_034.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Apply set and clear directives to Python hooks but ignore them for Monty hooks.
+
+## ANC-035
+
+Anchor: Hooks inherit daemon-process environment values only through variable names explicitly allowed by daemon configuration.
+
+> whitelisting api keys globally (by name) in config file (this is really a daemon scope decision)
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Explicit daemon inheritance
+
+Scope: edits daemon environment configuration or subprocess creation
+
+Deterministic check to pair with the development gate: An allowed daemon value is delivered and an unlisted value is absent.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+
+Beads: anchor `run-6cy`, plan questions `run-6cy.1`, dev questions `run-6cy.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Only daemon environment names on the configured allow list are inherited by hook processes. Evidence: tests/anc_035.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Pass the full daemon environment into each hook process by default.
+
+## ANC-036
+
+Anchor: Each schedule can explicitly set or clear its own environment variables.
+
+> having each entry having the ability to set or clear specific environment variables
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Schedule environment overrides
+
+Scope: edits schedule environment persistence or resolution
+
+Deterministic check to pair with the development gate: Two schedules set distinct identities and clearing removes a prior value.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
+Beads: anchor `run-89l`, plan questions `run-89l.1`, dev questions `run-89l.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Each schedule can set a value or clear a named environment variable independently. Evidence: tests/anc_036.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Schedules cannot clear an inherited environment variable.
+
+## ANC-037
+
+Anchor: Schedule creation and updates never implicitly capture environment values from the caller or daemon process.
+
+> Never capture or persist inherited host values accidentally
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 3.
+
+Summary: No implicit environment capture
+
+Scope: edits schedule creation, updates, or serialization
+
+Deterministic check to pair with the development gate: Ambient canaries are absent from persisted rows without explicit set input.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
+Beads: anchor `run-5z3`, plan questions `run-5z3.1`, dev questions `run-5z3.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Schedule writes persist only explicitly supplied environment values, never ambient caller or daemon values. Evidence: tests/anc_037.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: On schedule creation, serialize the daemon process environment into the schedule row by default.
+
+## ANC-038
+
+Anchor: The schedule registry permits deliberately supplied environment values as plaintext configuration.
+
+> why can we never add values?  all environment variables are not api keys?
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Explicit plaintext values
+
+Scope: edits schedule environment validation or persistence
+
+Deterministic check to pair with the development gate: An explicit set value round-trips through the registry.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
+Beads: anchor `run-oov`, plan questions `run-oov.1`, dev questions `run-oov.2`
+
+Fixtures:
+- pass: Delivered a schedule registry accepting deliberately supplied secret and nonsecret plaintext Set values. Evidence: tests/anc_038.rs::plaintext_secret_and_nonsecret_roundtrip asserts both values persist and round-trip and passed.
+- fail: Delivered this incompatible behavior: Reject every plaintext environment set value, including deliberate nonsensitive configuration.
+
+## ANC-039
+
+Anchor: Schedules can resolve environment values through an application-provided resolver for opaque references.
+
+> I also like allowing this:   "OTHER_API_KEY": { "reference": "keychain://agents/planner-7/api-key" }
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Application secret references
+
+Scope: edits environment reference resolution
+
+Deterministic check to pair with the development gate: A consumer resolver supplies a referenced value without persisting the result.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
+Beads: anchor `run-9a5`, plan questions `run-9a5.1`, dev questions `run-9a5.2`
+
+Fixtures:
+- pass: Resolve opaque schedule environment references through a consumer-supplied resolver at execution time. Evidence: tests/anc_039.rs::compliant passed.
+- fail: Store an opaque reference string as the hook value without invoking the application resolver.
+
+## ANC-040
+
+Anchor: Schedules can load environment variables from full-path .env files.
+
+> Another useful way to specify would be loading from a full-path .env file.
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Absolute dotenv sources
+
+Scope: edits schedule environment sources or file loading
+
+Deterministic check to pair with the development gate: An authorized absolute dotenv file supplies hook values.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
+Beads: anchor `run-xaz`, plan questions `run-xaz.1`, dev questions `run-xaz.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Load a schedule environment source from an absolute .env file path. Evidence: tests/anc_040.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Accept only a relative .env path and resolve it against the daemon working directory.
+
+## ANC-041
+
+Anchor: Monty scripts can read their configured environment during source initialization, before hook functions run.
+
+> there should also be the ability to set environment variables in a monty script before it runs.
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: Environment before initialization
+
+Scope: edits Monty source initialization or environment delivery
+
+Deterministic check to pair with the development gate: A top-level getenv reads the configured snapshot before cron_stop or cron_tick.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
+Beads: anchor `run-euz`, plan questions `run-euz.1`, dev questions `run-euz.2`
+
+Fixtures:
+- pass: Delivered the required behavior: A top-level Monty source expression reads the configured environment before cron_tick or cron_stop runs. Evidence: tests/anc_041.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Inject configured environment variables only after Monty source initialization finishes.
+
+## ANC-042
+
+Anchor: The first released schedule schema establishes one baseline without requiring migrations among unreleased development schemas.
+
+> i don't know why we are on schema v4 when we haven't even released binaries yet.
+
+Said by randlee, Phase B continuation discussion; all 16 statements approved, with atm_run mandatory and production dependency scope corrected., 2026-10-29. Status: locked. Version 2.
+
+Summary: First release schema baseline
+
+Scope: edits schedule schema versioning or migrations
+
+Deterministic check to pair with the development gate: First-release schema validation does not require a v1-v4 development migration ladder.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `b-18`: This sprint composes the generated daemon; it does not change sc-cron scheduling/job interfaces, Monty product examples, or the first-release database schema.
+- `b-13`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-14`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-15`: This sprint changes observability injection or event emission only; b-16 owns host-extension behavior and b-17 owns environment configuration/resolution/schema.
+- `b-16`: b-16 implements host registration and CLI argv dispatch; b-17 separately owns environment configuration, resolution, persistence safeguards, and source-initialization environment reads.
+
+Beads: anchor `run-fv4`, plan questions `run-fv4.1`, dev questions `run-fv4.2`
+
+Fixtures:
+- pass: Delivered the required behavior: Ship the first schedule schema as one baseline without requiring migration from unreleased development schemas. Evidence: tests/anc_042.rs::compliant asserts the behavior and passed.
+- fail: Delivered this incompatible behavior: Require users of the first binary release to migrate sequentially through unreleased schema v1, v2, v3, and v4.

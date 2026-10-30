@@ -35,6 +35,21 @@ authorization and registry credentials. Merging the release kit onto
 
 Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL, the adaptor, and the six generation layouts. See [Phase b plan](plans/phase-b/phase-b-plan.md).
 
+The b-13 through b-18 continuation establishes the repository `0.1.1`
+contract. b-13 owns the non-blocking version/public API boundary and whole
+cron component propagation but performs no release;
+b-14, b-15, and b-16 then run in parallel. b-16 follows b-13's generated
+graph amendment and owns both generated dependency inventories plus the
+trusted in-process Monty example; b-17 adds the shared Python/Monty hook
+environment and release-v1 sc-cron schema baseline; b-18 owns the sc-publish
+consumer update, a real install and complete synchronization from the exact
+pinned kit revision, the human-authorized five-crate publish order, and the
+registry-only generated proof plus isolated-CI SIGINT/SIGTERM lifecycle
+proof. Publication evidence and the registry-only proof are produced from one
+unchanged source commit and that exact commit is tagged `v0.1.1`. b-18 is
+blocked until an exact later kit
+revision excludes `docs/sprints/**`; the current pin is not a valid input.
+
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | b-1 rusqlite writer | [sprint-b-1](plans/phase-b/sprint-b-1-sqlite-writer.md) | complete | `sprint/b-1-sqlite-writer` |
@@ -49,3 +64,9 @@ Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL
 | b-10 sc-cron Monty host bridge | [sprint-b-10](plans/phase-b/sprint-b-10-sc-cron-monty-host-bridge.md) | complete | `sprint/b-10-sc-cron-monty-host-bridge` |
 | b-11 benchmark Monty reports | [sprint-b-11](plans/phase-b/sprint-b-11-benchmark-monty-reports.md) | complete | `sprint/b-11-benchmark-monty-reports` |
 | b-12 sc-cron schedule row limit | [sprint-b-12](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md) | complete | `sprint/b-12-sc-cron-schedule-row-limit` |
+| b-13 observability contract | [sprint-b-13](plans/phase-b/sprint-b-13-observability-contract.md) | planned | `sprint/b-13-observability-contract` |
+| b-14 runtime observability | [sprint-b-14](plans/phase-b/sprint-b-14-sc-runtime-observability.md) | planned | `sprint/b-14-sc-runtime-observability` |
+| b-15 cron observability | [sprint-b-15](plans/phase-b/sprint-b-15-sc-cron-observability.md) | planned | `sprint/b-15-sc-cron-observability` |
+| b-16 Monty template examples | [sprint-b-16](plans/phase-b/sprint-b-16-monty-template-examples.md) | planned | `sprint/b-16-monty-template-examples` |
+| b-17 sc-cron hook environment | [sprint-b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md) | planned | `sprint/b-17-sc-cron-hook-environment` |
+| b-18 template observability integration | [sprint-b-18](plans/phase-b/sprint-b-18-template-observability-integration.md) | planned | `sprint/b-18-template-observability-integration` |

@@ -1,6 +1,6 @@
 ---
 name: report-format
-version: 0.8.5
+version: 0.8.6
 description: The provenance-quoting report format for gate results, what the planning agent or quality manager should do with each verdict, and where reports are posted.
 ---
 
@@ -47,7 +47,7 @@ Before acting on a failing verdict, re-read the sent text (the composed item fil
   python3 "$S" report --run <run.json> --format md > "$W/report.md" && bd comment <bead> --file "$W/report.md"
   ```
 - Development gate: comment on the sprint bead and, when there is a PR, on the PR, with the deterministic check outcomes beneath.
-- Both: the run JSON stays in `doc/plan/phase-current/anchor-runs/` and is committed with the plan.
+- Both: the run JSON stays in `docs/plans/phase-<current>/anchor-runs/` (`$P/anchor-runs/`) and is committed with the plan.
 
 The skill posts in the main session; agents return JSON and never write to beads or PRs.
 

@@ -84,7 +84,8 @@ table. This sprint does not parse expressions and does not add a table.
   Those are `b-11`, which consumes `render_template`.
 - `crates/sc-cron/tests/sc_compose_bench.rs`. `b-11` owns that harness.
 - Phase-end QA on `integrate/phase-b`.
-- An in-process compose engine. This sprint spawns `sc-compose` on `PATH`.
+- An in-process compose engine. This sprint spawns the program selected by
+  the embedder, whose default is the basename `sc-compose` on `PATH`.
 - `monty-pool`, `monty-fs`, `monty-runtime`, and any PyO3 import inside the VM.
 
 ## Contract (monty 1.4.0)

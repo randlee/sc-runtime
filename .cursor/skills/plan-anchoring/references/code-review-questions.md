@@ -1,6 +1,6 @@
 ---
 name: code-review-questions
-version: 0.8.5
+version: 0.8.6
 description: The development-gate (sprint review) Jev question set, the evidence question, what delivered-work text to feed it, and pairing with deterministic checks.
 ---
 
