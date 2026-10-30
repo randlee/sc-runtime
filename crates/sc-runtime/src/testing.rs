@@ -42,6 +42,23 @@ const SHUTDOWN_BUDGET: Duration = Duration::from_secs(10);
 
 type Serving = Result<Endpoint, RuntimeError>;
 
+/// Applies the daemon's request tracking and deadline middleware to a test router.
+///
+/// This enables deterministic deadline tests without waiting for production limits.
+pub fn instrument_router(
+    router: axum::Router,
+    logger: sc_observability_types::SharedCanonicalLog,
+    limit: Duration,
+    shutdown: tokio::sync::watch::Receiver<bool>,
+    drain: Duration,
+) -> axum::Router {
+    crate::router::with_request_tracking(
+        crate::router::with_request_timeout(router, limit, shutdown, drain),
+        crate::router::RequestMetrics::new(),
+        logger,
+    )
+}
+
 /// A daemon started through the production builder on a private instance root.
 ///
 /// Drop stops the daemon and joins `run` until it returns. It does not panic
@@ -83,6 +100,31 @@ impl DaemonFixture {
     {
         let (config, temp) = prepare_config(config)?;
         let builder = crate::Daemon::builder(app, &config)
+            .stores(stores)
+            .routes(routes);
+        spawn(builder, temp).await
+    }
+
+    /// Starts a daemon with an injected canonical logger on an isolated root.
+    ///
+    /// # Errors
+    /// Returns the startup or serving error when the daemon cannot start.
+    pub async fn start_with_logger<S, FStores, Fut, FRoutes>(
+        app: &AppName,
+        config: DaemonConfig,
+        stores: FStores,
+        routes: FRoutes,
+        logger: sc_observability_types::SharedCanonicalLog,
+    ) -> Result<Self, RuntimeError>
+    where
+        S: Clone + Send + Sync + 'static,
+        FStores: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
+        FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+    {
+        let (config, temp) = prepare_config(config)?;
+        let builder = crate::Daemon::builder(app, &config)
+            .logger(logger)
             .stores(stores)
             .routes(routes);
         spawn(builder, temp).await
