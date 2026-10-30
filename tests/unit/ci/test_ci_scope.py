@@ -25,7 +25,7 @@ class CiScopeTests(unittest.TestCase):
             ci_scope.requires_runtime(
                 [
                     "docs/requirements.md",
-                    "doc/plan/phase-current/anchors.md",
+                    "docs/plans/phase-b/anchors.md",
                     "README.md",
                 ]
             )

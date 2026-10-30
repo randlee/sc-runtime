@@ -1,4 +1,4 @@
-# Intent - phase-current
+# Intent - phase-b
 
 Written 2026-10-25 by randlee. This page frames the anchors. Jev judges the anchors, not this page.
 
