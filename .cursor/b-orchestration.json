@@ -14,12 +14,14 @@
     "full_qa1_before_merge": true,
     "zero_open_findings_before_merge": true,
     "green_ci_before_merge": true,
-    "max_native_concurrency_including_parent": 4
+    "max_native_concurrency_including_parent": 4,
+    "capacity_handling": "Parent launches required reviewers in bounded waves as native slots free; enforcer never runs before all real reviewer task IDs and fenced outputs exist."
   },
   "source_artifacts": {
     "bridge_pr": 88,
     "bridge_head": "9d1a34091565005103f78eb9aab0f59dd5f1a21f",
-    "b13_head": "0a6a9dcfb6258d06a470154e24e0a2aec915430e"
+    "b13_head": "0a6a9dcfb6258d06a470154e24e0a2aec915430e",
+    "bridge_pr_status": "closed_superseded_by89_with_entire_commit_retained"
   },
   "sprints": {
     "b-14": {
@@ -28,14 +30,17 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-14-sc-runtime-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "development_in_progress",
+      "status": "development_complete_qa_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-14-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b14_sol_recovery",
       "recovered_from": {
         "task_id": "/root/phaseb_b14_developer",
         "model": "gpt-6.1-terra",
         "reason": "Selected model at capacity; partial changes preserved"
-      }
+      },
+      "pr_number": 90,
+      "head": "e47ce120dd24035a6bbcb9ec67cc028c47181fdf",
+      "validation": "developer reports all required checks and MSRV/no-default tests PASS; independent QA pending"
     },
     "b-15": {
       "task_id": "run-03z.3",
@@ -43,9 +48,12 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "development_in_progress",
+      "status": "waiting_b16_minimal_deadline_fixture",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
-      "developer_task_id": "/root/phaseb_b15_developer"
+      "developer_task_id": "/root/phaseb_b15_developer",
+      "pr_number": 91,
+      "head": "c897085033d4e6dfbe638f83d3c1d5992671cef5",
+      "state_path": "/tmp/phaseb-cursor-orchestration/b-15-developer-state.json"
     },
     "b-16": {
       "task_id": "run-03z.4",
@@ -55,14 +63,17 @@
       "effort": "high",
       "status": "development_in_progress",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
-      "developer_task_id": "/root/phaseb_b16_developer"
+      "developer_task_id": "/root/phaseb_b16_developer",
+      "pr_number": 92,
+      "head": "c897085033d4e6dfbe638f83d3c1d5992671cef5"
     },
     "b-13": {
       "task_id": "run-03z.1",
       "branch": "sprint/b-13-observability-contract",
       "head": "0a6a9dcfb6258d06a470154e24e0a2aec915430e",
       "status": "development_complete_qa_pending",
-      "developer_task_id": "/root/phaseb_b13_developer"
+      "developer_task_id": "/root/phaseb_b13_developer",
+      "pr_number": 89
     }
   },
   "qa_rounds": [],
@@ -72,11 +83,18 @@
       "crates/sc-cron/src/worker.rs",
       "crates/sc-cron/src/worker/worker_runs.rs",
       "crates/sc-cron/src/scheduler/run_due.rs",
-      "crates/sc-cron/src/scheduler.rs"
+      "crates/sc-cron/src/scheduler.rs",
+      "crates/sc-cron/tests/observability_components.rs"
     ],
-    "owner": "b-15",
+    "owner": "b-16",
     "b15_scheduler_limit": "finish_due passes existing coord.logger to record_due only",
-    "handoff": "Parent confirmation after b15 compilable development push; b16 merges before mechanical registry edits; no whole-sprint QA/merge wait"
+    "handoff": "Parent confirmation after b15 compilable development push; b16 merges before mechanical registry edits; no whole-sprint QA/merge wait",
+    "consumed_b15_head": "d64be138e3461cf8743cd0ec17cf3c65cc430a76",
+    "status": "b16_deterministic_deadline_fixture_needed_b15_yielded_capacity",
+    "queued_b15_fixes": [
+      "worker::disable successful refused terminal event",
+      "production_monty_pipe_deadline rejection attempts2->4 for added due events"
+    ]
   },
   "scope_extensions": [
     {
@@ -95,5 +113,59 @@
       "path": "crates/sc-cron/tests/observability_components.rs",
       "scope": "Only compose_pipe_drain_event_survives_rejection migration to new registry/adapters, preserving assertion"
     }
-  ]
+  ],
+  "qa_schedule": {
+    "b-13": {
+      "task_id": "run-03z.11",
+      "qa_pass": "qa-b-13-1",
+      "commit": "0a6a9dcfb6258d06a470154e24e0a2aec915430e",
+      "status": "reviewers_running_in_capacity_bounded_batches",
+      "required_reviewers": [
+        "req-qa",
+        "arch-qa",
+        "extensibility-qa",
+        "ruthless-boundary-qa",
+        "rust-qa-agent",
+        "rust-best-practices-agent",
+        "rust-service-hardening-agent",
+        "flaky-test-qa"
+      ],
+      "spawn_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b13_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "result_path": "/tmp/phaseb-cursor-orchestration/b13-qa1/req-qa-result.md",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b13_qa1_rust",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "running",
+          "fenced_json_received": false
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa1_arch",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "running",
+          "fenced_json_received": false
+        }
+      ]
+    }
+  }
 }
