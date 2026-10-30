@@ -1,7 +1,7 @@
 ---
 id: b-15
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-cron
 track: observability
@@ -65,6 +65,14 @@ field/constructor, `spawn_feed`/`FeedLaunch`, and due-run feed parameters.
 The same `RunCoord` logger Arc and event behavior are preserved. All other
 wave-8 work remains parallel. The handoff waits for the development push,
 not QA, a PR merge, or completion of the whole sprint.
+
+The additional `scheduler.rs` ownership is limited to forwarding the existing
+`RunCoord` logger in `Scheduler::finish_due`. Ownership of
+`tests/observability_components.rs` is limited to the production pipe test's
+rejection-attempt count for attachment, due launch, pipe deadline, and due
+finish. These narrow seams use the same serial writer window with b-16;
+this adds no ownership of other scheduler or component behavior. b-16 retains
+its registry and host work.
 
 b-13's authorized development facade permits implementing these library event
 sites before upstream publication. Development applications may inject the
