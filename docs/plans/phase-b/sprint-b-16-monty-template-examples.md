@@ -220,9 +220,9 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    compose-specific.
 6. ADR-RUN-0013 / NFR-CRON-0001: create
    `docs/sc-cron/monty-generated-example.md` documenting the generated path,
-   feature enablement, input/output shape, and security limits. Monty source
-   is application-supplied in-process source. MVP has no signing, separate
-   script approval mechanism, or consumer option enabling one. Host registration
+   feature enablement, input/output shape, and security limits. MVP executes application-supplied in-process Monty source without
+   signature validation or separate script approval; consumers cannot enable
+   either gate. Host registration
    and environment policy are enforced independently. Registered synchronous
    handlers retain stack-overflow, allocator-abort, panic, and non-cooperative
    deadline risks.
