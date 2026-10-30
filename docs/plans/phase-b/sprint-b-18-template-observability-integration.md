@@ -48,6 +48,13 @@ adrs:
   - ADR-RT-0002
   - ADR-TRN-0006
 owned_paths:
+  - Cargo.toml
+  - Cargo.lock
+  - scripts/check_observability_release.py
+  - dev/observability-logger-adapter/Cargo.toml
+  - dev/observability-logger-adapter/Cargo.lock
+  - dev/observability-logger-adapter/src/lib.rs
+  - dev/observability-logger-adapter/tests/real_logger.rs
   - template/crates/daemon/src/main.rs
   - template/crates/daemon/src/observability.rs
   - template/crates/daemon/src/cron.rs
@@ -177,6 +184,34 @@ every fix round. There is no same-wave sibling.
   All production release crates exclude sc-compose and ATM crate dependencies
   and Rust imports, enforced by boundary lint; test/benchmark references are
   permitted (ANC-031).
+
+b-13 may deliver library development against the owner-authorized unpublished
+`sc-observability-types` `1.5.1` facade in `dev/observability-types-shim`, which
+reexports exact registry `1.5.0` values/errors and adds the fixed injection
+trait, Noop/shared handle, and test-util doubles. Development applications
+also use the unpublished `sc-observability-dev-adapter` `0.0.0` newtype in
+`dev/observability-logger-adapter` to inject a real registry
+`sc-observability` `1.5.0` `Arc<v2::Logger>`. It forwards the actual
+`service_name`/`try_log` APIs with no fake queue or sinks; its tests exercise
+real queue/sink, saturation, and shutdown behavior. The application retains
+construction, flush, and shutdown ownership. Neither local package claims
+to be the upstream `1.5.1` adapter. Before release acceptance, follow the
+[removal procedure](../../../dev/observability-types-shim/README.md): remove
+the `path` key from the root `sc-observability-types` workspace dependency
+and the local adapter dependency, remove the development packages, and
+resolve the real matching `sc-observability-types` /
+`sc-observability` `1.5.1` registry pair, and prove the published Logger
+adapter contract and generated JSONL behavior. Replace local newtype
+construction with direct coercion of an Arc clone of the real Logger to
+`SharedCanonicalLog` once the upstream trait implementation is available.
+b-18 owns the serial successor teardown paths and root `Cargo.toml` /
+`Cargo.lock` transition. Optimized development/benchmark profiles remain
+permitted; publication stays fenced by `publish = false` and the active
+release guard. `scripts/check_observability_release.py` must reject a
+development observability workspace path override, local adapter,
+observability registry patch, or non-registry/wrong-version release
+resolution; removing or disabling the guard is not a substitute for removing
+the shim.
 
 The current pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` is not a valid
 b-18 starting artifact because that kit package includes upstream sprint
@@ -345,6 +380,16 @@ the three literal codes above and do not duplicate the layout.
    `GeneratedObservabilityIntegration.test_release_contract_sources`; the
    registry-only proof lives in
    `GeneratedObservabilityIntegration.test_release_mode_uses_registry`.
+   Before publication, remove the development workspace path overrides and
+   local adapter, switch injection to direct upstream `Arc<Logger>` coercion,
+   and replace the intentional registry `1.5.0` plus local `1.5.1`
+   development resolution with
+   real matching registry `1.5.1` releases in the root and generated release
+   locks. The release guard must pass without weakening its predicate, and
+   published adapter tests must prove immediate queue-full/disconnected
+   rejection. Shim doubles or a local Logger substitute cannot satisfy this
+   production proof. The local adapter's real `1.5.0` tests remain development
+   evidence, not published `1.5.1` adapter evidence.
 9. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006: on an isolated ephemeral CI runner only,
    launch the real generated daemon binary twice with a fresh temporary
    instance root, deliver SIGINT in one case and SIGTERM in the other, and
@@ -397,6 +442,10 @@ the three literal codes above and do not duplicate the layout.
    authorized publish order 1–5, registry resolution without checkout patches,
    one CI entry per fixture with the sqlite-mcp no-edits sequence, and
    `v0.1.1` at the publication/proof commit.
+   The same gate requires development path/adapter removal, direct upstream
+   Arc coercion, real matching registry `1.5.1` root/generated lock resolution,
+   the active release guard, and the published production Logger adapter's
+   non-blocking proof.
 7. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006:
    `test_signal_shutdown_isolated_ci` passes in the dedicated GitHub-hosted
    ephemeral job for both real SIGINT and SIGTERM paths with
@@ -442,6 +491,7 @@ git diff --check
 git diff --exit-code
 test -z "$(git status --porcelain)"
 bash .github/scripts/run-consumer-preflight.sh
+python3 scripts/check_observability_release.py
 just lint
 just test
 just new generated/test-observability --var-file wizard/fixtures/sqlite-mcp.json

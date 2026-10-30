@@ -83,11 +83,43 @@ recommended_model: sol
 
 ## Goal
 
-Consume published `sc-observability-types` **1.5.1** and
-`sc-observability` **1.5.1** and freeze the injection contract before either library
-migrates events. This repository does not own those upstream source trees or
-their publication. If matching releases are unavailable, this sprint is
-blocked at entry; it does not vendor a replacement.
+Freeze the injection contract for published `sc-observability-types` **1.5.1**
+and `sc-observability` **1.5.1** before either library migrates events. This
+repository does not own those upstream source trees or their publication.
+
+The owner authorized a temporary development exception on 2026-10-30:
+`dev/observability-types-shim` is an unpublished local package named
+`sc-observability-types` at `1.5.1`. It reexports the exact registry `1.5.0`
+values and errors and adds only the fixed `CanonicalLog`, `NoopCanonicalLog`,
+`SharedCanonicalLog`, and `test-util` doubles below. The root workspace
+dependency is `sc-observability-types = { version = "1.5.1", path =
+"dev/observability-types-shim" }`; runtime and cron consume it with
+`workspace = true`. This explicit development path override permits library
+work while the matching releases are unavailable. sc-command retains its
+existing registry `1.5.0` requirement, and the reexports preserve canonical
+type identity. No observability `[patch.crates-io]` entry is used. The
+development lock intentionally contains registry `1.5.0` plus the local
+`1.5.1` facade. Dependency requirements and the public trait contract remain
+unchanged.
+
+Development applications may inject the real registry `sc-observability`
+`1.5.0` logger through `LoggerAdapter(Arc<v2::Logger>)` in
+`dev/observability-logger-adapter`. That unpublished package,
+`sc-observability-dev-adapter` `0.0.0`, forwards `service_name` and `try_log`
+to the actual logger; it adds no queue, sink, or lifecycle policy. The
+application constructs, flushes, and shuts down the real logger. Adapter
+tests exercise actual `1.5.0` queue/sink, saturation, and shutdown behavior;
+Noop/recording doubles do not establish those facts. Optimized development
+builds and benchmarks are permitted; `publish = false` and the publication
+guard remain the release fence.
+
+This local newtype is not an upstream `1.5.1` implementation or proof. b-18
+release acceptance still requires the real matching registry `1.5.1` pair,
+removal of the development workspace path overrides and adapter, direct
+coercion of `Arc<Logger>` to the upstream shared trait, registry-only lock
+resolution, and the active release guard. Follow the
+[shim removal procedure](../../../dev/observability-types-shim/README.md).
+No shim result satisfies that release gate.
 
 The baseline is `develop` after Track B Monty merged at `240e445`. This sprint
 adds logger propagation to sc-cron, a general-purpose optional SQLite cron
@@ -267,12 +299,17 @@ This sprint migrates the component-owned events in its whole-file ownership:
 | `cron.process` | `child.kill_failed` | debug | `failed` | `CHILD_KILL_FAILED` | pid when available, error; once per failed kill attempt |
 | `cron.process` | `child.reap_timeout` | warning | `timeout` | `CHILD_REAP_TIMEOUT` | pid when available, `deadline_remaining_ms = 0`; once per reap deadline |
 | `cron.monty.compose` | `pipe.drain_timeout` | warning | `timeout` | `COMPOSE_PIPE_DRAIN_TIMEOUT` | `deadline_remaining_ms = 0`; once per pipe-drain deadline |
-| `cron.monty.compose` | `child.kill_timeout` | warning | `timeout` | `COMPOSE_CHILD_KILL_TIMEOUT` | pid when available, `deadline_remaining_ms = 0`; once per post-kill deadline |
 
 Component tests assert this exact target/action/level/outcome/code/field/
 cardinality table. Rejecting emission may not
 change jitter fallback, corrupt-row skipping, kill/reap, pipe draining,
 compose exit, or Monty feed results.
+
+The baseline compose driver has no child-kill deadline branch. b-16 owns
+`cron.monty.compose/child.kill_timeout` and its acceptance when implementing
+the already-planned deadline/process-group driver. b-13 preserves the five
+existing component rows above and logger-handle propagation; it adds no kill
+policy to manufacture the deferred event.
 
 ## Canonical `LogEvent` construction
 
@@ -340,8 +377,10 @@ registry-only generated build.
    sc-compose or ATM crate dependency/import to any of the five release
    crates. Test/benchmark-only references remain allowed. b-16 owns the
    complete cross-crate enforcement fixtures and package-identity checks.
-   Root `Cargo.lock` proves types `1.5.1` only. The full logger is an external
-   entry prerequisite; b-16/b-18 generated lockfiles prove the matching pair.
+   Under the development exception, root `Cargo.lock` intentionally contains
+   registry types `1.5.0` and the local `1.5.1` facade. The released lock must
+   prove real registry types `1.5.1` after removing the workspace path key;
+   b-18 verifies the matching full logger/types pair and production adapter.
 3. Implement the public signatures fixed above, propagate one handle through runtime
    state and `RunCoord`, and preserve all old constructor calls.
    Generic `new_with_logger` emits `cron.scheduler/logger.attached` once;
@@ -355,7 +394,7 @@ registry-only generated build.
    change.
    Implement the fixed jitter/store/scheduler/process/Monty propagation seams,
    keep every legacy constructor/function source-compatible with a Noop, and
-   migrate the six component-owned event rows above. In `hook.rs`, add the
+   migrate the five component-owned event rows above. In `hook.rs`, add the
    logger-aware `PythonHook` API and route it to `supervise_with_logger`; b-15
    later passes the existing `RunCoord` handle at its worker-owned call site.
 4. NFR-RT-0002 / NFR-CRON-0001 / NFR-RUN-0002 / NFR-RUN-0005: contract tests prove object safety, Noop compatibility, replacement,
@@ -365,6 +404,9 @@ registry-only generated build.
    full-runtime dependencies and direct blocking adapter calls in this
    repository; the upstream adapter's non-blocking behavior is proved by its
    published contract tests, not by grepping unrelated test helpers here.
+   During development, the local newtype's tests separately exercise real
+   registry `1.5.0` logger behavior; the types-facade doubles prove library
+   behavior. Published `1.5.1` adapter proof remains a b-18 release prerequisite.
 5. NFR-RT-0003 / NFR-RUN-0009: keep `tracing` manifest dependencies during the staged migration. Their
    cleanup is explicitly deferred; b-14 and b-15 remove owned production
    calls without reopening these shared manifests.

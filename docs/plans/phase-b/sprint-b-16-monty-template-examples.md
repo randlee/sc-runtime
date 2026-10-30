@@ -48,6 +48,9 @@ owned_paths:
   - crates/sc-cron/src/monty_run.rs
   - crates/sc-cron/src/monty_compose.rs
   - crates/sc-cron/src/monty_compose_common.rs
+  - crates/sc-cron/src/worker.rs
+  - crates/sc-cron/src/worker/worker_runs.rs
+  - crates/sc-cron/src/scheduler/run_due.rs
   - crates/sc-cron/tests/monty_host_bridge.rs
   - crates/sc-cron/tests/sc_compose_bench.rs
   - scripts/benchmark/monty/campaign.py
@@ -81,8 +84,29 @@ the production suspend/resume loop and the safe render-only compose adapter;
 it does not freeze its pre-release fixed two-name registry as the general
 library API. This sprint follows b-13 because b-13 owns the preceding edits to
 the same crate and authority documents. It remains `parallel_safe` with b-14
-and b-15 because their exact paths are disjoint. b-17 merges b-16 first and
-adds the resolved environment snapshot to the completed host-call context.
+and b-15 except for the declared serial sole-writer window on
+`crates/sc-cron/src/worker.rs`, `crates/sc-cron/src/worker/worker_runs.rs`, and
+`crates/sc-cron/src/scheduler/run_due.rs`. b-15 owns those files through a
+compilable development push; after merging that push forward, b-16 changes
+only their mechanical registry transport: the Worker field/constructor,
+`spawn_feed`/`FeedLaunch`, and the
+`spawn_monty_due`/`run_monty_due`/`run_monty_tick_after_stop`/`feed_once`
+parameters. Preserve the same `RunCoord` logger Arc and event behavior.
+Disjoint work continues in parallel; this is no whole-sprint `must_follow`
+edge or QA/PR-merge gate. b-17 merges b-16 first and adds the resolved
+environment snapshot to the completed host-call context.
+
+b-13's owner-authorized unpublished `sc-observability-types` `1.5.1` facade
+over exact registry `1.5.0`, selected by the root workspace dependency's
+development `path` override, permits library development before upstream
+publication. The separate unpublished `sc-observability-dev-adapter` `0.0.0`
+newtype injects the real registry `1.5.0` logger through its actual
+`service_name`/`try_log`; the application owns construction, flush, and
+shutdown. Optimized development builds and benchmarks are permitted. This
+does not claim an upstream `1.5.1` adapter. Generated release requirements
+remain `1.5.1`; real matching registry resolution, direct upstream Arc
+coercion, adapter proof, and removal of development paths/adapter remain
+required for b-18 release acceptance.
 
 ## Public host-extension contract
 
@@ -156,6 +180,19 @@ The production-bridge benchmark and generated example invoke
 render helpers, lab benchmark code, and historical reports may retain that
 name; their presence does not create a product requirement.
 
+The current blocking driver has no child-kill deadline branch. Implementing
+the deadline/process-group behavior above also owns this event transferred
+from b-13's migration table, using its same injected logger handle:
+
+| Target | Action | Level | Outcome | `Diagnostic.code` | Required fields / cardinality |
+|---|---|---|---|---|---|
+| `cron.monty.compose` | `child.kill_timeout` | warning | `timeout` | `COMPOSE_CHILD_KILL_TIMEOUT` | pid when available, `deadline_remaining_ms = 0`; once per post-kill deadline |
+
+Assert the exact row when that branch triggers and prove rejecting emission
+does not change the timeout or child cleanup result. This acceptance belongs
+to the already-planned driver change; b-13 adds no kill policy. Preserve the
+row deadline and per-stream output caps for both CLI adapters.
+
 The template Cargo files are owned only by this sprint. b-17 consumes the
 resulting registry and `cron`/`monty` feature definitions and does not edit
 those manifests.
@@ -200,6 +237,8 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    output cap; apply the explicit child-environment restriction above. Implement `atm_run` in this
    same sprint through the identical registry and supervisor. Remove the old
    render-only/temp-root argument rewriting from the general CLI adapters.
+   The driver tests own the exact `COMPOSE_CHILD_KILL_TIMEOUT` row above and
+   its unchanged timeout/cleanup behavior when event emission is rejected.
 3. REQ-RUN-0301 / REQ-CRON-0001 / ADR-RUN-0303: add optional daemon dependency `sc-cron`, direct
    `sc-observability-types`, and features equivalent to
    `cron = ["dep:sc-cron"]` and
@@ -264,6 +303,8 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    `HOST_CALL_FAILED`; invalid supplied-adapter shape expects `HOST_DENIED`.
    The production registration assertion derives names from the configured
    registry rather than requiring a fixed global list.
+   Driver tests assert the transferred `COMPOSE_CHILD_KILL_TIMEOUT` event row
+   and prove rejected emission leaves timeout/cleanup results unchanged.
 3. `NFR-CRON-0001`: the required `cargo tree` command passes inspection with
    no Monty crate in the default tree and no `monty-pool`, `monty-fs`, or
    `monty-runtime` in the Monty tree.
