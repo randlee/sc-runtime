@@ -91,10 +91,14 @@ or requires the full observability runtime.
 
 The cron contract also exposes `SqliteScheduleStore::open_with_logger` and
 `supervise_with_logger` and propagates the handle through compose, host, and
-run internals. `Scheduler::open_with_logger` is the only public logger-aware
-scheduler construction path and installs one Arc into store, concrete
-`SystemJitter`, and `RunCoord`; there is no public wrapper jitter or
-post-construction `Scheduler::with_logger`. Existing `open`, jitter, and
+run internals. Generic `Scheduler::new_with_logger(store, clock, jitter, handle)`
+preserves application-supplied components and installs the handle in
+`RunCoord` and worker/hook paths; those components own their internal logging.
+`Scheduler::open_with_logger` constructs its logger-aware SQLite store and
+`SystemJitter` and delegates generic construction, sharing one Arc throughout.
+The generic constructor emits `logger.attached` once; the helper does not
+duplicate it. There is no public wrapper jitter or post-construction setter.
+Existing `new`, `open`, jitter, and
 `supervise` entry points remain source-compatible by delegating with the
 fixed `sc-cron` Noop identity. Both supervision functions return
 `Result<Captured, CronError>`.

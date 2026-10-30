@@ -20,11 +20,13 @@ requirements:
   - REQ-RUN-0702
   - REQ-RT-0001
   - REQ-RT-0005
+  - REQ-RT-0007
   - NFR-RT-0001
   - NFR-RT-0002
   - NFR-RT-0003
   - REQ-CRON-0001
   - REQ-CRON-0003
+  - REQ-CRON-0005
   - NFR-CRON-0001
   - NFR-RUN-0002
   - NFR-RUN-0005
@@ -89,7 +91,8 @@ blocked at entry; it does not vendor a replacement.
 
 The baseline is `develop` after Track B Monty merged at `240e445`. This sprint
 adds logger propagation to sc-cron, a general-purpose optional SQLite cron
-library for application-defined Rust, Python, and optional Monty jobs. It
+library for application-defined Rust, Python, and optional Monty jobs
+(REQ-CRON-0003). It
 preserves execution and recovery behavior and adds no MVP script signing,
 separate approval mechanism, or consumer option enabling either. b-16 owns
 the application host-extension seam and CLI adapters; b-17 owns environment
@@ -103,10 +106,7 @@ wave without replanning that closed work.
 
 ## Upstream artifact consumed
 
-Published `sc-observability-types` **1.5.1** and `sc-observability` **1.5.1**
-are exact external entry prerequisites. This repository consumes them and
-does not own or authorize their publication. The types patch fixes these
-semantics:
+The required upstream releases expose this types contract:
 
 ```rust
 pub trait CanonicalLog: Send + Sync {
@@ -129,9 +129,10 @@ call `Logger::log`, `enqueue_blocking`, or any blocking/backpressured path.
 Queue-full and disconnected-sink rejection returns `EventError` immediately
 and remains best effort at every library call site. It does not require
 `Logger: Clone`.
+Emission failure never replaces an HTTP response, `RuntimeError`, `CronError`,
+`RunOutcome`, stop decision, or store result.
 Applications retain `Arc<Logger>` and coerce an Arc clone to
-`SharedCanonicalLog`. Noop and the upstream recording/test-double contract are
-fixed here so b-14 and b-15 do not renegotiate them.
+`SharedCanonicalLog`.
 This is a trusted synchronous trait boundary: custom implementations must
 return promptly, perform no sink I/O or capacity wait, and not panic. The
 libraries do not spawn or time-box `emit`; acceptance proves the published
@@ -175,7 +176,10 @@ tests.
 
 ## Public signatures fixed here
 
-Every fallible public sc-cron function returns `CronError`.
+Fallible library entry points return `CronError` (REQ-CRON-0005).
+Application-implemented callback protocols retain their documented results;
+the environment path maps its resolver protocol to fixed `ENV_REFERENCE`
+failures without provider prose.
 
 ```rust
 impl<P, S, StoresFn, RoutesFn> DaemonBuilder<P, S, StoresFn, RoutesFn> {
@@ -220,6 +224,12 @@ impl<C> Scheduler<SqliteScheduleStore, C, SystemJitter> {
     ) -> Result<Self, CronError>;
 }
 
+impl<S: ScheduleStore, C: Clock, J: JitterSource> Scheduler<S, C, J> {
+    pub fn new_with_logger(
+        store: Arc<S>, clock: Arc<C>, jitter: Arc<J>, logger: SharedCanonicalLog,
+    ) -> Self;
+}
+
 pub async fn supervise_with_logger<F>(
     spec: &ChildSpec<'_>,
     cap: usize,
@@ -229,21 +239,19 @@ pub async fn supervise_with_logger<F>(
 where F: std::future::Future<Output = ()>;
 ```
 
-`SqliteScheduleStore::open`, `Scheduler::open`, and `process::supervise`
-delegate with the fixed Noop. `Scheduler::open_with_logger` is the sole
-public logger-aware scheduler constructor: it constructs
-`SystemJitter::with_logger(logger.clone())` internally and installs the same
-Arc into the store, concrete jitter, and `RunCoord`, then emits
-`cron.scheduler/logger.attached`. There is no post-construction
-`Scheduler::with_logger` path and no public jitter wrapper. Internal
+Legacy constructors delegate with the fixed Noop. Generic
+`Scheduler::new_with_logger` preserves the supplied store, clock, and jitter
+and installs the handle in `RunCoord` and worker/hook paths. Those supplied
+components own their internal logging. `open_with_logger` constructs the
+logger-aware SQLite store and `SystemJitter`, then delegates generic scheduler
+construction, sharing one Arc across the built-ins and `RunCoord`.
+`new_with_logger` emits `cron.scheduler/logger.attached` once; the open helper
+does not emit it again. There is no post-construction logger setter or jitter
+wrapper. Internal
 `run_compose_*_with_logger`,
 `drive_feed`, and `execute_feed_with_logger` functions carry the same handle
 through `monty_compose.rs`, `monty_host.rs`, and `monty_run.rs`; their legacy
-forms delegate with the Noop. This sprint implements logger-aware
-`PythonHook` construction/run and the `supervise_with_logger` call inside
-`hook.rs`. b-15 owns only the worker call site that passes
-`RunCoord.logger()` into this API, plus its worker and due-run event sites,
-without reopening these b-13 component files.
+forms delegate with the Noop.
 
 `execute_feed_with_logger` is the internal logger-bearing counterpart of the
 landed `execute_feed_with_compose_program` path: it receives both the
@@ -304,11 +312,6 @@ manifests and lockfile; it does not publish a crate or edit the template. b-18 o
 sc-publish consumer input, authorization gate, publication order, and
 registry-only generated build.
 
-Every emission is best effort. `emit` failure is observed in tests but never
-replaces an HTTP response, `RuntimeError`, `CronError`, `RunOutcome`, stop
-decision, or store result. The interface-owned scheduler events migrate in
-this sprint; remaining cron taxonomy belongs to b-15.
-
 ## Required work and deliverables
 
 1. Amend ADR-RUN-0002, ADR-RUN-0003, ADR-RUN-0004, ADR-RUN-0007,
@@ -320,7 +323,8 @@ this sprint; remaining cron taxonomy belongs to b-15.
    observability/types/transport/command edges and optional cron graph; amend
    the REQ-RT-0001 and
    NFR-RT-0001 method tables for optional all-phase `.logger()` without a new
-   typestate; REQ-RUN-0309 for generated/runtime/cron caret `1.5.1`
+   typestate; REQ-RT-0007 for unchanged string-based store errors alongside the
+   allowed logging-types dependency; REQ-RUN-0309 for generated/runtime/cron caret `1.5.1`
    requirements, the retained sc-command tested minimum `1.5.0`, and exact
    lock resolution `1.5.1`; REQ-CRON-0001 and ADR-RUN-0303 for the optional generated
    cron graph; REQ-RUN-0702 for the five-crate release order; and
@@ -336,11 +340,12 @@ this sprint; remaining cron taxonomy belongs to b-15.
    sc-compose or ATM crate dependency/import to any of the five release
    crates. Test/benchmark-only references remain allowed. b-16 owns the
    complete cross-crate enforcement fixtures and package-identity checks.
-   `Cargo.lock` proves the exact resolved `1.5.1` pair.
+   Root `Cargo.lock` proves types `1.5.1` only. The full logger is an external
+   entry prerequisite; b-16/b-18 generated lockfiles prove the matching pair.
 3. Implement the public signatures fixed above, propagate one handle through runtime
    state and `RunCoord`, and preserve all old constructor calls.
-   `Scheduler::open_with_logger` installs one handle coherently and emits the
-   production `cron.scheduler/logger.attached` event; b-18 consumes
+   Generic `new_with_logger` emits `cron.scheduler/logger.attached` once;
+   `open_with_logger` delegates with coherently configured built-ins. b-18 consumes
    this interface-owned event without manufacturing a fake cron record.
    The same `scheduler.rs` ownership migrates its two shutdown-deadline trace
    calls to `cron.scheduler/shutdown.worker_timeout` (error) and
@@ -364,14 +369,10 @@ this sprint; remaining cron taxonomy belongs to b-15.
    cleanup is explicitly deferred; b-14 and b-15 remove owned production
    calls without reopening these shared manifests.
 6. REQ-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0005 / REQ-RUN-0503 /
-   REQ-RUN-0701 / REQ-RUN-0702: bump the root workspace to `0.1.1`, make
-   `sc-cron` the fifth independently packaged public crate and generated
-   versioned dependency, retain `sc-runtime-db-sqlite` as unpublished, amend
-   both generated green/CI observability checks to `1.5.1`, and inspect the
-   package file lists for both changed public crates without claiming
-   publication of the upstream observability pair. This sprint amends the
-   release and boundary authority; b-18 owns each integration acceptance
-   root.
+   REQ-RUN-0701 / REQ-RUN-0702: apply the public release contract above and
+   record sc-cron as the fifth public crate in release authority. Inspect both
+   changed package file lists. Update generated green/CI observability
+   requirements to `1.5.1`; b-18 owns integration acceptance and publication.
 7. NFR-RUN-0008: keep every changed production Rust source below the existing
    1000-source-line gate; this ID governs only `just lint` line counts, not
    request, scheduler, or error behavior.
@@ -393,7 +394,9 @@ this sprint; remaining cron taxonomy belongs to b-15.
 4. `boundary:BOUNDARY-sc-cron`: the cron `observability_contract` and
    `observability_components` tests pass only when legacy constructors use a
    Noop and `open_with_logger` installs one identical handle in store, jitter,
-   shared, and worker state as the sole public logger-aware constructor.
+   shared, and worker state. A custom-store/custom-jitter case constructs the
+   generic scheduler without replacing its providers, proves their use through
+   sentinel calls, and observes scheduler/worker events on the injected handle.
 5. `boundary:BOUNDARY-sc-cron`: `observability_components` passes only when
    each scheduler shutdown branch emits its fixed row once and rejection does
    not change the returned shutdown result.

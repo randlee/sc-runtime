@@ -139,7 +139,9 @@ field keys. Every failed emission is ignored after the attempt.
    `TARGET_RESOLVE_FAILED: {detail}; fix hook target configuration and retry`
    and `JOB_JOIN_FAILED: {detail}; fix the job panic and retry`. One typed
    internal formatter owns these display strings. Structured `LogEvent` is
-   the machine contract; display prose is not public or parseable schema.
+   the event contract; the supported `RunOutcome::failure_parts` /
+   `RunFailureParts` parser retains the public `CODE: detail; recovery` format.
+   Choose event diagnostic codes from typed origins, never arbitrary prose.
 4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0005 / NFR-RUN-0009: test native
    and Monty success/failure paths with a recording emitter and a rejecting
    emitter. Queue-full and disconnected rejection returns immediately and

@@ -16,12 +16,14 @@ requirements:
   - REQ-CRON-0005
   - REQ-CRON-0019
   - REQ-RUN-0301
+  - REQ-RUN-0503
   - NFR-CRON-0001
   - NFR-CRON-0002
   - NFR-RUN-0005
   - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
+  - ADR-RUN-0002
   - ADR-RUN-0011
   - ADR-RUN-0013
   - ADR-RUN-0014
@@ -88,7 +90,8 @@ references remain permitted; this sprint preserves b-16's boundary enforcement.
 
 ## Public model
 
-Use this surface, retaining the crate's existing generic conventions:
+Keep existing generics. Library entry points return `CronError`; resolver
+callback errors map to `ENV_REFERENCE` through their separate protocol.
 
 ```rust
 pub const MAX_ENV_ENTRIES: usize = 128;
@@ -190,8 +193,8 @@ object-safe resolver is Arc-owned; HookEnvironmentHost is Clone/Default with
 empty policy and value-free Debug.
 
 All schedule operations use one name-keyed map. A repeated set/reference/clear
-for the exact same name replaces its previous operation. Case-fold spelling
-collisions are rejected. Repeated normalized dotenv paths are invalid,
+for the exact same name replaces its previous operation. Repeated normalized
+dotenv paths are invalid,
 regardless of required flag. Host allowlists accumulate; exact duplicates are
 idempotent. len counts variable operations; is_empty checks operations and
 dotenv sources. Accessors borrow values rather than cloning them. Stored
@@ -249,8 +252,7 @@ environment. Allow_process stores names, resolves daemon values at execution,
 and never captures values during schedule creation or update.
 
 Generated CronConfig::hook_environment_host() builds the configured policy.
-The application can attach its resolver before passing that prebuilt policy
-to cron::open; composition must preserve the resolver object.
+Attach the application's resolver before `cron::open`; retain that object.
 
 ## Resolution and authorization
 
@@ -322,8 +324,7 @@ sc_compose_run and atm_run children receive the same snapshot as Python/Monty,
 with no implicit full-daemon inheritance. Both adapters forward any command or
 subcommand and its arguments unchanged, with no command allowlist. They retain
 the common row deadline, process-group kill, and output limits.
-Rust jobs retain their ordinary application access; sc-cron never mutates the
-daemon process environment with set_var/remove_var.
+sc-cron never mutates the daemon process environment with set_var/remove_var.
 
 Before scheduled persistence/logging, replace each distinct nonempty snapshot
 value in hook/provider-controlled detail or stop reason with [REDACTED_ENV],
@@ -353,20 +354,21 @@ consumer tables or create a second environment/secret table.
 
 ## Required work and deliverables
 
-1. REQ-CRON-0001/0003/0004/0005/0019, ADR-RUN-0013/0016, NFR-CRON-0002:
-   implement the model, resolution, runtime, redaction, and first-release schema
-   specified above; align authority docs. Validate JSON at model/store/execution
-   boundaries and skip corrupt rows through the existing bounded path.
+1. REQ-CRON-0001 / REQ-CRON-0003 / REQ-CRON-0004 / REQ-CRON-0005 /
+   REQ-CRON-0019 / ADR-RUN-0013 / ADR-RUN-0016 / NFR-CRON-0002:
+   implement the model, resolution, runtime, redaction, and schema above; align
+   authority docs. Skip corrupt rows through the existing bounded decode path.
 2. NFR-CRON-0001 / NFR-RUN-0009: export the types and boundary facade;
    compile-test constructors/accessors and Arc<dyn EnvironmentReferenceResolver>.
 3. REQ-CRON-0019 / NFR-RUN-0005: deliver the same snapshot through worker,
    run_due, initialization, and both CLI paths, retaining process supervision
    and sc-cron.hook.v1 input.
-4. REQ-RUN-0301 / REQ-CRON-0019 / ADR-RUN-0014: generate the specified empty
+4. REQ-RUN-0301 / REQ-CRON-0019 / ADR-RUN-0002 / ADR-RUN-0014: generate the specified empty
    policy defaults, config/schema, prebuilt-policy wiring, and identity/team,
    clear, dotenv, and recording-resolver example. Preserve schedule limits and
    b-16 Cargo features.
-5. NFR-RUN-0005: add Unix/Windows parity and canary tests below. Production adds
+5. NFR-RUN-0005 / NFR-RUN-0008 / ADR-RUN-0011: add the parity/canary tests.
+   Changed production Rust files stay below 1000 source lines. Production adds
    no sleeps/block_on and holds no std::sync::Mutex guard across await;
    condition/deadline test coordination is permitted.
 
@@ -439,6 +441,6 @@ Windows execution evidence.
 
 ## This sprint does not close
 
-Rust hook isolation/JobContext, writable Monty os.environ, automatic caller
-capture, a built-in secret-manager provider, agent-to-agent file authorization,
-new CLI adapters, network integrations, or a signing/approval mechanism.
+Excluded: Rust JobContext/isolation, writable Monty os.environ, caller capture,
+built-in secret providers, agent-to-agent file authorization, new CLI/network
+adapters, and signing/approval mechanisms.

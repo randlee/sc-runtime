@@ -2069,7 +2069,7 @@
       "id": "REQ-CRON-0005",
       "source_type": "REQ",
       "source_ref": "REQ-CRON-0005",
-      "statement": "Fallible public functions in sc-cron return CronError.",
+      "statement": "Fallible public library entry points in sc-cron must return CronError.",
       "quote": "Fallible public functions in sc-cron return CronError.",
       "kind": "directive",
       "stated_by": "randlee",
@@ -2080,14 +2080,14 @@
       "deterministic_check": "The public error type in crates/sc-cron is CronError.",
       "fixtures": {
         "pass": [
-          "Fallible public functions in sc-cron return CronError."
+          "Fallible public library entry points in sc-cron return CronError. The signatures in crates/sc-cron/src/expr.rs (CronExpr::parse) and crates/sc-cron/src/scheduler.rs (Scheduler::open) return Result<Self, CronError>, providing checkable evidence for this library error contract."
         ],
         "fail": [
           "Fallible public functions in sc-cron return a type other than CronError."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 5,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -2186,6 +2186,29 @@
           "item": "b-15",
           "reason": "This event-only sprint changes no public fallible function signature or CronError return type.",
           "replaced": false
+        },
+        {
+          "at": "2026-10-30T07:13:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "Fallible public functions in sc-cron return CronError."
+        },
+        {
+          "at": "2026-10-30T07:13:51+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "Fallible public library entry points in sc-cron return CronError."
+        },
+        {
+          "at": "2026-10-30T07:16:48+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ],
       "exclude": [

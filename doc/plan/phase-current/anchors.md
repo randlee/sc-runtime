@@ -624,11 +624,11 @@ Fixtures:
 
 ## REQ-CRON-0005
 
-Anchor: Fallible public functions in sc-cron return CronError.
+Anchor: Fallible public library entry points in sc-cron must return CronError.
 
 > Fallible public functions in sc-cron return CronError.
 
-Said by randlee, requirements register, 2026-10-25. Status: locked. Version 2.
+Said by randlee, requirements register, 2026-10-25. Status: locked. Version 5.
 
 Summary: One CronError enum
 
@@ -651,7 +651,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 Beads: anchor `run-whn`, plan questions `run-whn.1`, dev questions `run-whn.2`
 
 Fixtures:
-- pass: Fallible public functions in sc-cron return CronError.
+- pass: Fallible public library entry points in sc-cron return CronError. The signatures in crates/sc-cron/src/expr.rs (CronExpr::parse) and crates/sc-cron/src/scheduler.rs (Scheduler::open) return Result<Self, CronError>, providing checkable evidence for this library error contract.
 - fail: Fallible public functions in sc-cron return a type other than CronError.
 
 ## ADR-RUN-0013

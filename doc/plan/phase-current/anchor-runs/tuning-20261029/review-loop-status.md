@@ -50,6 +50,15 @@ the review diff.
 
 ## Final planning gate state — PASS
 
+Latest exact-source rechecks after scoped QA remediation are recorded in
+../../qa-runs/final-scoped-20261030/anchor-recheck-summary.json. All six pass.
+The 16 approved ANC statements/scopes/questions remain unchanged. The legacy
+REQ-CRON-0005 snapshot now distinguishes library entry points from external
+callback protocols, preserving its original quote; its planning/development
+fixtures pass with concrete existing-signature evidence. The original gate
+archive below remains the immutable 67c9dc2-era snapshot. Final scoped QA
+verification is recorded separately in the current qa-runs directory.
+
 All six final b-13–b-18 runs pass with all 44 locked anchors selected. All 16
 new anchors are satisfied in the continuation; unchanged parser/store anchors
 have version-matched passing baseline coverage. No locked anchor is uncovered.

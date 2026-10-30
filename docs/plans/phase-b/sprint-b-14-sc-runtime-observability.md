@@ -82,7 +82,7 @@ attempt or changes request execution.
 5. NFR-RT-0002 / NFR-RT-0003: remove direct tracing calls from runtime source. The shared manifest is
    owned by b-13 and may retain the dependency for staged cleanup.
 6. REQ-RT-0005 / NFR-RUN-0005 / ADR-RT-0004: add a runtime regression that
-   uses the existing real-daemon fixture to drive the signal/shutdown path
+   uses the existing daemon fixture's crate-private shutdown trigger
    with deadline coordination and an isolated temporary instance root; it
    must not spawn a generated-project daemon process.
 7. ADR-RUN-0011: production changes add no sleep or `block_on` call and hold
@@ -97,7 +97,7 @@ attempt or changes request execution.
    handler timeout emits `RUNTIME.REQUEST_TIMEOUT` and a drain timeout emits
    `RUNTIME.DRAIN_TIMEOUT`.
 3. ADR-RT-0001 / `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when
-   concurrent requests retain distinct IDs and the real signal regression
+   concurrent requests retain distinct IDs and the fixture shutdown regression
    drains and joins with deadline polling rather than fixed sleeps.
 4. ADR-RUN-0004 / ADR-RUN-0007 / NFR-RUN-0002: `observability_http` passes only when
    queue-full and disconnected rejection returns immediately and changes no

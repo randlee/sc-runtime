@@ -2155,7 +2155,7 @@ This applies to `crates/daemon` of a project rendered from `template/`.
        log_root,
        &cfg.logging,
    )?; // generated main maps this to DAEMON.OBSERVABILITY
-   let logger = observability.shared_log();
+   let logger = observability.logger();
    let result = sc_runtime::Daemon::builder(&app, &cfg.daemon)
        .logger(logger.clone())
        /* .stores(...).routes(...).mcp(...) */

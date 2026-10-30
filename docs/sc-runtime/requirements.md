@@ -69,7 +69,7 @@ async fn main() -> ExitCode {
         Ok(owner) => owner,
         Err(e) => return report_observability(e),
     };
-    let logger = observability.shared_log();
+    let logger = observability.logger();
 
     let app = match sc_transport::AppName::new("my-app") {
         Ok(app) => app,
@@ -190,7 +190,7 @@ last so no request is accepted before it can be served.
    startup fails safely, the first daemon remains reachable through `S`, and
    the failed startup and cleanup do not remove `S`.
 6. Inspection of the public API of `crates/sc-runtime`: `DaemonBuilder` has no
-   public method other than `stores`, `routes`, `mcp` and `run`.
+   public method other than `logger`, `stores`, `routes`, `mcp` and `run`.
 7. A test deserialises a `DaemonConfig` from a JSON document with
    `serde_json` (a dev-dependency) and passes it to `Daemon::builder`; it
    compiles, which shows `DaemonConfig: serde::Deserialize`.
@@ -628,8 +628,9 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
   `remediation`, and optional `cause` are `String`. The application maps its
   store error into those fields inside the stores closure. `sc-runtime` does
   not name the foreign error type, does not implement `source()` for a
-  downcast, and does not declare a direct dependency on
-  `sc-observability-types`. There is no `AppName` variant and no
+  downcast. Its store-error representation does not use observability types;
+  the direct `sc-observability-types` dependency is permitted for injected
+  logging under REQ-RUN-0309. There is no `AppName` variant and no
   `APP.INVALID_NAME` row. `run` does not construct `sc_transport::AppName`
   and does not use `unreachable!`.
 

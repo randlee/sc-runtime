@@ -132,7 +132,8 @@ Full ambient inheritance remains available only through explicit direct-call
 `ChildEnv::Inherit`. Monty resumes `Getenv` and `GetEnviron` from the same map;
 missing or cleared names behave as absent. Source initialization uses a
 stage-specific resume driver: top-level environment reads work, but every
-function call, including sc_compose_run and atm_run, is denied there. Ordinary
+registered host call, including sc_compose_run and atm_run, is denied there.
+VM-local computation remains permitted. Normal
 retained-module semantics apply to a value copied into a global. Every other
 Monty OS call remains denied. Both CLI adapter children receive the same
 snapshot and not the daemon's complete environment. Neither path mutates the
@@ -155,7 +156,7 @@ Monty source defines `cron_stop(hook)` and `cron_tick(hook)`. One REPL is retain
 
 ### Application-owned Monty hosts
 
-Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its name, positional/keyword JSON arguments, schedule name, hook phase, and row deadline and returns `Result<serde_json::Value, CronError>`; matching closures are supported. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`; invalid call arguments fail with `HOST_DENIED`; handler failure records `HOST_CALL_FAILED` after configured-value redaction. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
+Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its name, positional/keyword JSON arguments, schedule name, hook phase, and row deadline and returns `Result<serde_json::Value, CronError>`; matching closures are supported. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`. Bridge argument conversion and supplied CLI adapter shape rejection fail with `HOST_DENIED`; a custom handler's returned error, including `CronError::InvalidSpec`, records `HOST_CALL_FAILED` after configured-value redaction. Private typed dispatch preserves supplied-adapter errors without parsing custom error prose. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
 
 Phase B supplies opt-in `sc_compose_run(subcommand, args)` and `atm_run(subcommand, args)` adapters through this same registry. `ScComposeHostConfig` and `AtmHostConfig` select non-empty executable paths (defaults `sc-compose` and `atm`) and working directories (default the daemon directory captured at configuration). Each adapter accepts one command/subcommand string and an optional list of string arguments, with no keyword arguments. It forwards the non-empty command/subcommand followed by those ordered arguments directly as argv, never through a shell. Every command/subcommand is supported; flags including `--root` are forwarded unchanged. Neither adapter forces render arguments or temp-root staging. Scripts choose arguments, not the configured executable or working directory. Both adapters share the existing blocking child driver in `monty_compose`, generalized for argv/cwd, with row deadline, process-group termination, and `MAX_HOOK_OUTPUT_BYTES` per stream. They do not call the async `process::supervise` from the blocking feed thread or introduce a runtime/`block_on` bridge. A completed child returns `{stdout, stderr, exit_code}`, including nonzero exits; script code decides how that result affects its hook. A deadline expiration records `TimedOut`; spawn, decoding, and capture-limit failures record stable host errors. The adapters receive the resolved environment snapshot from ADR-RUN-0016. Neither CLI is required when its adapter is unused. `render_template` is not a product requirement; an internal helper may remain an implementation convenience without becoming a mandatory registered host function.
 
@@ -199,6 +200,16 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource>;
 ```
 
 `SqliteScheduleStore` is the production store. `ScheduleStore::limits` defaults to `ScheduleLimits::default()` (unlimited). That store returns the ceiling it was opened with. The crosswalk retains this seam with the copy (REQ-CRON-0009). The public module `process` and `PythonHook` also stay public. They are the retained REQ-CRON-0018 supervisor port (`ChildSpec`, `supervise`, and the related supervisor types). That surface is not an sc-runtime HTTP route, MCP tool, or product API.
+
+`Scheduler::new_with_logger(store, clock, jitter, logger)` retains the supplied
+generic components and installs scheduler/worker/hook logging. Supplied store
+and jitter implementations own their internal logging. Legacy `new` delegates
+with the fixed Noop. `open_with_logger(path, limits, clock, logger)` constructs
+the logger-aware SQLite store and `SystemJitter`, then delegates generic
+construction with the same handle. The generic constructor emits
+`cron.scheduler/logger.attached` once; the convenience path does not duplicate
+it. No logging wrapper, new component trait, or post-construction setter is
+required.
 
 ## Public exports
 

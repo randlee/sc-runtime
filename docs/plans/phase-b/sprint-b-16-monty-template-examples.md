@@ -14,6 +14,8 @@ requirements:
   - REQ-RUN-0702
   - REQ-RUN-0309
   - REQ-RUN-0301
+  - REQ-RUN-0329
+  - REQ-RUN-0503
   - REQ-RUN-0005
   - REQ-CRON-0001
   - REQ-CRON-0003
@@ -22,6 +24,7 @@ requirements:
   - NFR-RUN-0005
 adrs:
   - ADR-RUN-0002
+  - ADR-RUN-0003
   - ADR-RUN-0011
   - ADR-RUN-0013
   - ADR-RUN-0303
@@ -109,7 +112,11 @@ change behavior. `Scheduler::with_monty_hosts(registry)` installs one immutable
 registry for subsequent runs. Hook source may invoke a registered name but
 cannot register, replace, or discover a handler object. A source reference to
 an unregistered name fails as `HOST_UNDEFINED`; a registered handler error is
-recorded as `HOST_CALL_FAILED` after b-17 secret redaction. The handler runs on
+recorded as `HOST_CALL_FAILED`, including returned `InvalidSpec`, after b-17
+secret redaction. Private typed dispatch distinguishes supplied CLI adapters
+from custom handlers: bridge conversion/adapter shape rejection is
+`HOST_DENIED`; custom handler errors never supply their own bridge code.
+No argument-schema API or error-string parsing is added. The handler runs on
 the existing blocking feed thread: the call includes the row deadline and
 sc-cron checks it before and after the handler, but cannot preempt arbitrary
 synchronous application code. This is the same trusted-code boundary as a
@@ -152,7 +159,7 @@ name; their presence does not create a product requirement.
 The template Cargo files are owned only by this sprint. b-17 consumes the
 resulting registry and `cron`/`monty` feature definitions and does not edit
 those manifests.
-Generated package names retain `<project>-<role>`, including
+REQ-RUN-0329: generated package names retain `<project>-<role>`, including
 `{{project-name}}-daemon`; dependency/feature edits must not rename them.
 
 The generated daemon feature contract is fixed:
@@ -219,7 +226,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    and environment policy are enforced independently. Registered synchronous
    handlers retain stack-overflow, allocator-abort, panic, and non-cooperative
    deadline risks.
-7. REQ-RUN-0005 / NFR-CRON-0001: enforce the tool-crate exclusion on all
+7. REQ-RUN-0005 / NFR-CRON-0001 / ADR-RUN-0003: enforce the tool-crate exclusion on all
    production release crates (`sc-config`, `sc-transport`, `sc-command`,
    `sc-runtime`, and `sc-cron`). Boundary lint checks normal/build dependencies,
    renamed packages, Rust imports, and production feature combinations; a
@@ -253,6 +260,8 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    Spawn, output, and handler-error cases assert `HOST_SPAWN`, `HOST_OUTPUT`,
    and `HOST_CALL_FAILED` respectively; nonzero child exit remains an ordinary
    returned CLI result rather than being rewritten as a render failure.
+   The existing handler-error case returns `InvalidSpec` and still expects
+   `HOST_CALL_FAILED`; invalid supplied-adapter shape expects `HOST_DENIED`.
    The production registration assertion derives names from the configured
    registry rather than requiring a fixed global list.
 3. `NFR-CRON-0001`: the required `cargo tree` command passes inspection with
@@ -279,7 +288,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    exposes only its registered names. `test_monty_example` proves the checked
    example and production-bridge benchmark call `sc_compose_run`; it does not
    ban internal helper names or explanatory historical documentation.
-10. REQ-RUN-0005: `test_production_tool_boundary` and the production
+10. REQ-RUN-0005 / ADR-RUN-0003: `test_production_tool_boundary` and the production
     dependency-tree gates pass only when every release crate excludes the
     compose/ATM crate families from normal/build dependencies, including
     renamed and transitive packages, for its supported production features.
