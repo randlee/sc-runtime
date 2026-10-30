@@ -168,3 +168,10 @@ Monty, both CLI adapter, and resolver paths echo canaries and prove redaction, p
 delivery, and absence of a non-allowlisted daemon secret. Resolution performs
 file I/O off the async hot path, holds no store connection or synchronous lock
 across await, and calls no `std::env::set_var` or `std::env::remove_var`.
+
+The implemented registry builder uses `register(name, handler)`,
+`with_sc_compose(ScComposeHostConfig)`, and `with_atm(AtmHostConfig)`, each
+returning `Result<MontyHostRegistry, CronError>`. The generated development
+example and custom closure setup are in [monty-generated-example.md](monty-generated-example.md).
+The b-16 child environment is explicitly empty; the resolved-snapshot text
+above is the b-17 successor contract.

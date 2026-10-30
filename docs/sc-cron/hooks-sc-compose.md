@@ -107,3 +107,10 @@ separate. Test executable fixtures verify non-render compose argv, ATM argv,
 nonzero results, missing programs, deadlines, and capture caps without relying
 on live external services. Historical PyO3 renderer comparisons are test-only
 measurements and do not authorize production tool-crate dependencies.
+
+The implemented registry builder uses `register(name, handler)`,
+`with_sc_compose(ScComposeHostConfig)`, and `with_atm(AtmHostConfig)`, each
+returning `Result<MontyHostRegistry, CronError>`. The generated development
+example and custom closure setup are in [monty-generated-example.md](monty-generated-example.md).
+The b-16 child environment is explicitly empty; the resolved-snapshot text
+above is the b-17 successor contract.

@@ -13,6 +13,8 @@ default = []
 default = ["general-db"]
 {% endif %}
 general-db = []
+cron = ["dep:sc-cron"]
+monty = ["cron", "sc-cron/monty"]
 
 [dependencies]
 api-types = { path = "../api-types", features = ["schema"] }
@@ -20,6 +22,8 @@ service = { path = "../service" }
 clap.workspace = true
 sc-command = { workspace = true, features = ["server"] }
 sc-config.workspace = true
+sc-cron = { workspace = true, optional = true }
+sc-observability-types.workspace = true
 sc-observability.workspace = true
 sc-runtime.workspace = true
 sc-transport.workspace = true

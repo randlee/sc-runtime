@@ -238,3 +238,10 @@ A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule
 ## What this crate is not
 
 It does not open Postgres, call beads, or ship an HTTP, MCP, or CLI API. The consumer may add that API and have it insert rows. beads-cache's hook calls beads. Another consumer's hook is the sync method on its adaptor.
+
+The implemented registry builder uses `register(name, handler)`,
+`with_sc_compose(ScComposeHostConfig)`, and `with_atm(AtmHostConfig)`, each
+returning `Result<MontyHostRegistry, CronError>`. The generated development
+example and custom closure setup are in [monty-generated-example.md](monty-generated-example.md).
+The b-16 child environment is explicitly empty; the resolved-snapshot text
+above is the b-17 successor contract.

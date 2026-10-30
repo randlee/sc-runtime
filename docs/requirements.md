@@ -4443,3 +4443,10 @@ test daemon.
 6. Inspection of this repository's tests and of `template/` finds no test
    that spawns the generated `cli` binary other than the isolated-machine
    tests of obligation 2.
+
+The production tool-crate exclusion is enforced across the five release crates
+by the `production-tool-boundary` lint companion in `sc-lint.toml`: package
+identity checks cover normal/build, renamed and target-specific dependencies,
+production Rust imports, and Cargo normal/build transitive trees for supported
+production features. Dev-only fixtures remain permitted. The Monty registry
+and optional adapters are documented in [the generated example](sc-cron/monty-generated-example.md).

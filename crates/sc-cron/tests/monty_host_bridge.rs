@@ -283,3 +283,27 @@ fn registry_order_is_irrelevant_and_handler_trait_is_object_safe() {
         .expect("z");
     assert_eq!(a.names().collect::<Vec<_>>(), b.names().collect::<Vec<_>>());
 }
+
+#[cfg(unix)]
+#[tokio::test]
+async fn checked_generated_example_uses_both_opt_in_adapters() {
+    let (_dir, program) = executable("exit 0");
+    let registry = compose(&program)
+        .with_atm(AtmHostConfig::new(&program).expect("ATM config"))
+        .expect("both adapters");
+    let mut fixture = Fixture::new();
+    fixture.scheduler = fixture.scheduler.with_monty_hosts(registry);
+    let source = include_str!("../../../template/examples/monty/cron.py");
+    fixture.start(ScheduleSpec::with_hook(
+        "generated-example", "* * * * *", BUDGET,
+        json!({"compose_args": ["--root", "/application/templates", "--mode", "file", "--file", "note.j2"]}),
+        HookTarget::monty(source).expect("checked example source"),
+    ).expect("schedule"));
+    fixture.clock.advance(chrono::Duration::seconds(60));
+    let runs = tokio::time::timeout(common::WAIT, fixture.scheduler.run_due(idle_job()))
+        .await
+        .expect("bounded example")
+        .expect("run example");
+    assert_eq!(runs.len(), 1);
+    assert_eq!(runs[0].outcome, RunOutcome::Ok);
+}

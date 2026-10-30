@@ -2844,3 +2844,10 @@ those edges, because the analyzer will not.
 a-2, a-3, a-4, and a-5 read this record before writing a manifest. Exit 0 on
 a single crate needs a `[workspace]` with `[workspace.package].version`. A
 tree with no `[workspace]` exits 3.
+
+The production tool-crate exclusion is enforced across the five release crates
+by the `production-tool-boundary` lint companion in `sc-lint.toml`: package
+identity checks cover normal/build, renamed and target-specific dependencies,
+production Rust imports, and Cargo normal/build transitive trees for supported
+production features. Dev-only fixtures remain permitted. The Monty registry
+and optional adapters are documented in [the generated example](sc-cron/monty-generated-example.md).

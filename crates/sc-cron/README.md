@@ -108,9 +108,18 @@ Runtime notes:
 | Feature | Enables |
 |---|---|
 | `test-utils` | `ManualClock` (a deterministic clock whose parks tell a test the worker has settled) and `SeqJitter` (a scripted jitter source) |
-| `monty` | Trusted in-process Monty source hooks (`HookTarget::Monty`); requires **Rust 1.96.1** to build. Feeds run on the blocking pool in wall time. `render_template` spawns the embedder's compose program (default basename `sc-compose` on `PATH`). |
+| `monty` | Trusted in-process source hooks and empty-default application host registry; requires Rust 1.96.1. |
 
-With feature `monty`, set the compose program with `Scheduler::with_monty_host(MontyHostConfig::new(...)?)`. The default is `sc-compose` on `PATH` (like `PythonHook`'s default `python3`). Hook source cannot override it. Use a basename for `PATH` lookup or an absolute path from your configuration. A missing program records `RunOutcome::Failed` with `COMPOSE_NOT_FOUND`; use `RunOutcome::failure_parts()` to read the code.
+Build a `MontyHostRegistry` with `.register("jev_call", handler)?` for custom
+JSON-shaped callbacks. Install it with `Scheduler::with_monty_hosts(registry)`.
+Register optional `sc_compose_run` or `atm_run` with `.with_sc_compose(config)?`
+or `.with_atm(config)?`; `ScComposeHostConfig` and `AtmHostConfig` choose the
+executable and cwd. Both forward any command and argv without a shell, clear
+the child environment, enforce row deadlines/group cleanup and cap each stream.
+Completed nonzero exits are returned to the script. No CLI is required by an
+empty registry or a custom application handler. `render_template` is not a
+product API. See [the generated example](../../docs/sc-cron/monty-generated-example.md)
+for API, result/error shapes, development generation, and in-process limits.
 
 ## Links
 
