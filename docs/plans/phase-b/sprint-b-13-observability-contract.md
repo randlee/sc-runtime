@@ -42,7 +42,12 @@ adrs:
   - ADR-RUN-0013
   - ADR-RUN-0303
   - ADR-CMD-0001
+  - ADR-CMD-0002
+  - ADR-CMD-0003
   - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
+  - ADR-RT-0004
 owned_paths:
   - Cargo.toml
   - Cargo.lock

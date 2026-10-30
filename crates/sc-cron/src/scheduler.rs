@@ -294,15 +294,17 @@ where
         jitter: Arc<J>,
         logger: SharedCanonicalLog,
     ) -> Self {
-        crate::emit_event(
-            &logger,
+        if let Some(event) = crate::component_event(
+            logger.service_name().clone(),
             "cron.scheduler",
             "logger.attached",
             Level::Info,
             "success",
             None,
             serde_json::Map::new(),
-        );
+        ) {
+            let _ = logger.emit(event);
+        }
         #[cfg(feature = "monty")]
         let monty_host = crate::MontyHostConfig::default();
         Self {
@@ -901,8 +903,8 @@ impl WorkerHandle {
             return true;
         }
         if self.feeds.load(Ordering::Acquire) == 0 {
-            crate::emit_event(
-                &self.logger,
+            if let Some(event) = crate::component_event(
+                self.logger.service_name().clone(),
                 "cron.scheduler",
                 "shutdown.worker_timeout",
                 Level::Error,
@@ -912,13 +914,15 @@ impl WorkerHandle {
                     .as_object()
                     .cloned()
                     .unwrap_or_default(),
-            );
+            ) {
+                let _ = self.logger.emit(event);
+            }
             task.abort();
             let _ = task.await;
             return false;
         }
-        crate::emit_event(
-            &self.logger,
+        if let Some(event) = crate::component_event(
+            self.logger.service_name().clone(),
             "cron.scheduler",
             "shutdown.deadline_exceeded",
             Level::Warn,
@@ -929,7 +933,9 @@ impl WorkerHandle {
             .as_object()
             .cloned()
             .unwrap_or_default(),
-        );
+        ) {
+            let _ = self.logger.emit(event);
+        }
         let _ = task.await;
         false
     }

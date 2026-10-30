@@ -74,8 +74,8 @@ impl SystemJitter {
                 &default
             }
         };
-        crate::emit_event(
-            logger,
+        if let Some(event) = crate::component_event(
+            logger.service_name().clone(),
             "cron.jitter",
             "source.unavailable",
             sc_observability_types::Level::Warn,
@@ -85,7 +85,9 @@ impl SystemJitter {
                 .as_object()
                 .cloned()
                 .unwrap_or_default(),
-        );
+        ) {
+            let _ = logger.emit(event);
+        }
     }
 }
 

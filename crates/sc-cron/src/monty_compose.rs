@@ -191,8 +191,8 @@ fn join_reader(
             drained
         }
         Err(mpsc::RecvTimeoutError::Timeout) => {
-            crate::emit_event(
-                logger,
+            if let Some(event) = crate::component_event(
+                logger.service_name().clone(),
                 "cron.monty.compose",
                 "pipe.drain_timeout",
                 sc_observability_types::Level::Warn,
@@ -202,7 +202,9 @@ fn join_reader(
                     .as_object()
                     .cloned()
                     .unwrap_or_default(),
-            );
+            ) {
+                let _ = logger.emit(event);
+            }
             Err(std::io::Error::other(
                 "compose pipe stayed open after the child exited",
             ))

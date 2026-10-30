@@ -163,6 +163,42 @@ async fn failed_kill_and_unreaped_child_emit_exact_rows_with_unchanged_result() 
     assert_eq!(reject.attempts(), 2);
 }
 
+#[tokio::test]
+async fn reap_timer_start_failure_returns_without_waiting_or_claiming_elapsed_deadline() {
+    for rejecting in [false, true] {
+        let recording = recorder();
+        let rejected = Arc::new(RejectingCanonicalLog::new(
+            ServiceName::new("reject").unwrap(),
+        ));
+        let logger: SharedCanonicalLog = if rejecting {
+            rejected.clone()
+        } else {
+            recording.clone()
+        };
+        let result = tokio::time::timeout(
+            Duration::from_secs(1),
+            sc_cron::process::testing::failed_reap_timer(logger),
+        )
+        .await
+        .expect("timer-start failure must not await an unreapable child");
+        let error = result.unwrap_err();
+        assert_eq!(error.code(), "HOOK_FAILED");
+        assert!(error.to_string().contains("reap timer could not start"));
+        if rejecting {
+            assert_eq!(rejected.attempts(), 1);
+        } else {
+            let events = recording.events();
+            assert_eq!(events.len(), 1);
+            assert_eq!(events[0].action.as_str(), "child.kill_failed");
+            assert!(
+                !events
+                    .iter()
+                    .any(|event| event.action.as_str() == "child.reap_timeout")
+            );
+        }
+    }
+}
+
 struct ObservedLog {
     inner: SharedCanonicalLog,
     emitted: tokio::sync::Notify,
@@ -238,35 +274,169 @@ async fn each_shutdown_branch_emits_once_and_returns_false() {
 }
 
 #[cfg(all(feature = "monty", unix))]
+struct PipeHolder {
+    child: std::process::Child,
+    release: Arc<std::sync::Mutex<std::process::ChildStdin>>,
+    cancel: std::sync::mpsc::Sender<()>,
+    watchdog: Option<std::thread::JoinHandle<()>>,
+}
+
+#[cfg(all(feature = "monty", unix))]
+fn kill_holder_group(pid: u32) {
+    let _ = std::process::Command::new("/bin/kill")
+        .args(["-KILL", "--", &format!("-{pid}")])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status();
+}
+
+#[cfg(all(feature = "monty", unix))]
+impl PipeHolder {
+    fn start(socket: &std::path::Path) -> Self {
+        use std::io::BufRead;
+        use std::os::unix::process::CommandExt;
+        use std::process::{Command, Stdio};
+
+        // The test owns this child directly, so every path can kill and reap
+        // it. The production compose child transfers its stdout descriptor
+        // only after the listener is ready, then waits for a holder ACK.
+        let script = r#"import array, os, socket, sys
+listener = socket.socket(socket.AF_UNIX)
+listener.bind(sys.argv[1])
+listener.listen(1)
+print('ready', flush=True)
+connection, _ = listener.accept()
+_, ancillary, _, _ = connection.recvmsg(1, socket.CMSG_SPACE(array.array('i').itemsize))
+fds = array.array('i')
+fds.frombytes(ancillary[0][2][:fds.itemsize])
+connection.sendall(b'held')
+sys.stdin.buffer.read(1)
+for fd in fds:
+    os.close(fd)
+"#;
+        let mut child = Command::new("python3")
+            .args(["-c", script])
+            .arg(socket)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::inherit())
+            .process_group(0)
+            .spawn()
+            .unwrap();
+        let pid = child.id();
+        let (cancel, cancelled) = std::sync::mpsc::channel();
+        let watchdog = std::thread::spawn(move || {
+            if cancelled.recv_timeout(Duration::from_secs(25)).is_err() {
+                kill_holder_group(pid);
+            }
+        });
+        let release = Arc::new(std::sync::Mutex::new(child.stdin.take().unwrap()));
+        let stdout = child.stdout.take().unwrap();
+        let guard = Self {
+            child,
+            release,
+            cancel,
+            watchdog: Some(watchdog),
+        };
+        let (ready, readiness) = std::sync::mpsc::channel();
+        let reader = std::thread::spawn(move || {
+            let mut line = String::new();
+            let result = std::io::BufReader::new(stdout).read_line(&mut line);
+            let _ = ready.send((result, line));
+        });
+        let (result, line) = readiness.recv_timeout(Duration::from_secs(5)).unwrap();
+        result.unwrap();
+        assert_eq!(line.trim(), "ready");
+        reader.join().unwrap();
+        guard
+    }
+}
+
+#[cfg(all(feature = "monty", unix))]
+impl Drop for PipeHolder {
+    fn drop(&mut self) {
+        // Unconditional cleanup also handles panic, failed assertions, expiry,
+        // and failure before the pipe deadline can be observed.
+        let _ = self.cancel.send(());
+        kill_holder_group(self.child.id());
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+        if let Some(watchdog) = self.watchdog.take() {
+            let _ = watchdog.join();
+        }
+    }
+}
+
+#[cfg(all(feature = "monty", unix))]
+struct PipeReleaseLog {
+    inner: SharedCanonicalLog,
+    release: Arc<std::sync::Mutex<std::process::ChildStdin>>,
+    deadlines: std::sync::atomic::AtomicUsize,
+}
+
+#[cfg(all(feature = "monty", unix))]
+impl CanonicalLog for PipeReleaseLog {
+    fn service_name(&self) -> &ServiceName {
+        self.inner.service_name()
+    }
+
+    fn emit(&self, event: LogEvent) -> Result<(), sc_observability_types::v2::EventError> {
+        use std::io::Write;
+        let deadline = event.target.as_str() == "cron.monty.compose"
+            && event.action.as_str() == "pipe.drain_timeout";
+        let result = self.inner.emit(event);
+        if deadline {
+            self.deadlines
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            // Release even when the inner logger rejects the event.
+            let _ = self.release.lock().unwrap().write_all(b"x");
+        }
+        result
+    }
+}
+
+#[cfg(all(feature = "monty", unix))]
 #[tokio::test]
 async fn production_monty_pipe_deadline_uses_injected_logger_and_preserves_failure() {
     use sc_cron::{HookTarget, ManualClock, MontyHostConfig, RunOutcome};
     use std::os::unix::fs::PermissionsExt;
 
-    let root = tempfile::tempdir().unwrap();
-    let program = root.path().join("compose-pipe-holder.py");
-    // The leader exits, while one bounded descendant holds stdout past the
-    // existing pipe-drain bound. No global environment or PATH is modified.
-    std::fs::write(&program, "#!/usr/bin/env python3\nimport subprocess, sys\nsubprocess.Popen([sys.executable, '-c', 'import time; time.sleep(6)'], stdout=sys.stdout, stderr=subprocess.DEVNULL)\nprint('rendered', flush=True)\n").unwrap();
-    std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o700)).unwrap();
     let source = "def cron_stop(hook):\n    return {'action': 'continue'}\ndef cron_tick(hook):\n    render_template('x', {})\n";
-
     for rejecting in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let socket = root.path().join("pipe.sock");
+        let holder = PipeHolder::start(&socket);
+        let program = root.path().join("compose-pipe-holder.py");
+        let socket_literal = serde_json::to_string(socket.to_str().unwrap()).unwrap();
+        std::fs::write(&program, format!(r#"#!/usr/bin/env python3
+import array, socket, sys
+connection = socket.socket(socket.AF_UNIX)
+connection.connect({socket_literal})
+connection.sendmsg([b'x'], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array('i', [sys.stdout.fileno()]))])
+assert connection.recv(4) == b'held'
+print('rendered', flush=True)
+"#)).unwrap();
+        std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o700)).unwrap();
         let recording = recorder();
         let rejected = Arc::new(RejectingCanonicalLog::new(
             ServiceName::new("reject").unwrap(),
         ));
-        let logger: SharedCanonicalLog = if rejecting {
+        let inner: SharedCanonicalLog = if rejecting {
             rejected.clone()
         } else {
             recording.clone()
         };
+        let observed = Arc::new(PipeReleaseLog {
+            inner,
+            release: holder.release.clone(),
+            deadlines: std::sync::atomic::AtomicUsize::new(0),
+        });
         let clock = Arc::new(ManualClock::new("2026-10-19T00:00:00Z".parse().unwrap()));
         let scheduler = Scheduler::new_with_logger(
             Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).unwrap()),
             clock.clone(),
             Arc::new(SeqJitter::new([])),
-            logger,
+            observed.clone(),
         )
         .with_monty_host(MontyHostConfig::new(&program).unwrap());
         scheduler
@@ -292,13 +462,17 @@ async fn production_monty_pipe_deadline_uses_injected_logger_and_preserves_failu
                 sc_cron::StopDecision::Continue
             }
         }
-        let runs = tokio::time::timeout(Duration::from_secs(15), scheduler.run_due(Arc::new(Idle)))
+        let runs = tokio::time::timeout(Duration::from_secs(20), scheduler.run_due(Arc::new(Idle)))
             .await
             .unwrap()
             .unwrap();
         assert_eq!(runs.len(), 1);
         assert!(
             matches!(&runs[0].outcome, RunOutcome::Failed(message) if message.contains("COMPOSE_NOT_RUNNABLE"))
+        );
+        assert_eq!(
+            observed.deadlines.load(std::sync::atomic::Ordering::SeqCst),
+            1
         );
         if rejecting {
             assert_eq!(rejected.attempts(), 2); // attachment and pipe deadline
