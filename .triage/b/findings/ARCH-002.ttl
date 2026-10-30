@@ -1,5 +1,5 @@
 @prefix qa: <urn:sc-runtime:qa:> .
-"ARCH-002" qa:sprint "b-13" ;
+<urn:sc-runtime:qa:b-13:ARCH-002> qa:sprint "b-13" ;
   qa:severity "BLOCKING" ;
   qa:reviewer "arch-qa" ;
   qa:location "crates/sc-cron/src/lib.rs:178" ;

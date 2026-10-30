@@ -1,5 +1,5 @@
 @prefix qa: <urn:sc-runtime:qa:> .
-"FTQ-001" qa:sprint "b-13" ;
+<urn:sc-runtime:qa:b-13:FTQ-001> qa:sprint "b-13" ;
   qa:severity "important" ;
   qa:reviewer "flaky-test-qa" ;
   qa:location "crates/sc-cron/tests/observability_components.rs:250" ;
