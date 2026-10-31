@@ -150,8 +150,6 @@ pub fn is_identifier(text: &str) -> bool {
 impl std::fmt::Debug for PythonHook {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("PythonHook")
-            .field("program", &self.program)
-            .field("module", &self.module)
             .field("env", &self.env)
             .finish_non_exhaustive()
     }
@@ -200,11 +198,19 @@ impl PythonHook {
             cwd.join(module)
         };
         Ok(Self {
-            program: PathBuf::from("python3"),
+            program: crate::process::resolve_program(Path::new(if cfg!(windows) {
+                "python"
+            } else {
+                "python3"
+            }))
+            .unwrap_or_else(|_| PathBuf::from(if cfg!(windows) { "python" } else { "python3" })),
             logger,
             correlation: None,
             module,
-            env: ChildEnv::Inherit,
+            env: ChildEnv::Only {
+                keep: vec![],
+                set: vec![],
+            },
         })
     }
 
@@ -219,14 +225,15 @@ impl PythonHook {
     /// show a start failure.
     #[must_use]
     pub fn with_program(mut self, program: impl Into<PathBuf>) -> Self {
-        self.program = program.into();
+        let program = program.into();
+        self.program = crate::process::resolve_program(&program).unwrap_or(program);
         self
     }
 
     /// The same hook, started with `env` (REQ-CRON-0018).
     ///
-    /// The default is [`ChildEnv::Inherit`]. The child sees the caller's
-    /// environment unless the caller sets [`ChildEnv::Only`].
+    /// The default is empty [`ChildEnv::Only`]. A trusted direct caller may
+    /// explicitly choose [`ChildEnv::Inherit`].
     ///
     /// # Examples
     ///
@@ -354,7 +361,7 @@ pub struct HookCall<'a> {
 }
 
 /// What a hook did.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct HookOutput {
     /// How it ended.
     pub status: HookStatus,
@@ -366,6 +373,18 @@ pub struct HookOutput {
     pub stdout_truncated: bool,
     /// Whether stderr had more than was kept.
     pub stderr_truncated: bool,
+}
+
+impl std::fmt::Debug for HookOutput {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("HookOutput")
+            .field("status", &self.status)
+            .field("stdout_bytes", &self.stdout.len())
+            .field("stderr_bytes", &self.stderr.len())
+            .field("stdout_truncated", &self.stdout_truncated)
+            .field("stderr_truncated", &self.stderr_truncated)
+            .finish()
+    }
 }
 
 impl HookOutput {
@@ -395,17 +414,31 @@ impl HookOutput {
     ///
     /// The outcome of a stop check that did not decide, as above.
     pub fn stop_decision(&self) -> Result<StopDecision, RunOutcome> {
+        self.stop_decision_redacted(&crate::environment::EnvironmentSnapshot::default())
+    }
+
+    fn stop_decision_redacted(
+        &self,
+        environment: &crate::environment::EnvironmentSnapshot,
+    ) -> Result<StopDecision, RunOutcome> {
         if self.status == HookStatus::TimedOut {
             return Err(RunOutcome::TimedOut);
         }
-        if let Some(failure) = self.failure() {
+        if let Some(failure) = self.failure_redacted(environment) {
             return Err(RunOutcome::Failed(format!("stop check: {failure}")));
         }
-        parse_reply(self).map_err(|why| {
-            RunOutcome::Failed(format!(
-                "stop check: {CODE_HOST_REPLY}: {why}; {STOP_REPLY_RECOVERY}"
-            ))
-        })
+        parse_reply(self)
+            .map(|decision| match decision {
+                StopDecision::Continue => StopDecision::Continue,
+                StopDecision::Disable(reason) => StopDecision::Disable(environment.redact(&reason)),
+                StopDecision::Delete(reason) => StopDecision::Delete(environment.redact(&reason)),
+            })
+            .map_err(|why| {
+                let why = environment.redact(&why);
+                RunOutcome::Failed(format!(
+                    "stop check: {CODE_HOST_REPLY}: {why}; {STOP_REPLY_RECOVERY}"
+                ))
+            })
     }
 
     /// The outcome of this output of a `cron.tick` hook (REQ-CRON-0013, REQ-CRON-0018).
@@ -415,18 +448,30 @@ impl HookOutput {
     /// the start of its stderr.
     #[must_use]
     pub fn run_outcome(&self) -> RunOutcome {
+        self.run_outcome_redacted(&crate::environment::EnvironmentSnapshot::default())
+    }
+
+    fn run_outcome_redacted(
+        &self,
+        environment: &crate::environment::EnvironmentSnapshot,
+    ) -> RunOutcome {
         if self.status == HookStatus::TimedOut {
             return RunOutcome::TimedOut;
         }
-        self.failure().map_or(RunOutcome::Ok, RunOutcome::Failed)
+        self.failure_redacted(environment)
+            .map_or(RunOutcome::Ok, RunOutcome::Failed)
     }
 
     /// Describes how the hook failed, or `None` if it exited 0.
-    fn failure(&self) -> Option<String> {
+    fn failure_redacted(
+        &self,
+        environment: &crate::environment::EnvironmentSnapshot,
+    ) -> Option<String> {
         match &self.status {
             HookStatus::Exited(status) if status.success() => None,
             HookStatus::Exited(status) => {
-                let shown = stderr_in_message(&self.stderr);
+                let redacted = environment.redact(&self.stderr);
+                let shown = stderr_in_message(&redacted);
                 Some(if shown.is_empty() {
                     format!("hook exited with {status}")
                 } else {
@@ -491,11 +536,21 @@ pub(crate) async fn stop_step<C: Clock + ?Sized>(
     hook: &PythonHook,
     clock: &C,
     call: &HookCall<'_>,
+    environment: &crate::environment::EnvironmentSnapshot,
 ) -> Step {
-    stop_outcome(hook.invoke(clock, call).await)
+    match hook.invoke(clock, call).await {
+        Ok(output) => match output.stop_decision_redacted(environment) {
+            Ok(StopDecision::Continue) => Step::Run,
+            Ok(StopDecision::Disable(reason)) => Step::Disable(reason),
+            Ok(StopDecision::Delete(reason)) => Step::Delete(reason),
+            Err(outcome) => Step::Skip(outcome),
+        },
+        Err(_) => Step::Skip(RunOutcome::Failed("stop check: HOOK_FAILED: Python hook could not start; Check interpreter and module configuration.".into())),
+    }
 }
 
 /// What the `cron.stop` hook's result means.
+#[cfg(test)]
 fn stop_outcome(result: Result<HookOutput, CronError>) -> Step {
     let output = match result {
         Ok(output) => output,
@@ -519,11 +574,19 @@ pub(crate) async fn tick_outcome<C: Clock + ?Sized>(
     hook: &PythonHook,
     clock: &C,
     call: &HookCall<'_>,
+    environment: &crate::environment::EnvironmentSnapshot,
 ) -> RunOutcome {
-    tick_result(hook.invoke(clock, call).await)
+    match hook.invoke(clock, call).await {
+        Ok(output) => output.run_outcome_redacted(environment),
+        Err(_) => RunOutcome::Failed(
+            "HOOK_FAILED: Python hook could not start; Check interpreter and module configuration."
+                .into(),
+        ),
+    }
 }
 
 /// What the `cron.tick` hook's result means.
+#[cfg(test)]
 fn tick_result(result: Result<HookOutput, CronError>) -> RunOutcome {
     match result {
         Err(error) => RunOutcome::Failed(error.recorded()),

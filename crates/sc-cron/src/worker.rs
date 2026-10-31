@@ -205,6 +205,7 @@ pub(crate) struct Worker<S, C> {
     job: Arc<dyn Job>,
     policy: MissedTickPolicy,
     coord: Arc<RunCoord>,
+    environment: Arc<crate::HookEnvironmentHost>,
     #[cfg(feature = "monty")]
     hosts: Arc<crate::MontyHostRegistry>,
     shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
@@ -283,12 +284,16 @@ pub(crate) fn resolve(
 
 /// One run of `target` for `schedule`: the stop check, then the run, under
 /// `deadline` on `clock`'s monotonic timeline (REQ-CRON-0005, REQ-CRON-0013).
-pub(crate) async fn run_target<C: Clock + ?Sized>(
+pub(crate) async fn run_target_with_environment<C: Clock + ?Sized>(
     target: ResolvedTarget,
     clock: Arc<C>,
     schedule: &Schedule,
     deadline: Instant,
+    host: &crate::HookEnvironmentHost,
 ) -> Report {
+    if let Err(error) = schedule.spec.validate_environment() {
+        return Report::Ran(RunOutcome::Failed(error.recorded()));
+    }
     let payload = &schedule.spec.payload;
     match target {
         ResolvedTarget::Rust(job) => match job.should_stop(payload).await {
@@ -297,6 +302,11 @@ pub(crate) async fn run_target<C: Clock + ?Sized>(
             StopDecision::Delete(reason) => Report::Delete(reason),
         },
         ResolvedTarget::Python(hook) => {
+            let environment = match host.snapshot(clock.as_ref(), schedule, deadline).await {
+                Ok(environment) => environment,
+                Err(outcome) => return Report::Ran(outcome),
+            };
+            let hook = hook.with_env(environment.child_env());
             // resolve installed RunCoord's identical logger Arc. The resolved
             // hook carries it through this future into supervise_with_logger.
             let call = |event| HookCall {
@@ -306,16 +316,33 @@ pub(crate) async fn run_target<C: Clock + ?Sized>(
                 timeout: schedule.spec.timeout,
                 deadline,
             };
-            match stop_step(&hook, clock.as_ref(), &call(HookEvent::Stop)).await {
-                Step::Run => {
-                    Report::Ran(tick_outcome(&hook, clock.as_ref(), &call(HookEvent::Tick)).await)
-                }
+            match stop_step(&hook, clock.as_ref(), &call(HookEvent::Stop), &environment).await {
+                Step::Run => Report::Ran(
+                    tick_outcome(&hook, clock.as_ref(), &call(HookEvent::Tick), &environment).await,
+                ),
                 Step::Skip(outcome) => Report::Ran(outcome),
                 Step::Disable(reason) => Report::Disable(reason),
                 Step::Delete(reason) => Report::Delete(reason),
             }
         }
     }
+}
+
+#[cfg(test)]
+pub(crate) async fn run_target<C: Clock + ?Sized>(
+    target: ResolvedTarget,
+    clock: Arc<C>,
+    schedule: &Schedule,
+    deadline: Instant,
+) -> Report {
+    run_target_with_environment(
+        target,
+        clock,
+        schedule,
+        deadline,
+        &crate::HookEnvironmentHost::new(),
+    )
+    .await
 }
 
 impl<S, C> Worker<S, C>
@@ -340,6 +367,7 @@ where
             job,
             policy,
             coord,
+            environment: Arc::new(crate::HookEnvironmentHost::new()),
             #[cfg(feature = "monty")]
             hosts,
             shutdown,
@@ -354,6 +382,14 @@ where
                 .unwrap_or(chrono::Duration::MAX),
             poll_due: None,
         }
+    }
+
+    pub(crate) fn with_hook_environment(
+        mut self,
+        environment: Arc<crate::HookEnvironmentHost>,
+    ) -> Self {
+        self.environment = environment;
+        self
     }
 
     /// Returns whether shutdown was requested, without waiting.
@@ -804,7 +840,11 @@ where
             Ok(target) => {
                 let clock = Arc::clone(&self.clock);
                 let schedule = slot.schedule.clone();
-                tokio::spawn(async move { run_target(target, clock, &schedule, deadline).await })
+                let environment = Arc::clone(&self.environment);
+                tokio::spawn(async move {
+                    run_target_with_environment(target, clock, &schedule, deadline, &environment)
+                        .await
+                })
             }
             Err(outcome) => tokio::spawn(async move { Report::Ran(outcome) }),
         };
@@ -852,7 +892,11 @@ where
             }
             Ok(Report::Ran(outcome)) => self.record(&schedule, outcome, correlation.clone()).await,
             Err(error) if error.is_panic() => {
-                let message = panic_message(error);
+                let message = if matches!(schedule.spec.hook, HookTarget::Rust) {
+                    panic_message(error)
+                } else {
+                    "hook or environment provider task panicked".to_owned()
+                };
                 if let Some(mut event) = event_record(
                     self.coord.logger.service_name().clone(),
                     Event::JobJoinFailed,
@@ -1080,53 +1124,4 @@ fn detail_event(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn reload_retry_doubles_per_failure_then_caps_at_one_minute() {
-        let now = DateTime::<Utc>::UNIX_EPOCH;
-        let mut retry = ReloadRetry::default();
-        let mut delays = Vec::new();
-        for _ in 0..9 {
-            retry.failed(now);
-            delays.push(retry.due.map(|due| (due - now).num_seconds()));
-        }
-        let expected = [1, 2, 4, 8, 16, 32, 60, 60, 60].map(Some);
-        assert_eq!(delays, expected);
-        assert!(!retry.is_due(now));
-        assert!(retry.is_due(now + chrono::Duration::seconds(60)));
-    }
-
-    #[test]
-    fn reload_retry_delay_never_overflows() {
-        for failures in (62..=64).chain([u32::MAX - 1, u32::MAX]) {
-            assert_eq!(
-                ReloadRetry::delay(failures),
-                chrono::Duration::seconds(60),
-                "{failures}"
-            );
-        }
-        let now = DateTime::<Utc>::UNIX_EPOCH;
-        let mut retry = ReloadRetry {
-            failures: u32::MAX,
-            due: None,
-        };
-        retry.failed(now);
-        assert_eq!(retry.failures, u32::MAX);
-        assert_eq!(retry.due, Some(now + chrono::Duration::seconds(60)));
-    }
-
-    #[test]
-    fn reload_retry_success_clears_the_backoff() {
-        let now = DateTime::<Utc>::UNIX_EPOCH;
-        let mut retry = ReloadRetry::default();
-        retry.failed(now);
-        retry.failed(now);
-        retry.succeeded();
-        assert!(retry.due.is_none());
-        assert!(!retry.is_due(now + chrono::Duration::days(1)));
-        retry.failed(now);
-        assert_eq!(retry.due, Some(now + chrono::Duration::seconds(1)));
-    }
-}
+mod tests;

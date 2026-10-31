@@ -5,13 +5,9 @@
 //! standalone default; a caller may supply any other [`ScheduleStore`]. On open it sets the
 //! busy timeout first, then WAL, then checks the schema version in
 //! `PRAGMA user_version`. A fresh file (version 0, no tables) gets the
-//! schema and version [`SCHEMA_VERSION`]. A file at version 1, which lacks the
-//! `enabled` column, gains it in place with every schedule enabled
-//! (REQ-CRON-0014), then gains the hook columns. A file at version 2 gains
-//! the hook columns, defaulting every row to a Rust hook. A file at version 3
-//! gains `hook_source` and the three-way `hook_kind` check in a rebuild step.
-//! Any other `user_version`, or a file that already holds unrelated tables, is
-//! refused with [`StoreErrorKind::SchemaMismatch`].
+//! complete first-release schema and version [`SCHEMA_VERSION`]. Existing
+//! databases must match its semantic columns, defaults, constraints and indexes.
+//! Incompatible development databases are rejected without migration or data loss.
 //!
 //! `create` runs as one immediate transaction, so the active-name check, the
 //! embedder row-limit check, and the write cannot interleave with another
@@ -41,56 +37,15 @@ use crate::{
     ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp,
 };
 
+use crate::MAX_ENV_DOCUMENT_BYTES;
+
 const TABLE: &str = "sc_cron_schedule";
 
-/// The `PRAGMA user_version` this code writes. Version 1, the schema before
-/// the `enabled` column, and version 2, the schema before the hook columns,
-/// are upgraded in place on open.
-pub const SCHEMA_VERSION: i64 = 4;
+/// Complete first-release schema. Unreleased development schemas are not migrated.
+pub const SCHEMA_VERSION: i64 = 1;
 
-/// Adds the `enabled` column to a version 1 table; every row stays enabled.
-const ADD_ENABLED: &str = "ALTER TABLE sc_cron_schedule
-    ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1))";
-
-/// Adds the hook columns. Existing rows are Rust hooks.
-const ADD_HOOK: &str = "ALTER TABLE sc_cron_schedule
-    ADD COLUMN hook_kind TEXT NOT NULL DEFAULT 'rust';
-ALTER TABLE sc_cron_schedule
-    ADD COLUMN hook_module TEXT NOT NULL DEFAULT ''";
-
-/// Rebuilds the v1-v3 table so SQLite enforces the expanded hook kind check.
-/// SQLite cannot add a CHECK constraint to the v3 `hook_kind` column in place.
-const REBUILD_HOOK_TABLE: &str = "ALTER TABLE sc_cron_schedule RENAME TO sc_cron_schedule_v3;
-CREATE TABLE sc_cron_schedule (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    generation   INTEGER NOT NULL CHECK (generation BETWEEN 1 AND 4294967295),
-    name         TEXT    NOT NULL UNIQUE CHECK (length(CAST(name AS BLOB)) BETWEEN 1 AND 128),
-    expr         TEXT    NOT NULL CHECK (length(CAST(expr AS BLOB)) <= 256),
-    timeout_ms   INTEGER NOT NULL CHECK (timeout_ms > 0),
-    jitter_ms    INTEGER NOT NULL CHECK (jitter_ms >= 0),
-    payload      TEXT    NOT NULL CHECK (length(CAST(payload AS BLOB)) <= 65536),
-    created_at   TEXT    NOT NULL,
-    next_run_at  TEXT,
-    last_run_at  TEXT,
-    last_outcome TEXT,
-    ended_at     TEXT,
-    stop_reason  TEXT,
-    enabled      INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
-    hook_kind    TEXT    NOT NULL DEFAULT 'rust' CHECK (hook_kind IN ('rust', 'python', 'monty')),
-    hook_module  TEXT    NOT NULL DEFAULT '',
-    hook_source  TEXT    NOT NULL DEFAULT '' CHECK (length(CAST(hook_source AS BLOB)) <= 65536),
-    CHECK ((ended_at IS NULL) = (next_run_at IS NOT NULL)),
-    CHECK ((ended_at IS NULL) = (stop_reason IS NULL))
-);
-INSERT INTO sc_cron_schedule
-    (id, generation, name, expr, timeout_ms, jitter_ms, payload, created_at,
-     next_run_at, last_run_at, last_outcome, ended_at, stop_reason, enabled,
-     hook_kind, hook_module, hook_source)
-SELECT id, generation, name, expr, timeout_ms, jitter_ms, payload, created_at,
-       next_run_at, last_run_at, last_outcome, ended_at, stop_reason, enabled,
-       hook_kind, hook_module, ''
-FROM sc_cron_schedule_v3;
-DROP TABLE sc_cron_schedule_v3";
+#[path = "sqlite_schema.rs"]
+mod schema_check;
 
 fn schema() -> String {
     format!(
@@ -115,6 +70,8 @@ fn schema() -> String {
     hook_module  TEXT    NOT NULL DEFAULT '',
     hook_source  TEXT    NOT NULL DEFAULT ''
                  CHECK (length(CAST(hook_source AS BLOB)) <= {MAX_HOOK_SOURCE_BYTES}),
+    hook_environment TEXT NOT NULL DEFAULT '{{\"dotenv\":[],\"variables\":{{}}}}'
+                 CHECK (length(CAST(hook_environment AS BLOB)) <= {MAX_ENV_DOCUMENT_BYTES}),
     CHECK ((ended_at IS NULL) = (next_run_at IS NOT NULL)),
     CHECK ((ended_at IS NULL) = (stop_reason IS NULL))
 );"
@@ -123,7 +80,7 @@ fn schema() -> String {
 
 const COLUMNS: &str = "id, generation, name, expr, timeout_ms, jitter_ms, payload, created_at, \
      next_run_at, last_run_at, last_outcome, ended_at, stop_reason, enabled, \
-     hook_kind, hook_module, hook_source";
+     hook_kind, hook_module, hook_source, hook_environment";
 
 /// How long a writer waits for another connection's lock on the same file.
 const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
@@ -327,40 +284,7 @@ fn init_schema(connection: &mut Connection) -> Result<(), CronError> {
                 .pragma_update(None, "user_version", SCHEMA_VERSION)
                 .map_err(|error| store_error("failed to set schema version", error))?;
         }
-        SCHEMA_VERSION => {}
-        1 => {
-            transaction
-                .execute_batch(ADD_ENABLED)
-                .map_err(|error| store_error("failed to add the enabled column", error))?;
-            transaction
-                .execute_batch(ADD_HOOK)
-                .map_err(|error| store_error("failed to add the hook columns", error))?;
-            transaction
-                .execute_batch(REBUILD_HOOK_TABLE)
-                .map_err(|error| store_error("failed to rebuild the hook table", error))?;
-            transaction
-                .pragma_update(None, "user_version", SCHEMA_VERSION)
-                .map_err(|error| store_error("failed to set schema version", error))?;
-        }
-        2 => {
-            transaction
-                .execute_batch(ADD_HOOK)
-                .map_err(|error| store_error("failed to add the hook columns", error))?;
-            transaction
-                .execute_batch(REBUILD_HOOK_TABLE)
-                .map_err(|error| store_error("failed to rebuild the hook table", error))?;
-            transaction
-                .pragma_update(None, "user_version", SCHEMA_VERSION)
-                .map_err(|error| store_error("failed to set schema version", error))?;
-        }
-        3 => {
-            transaction
-                .execute_batch(REBUILD_HOOK_TABLE)
-                .map_err(|error| store_error("failed to rebuild the hook table", error))?;
-            transaction
-                .pragma_update(None, "user_version", SCHEMA_VERSION)
-                .map_err(|error| store_error("failed to set schema version", error))?;
-        }
+        SCHEMA_VERSION => schema_check::validate(&transaction)?,
         other => {
             return Err(StoreError::new(
                 StoreErrorKind::SchemaMismatch,
@@ -716,11 +640,13 @@ struct Columns {
     hook_kind: String,
     hook_module: String,
     hook_source: String,
+    hook_environment: String,
 }
 
 impl Columns {
     fn new(schedule: &NewSchedule, created_at: Timestamp) -> Result<Self, CronError> {
         let spec = &schedule.spec;
+        spec.validate_environment()?;
         let (hook_kind, hook_module, hook_source) = spec.hook.stored();
         Ok(Self {
             expr: spec.expr.as_str().to_owned(),
@@ -732,6 +658,7 @@ impl Columns {
             hook_kind: hook_kind.to_owned(),
             hook_module: hook_module.to_owned(),
             hook_source: hook_source.to_owned(),
+            hook_environment: spec.environment.encode()?,
         })
     }
 
@@ -745,8 +672,8 @@ impl Columns {
             .execute(
                 "INSERT INTO sc_cron_schedule
                     (generation, name, expr, timeout_ms, jitter_ms, payload,
-                     created_at, next_run_at, enabled, hook_kind, hook_module, hook_source)
-                 VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+                     created_at, next_run_at, enabled, hook_kind, hook_module, hook_source, hook_environment)
+                 VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
                 params![
                     name,
                     self.expr,
@@ -759,6 +686,7 @@ impl Columns {
                     self.hook_kind,
                     self.hook_module,
                     self.hook_source,
+                    self.hook_environment,
                 ],
             )
             .map_err(|error| store_error(&format!("failed to insert {TABLE}"), error))?;
@@ -791,7 +719,7 @@ impl Columns {
                     jitter_ms = ?5, payload = ?6, created_at = ?7, next_run_at = ?8,
                     last_run_at = NULL, last_outcome = NULL, ended_at = NULL,
                     stop_reason = NULL, enabled = ?9, hook_kind = ?10, hook_module = ?11,
-                    hook_source = ?12
+                    hook_source = ?12, hook_environment = ?13
                  WHERE id = ?1",
                 params![
                     id,
@@ -806,6 +734,7 @@ impl Columns {
                     self.hook_kind,
                     self.hook_module,
                     self.hook_source,
+                    self.hook_environment,
                 ],
             )
             .map_err(|error| store_error(&format!("failed to restart {TABLE} id {id}"), error))?;
@@ -877,6 +806,7 @@ struct RawRow {
     hook_kind: String,
     hook_module: String,
     hook_source: String,
+    hook_environment: String,
 }
 
 impl RawRow {
@@ -899,6 +829,7 @@ impl RawRow {
             hook_kind: row.get(14)?,
             hook_module: row.get(15)?,
             hook_source: row.get(16)?,
+            hook_environment: row.get(17)?,
         })
     }
 
@@ -929,7 +860,7 @@ impl RawRow {
             })
             .transpose()?;
         let timeout = duration(self.timeout_ms, "timeout_ms")?;
-        Ok(Schedule {
+        let schedule = Schedule {
             id: ScheduleId::new(
                 u64::try_from(id).map_err(|_negative| corrupt("id is negative".into()))?,
             ),
@@ -942,6 +873,8 @@ impl RawRow {
                 expr: CronExpr::parse(&self.expr).map_err(|error| field("expr", error))?,
                 timeout: RunTimeout::new(timeout).map_err(|error| field("timeout_ms", error))?,
                 payload,
+                environment: crate::HookEnvironment::decode(&self.hook_environment)
+                    .map_err(|_| corrupt("invalid hook environment".into()))?,
                 hook: HookTarget::from_stored(
                     &self.hook_kind,
                     &self.hook_module,
@@ -961,7 +894,12 @@ impl RawRow {
                 1 => true,
                 other => return Err(corrupt(format!("enabled is {other}, not 0 or 1"))),
             },
-        })
+        };
+        schedule
+            .spec
+            .validate_environment()
+            .map_err(|_| corrupt("invalid hook environment pairing".into()))?;
+        Ok(schedule)
     }
 }
 

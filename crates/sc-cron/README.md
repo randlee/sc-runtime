@@ -41,8 +41,9 @@ logger contract.
   writes over a restarted schedule.
 - **Stores read no clock.** Every instant is a `Timestamp` argument.
   `SqliteScheduleStore` is the rusqlite implementation (SQLite bundled), on a
-  database file of its own (`PRAGMA user_version` = `SCHEMA_VERSION`, 4; a
-  version 1, 2, or 3 file is rebuilt to that schema when opened).
+  database file of its own (`PRAGMA user_version` = `SCHEMA_VERSION`, 1).
+  The complete first-release schema includes canonical `hook_environment`.
+  Incompatible development tables are rejected with recreate guidance.
   `list_active` skips a row that does not decode and emits the canonical
   `cron.store` / `row.corrupt` event, so other schedules keep running; `get`
   on that row still returns the `Corrupt` error. Observing the event requires
@@ -118,11 +119,32 @@ JSON-shaped callbacks. Install it with `Scheduler::with_monty_hosts(registry)`.
 Register optional `sc_compose_run` or `atm_run` with `.with_sc_compose(config)?`
 or `.with_atm(config)?`; `ScComposeHostConfig` and `AtmHostConfig` choose the
 executable and cwd. Both forward any command and argv without a shell, clear
-the child environment, enforce row deadlines/group cleanup and cap each stream.
+the child environment and install the shared occurrence snapshot, enforce row
+deadlines/group cleanup and cap each stream.
 Completed nonzero exits are returned to the script. No CLI is required by an
 empty registry or a custom application handler. `render_template` is not a
 product API. See [the generated example](../../docs/sc-cron/monty-generated-example.md)
 for API, result/error shapes, development generation, and in-process limits.
+
+## Shared hook environment
+
+Build schedule policy with `HookEnvironment::new().set(...)?`, `.reference(...)?`,
+`.clear(...)?` and ordered absolute `.dotenv(path, required)?` sources, then
+attach it with `ScheduleSpec::with_environment`. Nonempty Rust policy is invalid.
+Inject administrator authorization with `Scheduler::with_hook_environment` and
+`HookEnvironmentHost`: process-name, exact-file and directory-root allowlists
+are empty by default, and an application may attach an
+`Arc<dyn EnvironmentReferenceResolver>`.
+
+One immutable snapshot resolves daemon values, ordered files and schedule
+operations before stop; tick, Monty initialization and both CLI adapters reuse
+it. Python defaults to an empty `ChildEnv::Only`; direct callers may opt into
+Inherit. Source initialization permits environment reads and denies application
+host calls. Retained module globals initialize once per generation; later getenv
+reads use the current occurrence. Values in scheduled details/reasons are
+redacted before fixed diagnostics are assembled. Explicit Set values are
+intentional plaintext configuration; resolved values never persist in registry
+writes. Direct `HookOutput` fields remain raw and Debug output is value-free.
 
 ## Links
 

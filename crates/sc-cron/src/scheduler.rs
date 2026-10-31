@@ -66,6 +66,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     /// computed. `start` and `replace_and_set_enabled` share it.
     fn new_schedule(&self, spec: ScheduleSpec) -> Result<(NewSchedule, DateTime<Utc>), CronError> {
         encode_payload(&spec.payload)?;
+        spec.validate_environment()?;
         let now = self.clock.now();
         spec.expr.require_future(now)?;
         let jitter = jitter::draw(&spec.expr, now, self.jitter.as_ref());
@@ -193,6 +194,7 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource> {
     reload_poll: Duration,
     worker_live: Arc<AtomicBool>,
     coord: Arc<RunCoord>,
+    environment: Arc<crate::HookEnvironmentHost>,
     #[cfg(feature = "monty")]
     hosts: Arc<crate::MontyHostRegistry>,
 }
@@ -212,6 +214,7 @@ where
             self.reload_poll,
             Arc::clone(&self.worker_live),
             Arc::clone(&self.coord),
+            Arc::clone(&self.environment),
             #[cfg(feature = "monty")]
             Arc::clone(&self.hosts),
         )
@@ -241,6 +244,7 @@ where
         reload_poll: Duration,
         worker_live: Arc<AtomicBool>,
         coord: Arc<RunCoord>,
+        environment: Arc<crate::HookEnvironmentHost>,
         #[cfg(feature = "monty")] hosts: Arc<crate::MontyHostRegistry>,
     ) -> Self {
         Self {
@@ -249,6 +253,7 @@ where
             reload_poll,
             worker_live,
             coord,
+            environment,
             #[cfg(feature = "monty")]
             hosts,
         }
@@ -307,9 +312,17 @@ where
             reload_poll: DEFAULT_RELOAD_POLL,
             worker_live: Arc::new(AtomicBool::new(false)),
             coord: Arc::new(RunCoord::with_logger(logger)),
+            environment: Arc::new(crate::HookEnvironmentHost::new()),
             #[cfg(feature = "monty")]
             hosts: Arc::new(crate::MontyHostRegistry::new()),
         }
+    }
+
+    /// Installs daemon-owned environment authority for future occurrences.
+    #[must_use]
+    pub fn with_hook_environment(mut self, host: crate::HookEnvironmentHost) -> Self {
+        self.environment = Arc::new(host);
+        self
     }
 
     /// Returns the row ceiling the store enforces.
@@ -596,6 +609,7 @@ where
             #[cfg(feature = "monty")]
             Arc::clone(&self.hosts),
         );
+        let worker = worker.with_hook_environment(Arc::clone(&self.environment));
         let task = tokio::spawn(async move {
             let _live = live;
             worker.run(reload).await;

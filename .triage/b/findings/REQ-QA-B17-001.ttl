@@ -5,7 +5,7 @@
   qa:sprint "b-17" ;
   qa:qaPass "qa-b-17-1" ;
   qa:severity "Blocking" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "req-qa" ;
   qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
   qa:location ".github/workflows/crates.yml:151" ;
@@ -17,7 +17,7 @@
   qa:sprint "b-17" ;
   qa:qaPass "qa-b-17-2" ;
   qa:severity "Blocking" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "req-qa" ;
   qa:commit "216e2e38f52a5418ce0951ce6873d6335cabd497" ;
   qa:location ".github/workflows/crates.yml:145-149" ;
