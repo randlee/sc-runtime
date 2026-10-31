@@ -163,7 +163,9 @@ impl StoreErrorKind {
         match self {
             Self::Busy => "retry later; another connection holds the database lock",
             Self::Corrupt => "repair or remove the named row, or restore the database file",
-            Self::SchemaMismatch => "open the schedule store on its own sc-cron database file",
+            Self::SchemaMismatch => {
+                "recreate an incompatible development schedule database using the first-release schema; preserve or export needed data first"
+            }
             Self::Unavailable => "check the database path, permissions and free disk space",
             Self::Other => "see the source error",
         }

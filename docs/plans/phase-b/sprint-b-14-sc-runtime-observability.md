@@ -1,7 +1,7 @@
 ---
 id: b-14
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-runtime
 track: observability
@@ -12,6 +12,7 @@ integration_branch: integrate/phase-b-observability
 requirements:
   - REQ-RT-0004
   - REQ-RT-0005
+  - REQ-RT-0006
   - NFR-RT-0002
   - NFR-RT-0003
   - NFR-RT-0004
@@ -23,8 +24,11 @@ adrs:
   - ADR-RUN-0007
   - ADR-RUN-0011
   - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
   - ADR-RT-0004
 owned_paths:
+  - crates/sc-runtime/src/builder.rs
   - crates/sc-runtime/src/router.rs
   - crates/sc-runtime/src/testing.rs
   - crates/sc-runtime/src/tests.rs
@@ -50,6 +54,9 @@ runtime state and the fixed `DaemonBuilder::logger` contract. Merge b-13 into
 this branch before every development or fix round. It is `parallel_safe` with
 b-15 and b-16 because their owned paths and production boundaries are
 disjoint.
+
+The `builder.rs` change is limited to the serial b-13 consumer seam: carry the
+existing shared logger into request middleware, without changing builder APIs.
 
 ## Event contract
 
@@ -88,6 +95,17 @@ attempt or changes request execution.
 7. ADR-RUN-0011: production changes add no sleep or `block_on` call and hold
    no `std::sync::Mutex` guard across `.await`; test deadline polling is
    exempt.
+8. REQ-RT-0006 / ADR-RT-0004: `DaemonFixture::start_with_logger` uses the
+   existing production builder and fixture startup path. It preserves a fresh
+   temporary instance root per fixture, caller-owned endpoint selection, the
+   connected client, per-fixture shutdown and join, and the existing typed
+   `RuntimeError` startup/serving contract. Injecting the logger adds no shared
+   fixture state or separate daemon mode.
+
+ADR-RT-0002 and ADR-RT-0003 remain binding for these owned runtime paths;
+their applicability is unchanged. The builder edit only forwards the existing
+logger handle, preserving singleton locking, assembly order, and opaque
+project stores/router/MCP pass-through.
 
 ## Acceptance criteria
 
@@ -101,20 +119,20 @@ attempt or changes request execution.
    drains and joins with deadline polling rather than fixed sleeps.
 4. ADR-RUN-0004 / ADR-RUN-0007 / NFR-RUN-0002: `observability_http` passes only when
    queue-full and disconnected rejection returns immediately and changes no
-   status, body, header, counter, request deadline, or error.
+   status, body, header, counter, request deadline, or error. [roots: `req:NFR-RUN-0002`]
 5. `boundary:BOUNDARY-sc-runtime`: the required boundary lint and
    `cargo check --workspace` pass with tests using the types test double, not
    another workspace crate or a full runtime sink.
    All production release crates exclude sc-compose and ATM crate dependencies
    and Rust imports, enforced by boundary lint; test/benchmark references are
-   permitted (ANC-031).
+   permitted (ANC-031). [roots: `req:NFR-RT-0004`]
 6. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when an
    arbitrary application 5xx has no diagnostic and the two framework timeout
    branches carry exactly their fixed codes.
 7. `boundary:BOUNDARY-sc-runtime`: table-driven 1xx/2xx/3xx/4xx/5xx and
    unmatched-route cases prove total outcome mapping, matched-template path
    cardinality, and one terminal event per started request without recording
-   raw path parameters.
+   raw path parameters. [roots: `req:REQ-RT-0004`]
 
 ## Required validation
 
@@ -132,3 +150,29 @@ sc-lint lint sc-boundary --root . --config sc-lint.toml
 
 - File/console sinks or generated observability configuration (b-18).
 - Cron events (b-15) or logger construction/shutdown.
+
+
+## Implementation evidence
+
+Consumed b-13 final contract `0a6a9dcfb6258d06a470154e24e0a2aec915430e`.
+The inherited b-13 builder stored the injected logger but dropped it at `drive`.
+The authorized serial consumer change forwards that existing handle through
+`serve` into request middleware. Builder APIs, constructors, and typestate are
+unchanged. The real-daemon regression checks `Arc::ptr_eq` in an HTTP handler
+and records both lifecycle events through that injected receiver. Independent
+requirements and architecture QA must assess this inherited omission and fix;
+this implementation evidence does not assert a QA verdict.
+
+`observability_http` exercises 101/200/302/404/500 responses, unmatched routes,
+validated and generated IDs, concurrent IDs, secret exclusion, both timeout
+codes, full and disconnected queues, response/header/body/counter preservation,
+handler cancellation, and real-daemon handle identity. The crate-private
+shutdown regression uses an isolated temporary instance root, deadline polling,
+and joins both the request and daemon task after the drain timeout.
+
+Development validation passed: focused HTTP tests (5), full runtime tests with
+`test-util`, formatting, workspace all-target Clippy and runtime feature Clippy
+with warnings denied, `cargo check --workspace`, direct-tracing scan,
+`just adr-run-0011`, and boundary lint (zero findings). Only the types test
+receivers are used; no full observability sink dependency was added. The
+upstream publication guard remains enabled for the b-18 release condition.

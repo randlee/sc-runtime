@@ -1,7 +1,7 @@
 ---
 id: b-16
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: monty-host-extensibility
 track: monty-product
@@ -15,19 +15,47 @@ requirements:
   - REQ-RUN-0309
   - REQ-RUN-0301
   - REQ-RUN-0329
+  - REQ-RUN-0501
   - REQ-RUN-0503
+  - REQ-RUN-0701
   - REQ-RUN-0005
   - REQ-CRON-0001
   - REQ-CRON-0003
   - REQ-CRON-0005
   - NFR-CRON-0001
+  - NFR-RUN-0004
   - NFR-RUN-0005
+  - NFR-RUN-0008
 adrs:
+  - ADR-CFG-0001
+  - ADR-CFG-0002
+  - ADR-CFG-0003
+  - ADR-CMD-0001
+  - ADR-CMD-0002
+  - ADR-CMD-0003
+  - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
+  - ADR-RT-0004
+  - ADR-RUN-0001
   - ADR-RUN-0002
   - ADR-RUN-0003
+  - ADR-RUN-0004
+  - ADR-RUN-0005
+  - ADR-RUN-0007
+  - ADR-RUN-0008
   - ADR-RUN-0011
   - ADR-RUN-0013
+  - ADR-RUN-0015
   - ADR-RUN-0303
+  - ADR-RUN-0401
+  - ADR-RUN-0402
+  - ADR-TRN-0001
+  - ADR-TRN-0002
+  - ADR-TRN-0003
+  - ADR-TRN-0004
+  - ADR-TRN-0005
+  - ADR-TRN-0006
 owned_paths:
   - docs/architecture.md
   - docs/requirements.md
@@ -48,9 +76,15 @@ owned_paths:
   - crates/sc-cron/src/monty_run.rs
   - crates/sc-cron/src/monty_compose.rs
   - crates/sc-cron/src/monty_compose_common.rs
+  - crates/sc-cron/src/worker.rs
+  - crates/sc-cron/src/worker/worker_runs.rs
+  - crates/sc-cron/src/scheduler/run_due.rs
+  - crates/sc-cron/tests/observability_components.rs
   - crates/sc-cron/tests/monty_host_bridge.rs
   - crates/sc-cron/tests/sc_compose_bench.rs
   - scripts/benchmark/monty/campaign.py
+  - scripts/new_project.py
+  - .github/workflows/template.yml
   - template/Cargo.toml
   - template/workspace.template.toml
   - template/crates/daemon/Cargo.toml
@@ -81,8 +115,81 @@ the production suspend/resume loop and the safe render-only compose adapter;
 it does not freeze its pre-release fixed two-name registry as the general
 library API. This sprint follows b-13 because b-13 owns the preceding edits to
 the same crate and authority documents. It remains `parallel_safe` with b-14
-and b-15 because their exact paths are disjoint. b-17 merges b-16 first and
-adds the resolved environment snapshot to the completed host-call context.
+and b-15 except for the declared serial sole-writer window on
+`crates/sc-cron/src/worker.rs`, `crates/sc-cron/src/worker/worker_runs.rs`, and
+`crates/sc-cron/src/scheduler/run_due.rs`. b-15 owns those files through a
+compilable development push; after merging that push forward, b-16 changes
+only their mechanical registry transport: the Worker field/constructor,
+`spawn_feed`/`FeedLaunch`, and the
+`spawn_monty_due`/`run_monty_due`/`run_monty_tick_after_stop`/`feed_once`
+parameters. The parent-authorized window also included the one-line
+`scheduler.rs::finish_due` logger forwarding seam and the named component-test
+block below. b-16 consumed b-15 snapshot `07c1197`; b-15 then consumed b-16
+`cccb2a7` for its event-only `worker::disable` terminal record and rejection
+attempt counter correction. b-16 consumed the resulting `d64be13` and final
+`9452d80` artifacts, preserving those fixes. Each handoff froze the same physical
+files for the other writer. Preserve the same `RunCoord` logger Arc and event behavior.
+Disjoint work continues in parallel; this is no whole-sprint `must_follow`
+edge or QA/PR-merge gate. b-17 merges b-16 first and adds the resolved
+environment snapshot to the completed host-call context.
+
+b-13's owner-authorized unpublished `sc-observability-types` `1.5.1` facade
+over exact registry `1.5.0`, selected by the root workspace dependency's
+development `path` override, permits library development before upstream
+publication. The separate unpublished `sc-observability-dev-adapter` `0.0.0`
+newtype injects the real registry `1.5.0` logger through its actual
+`service_name`/`try_log`; the application owns construction, flush, and
+shutdown. Optimized development builds and benchmarks are permitted. This
+does not claim an upstream `1.5.1` adapter. Generated release requirements
+remain `1.5.1`; real matching registry resolution, direct upstream Arc
+coercion, adapter proof, and removal of development paths/adapter remain
+required for b-18 release acceptance.
+
+The serial b-13 consumer edit in `observability_components.rs` is limited to
+`production_monty_pipe_deadline_uses_injected_logger_and_preserves_failure`: migrate
+its old host configuration/call to the registry adapter while preserving the
+component event assertions. b-15 alone changed its expected rejection attempts
+from two to four after the serial return window; other component tests remain
+unchanged.
+
+The explicit `scripts/new_project.py --development-observability` mode selects
+real registry logger `=1.5.0`, the local types facade, and the development
+adapter at generation time for checkout validation. It fails before output
+when combined with `--release` (including release environment selection).
+The existing matrix (non-tag runs only) and plain-template checkout CI callers
+explicitly select this mode; release calls and registry proof do not. The `just new` recipe
+already forwards option arguments unchanged.
+Canonical template/release inventories remain `1.5.1`; no generated source is
+edited after this explicit development render. This proves development only,
+with the real registry release proof still owned by b-18.
+
+NFR-RUN-0004: the standard tools considered and reused are Monty's external-call
+suspension protocol, `std::process::Command` and `process-wrap` for child/group
+operations, and the sc-compose/ATM CLIs for their command implementations.
+Those tools do not choose application handlers or supply sc-cron's immutable
+registry, row-deadline context, bounded capture and hook-result mapping; this
+small integration seam supplies those library-specific values and forwards
+commands unchanged. Generation remains cargo-generate-owned, canonical events
+reuse `sc-observability-types`, and sc-lint supplies boundary and source-size
+checks. REQ-RUN-0005 traces the production dependency/import exclusions;
+NFR-RUN-0008 traces every owned production Rust file to the existing
+`sc-lint lint line-counts` check in `just lint gates` and full `just lint`.
+
+ADR applicability: RUN-0001/0004/0007/0008 govern the project-owned reusable
+registry, direct canonical emission, types-only library edge and blocking-feed
+handoff. RUN-0002/0003/0011/0013/0303 govern release inventories, crate boundaries,
+deadlines and the optional cron/Monty graph. RUN-0005/0015/0401/0402 govern the
+existing sc-lint/just checks, production benchmark/campaign callers, generation
+pipeline and checkout/release rendering. The CFG, TRN, CMD and RT inventories
+are listed because this sprint owns their boundary manifests; their untouched
+configuration, errors, endpoints, routers and lifecycle behavior is preserved.
+RT-0002/TRN-0006 lifecycle execution proof remains b-18; RT-0003 remains
+inapplicable to this continuation, and RT-0004 remains b-14's fixture reference.
+REQ-RUN-0501 traces the explicit development generation mode and its unchanged
+pipeline in deliverable 8 and acceptance 1/6/7; REQ-RUN-0701 traces the two
+explicit non-tag template CI callers exercising that mode. The literal
+validation recipes below retain that existing checkout proof; release rendering
+and actual registry proof remain b-18's acceptance.
 
 ## Public host-extension contract
 
@@ -90,7 +197,7 @@ Feature `monty` exports `MontyHostRegistry`, `MontyHostHandler`, and the owned
 JSON-shaped `MontyHostCall`. `MontyHostHandler` is `Send + Sync` and has one
 synchronous method returning `Result<serde_json::Value, CronError>`; a blanket
 implementation makes a matching closure usable without a wrapper type. A call
-contains its registered name, positional JSON arguments, keyword JSON
+contains its registered `MontyHostName`, positional JSON arguments, keyword JSON
 arguments, schedule name, hook phase, and row deadline. b-17 adds read-only
 access to that run's resolved environment snapshot without changing handler
 registration or allowing process-global reads.
@@ -104,6 +211,10 @@ pub trait MontyHostHandler: Send + Sync {
 }
 // Matching closures implement Fn(&MontyHostCall) -> Result<Value, CronError>.
 ```
+
+`MontyHostName::new` validates a non-reserved identifier and `as_str()` borrows
+it. Registry keys and `MontyHostCall.name` use this type; `register(name, handler)`
+still accepts strings and JSON arguments/results are unchanged.
 
 `MontyHostRegistry::new()` is empty. Its consuming `register(name, handler)`
 builder returns `CronError::InvalidSpec` for a non-identifier, `__hook`,
@@ -156,6 +267,19 @@ The production-bridge benchmark and generated example invoke
 render helpers, lab benchmark code, and historical reports may retain that
 name; their presence does not create a product requirement.
 
+The current blocking driver has no child-kill deadline branch. Implementing
+the deadline/process-group behavior above also owns this event transferred
+from b-13's migration table, using its same injected logger handle:
+
+| Target | Action | Level | Outcome | `Diagnostic.code` | Required fields / cardinality |
+|---|---|---|---|---|---|
+| `cron.monty.compose` | `child.kill_timeout` | warning | `timeout` | `COMPOSE_CHILD_KILL_TIMEOUT` | pid when available, `deadline_remaining_ms = 0`; once per post-kill deadline |
+
+Assert the exact row when that branch triggers and prove rejecting emission
+does not change the timeout or child cleanup result. This acceptance belongs
+to the already-planned driver change; b-13 adds no kill policy. Preserve the
+row deadline and per-stream output caps for both CLI adapters.
+
 The template Cargo files are owned only by this sprint. b-17 consumes the
 resulting registry and `cron`/`monty` feature definitions and does not edit
 those manifests.
@@ -200,6 +324,8 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    output cap; apply the explicit child-environment restriction above. Implement `atm_run` in this
    same sprint through the identical registry and supervisor. Remove the old
    render-only/temp-root argument rewriting from the general CLI adapters.
+   The driver tests own the exact `COMPOSE_CHILD_KILL_TIMEOUT` row above and
+   its unchanged timeout/cleanup behavior when event emission is rejected.
 3. REQ-RUN-0301 / REQ-CRON-0001 / ADR-RUN-0303: add optional daemon dependency `sc-cron`, direct
    `sc-observability-types`, and features equivalent to
    `cron = ["dep:sc-cron"]` and
@@ -238,7 +364,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    `sc-compose`, `sc-compose-*`, `agent-team-mail`, `agent-team-mail-core`, and
    `atm-*`; the ATM Rust library name `atm_core` is also covered by import
    checks. Renamed dependency fixtures must fail as production edges.
-8. NFR-RUN-0005 / REQ-RUN-0503: require the freshly generated, unedited checkout
+8. NFR-RUN-0005 / REQ-RUN-0501 / REQ-RUN-0503 / REQ-RUN-0701: require the freshly generated, unedited checkout
    to pass `just setup`, `just lint`, `just test`, `just build-cli`, then
    `just build-daemon`; also compile the daemon with and without `monty`.
    Assert that a checkout render contains the
@@ -248,9 +374,9 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 
 ## Acceptance criteria
 
-1. `REQ-CRON-0001`: `test_monty_example` and the two generated `cargo check`
+1. `REQ-CRON-0001` / `REQ-RUN-0501` / `REQ-RUN-0701`: `test_monty_example` and the two generated `cargo check`
    commands pass with the generated daemon as the only generated crate with
-   the optional `sc-cron` edge; the feature-off build does not link it.
+   the optional `sc-cron` edge; the feature-off build does not link it. [roots: `req:REQ-CRON-0001`, `req:REQ-RUN-0301`]
 2. `REQ-CRON-0003`: `monty_host_bridge` passes empty-default, custom
    closure call/result, handler error, multiple-call, invalid/duplicate/reserved
    registration, unregistered-name denial, and both opt-in CLI adapter cases.
@@ -264,9 +390,11 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    `HOST_CALL_FAILED`; invalid supplied-adapter shape expects `HOST_DENIED`.
    The production registration assertion derives names from the configured
    registry rather than requiring a fixed global list.
+   Driver tests assert the transferred `COMPOSE_CHILD_KILL_TIMEOUT` event row
+   and prove rejected emission leaves timeout/cleanup results unchanged. [roots: `req:REQ-CRON-0003`]
 3. `NFR-CRON-0001`: the required `cargo tree` command passes inspection with
    no Monty crate in the default tree and no `monty-pool`, `monty-fs`, or
-   `monty-runtime` in the Monty tree.
+   `monty-runtime` in the Monty tree. [roots: `req:NFR-CRON-0001`]
 4. `NFR-RUN-0005`: `test_monty_example` passes using a temporary output and
    no sleep, network, globally fixed project path, or external compose process.
 5. ADR-RUN-0013: `monty_host_bridge` and `test_monty_example` pass only when
@@ -294,7 +422,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
     renamed and transitive packages, for its supported production features.
     Fixture cases prove a production Rust import is rejected and a test-only
     dependency/import is accepted. Executable names in adapter configuration
-    and documentation are not Rust crate references.
+    and documentation are not Rust crate references. [roots: `req:REQ-RUN-0005`]
 
 ## Required validation
 
@@ -302,12 +430,12 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 python3 -m unittest tests.unit.generation.test_monty_example tests.unit.test_production_tool_boundary
 cargo +1.96.1 test -p sc-cron --features monty --test monty_host_bridge
 cargo +1.96.1 test -p sc-cron --features monty --test sc_compose_bench
-just new generated/test-monty --var-file wizard/fixtures/sqlite-mcp.json
-just --justfile generated/test-monty/justfile setup
-just --justfile generated/test-monty/justfile lint
-just --justfile generated/test-monty/justfile test
-just --justfile generated/test-monty/justfile build-cli
-just --justfile generated/test-monty/justfile build-daemon
+just new generated/test-monty --var-file wizard/fixtures/sqlite-mcp.json --development-observability
+just --justfile generated/test-monty/Justfile setup
+just --justfile generated/test-monty/Justfile lint
+just --justfile generated/test-monty/Justfile test
+just --justfile generated/test-monty/Justfile build-cli
+just --justfile generated/test-monty/Justfile build-daemon
 cargo check --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon
 cargo +1.96.1 check --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon -e features
@@ -321,10 +449,50 @@ just adr-run-0011
 
 The generation test owns cleanup of its temporary output; the literal
 `generated/test-monty` commands are the operator reproduction form and require
-that destination to be absent before the first command.
+that destination to be absent before the first command. These checkout recipes
+explicitly select the accepted development mode. The retained `--release` path
+omits that flag and every development override; matching registry `1.5.1`
+resolution and the registry-only generated build remain b-18 release gates.
 
 ## This sprint does not close
 
 - Async host handlers, per-schedule handler registration, script signing,
   separate script approval, or a claim that arbitrary synchronous application code can be
   forcibly cancelled at the row deadline.
+
+## Implementation validation
+
+Implementation is delivered; independent b-16 QA remains separate. Current
+shared source is the validated b-15 repair `e9d19647851a0a04a69214b1c4fa1945468c05a4`
+with the README-only follow-up `df37ac8c7addf54b6f32bbf963748a51d16b1314`.
+The e9d record proves actual full `just lint` and `just test`, locked Rust 1.94.1
+workspace/all-target checking, Rust 1.96.1 native and all-feature Clippy with
+warnings denied, 18 Monty handshake cases and the injected spurious-wait witness.
+The df37 record proves the protected source/test/Cargo/generation/CI files are
+byte-identical to that validated source. This sprint-doc-only amendment reuses
+that proof; it does not claim a new runtime-suite run or independent b-16 QA.
+The benchmark target's operator measurement remains ignored by default; no
+performance measurement is claimed.
+
+The existing b-16 fresh explicit development render at `generated/test-monty-network` passed
+setup, lint, test, build-cli, build-daemon, and daemon checks with and without
+Monty. Hashes for all 38 generated crate/example files matched before and after
+those recipes. Feature trees show no sc-cron/Monty edge by default and only
+`monty`/`monty-types` when enabled, with no pool/fs/runtime crates. The lockfile
+records real registry logger/types `1.5.0` plus the local types facade `1.5.1`;
+this is development evidence, and matching registry `1.5.1` release proof remains
+b-18's acceptance condition. That prior generated-development proof is reused
+here; these recipes were not rerun for this documentation amendment. Temporary
+generated output is not a shipped artifact.
+
+## Contract propagation before implementation QA
+
+The combined b-15/b-16 artifact consumes validated b-13 `c00cb59`. Event
+construction helpers are pure value factories; each owning worker, due-run,
+scheduler, or CLI-driver branch invokes its injected logger directly and
+discards emission rejection. The fixed taxonomy, outcome tokens, shared Arc,
+registry/adapters, and deadline policy are preserved. The production pipe
+witness retains b-13 descriptor readiness, release, watchdog, kill and reap,
+with b-16 registered `sc_compose_run` and b-15's four rejection attempts.
+This narrow caller propagation precedes independent QA and does not assert
+QA acceptance or change the registry release gate.

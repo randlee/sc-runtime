@@ -1,7 +1,7 @@
 ---
 id: b-17
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-cron-hook-environment
 track: hook-environment
@@ -10,6 +10,10 @@ branch: sprint/b-17-sc-cron-hook-environment
 worktree: sprint/b-17-sc-cron-hook-environment
 integration_branch: integrate/phase-b-observability
 requirements:
+  - REQ-RUN-0002
+  - REQ-RUN-0003
+  - REQ-RUN-0004
+  - REQ-RUN-0005
   - REQ-CRON-0001
   - REQ-CRON-0003
   - REQ-CRON-0004
@@ -19,24 +23,55 @@ requirements:
   - REQ-RUN-0503
   - NFR-CRON-0001
   - NFR-CRON-0002
+  - NFR-RUN-0004
   - NFR-RUN-0005
   - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
+  - ADR-RUN-0001
   - ADR-RUN-0002
+  - ADR-RUN-0003
+  - ADR-RUN-0004
+  - ADR-RUN-0005
+  - ADR-RUN-0006
+  - ADR-RUN-0007
+  - ADR-RUN-0008
+  - ADR-RUN-0009
   - ADR-RUN-0011
+  - ADR-RUN-0012
   - ADR-RUN-0013
   - ADR-RUN-0014
+  - ADR-RUN-0015
   - ADR-RUN-0016
+  - ADR-RUN-0303
+  - ADR-RUN-0401
+  - ADR-RUN-0402
 owned_paths:
   - docs/architecture.md
   - docs/sc-cron/requirements.md
   - docs/sc-cron/architecture.md
   - boundaries/sc-cron/sc-cron.toml
   - crates/sc-cron/src/lib.rs
+  - crates/sc-cron/README.md
   - crates/sc-cron/src/types.rs
   - crates/sc-cron/src/sqlite.rs
   - crates/sc-cron/src/environment.rs
+  - Cargo.lock
+  - crates/sc-cron/Cargo.toml
+  - crates/sc-cron/src/error.rs
+  - crates/sc-cron/src/process.rs
+  - crates/sc-cron/src/sqlite_schema.rs
+  - crates/sc-cron/src/environment/dotenv.rs
+  - crates/sc-cron/src/environment/resolve.rs
+  - crates/sc-cron/src/environment/wire.rs
+  - crates/sc-cron/src/worker/tests.rs
+  - crates/sc-cron/src/worker/event_contract_tests.rs
+  - crates/sc-cron/src/worker/event_rows.rs
+  - crates/sc-cron/tests/hook_environment/model.rs
+  - crates/sc-cron/tests/hook_environment/resolution.rs
+  - crates/sc-cron/tests/hook_environment/monty.rs
+  - crates/sc-cron/tests/observability_components.rs
+  - template/crates/daemon/Cargo.toml
   - crates/sc-cron/src/hook.rs
   - crates/sc-cron/src/monty_host.rs
   - crates/sc-cron/src/monty_run.rs
@@ -55,6 +90,9 @@ owned_paths:
   - template/examples/monty/cron.py
   - docs/sc-cron/monty-generated-example.md
   - tests/unit/generation/test_cron_environment.py
+  - tests/__init__.py
+  - tests/unit/generation/test_monty_example.py
+  - tests/integration/wizard/test_output_equivalence.py
   - .github/workflows/crates.yml
 must_follow: [b-15, b-16]
 parallel_safe: []
@@ -352,6 +390,48 @@ not exact SQL text or column order. Reject incompatible data with recreate
 guidance without overwriting it. The crate does not inspect or migrate
 consumer tables or create a second environment/secret table.
 
+NFR-RUN-0004: reuse `std::env::vars_os` for process input,
+`std::fs::canonicalize` and metadata for file identity, serde/serde_json for the
+wire representation, `Command::envs` and the existing process-wrap supervisor
+for child delivery, and Monty's suspended OS calls for lookup/enumeration.
+These standard ports do not choose administrator authorization, schedule-layer
+precedence, the fixed dotenv grammar/limits, or application-owned reference
+resolution. The small shared policy/parser seam supplies those approved values
+once for Python and Monty, without shell evaluation or process-environment
+mutation. Generation remains cargo-generate-owned and lint infrastructure
+remains sc-lint-owned. NFR-RUN-0008 traces all changed production Rust files to
+the existing `sc-lint lint line-counts` check in `just lint gates` and full
+`just lint`; no separate counter or new gate is introduced.
+
+## ADR applicability
+
+The owned library is sc-cron, including its boundary manifest. Its architecture
+declares ADR-RUN-0013 and ADR-RUN-0016 binding and references ADR-RUN-0014; it has
+no separate crate-prefixed ADR headings. The generated daemon paths are project
+composition under the repository decisions below. This inventory does not add
+ownership of sc-config, sc-transport, sc-command or sc-runtime library paths or
+their boundary manifests merely because their earlier artifacts are consumed.
+
+- ADR-RUN-0001 and ADR-RUN-0008 retain application-owned policy/resolvers and
+  standard-tool reuse; no command framework or consumer-specific host is added.
+- ADR-RUN-0002, ADR-RUN-0003 and ADR-RUN-0303 preserve published crate identities,
+  the types-only dependency graph and default-off generated cron/Monty features.
+- ADR-RUN-0004, ADR-RUN-0006, ADR-RUN-0007 and ADR-RUN-0011 govern the identical
+  injected logger, direct owner emission, typed value-free failures, asynchronous
+  resolution, blocking file/VM/child work and original deadline handoff.
+- ADR-RUN-0005 governs reuse of sc-lint/just. ADR-RUN-0009's daemon-test boundary
+  remains intact: these hook-child and configuration tests do not introduce an
+  in-process replacement for a real-daemon suite or a VM provisioner.
+- ADR-RUN-0012 and ADR-RUN-0013 preserve the separate schedule SQLite table and
+  crate, without migrating consumer stores or adopting their SqliteWriter.
+  ADR-RUN-0014 preserves embedder row limits; ADR-RUN-0016 supplies the approved
+  public environment model, persisted wire form and shared execution policy.
+- ADR-RUN-0401 and ADR-RUN-0402 govern the unchanged cargo-generate/sc-compose
+  pipeline and fresh unedited generated-project proof. ADR-RUN-0015's controlled
+  benchmark/release rules remain intact; no new measurement or release acceptance
+  is claimed here. Matching registry publication, real signal/endpoint/instance
+  lock lifecycle execution and release proof remain B18 responsibilities.
+
 ## Required work and deliverables
 
 1. REQ-CRON-0001 / REQ-CRON-0003 / REQ-CRON-0004 / REQ-CRON-0005 /
@@ -397,7 +477,7 @@ consumer tables or create a second environment/secret table.
 6. Canary cases include ENV, HOST, :, and 1: redaction must not alter fixed
    codes/recovery or metadata. All scheduled diagnostics/outcomes/events/reasons
    and Debug strings omit values; direct raw HookOutput fields are the stated
-   exception. Initialization/runtime exceptions and both CLI streams are covered.
+   exception. Initialization/runtime exceptions and both CLI streams are covered. [roots: `req:NFR-CRON-0002`]
 7. SQLite cases prove fresh schema creation, canonical round-trip, empty
    defaults, corrupt-row handling, and non-destructive rejection of an
    incompatible table. No historical migration fixture is required.
@@ -407,7 +487,7 @@ consumer tables or create a second environment/secret table.
    A freshly generated project passes REQ-RUN-0503's setup, lint,
    test, build-cli, and build-daemon sequence with no generated source edits.
    Default feature builds exclude Monty and boundary lint permits only the
-   declared types/dependencies.
+   declared types/dependencies. [roots: `req:REQ-CRON-0019`]
 
 ## Required validation
 
@@ -424,12 +504,13 @@ just test sc-cron-tree-default
 just test sc-cron-tree-monty
 python3 -m unittest tests.unit.generation.test_cron_environment
 python3 -m unittest tests.unit.generation.test_monty_example
-just new generated/test-cron-env --var-file wizard/fixtures/sqlite-mcp.json
-just --justfile generated/test-cron-env/justfile setup
-just --justfile generated/test-cron-env/justfile lint
-just --justfile generated/test-cron-env/justfile test
-just --justfile generated/test-cron-env/justfile build-cli
-just --justfile generated/test-cron-env/justfile build-daemon
+mkdir -p generated
+just new generated/test-cron-env --var-file wizard/fixtures/sqlite-mcp.json --development-observability
+just --justfile generated/test-cron-env/Justfile setup
+just --justfile generated/test-cron-env/Justfile lint
+just --justfile generated/test-cron-env/Justfile test
+just --justfile generated/test-cron-env/Justfile build-cli
+just --justfile generated/test-cron-env/Justfile build-daemon
 ! rg -n 'std::env::set_var|std::env::remove_var' crates/sc-cron/src
 sc-lint lint sc-boundary --root . --config sc-lint.toml
 just lint
@@ -438,9 +519,71 @@ just lint
 The windows-latest crates.yml job executes the same named hook_environment and
 monty_host_bridge roots; compilation or skipped parity cases do not count as
 Windows execution evidence.
+The literal checkout-generation recipes require an absent destination and
+explicitly select the accepted development bridge. The retained `--release`
+path omits that flag and development overrides; matching registry 1.5.1 proof
+remains a B18 release gate.
 
 ## This sprint does not close
 
 Excluded: Rust JobContext/isolation, writable Monty os.environ, caller capture,
 built-in secret providers, agent-to-agent file authorization, new CLI/network
 adapters, and signing/approval mechanisms.
+
+
+## Development artifact
+
+Implementation is delivered. `status: complete` records that delivery under the
+phase legend; it does not mean independent QA, hosted CI acceptance or merge.
+The final reviewed B16 remedy bc38490a6b7601a6083d86d4afcc3517151eddd1 is
+consumed through a forward-only merge at source
+0ec84667e0455e45307efff83162ee2e6cd5fa81, with runtime tree
+1215194c78dd5007073eeb27ab82c8ee773f55cf. This final plan-metadata amendment
+preserves that runtime tree. Subsequent hosted outcomes belong in delivery
+records, Beads and parent integration state, without outcome-only branch pushes.
+
+The implementation supplies the validated environment model and canonical wire
+form, deadline-bounded immutable occurrence snapshots, bounded authorized dotenv
+loading, application reference resolution, redaction, first-release schema 1,
+Python/Monty/CLI delivery, resumable source initialization and generated daemon
+policy/example wiring. Private occurrence correlation and validated
+`MontyHostName` remain intact. Pure event factories return observations for
+direct owner emission; no logger wrapper or production blocking bridge is added.
+Production source satisfies the existing source-size and function-length gates.
+
+All 15 required final-source local command groups pass: default and Monty
+suites, environment/host roots, 18 handshake cases, both Clippy modes, formatting,
+feature trees, focused generation tests, boundary and full repository lint.
+The updated production-boundary negative fixtures and no-global-environment-
+mutation check also pass. The full Monty suite executes the immediate wait-error
+truthfulness and readiness-failure child-reaping regressions. The generation
+watchdog timeout/reaping witness passes in the focused generation suite.
+
+The adequate fresh-project proof at source
+944b613313f5da74161fabefdac130c13fed0a05 is reused explicitly: all 128 tracked
+generator/template/wizard/manifest/lock/recipe/CI input blobs are identical to
+the final source, and all 26 retained generated-source hashes still match.
+That proof passes explicit development generation, setup, lint, test,
+build-cli and build-daemon, plus seven optional cron and seven optional Monty
+daemon tests. No third whole generated sequence is claimed. New runtime
+telemetry behavior is covered by the current-source Rust suites above.
+
+Earlier source 33b81b3280b482c766caa1f5283efc6744c79029 passed actual Linux and
+Windows execution in Actions run 41154463873. Source 944b613 also passed the
+Windows named roots 20/28/7 in run 41158679611/job 124411408338. Those original
+checkpoints remain preserved; neither substitutes for final-source hosted
+Linux and Windows execution. Both final platform proofs remain required and
+pending at this source freeze. No independent QA or merge approval is claimed.
+
+The additional owned implementation seams support the approved contract:
+serde/wire inventory, value-free errors and Debug, child executable policy,
+isolated schema validation, resolver/parser modules and test-only worker
+assertions. Generated daemon tests prove prebuilt policy/resolver retention.
+The observability fixture retains B13's deterministic pipe witness, B16 registry
+calls and B15 event cardinality/correlation. The shared generation caller fixes
+preserve all recipes, negative controls, canonical release pins and release
+fences. No additional product behavior, signing/approval mechanism, authority
+change, boundary relaxation or new process gate is introduced.
+
+Parent owns independent QA/CI acceptance, project-plan status and merge.
+Matching registry 1.5.1 and real release/lifecycle proof remain B18 work.

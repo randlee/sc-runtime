@@ -40,6 +40,10 @@ INVENTORY = {
         "SC_COMPOSE unset and sc-compose not on PATH",
         "set SC_COMPOSE or install sc-compose on PATH; cargo generate does not run",
     ),
+    "GEN.DEVELOPMENT_RELEASE_CONFLICT": (
+        "development observability cannot be combined with release generation",
+        "omit --development-observability for a registry release render",
+    ),
     "GEN.DEST_CONFLICT": (
         "the destination path exists",
         "choose an absent path",
@@ -325,6 +329,41 @@ def apply_checkout_patch(dest: Path, root: Path) -> None:
         fail_step("cargo-generate")
 
 
+def apply_development_observability(dest: Path, root: Path) -> None:
+    """Select real 1.5.0 logger plus unpublished interface bridge at generation time.
+
+    This explicit development mode never changes the canonical template or
+    release artifacts. The application still owns the real logger lifecycle.
+    """
+    manifest = dest / "Cargo.toml"
+    text = manifest.read_text(encoding="utf-8")
+    types = (root / "dev/observability-types-shim").resolve().as_posix()
+    adapter = (root / "dev/observability-logger-adapter").resolve().as_posix()
+    text = text.replace('sc-observability = { version = "1.5.1" }',
+                        'sc-observability = { version = "=1.5.0" }')
+    text = text.replace('sc-observability-types = { version = "1.5.1" }',
+                        f'sc-observability-types = {{ version = "1.5.1", path = "{types}" }}\n'
+                        f'sc-observability-dev-adapter = {{ version = "0.0.0", path = "{adapter}" }}')
+    manifest.write_text(text, encoding="utf-8")
+    daemon_manifest = dest / "crates/daemon/Cargo.toml"
+    text = daemon_manifest.read_text(encoding="utf-8")
+    if "sc-observability-dev-adapter.workspace = true" not in text:
+        text = text.replace(
+            "sc-observability.workspace = true",
+            "sc-observability.workspace = true\nsc-observability-dev-adapter.workspace = true",
+        )
+    daemon_manifest.write_text(text, encoding="utf-8")
+    observability = dest / "crates/daemon/src/observability.rs"
+    text = observability.read_text(encoding="utf-8")
+    text = text.replace(
+        "let shared: SharedCanonicalLog = logger.clone();",
+        "let shared: SharedCanonicalLog = Arc::new(\n"
+        "            sc_observability_dev_adapter::LoggerAdapter::new(Arc::clone(&logger)),\n"
+        "        );",
+    )
+    observability.write_text(text, encoding="utf-8")
+
+
 def render_documents(dest: Path, compose: str, answers_path: Path) -> None:
     for name in COMPOSE_DOCS:
         source = dest / name
@@ -378,7 +417,10 @@ def write_answers_for_compose(answers: dict) -> Path:
         fail_step("values")
 
 
-def generate(dest: Path, var_file: Path, release: bool) -> None:
+def generate(dest: Path, var_file: Path, release: bool, development_observability: bool = False) -> None:
+    if development_observability and release_mode(release):
+        fail("GEN.DEVELOPMENT_RELEASE_CONFLICT")
+    dest = dest.resolve()
     root = repo_root()
     schema = load_schema(root)
     answers = validate(schema, load_json(var_file))
@@ -397,6 +439,8 @@ def generate(dest: Path, var_file: Path, release: bool) -> None:
         cargo_generate(root, dest, name, values)
         if not release_mode(release):
             apply_checkout_patch(dest, root)
+        if development_observability:
+            apply_development_observability(dest, root)
         render_documents(dest, compose, composed)
         run_recipes(dest)
     finally:
@@ -468,14 +512,19 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--var-file", type=Path)
     parser.add_argument("--prefill", type=Path)
     parser.add_argument("--release", action="store_true")
+    parser.add_argument("--development-observability", action="store_true", help="generate against the real 1.5.0 logger and local interface bridge; incompatible with --release")
     parser.add_argument("--patch-checkout", type=Path)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(sys.argv[1:] if argv is None else argv)
+    if args.development_observability and release_mode(args.release):
+        fail("GEN.DEVELOPMENT_RELEASE_CONFLICT")
     if args.patch_checkout is not None:
         apply_checkout_patch(args.patch_checkout, repo_root())
+        if args.development_observability:
+            apply_development_observability(args.patch_checkout, repo_root())
         return
     if args.dest is None:
         fail("GEN.SCHEMA_INVALID")
@@ -487,7 +536,10 @@ def main(argv: list[str] | None = None) -> None:
                 fail("GEN.DEST_CONFLICT")
             acquired = entry_answers(args.prefill)
             var_file = acquired
-        generate(args.dest, var_file, args.release)
+        if args.development_observability:
+            generate(args.dest, var_file, args.release, True)
+        else:
+            generate(args.dest, var_file, args.release)
     finally:
         if acquired is not None:
             acquired.unlink(missing_ok=True)

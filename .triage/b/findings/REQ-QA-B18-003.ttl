@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18:qa1:REQ-QA-B18-003>
+  qa:id "REQ-QA-B18-003" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Blocking" ;
+  qa:status "fixed" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location ".github/workflows/template.yml:136-150" ;
+  qa:issue "The template workflow runs cargo check and three cargo test commands directly in the generated-fixture job. REQ-RUN-0004 requires every workflow job that lints, tests, or generates to invoke the root just recipes; its sole exception is the REQ-RUN-0306 plain-cargo-generate job. These commands are outside that exception." ;
+  qa:recommendation "Move the generated workspace check and extra-feature tests behind the prescribed just recipes, or make a reviewed requirements change that explicitly authorizes any necessary workflow command; preserve the fixture no-edits sequence." .

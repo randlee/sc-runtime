@@ -52,6 +52,14 @@ typestate, [ADR-RT-0001](architecture.md)).
 | `.logger(handle)` | a `sc_observability_types::SharedCanonicalLog`; optional in every builder state and replaces the fixed `sc-runtime` Noop | no |
 | `.run().await` | none; returns `Result<(), RuntimeError>` | yes |
 
+The optional logger is a `SharedCanonicalLog` retained through `stores`,
+`routes`, and `run` without adding a typestate. Repeated `.logger()` calls
+replace and drop the prior handle; only explicit injection changes the fixed
+`sc-runtime` identity. Library code never flushes or shuts down the logger.
+Emission errors are best effort and cannot replace an HTTP or `RuntimeError`
+result. `observability_contract` proves phase preservation, Arc ownership,
+replacement, identity and unchanged failure behavior.
+
 Intended use, in the `daemon/src/main.rs` of a generated project:
 
 ```rust
@@ -213,7 +221,10 @@ tempdir as the explicit path.
   crate, on the file `<instance-root>/daemon.lock`.
 - The lock MUST be taken by `run()` before the stores closure is called and
   before any listener is bound.
-- The lock MUST be held until the process exits or `run()` returns.
+- The lock MUST be held until the process exits or `run()` returns. The
+  additive ready-state `run_with_cleanup` MUST retain it until the supplied
+  asynchronous cleanup finishes, on success and on startup errors. Successful
+  stores and the runtime logger also remain owned through that callback.
 - The attempt to lock MUST NOT block waiting for the holder: it is a
   non-blocking try-lock (decided in this document; the design states the
   exclusive lock but not whether the attempt waits). If another process holds
@@ -413,7 +424,10 @@ On shutdown `run()` MUST:
    selected socket file while the listener still holds its endpoint lock,
    then release that endpoint lock (decided in this document and
    ADR-TRN-0006). Do not delete the endpoint-lock file.
-5. Before returning, release the lock on `<instance-root>/daemon.lock`.
+5. When using `run_with_cleanup`, await application cleanup after listener
+   disposal while retaining successful stores and the instance lock, including
+   on startup errors. Drop any unused startup closure before this callback.
+   Before returning, release the lock on `<instance-root>/daemon.lock`.
 6. Return `Ok(())` (decided in this document, following from the
    `Result<(), RuntimeError>` return type in [REQ-RT-0007](requirements.md)).
 
@@ -425,6 +439,10 @@ Steps 1 to 5 happen in that order. Endpoint cleanup must precede release of
 endpoint ownership; the instance-root lock is released afterwards.
 
 `run()` MUST NOT delete `daemon.lock`; releasing the lock is sufficient.
+`run_with_cleanup` preserves this sequence and all existing runtime errors;
+its infallible callback does not replace a primary startup/serve error. `run()`
+uses empty cleanup by default. Callers MUST await the run future to completion:
+dropping it or panicking cannot perform asynchronous cleanup.
 
 The same six-step sequence MUST run when shutdown is started by the
 crate-private trigger that `testing::DaemonFixture` uses to stop its own
@@ -743,8 +761,8 @@ The lock lives in the instance root and, by default, so does the socket. If
 `sc-runtime` computed either on its own, the lock directory and the socket
 directory could diverge, and a daemon could listen where no CLI looks. One
 resolver in one crate, called by both binaries with the same inputs, is what
-makes the CLI find the daemon. The builder is limited to five methods, so the
-inputs need a named carrier, and `DaemonConfig` is the only value the project
+makes the CLI find the daemon. The builder keeps a fixed assembly order, so the
+endpoint inputs use a named carrier, and `DaemonConfig` is the only value the project
 hands to `run()`. The decision that one resolver is shared by daemon and CLI
 is [ADR-TRN-0002](../sc-transport/architecture.md); the template-side
 counterpart, that the generated `cli` and `daemon` each accept a global

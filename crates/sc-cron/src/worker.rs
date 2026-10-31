@@ -51,7 +51,23 @@ use crate::{
 
 mod worker_runs;
 
-use worker_runs::{await_aborted, finished, panic_message};
+pub(crate) use worker_runs::{Event, event_record, terminal_event};
+use worker_runs::{WorkerFailure, await_aborted, cancel_slot_run, finished, panic_message};
+
+pub(crate) type RunCorrelation = Option<sc_observability_types::CorrelationId>;
+
+/// Logical occurrence identity within this scheduler/store domain.
+pub(crate) fn run_correlation(schedule: &Schedule, due: Option<DateTime<Utc>>) -> RunCorrelation {
+    let due = due?;
+    sc_observability_types::CorrelationId::new(format!(
+        "cron-s{}-g{}-t{}-n{}",
+        schedule.id,
+        schedule.generation,
+        due.timestamp(),
+        due.timestamp_subsec_nanos()
+    ))
+    .ok()
+}
 
 /// The longest a worker goes between reloads of the active schedules.
 ///
@@ -92,6 +108,7 @@ enum RunHandle {
 
 /// One run in flight.
 struct InFlight {
+    correlation: RunCorrelation,
     handle: Option<RunHandle>,
     /// On the clock's monotonic timeline. Ignored while `is_monty` is set:
     /// that run is not woken or expired from this instant.
@@ -118,9 +135,9 @@ impl InFlight {
     }
 }
 
-/// Dropping a Rust or Python run cancels it. A Monty run is detached instead,
-/// so a dropped slot does not abort the interpreter. The feed guard still
-/// drops, which is what lets shutdown proceed after a panic.
+/// A fallback for unwinding or dropping the worker future. Normal removal and
+/// shutdown take and join the handle before this drop. Async cleanup cannot run
+/// from Drop; callers must await `WorkerHandle::shutdown` to completion.
 impl Drop for InFlight {
     fn drop(&mut self) {
         if let Some(RunHandle::Abortable(handle)) = self.handle.take() {
@@ -145,6 +162,8 @@ struct Slot {
     next: Option<DateTime<Utc>>,
     run: Option<InFlight>,
     queued: Queued,
+    /// Logging-only deduplication while run_due retains this name.
+    last_skipped: Option<DateTime<Utc>>,
 }
 
 /// Backoff for a failed reload, or for a failed stop or disable write: 1 s
@@ -186,8 +205,9 @@ pub(crate) struct Worker<S, C> {
     job: Arc<dyn Job>,
     policy: MissedTickPolicy,
     coord: Arc<RunCoord>,
+    environment: Arc<crate::HookEnvironmentHost>,
     #[cfg(feature = "monty")]
-    compose_program: Arc<std::path::PathBuf>,
+    hosts: Arc<crate::MontyHostRegistry>,
     shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
     /// Tokio instant from [`crate::WorkerHandle::shutdown`]. `None` when the
     /// handle was dropped, which stops the worker without a handle deadline.
@@ -205,7 +225,7 @@ pub(crate) struct Worker<S, C> {
     /// has run, but the stored next run is still that occurrence, so a slot
     /// rebuilt from the row would run it again: no slot is built for these,
     /// and the write is retried until the store answers.
-    pending_ends: Vec<Schedule>,
+    pending_ends: Vec<(Schedule, RunCorrelation)>,
     /// The most the worker waits between reloads.
     reload_poll: chrono::Duration,
     /// When the next periodic reload is due; `None` until the first reload
@@ -220,38 +240,60 @@ pub(crate) struct Worker<S, C> {
 pub(crate) fn resolve(
     job: &Arc<dyn Job>,
     schedule: &Schedule,
+    logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: RunCorrelation,
 ) -> Result<ResolvedTarget, RunOutcome> {
     match &schedule.spec.hook {
         HookTarget::Rust => Ok(ResolvedTarget::Rust(Arc::clone(job))),
-        HookTarget::Python { module } => match PythonHook::new(module) {
-            Ok(hook) => Ok(ResolvedTarget::Python(hook)),
-            Err(error) => {
-                tracing::warn!(subsystem = "sc_cron", action = "resolve_failed",
-                    schedule = %schedule.id, name = %schedule.spec.name, code = error.code(), %error,
-                    "no target for this run: {error}");
-                Err(RunOutcome::Failed(format!("resolve: {}", error.recorded())))
+        HookTarget::Python { module } => {
+            match PythonHook::new_with_logger(module, Arc::clone(logger)) {
+                Ok(hook) => Ok(ResolvedTarget::Python(
+                    hook.with_correlation(correlation.clone()),
+                )),
+                Err(error) => {
+                    if let Some(mut event) = event_record(
+                        logger.service_name().clone(),
+                        Event::TargetResolveFailed,
+                        Some(schedule),
+                        serde_json::json!({"target": module.display().to_string(), "error": error.recorded()}),
+                    ) {
+                        event.correlation_id = correlation.clone();
+                        let _ = logger.emit(event);
+                    };
+                    Err(WorkerFailure::TargetResolve.outcome(error.recorded()))
+                }
             }
-        },
+        }
         HookTarget::Monty { .. } => {
             let error = CronError::HookFailed(
                 "Monty hooks require sc-cron's optional `monty` feature".to_owned(),
             );
-            tracing::warn!(subsystem = "sc_cron", action = "resolve_failed",
-                schedule = %schedule.id, name = %schedule.spec.name, code = error.code(), %error,
-                "no target for this run: {error}");
-            Err(RunOutcome::Failed(format!("resolve: {}", error.recorded())))
+            if let Some(mut event) = event_record(
+                logger.service_name().clone(),
+                Event::TargetResolveFailed,
+                Some(schedule),
+                serde_json::json!({"target": "monty", "error": error.recorded()}),
+            ) {
+                event.correlation_id = correlation.clone();
+                let _ = logger.emit(event);
+            };
+            Err(WorkerFailure::TargetResolve.outcome(error.recorded()))
         }
     }
 }
 
 /// One run of `target` for `schedule`: the stop check, then the run, under
 /// `deadline` on `clock`'s monotonic timeline (REQ-CRON-0005, REQ-CRON-0013).
-pub(crate) async fn run_target<C: Clock + ?Sized>(
+pub(crate) async fn run_target_with_environment<C: Clock + ?Sized>(
     target: ResolvedTarget,
     clock: Arc<C>,
     schedule: &Schedule,
     deadline: Instant,
+    host: &crate::HookEnvironmentHost,
 ) -> Report {
+    if let Err(error) = schedule.spec.validate_environment() {
+        return Report::Ran(RunOutcome::Failed(error.recorded()));
+    }
     let payload = &schedule.spec.payload;
     match target {
         ResolvedTarget::Rust(job) => match job.should_stop(payload).await {
@@ -260,6 +302,13 @@ pub(crate) async fn run_target<C: Clock + ?Sized>(
             StopDecision::Delete(reason) => Report::Delete(reason),
         },
         ResolvedTarget::Python(hook) => {
+            let environment = match host.snapshot(clock.as_ref(), schedule, deadline).await {
+                Ok(environment) => environment,
+                Err(outcome) => return Report::Ran(outcome),
+            };
+            let hook = hook.with_env(environment.child_env());
+            // resolve installed RunCoord's identical logger Arc. The resolved
+            // hook carries it through this future into supervise_with_logger.
             let call = |event| HookCall {
                 event,
                 schedule: &schedule.spec.name,
@@ -267,16 +316,33 @@ pub(crate) async fn run_target<C: Clock + ?Sized>(
                 timeout: schedule.spec.timeout,
                 deadline,
             };
-            match stop_step(&hook, clock.as_ref(), &call(HookEvent::Stop)).await {
-                Step::Run => {
-                    Report::Ran(tick_outcome(&hook, clock.as_ref(), &call(HookEvent::Tick)).await)
-                }
+            match stop_step(&hook, clock.as_ref(), &call(HookEvent::Stop), &environment).await {
+                Step::Run => Report::Ran(
+                    tick_outcome(&hook, clock.as_ref(), &call(HookEvent::Tick), &environment).await,
+                ),
                 Step::Skip(outcome) => Report::Ran(outcome),
                 Step::Disable(reason) => Report::Disable(reason),
                 Step::Delete(reason) => Report::Delete(reason),
             }
         }
     }
+}
+
+#[cfg(test)]
+pub(crate) async fn run_target<C: Clock + ?Sized>(
+    target: ResolvedTarget,
+    clock: Arc<C>,
+    schedule: &Schedule,
+    deadline: Instant,
+) -> Report {
+    run_target_with_environment(
+        target,
+        clock,
+        schedule,
+        deadline,
+        &crate::HookEnvironmentHost::new(),
+    )
+    .await
 }
 
 impl<S, C> Worker<S, C>
@@ -293,7 +359,7 @@ where
         coord: Arc<RunCoord>,
         reload_poll: Duration,
         shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
-        #[cfg(feature = "monty")] compose_program: Arc<std::path::PathBuf>,
+        #[cfg(feature = "monty")] hosts: Arc<crate::MontyHostRegistry>,
     ) -> Self {
         Self {
             store,
@@ -301,8 +367,9 @@ where
             job,
             policy,
             coord,
+            environment: Arc::new(crate::HookEnvironmentHost::new()),
             #[cfg(feature = "monty")]
-            compose_program,
+            hosts,
             shutdown,
             handle_deadline: None,
             stopping: false,
@@ -315,6 +382,14 @@ where
                 .unwrap_or(chrono::Duration::MAX),
             poll_due: None,
         }
+    }
+
+    pub(crate) fn with_hook_environment(
+        mut self,
+        environment: Arc<crate::HookEnvironmentHost>,
+    ) -> Self {
+        self.environment = environment;
+        self
     }
 
     /// Returns whether shutdown was requested, without waiting.
@@ -429,29 +504,29 @@ where
     fn is_pending_end(&self, schedule: &Schedule) -> bool {
         self.pending_ends
             .iter()
-            .any(|ending| ending.id == schedule.id && ending.generation == schedule.generation)
+            .any(|(ending, _)| ending.id == schedule.id && ending.generation == schedule.generation)
     }
 
     /// Ends a schedule whose last occurrence has run. If the store fails, the
     /// write is retried with backoff and the schedule gets no slot meanwhile,
     /// so it can never run again.
-    async fn end_exhausted(&mut self, schedule: &Schedule) {
-        if self.end(schedule, EXHAUSTED).await {
+    async fn end_exhausted(&mut self, schedule: &Schedule, correlation: RunCorrelation) {
+        if self.end(schedule, EXHAUSTED, correlation.clone()).await {
             return;
         }
         if !self.is_pending_end(schedule) {
-            self.pending_ends.push(schedule.clone());
+            self.pending_ends.push((schedule.clone(), correlation));
         }
         self.write_retry.failed(self.clock.now());
     }
 
     /// Retries the ending writes that failed.
     async fn retry_ends(&mut self) {
-        for schedule in std::mem::take(&mut self.pending_ends) {
+        for (schedule, correlation) in std::mem::take(&mut self.pending_ends) {
             if self.stop_requested() {
-                self.pending_ends.push(schedule);
-            } else if !self.end(&schedule, EXHAUSTED).await {
-                self.pending_ends.push(schedule);
+                self.pending_ends.push((schedule, correlation));
+            } else if !self.end(&schedule, EXHAUSTED, correlation.clone()).await {
+                self.pending_ends.push((schedule, correlation));
                 self.write_retry.failed(self.clock.now());
             }
         }
@@ -492,8 +567,14 @@ where
                 self.merge(rows).await;
             }
             Err(error) => {
-                tracing::error!(subsystem = "sc_cron", action = "reload_failed",
-                    code = error.code(), %error, "schedule reload failed: {error}");
+                if let Some(event) = event_record(
+                    self.coord.logger.service_name().clone(),
+                    Event::ScheduleReloadFailed,
+                    None,
+                    serde_json::json!({"error": error.to_string()}),
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
                 self.retry.failed(self.clock.now());
             }
         }
@@ -514,12 +595,24 @@ where
                 let mut slot = previous.swap_remove(index);
                 if schedule.enabled {
                     self.slots.push(slot);
+                    continue;
                 } else if slot.run.as_ref().is_some_and(InFlight::is_monty) {
                     slot.queued = Queued::Disable;
                     self.slots.push(slot);
-                } else if slot.run.is_some() {
-                    log(&slot.schedule, "cancelled", "schedule disabled");
+                    continue;
+                } else if slot.run.is_some()
+                    && let Some(mut event) = detail_event(
+                        self.coord.logger.service_name().clone(),
+                        &slot.schedule,
+                        Event::ScheduleCancelled,
+                        "schedule disabled",
+                    )
+                {
+                    event.correlation_id =
+                        slot.run.as_ref().and_then(|run| run.correlation.clone());
+                    let _ = self.coord.logger.emit(event);
                 }
+                cancel_slot_run(&mut slot).await;
                 continue;
             }
             if let Some(index) = previous.iter().position(|slot| {
@@ -548,13 +641,19 @@ where
                     slot.queued = Queued::Delete;
                 }
                 self.slots.push(slot);
-            } else if slot.run.is_some() {
-                log(
+                continue;
+            } else if slot.run.is_some()
+                && let Some(mut event) = detail_event(
+                    self.coord.logger.service_name().clone(),
                     &slot.schedule,
-                    "cancelled",
+                    Event::ScheduleCancelled,
                     "schedule ended, disabled or restarted",
-                );
+                )
+            {
+                event.correlation_id = slot.run.as_ref().and_then(|run| run.correlation.clone());
+                let _ = self.coord.logger.emit(event);
             }
+            cancel_slot_run(&mut slot).await;
         }
     }
 
@@ -579,7 +678,7 @@ where
             next
         };
         if next.is_none() {
-            self.end_exhausted(&schedule).await;
+            self.end_exhausted(&schedule, None).await;
             return None;
         }
         Some(Slot {
@@ -587,6 +686,7 @@ where
             next,
             run: None,
             queued: Queued::None,
+            last_skipped: None,
         })
     }
 
@@ -610,9 +710,18 @@ where
                 index += 1;
                 continue;
             };
-            log(&slot.schedule, "timed_out", "run deadline passed");
+            let correlation = run.correlation.clone();
+            if let Some(mut event) = detail_event(
+                self.coord.logger.service_name().clone(),
+                &slot.schedule,
+                Event::RunTimedOut,
+                "run deadline passed",
+            ) {
+                event.correlation_id = correlation.clone();
+                let _ = self.coord.logger.emit(event);
+            };
             let result = await_aborted(run).await;
-            if !self.complete(index, result).await {
+            if !self.complete(index, result, correlation).await {
                 index += 1;
             }
         }
@@ -629,11 +738,19 @@ where
                 return;
             };
             if self.coord.name_in_flight(&slot.schedule.spec.name) {
-                log(
-                    &slot.schedule,
-                    "skipped_in_flight",
-                    "run_due still holds this name",
-                );
+                if let Some(due) = slot.next.filter(|next| *next <= now)
+                    && slot.last_skipped != Some(due)
+                {
+                    slot.last_skipped = Some(due);
+                    if let Some(event) = detail_event(
+                        self.coord.logger.service_name().clone(),
+                        &slot.schedule,
+                        Event::RunSkippedInFlight,
+                        "run_due still holds this name",
+                    ) {
+                        let _ = self.coord.logger.emit(event);
+                    };
+                }
                 index += 1;
                 continue;
             }
@@ -653,50 +770,63 @@ where
                 index += 1;
                 continue;
             }
-            let Some(slot) = self.slots.get_mut(index) else {
-                return;
-            };
-            if slot.run.is_some() {
-                log(
-                    &slot.schedule,
-                    "skipped_in_flight",
-                    "previous run still in flight",
-                );
-            } else if missed && self.policy == MissedTickPolicy::Skip {
-                log(
-                    &slot.schedule,
-                    "missed_skipped",
-                    "missed occurrences dropped",
-                );
-            } else {
-                if missed {
-                    log(
-                        &slot.schedule,
-                        "missed_replayed",
-                        "missed occurrences run once",
-                    );
-                }
-                self.launch(index);
-            }
+            self.launch_selected(index, missed, run_correlation(&schedule, Some(due)));
             let Some(slot) = self.slots.get(index) else {
                 return;
             };
             if slot.next.is_none() && slot.run.is_none() {
                 let slot = self.slots.remove(index);
-                self.end_exhausted(&slot.schedule).await;
+                self.end_exhausted(&slot.schedule, None).await;
             } else {
                 index += 1;
             }
         }
     }
 
-    fn launch(&mut self, index: usize) {
+    fn launch_selected(&mut self, index: usize, missed: bool, correlation: RunCorrelation) {
+        let Some(slot) = self.slots.get(index) else {
+            return;
+        };
+        if slot.run.is_some() {
+            if let Some(event) = detail_event(
+                self.coord.logger.service_name().clone(),
+                &slot.schedule,
+                Event::RunSkippedInFlight,
+                "previous run still in flight",
+            ) {
+                let _ = self.coord.logger.emit(event);
+            };
+        } else if missed && self.policy == MissedTickPolicy::Skip {
+            if let Some(event) = detail_event(
+                self.coord.logger.service_name().clone(),
+                &slot.schedule,
+                Event::RunMissedSkipped,
+                "missed occurrences dropped",
+            ) {
+                let _ = self.coord.logger.emit(event);
+            };
+        } else {
+            if missed
+                && let Some(event) = detail_event(
+                    self.coord.logger.service_name().clone(),
+                    &slot.schedule,
+                    Event::RunMissedReplayed,
+                    "missed occurrences run once",
+                )
+            {
+                let _ = self.coord.logger.emit(event);
+            }
+            self.launch(index, correlation);
+        }
+    }
+
+    fn launch(&mut self, index: usize, correlation: RunCorrelation) {
         #[cfg(feature = "monty")]
         if matches!(
             self.slots.get(index).map(|slot| &slot.schedule.spec.hook),
             Some(HookTarget::Monty { .. })
         ) {
-            self.launch_monty(index);
+            self.launch_monty(index, correlation);
             return;
         }
         let monotonic = self.clock.monotonic_now();
@@ -706,16 +836,34 @@ where
         let timeout = slot.schedule.spec.timeout;
         // RunTimeout is at most 24 h, so this cannot overflow in practice.
         let deadline = monotonic.checked_add(timeout.get()).unwrap_or(monotonic);
-        let handle = match resolve(&self.job, &slot.schedule) {
+        let handle = match resolve(
+            &self.job,
+            &slot.schedule,
+            &self.coord.logger,
+            correlation.clone(),
+        ) {
             Ok(target) => {
                 let clock = Arc::clone(&self.clock);
                 let schedule = slot.schedule.clone();
-                tokio::spawn(async move { run_target(target, clock, &schedule, deadline).await })
+                let environment = Arc::clone(&self.environment);
+                tokio::spawn(async move {
+                    run_target_with_environment(target, clock, &schedule, deadline, &environment)
+                        .await
+                })
             }
             Err(outcome) => tokio::spawn(async move { Report::Ran(outcome) }),
         };
-        log(&slot.schedule, "launched", "run started");
+        if let Some(mut event) = event_record(
+            self.coord.logger.service_name().clone(),
+            Event::RunLaunched,
+            Some(&slot.schedule),
+            serde_json::json!({"deadline_remaining_ms": deadline.saturating_duration_since(self.clock.monotonic_now()).as_millis() as u64}),
+        ) {
+            event.correlation_id = correlation.clone();
+            let _ = self.coord.logger.emit(event);
+        };
         slot.run = Some(InFlight {
+            correlation,
             handle: Some(RunHandle::Abortable(handle)),
             deadline,
             guard: None,
@@ -723,7 +871,12 @@ where
     }
 
     /// Records a finished run. Returns whether the slot was removed.
-    async fn complete(&mut self, index: usize, result: Result<Report, JoinError>) -> bool {
+    async fn complete(
+        &mut self,
+        index: usize,
+        result: Result<Report, JoinError>,
+        correlation: RunCorrelation,
+    ) -> bool {
         let Some(slot) = self.slots.get_mut(index) else {
             return false;
         };
@@ -732,26 +885,50 @@ where
         match result {
             Ok(Report::Delete(reason)) => {
                 self.slots.remove(index);
-                if !self.end(&schedule, &reason).await {
+                if !self.end(&schedule, &reason, correlation.clone()).await {
                     self.rebuild_later();
                 }
                 return true;
             }
             Ok(Report::Disable(reason)) => {
                 self.slots.remove(index);
-                self.disable(&schedule, &reason).await;
+                self.disable(&schedule, &reason, correlation.clone()).await;
                 return true;
             }
-            Ok(Report::Ran(outcome)) => self.record(&schedule, outcome).await,
+            Ok(Report::Ran(outcome)) => self.record(&schedule, outcome, correlation.clone()).await,
             Err(error) if error.is_panic() => {
-                let message = panic_message(error);
+                let message = if matches!(schedule.spec.hook, HookTarget::Rust) {
+                    panic_message(error)
+                } else {
+                    "hook or environment provider task panicked".to_owned()
+                };
+                if let Some(mut event) = event_record(
+                    self.coord.logger.service_name().clone(),
+                    Event::JobJoinFailed,
+                    Some(&schedule),
+                    serde_json::json!({"error": message}),
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                };
                 self.record(
                     &schedule,
-                    RunOutcome::Failed(format!("job panicked: {message}")),
+                    WorkerFailure::JobJoin.outcome(message),
+                    correlation.clone(),
                 )
                 .await;
             }
-            Err(error) => log(&schedule, "cancelled", &error.to_string()),
+            Err(error) => {
+                if let Some(mut event) = detail_event(
+                    self.coord.logger.service_name().clone(),
+                    &schedule,
+                    Event::ScheduleCancelled,
+                    &error.to_string(),
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                }
+            }
         }
         if self
             .slots
@@ -759,24 +936,48 @@ where
             .is_some_and(|slot| slot.next.is_none())
         {
             self.slots.remove(index);
-            self.end_exhausted(&schedule).await;
+            self.end_exhausted(&schedule, correlation).await;
             return true;
         }
         false
     }
 
-    async fn record(&mut self, schedule: &Schedule, outcome: RunOutcome) {
+    async fn record(
+        &mut self,
+        schedule: &Schedule,
+        outcome: RunOutcome,
+        correlation: RunCorrelation,
+    ) {
         let (id, generation) = (schedule.id, schedule.generation);
         let at = self.now_stamp();
-        let text = outcome.to_string();
+        let recorded = outcome.clone();
         let result = self
             .store_call(move |store| store.record_run(id, generation, at, &outcome))
             .await;
         match result {
-            Ok(true) => log(schedule, "recorded", &text),
-            Ok(false) => self.fenced(schedule, "record_run"),
-            Err(error) => tracing::error!(subsystem = "sc_cron", action = "record_failed",
-                schedule = %id, code = error.code(), %error, "run outcome not recorded: {error}"),
+            Ok(true) => {
+                if let Some(mut event) = terminal_event(
+                    self.coord.logger.service_name().clone(),
+                    Event::RunFinished,
+                    schedule,
+                    &recorded,
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                }
+            }
+            Ok(false) => self.fenced(schedule, "record_run", correlation.clone()),
+            Err(error) => {
+                if let Some(mut event) = event_record(
+                    self.coord.logger.service_name().clone(),
+                    Event::RunRecordFailed,
+                    Some(schedule),
+                    serde_json::json!({"error": error.to_string()}),
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                }
+            }
         }
     }
 
@@ -790,13 +991,19 @@ where
         {
             Ok(true) => true,
             Ok(false) => {
-                self.fenced(schedule, "set_next");
+                self.fenced(schedule, "set_next", None);
                 false
             }
             Err(error) => {
                 // The in-memory next run still drives this process.
-                tracing::error!(subsystem = "sc_cron", action = "set_next_failed",
-                    schedule = %id, code = error.code(), %error, "next run not stored: {error}");
+                if let Some(event) = event_record(
+                    self.coord.logger.service_name().clone(),
+                    Event::ScheduleNextFailed,
+                    Some(schedule),
+                    serde_json::json!({"error": error.to_string()}),
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
                 true
             }
         }
@@ -804,7 +1011,12 @@ where
 
     /// Writes the end of a schedule; returns `false` only when the store
     /// failed, so the caller can retry. A fenced write is answered (`true`).
-    async fn end(&mut self, schedule: &Schedule, reason: &str) -> bool {
+    async fn end(
+        &mut self,
+        schedule: &Schedule,
+        reason: &str,
+        correlation: RunCorrelation,
+    ) -> bool {
         let (id, generation) = (schedule.id, schedule.generation);
         let at = self.now_stamp();
         let owned = reason.to_owned();
@@ -812,12 +1024,28 @@ where
             .store_call(move |store| store.stop(id, generation, at, &owned))
             .await
         {
-            Ok(true) => log(schedule, "stopped", reason),
-            Ok(false) => self.fenced(schedule, "stop"),
+            Ok(true) => {
+                if let Some(mut event) = detail_event(
+                    self.coord.logger.service_name().clone(),
+                    schedule,
+                    Event::ScheduleStopped,
+                    reason,
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                }
+            }
+            Ok(false) => self.fenced(schedule, "stop", correlation.clone()),
             Err(error) => {
-                tracing::error!(subsystem = "sc_cron", action = "stop_failed",
-                    schedule = %id, code = error.code(), %error,
-                    "schedule stop not stored: {error}");
+                if let Some(mut event) = event_record(
+                    self.coord.logger.service_name().clone(),
+                    Event::ScheduleStopFailed,
+                    Some(schedule),
+                    serde_json::json!({"error": error.to_string()}),
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                };
                 return false;
             }
         }
@@ -826,7 +1054,7 @@ where
     }
 
     /// Disables the schedule on its stop check's say-so; fenced like every write.
-    async fn disable(&mut self, schedule: &Schedule, reason: &str) {
+    async fn disable(&mut self, schedule: &Schedule, reason: &str, correlation: RunCorrelation) {
         let (id, generation) = (schedule.id, schedule.generation);
         let at = self.now_stamp();
         let owned = reason.to_owned();
@@ -835,82 +1063,70 @@ where
             .await
         {
             Ok(true) => {
-                log(schedule, "disabled", reason);
+                if let Some(mut event) = detail_event(
+                    self.coord.logger.service_name().clone(),
+                    schedule,
+                    Event::ScheduleDisabled,
+                    reason,
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                };
+                if let Some(mut event) = terminal_event(
+                    self.coord.logger.service_name().clone(),
+                    Event::RunFinished,
+                    schedule,
+                    &RunOutcome::Refused(reason.to_owned()),
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                };
                 self.write_answered();
             }
-            Ok(false) => self.fenced(schedule, "disable"),
+            Ok(false) => self.fenced(schedule, "disable", correlation.clone()),
             Err(error) => {
                 // The slot is gone but the row is still enabled: rebuild it.
-                tracing::error!(subsystem = "sc_cron", action = "disable_failed",
-                    schedule = %id, code = error.code(), %error,
-                    "schedule disable not stored: {error}");
+                if let Some(mut event) = event_record(
+                    self.coord.logger.service_name().clone(),
+                    Event::ScheduleDisableFailed,
+                    Some(schedule),
+                    serde_json::json!({"error": error.to_string()}),
+                ) {
+                    event.correlation_id = correlation.clone();
+                    let _ = self.coord.logger.emit(event);
+                };
                 self.rebuild_later();
             }
         }
     }
 
-    fn fenced(&mut self, schedule: &Schedule, operation: &str) {
-        tracing::warn!(subsystem = "sc_cron", action = "fenced", schedule = %schedule.id,
-            generation = %schedule.generation, operation,
-            "{operation} fenced: schedule ended or restarted");
+    fn fenced(&mut self, schedule: &Schedule, operation: &str, correlation: RunCorrelation) {
+        if let Some(mut event) = event_record(
+            self.coord.logger.service_name().clone(),
+            Event::RunFenced,
+            Some(schedule),
+            serde_json::json!({"operation": operation}),
+        ) {
+            event.correlation_id = correlation.clone();
+            let _ = self.coord.logger.emit(event);
+        };
         self.reload_wanted = true;
     }
 }
 
-fn log(schedule: &Schedule, action: &str, detail: &str) {
-    tracing::info!(subsystem = "sc_cron", action, schedule = %schedule.id,
-        generation = %schedule.generation, name = %schedule.spec.name, detail,
-        "schedule {} {action}: {detail}", schedule.spec.name);
+fn detail_event(
+    service: sc_observability_types::ServiceName,
+    schedule: &Schedule,
+    event: Event,
+    detail: &str,
+) -> Option<sc_observability_types::LogEvent> {
+    let fields = match event {
+        Event::RunTimedOut => serde_json::json!({"deadline_remaining_ms": 0}),
+        Event::RunMissedSkipped | Event::RunMissedReplayed => serde_json::json!({}),
+        _ => serde_json::json!({"reason": detail}),
+    };
+    event_record(service, event, Some(schedule), fields)
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn reload_retry_doubles_per_failure_then_caps_at_one_minute() {
-        let now = DateTime::<Utc>::UNIX_EPOCH;
-        let mut retry = ReloadRetry::default();
-        let mut delays = Vec::new();
-        for _ in 0..9 {
-            retry.failed(now);
-            delays.push(retry.due.map(|due| (due - now).num_seconds()));
-        }
-        let expected = [1, 2, 4, 8, 16, 32, 60, 60, 60].map(Some);
-        assert_eq!(delays, expected);
-        assert!(!retry.is_due(now));
-        assert!(retry.is_due(now + chrono::Duration::seconds(60)));
-    }
-
-    #[test]
-    fn reload_retry_delay_never_overflows() {
-        for failures in (62..=64).chain([u32::MAX - 1, u32::MAX]) {
-            assert_eq!(
-                ReloadRetry::delay(failures),
-                chrono::Duration::seconds(60),
-                "{failures}"
-            );
-        }
-        let now = DateTime::<Utc>::UNIX_EPOCH;
-        let mut retry = ReloadRetry {
-            failures: u32::MAX,
-            due: None,
-        };
-        retry.failed(now);
-        assert_eq!(retry.failures, u32::MAX);
-        assert_eq!(retry.due, Some(now + chrono::Duration::seconds(60)));
-    }
-
-    #[test]
-    fn reload_retry_success_clears_the_backoff() {
-        let now = DateTime::<Utc>::UNIX_EPOCH;
-        let mut retry = ReloadRetry::default();
-        retry.failed(now);
-        retry.failed(now);
-        retry.succeeded();
-        assert!(retry.due.is_none());
-        assert!(!retry.is_due(now + chrono::Duration::days(1)));
-        retry.failed(now);
-        assert_eq!(retry.due, Some(now + chrono::Duration::seconds(1)));
-    }
-}
+mod tests;

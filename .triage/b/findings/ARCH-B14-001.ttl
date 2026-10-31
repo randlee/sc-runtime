@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-14:ARCH-B14-001> qa:sprint "b-14" ;
+  qa:severity "BLOCKING" ;
+  qa:reviewer "arch-qa" ;
+  qa:location "docs/plans/phase-b/sprint-b-14-sc-runtime-observability.md:21" ;
+  qa:issue "The B14 adrs list omits ADR-RT-0002 and ADR-RT-0003, although B14 owns sc-runtime paths and both decisions are Active in docs/sc-runtime/architecture.md. RULE-ADR-PLAN explicitly requires every binding ADR from each owned crate architecture file. The phase plan applicability notes do not waive this enumeration rule; no implementation violation of either omitted ADR was found." ;
+  qa:remedy "Add ADR-RT-0002 and ADR-RT-0003 to the existing adrs list. Preserve narrow applicability and the authorized mechanical builder forwarding; no additional runtime scope or tests are required." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .

@@ -24,8 +24,9 @@ use crate::{RunOutcome, StopDecision};
 ///   working past it.
 /// - A job that blocks a runtime thread without awaiting cannot be timed
 ///   out, and on a current-thread runtime it also stalls the worker and
-///   every other schedule. Run the scheduler on a multi-thread runtime for
-///   the hard timeout guarantee, and never block inside `run`.
+///   every other schedule. Use a multi-thread runtime so unrelated work can
+///   progress, and never block inside `run`. Even there cancellation cannot
+///   preempt native code; shutdown joins its actual completion.
 ///
 /// The deadline is on [`Clock::monotonic_now`](crate::Clock::monotonic_now)'s
 /// timeline, which is `Instant::now` under

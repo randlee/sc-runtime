@@ -22,6 +22,8 @@ crates, and the registry-backed fixture matrix at that tag still need release
 authorization and registry credentials. Merging the release kit onto
 `integrate/phase-a` is the integration record for that later publish.
 
+`complete` in sprint frontmatter records implementation delivery. This index separately records QA and merge progress; `implemented; QA pending` means those gates remain open.
+
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | a-1 compatibility spike | [sprint-a-1](plans/phase-a/sprint-a-1-compatibility-spike.md) | complete | `sprint/a-1-compatibility-spike` |
@@ -35,6 +37,11 @@ authorization and registry credentials. Merging the release kit onto
 
 Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL, the adaptor, and the six generation layouts. See [Phase b plan](plans/phase-b/phase-b-plan.md).
 
+Continuation execution lead: `codexis`. The b-13 through b-18 integration
+branch is `integrate/phase-b-observability`; its dependency and execution
+ledger is Beads epic `run-03z`. Sprint scope and ownership remain defined by
+the approved sprint documents.
+
 The b-13 through b-18 continuation establishes the repository `0.1.1`
 contract. b-13 owns the non-blocking version/public API boundary and whole
 cron component propagation but performs no release;
@@ -42,13 +49,31 @@ b-14, b-15, and b-16 then run in parallel. b-16 follows b-13's generated
 graph amendment and owns both generated dependency inventories plus the
 trusted in-process Monty example; b-17 adds the shared Python/Monty hook
 environment and release-v1 sc-cron schema baseline; b-18 owns the sc-publish
-consumer update, a real install and complete synchronization from the exact
-pinned kit revision, the human-authorized five-crate publish order, and the
-registry-only generated proof plus isolated-CI SIGINT/SIGTERM lifecycle
-proof. Publication evidence and the registry-only proof are produced from one
-unchanged source commit and that exact commit is tagged `v0.1.1`. b-18 is
-blocked until an exact later kit
-revision excludes `docs/sprints/**`; the current pin is not a valid input.
+consumer update, a real qualified exact-kit install and complete output
+synchronization, publish-order/preflight source contracts, and real development
+HTTP+cron JSONL plus isolated-CI SIGINT/SIGTERM lifecycle proof. The owner
+confirmed on 2026-10-30 that Phase B finishes before upstream `1.5.1`; the
+approved real registry `1.5.0` development adapter may support these proofs.
+All b-18 runtime/lifecycle criteria remain required. This timing amendment
+does not mark b-18 or Phase B complete.
+
+Release epic `run-h0h` owns matching published `1.5.1` and external prerequisite
+`run-03z.7`, direct upstream Arc coercion and bridge/path removal, the
+human-authorized five-crate `0.1.1` publication, registry-only generated proof,
+and the same-source `v0.1.1` tag. Publication evidence and registry-only proof
+bind to one unchanged source commit. The release guard stays active; the
+phase-end readiness review after fixes must report these remaining release
+limits. [REQ-RUN-0702](requirements.md), including Success Criteria 6–7,
+and [architecture](architecture.md) (System shape and ADR-RUN-0004/0007)
+carry this governing timing amendment. Canonical release inventories, public
+interfaces, and every production safety predicate remain unchanged.
+
+The existing kit pin is rejected because its installer copies a
+`docs/sprints/**` destination. b-18 must select a qualified exact full SHA and
+prove the complete actual installer destination inventory is package-safe;
+upstream source may retain its own history. Kit preparation and qualification
+may progress independently, while final runtime composition consumes approved
+parent merges. This docs amendment selects no replacement consumer pin.
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
@@ -64,9 +89,9 @@ revision excludes `docs/sprints/**`; the current pin is not a valid input.
 | b-10 sc-cron Monty host bridge | [sprint-b-10](plans/phase-b/sprint-b-10-sc-cron-monty-host-bridge.md) | complete | `sprint/b-10-sc-cron-monty-host-bridge` |
 | b-11 benchmark Monty reports | [sprint-b-11](plans/phase-b/sprint-b-11-benchmark-monty-reports.md) | complete | `sprint/b-11-benchmark-monty-reports` |
 | b-12 sc-cron schedule row limit | [sprint-b-12](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md) | complete | `sprint/b-12-sc-cron-schedule-row-limit` |
-| b-13 observability contract | [sprint-b-13](plans/phase-b/sprint-b-13-observability-contract.md) | planned | `sprint/b-13-observability-contract` |
-| b-14 runtime observability | [sprint-b-14](plans/phase-b/sprint-b-14-sc-runtime-observability.md) | planned | `sprint/b-14-sc-runtime-observability` |
-| b-15 cron observability | [sprint-b-15](plans/phase-b/sprint-b-15-sc-cron-observability.md) | planned | `sprint/b-15-sc-cron-observability` |
-| b-16 Monty template examples | [sprint-b-16](plans/phase-b/sprint-b-16-monty-template-examples.md) | planned | `sprint/b-16-monty-template-examples` |
-| b-17 sc-cron hook environment | [sprint-b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md) | planned | `sprint/b-17-sc-cron-hook-environment` |
-| b-18 template observability integration | [sprint-b-18](plans/phase-b/sprint-b-18-template-observability-integration.md) | planned | `sprint/b-18-template-observability-integration` |
+| b-13 observability contract | [sprint-b-13](plans/phase-b/sprint-b-13-observability-contract.md) | complete | `sprint/b-13-observability-contract` |
+| b-14 runtime observability | [sprint-b-14](plans/phase-b/sprint-b-14-sc-runtime-observability.md) | complete | `sprint/b-14-sc-runtime-observability` |
+| b-15 cron observability | [sprint-b-15](plans/phase-b/sprint-b-15-sc-cron-observability.md) | complete | `sprint/b-15-sc-cron-observability` |
+| b-16 Monty template examples | [sprint-b-16](plans/phase-b/sprint-b-16-monty-template-examples.md) | complete | `sprint/b-16-monty-template-examples` |
+| b-17 sc-cron hook environment | [sprint-b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md) | complete | `sprint/b-17-sc-cron-hook-environment` |
+| b-18 template observability integration | [sprint-b-18](plans/phase-b/sprint-b-18-template-observability-integration.md) | complete | `codex/b-18-publishing-kit` |

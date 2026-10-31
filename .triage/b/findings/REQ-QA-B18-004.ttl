@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18:qa1:REQ-QA-B18-004>
+  qa:id "REQ-QA-B18-004" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Blocking" ;
+  qa:status "fixed" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "template/crates/daemon/src/cron.rs:165-168" ;
+  qa:issue "The fixed cron::open contract says database_path resolves below instance_root, but implementation uses Path::join without rejecting absolute paths or parent traversal. Absolute paths replace the root in join, and ../ paths escape it; config and tests currently accept a caller-supplied absolute database path. The schema says only relative paths resolve below the root, leaving the accepted behavior inconsistent with the fixed contract." ;
+  qa:recommendation "Enforce that configured schedule database paths remain beneath instance_root (including rejecting absolute and parent-traversal paths), and add tests for absolute and ../ inputs; otherwise revise the fixed contract/schema together through planned requirements review." .

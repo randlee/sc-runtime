@@ -212,7 +212,7 @@ This requirement applies to each of the four workspace crates: `sc-config`,
    `cargo publish -p <crate>` per crate).
 
 The Phase B continuation extends, rather than replaces, those Phase A
-obligations: `sc-cron` is the fifth independently packaged public crate. It
+obligations at workspace version `0.1.1`: `sc-cron` is the fifth independently packaged public crate. It
 MUST satisfy the same package-metadata, standalone test, README/doctest,
 publishability, and separate-publication obligations. The five-crate publish
 order is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, then
@@ -3651,12 +3651,43 @@ human-authorized crates.io order is `sc-config` (1), `sc-transport` (2),
 `0.1.1`; `sc-runtime-db-sqlite` remains unpublished. Generated manifests use
 normal crates.io version requirements satisfied by `0.1.1`, and the
 release-mode generated lockfile proves registry resolution with no checkout
-path, git dependency, or `[patch.crates-io]` override. Sprint b-13 records
-this amendment but performs no publication; sprint b-18 owns its single
-integration acceptance root and release evidence.
-The exact commit published and proven by b-18 MUST be tagged `v0.1.1`; no
-source or manifest change may occur between the five crate publications, the
-registry-only generated proof, and that tag.
+path, git dependency, or `[patch.crates-io]` override.
+
+**Timing amendment — 2026-10-30:** the owner directed that matching upstream
+`1.5.1` publication follows Phase B. Sprint b-13 establishes the `0.1.1`
+contract without publication. Sprint b-18 owns the Phase B integration
+acceptance root: real development composition using the approved registry
+`1.5.0` logger through the unpublished development adapter, shared logger
+ownership, HTTP+cron JSONL, shutdown precedence, real isolated GitHub-hosted
+SIGINT/SIGTERM lifecycle proof, qualified exact-kit installation with complete
+package-safe destination inventory, repeat dry-run/drift proof, and
+pre-publication source/preflight contracts. REQ-RUN-0701's fixture matrix and
+b-18's no-edits generation sequence remain phase acceptance gates. This
+amendment does not accept b-18 or Phase B as complete.
+
+Release epic `run-h0h`, after Phase B, owns the release acceptance root and
+all publication evidence. Before internal publication it MUST consume the
+real matching registry `sc-observability-types` / `sc-observability` `1.5.1`
+pair (external prerequisite `run-03z.7`), remove both development packages and
+all development workspace path overrides/local adapter dependencies, replace
+newtype construction with direct upstream `Arc<Logger>` coercion, prove exact
+matching `1.5.1` root/generated release lock resolution, and verify the
+published production Logger adapter's immediate queue-full/disconnected
+rejection. Development bridge tests cannot satisfy that published-adapter
+proof. The active release guard MUST pass unchanged, rejecting development
+paths/adapters, observability registry patches, and non-registry or
+wrong-version resolution. Human release authorization and credentials remain
+required for the five internal publications in the order above.
+
+The exact commit published and proven by `run-h0h` MUST be tagged `v0.1.1`;
+no source or manifest change may occur between the five crate publications,
+the registry-only generated proof, and that tag. The registry-only proof
+MUST render with `scripts/new_project.py --release`, contain no checkout
+patch/path/git override, and build/test the generated daemon with `cron` and
+`monty`. The phase-end readiness review MUST report these remaining release
+limits explicitly; development acceptance is never passing registry-only or
+published `1.5.1` evidence. This amendment changes delivery ownership/timing
+only; all production safety predicates remain binding.
 
 ### Rationale
 
@@ -3679,13 +3710,21 @@ the point at which generated projects become upgradeable by a normal
    `Cargo.lock` of a project generated in that run lists the four crates with
    source `registry+https://github.com/rust-lang/crates.io-index`.
 5. `git ls-tree -d v0.1.0 examples/spike` prints nothing.
-6. For the Phase B continuation, the b-18 release evidence records the five
-   `0.1.1` crates in the order above, records `sc-runtime-db-sqlite` as
-   unpublished, and proves a release-mode generated workspace resolves those
-   five packages from crates.io without a checkout patch.
-7. `git tag -l v0.1.1` prints `v0.1.1`, the tag resolves to the exact commit
-   recorded by the b-18 publication evidence, and the registry-only generated
-   proof was run against that same source commit.
+6. For the `0.1.1` continuation, later release epic `run-h0h` records the
+   five `0.1.1` crates published in the order above, records
+   `sc-runtime-db-sqlite` as unpublished, and proves a release-mode generated
+   workspace resolves those five packages from crates.io without checkout
+   patch/path/git overrides. Its evidence includes every `1.5.1`, bridge
+   removal, direct Arc coercion, non-blocking published-adapter, unchanged
+   release-guard, and human-authorization predicate above. b-18 supplies the
+   required phase implementation, qualified kit/install, and source-contract
+   evidence; it does not supply or waive this later release evidence.
+7. At `run-h0h` release acceptance, `git tag -l v0.1.1` prints `v0.1.1`, the
+   tag resolves to the exact commit recorded by that epic's publication
+   evidence, and the registry-only generated proof was run against that same
+   source commit without an intervening source or manifest change. Phase B
+   readiness reports the outstanding release conditions rather than claiming
+   criteria 6–7 passed.
 
 ---
 
@@ -4443,3 +4482,10 @@ test daemon.
 6. Inspection of this repository's tests and of `template/` finds no test
    that spawns the generated `cli` binary other than the isolated-machine
    tests of obligation 2.
+
+The production tool-crate exclusion is enforced across the five release crates
+by the `production-tool-boundary` lint companion in `sc-lint.toml`: package
+identity checks cover normal/build, renamed and target-specific dependencies,
+production Rust imports, and Cargo normal/build transitive trees for supported
+production features. Dev-only fixtures remain permitted. The Monty registry
+and optional adapters are documented in [the generated example](sc-cron/monty-generated-example.md).

@@ -33,6 +33,7 @@ class CiScopeTests(unittest.TestCase):
 
     def test_crate_template_and_workflow_changes_require_runtime(self):
         self.assertTrue(ci_scope.requires_runtime(["crates/sc-runtime/src/lib.rs"]))
+        self.assertTrue(ci_scope.requires_runtime(["dev/observability-logger-adapter/src/lib.rs"]))
         self.assertTrue(ci_scope.requires_runtime(["template/Justfile"]))
         self.assertTrue(ci_scope.requires_runtime([".github/workflows/crates.yml"]))
         self.assertTrue(ci_scope.requires_runtime(["Cargo.lock"]))

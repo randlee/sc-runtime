@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:FTQ-007>
+  qa:id "FTQ-007" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Important" ;
+  qa:status "fixed" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location "crates/sc-cron/tests/hook_environment/resolution.rs:319" ;
+  qa:issue "The new environment-isolation parent tests collect their reexec child with synchronous Command::output and no independent watchdog. A child that stalls before its own runtime deadlines are installed, or during non-abortable runtime teardown, blocks the parent suite forever. The same pattern appears in the invalid-value, Monty/CLI parity and Windows PATH wrappers." ;
+  qa:recommendation "Use a shared test-only owned-child helper with a hard deadline covering startup, captured output and process exit, and unconditional termination and reap on timeout/failure. Preserve process-local environment injection, all canary assertions and Windows execution cases. The existing bounded reexec witness pattern can be reused; no production isolation policy is needed." .

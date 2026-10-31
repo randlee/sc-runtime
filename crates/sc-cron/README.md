@@ -6,8 +6,9 @@ jitter and missed-tick handling.
 `sc-cron` runs a caller's `Job` on cron schedules kept in a `ScheduleStore`.
 It was extracted from an earlier in-house scheduler and carries no
 consumer-specific type: a schedule's input is an opaque JSON payload, and every
-failure is a `CronError` with a stable `code()`. The crate depends on no
-other workspace crate.
+failure is a `CronError` with a stable `code()`. Its sole workspace-crate
+dependency is `sc-observability-types`, used only for the injected canonical
+logger contract.
 
 - **Validated input.** `ScheduleName` (at most 128 bytes), `CronExpr` (in UTC:
   standard five-field crontab, minute first; or the `cron` crate's six or
@@ -40,11 +41,14 @@ other workspace crate.
   writes over a restarted schedule.
 - **Stores read no clock.** Every instant is a `Timestamp` argument.
   `SqliteScheduleStore` is the rusqlite implementation (SQLite bundled), on a
-  database file of its own (`PRAGMA user_version` = `SCHEMA_VERSION`, 4; a
-  version 1, 2, or 3 file is rebuilt to that schema when opened).
-  `list_active` skips a row that does not decode, with a `tracing` warning,
-  so the other schedules keep running; `get` on that row still returns the
-  `Corrupt` error.
+  database file of its own (`PRAGMA user_version` = `SCHEMA_VERSION`, 1).
+  The complete first-release schema includes canonical `hook_environment`.
+  Incompatible development tables are rejected with recreate guidance.
+  `list_active` skips a row that does not decode and emits the canonical
+  `cron.store` / `row.corrupt` event, so other schedules keep running; `get`
+  on that row still returns the `Corrupt` error. Observing the event requires
+  a logger-aware store/open construction; legacy constructors install a fixed
+  Noop logger.
 - **Injected time and randomness**, through `Clock` and `JitterSource`.
 
 ## Example
@@ -102,15 +106,54 @@ Runtime notes:
   the worker.
 - Stop the worker by awaiting `WorkerHandle::shutdown`. Dropping the handle
   drains detached, and in-flight outcomes can be lost at process exit.
+  A shutdown deadline cancels and joins cooperative runs; the worker itself
+  remains owned until all runs and its active blocking store call finish.
+  `false` means the deadline was missed, not that ownership was detached.
+  Physical completion can exceed the deadline for a store or native job that
+  does not cooperate; Tokio cannot forcibly preempt running blocking work.
+  Await shutdown to completion before consuming the application's logger.
 
 ## Feature flags
 
 | Feature | Enables |
 |---|---|
 | `test-utils` | `ManualClock` (a deterministic clock whose parks tell a test the worker has settled) and `SeqJitter` (a scripted jitter source) |
-| `monty` | Trusted in-process Monty source hooks (`HookTarget::Monty`); requires **Rust 1.96.1** to build. Feeds run on the blocking pool in wall time. `render_template` spawns the embedder's compose program (default basename `sc-compose` on `PATH`). |
+| `monty` | Trusted in-process source hooks and empty-default application host registry; requires Rust 1.96.1. |
 
-With feature `monty`, set the compose program with `Scheduler::with_monty_host(MontyHostConfig::new(...)?)`. The default is `sc-compose` on `PATH` (like `PythonHook`'s default `python3`). Hook source cannot override it. Use a basename for `PATH` lookup or an absolute path from your configuration. A missing program records `RunOutcome::Failed` with `COMPOSE_NOT_FOUND`; use `RunOutcome::failure_parts()` to read the code.
+Build a `MontyHostRegistry` with `.register("jev_call", handler)?` for custom
+JSON-shaped callbacks. Install it with `Scheduler::with_monty_hosts(registry)`.
+Arguments and results preserve the complete JSON `i64`/`u64` integer domain,
+including nested arrays and objects, as exact Monty integers. Monty integers
+outside that domain are rejected with `HOST_DENIED` and range guidance.
+Register optional `sc_compose_run` or `atm_run` with `.with_sc_compose(config)?`
+or `.with_atm(config)?`; `ScComposeHostConfig` and `AtmHostConfig` choose the
+executable and cwd. Both forward any command and argv without a shell, clear
+the child environment and install the shared occurrence snapshot, enforce row
+deadlines/group cleanup and cap each stream.
+Completed nonzero exits are returned to the script. No CLI is required by an
+empty registry or a custom application handler. `render_template` is not a
+product API. See [the generated example](../../docs/sc-cron/monty-generated-example.md)
+for API, result/error shapes, development generation, and in-process limits.
+
+## Shared hook environment
+
+Build schedule policy with `HookEnvironment::new().set(...)?`, `.reference(...)?`,
+`.clear(...)?` and ordered absolute `.dotenv(path, required)?` sources, then
+attach it with `ScheduleSpec::with_environment`. Nonempty Rust policy is invalid.
+Inject administrator authorization with `Scheduler::with_hook_environment` and
+`HookEnvironmentHost`: process-name, exact-file and directory-root allowlists
+are empty by default, and an application may attach an
+`Arc<dyn EnvironmentReferenceResolver>`.
+
+One immutable snapshot resolves daemon values, ordered files and schedule
+operations before stop; tick, Monty initialization and both CLI adapters reuse
+it. Python defaults to an empty `ChildEnv::Only`; direct callers may opt into
+Inherit. Source initialization permits environment reads and denies application
+host calls. Retained module globals initialize once per generation; later getenv
+reads use the current occurrence. Values in scheduled details/reasons are
+redacted before fixed diagnostics are assembled. Explicit Set values are
+intentional plaintext configuration; resolved values never persist in registry
+writes. Direct `HookOutput` fields remain raw and Debug output is value-free.
 
 ## Links
 

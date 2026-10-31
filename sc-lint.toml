@@ -7,6 +7,10 @@ minimum_version = "0.8.0"
 # consumer template from sprint a-6 with the same minimum_version floor.
 # Boundary lint command: `sc-lint lint sc-boundary`.
 [[tool.sc-lint.lint]]
+name = "production-tool-boundary"
+command = ["python3", "tests/unit/test_production_tool_boundary.py", "--check", "--tree"]
+
+[[tool.sc-lint.lint]]
 name = "boundary"
 command = ["sc-lint", "lint", "sc-boundary", "--root", ".", "--config", "sc-lint.toml"]
 
@@ -68,9 +72,9 @@ command = ["cargo", "xwin", "clippy", "--workspace", "--exclude", "sc-runtime-db
 
 [tool.sc-lint.lint_profiles]
 # Fast boundary-only pass while leaf crates land (a-2..a-4).
-gates = ["boundary", "line-counts"]
+gates = ["boundary", "production-tool-boundary", "line-counts"]
 # Full maintainer gate once the workspace exists (a-5+).
-full = ["boundary", "line-counts", "fmt", "clippy", "clippy-sc-cron", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
+full = ["boundary", "production-tool-boundary", "line-counts", "fmt", "clippy", "clippy-sc-cron", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
 
 [tool.sc-lint.analyzers.portability]
 exclude_rules = []
@@ -87,6 +91,11 @@ forbidden_literals = []
 [line_counts]
 max_production_lines = 1000
 paths = ["crates/*/src/**/*.rs", "template/**/*.rs"]
+
+# Shared package-identity boundary check and negative fixtures for both libraries.
+[[tool.sc-lint.test]]
+name = "observability-dependencies"
+command = ["python3", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_observability_dependencies.py"]
 
 [[tool.sc-lint.test]]
 name = "workspace"

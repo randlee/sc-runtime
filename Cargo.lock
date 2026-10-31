@@ -2067,11 +2067,11 @@ checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 
 [[package]]
 name = "sc-command"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "axum",
  "rmcp",
- "sc-observability-types",
+ "sc-observability-types 1.5.0",
  "serde",
  "serde_json",
  "tokio",
@@ -2079,7 +2079,7 @@ dependencies = [
 
 [[package]]
 name = "sc-config"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -2087,7 +2087,7 @@ dependencies = [
 
 [[package]]
 name = "sc-cron"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -2099,6 +2099,8 @@ dependencies = [
  "process-wrap",
  "rusqlite",
  "sc-cron",
+ "sc-observability-types 1.5.1",
+ "serde",
  "serde_json",
  "tempfile",
  "tokio",
@@ -2140,14 +2142,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-observability-types"
+version = "1.5.1"
+dependencies = [
+ "sc-observability-types 1.5.0",
+]
+
+[[package]]
 name = "sc-runtime"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "axum",
  "fd-lock",
  "reqwest",
  "rmcp",
  "sc-command",
+ "sc-observability-types 1.5.1",
  "sc-transport",
  "serde",
  "serde_json",
@@ -2160,7 +2170,7 @@ dependencies = [
 
 [[package]]
 name = "sc-runtime-db-sqlite"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "rusqlite",
  "tempfile",
@@ -2168,7 +2178,7 @@ dependencies = [
 
 [[package]]
 name = "sc-transport"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "axum",
  "reqwest",

@@ -37,7 +37,7 @@ class LiquidTests(unittest.TestCase):
                 bodies.append(text.strip())
         self.assertEqual(
             bodies,
-            ["pub mod mcp;", ".mcp(daemon::mcp::service)"],
+            [".mcp(crate::mcp::service)", "pub mod mcp;"],
         )
 
     def test_whole_file_differences_are_ignored(self):

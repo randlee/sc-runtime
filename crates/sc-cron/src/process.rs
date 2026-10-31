@@ -41,7 +41,7 @@
 //! # Examples
 //!
 //! ```no_run
-//! # async fn example() -> std::io::Result<()> {
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 //! use std::path::Path;
 //! use std::time::Duration;
 //!
@@ -92,7 +92,7 @@ pub const REAP_AFTER_KILL: std::time::Duration = std::time::Duration::from_secs(
 /// variables, the user site and the working directory on `sys.path`; it
 /// does not clear the environment. A caller that must not leak its
 /// environment to the child uses [`ChildEnv::Only`].
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub enum ChildEnv {
     /// The child inherits this process's environment.
     #[default]
@@ -111,7 +111,6 @@ pub enum ChildEnv {
 
 /// What to run: a program, its arguments, its working directory, its input
 /// and its environment.
-#[derive(Debug)]
 pub struct ChildSpec<'a> {
     /// The program; an absolute path, or a bare name looked up on `PATH`.
     pub program: &'a Path,
@@ -123,6 +122,86 @@ pub struct ChildSpec<'a> {
     pub input: &'a [u8],
     /// Its environment.
     pub env: ChildEnv,
+}
+
+impl std::fmt::Debug for ChildEnv {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Inherit => f.write_str("ChildEnv::Inherit"),
+            Self::Only { keep, set } => f
+                .debug_struct("ChildEnv::Only")
+                .field("kept_names", keep)
+                .field("set_names", &set.iter().map(|(n, _)| n).collect::<Vec<_>>())
+                .finish(),
+        }
+    }
+}
+impl std::fmt::Debug for ChildSpec<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ChildSpec")
+            .field("argument_count", &self.args.len())
+            .field("input_bytes", &self.input.len())
+            .field("env", &self.env)
+            .finish_non_exhaustive()
+    }
+}
+
+/// Resolves a launch executable using the daemon PATH before child env clearing.
+/// Relative components are anchored to the daemon cwd, independently of child cwd.
+pub(crate) fn resolve_program(program: &Path) -> io::Result<std::path::PathBuf> {
+    if program.is_absolute() {
+        return Ok(program.to_path_buf());
+    }
+    let cwd = std::env::current_dir()?;
+    if program.components().count() > 1 {
+        return Ok(cwd.join(program));
+    }
+    let path = std::env::var_os("PATH").ok_or_else(|| {
+        io::Error::new(io::ErrorKind::NotFound, "daemon launch PATH is unavailable")
+    })?;
+    #[cfg(windows)]
+    let extensions = std::env::var("PATHEXT").unwrap_or_else(|_| ".COM;.EXE;.BAT;.CMD".into());
+    for dir in std::env::split_paths(&path) {
+        let dir = if dir.is_absolute() {
+            dir
+        } else {
+            cwd.join(dir)
+        };
+        let candidate = dir.join(program);
+        if executable(&candidate) {
+            return Ok(candidate);
+        }
+        #[cfg(windows)]
+        for extension in extensions.split(';').filter(|s| !s.is_empty()) {
+            let mut name = candidate.as_os_str().to_os_string();
+            name.push(extension);
+            let candidate = std::path::PathBuf::from(name);
+            if executable(&candidate) {
+                return Ok(candidate);
+            }
+        }
+    }
+    Err(io::Error::new(
+        io::ErrorKind::NotFound,
+        "configured executable not found on daemon PATH",
+    ))
+}
+fn executable(path: &Path) -> bool {
+    let Ok(metadata) = path.metadata() else {
+        return false;
+    };
+    if !metadata.is_file() {
+        return false;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        metadata.permissions().mode() & 0o111 != 0
+    }
+    #[cfg(not(unix))]
+    {
+        true
+    }
 }
 
 /// A fresh private working directory for a child, removed when dropped.
@@ -157,12 +236,21 @@ impl TempCwd {
 }
 
 /// Up to a cap of one pipe's output, and whether more arrived.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct Capped {
     /// The bytes kept, at most the cap.
     pub bytes: Vec<u8>,
     /// Whether more bytes arrived than were kept.
     pub truncated: bool,
+}
+
+impl std::fmt::Debug for Capped {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Capped")
+            .field("bytes", &self.bytes.len())
+            .field("truncated", &self.truncated)
+            .finish()
+    }
 }
 
 impl Capped {
@@ -241,6 +329,41 @@ pub async fn supervise(
     spec: &ChildSpec<'_>,
     cap: usize,
     expiry: impl Future<Output = ()>,
+) -> Result<Captured, crate::CronError> {
+    supervise_with_logger(spec, cap, expiry, crate::noop_logger()).await
+}
+
+/// Supervises a child using a shared best-effort canonical logger.
+///
+/// # Errors
+/// Returns `CronError::HookFailed` for spawn, wait, or reap-timer start failures.
+pub async fn supervise_with_logger<F: Future<Output = ()>>(
+    spec: &ChildSpec<'_>,
+    cap: usize,
+    expiry: F,
+    logger: sc_observability_types::SharedCanonicalLog,
+) -> Result<Captured, crate::CronError> {
+    supervise_with_correlation(spec, cap, expiry, logger, None).await
+}
+
+pub(crate) async fn supervise_with_correlation<F: Future<Output = ()>>(
+    spec: &ChildSpec<'_>,
+    cap: usize,
+    expiry: F,
+    logger: sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
+) -> Result<Captured, crate::CronError> {
+    supervise_inner(spec, cap, expiry, logger, correlation)
+        .await
+        .map_err(|error| crate::CronError::HookFailed(error.to_string()))
+}
+
+async fn supervise_inner(
+    spec: &ChildSpec<'_>,
+    cap: usize,
+    expiry: impl Future<Output = ()>,
+    logger: sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
 ) -> io::Result<Captured> {
     let mut command = CommandWrap::with_new(spec.program, |command| {
         command
@@ -297,12 +420,11 @@ pub async fn supervise(
         // group or job may be left, having let go of the pipes: end it, so
         // nothing outlives the run. An empty group is fine (nothing to kill).
         if let Err(error) = tree.child.start_kill() {
-            tracing::debug!(subsystem = "sc_cron", action = "child_kill", %error,
-                "kill after exit found nothing left to kill: {error}");
+            kill_failed(&logger, correlation.clone(), tree.child.id(), &error);
         }
         Some(status)
     } else {
-        reap_killed(&mut tree).await;
+        reap_killed(&mut tree, &logger, correlation).await?;
         None
     };
     Ok(Captured {
@@ -316,34 +438,157 @@ pub async fn supervise(
 ///
 /// The bound is a thread timer, not tokio's: a paused or manual tokio clock
 /// must not cut the reap short. A group that is not reaped in time is logged
-/// and left; drop kills it again.
-async fn reap_killed(tree: &mut Tree) {
-    if let Err(error) = tree.child.start_kill() {
-        tracing::debug!(subsystem = "sc_cron", action = "child_kill", %error,
-            "kill at expiry found nothing to kill: {error}");
-    }
-    let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
-    let timer = std::thread::Builder::new()
+/// and left; drop kills it again. Timer-start failure returns immediately with
+/// an error instead of entering an unbounded wait; drop retries the kill.
+async fn reap_killed(
+    tree: &mut Tree,
+    logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
+) -> io::Result<()> {
+    reap_killed_with_timer(tree, logger, correlation, start_reap_timer).await
+}
+
+fn start_reap_timer(bound: tokio::sync::oneshot::Sender<()>) -> io::Result<()> {
+    std::thread::Builder::new()
         .name("sc-cron-reap-bound".to_owned())
         .spawn(move || {
             std::thread::park_timeout(REAP_AFTER_KILL);
             let _ = bound.send(());
-        });
-    let bounded = async {
-        if timer.is_ok() {
-            let _ = bounded.await;
-        } else {
-            std::future::pending::<()>().await;
-        }
-    };
+        })
+        .map(|_| ())
+}
+
+async fn reap_killed_with_timer(
+    tree: &mut Tree,
+    logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
+    start_timer: impl FnOnce(tokio::sync::oneshot::Sender<()>) -> io::Result<()>,
+) -> io::Result<()> {
+    try_kill(tree, logger, correlation.clone());
+    let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
+    // Fail closed immediately when no real-time bound can be established.
+    // The caller drops Tree on this error, retrying group cleanup. Do not
+    // report child.reap_timeout: no reap deadline has actually elapsed.
+    start_timer(bound).map_err(|error| {
+        io::Error::new(error.kind(), format!("reap timer could not start: {error}"))
+    })?;
+    await_reap(tree, logger, correlation, async {
+        let _ = bounded.await;
+    })
+    .await;
+    Ok(())
+}
+
+async fn await_reap(
+    tree: &mut Tree,
+    logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
+    bounded: impl Future<Output = ()>,
+) {
     tokio::select! {
         biased;
         _ = tree.child.wait() => tree.reaped = true,
         () = bounded => {
-            tracing::warn!(subsystem = "sc_cron", action = "child_reap",
-                after_ms = u64::try_from(REAP_AFTER_KILL.as_millis()).unwrap_or(u64::MAX),
-                "a killed child's group was not reaped in time; it is left (killed again on drop)");
+            let mut fields = serde_json::Map::new();
+            fields.insert("deadline_remaining_ms".into(), 0.into());
+            if let Some(pid) = tree.child.id() { fields.insert("pid".into(), pid.into()); }
+            if let Some(mut event) = crate::component_event(logger.service_name().clone(), "cron.process", "child.reap_timeout",
+                sc_observability_types::Level::Warn, "timeout", Some("CHILD_REAP_TIMEOUT"), fields) { event.correlation_id = correlation.clone();
+                let _ = logger.emit(event); }
         }
+    }
+}
+
+fn try_kill(
+    tree: &mut Tree,
+    logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
+) {
+    if let Err(error) = tree.child.start_kill() {
+        kill_failed(logger, correlation, tree.child.id(), &error);
+    }
+}
+
+fn kill_failed(
+    logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
+    pid: Option<u32>,
+    error: &io::Error,
+) {
+    let mut fields = serde_json::Map::new();
+    fields.insert("error".into(), error.to_string().into());
+    if let Some(pid) = pid {
+        fields.insert("pid".into(), pid.into());
+    }
+    if let Some(mut event) = crate::component_event(
+        logger.service_name().clone(),
+        "cron.process",
+        "child.kill_failed",
+        sc_observability_types::Level::Debug,
+        "failed",
+        Some("CHILD_KILL_FAILED"),
+        fields,
+    ) {
+        event.correlation_id = correlation.clone();
+        let _ = logger.emit(event);
+    }
+}
+
+/// Deterministic process faults for component-contract tests only.
+#[cfg(feature = "test-utils")]
+#[doc(hidden)]
+pub mod testing {
+    use super::*;
+
+    #[derive(Debug)]
+    struct Unreapable;
+    impl ChildWrapper for Unreapable {
+        fn inner(&self) -> &dyn ChildWrapper {
+            self
+        }
+        fn inner_mut(&mut self) -> &mut dyn ChildWrapper {
+            self
+        }
+        fn into_inner(self: Box<Self>) -> Box<dyn ChildWrapper> {
+            self
+        }
+        fn id(&self) -> Option<u32> {
+            Some(42)
+        }
+        fn start_kill(&mut self) -> io::Result<()> {
+            Err(io::Error::other("injected kill failure"))
+        }
+        fn wait(
+            &mut self,
+        ) -> std::pin::Pin<Box<dyn Future<Output = io::Result<ExitStatus>> + Send + '_>> {
+            Box::pin(std::future::pending())
+        }
+    }
+
+    /// Injects timer creation failure with a child whose wait never completes.
+    pub async fn failed_reap_timer(
+        logger: sc_observability_types::SharedCanonicalLog,
+    ) -> Result<(), crate::CronError> {
+        let mut tree = Tree {
+            child: Box::new(Unreapable),
+            reaped: false,
+        };
+        reap_killed_with_timer(&mut tree, &logger, None, |_| {
+            Err(io::Error::other("injected timer-start failure"))
+        })
+        .await
+        .map_err(|error| crate::CronError::HookFailed(error.to_string()))
+    }
+
+    /// Returns whether an unreapable fake child was reaped after an immediate bound.
+    pub async fn failed_kill_and_reap(logger: sc_observability_types::SharedCanonicalLog) -> bool {
+        let mut tree = Tree {
+            child: Box::new(Unreapable),
+            reaped: false,
+        };
+        try_kill(&mut tree, &logger, None);
+        await_reap(&mut tree, &logger, None, std::future::ready(())).await;
+        tree.reaped
     }
 }
 

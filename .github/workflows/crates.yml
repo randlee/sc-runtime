@@ -136,3 +136,30 @@ jobs:
       - name: Test
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just test
+
+      - name: Check development observability bridge
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' && hashFiles('dev/observability-types-shim/Cargo.toml') != '' }}
+        shell: bash
+        run: just test development-bridge
+
+  cron-environment-windows:
+    name: Windows hook environment execution
+    needs: ci-scope
+    if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: dtolnay/rust-toolchain@1.94.1
+      - uses: extractions/setup-just@v2
+      - name: Verify owned process cleanup on Windows
+        run: just test owned-process-windows
+      - name: Execute default shared hook environment root
+        run: just test windows-hook-default
+      - uses: dtolnay/rust-toolchain@1.96.1
+      - name: Execute Monty shared hook environment root
+        run: just test windows-hook-monty
+      - name: Execute Monty host bridge root
+        run: just test windows-host-monty

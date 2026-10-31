@@ -12,8 +12,6 @@
 //! the same calls on tokio's blocking pool so a busy database never blocks
 //! an executor thread.
 
-#[cfg(feature = "monty")]
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
@@ -30,6 +28,7 @@ use crate::{
     Clock, CronError, Generation, JitterSource, Job, NewSchedule, RunOutcome, Schedule, ScheduleId,
     ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp, jitter,
 };
+use sc_observability_types::{Level, SharedCanonicalLog};
 
 mod run_due;
 
@@ -67,6 +66,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     /// computed. `start` and `replace_and_set_enabled` share it.
     fn new_schedule(&self, spec: ScheduleSpec) -> Result<(NewSchedule, DateTime<Utc>), CronError> {
         encode_payload(&spec.payload)?;
+        spec.validate_environment()?;
         let now = self.clock.now();
         spec.expr.require_future(now)?;
         let jitter = jitter::draw(&spec.expr, now, self.jitter.as_ref());
@@ -194,10 +194,9 @@ pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource> {
     reload_poll: Duration,
     worker_live: Arc<AtomicBool>,
     coord: Arc<RunCoord>,
+    environment: Arc<crate::HookEnvironmentHost>,
     #[cfg(feature = "monty")]
-    monty_host: crate::MontyHostConfig,
-    #[cfg(feature = "monty")]
-    compose_program: Arc<PathBuf>,
+    hosts: Arc<crate::MontyHostRegistry>,
 }
 
 impl<S, C, J> Scheduler<S, C, J>
@@ -215,10 +214,9 @@ where
             self.reload_poll,
             Arc::clone(&self.worker_live),
             Arc::clone(&self.coord),
+            Arc::clone(&self.environment),
             #[cfg(feature = "monty")]
-            self.monty_host.clone(),
-            #[cfg(feature = "monty")]
-            Arc::clone(&self.compose_program),
+            Arc::clone(&self.hosts),
         )
     }
 
@@ -246,8 +244,8 @@ where
         reload_poll: Duration,
         worker_live: Arc<AtomicBool>,
         coord: Arc<RunCoord>,
-        #[cfg(feature = "monty")] monty_host: crate::MontyHostConfig,
-        #[cfg(feature = "monty")] compose_program: Arc<PathBuf>,
+        environment: Arc<crate::HookEnvironmentHost>,
+        #[cfg(feature = "monty")] hosts: Arc<crate::MontyHostRegistry>,
     ) -> Self {
         Self {
             core,
@@ -255,10 +253,9 @@ where
             reload_poll,
             worker_live,
             coord,
+            environment,
             #[cfg(feature = "monty")]
-            monty_host,
-            #[cfg(feature = "monty")]
-            compose_program,
+            hosts,
         }
     }
 }
@@ -279,8 +276,31 @@ where
     /// policy is [`MissedTickPolicy::Coalesce`].
     #[must_use]
     pub fn new(store: Arc<S>, clock: Arc<C>, jitter: Arc<J>) -> Self {
-        #[cfg(feature = "monty")]
-        let monty_host = crate::MontyHostConfig::default();
+        Self::new_with_logger(store, clock, jitter, crate::noop_logger())
+    }
+
+    /// Creates a scheduler with a shared, best-effort canonical logger.
+    ///
+    /// The supplied store, clock and jitter remain unchanged and own their
+    /// internal logging. Application code owns logger flush and shutdown.
+    #[must_use]
+    pub fn new_with_logger(
+        store: Arc<S>,
+        clock: Arc<C>,
+        jitter: Arc<J>,
+        logger: SharedCanonicalLog,
+    ) -> Self {
+        if let Some(event) = crate::component_event(
+            logger.service_name().clone(),
+            "cron.scheduler",
+            "logger.attached",
+            Level::Info,
+            "success",
+            None,
+            serde_json::Map::new(),
+        ) {
+            let _ = logger.emit(event);
+        }
         Self {
             core: Arc::new(Core {
                 store,
@@ -291,12 +311,18 @@ where
             policy: MissedTickPolicy::default(),
             reload_poll: DEFAULT_RELOAD_POLL,
             worker_live: Arc::new(AtomicBool::new(false)),
-            coord: Arc::new(RunCoord::new()),
+            coord: Arc::new(RunCoord::with_logger(logger)),
+            environment: Arc::new(crate::HookEnvironmentHost::new()),
             #[cfg(feature = "monty")]
-            monty_host: monty_host.clone(),
-            #[cfg(feature = "monty")]
-            compose_program: Arc::new(monty_host.compose_program().to_path_buf()),
+            hosts: Arc::new(crate::MontyHostRegistry::new()),
         }
+    }
+
+    /// Installs daemon-owned environment authority for future occurrences.
+    #[must_use]
+    pub fn with_hook_environment(mut self, host: crate::HookEnvironmentHost) -> Self {
+        self.environment = Arc::new(host);
+        self
     }
 
     /// Returns the row ceiling the store enforces.
@@ -333,24 +359,15 @@ where
         self
     }
 
-    /// Sets the program spawned for Monty host calls (`render_template`,
-    /// `sc_compose_run`). Hook source cannot override this.
+    /// Installs one immutable registry for subsequent Monty feeds.
     ///
-    /// The default is `sc-compose` on `PATH`, like [`PythonHook::new`]'s
-    /// default of `python3`.
+    /// The default registry is empty; CLI adapters and application handlers
+    /// are registered explicitly by the embedding application.
     #[cfg(feature = "monty")]
     #[must_use]
-    pub fn with_monty_host(mut self, config: crate::MontyHostConfig) -> Self {
-        self.compose_program = Arc::new(config.compose_program().to_path_buf());
-        self.monty_host = config;
+    pub fn with_monty_hosts(mut self, registry: crate::MontyHostRegistry) -> Self {
+        self.hosts = Arc::new(registry);
         self
-    }
-
-    /// Monty host settings (compose program path).
-    #[cfg(feature = "monty")]
-    #[must_use]
-    pub fn monty_host(&self) -> &crate::MontyHostConfig {
-        &self.monty_host
     }
 
     /// Returns the store, for reading schedules and their run state.
@@ -590,8 +607,9 @@ where
             self.reload_poll,
             shutdown_rx,
             #[cfg(feature = "monty")]
-            Arc::clone(&self.compose_program),
+            Arc::clone(&self.hosts),
         );
+        let worker = worker.with_hook_environment(Arc::clone(&self.environment));
         let task = tokio::spawn(async move {
             let _live = live;
             worker.run(reload).await;
@@ -600,6 +618,7 @@ where
             shutdown: Some(shutdown),
             task: Some(task),
             feeds: Arc::clone(&self.coord.feeds),
+            logger: Arc::clone(&self.coord.logger),
         }
     }
 }
@@ -681,6 +700,28 @@ where
     }
 }
 
+impl<C: Clock + 'static> Scheduler<SqliteScheduleStore, C, crate::SystemJitter> {
+    /// Opens built-in components sharing one canonical logger.
+    ///
+    /// # Errors
+    /// Returns `CronError` when the store cannot be opened or validated.
+    pub fn open_with_logger(
+        path: impl AsRef<std::path::Path>,
+        limits: ScheduleLimits,
+        clock: Arc<C>,
+        logger: SharedCanonicalLog,
+    ) -> Result<Self, CronError> {
+        let store = SqliteScheduleStore::open_with_logger(path, limits, Arc::clone(&logger))?;
+        let jitter = crate::SystemJitter::with_logger(Arc::clone(&logger));
+        Ok(Self::new_with_logger(
+            Arc::new(store),
+            clock,
+            Arc::new(jitter),
+            logger,
+        ))
+    }
+}
+
 fn ceiling_label(limits: ScheduleLimits) -> String {
     match limits.max_schedule_rows {
         Some(limit) => limit.to_string(),
@@ -745,8 +786,17 @@ where
         row: &Schedule,
         report: Report,
         next: Option<DateTime<Utc>>,
+        correlation: crate::worker::RunCorrelation,
     ) -> DueRun {
-        record_due(Arc::clone(&self.core), row, report, next).await
+        record_due(
+            Arc::clone(&self.core),
+            Arc::clone(&self.coord.logger),
+            row,
+            report,
+            next,
+            correlation,
+        )
+        .await
     }
 }
 
@@ -767,14 +817,15 @@ pub(super) async fn blocking<T: Send + 'static>(
 impl<S: ScheduleStore, C: Clock, J: JitterSource> std::fmt::Debug for Scheduler<S, C, J> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut dbg = f.debug_struct("Scheduler");
-        dbg.field("policy", &self.policy)
+        dbg.field("service", self.coord.logger.service_name())
+            .field("policy", &self.policy)
             .field(
                 "max_schedule_rows",
                 &self.core.store.limits().max_schedule_rows,
             )
             .field("worker_live", &self.worker_live.load(Ordering::Acquire));
         #[cfg(feature = "monty")]
-        dbg.field("monty_compose_program", &*self.compose_program);
+        dbg.field("monty_hosts", &*self.hosts);
         dbg.finish_non_exhaustive()
     }
 }
@@ -794,23 +845,61 @@ impl Drop for LiveGuard {
 /// the handle signals the worker to stop and does not wait. The worker then
 /// drains its in-flight runs detached, and their outcomes are lost if the
 /// process exits first.
-#[derive(Debug)]
 pub struct WorkerHandle {
     shutdown: Option<oneshot::Sender<Option<tokio::time::Instant>>>,
     task: Option<JoinHandle<()>>,
     feeds: Arc<AtomicUsize>,
+    logger: SharedCanonicalLog,
+}
+
+impl std::fmt::Debug for WorkerHandle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WorkerHandle")
+            .field("service", self.logger.service_name())
+            .field("feeds", &self.feeds)
+            .finish_non_exhaustive()
+    }
 }
 
 impl WorkerHandle {
+    /// Constructs a gated worker owner to exercise shutdown deadline branches.
+    #[cfg(feature = "test-utils")]
+    #[doc(hidden)]
+    pub fn shutdown_probe(
+        logger: SharedCanonicalLog,
+        outstanding_feeds: usize,
+    ) -> (Self, tokio::sync::oneshot::Sender<()>) {
+        let (release, wait) = tokio::sync::oneshot::channel();
+        let task = tokio::spawn(async move {
+            let _ = wait.await;
+        });
+        (
+            Self {
+                shutdown: None,
+                task: Some(task),
+                feeds: Arc::new(AtomicUsize::new(outstanding_feeds)),
+                logger,
+            },
+            release,
+        )
+    }
     /// Stops the worker, waiting for in-flight runs until `deadline`.
     ///
     /// The worker stops launching runs, then waits for each in-flight run
     /// until that run's own deadline, recording its outcome. If `deadline`
-    /// passes while no Monty feed is outstanding, the worker task is aborted
-    /// and records nothing. While a Monty feed is outstanding the worker is
-    /// not aborted: Rust and Python siblings are recorded `TimedOut`, and the
-    /// Monty feed runs until it returns. Returns whether the worker finished
-    /// before `deadline`.
+    /// passes while no Monty feed is outstanding, cooperative runs are aborted
+    /// and joined without recording outcomes. While a Monty feed is outstanding,
+    /// Rust and Python siblings are recorded `TimedOut`, and the Monty feed runs
+    /// until it returns. The worker itself is never aborted: every running store
+    /// operation and owned run must finish joining before this method returns.
+    /// Returns whether the worker finished before `deadline`.
+    ///
+    /// The deadline bounds cooperative work, not arbitrary native code or a
+    /// synchronous store operation. A started blocking store call cannot be
+    /// preempted by Tokio; shutdown awaits its actual completion. SQLite lock
+    /// waits use the configured busy timeout. Custom stores and native jobs must
+    /// cooperate. Await shutdown to completion before consuming logger shutdown;
+    /// dropping this future cannot finish an asynchronous join.
     pub async fn shutdown(mut self, deadline: tokio::time::Instant) -> bool {
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
@@ -823,20 +912,38 @@ impl WorkerHandle {
             return true;
         }
         if self.feeds.load(Ordering::Acquire) == 0 {
-            tracing::error!(
-                subsystem = "sc_cron",
-                action = "shutdown_deadline",
-                "worker did not stop before the shutdown deadline; aborting"
-            );
-            task.abort();
+            if let Some(event) = crate::component_event(
+                self.logger.service_name().clone(),
+                "cron.scheduler",
+                "shutdown.worker_timeout",
+                Level::Error,
+                "timeout",
+                Some("WORKER_SHUTDOWN_TIMEOUT"),
+                serde_json::json!({"deadline_remaining_ms": 0, "worker_count": 1})
+                    .as_object()
+                    .cloned()
+                    .unwrap_or_default(),
+            ) {
+                let _ = self.logger.emit(event);
+            }
             let _ = task.await;
             return false;
         }
-        tracing::warn!(
-            subsystem = "sc_cron",
-            action = "shutdown_deadline",
-            "shutdown deadline passed during a Monty feed; waiting for the feed"
-        );
+        if let Some(event) = crate::component_event(
+            self.logger.service_name().clone(),
+            "cron.scheduler",
+            "shutdown.deadline_exceeded",
+            Level::Warn,
+            "timeout",
+            Some("SHUTDOWN_DEADLINE_EXCEEDED"),
+            serde_json::json!({"deadline_remaining_ms": 0, "worker_count": 1,
+                "feed_count": self.feeds.load(Ordering::Acquire)})
+            .as_object()
+            .cloned()
+            .unwrap_or_default(),
+        ) {
+            let _ = self.logger.emit(event);
+        }
         let _ = task.await;
         false
     }

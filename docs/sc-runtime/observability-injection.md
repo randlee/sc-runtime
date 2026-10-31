@@ -1,11 +1,11 @@
 # Injectable observability for generated projects
 
-**Status:** Phase B b-13 contract (implementation planned)
+**Status:** Phase B b-13 contract (library contract implemented; development-only bridge active)
 **Related:** [ADR-RUN-0003](../architecture.md), [ADR-RUN-0004](../architecture.md), [ADR-RUN-0007](../architecture.md), [ADR-RUN-0011](../architecture.md), [ADR-RUN-0014](../architecture.md), [ADR-RUN-0303](../architecture.md), [ADR-RT-0002](architecture.md), [ADR-TRN-0006](../sc-transport/architecture.md), [REQ-RUN-0309](../requirements.md), [NFR-RUN-0002](../requirements.md), [NFR-RUN-0010](../requirements.md), [NFR-RT-0002](requirements.md)
 
 ## Goal
 
-A project rendered from `template/` uses the caret-compatible requirement
+The production release target for a project rendered from `template/` uses the caret-compatible requirement
 **`sc-observability` 1.5.1** (with exact `1.5.1` lock resolution) in
 `main`, logs to the same on-disk layout as other SC consumers, and **injects**
 that logger into the two participating workspace libraries (`sc-runtime` and
@@ -57,6 +57,48 @@ ordered cloned events through `events()` and `clear()`, while
 locks without panicking. Library crates enable this feature only in
 dev-dependencies.
 
+## Temporary development exception
+
+The owner authorized library development before upstream publication on
+2026-10-30. The unpublished local package in
+[`dev/observability-types-shim`](../../dev/observability-types-shim/README.md)
+is named `sc-observability-types` at `1.5.1`; it reexports exact registry
+`1.5.0` values/errors and adds only the fixed trait, Noop/shared handle, and
+`test-util` doubles above. The root workspace dependency
+`sc-observability-types = { version = "1.5.1", path =
+"dev/observability-types-shim" }` selects this facade for development;
+runtime/cron use that workspace entry and sc-command retains its existing
+registry `1.5.0` requirement. Reexports preserve canonical value/error type
+identity, with no observability registry patch. The development lock
+intentionally contains real registry `1.5.0` and local `1.5.1` without
+changing dependency requirements.
+
+Development applications can inject the real registry `sc-observability`
+`1.5.0` logger through the unpublished `sc-observability-dev-adapter` `0.0.0`
+package in `dev/observability-logger-adapter`. Its `LoggerAdapter` newtype
+holds `Arc<v2::Logger>` and implements the planned interface by forwarding
+actual `service_name` and `try_log` calls. The application constructs,
+flushes, and shuts down the real logger. The adapter adds no queue, sink, or
+lifecycle policy; its tests exercise real `1.5.0` admission/sink, saturation,
+and shutdown behavior independently of Noop/recording doubles. Development
+injection uses an Arc around that newtype; the direct Arc coercion described
+below remains the final upstream contract.
+
+Optimized development builds and benchmarks are permitted. Both local
+packages remain unpublished with `publish = false`, and the publication
+guard stays active. The 2026-10-30 governing timing amendment in
+[REQ-RUN-0702](../requirements.md), including Success Criteria 6–7, and
+[architecture](../architecture.md) (System shape and ADR-RUN-0004/0007)
+permits Phase B's real development JSONL/composition/lifecycle proof with
+this adapter and assigns production release acceptance after Phase B to
+`run-h0h`. That epic, including external prerequisite `run-03z.7`,
+requires the real matching
+`1.5.1` registry pair and published adapter proof, removal of development
+workspace path overrides and the local adapter, replacement of newtype
+construction with direct upstream `Arc<Logger>` coercion, and real registry
+root/generated lock resolution. The local `0.0.0` adapter is no claim of
+published `1.5.1` support. Follow the linked removal procedure before publication.
+
 ## Generated daemon responsibilities
 
 Order is fixed ([REQ-RUN-0309](../requirements.md)):
@@ -67,7 +109,9 @@ Order is fixed ([REQ-RUN-0309](../requirements.md)):
 3. Build **`LoggerConfig::default_for(ServiceName::new(APP_NAME)?, log_root)`**
    and apply `LogSettings` from config (level, console/file sinks).
 4. **`LoggerBuilder::build()`** → store it in `Arc<Logger>` until `main`
-   returns, and coerce an Arc clone to `SharedCanonicalLog`.
+   returns. For development, derive `SharedCanonicalLog` with the approved
+   `LoggerAdapter` around an Arc clone of that real logger; at release, coerce
+   the Arc clone directly through the published upstream trait implementation.
 5. Pass a **shareable handle** into assembly:
    - **`Daemon::builder(...).logger(handle)`** in any builder state; it adds
    no typestate or run step.
@@ -100,8 +144,10 @@ The generic constructor emits `logger.attached` once; the helper does not
 duplicate it. There is no public wrapper jitter or post-construction setter.
 Existing `new`, `open`, jitter, and
 `supervise` entry points remain source-compatible by delegating with the
-fixed `sc-cron` Noop identity. Both supervision functions return
-`Result<Captured, CronError>`.
+fixed `sc-cron` Noop identity. Both supervision functions return `Result<Captured, CronError>` and use the
+same supervision implementation. Their legacy argument lists remain unchanged.
+`PythonHook::new_with_logger(module, handle)` installs the handle before
+invocation; legacy `PythonHook::new` installs the fixed `sc-cron` Noop.
 
 Generated stderr errors are stable agent-facing strings in the established
 `CODE cause — recovery` form:
@@ -186,7 +232,9 @@ Before library code can accept injection:
 1. **Amend ADR-RUN-0004 and ADR-RUN-0007** — allow
    **`sc-observability-types`** (not the logging
    runtime) on `sc-runtime` and `sc-cron`; consume the matching published
-   types/runtime **1.5.1** patches. `sc-transport` remains out of this cut.
+   types/runtime **1.5.1** patches for release, using only the explicit
+   temporary types-facade exception above during development.
+   `sc-transport` remains out of this cut.
 2. Update **`REQ-RUN-0005`** forbidden/allowed edges and run `sc-lint-boundary`.
 3. Amend ADR-RUN-0003/0303 and ADR-CMD-0001 so the library and generated
    feature graphs, and the command crate's types dependency, are consistent.
@@ -202,16 +250,24 @@ migration; it is not required to change the event contract.
 The repository public crates move to workspace version `0.1.1`; b-13 makes
 `sc-cron` publishable but performs no publication. b-18 owns the existing
 sc-publish consumer update, real installation and complete output sync from
-the exact pinned kit revision, authorization/order proof, and registry-only
-generated build.
-The publication evidence and registry-only proof bind to one source commit,
+the exact qualified pinned kit revision, publish-order/preflight source
+contracts, and development generated-process/lifecycle proof. Actual release
+authorization/publication and registry-only generated builds follow Phase B in
+`run-h0h`. The phase-end readiness review after fixes must report the remaining
+release limits explicitly. The publication evidence and registry-only proof bind to one source commit,
 which is tagged `v0.1.1` without an intervening source or manifest change.
-The currently pinned kit is not a valid b-18 input because it installs an
-upstream `docs/sprints/**` artifact. b-18 remains blocked until an exact later
-revision excludes that class; its inventory gate must enumerate installed
-destinations and reject any `docs/sprints/**` path.
-This contract does not authorize or perform publication of either upstream
-observability crate.
+Historically, the former sc-publish pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` was
+rejected because its actual installer/package destinations included upstream
+`docs/sprints/**` history. The current pin, `9677ab083e7dd3feb258235a342e321ca1b45d8d`, is
+the qualified and installed immutable revision. Its qualification enumerated all 85 actual
+copy/render/package destinations, compared the complete inventory with real install outputs,
+excluded `docs/sprints/**` destinations, and rejected traversal, absolute or duplicate
+paths, unsafe symlinks, and package-unsafe paths. Upstream PR 137 remains draft and
+unmerged; that status is distinct from qualification of the available immutable revision and
+adds no merge prerequisite. Upstream source may retain its sprint history. Kit preparation
+can proceed independently; final runtime composition still consumes approved parent merges.
+This contract does not authorize or perform publication of either upstream observability
+crate.
 
 ## Acceptance for template
 
@@ -230,3 +286,12 @@ observability crate.
   test.
 - No `sc-observability-otlp` in the template; OTel remains opt-in on the
   consumer `daemon` crate.
+
+Cron invocation correlation uses the logical selected occurrence: numeric schedule
+ID, generation and due timestamp form `cron-s<ID>-g<GEN>-t<SECONDS>-n<NANOSECONDS>`.
+The private launch/lifetime state captures it before next-run advancement and
+preserves it across Python supervision, Monty stop/tick feeds and CLI cleanup.
+It is canonical top-level `correlation_id` only. It identifies occurrences within
+one scheduler/store domain, not globally unique attempts. Non-run lifecycle,
+reload, store, jitter and skipped pre-launch events have no correlation ID.
+Legacy standalone Python/process entrypoints also retain `None`.

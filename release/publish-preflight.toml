@@ -3,6 +3,15 @@
 
 schema_version = 1
 
+
+[[checks]]
+id = "observability-registry-only"
+description = "Reject development observability patches and require resolved registry types 1.5.1."
+run = "python3 scripts/check_observability_release.py"
+[[checks]]
+id = "release-contract-sources"
+description = "Verify prepublication release-generation source contracts."
+run = "python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_contract_sources"
 [[checks]]
 id = "benchmark-pass"
 description = "Monty benchmark gate on the controlled host (scripts/benchmark/check_gate.py)."
