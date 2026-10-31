@@ -1,0 +1,132 @@
+{
+  "scope": "Releasepreflightreadinesssourceengineering",
+  "bead": "run-h0h.5",
+  "source": {
+    "branch": "codex/publish-preflight",
+    "commit": "e47b7ccdc955377a4f54061967b3c02a79bc4e3a",
+    "base": "2a93925363eab051e3c103202901f38600b87c34",
+    "pr": 100
+  },
+  "publisher": {
+    "mode": "preflight",
+    "requested_ref": "develop",
+    "version": "0.1.1",
+    "original_run": 41241961110,
+    "status": "NOT_READY",
+    "candidate_authorization": false,
+    "publication_authorization": false,
+    "host_tools_prepared": true,
+    "real_benchmark_pending_quiet_host": true
+  },
+  "qa": {
+    "qa_pass": "qa-publisher-readiness-1",
+    "reviewer_manifest": [
+      {
+        "agent": "req-qa",
+        "task_id": "/root/preflight_qa1_req",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6-luna",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FAIL",
+        "result_path": "/tmp/sc-runtime-publisher-preflight/qa1/req-qa-result.md"
+      },
+      {
+        "agent": "arch-qa",
+        "task_id": "/root/preflight_qa1_arch",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/sc-runtime-publisher-preflight/qa1/arch-qa-result.md"
+      },
+      {
+        "agent": "extensibility-qa",
+        "task_id": "/root/preflight_qa1_ext",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/sc-runtime-publisher-preflight/qa1/extensibility-qa-result.md"
+      },
+      {
+        "agent": "ruthless-boundary-qa",
+        "task_id": "/root/preflight_qa1_boundary",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/sc-runtime-publisher-preflight/qa1/ruthless-boundary-qa-result.md"
+      },
+      {
+        "agent": "rust-qa-agent",
+        "task_id": "/root/preflight_qa1_rust",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FINDINGS",
+        "result_path": "/tmp/sc-runtime-publisher-preflight/qa1/rust-qa-agent-result.md"
+      },
+      {
+        "agent": "rust-best-practices-agent",
+        "task_id": "/root/preflight_qa1_rbp",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6-luna",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/sc-runtime-publisher-preflight/qa1/rust-best-practices-agent-result.md"
+      },
+      {
+        "agent": "rust-service-hardening-agent",
+        "task_id": "/root/preflight_qa1_service",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FINDINGS",
+        "result_path": "/tmp/sc-runtime-publisher-preflight/qa1/rust-service-hardening-agent-result.md"
+      },
+      {
+        "agent": "flaky-test-qa",
+        "task_id": "/root/preflight_qa1_flaky",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FINDINGS",
+        "result_path": "/tmp/sc-runtime-publisher-preflight/qa1/flaky-test-qa-result.md"
+      }
+    ],
+    "required_reviewers": [
+      "req-qa",
+      "arch-qa",
+      "extensibility-qa",
+      "ruthless-boundary-qa",
+      "rust-qa-agent",
+      "rust-best-practices-agent",
+      "rust-service-hardening-agent",
+      "flaky-test-qa"
+    ],
+    "status": "enforcer_ready",
+    "canonical_finding_ids": [
+      "PREFLIGHT-RSH-001",
+      "PREFLIGHT-RSH-002",
+      "PREFLIGHT-FTQ-002",
+      "PREFLIGHT-FTQ-003",
+      "PREFLIGHT-REQ-005"
+    ]
+  }
+}

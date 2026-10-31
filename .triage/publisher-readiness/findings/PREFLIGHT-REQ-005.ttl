@@ -1,0 +1,2 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:publisher-readiness:PREFLIGHT-REQ-005> qa:id "PREFLIGHT-REQ-005" ; qa:severity "blocking" ; qa:status "open" ; qa:reviewCommit "e47b7ccdc955377a4f54061967b3c02a79bc4e3a" ; qa:summary "The real controlled-host SSH route/auth and benchmark execution has not been exercised, and final hosted PR CI is pending. Source/mock checks do not close these execution gates." ; qa:aliases "" ; qa:ownerSeverity "Blocking execution" .
