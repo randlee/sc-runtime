@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18:qa1:REQ-QA-B18-001>
+  qa:id "REQ-QA-B18-001" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "docs/plans/phase-b/sprint-b-18-template-observability-integration.md:12-38" ;
+  qa:issue "The sprint lists REQ-RT-0005 and explicitly owns lock/socket cleanup and worker startup after the successful stores callback, but omits active REQ-RT-0002, which governs the singleton daemon.lock lifecycle and stores-callback ordering. The requirement is directly touched by WI9 and cannot be inferred as out of scope." ;
+  qa:recommendation "Add REQ-RT-0002 to the sprint requirements list and retain evidence that the runtime takes daemon.lock before the stores callback and holds it through run/shutdown." .

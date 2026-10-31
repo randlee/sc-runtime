@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18:qa1:REQ-QA-B18-002>
+  qa:id "REQ-QA-B18-002" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "template/crates/daemon/src/main.rs:95-102" ;
+  qa:issue "REQ-CRON-0019 and AC3 require the generated main composition to preserve and pass an application-provided EnvironmentReferenceResolver. main constructs hook_environment_host() and passes it directly to cron::open; it never attaches a resolver (line 96 is a TODO comment). The generated cron_environment test manually attaches a resolver and calls cron::open itself, so it does not prove main composition. The implementation-delivered paragraph also claims resolver preservation through composition, conflicting with this path." ;
+  qa:recommendation "Wire the application resolver into the configured HookEnvironmentHost in the generated main composition before calling cron::open, and change the generated integration test to exercise that production composition path while verifying the recording resolver." .
