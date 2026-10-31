@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import runpy
 import tempfile
+import tomllib
 import unittest
 from unittest.mock import patch
 import jsonschema
@@ -32,11 +33,13 @@ class CronEnvironmentTests(unittest.TestCase):
 
     def test_prebuilt_typed_policy_keeps_resolver_and_separately_wires_files_roots(self):
         source = (ROOT / "template/crates/daemon/src/cron.rs").read_text()
-        for token in ("pub fn hook_environment_host", ".allow_process(", ".allow_dotenv_file(", ".allow_dotenv_root(", "environment: sc_cron::HookEnvironmentHost", "scheduler.with_hook_environment(environment)", "prebuilt_policy_retains_application_reference_resolver_through_open", "config.row_limit()"):
+        for token in ("pub fn hook_environment_host", ".allow_process(", ".allow_dotenv_file(", ".allow_dotenv_root(", "environment: sc_cron::HookEnvironmentHost", ".with_hook_environment(hook_environment)", "prebuilt_policy_retains_application_reference_resolver_through_open", "config.row_limit()"):
             self.assertIn(token, source)
         open_source = source.split("pub fn open(", 1)[1].split("/// Row-cap fields", 1)[0]
         self.assertNotIn("hook_environment_host()", open_source)
-        self.assertIn('cron = ["dep:sc-cron"]', (ROOT / "template/crates/daemon/Cargo.toml").read_text())
+        manifest = (ROOT / "template/crates/daemon/Cargo.toml").read_text()
+        cron_feature = manifest.split('cron = [', 1)[1].split(']', 1)[0]
+        self.assertEqual(set(tomllib.loads("cron = [" + cron_feature + "]")["cron"]), {"dep:sc-cron", "dep:async-trait"})
         self.assertIn('monty = ["cron", "sc-cron/monty"]', (ROOT / "template/crates/daemon/Cargo.toml").read_text())
 
     def test_checked_example_receives_identity_team_clear_reference_dotenv_without_render_helper(self):
