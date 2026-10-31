@@ -228,18 +228,25 @@ count is 6, and the combined Phase B sprint count is 18.
 Wave-8 sibling ownership is disjoint except the explicit window below. b-13
 first owns shared ADR/REQ, boundary, lockfile, library manifests, public injection signatures, and the
 whole jitter/store/process/hook/Monty component files and their events/API.
-b-14 owns runtime event sites; b-15 owns only worker and due-run trace sites
+b-14 owns runtime event sites and the mechanical existing builder logger
+forwarding seam, without changing public typestate or assembly order;
+b-15 owns only worker and due-run trace sites
 and the worker call passing the handle into b-13's hook API. b-16 exclusively
 owns the host registry/adapters, all production tool-crate boundary checks,
 both template dependency inventories, daemon Cargo, and the first Monty
 example. Its shared authority and library paths are serial successors of
-b-13. The three declared paths shared with b-15 are
-`crates/sc-cron/src/worker.rs`, `crates/sc-cron/src/worker/worker_runs.rs`, and
-`crates/sc-cron/src/scheduler/run_due.rs`. b-15 is their sole writer through
+b-13. The five paths in the parent-coordinated writer window shared with b-15 are
+`crates/sc-cron/src/worker.rs`, `crates/sc-cron/src/worker/worker_runs.rs`,
+`crates/sc-cron/src/scheduler/run_due.rs`, `crates/sc-cron/src/scheduler.rs`,
+and `crates/sc-cron/tests/observability_components.rs`. The scheduler exception
+is limited to passing the existing logger into `record_due` from `finish_due`;
+the component-test exception is limited to b-16 registry-call migration and
+b-15 rejection-attempt cardinality for its added events. b-15 is their sole writer through
 a compilable development push. b-16 merges that push forward, then becomes
 sole writer only for mechanical registry transport through the Worker
 field/constructor, `spawn_feed`/`FeedLaunch`, and due-run feed parameters,
-preserving `RunCoord` logger Arc identity and events. All other work remains
+preserving `RunCoord` logger Arc identity and events. Parent-coordinated return windows preserve sole-writer ownership when
+consumer completion fixes touch these five paths. All other work remains
 parallel. Development push, not QA, PR merge, or whole-sprint completion,
 triggers the handoff; this adds no global b-15 `must_follow` edge to b-16.
 b-15 also owns its existing `target_resolver.rs` and `worker.rs` legacy test
