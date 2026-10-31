@@ -5,9 +5,12 @@
   qa:sprint "phase-b-end" ;
   qa:qaPass "qa-phase-b-end-1" ;
   qa:severity "Important" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "flaky-test-qa" ;
   qa:commit "a117c53a68a39bfa08bcfa64b0528ae8abcd7194" ;
   qa:location "tests/integration/generation/owned_process.py:72" ;
   qa:issue "The owned-tree runner launches its command before establishing that Unix session enumeration is available. When ps is denied (observed EPERM in the ordinary Codex sandbox), _stop_owned_session raises at line 72 before enumerating the SID. Its finally block kills only the launcher process group, leaving ordinary descendants that created another process group in the same owned session alive. This occurred for both failure and timeout witnesses: seven tests errored, and two test-owned grandchild.py processes survived their run cleanup. This is a concrete test-helper cleanup failure, not a daemon defect, deliberate setsid escape, or hypothetical hostile native operation." ;
-  qa:recommendation "Before launching a top-level Unix owned command, verify the exact required session-inspection capability and refuse with a clear error if it is unavailable. Add a deterministic fault test that makes the inspection fail with PermissionError and asserts subprocess.Popen is never called; retain all existing same-SID/new-pgrp/nested cleanup tests and the Windows Job accounting gate. Do not broaden killing by process name. This addresses the observed initially unavailable capability; it does not claim immunity to capability loss after launch." .
+  qa:recommendation "Before launching a top-level Unix owned command, verify the exact required session-inspection capability and refuse with a clear error if it is unavailable. Add a deterministic fault test that makes the inspection fail with PermissionError and asserts subprocess.Popen is never called; retain all existing same-SID/new-pgrp/nested cleanup tests and the Windows Job accounting gate. Do not broaden killing by process name. This addresses the observed initially unavailable capability; it does not claim immunity to capability loss after launch." ;
+  qa:fixedCommit "92f384834a78ed15ba68b3df02cd00267ea4d41e" ;
+  qa:verifiedBy "/root/phase_end_qa2_flaky" ;
+  qa:verification "Scoped QA2 source/test recheck passed; overall phase admission still awaits exact-head execution gates." .

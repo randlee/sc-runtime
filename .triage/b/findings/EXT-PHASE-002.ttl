@@ -5,9 +5,12 @@
   qa:sprint "phase-b-end" ;
   qa:qaPass "qa-phase-b-end-1" ;
   qa:severity "Minor" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "extensibility-qa" ;
   qa:commit "a117c53a68a39bfa08bcfa64b0528ae8abcd7194" ;
   qa:location "docs/sc-runtime/observability-injection.md:259" ;
   qa:issue "Active integration guidance still calls the qualified current kit invalid" ;
-  qa:recommendation "Make both paragraphs explicitly historical: identify former 16457 as the rejected pin and current 9677 as qualified/installed. Retain complete inventory, traversal/symlink and docs/sprints destination exclusion requirements, and keep upstream PR137 draft/unmerged status distinct from qualification of its immutable available revision. Do not introduce a new upstream-merge prerequisite." .
+  qa:recommendation "Make both paragraphs explicitly historical: identify former 16457 as the rejected pin and current 9677 as qualified/installed. Retain complete inventory, traversal/symlink and docs/sprints destination exclusion requirements, and keep upstream PR137 draft/unmerged status distinct from qualification of its immutable available revision. Do not introduce a new upstream-merge prerequisite." ;
+  qa:fixedCommit "92f384834a78ed15ba68b3df02cd00267ea4d41e" ;
+  qa:verifiedBy "/root/phase_end_qa2_ext" ;
+  qa:verification "Scoped QA2 source/test recheck passed; overall phase admission still awaits exact-head execution gates." .
