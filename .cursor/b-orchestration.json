@@ -5452,56 +5452,61 @@
           "agent": "req-qa",
           "task_id": "/root/phase_end_qa2_req",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6-luna",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
-          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/req-qa-result.md",
-          "verdict": "PASS"
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         },
         {
           "agent": "arch-qa",
           "task_id": "/root/phase_end_qa2_arch",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6.1-sol",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
-          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/arch-qa-result.md",
-          "verdict": "PASS"
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         },
         {
           "agent": "rust-qa-agent",
           "task_id": "/root/phase_end_qa2_rust",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6.1-terra",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
-          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/rust-qa-agent-result.md",
-          "verdict": "PASS"
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         },
         {
           "agent": "extensibility-qa",
           "task_id": "/root/phase_end_qa2_ext",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6.1-sol",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
-          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/extensibility-qa-result.md",
-          "verdict": "PASS"
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         },
         {
           "agent": "flaky-test-qa",
           "task_id": "/root/phase_end_qa2_flaky",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6.1-sol",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
-          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/flaky-test-qa-result.md",
-          "verdict": "PASS"
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         }
       ],
       "triage_ttl_paths": [
@@ -5512,8 +5517,113 @@
         ".triage/b/findings/FTQ-PHASEB-001.ttl"
       ],
       "finding_ids": [],
-      "coordinator_task_id": null,
-      "note": "FiveactualscopedrolesPASS, fullReq98/98/73checks, canonical5TTLsourcefixedwith92f+verifierIDs. CurrentfulljustlintPASS; extraouterwrapperfulltestattempt124notPASS/notsourcebug, canonicaldirectfulltestongoing; exactGHAphaseartifactpending. EnforcerwillpublishINFLIGHTifstillpending."
+      "coordinator_task_id": "/root/phase_end_qa2_enforcer",
+      "note": "ExactfullpublicreportJSONindependentlyGETverified and actual5completedTaskreceipts/fencedoutputs correlated.98/98+73checks,0findings/TODO. Windows+aggregatecurrentCIpending; canonicaldirectfulltestpending, interruptedextraouterwrapper124notPASS.",
+      "machine_status": {
+        "sprint": "phase-b-end",
+        "task": "qa-phase-b-end-2",
+        "branch": "integrate/phase-b-observability",
+        "commit": "92f384834a78ed15ba68b3df02cd00267ea4d41e",
+        "pr": 96,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 98,
+          "total": 98,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source QA is clean (98/98 deliverables and 73/73 requirement checks); exact-head PR CI is incomplete, with just lint and just test plus Windows hook environment execution still pending. Fifteen other required checks pass.",
+        "next_action": "wait_for_exact_head_ci",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/phase_end_qa2_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/phase_end_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/phase_end_qa2_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/phase_end_qa2_ext",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/phase_end_qa2_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-phase-b-end-2",
+          "commit": "92f384834a78ed15ba68b3df02cd00267ea4d41e",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541269692",
+          "coordinator_task_id": "/root/phase_end_qa2_enforcer",
+          "triage": {
+            "branch": "codex/phase-b-review-state",
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-PHASE-001.ttl",
+              ".triage/b/findings/ARCH-PHASE-B-001.ttl",
+              ".triage/b/findings/EXT-PHASE-001.ttl",
+              ".triage/b/findings/EXT-PHASE-002.ttl",
+              ".triage/b/findings/FTQ-PHASEB-001.ttl"
+            ]
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      },
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541269692"
     }
   ],
   "model_authority": "User: yes, use terra/sol/luna where appropriate",
@@ -6478,7 +6588,7 @@
   },
   "phase_end": {
     "bead": "run-03z.30",
-    "status": "qa2_all_source_reviewers_pass_execution_pending",
+    "status": "qa2_source_approved_awaiting_exact_head_execution",
     "review_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa1",
     "review_branch": "integrate/phase-b-observability",
     "coordination_branch": "codex/phase-b-review-state",
@@ -6492,56 +6602,61 @@
         "agent": "req-qa",
         "task_id": "/root/phase_end_qa2_req",
         "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6-luna",
-        "effort": "high",
-        "status": "completed",
         "fenced_json_received": true,
-        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/req-qa-result.md",
-        "verdict": "PASS"
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
       },
       {
         "agent": "arch-qa",
         "task_id": "/root/phase_end_qa2_arch",
         "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6.1-sol",
-        "effort": "high",
-        "status": "completed",
         "fenced_json_received": true,
-        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/arch-qa-result.md",
-        "verdict": "PASS"
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
       },
       {
         "agent": "rust-qa-agent",
         "task_id": "/root/phase_end_qa2_rust",
         "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6.1-terra",
-        "effort": "high",
-        "status": "completed",
         "fenced_json_received": true,
-        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/rust-qa-agent-result.md",
-        "verdict": "PASS"
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
       },
       {
         "agent": "extensibility-qa",
         "task_id": "/root/phase_end_qa2_ext",
         "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6.1-sol",
-        "effort": "high",
-        "status": "completed",
         "fenced_json_received": true,
-        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/extensibility-qa-result.md",
-        "verdict": "PASS"
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
       },
       {
         "agent": "flaky-test-qa",
         "task_id": "/root/phase_end_qa2_flaky",
         "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6.1-sol",
-        "effort": "high",
-        "status": "completed",
         "fenced_json_received": true,
-        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa2/flaky-test-qa-result.md",
-        "verdict": "PASS"
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
       }
     ],
     "state_branch": "codex/phase-b-review-state",
