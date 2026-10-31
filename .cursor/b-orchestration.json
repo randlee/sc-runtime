@@ -317,7 +317,45 @@
       "qa2_fix_bead": "run-03z.39",
       "qa2_fix_assignment": "/tmp/phaseb-cursor-orchestration/b17-qa2/fix-assignment.xml",
       "qa3_bead": "run-03z.40",
-      "qa3_packet": "/tmp/phaseb-cursor-orchestration/b17-qa3"
+      "qa3_packet": "/tmp/phaseb-cursor-orchestration/b17-qa3",
+      "qa3_dispatched": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b17_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/cursor_b17_qa2_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true
+        }
+      ]
     },
     "b-18": {
       "task_id": "run-03z.6",
@@ -4865,10 +4903,12 @@
     "authority_fix": {
       "bead": "run-03z.37",
       "task_id": "/root/phaseb_owner_authority_fix",
-      "status": "qa3_pass_ci_success_pending_merge",
+      "status": "merged_to_integration",
       "finding": "REQ-QA-OWNER-001",
       "commit": "6821d5dd5602d1d27d574807df6be04926e7a121",
-      "evidence": "/tmp/phaseb-cursor-orchestration/owner-amendment-review/fix-evidence/validation.json"
+      "evidence": "/tmp/phaseb-cursor-orchestration/owner-amendment-review/fix-evidence/validation.json",
+      "merge_commit": "66ecb270be3c4ee99056621768b19b56e1403ce1",
+      "merged_at": "2026-10-31T04:21:21Z"
     }
   }
 }
