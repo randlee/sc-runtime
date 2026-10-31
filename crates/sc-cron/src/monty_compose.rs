@@ -168,12 +168,20 @@ fn read_pipe(
             return Err(io::Error::other("CLI pipe reader disconnected"));
         }
         Err(mpsc::RecvTimeoutError::Timeout) => {
-            emit_timeout(
-                logger,
+            if let Some(event) = crate::component_event(
+                logger.service_name().clone(),
+                "cron.monty.compose",
                 "pipe.drain_timeout",
-                "COMPOSE_PIPE_DRAIN_TIMEOUT",
-                None,
-            );
+                sc_observability_types::Level::Warn,
+                "timeout",
+                Some("COMPOSE_PIPE_DRAIN_TIMEOUT"),
+                serde_json::json!({"deadline_remaining_ms": 0})
+                    .as_object()
+                    .cloned()
+                    .unwrap_or_default(),
+            ) {
+                let _ = logger.emit(event);
+            }
             return Err(io::Error::other("CLI pipe drain deadline expired"));
         }
     };
@@ -197,35 +205,22 @@ fn wait_until(child: &mut dyn ChildWrapper, deadline: Instant) -> io::Result<Opt
 }
 fn reap_after_kill(child: &mut dyn ChildWrapper, deadline: Instant, logger: &SharedCanonicalLog) {
     let _ = child.start_kill();
-    if !matches!(wait_until(child, deadline), Ok(Some(_))) {
-        emit_timeout(
-            logger,
+    if !matches!(wait_until(child, deadline), Ok(Some(_)))
+        && let Some(event) = crate::component_event(
+            logger.service_name().clone(),
+            "cron.monty.compose",
             "child.kill_timeout",
-            "COMPOSE_CHILD_KILL_TIMEOUT",
-            Some(child.id()),
-        );
+            sc_observability_types::Level::Warn,
+            "timeout",
+            Some("COMPOSE_CHILD_KILL_TIMEOUT"),
+            serde_json::json!({"deadline_remaining_ms": 0, "pid": child.id()})
+                .as_object()
+                .cloned()
+                .unwrap_or_default(),
+        )
+    {
+        let _ = logger.emit(event);
     }
-}
-fn emit_timeout(
-    logger: &SharedCanonicalLog,
-    action: &'static str,
-    code: &'static str,
-    pid: Option<u32>,
-) {
-    let mut fields = serde_json::Map::new();
-    fields.insert("deadline_remaining_ms".into(), serde_json::json!(0));
-    if let Some(pid) = pid {
-        fields.insert("pid".into(), serde_json::json!(pid));
-    }
-    crate::emit_event(
-        logger,
-        "cron.monty.compose",
-        action,
-        sc_observability_types::Level::Warn,
-        "timeout",
-        Some(code),
-        fields,
-    );
 }
 
 #[cfg(test)]

@@ -92,6 +92,11 @@ forbidden_literals = []
 max_production_lines = 1000
 paths = ["crates/*/src/**/*.rs", "template/**/*.rs"]
 
+# Shared package-identity boundary check and negative fixtures for both libraries.
+[[tool.sc-lint.test]]
+name = "observability-dependencies"
+command = ["python3", "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_observability_dependencies.py"]
+
 [[tool.sc-lint.test]]
 name = "workspace"
 command = ["cargo", "test", "--workspace", "--exclude", "sc-cron"]

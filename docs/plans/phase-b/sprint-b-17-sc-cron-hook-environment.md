@@ -37,6 +37,21 @@ owned_paths:
   - crates/sc-cron/src/types.rs
   - crates/sc-cron/src/sqlite.rs
   - crates/sc-cron/src/environment.rs
+  - Cargo.lock
+  - crates/sc-cron/Cargo.toml
+  - crates/sc-cron/src/error.rs
+  - crates/sc-cron/src/process.rs
+  - crates/sc-cron/src/sqlite_schema.rs
+  - crates/sc-cron/src/environment/dotenv.rs
+  - crates/sc-cron/src/environment/resolve.rs
+  - crates/sc-cron/src/environment/wire.rs
+  - crates/sc-cron/src/worker/tests.rs
+  - crates/sc-cron/src/worker/event_contract_tests.rs
+  - crates/sc-cron/tests/hook_environment/model.rs
+  - crates/sc-cron/tests/hook_environment/resolution.rs
+  - crates/sc-cron/tests/hook_environment/monty.rs
+  - crates/sc-cron/tests/observability_components.rs
+  - template/crates/daemon/Cargo.toml
   - crates/sc-cron/src/hook.rs
   - crates/sc-cron/src/monty_host.rs
   - crates/sc-cron/src/monty_run.rs
@@ -459,3 +474,11 @@ Initial focused evidence: hook_environment with Monty 23/23, monty_host_bridge
 16/16, generated environment/example Python tests 9/9, sc-cron all-feature
 Clippy and workspace default Clippy PASS. Full sprint validation follows the
 first push. Parent owns independent QA/CI/merge and project-plan status.
+
+The additional owned implementation seams support the approved environment
+contract: serde/wire dependency and lock inventory, value-free error recovery,
+child executable/Debug policy, isolated schema checks, resolver/parser modules,
+and test-only worker assertions. Generated daemon test support validates the
+prebuilt policy/resolver handoff. The observability component fixture consumes
+the parent-delivered B13 deterministic pipe witness while retaining B16 registry
+calls and B15 event cardinality. No additional product API or behavior is added.

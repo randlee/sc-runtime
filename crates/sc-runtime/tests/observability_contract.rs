@@ -77,12 +77,8 @@ async fn rejecting_receiver_preserves_runtime_failure() {
 fn library_dependency_and_blocking_adapter_edges_are_scoped() {
     let manifest = include_str!("../Cargo.toml");
     assert!(manifest.contains("sc-observability-types.workspace = true"));
-    assert!(
-        !manifest
-            .lines()
-            .any(|line| line.starts_with("sc-observability =")
-                || line.starts_with("sc-observability-otlp"))
-    );
+    // Resolved normal package identities are enforced for both libraries by
+    // the shared observability-dependencies check in the existing CI test path.
     let builder = include_str!("../src/builder.rs");
     assert!(!builder.contains("enqueue_blocking"));
     assert!(!builder.contains(".log("));

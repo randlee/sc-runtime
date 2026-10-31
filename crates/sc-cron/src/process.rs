@@ -327,7 +327,7 @@ pub async fn supervise(
 /// Supervises a child using a shared best-effort canonical logger.
 ///
 /// # Errors
-/// Returns `CronError::HookFailed` for spawn or wait failures.
+/// Returns `CronError::HookFailed` for spawn, wait, or reap-timer start failures.
 pub async fn supervise_with_logger<F: Future<Output = ()>>(
     spec: &ChildSpec<'_>,
     cap: usize,
@@ -404,7 +404,7 @@ async fn supervise_inner(
         }
         Some(status)
     } else {
-        reap_killed(&mut tree, &logger).await;
+        reap_killed(&mut tree, &logger).await?;
         None
     };
     Ok(Captured {
@@ -418,24 +418,43 @@ async fn supervise_inner(
 ///
 /// The bound is a thread timer, not tokio's: a paused or manual tokio clock
 /// must not cut the reap short. A group that is not reaped in time is logged
-/// and left; drop kills it again.
-async fn reap_killed(tree: &mut Tree, logger: &sc_observability_types::SharedCanonicalLog) {
-    try_kill(tree, logger);
-    let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
-    let timer = std::thread::Builder::new()
+/// and left; drop kills it again. Timer-start failure returns immediately with
+/// an error instead of entering an unbounded wait; drop retries the kill.
+async fn reap_killed(
+    tree: &mut Tree,
+    logger: &sc_observability_types::SharedCanonicalLog,
+) -> io::Result<()> {
+    reap_killed_with_timer(tree, logger, start_reap_timer).await
+}
+
+fn start_reap_timer(bound: tokio::sync::oneshot::Sender<()>) -> io::Result<()> {
+    std::thread::Builder::new()
         .name("sc-cron-reap-bound".to_owned())
         .spawn(move || {
             std::thread::park_timeout(REAP_AFTER_KILL);
             let _ = bound.send(());
-        });
-    let bounded = async {
-        if timer.is_ok() {
-            let _ = bounded.await;
-        } else {
-            std::future::pending::<()>().await;
-        }
-    };
-    await_reap(tree, logger, bounded).await;
+        })
+        .map(|_| ())
+}
+
+async fn reap_killed_with_timer(
+    tree: &mut Tree,
+    logger: &sc_observability_types::SharedCanonicalLog,
+    start_timer: impl FnOnce(tokio::sync::oneshot::Sender<()>) -> io::Result<()>,
+) -> io::Result<()> {
+    try_kill(tree, logger);
+    let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
+    // Fail closed immediately when no real-time bound can be established.
+    // The caller drops Tree on this error, retrying group cleanup. Do not
+    // report child.reap_timeout: no reap deadline has actually elapsed.
+    start_timer(bound).map_err(|error| {
+        io::Error::new(error.kind(), format!("reap timer could not start: {error}"))
+    })?;
+    await_reap(tree, logger, async {
+        let _ = bounded.await;
+    })
+    .await;
+    Ok(())
 }
 
 async fn await_reap(
@@ -450,8 +469,8 @@ async fn await_reap(
             let mut fields = serde_json::Map::new();
             fields.insert("deadline_remaining_ms".into(), 0.into());
             if let Some(pid) = tree.child.id() { fields.insert("pid".into(), pid.into()); }
-            crate::emit_event(logger, "cron.process", "child.reap_timeout",
-                sc_observability_types::Level::Warn, "timeout", Some("CHILD_REAP_TIMEOUT"), fields);
+            if let Some(event) = crate::component_event(logger.service_name().clone(), "cron.process", "child.reap_timeout",
+                sc_observability_types::Level::Warn, "timeout", Some("CHILD_REAP_TIMEOUT"), fields) { let _ = logger.emit(event); }
         }
     }
 }
@@ -472,15 +491,17 @@ fn kill_failed(
     if let Some(pid) = pid {
         fields.insert("pid".into(), pid.into());
     }
-    crate::emit_event(
-        logger,
+    if let Some(event) = crate::component_event(
+        logger.service_name().clone(),
         "cron.process",
         "child.kill_failed",
         sc_observability_types::Level::Debug,
         "failed",
         Some("CHILD_KILL_FAILED"),
         fields,
-    );
+    ) {
+        let _ = logger.emit(event);
+    }
 }
 
 /// Deterministic process faults for component-contract tests only.
@@ -512,6 +533,21 @@ pub mod testing {
         ) -> std::pin::Pin<Box<dyn Future<Output = io::Result<ExitStatus>> + Send + '_>> {
             Box::pin(std::future::pending())
         }
+    }
+
+    /// Injects timer creation failure with a child whose wait never completes.
+    pub async fn failed_reap_timer(
+        logger: sc_observability_types::SharedCanonicalLog,
+    ) -> Result<(), crate::CronError> {
+        let mut tree = Tree {
+            child: Box::new(Unreapable),
+            reaped: false,
+        };
+        reap_killed_with_timer(&mut tree, &logger, |_| {
+            Err(io::Error::other("injected timer-start failure"))
+        })
+        .await
+        .map_err(|error| crate::CronError::HookFailed(error.to_string()))
     }
 
     /// Returns whether an unreapable fake child was reaped after an immediate bound.
