@@ -101,7 +101,7 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-17-sc-cron-hook-environment",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "local_validation_pass_windows_pass_linux_pending",
+      "status": "local_validation_pass_linux_windows_pass_parent_fix_handoff_pending",
       "developer_task_id": "/root/phaseb_b17_developer",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
       "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2",
@@ -111,7 +111,7 @@
       "windows_job": 124398355367,
       "evidence": "/tmp/phaseb-cursor-orchestration/b-17-linux-repair-inflight.json",
       "windows_status": "success",
-      "linux_status": "in_progress",
+      "linux_status": "success",
       "shared_portability_commit": "021ec1bc6642419e162cec21aaea5dcc38d3e779",
       "shared_portability_paths": [
         "tests/unit/generation/test_monty_example.py",
