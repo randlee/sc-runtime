@@ -29,6 +29,7 @@
   <table>
     <thead><tr><th>Campaign</th><th>Host</th><th>Git</th><th>Status</th><th>rustc</th><th>Report</th></tr></thead>
     <tbody>
+<tr><td><a href="20261031T233507Z-rand-m5.campaign.json">20261031T233507Z-rand-m5</a></td><td>rand-m5</td><td><code>396ad6a86f8e</code></td><td>MEASURED</td><td>rustc 1.96.1 (31fca3adb 2026-06-26)</td><td><a href="20261031T233507Z-rand-m5.html">20261031T233507Z-rand-m5.html</a></td></tr>
 <tr><td><a href="20261031T230610Z-rand-m5.campaign.json">20261031T230610Z-rand-m5</a></td><td>rand-m5</td><td><code>a3dcf0f16260</code></td><td>MEASURED</td><td>rustc 1.96.1 (31fca3adb 2026-06-26)</td><td><a href="20261031T230610Z-rand-m5.html">20261031T230610Z-rand-m5.html</a></td></tr>
 <tr><td><a href="20261031T230456Z-rand-m5.campaign.json">20261031T230456Z-rand-m5</a></td><td>rand-m5</td><td><code>a3dcf0f16260</code></td><td>MEASURED</td><td>rustc 1.96.1 (31fca3adb 2026-06-26)</td><td><a href="20261031T230456Z-rand-m5.html">20261031T230456Z-rand-m5.html</a></td></tr>
 <tr><td><a href="20261031T225222Z-rand-m5.campaign.json">20261031T225222Z-rand-m5</a></td><td>rand-m5</td><td><code>a8cb4af1474c</code></td><td>MEASURED</td><td>rustc 1.96.1 (31fca3adb 2026-06-26)</td><td><a href="20261031T225222Z-rand-m5.html">20261031T225222Z-rand-m5.html</a></td></tr>
@@ -50,6 +51,28 @@
   </table>
   <h2>Code examples</h2>
   <p class="muted">Copied from each campaign JSON (<code>examples.hook_source</code>, <code>examples.resume_loop</code>, <code>examples.cli_argv</code>).</p>
+<h3>20261031T233507Z-rand-m5</h3>
+<h3>Hook snippet</h3>
+<pre><code>def cron_stop(hook):
+    return {&quot;action&quot;: &quot;continue&quot;, &quot;reason&quot;: &quot;ok&quot;}
+
+def cron_tick(hook):
+    return sc_compose_run(&quot;render&quot;, hook[&quot;payload&quot;][&quot;compose_args&quot;])
+</code></pre>
+<h3>production drive_feed resume loop</h3>
+<pre><code>// production path: drive_feed -&gt; execute_feed_with_logger
+let mut progress = repl.feed_start(phase_snippet(phase), snippet_inputs(hook, hosts), PrintWriter::Disabled)?;
+loop {
+    progress = match progress {
+        ReplProgress::FunctionCall(call) =&gt; resume_host(call, stage, phase, hook, hosts, run_deadline, logger)?,
+        ReplProgress::Complete { repl, value } =&gt; return finish_phase(phase, generation, repl, &amp;value),
+        ReplProgress::NameLookup(lookup) =&gt; return undefined_name(stage, &amp;lookup.name),
+        _ =&gt; return denied(stage, &quot;unsupported operation&quot;),
+    };
+}
+</code></pre>
+<h3>sc-compose CLI argv</h3>
+<pre><code>sc-compose render --root &lt;temp&gt; --mode file --file t.j2 --var-file &lt;temp&gt;/v.json</code></pre>
 <h3>20261031T230610Z-rand-m5</h3>
 <h3>Hook snippet</h3>
 <pre><code>def cron_stop(hook):
