@@ -50,11 +50,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa2_runtime_fixes_verified_readme_correction_in_progress",
+      "status": "qa3_reviewers_pass_zero_findings_ci_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b15_developer",
       "pr_number": 91,
-      "head": "e9d19647851a0a04a69214b1c4fa1945468c05a4",
+      "head": "df37ac8c7addf54b6f32bbf963748a51d16b1314",
       "state_path": "/tmp/phaseb-cursor-orchestration/b-15-developer-state.json",
       "fix_task_id": "/root/phaseb_b15_qa1_fixes",
       "fix_bead": "run-03z.21",
@@ -76,7 +76,8 @@
       "qa2_bead": "run-03z.22",
       "qa2_packet": "/tmp/phaseb-cursor-orchestration/b15-qa2",
       "qa2_new_finding": "REQ-QA-005",
-      "qa2_doc_fix_bead": "run-03z.23"
+      "qa2_doc_fix_bead": "run-03z.23",
+      "qa3_bead": "run-03z.24"
     },
     "b-16": {
       "task_id": "run-03z.4",
@@ -84,11 +85,44 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "final_fix_validated_qa2_in_progress",
+      "status": "full_initial_qa_in_progress",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
-      "head": "e9d19647851a0a04a69214b1c4fa1945468c05a4"
+      "head": "326a7a6a10e26ceb071e60cd02b7a1ef30800732",
+      "preqa_bead": "run-03z.25",
+      "qa1_bead": "run-03z.26",
+      "qa1_packet": "/tmp/phaseb-cursor-orchestration/b16-qa1",
+      "qa1_dispatched": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high"
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high"
+        },
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/cursor_b14_qa1_ext",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high"
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b13_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high"
+        }
+      ]
     },
     "b-13": {
       "task_id": "run-03z.1",
@@ -106,12 +140,12 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-17-sc-cron-hook-environment",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "local_validation_pass_linux_windows_pass_parent_fix_handoff_pending",
+      "status": "final_shared_runtime_fix_merged_local_and_hosted_validation_in_progress",
       "developer_task_id": "/root/phaseb_b17_developer",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
       "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2",
       "pr_number": 93,
-      "head": "c478c134128d6773ab44765e15ea572ba5a5f968",
+      "head": "944b613313f5da74161fabefdac130c13fed0a05",
       "windows_run": 41154463873,
       "windows_job": 124398355367,
       "evidence": "/tmp/phaseb-cursor-orchestration/b-17-dev-validation-checkpoint.json",
@@ -124,7 +158,8 @@
       ],
       "run": 41154463873,
       "linux_job": 124398355347,
-      "validated_source": "33b81b3280b482c766caa1f5283efc6744c79029"
+      "validated_source": "33b81b3280b482c766caa1f5283efc6744c79029",
+      "runtime_tree": "457316f043e6ab705bc2442df8515be0d842dd63"
     },
     "b-18": {
       "task_id": "run-03z.6",
@@ -1857,6 +1892,221 @@
             "failing": 0,
             "pending_checks": [
               "just lint and just test"
+            ]
+          },
+          "parent_correlation_required": true
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      }
+    },
+    {
+      "qa_pass": "qa-b-15-3",
+      "commit": "df37ac8c7addf54b6f32bbf963748a51d16b1314",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/91#issuecomment-6537576028",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b13_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-001.ttl",
+        ".triage/b/findings/REQ-QA-002.ttl",
+        ".triage/b/findings/REQ-QA-003.ttl",
+        ".triage/b/findings/REQ-QA-004.ttl",
+        ".triage/b/findings/RBQA-B15-001.ttl",
+        ".triage/b/findings/QA-001.ttl",
+        ".triage/b/findings/QA-002.ttl",
+        ".triage/b/findings/QA-003.ttl",
+        ".triage/b/findings/QA-004.ttl",
+        ".triage/b/findings/QA-005.ttl",
+        ".triage/b/findings/RBP-F001.ttl",
+        ".triage/b/findings/FTQ-003.ttl",
+        ".triage/b/findings/FTQ-004.ttl",
+        ".triage/b/findings/REQ-QA-005.ttl"
+      ],
+      "finding_ids": [],
+      "resolved_finding_ids": [
+        "REQ-QA-001",
+        "REQ-QA-002",
+        "REQ-QA-003",
+        "REQ-QA-004",
+        "RBQA-B15-001",
+        "QA-001",
+        "QA-002",
+        "QA-003",
+        "QA-004",
+        "QA-005",
+        "RBP-F001",
+        "FTQ-003",
+        "FTQ-004",
+        "REQ-QA-005"
+      ],
+      "coordinator_task_id": "/root/cursor_b15_qa2_enforcer",
+      "machine_status": {
+        "sprint": "b-15",
+        "task": "run-03z.24",
+        "branch": "sprint/b-15-sc-cron-observability",
+        "commit": "df37ac8c7addf54b6f32bbf963748a51d16b1314",
+        "pr": 91,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 13,
+          "total": 13,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "All reviewers PASS; deliverables are 13/13, TODO scan is clean, and no findings remain. CI has 11 pending checks.",
+        "next_action": "Wait for all required PR checks to complete green, then resume this enforcer for CI/publication-only completion.",
+        "owner": "parent orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/cursor_b15_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/cursor_b13_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/cursor_b13_qa2_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-b-15-3",
+          "commit": "df37ac8c7addf54b6f32bbf963748a51d16b1314",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/91#issuecomment-6537576028",
+          "coordinator_task_id": "/root/cursor_b15_qa2_enforcer",
+          "reviewer_tasks": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/cursor_b15_qa1_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/cursor_b13_qa2_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/cursor_b13_qa2_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            }
+          ],
+          "triage": {
+            "phase_id": "b",
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-001.ttl",
+              ".triage/b/findings/REQ-QA-002.ttl",
+              ".triage/b/findings/REQ-QA-003.ttl",
+              ".triage/b/findings/REQ-QA-004.ttl",
+              ".triage/b/findings/RBQA-B15-001.ttl",
+              ".triage/b/findings/QA-001.ttl",
+              ".triage/b/findings/QA-002.ttl",
+              ".triage/b/findings/QA-003.ttl",
+              ".triage/b/findings/QA-004.ttl",
+              ".triage/b/findings/QA-005.ttl",
+              ".triage/b/findings/RBP-F001.ttl",
+              ".triage/b/findings/FTQ-003.ttl",
+              ".triage/b/findings/FTQ-004.ttl",
+              ".triage/b/findings/REQ-QA-005.ttl"
+            ]
+          },
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "todo_scan": {
+            "script": "python3 .claude/skills/todo-triage/scripts/find_todos.py",
+            "rows": 0
+          },
+          "ci_snapshot": {
+            "green": 4,
+            "pending": 11,
+            "failing": 0,
+            "pending_checks": [
+              "just lint and just test",
+              "mysql.json",
+              "none.json",
+              "postgres.json",
+              "sqlite-apache.json",
+              "sqlite-mcp.json",
+              "sqlite-mysql.json",
+              "sqlite-no-mcp.json",
+              "sqlite-postgres.json",
+              "store-mysql live SQL",
+              "store-postgres live SQL"
             ]
           },
           "parent_correlation_required": true
