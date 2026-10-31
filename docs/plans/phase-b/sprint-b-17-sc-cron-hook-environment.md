@@ -486,16 +486,17 @@ passes setup, lint, test, build-cli and build-daemon with all 26 rendered source
 hashes unchanged. Optional generated daemon cron and Monty tests each pass seven
 cases, including prebuilt resolver preservation through `cron::open`.
 
-Windows execution on source 7f6e9586be60a5c2f7e9b0f23ae98de013d49aef passes
-all named default environment, Monty environment and Monty host bridge roots.
-Evidence is Actions run 41150476565, job 124385608381. That run's Linux job
-124385608392 failed generation tests: discovery imported an installed `tests`
-package, a recipe assertion used lowercase `justfile` on Linux, and the live
-wizard equivalence pipeline omitted explicit development observability selection.
-The narrow portability repair uses the tracked `Justfile` spelling, makes test
-imports unambiguous, and selects the existing development bridge for both live
-comparison paths while retaining every recipe and the unequal-fixture control.
-This sprint remains in progress until the repaired hosted gates pass.
+Validated source 33b81b3280b482c766caa1f5283efc6744c79029 passes Actions run
+41154463873. Linux job 124398355347 executes and passes `just lint`, `just test`
+and the development observability bridge checks. Windows job 124398355367
+executes all named roots: default environment 20/20, Monty environment 28/28,
+and Monty host bridge 7/7. These are actual execution results on this source.
+The generation portability repair uses the tracked `Justfile` spelling, makes
+test imports unambiguous, and selects the existing development bridge for both
+live comparison paths while retaining every recipe and the unequal-fixture
+control. The complete isolated-import generation suite passes 77 tests locally.
+This is a validated implementation checkpoint. The sprint remains in progress
+pending the parent's exact final B15 correlation artifact and independent QA.
 The validated B15/B16 parent artifact e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437
 is consumed with pure event factories and direct emission by worker/due owners.
 The B17 persistence observation helper now constructs a bounded pair of events;
