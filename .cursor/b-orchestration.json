@@ -79,7 +79,8 @@
       "qa2_doc_fix_bead": "run-03z.23",
       "qa3_bead": "run-03z.24",
       "merge_commit": "eabd9973892931cab5a0be7307303d449c319f21",
-      "merged_at": "2026-10-31T02:57:35Z"
+      "merged_at": "2026-10-31T02:57:35Z",
+      "merge_gate": "passed; merged eabd9973892931cab5a0be7307303d449c319f21"
     },
     "b-16": {
       "task_id": "run-03z.4",
@@ -87,7 +88,7 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "final_scoped_reviewers_pass_ci_enforcer_pending",
+      "status": "qa_ci_pass_ready_for_integration",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
@@ -2766,6 +2767,191 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
+    },
+    {
+      "qa_pass": "qa-b-16-3",
+      "commit": "bc38490a6b7601a6083d86d4afcc3517151eddd1",
+      "verdict": "PASS",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/92#issuecomment-6538138389",
+      "reviewer_manifest": [
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/cursor_b15_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b13_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/cursor_b13_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-B16-001.ttl",
+        ".triage/b/findings/ARCH-B16-001.ttl",
+        ".triage/b/findings/RBQA-B16-001.ttl",
+        ".triage/b/findings/RSH-B16-001.ttl",
+        ".triage/b/findings/FTQ-005.ttl",
+        ".triage/b/findings/FTQ-006.ttl"
+      ],
+      "finding_ids": [],
+      "resolved_finding_ids": [
+        "REQ-QA-B16-001",
+        "ARCH-B16-001",
+        "RBQA-B16-001",
+        "RSH-B16-001",
+        "FTQ-005",
+        "FTQ-006"
+      ],
+      "coordinator_task_id": "/root/cursor_b16_qa2_enforcer",
+      "machine_status": {
+        "sprint": "b-16",
+        "task": "run-03z.29",
+        "branch": "sprint/b-16-monty-template-examples",
+        "commit": "bc38490a6b7601a6083d86d4afcc3517151eddd1",
+        "pr": 92,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "READY",
+        "merge_reason": "All five required reviewers pass, requirements QA reports 19/19 complete, the TODO scan is clear, and all 15 PR checks are green at the verified PR head commit.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "QA PASS for qa-b-16-3. Parent may complete its correlation and merge workflow.",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/cursor_b15_qa1_boundary",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "req-qa",
+            "task_id": "/root/cursor_b15_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/cursor_b13_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/cursor_b13_qa2_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/cursor_b13_qa1_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-b-16-3",
+          "commit": "bc38490a6b7601a6083d86d4afcc3517151eddd1",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/92#issuecomment-6538138389",
+          "coordinator_task_id": "/root/cursor_b16_qa2_enforcer",
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "triage": {
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-B16-001.ttl",
+              ".triage/b/findings/ARCH-B16-001.ttl",
+              ".triage/b/findings/RBQA-B16-001.ttl",
+              ".triage/b/findings/RSH-B16-001.ttl",
+              ".triage/b/findings/FTQ-005.ttl",
+              ".triage/b/findings/FTQ-006.ttl"
+            ]
+          }
+        }
+      }
     }
   ],
   "model_authority": "User: yes, use terra/sol/luna where appropriate",
@@ -3709,5 +3895,13 @@
     "b14_new": "c2b8bfc5a15f7fbbd641400ff3b576e94b20b469",
     "b15_b16_old": "f9694481d3ce2b2530cf3bb450cf275b997b7587",
     "b15_b16_new": "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437"
+  },
+  "owner_release_timing": {
+    "decision": "Phase B completes using approved real1.5.0 development adapter; matching published1.5.1 and actual release admission follow phase",
+    "future_release_epic": "run-h0h",
+    "plan_amendment_pr": 94,
+    "kit_upstream_pr": "https://github.com/randlee/sc-publish/pull/137",
+    "qualified_kit_candidate": "9677ab083e7dd3feb258235a342e321ca1b45d8d",
+    "release_guard_retained": true
   }
 }
