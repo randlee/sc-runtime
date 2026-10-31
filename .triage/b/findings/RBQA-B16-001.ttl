@@ -11,3 +11,14 @@
   qa:location "tests/unit/test_production_tool_boundary.py:114" ;
   qa:issue "The production import gate rejects tool references in out-of-line test-only Rust modules, violating the explicit dev-only allowance." ;
   qa:recommendation "Propagate the test-only context of out-of-line mod declarations to their included files, reusing or extending the repository's existing module-context handling in scripts/adr_run_0011_grep.py where practical. Add the demonstrated fixture and retain a negative control where the module is production-reachable. Do not broadly skip src files, infer test status from filenames, or weaken tool package/import identities." .
+
+<urn:sc-runtime:qa:b-16:RBQA-B16-001:qa2>
+  qa:id "RBQA-B16-001" ;
+  qa:sprint "b-16" ;
+  qa:qaPass "qa-b-16-2" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:commit "809a0387eee90f1d3a6c661a4964f9e100fbf45b" ;
+  qa:location "tests/unit/test_production_tool_boundary.py:116" ;
+  qa:issue "The original out-of-line test-only allowance now works, but a file reached by both a test module and a production #[path] module is incorrectly exempted. The assigned production/dual-reachability safeguard is incomplete." ;
+  qa:recommendation "Resolve production #[path] module declarations when deciding whether a file is exclusively test-only, or conservatively retain scanning when such a production path cannot be ruled out. Add this same-file path-alias negative control alongside the passing test-only and conventional production controls. Keep package identities, dependency checks, and general src coverage unchanged; no new parser framework or process gate is required." .
