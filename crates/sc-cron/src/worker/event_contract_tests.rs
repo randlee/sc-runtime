@@ -247,7 +247,14 @@ fn fixed_origin_rows_use_exact_taxonomy_and_best_effort_envelope() {
     ];
     for (event, target, action, level, outcome, code) in rows {
         recorder.clear();
-        emit(&logger, event, None, serde_json::json!({"error": "opaque"}));
+        if let Some(event) = event_record(
+            logger.service_name().clone(),
+            event,
+            None,
+            serde_json::json!({"error": "opaque"}),
+        ) {
+            let _ = logger.emit(event);
+        };
         let events = recorder.events();
         assert_eq!(events.len(), 1);
         let actual = &events[0];

@@ -51,7 +51,7 @@ use crate::{
 
 mod worker_runs;
 
-pub(crate) use worker_runs::{Event, emit, terminal};
+pub(crate) use worker_runs::{Event, event_record, terminal_event};
 use worker_runs::{WorkerFailure, await_aborted, finished, panic_message};
 
 /// The longest a worker goes between reloads of the active schedules.
@@ -232,12 +232,14 @@ pub(crate) fn resolve(
             match PythonHook::new_with_logger(module, Arc::clone(logger)) {
                 Ok(hook) => Ok(ResolvedTarget::Python(hook)),
                 Err(error) => {
-                    emit(
-                        logger,
+                    if let Some(event) = event_record(
+                        logger.service_name().clone(),
                         Event::TargetResolveFailed,
                         Some(schedule),
                         serde_json::json!({"target": module.display().to_string(), "error": error.recorded()}),
-                    );
+                    ) {
+                        let _ = logger.emit(event);
+                    };
                     Err(WorkerFailure::TargetResolve.outcome(error.recorded()))
                 }
             }
@@ -246,12 +248,14 @@ pub(crate) fn resolve(
             let error = CronError::HookFailed(
                 "Monty hooks require sc-cron's optional `monty` feature".to_owned(),
             );
-            emit(
-                logger,
+            if let Some(event) = event_record(
+                logger.service_name().clone(),
                 Event::TargetResolveFailed,
                 Some(schedule),
                 serde_json::json!({"target": "monty", "error": error.recorded()}),
-            );
+            ) {
+                let _ = logger.emit(event);
+            };
             Err(WorkerFailure::TargetResolve.outcome(error.recorded()))
         }
     }
@@ -542,12 +546,14 @@ where
                 self.merge(rows).await;
             }
             Err(error) => {
-                emit(
-                    &self.coord.logger,
+                if let Some(event) = event_record(
+                    self.coord.logger.service_name().clone(),
                     Event::ScheduleReloadFailed,
                     None,
                     serde_json::json!({"error": error.to_string()}),
-                );
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
                 self.retry.failed(self.clock.now());
             }
         }
@@ -571,13 +577,15 @@ where
                 } else if slot.run.as_ref().is_some_and(InFlight::is_monty) {
                     slot.queued = Queued::Disable;
                     self.slots.push(slot);
-                } else if slot.run.is_some() {
-                    log(
-                        &self.coord.logger,
+                } else if slot.run.is_some()
+                    && let Some(event) = detail_event(
+                        self.coord.logger.service_name().clone(),
                         &slot.schedule,
                         Event::ScheduleCancelled,
                         "schedule disabled",
-                    );
+                    )
+                {
+                    let _ = self.coord.logger.emit(event);
                 }
                 continue;
             }
@@ -607,13 +615,15 @@ where
                     slot.queued = Queued::Delete;
                 }
                 self.slots.push(slot);
-            } else if slot.run.is_some() {
-                log(
-                    &self.coord.logger,
+            } else if slot.run.is_some()
+                && let Some(event) = detail_event(
+                    self.coord.logger.service_name().clone(),
                     &slot.schedule,
                     Event::ScheduleCancelled,
                     "schedule ended, disabled or restarted",
-                );
+                )
+            {
+                let _ = self.coord.logger.emit(event);
             }
         }
     }
@@ -671,12 +681,14 @@ where
                 index += 1;
                 continue;
             };
-            log(
-                &self.coord.logger,
+            if let Some(event) = detail_event(
+                self.coord.logger.service_name().clone(),
                 &slot.schedule,
                 Event::RunTimedOut,
                 "run deadline passed",
-            );
+            ) {
+                let _ = self.coord.logger.emit(event);
+            };
             let result = await_aborted(run).await;
             if !self.complete(index, result).await {
                 index += 1;
@@ -699,12 +711,14 @@ where
                     && slot.last_skipped != Some(due)
                 {
                     slot.last_skipped = Some(due);
-                    log(
-                        &self.coord.logger,
+                    if let Some(event) = detail_event(
+                        self.coord.logger.service_name().clone(),
                         &slot.schedule,
                         Event::RunSkippedInFlight,
                         "run_due still holds this name",
-                    );
+                    ) {
+                        let _ = self.coord.logger.emit(event);
+                    };
                 }
                 index += 1;
                 continue;
@@ -729,39 +743,52 @@ where
                 return;
             };
             if slot.run.is_some() {
-                log(
-                    &self.coord.logger,
+                if let Some(event) = detail_event(
+                    self.coord.logger.service_name().clone(),
                     &slot.schedule,
                     Event::RunSkippedInFlight,
                     "previous run still in flight",
-                );
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
             } else if missed && self.policy == MissedTickPolicy::Skip {
-                log(
-                    &self.coord.logger,
+                if let Some(event) = detail_event(
+                    self.coord.logger.service_name().clone(),
                     &slot.schedule,
                     Event::RunMissedSkipped,
                     "missed occurrences dropped",
-                );
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
             } else {
-                if missed {
-                    log(
-                        &self.coord.logger,
+                if missed
+                    && let Some(event) = detail_event(
+                        self.coord.logger.service_name().clone(),
                         &slot.schedule,
                         Event::RunMissedReplayed,
                         "missed occurrences run once",
-                    );
+                    )
+                {
+                    let _ = self.coord.logger.emit(event);
                 }
                 self.launch(index);
             }
-            let Some(slot) = self.slots.get(index) else {
-                return;
-            };
-            if slot.next.is_none() && slot.run.is_none() {
-                let slot = self.slots.remove(index);
-                self.end_exhausted(&slot.schedule).await;
-            } else {
-                index += 1;
-            }
+            index = self.retire_exhausted_slot(index).await;
+        }
+    }
+
+    /// Removes a finished slot while preserving the next iteration's index.
+    async fn retire_exhausted_slot(&mut self, index: usize) -> usize {
+        if self
+            .slots
+            .get(index)
+            .is_some_and(|slot| slot.next.is_none() && slot.run.is_none())
+        {
+            let slot = self.slots.remove(index);
+            self.end_exhausted(&slot.schedule).await;
+            index
+        } else {
+            index + 1
         }
     }
 
@@ -793,12 +820,14 @@ where
             }
             Err(outcome) => tokio::spawn(async move { Report::Ran(outcome) }),
         };
-        emit(
-            &self.coord.logger,
+        if let Some(event) = event_record(
+            self.coord.logger.service_name().clone(),
             Event::RunLaunched,
             Some(&slot.schedule),
             serde_json::json!({"deadline_remaining_ms": deadline.saturating_duration_since(self.clock.monotonic_now()).as_millis() as u64}),
-        );
+        ) {
+            let _ = self.coord.logger.emit(event);
+        };
         slot.run = Some(InFlight {
             handle: Some(RunHandle::Abortable(handle)),
             deadline,
@@ -829,21 +858,27 @@ where
             Ok(Report::Ran(outcome)) => self.record(&schedule, outcome).await,
             Err(error) if error.is_panic() => {
                 let message = panic_message(error);
-                emit(
-                    &self.coord.logger,
+                if let Some(event) = event_record(
+                    self.coord.logger.service_name().clone(),
                     Event::JobJoinFailed,
                     Some(&schedule),
                     serde_json::json!({"error": message}),
-                );
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
                 self.record(&schedule, WorkerFailure::JobJoin.outcome(message))
                     .await;
             }
-            Err(error) => log(
-                &self.coord.logger,
-                &schedule,
-                Event::ScheduleCancelled,
-                &error.to_string(),
-            ),
+            Err(error) => {
+                if let Some(event) = detail_event(
+                    self.coord.logger.service_name().clone(),
+                    &schedule,
+                    Event::ScheduleCancelled,
+                    &error.to_string(),
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                }
+            }
         }
         if self
             .slots
@@ -865,14 +900,27 @@ where
             .store_call(move |store| store.record_run(id, generation, at, &outcome))
             .await;
         match result {
-            Ok(true) => terminal(&self.coord.logger, Event::RunFinished, schedule, &recorded),
+            Ok(true) => {
+                if let Some(event) = terminal_event(
+                    self.coord.logger.service_name().clone(),
+                    Event::RunFinished,
+                    schedule,
+                    &recorded,
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                }
+            }
             Ok(false) => self.fenced(schedule, "record_run"),
-            Err(error) => emit(
-                &self.coord.logger,
-                Event::RunRecordFailed,
-                Some(schedule),
-                serde_json::json!({"error": error.to_string()}),
-            ),
+            Err(error) => {
+                if let Some(event) = event_record(
+                    self.coord.logger.service_name().clone(),
+                    Event::RunRecordFailed,
+                    Some(schedule),
+                    serde_json::json!({"error": error.to_string()}),
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                }
+            }
         }
     }
 
@@ -891,12 +939,14 @@ where
             }
             Err(error) => {
                 // The in-memory next run still drives this process.
-                emit(
-                    &self.coord.logger,
+                if let Some(event) = event_record(
+                    self.coord.logger.service_name().clone(),
                     Event::ScheduleNextFailed,
                     Some(schedule),
                     serde_json::json!({"error": error.to_string()}),
-                );
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
                 true
             }
         }
@@ -912,15 +962,26 @@ where
             .store_call(move |store| store.stop(id, generation, at, &owned))
             .await
         {
-            Ok(true) => log(&self.coord.logger, schedule, Event::ScheduleStopped, reason),
+            Ok(true) => {
+                if let Some(event) = detail_event(
+                    self.coord.logger.service_name().clone(),
+                    schedule,
+                    Event::ScheduleStopped,
+                    reason,
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                }
+            }
             Ok(false) => self.fenced(schedule, "stop"),
             Err(error) => {
-                emit(
-                    &self.coord.logger,
+                if let Some(event) = event_record(
+                    self.coord.logger.service_name().clone(),
                     Event::ScheduleStopFailed,
                     Some(schedule),
                     serde_json::json!({"error": error.to_string()}),
-                );
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
                 return false;
             }
         }
@@ -938,57 +999,65 @@ where
             .await
         {
             Ok(true) => {
-                log(
-                    &self.coord.logger,
+                if let Some(event) = detail_event(
+                    self.coord.logger.service_name().clone(),
                     schedule,
                     Event::ScheduleDisabled,
                     reason,
-                );
-                terminal(
-                    &self.coord.logger,
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
+                if let Some(event) = terminal_event(
+                    self.coord.logger.service_name().clone(),
                     Event::RunFinished,
                     schedule,
                     &RunOutcome::Refused(reason.to_owned()),
-                );
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
                 self.write_answered();
             }
             Ok(false) => self.fenced(schedule, "disable"),
             Err(error) => {
                 // The slot is gone but the row is still enabled: rebuild it.
-                emit(
-                    &self.coord.logger,
+                if let Some(event) = event_record(
+                    self.coord.logger.service_name().clone(),
                     Event::ScheduleDisableFailed,
                     Some(schedule),
                     serde_json::json!({"error": error.to_string()}),
-                );
+                ) {
+                    let _ = self.coord.logger.emit(event);
+                };
                 self.rebuild_later();
             }
         }
     }
 
     fn fenced(&mut self, schedule: &Schedule, operation: &str) {
-        emit(
-            &self.coord.logger,
+        if let Some(event) = event_record(
+            self.coord.logger.service_name().clone(),
             Event::RunFenced,
             Some(schedule),
             serde_json::json!({"operation": operation}),
-        );
+        ) {
+            let _ = self.coord.logger.emit(event);
+        };
         self.reload_wanted = true;
     }
 }
 
-fn log(
-    logger: &sc_observability_types::SharedCanonicalLog,
+fn detail_event(
+    service: sc_observability_types::ServiceName,
     schedule: &Schedule,
     event: Event,
     detail: &str,
-) {
+) -> Option<sc_observability_types::LogEvent> {
     let fields = match event {
         Event::RunTimedOut => serde_json::json!({"deadline_remaining_ms": 0}),
         Event::RunMissedSkipped | Event::RunMissedReplayed => serde_json::json!({}),
         _ => serde_json::json!({"reason": detail}),
     };
-    emit(logger, event, Some(schedule), fields);
+    event_record(service, event, Some(schedule), fields)
 }
 
 #[cfg(test)]

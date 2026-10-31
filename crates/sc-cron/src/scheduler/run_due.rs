@@ -13,7 +13,7 @@ use crate::clock::sleep_until_monotonic;
 use crate::coord::NameInFlightGuard;
 #[cfg(feature = "monty")]
 use crate::coord::RunCoord;
-use crate::worker::{Event, emit, resolve, run_target_with_environment, terminal};
+use crate::worker::{Event, event_record, resolve, run_target_with_environment, terminal_event};
 
 #[cfg(feature = "monty")]
 const CODE_DUE_JOIN_FAILED: &str = "DUE_JOIN_FAILED";
@@ -75,7 +75,18 @@ where
     };
     let result =
         blocking(move || persist_due_report(&core, (id, generation), at, report, next)).await;
-    notify_due_record(&logger, row, &recorded, operation, result);
+    for event in due_record_events(
+        logger.service_name().clone(),
+        row,
+        &recorded,
+        operation,
+        result,
+    )
+    .into_iter()
+    .flatten()
+    {
+        let _ = logger.emit(event);
+    }
     DueRun {
         name: row.spec.name.clone(),
         outcome: recorded,
@@ -124,45 +135,46 @@ fn persist_due_report<S: ScheduleStore, C: Clock, J: JitterSource>(
         }
     }
 }
-fn notify_due_record(
-    logger: &sc_observability_types::SharedCanonicalLog,
+/// Constructs at most two persistence observations without invoking a logger.
+fn due_record_events(
+    service: sc_observability_types::ServiceName,
     row: &Schedule,
     recorded: &RunOutcome,
     operation: &str,
     result: Result<Finish, CronError>,
-) {
+) -> [Option<sc_observability_types::LogEvent>; 2] {
+    let terminal = || terminal_event(service.clone(), Event::DueFinished, row, recorded);
+    let observation = |event, fields| event_record(service.clone(), event, Some(row), fields);
     match result {
-        Ok(Finish::Recorded) => terminal(logger, Event::DueFinished, row, recorded),
-        Ok(Finish::Fenced) => emit(
-            logger,
-            Event::DueFenced,
-            Some(row),
-            serde_json::json!({"operation": operation}),
-        ),
-        Ok(Finish::Partial) => {
-            terminal(logger, Event::DueFinished, row, recorded);
-            emit(
-                logger,
+        Ok(Finish::Recorded) => [terminal(), None],
+        Ok(Finish::Fenced) => [
+            observation(
+                Event::DueFenced,
+                serde_json::json!({"operation": operation}),
+            ),
+            None,
+        ],
+        Ok(Finish::Partial) => [
+            terminal(),
+            observation(
                 Event::DuePartialWrite,
-                Some(row),
                 serde_json::json!({"outcome": recorded.to_string()}),
-            );
-        }
-        Ok(Finish::FollowUp(error)) => {
-            terminal(logger, Event::DueFinished, row, recorded);
-            emit(
-                logger,
+            ),
+        ],
+        Ok(Finish::FollowUp(error)) => [
+            terminal(),
+            observation(
                 Event::DueFollowUpFailed,
-                Some(row),
                 serde_json::json!({"outcome": recorded.to_string(), "error": error.to_string()}),
-            );
-        }
-        Err(error) => emit(
-            logger,
-            Event::DueRecordFailed,
-            Some(row),
-            serde_json::json!({"error": error.to_string()}),
-        ),
+            ),
+        ],
+        Err(error) => [
+            observation(
+                Event::DueRecordFailed,
+                serde_json::json!({"error": error.to_string()}),
+            ),
+            None,
+        ],
     }
 }
 
@@ -196,24 +208,36 @@ where
     let at = Timestamp::from_datetime(scheduler.core.clock.now());
     let core = Arc::clone(&scheduler.core);
     match blocking(move || core.store.stop(id, generation, at, EXHAUSTED)).await {
-        Ok(true) => emit(
-            &scheduler.coord.logger,
-            Event::DueStopped,
-            Some(row),
-            serde_json::json!({}),
-        ),
-        Ok(false) => emit(
-            &scheduler.coord.logger,
-            Event::DueFenced,
-            Some(row),
-            serde_json::json!({"operation": "stop"}),
-        ),
-        Err(error) => emit(
-            &scheduler.coord.logger,
-            Event::DueStopFailed,
-            Some(row),
-            serde_json::json!({"error": error.to_string()}),
-        ),
+        Ok(true) => {
+            if let Some(event) = event_record(
+                scheduler.coord.logger.service_name().clone(),
+                Event::DueStopped,
+                Some(row),
+                serde_json::json!({}),
+            ) {
+                let _ = scheduler.coord.logger.emit(event);
+            }
+        }
+        Ok(false) => {
+            if let Some(event) = event_record(
+                scheduler.coord.logger.service_name().clone(),
+                Event::DueFenced,
+                Some(row),
+                serde_json::json!({"operation": "stop"}),
+            ) {
+                let _ = scheduler.coord.logger.emit(event);
+            }
+        }
+        Err(error) => {
+            if let Some(event) = event_record(
+                scheduler.coord.logger.service_name().clone(),
+                Event::DueStopFailed,
+                Some(row),
+                serde_json::json!({"error": error.to_string()}),
+            ) {
+                let _ = scheduler.coord.logger.emit(event);
+            }
+        }
     }
 }
 
@@ -300,12 +324,14 @@ where
         .checked_add(row.spec.timeout.get())
         .unwrap_or(monotonic);
     let clock = Arc::clone(&scheduler.core.clock);
-    emit(
-        &scheduler.coord.logger,
+    if let Some(event) = event_record(
+        scheduler.coord.logger.service_name().clone(),
         Event::DueLaunched,
         Some(&row),
         serde_json::json!({"deadline_remaining_ms": deadline.saturating_duration_since(scheduler.core.clock.monotonic_now()).as_millis() as u64}),
-    );
+    ) {
+        let _ = scheduler.coord.logger.emit(event);
+    };
     #[cfg(feature = "monty")]
     if monty {
         return Some(spawn_monty_due(
@@ -343,21 +369,25 @@ where
     match super::blocking(move || core.store.set_next(id, generation, stamp)).await {
         Ok(true) => true,
         Ok(false) => {
-            emit(
-                &scheduler.coord.logger,
+            if let Some(event) = event_record(
+                scheduler.coord.logger.service_name().clone(),
                 Event::DueFenced,
                 Some(row),
                 serde_json::json!({"operation": "set_next"}),
-            );
+            ) {
+                let _ = scheduler.coord.logger.emit(event);
+            };
             false
         }
         Err(error) => {
-            emit(
-                &scheduler.coord.logger,
+            if let Some(event) = event_record(
+                scheduler.coord.logger.service_name().clone(),
                 Event::DueNextFailed,
                 Some(row),
                 serde_json::json!({"error": error.to_string()}),
-            );
+            ) {
+                let _ = scheduler.coord.logger.emit(event);
+            };
             true
         }
     }
@@ -451,12 +481,14 @@ where
                     return Err(CronError::HookFailed("due run has no task".to_owned()));
                 };
                 let report = handle.await.unwrap_or_else(|error| {
-                    emit(
-                        &scheduler.coord.logger,
+                    if let Some(event) = event_record(
+                        scheduler.coord.logger.service_name().clone(),
                         Event::DueTaskFailed,
                         Some(&row),
                         serde_json::json!({"error": error.to_string()}),
-                    );
+                    ) {
+                        let _ = scheduler.coord.logger.emit(event);
+                    };
                     Report::Ran(run_task_failed(&error))
                 });
                 slot.take();
@@ -468,12 +500,14 @@ where
                     return Err(CronError::HookFailed("due run has no task".to_owned()));
                 };
                 let recorded = handle.await.unwrap_or_else(|error| {
-                    emit(
-                        &scheduler.coord.logger,
+                    if let Some(event) = event_record(
+                        scheduler.coord.logger.service_name().clone(),
                         Event::DueJoinFailed,
                         Some(&row),
                         serde_json::json!({"error": error.to_string()}),
-                    );
+                    ) {
+                        let _ = scheduler.coord.logger.emit(event);
+                    };
                     DueRun {
                         name: row.spec.name.clone(),
                         outcome: monty_failed(
@@ -530,17 +564,8 @@ impl Drop for DueTask {
 }
 
 #[cfg(feature = "monty")]
-fn monty_due_source(
-    schedule: &Schedule,
-    logger: &sc_observability_types::SharedCanonicalLog,
-) -> Result<String, Report> {
+fn monty_due_source(schedule: &Schedule) -> Result<String, Report> {
     let HookTarget::Monty { source } = &schedule.spec.hook else {
-        emit(
-            logger,
-            Event::MontyResolveFailed,
-            Some(schedule),
-            serde_json::json!({"error": "monty path used for another hook"}),
-        );
         return Err(Report::Ran(monty_failed(
             CODE_MONTY_RESOLVE,
             "monty path used for another hook",
@@ -561,9 +586,19 @@ async fn run_monty_due<C: Clock + 'static>(
     environment_host: Arc<crate::HookEnvironmentHost>,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::{FeedResult, MontyPhase};
-    let source = match monty_due_source(&schedule, &coord.logger) {
+    let source = match monty_due_source(&schedule) {
         Ok(source) => source,
-        Err(report) => return (report, stop_guard),
+        Err(report) => {
+            if let Some(event) = event_record(
+                coord.logger.service_name().clone(),
+                Event::MontyResolveFailed,
+                Some(&schedule),
+                serde_json::json!({"error": "monty path used for another hook"}),
+            ) {
+                let _ = coord.logger.emit(event);
+            }
+            return (report, stop_guard);
+        }
     };
     let environment = match environment_host
         .snapshot(clock.as_ref(), &schedule, deadline)
@@ -669,12 +704,14 @@ fn tick_report(coord: &RunCoord, schedule: &Schedule, tick: crate::monty_run::Fe
         FeedResult::Disable(reason) => Report::Disable(reason),
         FeedResult::Delete(reason) => Report::Delete(reason),
         FeedResult::Continue => {
-            emit(
-                &coord.logger,
+            if let Some(event) = event_record(
+                coord.logger.service_name().clone(),
                 Event::MontyTickFailed,
                 Some(schedule),
                 serde_json::json!({"error": "tick returned a stop action"}),
-            );
+            ) {
+                let _ = coord.logger.emit(event);
+            };
             Report::Ran(monty_failed(
                 CODE_MONTY_TICK,
                 "tick returned a stop action",
