@@ -118,7 +118,7 @@ jobs:
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         env:
           SC_RUNTIME_RELEASE: ${{ github.ref_type == 'tag' && '1' || '' }}
-        run: just new "$RUNNER_TEMP/app" --var-file "wizard/fixtures/${{ matrix.fixture }}"
+        run: just new "$RUNNER_TEMP/app" --var-file "wizard/fixtures/${{ matrix.fixture }}" ${{ github.ref_type != 'tag' && '--development-observability' || '' }}
 
       # ADR-RUN-0401 point 6 runs these recipes inside `just new`. Point 8
       # requires this job to run them again as an independent proof.
@@ -196,7 +196,7 @@ jobs:
 
       - name: Apply the checkout patch
         if: ${{ needs.ci-scope.outputs.runtime == 'true' && github.ref_type != 'tag' }}
-        run: python3 scripts/new_project.py --patch-checkout "$RUNNER_TEMP/plain"
+        run: python3 scripts/new_project.py --patch-checkout "$RUNNER_TEMP/plain" --development-observability
 
       - name: Build
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}

@@ -1,7 +1,7 @@
 ---
 id: b-15
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-cron
 track: observability
@@ -10,6 +10,9 @@ branch: sprint/b-15-sc-cron-observability
 worktree: sprint/b-15-sc-cron-observability
 integration_branch: integrate/phase-b-observability
 requirements:
+  - REQ-RUN-0005
+  - NFR-RUN-0004
+  - NFR-RUN-0008
   - REQ-CRON-0001
   - REQ-CRON-0003
   - REQ-CRON-0005
@@ -26,6 +29,8 @@ owned_paths:
   - crates/sc-cron/src/worker.rs
   - crates/sc-cron/src/worker/worker_runs.rs
   - crates/sc-cron/src/scheduler/run_due.rs
+  - crates/sc-cron/src/scheduler.rs # finish_due logger forwarding only; then b-16 window
+  - crates/sc-cron/tests/observability_components.rs # production pipe rejection count only after b-16 handoff
   - crates/sc-cron/tests/observability.rs
   - crates/sc-cron/tests/target_resolver.rs
   - crates/sc-cron/tests/worker.rs
@@ -64,6 +69,14 @@ The same `RunCoord` logger Arc and event behavior are preserved. All other
 wave-8 work remains parallel. The handoff waits for the development push,
 not QA, a PR merge, or completion of the whole sprint.
 
+The additional `scheduler.rs` ownership is limited to forwarding the existing
+`RunCoord` logger in `Scheduler::finish_due`. Ownership of
+`tests/observability_components.rs` is limited to the production pipe test's
+rejection-attempt count for attachment, due launch, pipe deadline, and due
+finish. These narrow seams use the same serial writer window with b-16;
+this adds no ownership of other scheduler or component behavior. b-16 retains
+its registry and host work.
+
 b-13's authorized development facade permits implementing these library event
 sites before upstream publication. Development applications may inject the
 real registry `1.5.0` logger through the unpublished `0.0.0` local
@@ -73,6 +86,23 @@ owns logger construction, flush, and shutdown. Explicit workspace path
 overrides select the development packages, with no observability registry
 patch. The real matching `1.5.1` pair, direct upstream Arc coercion, and
 development-package removal remain b-18's release gate.
+
+The QA1 corrective window additionally owns private correlation transport in
+`hook.rs`, `process.rs`, `monty_run.rs`, `monty_host.rs`, and `monty_compose.rs`,
+and correlation assertions in `tests/observability_components.rs`. It also owns
+the validated `MontyHostName` public model, facade declaration and documentation.
+Public supervisor, `HookCall`, `Job`, `ChildSpec`, and schedule signatures stay
+unchanged. These narrow shared-file repairs do not change driver policy.
+
+NFR-RUN-0004: the standard tool considered is `sc-observability-types`, whose
+canonical `LogEvent`, identifiers, diagnostic and logger contract are reused.
+Those types do not supply cron-specific target/action/outcome mappings or know
+which existing scheduler branch owns an observation; the small pure event
+mapping here supplies that domain data while owners emit directly. sc-lint
+supplies source and function-length checks, without custom counting tooling.
+REQ-RUN-0005 is verified by `boundary:BOUNDARY-sc-cron`, types-only dependency
+checks and production tool-package checks. NFR-RUN-0008 is verified for every
+owned production Rust file by `sc-lint lint line-counts` in full `just lint`.
 
 ## Event contract
 
@@ -178,6 +208,17 @@ field keys. Every failed emission is ignored after the attempt.
    no `std::sync::Mutex` guard across `.await`; deadline-based test polling is
    exempt.
 
+An invocation carries one observation-only canonical `CorrelationId`, formatted
+from its numeric schedule ID, generation and selected due timestamp as
+`cron-s<ID>-g<GEN>-t<SECONDS>-n<NANOSECONDS>`. The due occurrence is captured
+before advancing the next occurrence. This identifies a logical occurrence
+within its scheduler/store domain; it is not a globally unique execution
+attempt. Private in-flight, Python supervisor and Monty feed/CLI state retain
+it through stop/tick, completion, abort, expiry and recording. All invocation
+records place it only in top-level `correlation_id`; lifecycle, reload, store,
+jitter and skipped pre-launch observations keep `None`. It adds no persistence,
+wire, environment, payload or hook-source data.
+
 ## Acceptance criteria
 
 1. `boundary:BOUNDARY-sc-cron`: `observability` passes only when native and
@@ -227,3 +268,15 @@ sc-lint lint sc-boundary --root . --config sc-lint.toml
 
 - New Monty host functions, compose lifecycle redesign, schedule-row limits,
   template wiring, or a repository-wide diagnostics dependency cleanup.
+
+## Contract propagation before implementation QA
+
+The combined b-15/b-16 artifact consumes validated b-13 `c00cb59`. Event
+construction helpers are pure value factories; each owning worker, due-run,
+scheduler, or CLI-driver branch invokes its injected logger directly and
+discards emission rejection. The fixed taxonomy, outcome tokens, shared Arc,
+registry/adapters, and deadline policy are preserved. The production pipe
+witness retains b-13 descriptor readiness, release, watchdog, kill and reap,
+with b-16 registered `sc_compose_run` and b-15's four rejection attempts.
+This narrow caller propagation precedes independent QA and does not assert
+QA acceptance or change the registry release gate.

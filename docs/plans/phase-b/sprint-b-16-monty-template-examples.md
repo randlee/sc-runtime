@@ -1,7 +1,7 @@
 ---
 id: b-16
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: monty-host-extensibility
 track: monty-product
@@ -51,9 +51,12 @@ owned_paths:
   - crates/sc-cron/src/worker.rs
   - crates/sc-cron/src/worker/worker_runs.rs
   - crates/sc-cron/src/scheduler/run_due.rs
+  - crates/sc-cron/tests/observability_components.rs
   - crates/sc-cron/tests/monty_host_bridge.rs
   - crates/sc-cron/tests/sc_compose_bench.rs
   - scripts/benchmark/monty/campaign.py
+  - scripts/new_project.py
+  - .github/workflows/template.yml
   - template/Cargo.toml
   - template/workspace.template.toml
   - template/crates/daemon/Cargo.toml
@@ -91,7 +94,13 @@ compilable development push; after merging that push forward, b-16 changes
 only their mechanical registry transport: the Worker field/constructor,
 `spawn_feed`/`FeedLaunch`, and the
 `spawn_monty_due`/`run_monty_due`/`run_monty_tick_after_stop`/`feed_once`
-parameters. Preserve the same `RunCoord` logger Arc and event behavior.
+parameters. The parent-authorized window also included the one-line
+`scheduler.rs::finish_due` logger forwarding seam and the named component-test
+block below. b-16 consumed b-15 snapshot `07c1197`; b-15 then consumed b-16
+`cccb2a7` for its event-only `worker::disable` terminal record and rejection
+attempt counter correction. b-16 consumed the resulting `d64be13` and final
+`9452d80` artifacts, preserving those fixes. Each handoff froze the same physical
+files for the other writer. Preserve the same `RunCoord` logger Arc and event behavior.
 Disjoint work continues in parallel; this is no whole-sprint `must_follow`
 edge or QA/PR-merge gate. b-17 merges b-16 first and adds the resolved
 environment snapshot to the completed host-call context.
@@ -108,13 +117,31 @@ remain `1.5.1`; real matching registry resolution, direct upstream Arc
 coercion, adapter proof, and removal of development paths/adapter remain
 required for b-18 release acceptance.
 
+The serial b-13 consumer edit in `observability_components.rs` is limited to
+`production_monty_pipe_deadline_uses_injected_logger_and_preserves_failure`: migrate
+its old host configuration/call to the registry adapter while preserving the
+component event assertions. b-15 alone changed its expected rejection attempts
+from two to four after the serial return window; other component tests remain
+unchanged.
+
+The explicit `scripts/new_project.py --development-observability` mode selects
+real registry logger `=1.5.0`, the local types facade, and the development
+adapter at generation time for checkout validation. It fails before output
+when combined with `--release` (including release environment selection).
+The existing matrix (non-tag runs only) and plain-template checkout CI callers
+explicitly select this mode; release calls and registry proof do not. The `just new` recipe
+already forwards option arguments unchanged.
+Canonical template/release inventories remain `1.5.1`; no generated source is
+edited after this explicit development render. This proves development only,
+with the real registry release proof still owned by b-18.
+
 ## Public host-extension contract
 
 Feature `monty` exports `MontyHostRegistry`, `MontyHostHandler`, and the owned
 JSON-shaped `MontyHostCall`. `MontyHostHandler` is `Send + Sync` and has one
 synchronous method returning `Result<serde_json::Value, CronError>`; a blanket
 implementation makes a matching closure usable without a wrapper type. A call
-contains its registered name, positional JSON arguments, keyword JSON
+contains its registered `MontyHostName`, positional JSON arguments, keyword JSON
 arguments, schedule name, hook phase, and row deadline. b-17 adds read-only
 access to that run's resolved environment snapshot without changing handler
 registration or allowing process-global reads.
@@ -128,6 +155,10 @@ pub trait MontyHostHandler: Send + Sync {
 }
 // Matching closures implement Fn(&MontyHostCall) -> Result<Value, CronError>.
 ```
+
+`MontyHostName::new` validates a non-reserved identifier and `as_str()` borrows
+it. Registry keys and `MontyHostCall.name` use this type; `register(name, handler)`
+still accepts strings and JSON arguments/results are unchanged.
 
 `MontyHostRegistry::new()` is empty. Its consuming `register(name, handler)`
 builder returns `CronError::InvalidSpec` for a non-identifier, `__hook`,
@@ -369,3 +400,34 @@ that destination to be absent before the first command.
 - Async host handlers, per-schedule handler registration, script signing,
   separate script approval, or a claim that arbitrary synchronous application code can be
   forcibly cancelled at the row deadline.
+
+## Implementation validation
+
+Implementation is delivered; parent-managed implementation QA remains separate.
+The combined branch consumes b-13 `0a6a9dc` and b-15 `9452d80`. Native sc-cron
+tests, the full Rust 1.96.1 all-feature suite, workspace/default and all-feature
+Clippy with denied warnings, formatting, the focused generation/boundary tests,
+production dependency-tree gate, `just lint gates`, campaign self-check, and
+`just adr-run-0011` passed. The benchmark test target passes with its operator
+measurement case ignored by default; no performance measurement is claimed.
+
+A fresh explicit development render at `generated/test-monty-network` passed
+setup, lint, test, build-cli, build-daemon, and daemon checks with and without
+Monty. Hashes for all 38 generated crate/example files matched before and after
+those recipes. Feature trees show no sc-cron/Monty edge by default and only
+`monty`/`monty-types` when enabled, with no pool/fs/runtime crates. The lockfile
+records real registry logger/types `1.5.0` plus the local types facade `1.5.1`;
+this is development evidence, and matching registry `1.5.1` release proof remains
+b-18's acceptance condition. Temporary generated output is not a shipped artifact.
+
+## Contract propagation before implementation QA
+
+The combined b-15/b-16 artifact consumes validated b-13 `c00cb59`. Event
+construction helpers are pure value factories; each owning worker, due-run,
+scheduler, or CLI-driver branch invokes its injected logger directly and
+discards emission rejection. The fixed taxonomy, outcome tokens, shared Arc,
+registry/adapters, and deadline policy are preserved. The production pipe
+witness retains b-13 descriptor readiness, release, watchdog, kill and reap,
+with b-16 registered `sc_compose_run` and b-15's four rejection attempts.
+This narrow caller propagation precedes independent QA and does not assert
+QA acceptance or change the registry release gate.

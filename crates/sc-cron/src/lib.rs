@@ -148,7 +148,10 @@ pub use limits::{
 };
 #[cfg(feature = "monty")]
 #[doc(inline)]
-pub use monty_host::MontyHostConfig;
+pub use monty_host::{
+    AtmHostConfig, MontyHostCall, MontyHostHandler, MontyHostName, MontyHostRegistry,
+    ScComposeHostConfig,
+};
 #[doc(inline)]
 pub use run_failure::RunFailureParts;
 #[doc(inline)]

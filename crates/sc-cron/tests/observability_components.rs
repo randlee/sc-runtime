@@ -398,24 +398,30 @@ impl CanonicalLog for PipeReleaseLog {
 #[cfg(all(feature = "monty", unix))]
 #[tokio::test]
 async fn production_monty_pipe_deadline_uses_injected_logger_and_preserves_failure() {
-    use sc_cron::{HookTarget, ManualClock, MontyHostConfig, RunOutcome};
+    use sc_cron::{HookTarget, ManualClock, MontyHostRegistry, RunOutcome, ScComposeHostConfig};
     use std::os::unix::fs::PermissionsExt;
 
-    let source = "def cron_stop(hook):\n    return {'action': 'continue'}\ndef cron_tick(hook):\n    render_template('x', {})\n";
+    let python = std::process::Command::new("python3")
+        .args(["-c", "import sys; print(sys.executable)"])
+        .output()
+        .unwrap();
+    let interpreter = String::from_utf8(python.stdout).unwrap();
+    let source = "def cron_stop(hook):\n    return {'action': 'continue'}\ndef cron_tick(hook):\n    sc_compose_run('render', [])\n";
+
     for rejecting in [false, true] {
         let root = tempfile::tempdir().unwrap();
         let socket = root.path().join("pipe.sock");
         let holder = PipeHolder::start(&socket);
         let program = root.path().join("compose-pipe-holder.py");
         let socket_literal = serde_json::to_string(socket.to_str().unwrap()).unwrap();
-        std::fs::write(&program, format!(r#"#!/usr/bin/env python3
+        std::fs::write(&program, format!(r#"#!{interpreter}
 import array, socket, sys
 connection = socket.socket(socket.AF_UNIX)
 connection.connect({socket_literal})
 connection.sendmsg([b'x'], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, array.array('i', [sys.stdout.fileno()]))])
 assert connection.recv(4) == b'held'
 print('rendered', flush=True)
-"#)).unwrap();
+"#, interpreter=interpreter.trim())).unwrap();
         std::fs::set_permissions(&program, std::fs::Permissions::from_mode(0o700)).unwrap();
         let recording = recorder();
         let rejected = Arc::new(RejectingCanonicalLog::new(
@@ -438,7 +444,11 @@ print('rendered', flush=True)
             Arc::new(SeqJitter::new([])),
             observed.clone(),
         )
-        .with_monty_host(MontyHostConfig::new(&program).unwrap());
+        .with_monty_hosts(
+            MontyHostRegistry::new()
+                .with_sc_compose(ScComposeHostConfig::new(&program).unwrap())
+                .unwrap(),
+        );
         scheduler
             .start(
                 ScheduleSpec::with_hook(
@@ -468,14 +478,14 @@ print('rendered', flush=True)
             .unwrap();
         assert_eq!(runs.len(), 1);
         assert!(
-            matches!(&runs[0].outcome, RunOutcome::Failed(message) if message.contains("COMPOSE_NOT_RUNNABLE"))
+            matches!(&runs[0].outcome, RunOutcome::Failed(message) if message.contains("HOST_OUTPUT"))
         );
         assert_eq!(
             observed.deadlines.load(std::sync::atomic::Ordering::SeqCst),
             1
         );
         if rejecting {
-            assert_eq!(rejected.attempts(), 2); // attachment and pipe deadline
+            assert_eq!(rejected.attempts(), 4); // attached + due.launched + pipe deadline + due.finished
         } else {
             let events: Vec<_> = recording
                 .events()
@@ -492,6 +502,31 @@ print('rendered', flush=True)
                 "COMPOSE_PIPE_DRAIN_TIMEOUT",
             );
             assert_eq!(events[0].fields["deadline_remaining_ms"], 0);
+            let all = recording.events();
+            let launch = all
+                .iter()
+                .find(|event| event.action.as_str() == "due.launched")
+                .unwrap();
+            let finish = all
+                .iter()
+                .find(|event| event.action.as_str() == "due.finished")
+                .unwrap();
+            assert!(launch.correlation_id.is_some());
+            assert_eq!(launch.correlation_id, events[0].correlation_id);
+            assert_eq!(launch.correlation_id, finish.correlation_id);
+            assert!(
+                all.iter()
+                    .find(|event| event.action.as_str() == "logger.attached")
+                    .unwrap()
+                    .correlation_id
+                    .is_none()
+            );
+            for event in all {
+                assert!(
+                    !event.fields.contains_key("run_id")
+                        && !event.fields.contains_key("correlation_id")
+                );
+            }
         }
     }
 }

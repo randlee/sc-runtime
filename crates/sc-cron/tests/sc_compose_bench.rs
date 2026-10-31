@@ -46,58 +46,28 @@ loop {
         _ => return Err(denied()),
     };
 }"#;
-/// Production resume loop inside `execute_feed_with_compose_program`. The bench does not call `feed_start`
-/// itself for `production_bridge`; `Scheduler::run_due` → `drive_feed` does.
-const EXAMPLE_PRODUCTION_RESUME_LOOP: &str = r#"// production path: execute_feed_with_compose_program (not the lab feed_start harness)
-let mut progress = match repl.feed_start(
-    phase_snippet(phase),
-    snippet_inputs(hook),
-    PrintWriter::Disabled,
-) {
-    Ok(progress) => progress,
-    Err(error) => return from_exception(error.error, stage),
-};
+/// Production registry dispatch; the benchmark uses Scheduler::run_due.
+const EXAMPLE_PRODUCTION_RESUME_LOOP: &str = r#"// production path: drive_feed -> execute_feed_with_logger
+let mut progress = repl.feed_start(phase_snippet(phase), snippet_inputs(hook, hosts), PrintWriter::Disabled)?;
 loop {
     progress = match progress {
-        ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
-            match resume_render(call, stage, compose_program, host_deadline) {
-                Ok(next) => next,
-                Err(done) => return done,
-            }
-        }
-        ReplProgress::FunctionCall(call) if call.function_name == "sc_compose_run" => {
-            match resume_compose_run(call, stage, compose_program, host_deadline) {
-                Ok(next) => next,
-                Err(done) => return done,
-            }
-        }
-        ReplProgress::Complete { repl, value } => {
-            return finish_phase(phase, generation, repl, &value);
-        }
-        ReplProgress::FunctionCall(call) => {
-            return denied(stage, &format!("host function {}", call.function_name));
-        }
-        ReplProgress::OsCall(call) => {
-            let operation: &'static str = call.function_call.into();
-            return denied_os(stage, operation);
-        }
+        ReplProgress::FunctionCall(call) => resume_host(call, stage, phase, hook, hosts, run_deadline, logger)?,
+        ReplProgress::Complete { repl, value } => return finish_phase(phase, generation, repl, &value),
         ReplProgress::NameLookup(lookup) => return undefined_name(stage, &lookup.name),
-        ReplProgress::ResolveFutures(_) => return denied(stage, "unresolved futures"),
+        _ => return denied(stage, "unsupported operation"),
     };
 }
 "#;
 const EXAMPLE_CLI_ARGV: &str =
     "sc-compose render --root <temp> --mode file --file t.j2 --var-file <temp>/v.json";
 const EXAMPLE_COMPOSE_RUN: &str = r#"def cron_tick(hook):
-    # Only render is allowed. The host stages a temp root and ignores --root.
-    # bead, init, and extract fail the tick with COMPOSE_SUBCOMMAND.
-    return sc_compose_run("render", [hook["payload"]["template"], '{"name": "bench"}'])
+    return sc_compose_run("render", hook["payload"]["compose_args"])
 "#;
 const EXAMPLE_PRODUCTION: &str = r#"def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
 def cron_tick(hook):
-    return render_template(hook["payload"]["template"], hook["payload"]["context"])
+    return sc_compose_run("render", hook["payload"]["compose_args"])
 "#;
 
 /// Timed iterations per case (plus one untimed warmup before the timer starts).
@@ -322,7 +292,7 @@ def cron_stop(hook):
     return {"action": "continue", "reason": "ok"}
 
 def cron_tick(hook):
-    out = render_template(hook["payload"]["template"], hook["payload"]["context"])
+    out = sc_compose_run("render", hook["payload"]["compose_args"])["stdout"]
     if out.strip() != "Hello bench":
         raise RuntimeError("unexpected render: " + out)
     return None
@@ -337,10 +307,16 @@ def cron_tick(hook):
 #[cfg(feature = "monty")]
 async fn production_bridge_run(source: &str) {
     use common::{Fixture, WAIT, idle_job};
-    use sc_cron::{HookTarget, RunOutcome, ScheduleSpec};
+    use sc_cron::{HookTarget, MontyHostRegistry, RunOutcome, ScComposeHostConfig, ScheduleSpec};
     use serde_json::json;
 
-    let fixture = Fixture::new();
+    let mut fixture = Fixture::new();
+    fixture.scheduler = fixture.scheduler.with_monty_hosts(
+        MontyHostRegistry::new()
+            .with_sc_compose(ScComposeHostConfig::default())
+            .expect("registry"),
+    );
+    let fixtures = CliRenderFixtures::shared();
     let spec = ScheduleSpec::with_hook(
         "bench-production-bridge",
         "* * * * *",
@@ -348,6 +324,7 @@ async fn production_bridge_run(source: &str) {
         json!({
             "template": TEMPLATE,
             "context": {"name": "bench"},
+            "compose_args": ["--root", fixtures.root.to_str().expect("root"), "--mode", "file", "--file", "t.j2", "--var-file", fixtures.var_file.to_str().expect("vars")],
         }),
         HookTarget::monty(source).expect("source"),
     )
@@ -886,7 +863,7 @@ fn bench_sc_compose_hook_paths() {
         cases.push(BenchCase {
             id: "production_bridge",
             label: "production monty_host bridge",
-            strategy: "Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `drive_feed` → `execute_feed_with_compose_program` resumes `render_template` and spawns `sc-compose` (no lab `feed_start` in this harness).",
+            strategy: "Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `drive_feed` → `execute_feed_with_logger` resumes registered `sc_compose_run` and spawns `sc-compose` (no lab `feed_start` in this harness).",
             skipped: false,
             skip_reason: None,
             result: Some(result),
@@ -895,7 +872,7 @@ fn bench_sc_compose_hook_paths() {
         cases.push(BenchCase {
             id: "production_bridge",
             label: "production monty_host bridge",
-            strategy: "Production `drive_feed` + `render_template`.",
+            strategy: "Production `drive_feed` + optional `sc_compose_run`.",
             skipped: true,
             skip_reason: Some("sc-compose CLI missing"),
             result: None,
@@ -906,7 +883,7 @@ fn bench_sc_compose_hook_paths() {
     cases.push(BenchCase {
         id: "production_bridge",
         label: "production monty_host bridge",
-        strategy: "Production `drive_feed` + `render_template`.",
+        strategy: "Production `drive_feed` + optional `sc_compose_run`.",
         skipped: true,
         skip_reason: Some("build without --features monty"),
         result: None,

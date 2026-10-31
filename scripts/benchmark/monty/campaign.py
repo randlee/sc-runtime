@@ -216,12 +216,12 @@ def require_production_resume_loop(examples: dict) -> None:
             "examples.resume_loop must be labelled as the production path "
             "(keep the lab feed_start loop separate)"
         )
-    if "execute_feed_with_compose_program" not in lowered and "drive_feed" not in lowered:
+    if not any(name in lowered for name in ("execute_feed_with_compose_program", "execute_feed_with_logger", "drive_feed")):
         raise CampaignError(
             "examples.resume_loop must name execute_feed_with_compose_program or drive_feed "
             "(cfg(test) execute_feed is not the production path)"
         )
-    if "execute_feed_with_compose_program" not in lowered and "execute_feed" in lowered:
+    if not any(name in lowered for name in ("execute_feed_with_compose_program", "execute_feed_with_logger")) and "execute_feed" in lowered:
         raise CampaignError(
             "examples.resume_loop must not label production as execute_feed only; "
             "name execute_feed_with_compose_program or drive_feed"
@@ -578,11 +578,11 @@ def self_check() -> None:
         "sc_compose_cli_version": "sc-compose 0.0.0",
         "python_sc_compose": True,
         "examples": {
-            "hook_source": "def cron_tick(hook):\n    return render_template(hook['payload']['template'], hook['payload']['context'])\n",
+            "hook_source": "def cron_tick(hook):\n    return sc_compose_run('render', hook['payload']['compose_args'])\n",
             "resume_loop": (
                 "// production path: execute_feed_with_compose_program (not the lab feed_start harness)\n"
                 "let mut progress = repl.feed_start(phase_snippet(phase), snippet_inputs(hook), PrintWriter::Disabled)?;\n"
-                "resume_render(call, stage, compose_program, host_deadline)?;\n"
+                "resume_host(call, stage, phase, hook, hosts, deadline, logger)?;\n"
             ),
             "cli_argv": "sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json\n",
         },
