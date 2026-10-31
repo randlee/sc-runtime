@@ -6,8 +6,9 @@ jitter and missed-tick handling.
 `sc-cron` runs a caller's `Job` on cron schedules kept in a `ScheduleStore`.
 It was extracted from an earlier in-house scheduler and carries no
 consumer-specific type: a schedule's input is an opaque JSON payload, and every
-failure is a `CronError` with a stable `code()`. The crate depends on no
-other workspace crate.
+failure is a `CronError` with a stable `code()`. Its sole workspace-crate
+dependency is `sc-observability-types`, used only for the injected canonical
+logger contract.
 
 - **Validated input.** `ScheduleName` (at most 128 bytes), `CronExpr` (in UTC:
   standard five-field crontab, minute first; or the `cron` crate's six or
