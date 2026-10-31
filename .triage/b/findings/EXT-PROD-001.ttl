@@ -1,0 +1,11 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:finding:EXT-PROD-001> qa:id "EXT-PROD-001" ;
+ qa:severity "important" ; qa:status "open" ;
+ qa:sprint "phase-b-production-readiness" ;
+ qa:file "crates/sc-cron/src/monty_host.rs" ; qa:line 386 ;
+ qa:reviewCommit "1e6931bed0130d8452a35a9a6ec17b30ace11302" ;
+ qa:reviewerTask "/root/production_qa1_ext", "/root/production_qa1_rust" ;
+ qa:requirement "REQ-CRON-0003" ; qa:adr "ADR-RUN-0013" ;
+ qa:summary "Generic JSON host-result conversion silently rounds unsigned integers above i64::MAX through f64, including nested values." ;
+ qa:evidence "Exact extracted conversion witness maps 9223372036854775808 and 9223372036854775809 to the same Monty float. Production resume path traced at monty_run.rs:700-703. Not represented as a full scheduler execution witness." ;
+ qa:remediation "Preserve supported JSON integers exactly with existing Monty integer facilities, or deterministically refuse unsupported range with typed actionable bridge error; preserve public handler signature and test boundaries/nested real host results." .
