@@ -21,7 +21,7 @@ lint *profile:
     just supply-chain
 
 test *layer:
-    {{python}} .sc-lint/bootstrap.py test --config sc-lint.toml {{layer}}
+    {{ if layer == "windows-hook-default" { "cargo +1.94.1 test -p sc-cron --test hook_environment" } else if layer == "windows-hook-monty" { "cargo +1.96.1 test -p sc-cron --features monty --test hook_environment" } else if layer == "windows-host-monty" { "cargo +1.96.1 test -p sc-cron --features monty --test monty_host_bridge" } else { python + " .sc-lint/bootstrap.py test --config sc-lint.toml " + layer } }}
 
 upgrade:
     {{python}} .sc-lint/bootstrap.py upgrade --config sc-lint.toml

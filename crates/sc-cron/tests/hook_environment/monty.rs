@@ -141,15 +141,16 @@ async fn worker_shares_the_snapshot_between_stop_and_tick() {
 
 #[test]
 fn python_monty_and_both_cli_children_use_one_allowlisted_map() {
-    let output = std::process::Command::new(std::env::current_exe().expect("self"))
-        .args(["--exact", "monty::cli_environment_child", "--nocapture"])
-        .env("SC_CRON_ENV_CHILD", "monty")
-        .env("SC_ENV_INHERITED", "allowed-value")
-        .env("SC_ENV_UNLISTED", "unlisted-secret")
-        .env("ATM_IDENTITY", "daemon-identity")
-        .env("ATM_TEAM", "daemon-team")
-        .output()
-        .expect("child");
+    let output = super::owned_child::output(
+        std::process::Command::new(std::env::current_exe().expect("self"))
+            .args(["--exact", "monty::cli_environment_child", "--nocapture"])
+            .env("SC_CRON_ENV_CHILD", "monty")
+            .env("SC_ENV_INHERITED", "allowed-value")
+            .env("SC_ENV_UNLISTED", "unlisted-secret")
+            .env("ATM_IDENTITY", "daemon-identity")
+            .env("ATM_TEAM", "daemon-team"),
+        super::common::WAIT,
+    );
     assert!(
         output.status.success(),
         "{} {}",
@@ -285,11 +286,12 @@ async fn initialization_runtime_return_and_both_cli_streams_redact_without_touch
 #[cfg(windows)]
 #[test]
 fn windows_path_spelling_is_uppercase_for_python_and_monty_and_lookup_ignores_case() {
-    let output = std::process::Command::new(std::env::current_exe().expect("self"))
-        .args(["--exact", "monty::windows_path_child", "--nocapture"])
-        .env("SC_CRON_ENV_CHILD", "windows-path")
-        .output()
-        .expect("child");
+    let output = super::owned_child::output(
+        std::process::Command::new(std::env::current_exe().expect("self"))
+            .args(["--exact", "monty::windows_path_child", "--nocapture"])
+            .env("SC_CRON_ENV_CHILD", "windows-path"),
+        super::common::WAIT,
+    );
     assert!(
         output.status.success(),
         "{} {}",

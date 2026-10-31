@@ -6,6 +6,8 @@ mod model;
 #[cfg(feature = "monty")]
 #[path = "hook_environment/monty.rs"]
 mod monty;
+#[path = "hook_environment/owned_child.rs"]
+mod owned_child;
 #[path = "hook_environment/resolution.rs"]
 mod resolution;
 
