@@ -568,6 +568,59 @@ fn parse_reply(output: &HookOutput) -> Result<StopDecision, String> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn resolved_python_hook_retains_the_run_correlation_and_exact_logger() {
+        let logger: sc_observability_types::SharedCanonicalLog =
+            Arc::new(sc_observability_types::RecordingCanonicalLog::new(
+                sc_observability_types::ServiceName::new("python-context").unwrap(),
+            ));
+        let scheduler = crate::Scheduler::new_with_logger(
+            Arc::new(
+                crate::SqliteScheduleStore::open_in_memory(crate::ScheduleLimits::default())
+                    .unwrap(),
+            ),
+            Arc::new(crate::SystemClock),
+            Arc::new(crate::SystemJitter),
+            logger.clone(),
+        );
+        let mut spec = crate::ScheduleSpec::new(
+            "python-context",
+            "* * * * *",
+            std::time::Duration::from_secs(1),
+            serde_json::json!({}),
+        )
+        .unwrap();
+        spec.hook = crate::HookTarget::python("context-hook.py").unwrap();
+        let row = scheduler.start(spec).unwrap();
+        let correlation =
+            crate::worker::run_correlation(&row, row.next_run_at.map(|at| at.as_datetime()));
+        struct Idle;
+        #[async_trait::async_trait]
+        impl crate::Job for Idle {
+            async fn run(&self, _: &serde_json::Value, _: std::time::Instant) -> RunOutcome {
+                RunOutcome::Ok
+            }
+            async fn should_stop(&self, _: &serde_json::Value) -> crate::StopDecision {
+                crate::StopDecision::Continue
+            }
+        }
+        let job: Arc<dyn crate::Job> = Arc::new(Idle);
+        let ResolvedTarget::Python(hook) =
+            crate::worker::resolve(&job, &row, &logger, correlation.clone()).unwrap()
+        else {
+            panic!("Python target");
+        };
+        assert!(Arc::ptr_eq(&hook.logger, &logger));
+        assert!(correlation.is_some());
+        assert_eq!(hook.correlation, correlation);
+        assert!(
+            PythonHook::new("context-hook.py")
+                .unwrap()
+                .correlation
+                .is_none()
+        );
+    }
+
     fn reply(stdout: &str) -> HookOutput {
         HookOutput {
             status: HookStatus::TimedOut,

@@ -40,7 +40,7 @@ let scheduler = scheduler.with_monty_hosts(registry);
 ```
 
 The open object-safe `MontyHostHandler: Send + Sync` supports matching closures.
-`MontyHostCall` owns the registered name, positional/keyword JSON arguments,
+`MontyHostCall` owns the validated `MontyHostName` (borrowed with `as_str()`), positional/keyword JSON arguments,
 schedule name, hook phase, and row deadline. Invalid identifiers, duplicate
 names, and reserved `__hook`, `cron_stop`, and `cron_tick` names return
 `CronError::InvalidSpec`. Source can invoke a registered function but cannot

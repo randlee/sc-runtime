@@ -224,7 +224,7 @@ pub(crate) struct Worker<S, C> {
     /// has run, but the stored next run is still that occurrence, so a slot
     /// rebuilt from the row would run it again: no slot is built for these,
     /// and the write is retried until the store answers.
-    pending_ends: Vec<Schedule>,
+    pending_ends: Vec<(Schedule, RunCorrelation)>,
     /// The most the worker waits between reloads.
     reload_poll: chrono::Duration,
     /// When the next periodic reload is due; `None` until the first reload
@@ -468,29 +468,29 @@ where
     fn is_pending_end(&self, schedule: &Schedule) -> bool {
         self.pending_ends
             .iter()
-            .any(|ending| ending.id == schedule.id && ending.generation == schedule.generation)
+            .any(|(ending, _)| ending.id == schedule.id && ending.generation == schedule.generation)
     }
 
     /// Ends a schedule whose last occurrence has run. If the store fails, the
     /// write is retried with backoff and the schedule gets no slot meanwhile,
     /// so it can never run again.
-    async fn end_exhausted(&mut self, schedule: &Schedule) {
-        if self.end(schedule, EXHAUSTED, None).await {
+    async fn end_exhausted(&mut self, schedule: &Schedule, correlation: RunCorrelation) {
+        if self.end(schedule, EXHAUSTED, correlation.clone()).await {
             return;
         }
         if !self.is_pending_end(schedule) {
-            self.pending_ends.push(schedule.clone());
+            self.pending_ends.push((schedule.clone(), correlation));
         }
         self.write_retry.failed(self.clock.now());
     }
 
     /// Retries the ending writes that failed.
     async fn retry_ends(&mut self) {
-        for schedule in std::mem::take(&mut self.pending_ends) {
+        for (schedule, correlation) in std::mem::take(&mut self.pending_ends) {
             if self.stop_requested() {
-                self.pending_ends.push(schedule);
-            } else if !self.end(&schedule, EXHAUSTED, None).await {
-                self.pending_ends.push(schedule);
+                self.pending_ends.push((schedule, correlation));
+            } else if !self.end(&schedule, EXHAUSTED, correlation.clone()).await {
+                self.pending_ends.push((schedule, correlation));
                 self.write_retry.failed(self.clock.now());
             }
         }
@@ -563,13 +563,15 @@ where
                     slot.queued = Queued::Disable;
                     self.slots.push(slot);
                 } else if slot.run.is_some()
-                    && let Some(event) = detail_event(
+                    && let Some(mut event) = detail_event(
                         self.coord.logger.service_name().clone(),
                         &slot.schedule,
                         Event::ScheduleCancelled,
                         "schedule disabled",
                     )
                 {
+                    event.correlation_id =
+                        slot.run.as_ref().and_then(|run| run.correlation.clone());
                     let _ = self.coord.logger.emit(event);
                 }
                 continue;
@@ -601,13 +603,14 @@ where
                 }
                 self.slots.push(slot);
             } else if slot.run.is_some()
-                && let Some(event) = detail_event(
+                && let Some(mut event) = detail_event(
                     self.coord.logger.service_name().clone(),
                     &slot.schedule,
                     Event::ScheduleCancelled,
                     "schedule ended, disabled or restarted",
                 )
             {
+                event.correlation_id = slot.run.as_ref().and_then(|run| run.correlation.clone());
                 let _ = self.coord.logger.emit(event);
             }
         }
@@ -634,7 +637,7 @@ where
             next
         };
         if next.is_none() {
-            self.end_exhausted(&schedule).await;
+            self.end_exhausted(&schedule, None).await;
             return None;
         }
         Some(Slot {
@@ -732,7 +735,7 @@ where
             };
             if slot.next.is_none() && slot.run.is_none() {
                 let slot = self.slots.remove(index);
-                self.end_exhausted(&slot.schedule).await;
+                self.end_exhausted(&slot.schedule, None).await;
             } else {
                 index += 1;
             }
@@ -884,7 +887,7 @@ where
             .is_some_and(|slot| slot.next.is_none())
         {
             self.slots.remove(index);
-            self.end_exhausted(&schedule).await;
+            self.end_exhausted(&schedule, correlation).await;
             return true;
         }
         false

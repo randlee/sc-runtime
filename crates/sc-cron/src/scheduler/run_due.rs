@@ -317,7 +317,7 @@ where
     };
     let correlation = run_correlation(&row, row.next_run_at.map(|at| at.as_datetime()));
     let next = row.spec.expr.next_run(row.jitter, now);
-    if !store_next_before_launch(scheduler, &row, next, correlation.clone()).await {
+    if !store_next_before_launch(scheduler, &row, next).await {
         return None;
     }
     let monotonic = scheduler.core.clock.monotonic_now();
@@ -362,7 +362,6 @@ async fn store_next_before_launch<S, C, J>(
     scheduler: &Scheduler<S, C, J>,
     row: &Schedule,
     next: Option<DateTime<Utc>>,
-    correlation: RunCorrelation,
 ) -> bool
 where
     S: ScheduleStore + 'static,
@@ -378,25 +377,23 @@ where
     match super::blocking(move || core.store.set_next(id, generation, stamp)).await {
         Ok(true) => true,
         Ok(false) => {
-            if let Some(mut event) = event_record(
+            if let Some(event) = event_record(
                 scheduler.coord.logger.service_name().clone(),
                 Event::DueFenced,
                 Some(row),
                 serde_json::json!({"operation": "set_next"}),
             ) {
-                event.correlation_id = correlation.clone();
                 let _ = scheduler.coord.logger.emit(event);
             };
             false
         }
         Err(error) => {
-            if let Some(mut event) = event_record(
+            if let Some(event) = event_record(
                 scheduler.coord.logger.service_name().clone(),
                 Event::DueNextFailed,
                 Some(row),
                 serde_json::json!({"error": error.to_string()}),
             ) {
-                event.correlation_id = correlation.clone();
                 let _ = scheduler.coord.logger.emit(event);
             };
             true

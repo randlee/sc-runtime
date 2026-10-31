@@ -398,3 +398,35 @@ pub(crate) fn monty_value_to_json(value: ObjectRef<'_>) -> Result<Value, MontyJs
 pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
     deadline.is_some_and(|deadline| Instant::now() >= deadline)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn host_names_validate_once_and_keep_string_lookup_and_json_arguments() {
+        for name in ["", "bad-name", "2host", "__hook", "cron_stop", "cron_tick"] {
+            assert!(MontyHostName::new(name).is_err(), "{name}");
+        }
+        let name = MontyHostName::new("my_host_2").unwrap();
+        assert_eq!(name.as_str(), "my_host_2");
+        let registry = MontyHostRegistry::new()
+            .register(name.as_str(), |call: &MontyHostCall| {
+                Ok(call.args[0].clone())
+            })
+            .unwrap();
+        assert!(registry.entries.contains_key(name.as_str()));
+        let call = MontyHostCall {
+            name,
+            args: vec![serde_json::json!({"nested":[1,true,null]})],
+            kwargs: Map::new(),
+            schedule: ScheduleName::new("host").unwrap(),
+            phase: HookEvent::Tick,
+            deadline: Instant::now(),
+        };
+        let value = registry
+            .invoke(&call, &crate::noop_logger(), &None)
+            .unwrap_or_else(|_| panic!("registered host"));
+        assert_eq!(value, call.args[0]);
+    }
+}
