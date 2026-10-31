@@ -274,7 +274,7 @@ the preflight gate. It does not edit `hooks-sc-compose.md`.
 ## Required validation
 
 - `cargo test -p sc-cron` exits 0 (bench stays ignored; default features do not link `monty`).
-- `python3 scripts/benchmark/monty/campaign.py --index-only` exits 0 against a fixture `*.campaign.json` (with all three `examples` keys) and refreshes the index and HTML without running cargo; it exits non-zero against a fixture missing `examples.hook_source`. The script grows that flag in this sprint.
+- `python3 scripts/benchmark/monty/campaign.py --index-only` exits 0 against a fixture `*.campaign.json` (with all three `examples` keys) and refreshes the index without running cargo and preserves historical HTML bytes; new HTML is rendered completely from JSON at packaging; it exits non-zero against a fixture missing `examples.hook_source`. The script grows that flag in this sprint.
 - `python3 scripts/benchmark/monty/campaign.py --gate` exits non-zero when run against a fixture campaign that skipped `production_bridge`.
 - Root `just test` and default PR CI do not invoke `benchmark` or `benchmark-gate`. `release-preflight.yml` verifies committed evidence through `release/publish-preflight.toml`.
 - `sc-lint lint sc-boundary --root . --config sc-lint.toml` exits 0. This sprint does not edit `boundaries/`.

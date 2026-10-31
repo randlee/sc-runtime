@@ -107,13 +107,9 @@ def verify_campaign(root: Path, payload: dict, path: Path, module, directories: 
     if payload.get("status") != module.campaign_status(expected) or payload.get("status") not in {"PASS", "MEASURED"}:
         raise EvidenceError("campaign is not complete and accepted by current baselines")
     module.validate_gate(payload)
-    sha = payload["git_sha"]
-    html = (path.parent / payload["report_html"]).read_text(encoding="utf-8")
-    if any(value not in html for value in (campaign_id, sha, payload["host"], payload["rustc"])):
-        raise EvidenceError("HTML report metadata does not match campaign")
-    if module.stamp_report_html(html, payload) != html:
-        raise EvidenceError("HTML examples/metadata contradict canonical campaign rendering")
-    module.validate_measurement_html(html, payload)
+    actual_html = (path.parent / payload["report_html"]).read_bytes()
+    if actual_html != module.render_campaign_html(payload).encode("utf-8"):
+        raise EvidenceError("HTML twin differs from complete canonical campaign rendering")
 
 
 def verify(root: Path = ROOT) -> list[str]:

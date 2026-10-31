@@ -2,7 +2,6 @@
 import copy
 import importlib.util
 import json
-import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -19,7 +18,7 @@ class ReleaseEvidenceTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
         shutil.copytree(ROOT / "scripts/benchmark", self.root / "scripts/benchmark", ignore=shutil.ignore_patterns("__pycache__"))
         self.git("init", "-q")
         self.git("config", "user.email", "test@example.invalid")
@@ -51,14 +50,8 @@ class ReleaseEvidenceTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("fixture_campaign", script)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        # Start with a real Rust-harness report, then use its canonical packager.
-        page = (ROOT / "site/reports/benchmark-monty/20261028T230213Z-Mac.html").read_text()
-        for case in self.payload["cases"]:
-            pattern = (r'(<tr id="' + re.escape(case["id"]) + r'".*?<td class="num">)[^<]*'
-                       r'(</td><td class="num">)[^<]*(</td><td class="num">)[^<]*')
-            page = re.sub(pattern, lambda m: (m[1] + f"{case['ms_per_run']:.3f} ms" + m[2]
-                          + f"{case['total_ms']}ms total" + m[3] + f"{case['timed_iters']} + 1 warmup"), page)
-        (self.report_dir / self.payload["report_html"]).write_text(module.stamp_report_html(page, self.payload))
+        (self.report_dir / self.payload["report_html"]).write_bytes(
+            module.render_campaign_html(self.payload).encode("utf-8"))
         try:
             module.write_index(self.report_dir)
         except module.CampaignError:
@@ -73,6 +66,34 @@ class ReleaseEvidenceTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertIn(self.source, result[0])
         self.assertIn("MEASURED", result[0])
+
+    def test_actual_producer_publish_verifier_preserves_legacy_bytes(self):
+        from datetime import datetime, timezone
+        spec = importlib.util.spec_from_file_location("producer", self.root / "scripts/benchmark/monty/campaign.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for name in ("20261028T230213Z-Mac.campaign.json", "20261028T230213Z-Mac.html"):
+            shutil.copyfile(ROOT / "site/reports/benchmark-monty" / name, self.report_dir / name)
+        historical = {p.name: p.read_bytes() for p in self.report_dir.iterdir() if p.name != "index.html"}
+        harness = copy.deepcopy(self.payload)
+        harness["schema"] = module.HARNESS_SCHEMA
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw.html"
+            raw.write_text("<p>Campaign status: FAIL. All measurements failed.</p>")
+            produced = module.package_campaign(report_dir=self.report_dir, harness=harness,
+                html_path=raw, host="rand-m5", git_revision=self.source,
+                rustc_version=self.payload["rustc"], when=datetime(2026, 10, 29, 23, 2, 13, tzinfo=timezone.utc))
+        report = self.report_dir / produced["report_html"]
+        before = report.read_bytes()
+        self.assertEqual(before, module.render_campaign_html(produced).encode("utf-8"))
+        self.assertNotIn(b"All measurements failed", before)
+        module.index_only(self.report_dir)
+        module.publish(self.report_dir)
+        self.assertEqual(report.read_bytes(), before)
+        for name, data in historical.items():
+            self.assertEqual((self.report_dir / name).read_bytes(), data)
+        self.commit("actual producer and publish evidence")
+        self.assertIn(produced["campaign_id"], evidence.verify(self.root)[0])
 
     def test_squash_history_with_identical_source_is_accepted(self):
         self.git("checkout", "--orphan", "squashed")
@@ -148,13 +169,20 @@ class ReleaseEvidenceTests(unittest.TestCase):
         path = self.report_dir / self.payload["report_html"]
         canonical = path.read_text()
         mutations = [" ".join(str(self.payload[key]) for key in ("campaign_id", "host", "git_sha", "rustc")),
-                     canonical.replace(f"{self.payload['cases'][0]['ms_per_run']:.3f} ms", "999999.000 ms", 1),
+                     canonical.replace(f"{self.payload['cases'][0]['ms_per_run']:.6f} ms", "999999.000000 ms", 1),
                      canonical.replace("</td>", "</div>", 1),
                      canonical.replace("30 + 1 warmup", "3000 + 1 warmup", 1),
                      canonical.replace("6.47 MiB", "99999 MiB")]
         # The final case corrupts a known actual RSS cell rather than inventing a fixture document.
         rss = self.payload["cases"][0]["subprocess_rss_bytes"] / 1048576
         mutations[-1] = canonical.replace(f"{rss:.2f} MiB", "99999 MiB", 1)
+        mutations.extend([
+            canonical.replace("<h2>Results</h2>", "<h2>Results</h2><p>Campaign status: FAIL. All measurements failed.</p>"),
+            canonical.replace("</body>", "<p>arbitrary visible text</p></body>"),
+            canonical.replace("</head>", "<style>body { display: none; }</style></head>"),
+            canonical.replace("</body>", "<script>alert('false result')</script></body>"),
+            canonical[:-10], canonical + "\n"
+        ])
         for page in mutations:
             path.write_text(page)
             self.commit("corrupt real canonical HTML")
