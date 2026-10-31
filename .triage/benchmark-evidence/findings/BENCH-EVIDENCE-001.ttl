@@ -1,8 +1,10 @@
 @prefix triage: <urn:sc-runtime:triage:> .
 <urn:sc-runtime:finding:BENCH-EVIDENCE-001> triage:id "BENCH-EVIDENCE-001" ;
- triage:alias "rust-qa-agent:QA-001", "req-qa:REQ-QA-001", "arch-qa:ARCH-001" ; triage:severity "Blocking" ;
+ triage:alias "rust-qa-agent:QA-001", "req-qa:REQ-QA-001", "arch-qa:ARCH-001" ; triage:severity "Important" ;
  triage:phase "benchmark-evidence" ; triage:commit "a29f8103c58ee1bdc0f6a337f1cbe46a71677480" ;
  triage:location "scripts/benchmark/check_release_evidence.py:109" ;
  triage:status "open" ;
  triage:issue "Verifier accepts metadata-only or contradictory campaign HTML while JSON/index pass." ;
  triage:remediation "Validate canonical report measurement content against campaign JSON; add corruption rejection regression using actual canonical report renderer." .
+
+<urn:sc-runtime:finding:BENCH-EVIDENCE-001> triage:qa2 "Original table corruption fixed; visible contradictory FAIL prose still accepted at 0cdcebe. Whole deterministic HTML render correspondence is minimal remaining fix." .
