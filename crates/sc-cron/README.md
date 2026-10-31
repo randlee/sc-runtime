@@ -42,9 +42,11 @@ other workspace crate.
   `SqliteScheduleStore` is the rusqlite implementation (SQLite bundled), on a
   database file of its own (`PRAGMA user_version` = `SCHEMA_VERSION`, 4; a
   version 1, 2, or 3 file is rebuilt to that schema when opened).
-  `list_active` skips a row that does not decode, with a `tracing` warning,
-  so the other schedules keep running; `get` on that row still returns the
-  `Corrupt` error.
+  `list_active` skips a row that does not decode and emits the canonical
+  `cron.store` / `row.corrupt` event, so other schedules keep running; `get`
+  on that row still returns the `Corrupt` error. Observing the event requires
+  a logger-aware store/open construction; legacy constructors install a fixed
+  Noop logger.
 - **Injected time and randomness**, through `Clock` and `JitterSource`.
 
 ## Example

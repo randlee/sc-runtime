@@ -256,9 +256,14 @@ async fn cli_output_cap() {
 async fn callback_deadline_checked_after_return() {
     let registry = MontyHostRegistry::new()
         .register("late", |call: &MontyHostCall| {
-            std::thread::park_timeout(
-                call.deadline.saturating_duration_since(Instant::now()) + Duration::from_millis(10),
-            );
+            let (_sender, receiver) = std::sync::mpsc::channel::<()>();
+            while Instant::now() < call.deadline {
+                assert!(
+                    receiver
+                        .recv_timeout(call.deadline.saturating_duration_since(Instant::now()))
+                        .is_err()
+                );
+            }
             Ok(Value::Null)
         })
         .expect("late");

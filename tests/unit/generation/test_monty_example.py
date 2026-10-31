@@ -99,8 +99,8 @@ class MontyExampleTests(unittest.TestCase):
         self.assertIn("${{ github.ref_type != 'tag' && '--development-observability' || '' }}", workflow)
         self.assertIn("SC_RUNTIME_RELEASE: ${{ github.ref_type == 'tag' && '1' || '' }}", workflow)
         self.assertIn('run: python3 scripts/new_project.py --patch-checkout "$RUNNER_TEMP/plain" --development-observability', workflow)
-        self.assertIn('new dest *args:', (ROOT / "justfile").read_text())
-        self.assertIn('scripts/new_project.py {{dest}} {{args}}', (ROOT / "justfile").read_text())
+        self.assertIn('new dest *args:', (ROOT / "Justfile").read_text())
+        self.assertIn('scripts/new_project.py {{dest}} {{args}}', (ROOT / "Justfile").read_text())
 
 
     def test_plain_checkout_cli_applies_explicit_development_selection(self):
