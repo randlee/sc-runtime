@@ -10,4 +10,6 @@
  qa:evidence "Exact extracted redaction/parser std-only witness confirms synthetic newline/tab/backslash/quote values are not redacted in either adapter; production worker persistence and terminal event paths traced. Not represented as full scheduler execution." ;
  qa:remediation "Use fixed value-free unknown-action error listing accepted action names in both Python and Monty parsers, with secret-bearing malformed-reply regressions; no generalized escaped-secret transformation framework." .
 
-<urn:sc-runtime:finding:RSH-PROD-001> qa:fixedCommit "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661" ; qa:verifiedBy "/root/final_closeout_service" ; qa:admission "Final aggregate QA and exact-head CI remain pending" .
+<urn:sc-runtime:finding:RSH-PROD-001> qa:fixedCommit "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661" ; qa:verifiedBy "/root/final_closeout_service" ; qa:admission "Final aggregate QA PASS and all 17 exact-head CI checks SUCCESS" .
+
+<urn:sc-runtime:finding:RSH-PROD-001> qa:admittedBy "/root/final_closeout_enforcer" ; qa:admissionReport "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539" .

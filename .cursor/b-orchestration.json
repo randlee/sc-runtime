@@ -6044,7 +6044,7 @@
     {
       "qa_pass": "qa-phase-b-closeout-final-1",
       "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
-      "verdict": "IN-FLIGHT",
+      "verdict": "PASS",
       "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
       "reviewer_manifest": [
         {
@@ -6138,22 +6138,18 @@
         "branch": "integrate/phase-b-observability",
         "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
         "pr": 96,
-        "verdict": "IN-FLIGHT",
-        "deliverables": {
-          "complete": 98,
-          "total": 98,
-          "percent": 100.0
-        },
+        "verdict": "PASS",
         "findings": {
           "blocking": 0,
           "important": 0,
           "minor": 0
         },
         "blocking_ids": [],
-        "merge_readiness": "not ready",
-        "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head canonical local full gates are terminal PASS: just lint exit 0 in 15.338 seconds and just test exit 0 in 996.435 seconds. Fresh hosted snapshot is 16/17 SUCCESS with the sole hosted aggregate job 124504564224 still IN_PROGRESS, so phase admission remains IN-FLIGHT pending that terminal hosted check. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
-        "next_action": "await_ci",
-        "owner": "parent-orchestrator",
+        "merge_readiness": "ready for phase merge to develop",
+        "merge_reason": "All phase source, reviewer, TODO, local execution, hosted CI, and carry-forward finding gates pass at the exact reviewed head. Parent may proceed with the phase merge after final correlation. This verdict is not production release admission.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Proceed with phase merge to develop after parent final correlation. Keep run-h0h production release blocked until its separately documented 1.5.1, bridge-removal, 0.1.1 publication, registry proof, controlled-host, authorization, and tagging prerequisites pass. No merge, publication, tag, or dispatch was performed.",
         "reviewer_spawn_gate": "pass",
         "reviewer_manifest": [
           {
@@ -6322,10 +6318,57 @@
               ".triage/b/findings/RSH-PROD-001.ttl"
             ]
           },
-          "parent_correlation_required": true
-        },
-        "missing_reviewers": [],
-        "unparsed_reviewers": []
+          "parent_correlation_required": true,
+          "phase_completion": {
+            "deliverables_complete": 98,
+            "deliverables_total": 98,
+            "requirement_checks": 73,
+            "separate_production_claims_closed": 3,
+            "separate_production_claims_total": 3,
+            "open_findings": 0,
+            "historical_triage_findings_closed": 8,
+            "todo_scan": "clean"
+          },
+          "execution": {
+            "source_head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+            "base_head": "a09c28fa012ce8419959bf0ccc322f0de2034d2d",
+            "local_full_gates": [
+              {
+                "gate": "just lint",
+                "status": "SUCCESS",
+                "exit": 0,
+                "duration_seconds": 15.338
+              },
+              {
+                "gate": "just test",
+                "status": "SUCCESS",
+                "exit": 0,
+                "duration_seconds": 996.435
+              }
+            ],
+            "hosted_checks": {
+              "required": 17,
+              "success": 17,
+              "failure": 0,
+              "pending": 0,
+              "all_terminal": true,
+              "aggregate_job": {
+                "id": 124504564224,
+                "status": "completed",
+                "conclusion": "success",
+                "url": "https://github.com/randlee/sc-runtime/actions/runs/41189944808/job/124504564224"
+              }
+            },
+            "windows": {
+              "hook_environment_job": "SUCCESS",
+              "native_witnesses": 7,
+              "synthetic_merge_commit": "09c0c1ed91365107df547a50e091e8a8822effee",
+              "merged_tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a",
+              "assigned_head_tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a",
+              "tree_identical": true
+            }
+          }
+        }
       }
     }
   ],
@@ -7291,7 +7334,7 @@
   },
   "phase_end": {
     "bead": "run-03z.30",
-    "status": "joint_final_inflight_only_execution_gates_pending",
+    "status": "approved",
     "review_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa1",
     "review_branch": "integrate/phase-b-observability",
     "coordination_branch": "codex/phase-b-review-state",
@@ -7411,22 +7454,18 @@
       "branch": "integrate/phase-b-observability",
       "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
       "pr": 96,
-      "verdict": "IN-FLIGHT",
-      "deliverables": {
-        "complete": 98,
-        "total": 98,
-        "percent": 100.0
-      },
+      "verdict": "PASS",
       "findings": {
         "blocking": 0,
         "important": 0,
         "minor": 0
       },
       "blocking_ids": [],
-      "merge_readiness": "not ready",
-      "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head canonical local full gates are terminal PASS: just lint exit 0 in 15.338 seconds and just test exit 0 in 996.435 seconds. Fresh hosted snapshot is 16/17 SUCCESS with the sole hosted aggregate job 124504564224 still IN_PROGRESS, so phase admission remains IN-FLIGHT pending that terminal hosted check. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
-      "next_action": "await_ci",
-      "owner": "parent-orchestrator",
+      "merge_readiness": "ready for phase merge to develop",
+      "merge_reason": "All phase source, reviewer, TODO, local execution, hosted CI, and carry-forward finding gates pass at the exact reviewed head. Parent may proceed with the phase merge after final correlation. This verdict is not production release admission.",
+      "next_action": "none",
+      "owner": "none",
+      "recommendation": "Proceed with phase merge to develop after parent final correlation. Keep run-h0h production release blocked until its separately documented 1.5.1, bridge-removal, 0.1.1 publication, registry proof, controlled-host, authorization, and tagging prerequisites pass. No merge, publication, tag, or dispatch was performed.",
       "reviewer_spawn_gate": "pass",
       "reviewer_manifest": [
         {
@@ -7595,16 +7634,101 @@
             ".triage/b/findings/RSH-PROD-001.ttl"
           ]
         },
-        "parent_correlation_required": true
-      },
-      "missing_reviewers": [],
-      "unparsed_reviewers": []
+        "parent_correlation_required": true,
+        "phase_completion": {
+          "deliverables_complete": 98,
+          "deliverables_total": 98,
+          "requirement_checks": 73,
+          "separate_production_claims_closed": 3,
+          "separate_production_claims_total": 3,
+          "open_findings": 0,
+          "historical_triage_findings_closed": 8,
+          "todo_scan": "clean"
+        },
+        "execution": {
+          "source_head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+          "base_head": "a09c28fa012ce8419959bf0ccc322f0de2034d2d",
+          "local_full_gates": [
+            {
+              "gate": "just lint",
+              "status": "SUCCESS",
+              "exit": 0,
+              "duration_seconds": 15.338
+            },
+            {
+              "gate": "just test",
+              "status": "SUCCESS",
+              "exit": 0,
+              "duration_seconds": 996.435
+            }
+          ],
+          "hosted_checks": {
+            "required": 17,
+            "success": 17,
+            "failure": 0,
+            "pending": 0,
+            "all_terminal": true,
+            "aggregate_job": {
+              "id": 124504564224,
+              "status": "completed",
+              "conclusion": "success",
+              "url": "https://github.com/randlee/sc-runtime/actions/runs/41189944808/job/124504564224"
+            }
+          },
+          "windows": {
+            "hook_environment_job": "SUCCESS",
+            "native_witnesses": 7,
+            "synthetic_merge_commit": "09c0c1ed91365107df547a50e091e8a8822effee",
+            "merged_tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a",
+            "assigned_head_tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a",
+            "tree_identical": true
+          }
+        }
+      }
     },
-    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539"
+    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
+    "admitted_head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+    "execution_proof": {
+      "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+      "base": "a09c28fa012ce8419959bf0ccc322f0de2034d2d",
+      "required_checks_success": 17,
+      "aggregate_job_id": 124504564224,
+      "aggregate_conclusion": "success",
+      "aggregate_head_sha": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+      "aggregate_log_sha256": "6b44d0e1df72b1666b71083cca204d166948f3349bb7971d2d3e4e986593f496",
+      "hosted_source_tree_proof": {
+        "parents": [
+          "a09c28fa012ce8419959bf0ccc322f0de2034d2d",
+          "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661"
+        ],
+        "sha": "09c0c1ed91365107df547a50e091e8a8822effee",
+        "tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a",
+        "assigned_head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+        "assigned_tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a",
+        "tree_identical": true,
+        "base_is_ancestor_of_assigned_head": true
+      },
+      "local_full_gates": [
+        {
+          "gate": "lint",
+          "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+          "exit": 0,
+          "duration_seconds": 15.338,
+          "log": "/tmp/phaseb-production-fix-full-lint-2ed1dfe.log"
+        },
+        {
+          "gate": "test",
+          "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+          "exit": 0,
+          "duration_seconds": 996.435,
+          "log": "/tmp/phaseb-production-fix-full-test-2ed1dfe.log"
+        }
+      ]
+    }
   },
   "production_readiness": {
     "bead": "run-03z.31",
-    "status": "joint_final_inflight_only_execution_gates_pending",
+    "status": "review_complete_source_approved_release_deferred",
     "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
     "qa_pass": "qa-phase-b-production-1",
     "reviewer_manifest": [
@@ -7692,22 +7816,18 @@
       "branch": "integrate/phase-b-observability",
       "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
       "pr": 96,
-      "verdict": "IN-FLIGHT",
-      "deliverables": {
-        "complete": 98,
-        "total": 98,
-        "percent": 100.0
-      },
+      "verdict": "PASS",
       "findings": {
         "blocking": 0,
         "important": 0,
         "minor": 0
       },
       "blocking_ids": [],
-      "merge_readiness": "not ready",
-      "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head canonical local full gates are terminal PASS: just lint exit 0 in 15.338 seconds and just test exit 0 in 996.435 seconds. Fresh hosted snapshot is 16/17 SUCCESS with the sole hosted aggregate job 124504564224 still IN_PROGRESS, so phase admission remains IN-FLIGHT pending that terminal hosted check. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
-      "next_action": "await_ci",
-      "owner": "parent-orchestrator",
+      "merge_readiness": "ready for phase merge to develop",
+      "merge_reason": "All phase source, reviewer, TODO, local execution, hosted CI, and carry-forward finding gates pass at the exact reviewed head. Parent may proceed with the phase merge after final correlation. This verdict is not production release admission.",
+      "next_action": "none",
+      "owner": "none",
+      "recommendation": "Proceed with phase merge to develop after parent final correlation. Keep run-h0h production release blocked until its separately documented 1.5.1, bridge-removal, 0.1.1 publication, registry proof, controlled-host, authorization, and tagging prerequisites pass. No merge, publication, tag, or dispatch was performed.",
       "reviewer_spawn_gate": "pass",
       "reviewer_manifest": [
         {
@@ -7876,10 +7996,57 @@
             ".triage/b/findings/RSH-PROD-001.ttl"
           ]
         },
-        "parent_correlation_required": true
-      },
-      "missing_reviewers": [],
-      "unparsed_reviewers": []
+        "parent_correlation_required": true,
+        "phase_completion": {
+          "deliverables_complete": 98,
+          "deliverables_total": 98,
+          "requirement_checks": 73,
+          "separate_production_claims_closed": 3,
+          "separate_production_claims_total": 3,
+          "open_findings": 0,
+          "historical_triage_findings_closed": 8,
+          "todo_scan": "clean"
+        },
+        "execution": {
+          "source_head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+          "base_head": "a09c28fa012ce8419959bf0ccc322f0de2034d2d",
+          "local_full_gates": [
+            {
+              "gate": "just lint",
+              "status": "SUCCESS",
+              "exit": 0,
+              "duration_seconds": 15.338
+            },
+            {
+              "gate": "just test",
+              "status": "SUCCESS",
+              "exit": 0,
+              "duration_seconds": 996.435
+            }
+          ],
+          "hosted_checks": {
+            "required": 17,
+            "success": 17,
+            "failure": 0,
+            "pending": 0,
+            "all_terminal": true,
+            "aggregate_job": {
+              "id": 124504564224,
+              "status": "completed",
+              "conclusion": "success",
+              "url": "https://github.com/randlee/sc-runtime/actions/runs/41189944808/job/124504564224"
+            }
+          },
+          "windows": {
+            "hook_environment_job": "SUCCESS",
+            "native_witnesses": 7,
+            "synthetic_merge_commit": "09c0c1ed91365107df547a50e091e8a8822effee",
+            "merged_tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a",
+            "assigned_head_tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a",
+            "tree_identical": true
+          }
+        }
+      }
     },
     "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
     "final_qa_pass": "qa-phase-b-closeout-final-1",
@@ -7908,6 +8075,8 @@
         "duration_seconds": 996.435,
         "log": "/tmp/phaseb-production-fix-full-test-2ed1dfe.log"
       }
-    ]
+    ],
+    "production_release_admission": "NOT_YET_ADMISSIBLE",
+    "release_epic": "run-h0h"
   }
 }
