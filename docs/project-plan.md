@@ -57,16 +57,19 @@ approved real registry `1.5.0` development adapter may support these proofs.
 All b-18 runtime/lifecycle criteria remain required. This timing amendment
 does not mark b-18 or Phase B complete.
 
-Release epic `run-h0h` owns matching published `1.5.1` and external prerequisite
-`run-03z.7`, direct upstream Arc coercion and bridge/path removal, the
-human-authorized five-crate `0.1.1` publication, registry-only generated proof,
-and the same-source `v0.1.1` tag. Publication evidence and registry-only proof
-bind to one unchanged source commit. The release guard stays active; the
-phase-end readiness review after fixes must report these remaining release
-limits. [REQ-RUN-0702](requirements.md), including Success Criteria 6–7,
-and [architecture](architecture.md) (System shape and ADR-RUN-0004/0007)
-carry this governing timing amendment. Canonical release inventories, public
-interfaces, and every production safety predicate remain unchanged.
+Release epic `run-h0h` now owns the initial five-crate 0.1.1 registry release
+using the 2026-10-31 [observability shim amendment](plans/phase-b/initial-release-observability-shim.md)
+and ADR-RUN-0017: one command-owned port and private generated adapter over
+actual registry 1.5.0, with local development packages/paths removed. Upstream
+1.5.1 capability/direct Arc migration is separate cleanup in
+[issue 97](https://github.com/randlee/sc-runtime/issues/97), not an unpublished
+initial-release prerequisite. Human authorization, strict updated guards,
+qualified preflight, controlled-host benchmarks, registry-only generation after
+all five publications and the same-source `v0.1.1` tag remain required.
+[REQ-RUN-0702](requirements.md), including Success Criteria 6–7,
+and [architecture](architecture.md) (ADR-RUN-0017)
+carry this governing release amendment and name its bounded dependency, pin
+and panic-policy exceptions. Other production safety predicates remain.
 
 The existing kit pin is rejected because its installer copies a
 `docs/sprints/**` destination. b-18 must select a qualified exact full SHA and

@@ -26,7 +26,7 @@ def graph(owner, package, transitive=False, kind=None):
 
 
 class ObservabilityDependencies(unittest.TestCase):
-    def test_actual_workspace_normal_graph_for_both_libraries(self):
+    def test_actual_workspace_normal_and_build_graph_for_all_libraries(self):
         metadata = CHECK.resolved_metadata()
         for owner in CHECK.OWNERS:
             with self.subTest(owner=owner):
@@ -40,14 +40,44 @@ class ObservabilityDependencies(unittest.TestCase):
                         with self.assertRaisesRegex(ValueError, forbidden):
                             CHECK.check_graph(graph(owner, forbidden, transitive), owner)
 
-    def test_authorized_types_facade_is_allowed(self):
+    def test_types_allowed_only_for_contract_sdks(self):
         for owner in CHECK.OWNERS:
-            CHECK.check_graph(graph(owner, "sc-observability-types", transitive=True), owner)
+            if owner in CHECK.NO_TYPES:
+                with self.assertRaisesRegex(ValueError, "sc-observability-types"):
+                    CHECK.check_graph(graph(owner, "sc-observability-types", transitive=True), owner)
+            else:
+                CHECK.check_graph(graph(owner, "sc-observability-types", transitive=True), owner)
 
-    def test_build_and_dev_only_edges_do_not_enter_normal_graph(self):
-        for kind in ("dev", "build"):
-            for owner in CHECK.OWNERS:
-                CHECK.check_graph(graph(owner, "sc-observability", True, kind), owner)
+    def test_build_edges_rejected_and_dev_edges_excluded(self):
+        for owner in CHECK.OWNERS:
+            for forbidden in CHECK.FORBIDDEN:
+                with self.subTest(owner=owner, forbidden=forbidden):
+                    with self.assertRaisesRegex(ValueError, forbidden):
+                        CHECK.check_graph(graph(owner, forbidden, True, "build"), owner)
+                    CHECK.check_graph(graph(owner, forbidden, True, "dev"), owner)
+
+    def test_command_pin_is_exact(self):
+        CHECK.check_command_manifest({"dependencies": {"sc-observability-types": "=1.5.0"}})
+        for spec in ("1.5.0", "=1.5.1", {"version": "=1.5.0", "path": "local"}):
+            with self.subTest(spec=spec), self.assertRaises(ValueError):
+                CHECK.check_command_manifest({"dependencies": {"sc-observability-types": spec}})
+
+    def test_cron_contract_edge_is_exact(self):
+        import copy
+        edge = {"version": "0.1.1", "path": "../sc-command", "default-features": False}
+        good = {"dependencies": {"sc-command": edge}}
+        CHECK.check_cron_manifest(good)
+        variants = [
+            {"dependencies": {"sc-command": {**edge, "features": ["server"]}}},
+            {"dependencies": {"sc-command": {**edge, "default-features": True}}},
+            {"dependencies": {"alias": {**edge, "package": "sc-command"}}},
+            {**copy.deepcopy(good), "build-dependencies": {"alias": {"package": "sc-command"}}},
+            {**copy.deepcopy(good), "target": {"cfg(unix)": {"dependencies": {"alias": {"package": "sc-command"}}}}},
+            {**copy.deepcopy(good), "features": {"bad": ["sc-command/server"]}},
+        ]
+        for variant in variants:
+            with self.subTest(variant=variant), self.assertRaises(ValueError):
+                CHECK.check_cron_manifest(variant)
 
     def test_mixed_edge_still_rejects_normal_reachability(self):
         metadata = graph("sc-runtime", "sc-observability")
@@ -56,6 +86,17 @@ class ObservabilityDependencies(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "sc-observability"):
             CHECK.check_graph(metadata, "sc-runtime")
+
+    def test_isolated_cron_rejects_server_feature_and_server_packages(self):
+        metadata = graph("sc-cron", "sc-command")
+        CHECK.check_isolated_graph(metadata)
+        for feature in ("server", "test-util"):
+            metadata["resolve"]["nodes"][2]["features"] = [feature]
+            with self.subTest(feature=feature), self.assertRaisesRegex(ValueError, "activates"):
+                CHECK.check_isolated_graph(metadata)
+        for name in ("axum", "rmcp"):
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, name):
+                CHECK.check_isolated_graph(graph("sc-cron", name, transitive=True))
 
     def test_missing_root_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "expected one package identity"):

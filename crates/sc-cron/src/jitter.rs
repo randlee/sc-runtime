@@ -32,7 +32,7 @@ pub trait JitterSource: Send + Sync {
 /// jitter spreads load, it is not a correctness property.
 #[derive(Clone, Default)]
 pub struct SystemJitter {
-    logger: Option<sc_observability_types::SharedCanonicalLog>,
+    logger: Option<sc_command::observability::SharedCanonicalLog>,
 }
 
 /// Legacy value constructor, retaining the fixed `sc-cron` Noop identity.
@@ -59,7 +59,7 @@ impl std::fmt::Debug for SystemJitter {
 impl SystemJitter {
     /// Creates system jitter using the supplied best-effort logger.
     #[must_use]
-    pub fn with_logger(logger: sc_observability_types::SharedCanonicalLog) -> Self {
+    pub fn with_logger(logger: sc_command::observability::SharedCanonicalLog) -> Self {
         Self {
             logger: Some(logger),
         }

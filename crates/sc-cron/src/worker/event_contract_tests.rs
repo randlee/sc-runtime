@@ -1,5 +1,6 @@
 use super::*;
-use sc_observability_types::{Level, RecordingCanonicalLog, ServiceName, SharedCanonicalLog};
+use sc_command::observability::{RecordingCanonicalLog, SharedCanonicalLog};
+use sc_observability_types::{Level, ServiceName};
 
 #[test]
 fn fixed_origin_rows_use_exact_taxonomy_and_best_effort_envelope() {

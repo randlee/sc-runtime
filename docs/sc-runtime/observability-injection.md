@@ -1,9 +1,8 @@
 # Injectable observability for generated projects
 
-**Status:** Phase B contract implemented with local development packages;
-initial release shim is planned under
+**Status:** Initial release shim implemented in source under
 [ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim).
-Current source and guards await implementation of this amendment.
+Release evidence remains subject to validation and authorized publication.
 **Plan:** [Initial release observability shim](../plans/phase-b/initial-release-observability-shim.md).
 **Cleanup:** [Issue 97](https://github.com/randlee/sc-runtime/issues/97), future
 work outside the initial release epic.
@@ -41,10 +40,9 @@ aliased or transitively in all production feature combinations. Config and
 transport have no types dependency. All sc-compose/ATM production exclusions
 remain binding. No sixth crate is published.
 
-The old local `dev/observability-types-shim` impersonating types 1.5.1 and
-`dev/observability-logger-adapter` 0.0.0 are current development implementation
-only. Delete them, their paths/lock identities and generation rewrites during
-implementation before initial publication; they are not release dependencies.
+The former local types 1.5.1 facade and development adapter 0.0.0 have been
+removed, together with their paths/lock identities and generation rewrites.
+The normal template now contains the application-only bridge directly.
 
 ## Explicit panic and admission limits
 

@@ -43,11 +43,11 @@ fn panic_fixture(
     host: HookEnvironmentHost,
 ) -> (
     common::Fixture,
-    Arc<sc_observability_types::RecordingCanonicalLog>,
+    Arc<sc_command::observability::RecordingCanonicalLog>,
     Schedule,
 ) {
     let mut fixture = common::Fixture::new();
-    let recorder = Arc::new(sc_observability_types::RecordingCanonicalLog::new(
+    let recorder = Arc::new(sc_command::observability::RecordingCanonicalLog::new(
         sc_observability_types::ServiceName::new("panic-canary").expect("service"),
     ));
     fixture.scheduler = Scheduler::new_with_logger(
@@ -69,7 +69,7 @@ fn panic_fixture(
 
 async fn assert_panic_boundary(
     fixture: &common::Fixture,
-    recorder: &sc_observability_types::RecordingCanonicalLog,
+    recorder: &sc_command::observability::RecordingCanonicalLog,
     row: &Schedule,
     worker: bool,
     code: &str,
@@ -365,7 +365,7 @@ impl EnvironmentReferenceResolver for StopActionResolver {
 
 async fn assert_unknown_action_boundary(hook: HookTarget, secret: &str, worker: bool) {
     let mut fixture = common::Fixture::new();
-    let recorder = Arc::new(sc_observability_types::RecordingCanonicalLog::new(
+    let recorder = Arc::new(sc_command::observability::RecordingCanonicalLog::new(
         sc_observability_types::ServiceName::new("stop-reply-canary").expect("service"),
     ));
     fixture.scheduler = Scheduler::new_with_logger(

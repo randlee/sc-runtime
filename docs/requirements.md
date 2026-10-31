@@ -440,7 +440,7 @@ test. Routing CI through the same recipes means a green local `just lint` and
 ## REQ-RUN-0005: Boundary manifests for every crate
 
 **2026-10-31 amendment:** ADR-RUN-0017 permits exactly cron -> command
-(defaults off/no features), pending implementation. All five SDK normal/build
+(defaults off/no features). All five SDK normal/build
 closures must exclude full logger/OTLP by resolved identity, including aliases
 and transitive edges. Direct-depth normal-only checks below are historical
 minimum checks and no longer sufficient proof. All tool-crate exclusions remain.
@@ -3679,10 +3679,8 @@ in [ADR-RUN-0017](architecture.md#adr-run-0017-initial-release-observability-shi
 It MUST remove both development packages and every facade/adapter path/rewrite,
 use the command-owned canonical port and private generated adapter, prove the
 exact registry 1.5.0 logger/types pair, and retain real admission/saturation/
-disconnection, unwind mapping, lifecycle and best-effort proof. The existing
-code/guards still implement the old development/future-upstream split until
-implementation; update their predicates to enforce this profile, never bypass
-them. Full logger/OTLP and sc-compose/ATM SDK exclusions remain mandatory.
+disconnection, unwind mapping, lifecycle and best-effort proof. The guards MUST enforce this exact profile and reject the former
+development/future-upstream split; never bypass them. Full logger/OTLP and sc-compose/ATM SDK exclusions remain mandatory.
 
 Matching published 1.5.1, upstream trait/direct Arc proof and restoration of
 cron's command prohibition are a separate future cleanup task, outside this

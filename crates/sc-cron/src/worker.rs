@@ -240,7 +240,7 @@ pub(crate) struct Worker<S, C> {
 pub(crate) fn resolve(
     job: &Arc<dyn Job>,
     schedule: &Schedule,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     correlation: RunCorrelation,
 ) -> Result<ResolvedTarget, RunOutcome> {
     match &schedule.spec.hook {

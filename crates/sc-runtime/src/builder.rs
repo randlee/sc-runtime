@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use sc_observability_types::{NoopCanonicalLog, SharedCanonicalLog};
+use sc_command::observability::{NoopCanonicalLog, SharedCanonicalLog};
 
 use rmcp::transport::streamable_http_server::StreamableHttpService;
 use sc_transport::{AppName, Endpoint};

@@ -51,7 +51,7 @@ authorizes a planned initial release with the real registry 1.5.0 pair,
 command-owned contract and private generated adapter. Capability-proven 1.5.1
 cleanup is separate future work. Development package/path removal, exact
 registry identity, verified package/admission proof and human authorization
-remain release predicates; current product code/guards still await that change.
+remain release predicates; the source change is under verification.
 
 | Layer | What it holds | Owner | Lives in |
 |---|---|---|---|
@@ -210,7 +210,7 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 
 ## ADR-RUN-0017: Initial release observability shim
 
-**Status:** Active release-planning amendment; implementation pending
+**Status:** Active release amendment; source under verification
 **Decision Date:** 2026-10-31
 **Source:** Owner request and explicit sc-observability correction quoted in the
 [release amendment](plans/phase-b/initial-release-observability-shim.md#scope-and-owner-direction).

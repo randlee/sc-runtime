@@ -1,7 +1,8 @@
 #![cfg(feature = "test-util")]
 
 use axum::{Router, extract::Path, http::StatusCode, routing::get};
-use sc_observability_types::{RecordingCanonicalLog, RejectingCanonicalLog, ServiceName};
+use sc_command::observability::{RecordingCanonicalLog, RejectingCanonicalLog};
+use sc_observability_types::ServiceName;
 
 // Shared transport helpers also contain process-signal helpers used by other tests.
 #[allow(dead_code)]
@@ -226,7 +227,7 @@ async fn deadline_codes_and_rejection_are_best_effort() {
 
 #[tokio::test]
 async fn real_daemon_preserves_injected_handle_and_records_http_events() {
-    use sc_observability_types::SharedCanonicalLog;
+    use sc_command::observability::SharedCanonicalLog;
     use sc_runtime::testing::DaemonFixture;
     use utoipa_axum::router::OpenApiRouter;
 
@@ -295,7 +296,7 @@ impl RejectedQueue {
     }
 }
 
-impl sc_observability_types::CanonicalLog for RejectedQueue {
+impl sc_command::observability::CanonicalLog for RejectedQueue {
     fn service_name(&self) -> &ServiceName {
         &self.service
     }

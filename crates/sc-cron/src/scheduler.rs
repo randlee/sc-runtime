@@ -28,7 +28,8 @@ use crate::{
     Clock, CronError, Generation, JitterSource, Job, NewSchedule, RunOutcome, Schedule, ScheduleId,
     ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp, jitter,
 };
-use sc_observability_types::{Level, SharedCanonicalLog};
+use sc_command::observability::SharedCanonicalLog;
+use sc_observability_types::Level;
 
 mod run_due;
 

@@ -7,7 +7,8 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use sc_observability_types::SharedCanonicalLog;
+use sc_command::observability::{CanonicalLog, SharedCanonicalLog};
+use sc_observability_types::{ErrorCode, ErrorContext, LogEvent, Remediation, v2::EventError};
 
 use sc_observability::{LogSettings, LoggerConfig, ServiceName};
 
@@ -59,7 +60,9 @@ impl Observability {
             .build()
             .map_err(observe)?;
         let logger = Arc::new(logger);
-        let shared: SharedCanonicalLog = logger.clone();
+        let shared: SharedCanonicalLog = Arc::new(LoggerAdapter {
+            logger: Arc::clone(&logger),
+        });
         Ok(Self { logger, shared })
     }
 
@@ -85,3 +88,43 @@ fn observe(err: impl std::fmt::Display) -> ObservabilityStart {
         cause: err.to_string(),
     }
 }
+
+// Application-only orphan-rule bridge. Remove after actual upstream capability:
+// https://github.com/randlee/sc-runtime/issues/97 (ADR-RUN-0017).
+struct LoggerAdapter {
+    logger: Arc<sc_observability::v2::Logger>,
+}
+
+impl CanonicalLog for LoggerAdapter {
+    fn service_name(&self) -> &ServiceName {
+        self.logger.service_name()
+    }
+
+    fn emit(&self, event: LogEvent) -> Result<(), EventError> {
+        // Only admission is contained. The logger remains owned by the app;
+        // unwind cannot expose partially mutated adapter state. This does not
+        // repair poison, catch abort, suppress panic hooks, or make locks wait-free.
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| self.logger.try_log(event)))
+        {
+            Ok(result) => result,
+            Err(_payload) => Err(admission_panicked()),
+        }
+    }
+}
+
+fn admission_panicked() -> EventError {
+    EventError::Routing {
+        context: Box::new(ErrorContext::new(
+            ErrorCode::new_static("DAEMON.OBSERVABILITY_ADMISSION_PANIC"),
+            "Logging admission panicked.",
+            Remediation::recoverable(
+                "Restart the daemon to restore logging; the application operation is unaffected.",
+                [] as [&str; 0],
+            ),
+        )),
+    }
+}
+
+#[cfg(test)]
+#[path = "observability_adapter_tests.rs"]
+mod adapter_tests;

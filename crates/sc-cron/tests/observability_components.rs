@@ -1,14 +1,14 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+use sc_command::observability::{
+    CanonicalLog, RecordingCanonicalLog, RejectingCanonicalLog, SharedCanonicalLog,
+};
 use sc_cron::{
     ScheduleLimits, ScheduleSpec, ScheduleStore, Scheduler, SeqJitter, SqliteScheduleStore,
     SystemClock, SystemJitter, WorkerHandle,
 };
-use sc_observability_types::{
-    CanonicalLog, Level, LogEvent, RecordingCanonicalLog, RejectingCanonicalLog, ServiceName,
-    SharedCanonicalLog,
-};
+use sc_observability_types::{Level, LogEvent, ServiceName};
 
 fn recorder() -> Arc<RecordingCanonicalLog> {
     Arc::new(RecordingCanonicalLog::new(

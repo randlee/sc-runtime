@@ -6,14 +6,13 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
+use sc_command::observability::{RecordingCanonicalLog, RejectingCanonicalLog, SharedCanonicalLog};
 use sc_cron::{
     Clock, CronError, Generation, HookTarget, Job, ManualClock, MissedTickPolicy, NewSchedule,
     RunOutcome, Schedule, ScheduleId, ScheduleLimits, ScheduleName, ScheduleSpec, ScheduleStore,
     Scheduler, SeqJitter, StopDecision, StoreError, StoreErrorKind, Timestamp,
 };
-use sc_observability_types::{
-    Level, LogEvent, RecordingCanonicalLog, RejectingCanonicalLog, ServiceName, SharedCanonicalLog,
-};
+use sc_observability_types::{Level, LogEvent, ServiceName};
 use serde_json::{Value, json};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]

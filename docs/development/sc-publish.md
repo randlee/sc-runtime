@@ -65,7 +65,7 @@ replace the old unpublished-1.5.1 initial release prerequisite. `run-h0h`
 prepares the same five 0.1.1 packages using actual registry logger/types
 `=1.5.0`, the command-owned neutral contract and private generated adapter.
 Delete local development packages/paths and obsolete generation-mode rewrites
-before publication; current product code and guards await that implementation.
+before publication; the source profile is implemented and under verification.
 Strict guards must enforce this exact profile, all-five normal/build identity
 closures and capability-gated cleanup. Full logger/OTLP and sc-compose/ATM SDK
 exclusions remain. No extra crate is published.

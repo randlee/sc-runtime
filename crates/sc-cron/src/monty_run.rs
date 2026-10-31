@@ -118,7 +118,7 @@ impl fmt::Display for StopReplyError {
 /// Inputs for one blocking-pool feed shared by the worker and `run_due`.
 pub(crate) struct FeedLaunch {
     /// Repl from the previous feed of this generation, if any.
-    pub(crate) logger: sc_observability_types::SharedCanonicalLog,
+    pub(crate) logger: sc_command::observability::SharedCanonicalLog,
     pub(crate) correlation: crate::worker::RunCorrelation,
     pub(crate) session: Option<MontySession>,
     /// Hook source.
@@ -253,7 +253,7 @@ pub(crate) fn execute_feed_with_logger(
     hook: &Value,
     hosts: &MontyHostRegistry,
     run_deadline: Instant,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     environment: Arc<EnvironmentSnapshot>,
     correlation: crate::worker::RunCorrelation,
 ) -> FeedDone {
@@ -298,7 +298,7 @@ fn open_session(
     environment: Arc<EnvironmentSnapshot>,
     deadline: Instant,
     hosts: &MontyHostRegistry,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
 ) -> Result<(MontySession, Duration), FeedDone> {
     if session
         .as_ref()
@@ -335,7 +335,7 @@ fn resume_started_feed(
     hook: &Value,
     hosts: &MontyHostRegistry,
     run_deadline: Instant,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     context: (&EnvironmentSnapshot, &crate::worker::RunCorrelation),
 ) -> FeedDone {
     let (environment, correlation) = context;
@@ -381,7 +381,7 @@ fn drive_progress(
     hook: &Value,
     hosts: &MontyHostRegistry,
     deadline: Instant,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     environment: &Arc<EnvironmentSnapshot>,
     correlation: &crate::worker::RunCorrelation,
 ) -> Result<(MontyRepl, MontyObject), FeedDone> {
@@ -480,7 +480,7 @@ fn compile(
     environment: Arc<EnvironmentSnapshot>,
     deadline: Instant,
     hosts: &MontyHostRegistry,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
 ) -> Result<MontySession, FeedDone> {
     let limits = ResourceLimits::default().max_feed_duration(budget);
     let repl = MontyRepl::new(
@@ -663,7 +663,7 @@ fn resume_host(
     hook: &Value,
     hosts: &MontyHostRegistry,
     deadline: Instant,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     environment: &Arc<EnvironmentSnapshot>,
     correlation: &crate::worker::RunCorrelation,
 ) -> Result<ReplProgress, FeedDone> {

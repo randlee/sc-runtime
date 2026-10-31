@@ -24,6 +24,9 @@ monty = ["dep:monty", "dep:monty-types"]
 monty-test-handshake = ["monty"]
 
 [dependencies]
+# Temporary contract-only edge; restore forbidden edge after upstream proof.
+# https://github.com/randlee/sc-runtime/issues/97
+sc-command = { version = "0.1.1", path = "../sc-command", default-features = false }
 sc-observability-types.workspace = true
 async-trait = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
@@ -47,7 +50,7 @@ monty = { version = "1.4.0", optional = true }
 monty-types = { version = "1.4.0", optional = true }
 
 [dev-dependencies]
-sc-observability-types = { workspace = true, features = ["test-util"] }
+sc-command = { version = "0.1.1", path = "../sc-command", default-features = false, features = ["test-util"] }
 # Self-reference so a plain `cargo test` builds the integration tests with
 # `test-utils`; no `required-features` gate silently skips them.
 sc-cron = { version = "0.1.1", path = ".", features = ["test-utils"] }

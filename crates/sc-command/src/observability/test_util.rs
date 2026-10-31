@@ -3,7 +3,8 @@
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use crate::{CanonicalLog, ErrorContext, LogEvent, Remediation, ServiceName, error_codes, v2};
+use super::CanonicalLog;
+use sc_observability_types::{ErrorContext, LogEvent, Remediation, ServiceName, error_codes, v2};
 
 /// An ordered event buffer shared safely through an `Arc`.
 #[derive(Debug)]
@@ -110,7 +111,9 @@ mod tests {
             panic!("poison the test-only event buffer");
         });
         assert!(receiver.events.is_poisoned());
-        receiver.emit(crate::tests::event("first")).unwrap();
+        receiver
+            .emit(crate::observability::tests::event("first"))
+            .unwrap();
         assert_eq!(receiver.events().len(), 1);
         receiver.clear();
         assert!(receiver.events().is_empty());

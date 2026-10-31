@@ -54,7 +54,7 @@ fn run_task_failed(error: &impl std::fmt::Display) -> RunOutcome {
 
 pub(super) async fn record_due<S, C, J>(
     core: Arc<Core<S, C, J>>,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     row: &Schedule,
     report: Report,
     next: Option<DateTime<Utc>>,
@@ -408,7 +408,7 @@ fn spawn_abortable_due<C: Clock + 'static>(
     next: Option<DateTime<Utc>>,
     deadline: std::time::Instant,
     clock: Arc<C>,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     execution: (Arc<crate::HookEnvironmentHost>, RunCorrelation),
 ) -> Launched {
     let (environment, correlation) = execution;
@@ -765,7 +765,7 @@ async fn feed_once<C: Clock + ?Sized>(
     deadline: std::time::Instant,
     hosts: Arc<crate::MontyHostRegistry>,
     environment: Arc<crate::environment::EnvironmentSnapshot>,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     correlation: RunCorrelation,
 ) -> crate::monty_run::FeedDone {
     crate::monty_run::drive_feed(
@@ -855,7 +855,8 @@ mod tests {
     }
     #[tokio::test]
     async fn joined_due_tasks_emit_their_origin_before_terminal_recording() {
-        use sc_observability_types::{RecordingCanonicalLog, ServiceName};
+        use sc_command::observability::RecordingCanonicalLog;
+        use sc_observability_types::ServiceName;
         use std::sync::Arc;
         let log = Arc::new(RecordingCanonicalLog::new(
             ServiceName::new("joined").unwrap(),
@@ -970,7 +971,8 @@ mod tests {
     #[cfg(feature = "monty")]
     #[tokio::test]
     async fn invalid_monty_origins_use_fixed_typed_codes() {
-        use sc_observability_types::{RecordingCanonicalLog, ServiceName};
+        use sc_command::observability::RecordingCanonicalLog;
+        use sc_observability_types::ServiceName;
         use std::sync::Arc;
         let log = Arc::new(RecordingCanonicalLog::new(
             ServiceName::new("monty-origin").unwrap(),

@@ -117,7 +117,7 @@ impl HookEvent {
 /// ```
 #[derive(Clone)]
 pub struct PythonHook {
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     correlation: crate::worker::RunCorrelation,
     program: PathBuf,
     module: PathBuf,
@@ -181,7 +181,7 @@ impl PythonHook {
     /// Returns the same validation errors as `new`.
     pub fn new_with_logger(
         module: impl AsRef<Path>,
-        logger: sc_observability_types::SharedCanonicalLog,
+        logger: sc_command::observability::SharedCanonicalLog,
     ) -> Result<Self, CronError> {
         let crate::HookTarget::Python { module } = crate::HookTarget::python(module)? else {
             return Err(CronError::InvalidSpec("module path is empty".to_owned()));
@@ -631,8 +631,8 @@ mod tests {
 
     #[test]
     fn resolved_python_hook_retains_the_run_correlation_and_exact_logger() {
-        let logger: sc_observability_types::SharedCanonicalLog =
-            Arc::new(sc_observability_types::RecordingCanonicalLog::new(
+        let logger: sc_command::observability::SharedCanonicalLog =
+            Arc::new(sc_command::observability::RecordingCanonicalLog::new(
                 sc_observability_types::ServiceName::new("python-context").unwrap(),
             ));
         let scheduler = crate::Scheduler::new_with_logger(

@@ -97,7 +97,7 @@ const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 /// # Ok::<(), sc_cron::CronError>(())
 /// ```
 pub struct SqliteScheduleStore {
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     // A rusqlite `Connection` is `Send` but not `Sync`, and the port's
     // methods take `&self` from any thread, so the one connection sits
     // behind a mutex. Calls are short single statements or one transaction.
@@ -142,7 +142,7 @@ impl SqliteScheduleStore {
     pub fn open_with_logger(
         path: impl AsRef<Path>,
         limits: ScheduleLimits,
-        logger: sc_observability_types::SharedCanonicalLog,
+        logger: sc_command::observability::SharedCanonicalLog,
     ) -> Result<Self, CronError> {
         let connection = Connection::open(path.as_ref())
             .map_err(|error| store_error("failed to open database", error))?;
@@ -179,7 +179,7 @@ impl SqliteScheduleStore {
     fn with_connection(
         mut connection: Connection,
         limits: ScheduleLimits,
-        logger: sc_observability_types::SharedCanonicalLog,
+        logger: sc_command::observability::SharedCanonicalLog,
     ) -> Result<Self, CronError> {
         init_schema(&mut connection)?;
         Ok(Self {

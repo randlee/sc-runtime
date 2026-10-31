@@ -16,7 +16,7 @@ spec.loader.exec_module(guard)
 
 def registry_metadata():
     return {
-        "packages": [{"name": guard.NAME, "version": "1.5.1", "id": "registry-id",
+        "packages": [{"name": guard.NAME, "version": "1.5.0", "id": "registry-id",
                       "source": guard.REGISTRY, "manifest_path": "/registry/source/Cargo.toml"}],
         "resolve": {"nodes": [{"id": "registry-id"}]},
     }
@@ -39,6 +39,17 @@ class ReleaseGuardTests(unittest.TestCase):
     def test_active_patch_rejected_even_when_metadata_is_registry(self):
         self.check_raises({"patch": {"crates-io": {guard.NAME: {"path": "dev/shim"}}}})
         self.check_raises({"patch": {"crates-io": {"alias": {"package": guard.NAME, "version": "1.5.1"}}}})
+
+    def test_replace_and_git_overrides_rejected(self):
+        self.check_raises({"replace": {"sc-observability-types:1.5.0": {"git": "https://example.com/types"}}})
+        self.check_raises({"dependencies": {"alias": {"package": guard.NAME, "git": "https://example.com/types"}}})
+        self.check_raises({"patch": {"crates-io": {"sc-observability": "1.5.0"}}})
+
+    def test_sdk_path_is_allowed(self):
+        sdk = self.root / "sc-command"
+        sdk.mkdir()
+        (sdk / "Cargo.toml").write_text('[package]\nname = "sc-command"\nversion = "0.1.1"\n')
+        self.check({"dependencies": {"sc-command": {"version": "0.1.1", "path": "sc-command"}}})
 
     def test_renamed_relative_shim_path_rejected(self):
         shim = self.root / "dev" / "renamed"
@@ -85,6 +96,14 @@ class ReleaseGuardTests(unittest.TestCase):
                 metadata["packages"][0].update(source=source, manifest_path=path)
                 self.check_raises(metadata=metadata)
 
+    def test_multiple_types_identities_rejected(self):
+        metadata = copy.deepcopy(self.metadata)
+        second = copy.deepcopy(metadata["packages"][0])
+        second["id"] = "another-id"
+        metadata["packages"].append(second)
+        metadata["resolve"]["nodes"].append({"id": "another-id"})
+        self.check_raises(metadata=metadata)
+
     def test_missing_or_malformed_metadata_fails_closed(self):
         cases = [None, {}, {"packages": []}, {"packages": [], "resolve": {"nodes": []}},
                  {"packages": [None], "resolve": {"nodes": [{"id": "x"}]}},
@@ -94,7 +113,7 @@ class ReleaseGuardTests(unittest.TestCase):
             with self.subTest(case=case):
                 with self.assertRaises(ValueError):
                     guard.validate({}, case, self.root)
-        for field, value in [("manifest_path", "relative/Cargo.toml"), ("version", "1.5.0"), ("source", "git+https://example.com")]:
+        for field, value in [("manifest_path", "relative/Cargo.toml"), ("version", "1.5.1"), ("source", "git+https://example.com")]:
             with self.subTest(field=field):
                 metadata = copy.deepcopy(self.metadata)
                 metadata["packages"][0][field] = value

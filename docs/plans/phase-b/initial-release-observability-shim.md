@@ -1,6 +1,6 @@
 # Initial release observability shim
 
-**Status:** Planned release amendment, 2026-10-31; documentation only.
+**Status:** Approved release amendment, 2026-10-31; implementation under verification.
 **Owner:** `run-h0h` release work; planning task `run-h0h.1`.
 **Authority:** [ADR-RUN-0017](../../architecture.md#adr-run-0017-initial-release-observability-shim),
 [REQ-RUN-0702](../../requirements.md#req-run-0702-release-v010-crates-published-repository-tagged).
@@ -18,8 +18,8 @@ The immediate correction was:
 The corrected direction authorizes planning the 1.5.0 bridge and explicit
 upstream cleanup. This amendment records that request after
 Phase B closed in PR 96 at `c3295c2320c7d7bc801665b99d9aee008fef2a1c`.
-It does not reopen b-13–b-18, add a phase/sprint, authorize publication, or
-claim that current code and guards already implement the planned release path.
+It does not reopen b-13–b-18, add a phase/sprint or authorize publication.
+The source implementation is under verification; no release proof is claimed.
 
 Use existing `sc-command` for the small injection contract. Its existing registry
 `sc-observability-types = "1.5.0"` dependency supplies the values and errors.
@@ -167,7 +167,7 @@ crates/sc-command/Cargo.toml
 crates/sc-command/src/lib.rs
 crates/sc-command/src/observability.rs (new)
 crates/sc-command/src/observability/test_util.rs (new)
-crates/sc-command/tests/observability_contract.rs (new)
+crates/sc-command/src/observability/tests.rs (new)
 crates/sc-runtime/Cargo.toml
 crates/sc-runtime/src/{builder,router,testing,tests}.rs
 crates/sc-runtime/tests/{observability_contract,observability_http}.rs
@@ -187,8 +187,9 @@ template/Cargo.toml
 template/workspace.template.toml
 template/Cargo.lock (if generated/checked in by the existing pipeline)
 template/crates/daemon/Cargo.toml
-template/crates/daemon/src/{observability,cron}.rs
-template/crates/daemon/tests/{cron_environment,observability_adapter}.rs (latter new)
+template/crates/daemon/src/{observability,cron,composition}.rs
+template/crates/daemon/tests/cron_environment.rs
+template/crates/daemon/src/observability_adapter_tests.rs (new)
 scripts/new_project.py
 scripts/check_observability_dependencies.py
 scripts/check_observability_release.py

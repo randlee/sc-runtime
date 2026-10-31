@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
-use sc_observability_types::{
-    CanonicalLog, NoopCanonicalLog, RecordingCanonicalLog, RejectingCanonicalLog, ServiceName,
+use sc_command::observability::{
+    CanonicalLog, NoopCanonicalLog, RecordingCanonicalLog, RejectingCanonicalLog,
     SharedCanonicalLog,
 };
+use sc_observability_types::ServiceName;
 use sc_runtime::{Daemon, DaemonBuilder, DaemonConfig, RuntimeError};
 use sc_transport::AppName;
 use utoipa_axum::router::OpenApiRouter;

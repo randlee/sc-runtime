@@ -500,7 +500,7 @@ async fn scheduled_python_details_reasons_and_events_redact_values_before_fixed_
                 "import os,json,sys\nhook=json.load(sys.stdin)\nif hook['event']=='cron.stop': print('{\"action\":\"continue\"}')\nelse:\n print(os.getenv('KEY'),file=sys.stderr)\n sys.exit(1)\n"
             };
             let module = python_file(root.path(), source);
-            let recording = Arc::new(sc_observability_types::RecordingCanonicalLog::new(
+            let recording = Arc::new(sc_command::observability::RecordingCanonicalLog::new(
                 sc_observability_types::ServiceName::new("canary").expect("service"),
             ));
             let store = Arc::new(

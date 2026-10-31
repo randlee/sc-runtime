@@ -1,11 +1,12 @@
 use std::sync::{Arc, Mutex, mpsc};
 use std::time::Duration;
 
+use super::LoggerAdapter;
+use sc_command::observability::CanonicalLog;
 use sc_observability::v2::{LogSink, Logger, LoggerConfig, SinkRegistration};
-use sc_observability_dev_adapter::LoggerAdapter;
 use sc_observability_types::{
-    ActionName, CanonicalLog, CorrelationId, Level, LogEvent, ProcessIdentity, SchemaVersion,
-    ServiceName, SinkHealth, SinkHealthState, SinkName, TargetCategory, Timestamp,
+    ActionName, CorrelationId, Level, LogEvent, ProcessIdentity, SchemaVersion, ServiceName,
+    SinkHealth, SinkHealthState, SinkName, TargetCategory, Timestamp,
     constants::OBSERVATION_ENVELOPE_VERSION, v2::LogSinkError,
 };
 
@@ -70,7 +71,9 @@ fn forwards_real_events_and_native_shutdown_error() {
     let root = tempfile::tempdir().expect("temp root");
     let sink = Arc::new(RecordingSink(Mutex::new(Vec::new())));
     let logger = logger(root.path(), sink.clone(), 8);
-    let adapter = LoggerAdapter::new(Arc::clone(&logger));
+    let adapter = LoggerAdapter {
+        logger: Arc::clone(&logger),
+    };
     assert_eq!(adapter.service_name(), logger.service_name());
     let original = event(adapter.service_name().clone());
     adapter.emit(original.clone()).expect("admitted");
@@ -121,7 +124,9 @@ fn saturated_real_queue_rejects_without_waiting_for_sink() {
         release: Mutex::new(release_rx),
     });
     let logger = logger(root.path(), sink, 1);
-    let adapter = Arc::new(LoggerAdapter::new(Arc::clone(&logger)));
+    let adapter = Arc::new(LoggerAdapter {
+        logger: Arc::clone(&logger),
+    });
     adapter
         .emit(event(adapter.service_name().clone()))
         .expect("initial");
@@ -145,5 +150,72 @@ fn saturated_real_queue_rejects_without_waiting_for_sink() {
         error.diagnostic().code,
         sc_observability::error_codes::LOGGER_QUEUE_FULL
     );
+    logger.shutdown().expect("owner shutdown");
+}
+
+#[test]
+fn panic_mapping_is_fixed_and_value_free() {
+    let error = super::admission_panicked();
+    assert!(matches!(
+        error,
+        sc_observability_types::v2::EventError::Routing { .. }
+    ));
+    assert_eq!(
+        error.diagnostic().code.as_str(),
+        "DAEMON.OBSERVABILITY_ADMISSION_PANIC"
+    );
+    assert_eq!(error.diagnostic().message, "Logging admission panicked.");
+}
+
+struct PanickingRedactor;
+
+impl sc_observability::Redactor for PanickingRedactor {
+    fn redact(&self, _key: &str, _value: &mut serde_json::Value) {
+        panic!("test-only secret panic payload");
+    }
+}
+
+#[test]
+fn real_try_log_unwind_becomes_fixed_error_without_payload() {
+    let root = tempfile::tempdir().expect("temp root");
+    let service = ServiceName::new("adapter-service").expect("service");
+    let mut config = LoggerConfig::default_for(service, root.path().to_path_buf());
+    config.enable_file_sink = true;
+    config.enable_console_sink = false;
+    config
+        .redaction
+        .custom_redactors
+        .push(Box::new(PanickingRedactor));
+    let logger = Arc::new(
+        Logger::builder(config)
+            .expect("builder")
+            .build()
+            .expect("logger"),
+    );
+    let adapter = LoggerAdapter {
+        logger: Arc::clone(&logger),
+    };
+    let mut event = event(adapter.service_name().clone());
+    event
+        .fields
+        .insert("secret-field".into(), serde_json::json!("secret value"));
+    let error = adapter.emit(event).expect_err("unwind must be contained");
+    assert_eq!(
+        error.diagnostic().code.as_str(),
+        "DAEMON.OBSERVABILITY_ADMISSION_PANIC"
+    );
+    assert_eq!(error.diagnostic().message, "Logging admission panicked.");
+    let wire = serde_json::to_string(&error.diagnostic()).expect("diagnostic");
+    for secret in [
+        "secret-field",
+        "secret value",
+        "test-only secret panic payload",
+    ] {
+        assert!(
+            !wire.contains(secret),
+            "returned diagnostic must be value-free"
+        );
+    }
+    drop(adapter);
     logger.shutdown().expect("owner shutdown");
 }

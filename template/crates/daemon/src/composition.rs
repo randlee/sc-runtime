@@ -38,7 +38,7 @@ impl CronServices {
     ///
     /// # Errors
     /// Returns typed policy, database-path validation, or scheduler-open failures.
-    pub fn open_scheduler(self, config: &crate::cron::CronConfig, instance_root: &std::path::Path, logger: sc_observability_types::SharedCanonicalLog)
+    pub fn open_scheduler(self, config: &crate::cron::CronConfig, instance_root: &std::path::Path, logger: sc_command::observability::SharedCanonicalLog)
         -> Result<sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>, sc_cron::CronError> {
         let mut hook_environment = config.hook_environment_host()?;
         if let Some(resolver) = self.resolver {
