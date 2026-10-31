@@ -253,7 +253,7 @@
       "branch": "sprint/b-18-template-observability-integration",
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-18-template-observability-integration",
       "head": "3b4b686fc6712ee63a50b683cf89750f0f01e445",
-      "status": "qualified_kit_candidate_ready_pending_b17_merge_and_owner_amendment",
+      "status": "qualified_kit_install_in_progress_pending_b17_merge_for_runtime",
       "must_follow_heads": {
         "b-14": "e47ce120dd24035a6bbcb9ec67cc028c47181fdf",
         "b-17": "ce9cc6088d2da2a3c6b1e5301d8a0975ae742f35"
@@ -267,7 +267,10 @@
       "external_blocker": "run-03z.16",
       "current_recheck": "/tmp/phaseb-cursor-orchestration/b18-prerequisites-recheck.json",
       "qualified_kit_commit": "9677ab083e7dd3feb258235a342e321ca1b45d8d",
-      "qualified_kit_pr": "https://github.com/randlee/sc-publish/pull/137"
+      "qualified_kit_pr": "https://github.com/randlee/sc-publish/pull/137",
+      "kit_preparation_task_id": "/root/phaseb_b18_kit_install",
+      "kit_preparation_bead": "run-03z.6.1",
+      "kit_preparation_assignment": "/tmp/phaseb-cursor-orchestration/b18-kit-preparation-assignment.xml"
     }
   },
   "qa_rounds": [
@@ -4363,8 +4366,10 @@
     "authority_fix": {
       "bead": "run-03z.37",
       "task_id": "/root/phaseb_owner_authority_fix",
-      "status": "in_progress",
-      "finding": "REQ-QA-OWNER-001"
+      "status": "pushed_docs_validation_pass_pending_qa3",
+      "finding": "REQ-QA-OWNER-001",
+      "commit": "6821d5dd5602d1d27d574807df6be04926e7a121",
+      "evidence": "/tmp/phaseb-cursor-orchestration/owner-amendment-review/fix-evidence/validation.json"
     }
   }
 }
