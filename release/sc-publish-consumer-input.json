@@ -88,12 +88,12 @@
     {
       "id": "release-contract-sources",
       "description": "Verify prepublication release-generation source contracts.",
-      "run": "python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_contract_sources"
+      "run": "bash scripts/check_release_contract_sources.sh"
     },
     {
       "id": "benchmark-pass",
       "description": "Monty benchmark gate on the controlled host (scripts/benchmark/check_gate.py).",
-      "run": "just --justfile scripts/benchmark/justfile benchmark-gate"
+      "run": "python3 scripts/benchmark/check_gate.py"
     }
   ]
 }

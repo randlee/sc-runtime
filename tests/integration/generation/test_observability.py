@@ -353,7 +353,11 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.assertEqual([c["publish_order"] for c in crates], [1, 2, 3, 4, 5])
         checks = {c["id"]: c["run"] for c in consumer["preflight_checks"]}
         self.assertEqual(checks["observability-registry-only"], "python3 scripts/check_observability_release.py")
-        self.assertIn("test_release_contract_sources", checks["release-contract-sources"])
+        self.assertEqual(checks["release-contract-sources"], "bash scripts/check_release_contract_sources.sh")
+        contract_runner = (ROOT / "scripts/check_release_contract_sources.sh").read_text()
+        self.assertIn("requirements-generation.txt", contract_runner)
+        self.assertIn("GeneratedObservabilityIntegration.test_release_contract_sources", contract_runner)
+        self.assertEqual(checks["benchmark-pass"], "python3 scripts/benchmark/check_gate.py")
         preflight = consumer["preflight_checks"]
         self.assertLess(next(i for i, check in enumerate(preflight) if check["id"] == "observability-registry-only"),
                         next(i for i, check in enumerate(preflight) if check["id"] == "release-contract-sources"))

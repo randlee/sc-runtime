@@ -112,6 +112,18 @@ Ordinary pre-publication discovery skips that unavailable proof. The opted-in
 proof must actually execute and fail on unmet release prerequisites; it may
 never report a skipped test as registry evidence.
 
+The consumer source-contract check uses `scripts/check_release_contract_sources.sh`
+to create a temporary virtual environment, install the existing generation pin
+from `requirements-generation.txt` (`jsonschema==4.26.0`), and run the contract
+test with that interpreter. It removes the environment on exit, including
+failure. This supplies nested generation checks on ephemeral hosted runners.
+Workspace membership lists all six existing crates explicitly so the qualified
+kit's literal manifest validator retains the five publish crates and the
+unpublished SQLite crate. The benchmark check invokes
+`python3 scripts/benchmark/check_gate.py`, the same entry point as the
+`benchmark-gate` just recipe. Its controlled-host and evidence gates still apply;
+a hosted runner failing those gates is not benchmark PASS evidence.
+
 ## Install (a-7 or release maintainer)
 
 ```bash
