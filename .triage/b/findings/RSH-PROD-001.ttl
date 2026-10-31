@@ -1,6 +1,6 @@
 @prefix qa: <urn:sc-runtime:qa:> .
 <urn:sc-runtime:finding:RSH-PROD-001> qa:id "RSH-PROD-001" ;
- qa:severity "important" ; qa:status "open" ;
+ qa:severity "important" ; qa:status "fixed" ;
  qa:sprint "phase-b-production-readiness" ;
  qa:file "crates/sc-cron/src/hook.rs" ; qa:line 624 ;
  qa:alsoFile "crates/sc-cron/src/monty_run.rs:111-115" ;
@@ -9,3 +9,5 @@
  qa:summary "Built-in unknown-action Debug formatting escapes resolved environment values before raw substring redaction, leaking reversible escaped values through persisted HOST_REPLY errors and terminal diagnostics." ;
  qa:evidence "Exact extracted redaction/parser std-only witness confirms synthetic newline/tab/backslash/quote values are not redacted in either adapter; production worker persistence and terminal event paths traced. Not represented as full scheduler execution." ;
  qa:remediation "Use fixed value-free unknown-action error listing accepted action names in both Python and Monty parsers, with secret-bearing malformed-reply regressions; no generalized escaped-secret transformation framework." .
+
+<urn:sc-runtime:finding:RSH-PROD-001> qa:fixedCommit "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661" ; qa:verifiedBy "/root/final_closeout_service" ; qa:admission "Final aggregate QA and exact-head CI remain pending" .

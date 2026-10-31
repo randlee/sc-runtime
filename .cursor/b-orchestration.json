@@ -7004,7 +7004,7 @@
   },
   "phase_end": {
     "bead": "run-03z.30",
-    "status": "qa3_all_reviews_and_local_full_gates_pass_hosted_aggregate_pending",
+    "status": "joint_final_six_reviews_pass_execution_pending",
     "review_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa1",
     "review_branch": "integrate/phase-b-observability",
     "coordination_branch": "codex/phase-b-review-state",
@@ -7012,55 +7012,73 @@
     "state_policy": "After this implementation snapshot, phase review manifests and exact public machine statuses persist in coordination branch .cursor/b-orchestration.json. Integration review commit remains frozen during CI. Beads remains task tracking; no new sprint or product gate.",
     "pr_number": 96,
     "pr_url": "https://github.com/randlee/sc-runtime/pull/96",
-    "head": "1e6931bed0130d8452a35a9a6ec17b30ace11302",
+    "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
     "reviewer_manifest": [
       {
-        "agent": "req-qa",
-        "task_id": "/root/phase_end_qa3_req",
+        "agent": "extensibility-qa",
+        "task_id": "/root/final_closeout_ext",
         "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
         "fenced_json_received": true,
         "verdict": "PASS",
-        "findings": {
-          "blocking": 0,
-          "important": 0,
-          "minor": 0
-        }
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/extensibility-qa-result.md"
       },
       {
-        "agent": "rust-qa-agent",
-        "task_id": "/root/phase_end_qa3_rust",
+        "agent": "rust-service-hardening-agent",
+        "task_id": "/root/final_closeout_service",
         "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
         "fenced_json_received": true,
         "verdict": "PASS",
-        "findings": {
-          "blocking": 0,
-          "important": 0,
-          "minor": 0
-        }
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/rust-service-hardening-agent-result.md"
+      },
+      {
+        "agent": "req-qa",
+        "task_id": "/root/final_closeout_req",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6-luna",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/req-qa-result.md"
       },
       {
         "agent": "arch-qa",
-        "task_id": "/root/phase_end_qa3_arch",
+        "task_id": "/root/final_closeout_arch",
         "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
         "fenced_json_received": true,
         "verdict": "PASS",
-        "findings": {
-          "blocking": 0,
-          "important": 0,
-          "minor": 0
-        }
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/arch-qa-result.md"
+      },
+      {
+        "agent": "rust-qa-agent",
+        "task_id": "/root/final_closeout_rust",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/rust-qa-agent-result.md"
       },
       {
         "agent": "flaky-test-qa",
-        "task_id": "/root/phase_end_qa3_flaky",
+        "task_id": "/root/final_closeout_flaky",
         "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
         "fenced_json_received": true,
         "verdict": "PASS",
-        "findings": {
-          "blocking": 0,
-          "important": 0,
-          "minor": 0
-        }
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/flaky-test-qa-result.md"
       }
     ],
     "state_branch": "codex/phase-b-review-state",
@@ -7088,108 +7106,83 @@
   },
   "production_readiness": {
     "bead": "run-03z.31",
-    "status": "qa1_fail_two_important_scoped_fixes_active",
-    "head": "1e6931bed0130d8452a35a9a6ec17b30ace11302",
+    "status": "joint_final_six_scoped_reviews_pass_zero_findings_execution_pending",
+    "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
     "qa_pass": "qa-phase-b-production-1",
     "reviewer_manifest": [
       {
+        "agent": "extensibility-qa",
+        "task_id": "/root/final_closeout_ext",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/extensibility-qa-result.md"
+      },
+      {
+        "agent": "rust-service-hardening-agent",
+        "task_id": "/root/final_closeout_service",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/rust-service-hardening-agent-result.md"
+      },
+      {
         "agent": "req-qa",
-        "task_id": "/root/production_qa1_req",
+        "task_id": "/root/final_closeout_req",
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6-luna",
         "effort": "high",
         "status": "completed",
         "fenced_json_received": true,
         "verdict": "PASS",
-        "result_path": "/tmp/phaseb-cursor-orchestration/production-readiness-qa1/req-qa-result.md"
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/req-qa-result.md"
       },
       {
         "agent": "arch-qa",
-        "task_id": "/root/production_qa1_arch",
+        "task_id": "/root/final_closeout_arch",
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6.1-sol",
         "effort": "high",
         "status": "completed",
         "fenced_json_received": true,
         "verdict": "PASS",
-        "result_path": "/tmp/phaseb-cursor-orchestration/production-readiness-qa1/arch-qa-result.md"
-      },
-      {
-        "agent": "ruthless-boundary-qa",
-        "task_id": "/root/production_qa1_boundary",
-        "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6.1-sol",
-        "effort": "high",
-        "status": "completed",
-        "fenced_json_received": true,
-        "verdict": "PASS",
-        "result_path": "/tmp/phaseb-cursor-orchestration/production-readiness-qa1/ruthless-boundary-qa-result.md"
-      },
-      {
-        "agent": "extensibility-qa",
-        "task_id": "/root/production_qa1_ext",
-        "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6.1-sol",
-        "effort": "high",
-        "status": "completed",
-        "fenced_json_received": true,
-        "verdict": "FAIL",
-        "result_path": "/tmp/phaseb-cursor-orchestration/production-readiness-qa1/extensibility-qa-result.md"
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/arch-qa-result.md"
       },
       {
         "agent": "rust-qa-agent",
-        "task_id": "/root/production_qa1_rust",
+        "task_id": "/root/final_closeout_rust",
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6.1-terra",
         "effort": "high",
         "status": "completed",
         "fenced_json_received": true,
-        "verdict": "FAIL",
-        "result_path": "/tmp/phaseb-cursor-orchestration/production-readiness-qa1/rust-qa-agent-result.md"
-      },
-      {
-        "agent": "rust-best-practices-agent",
-        "task_id": "/root/production_qa1_rbp",
-        "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6-luna",
-        "effort": "high",
-        "status": "completed",
-        "fenced_json_received": true,
         "verdict": "PASS",
-        "result_path": "/tmp/phaseb-cursor-orchestration/production-readiness-qa1/rust-best-practices-agent-result.md"
-      },
-      {
-        "agent": "rust-service-hardening-agent",
-        "task_id": "/root/production_qa1_service",
-        "spawn_actor": "parent-orchestrator",
-        "model": "gpt-6.1-sol",
-        "effort": "high",
-        "status": "completed",
-        "fenced_json_received": true,
-        "verdict": "FAIL",
-        "result_path": "/tmp/phaseb-cursor-orchestration/production-readiness-qa1/rust-service-hardening-agent-result.md"
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/rust-qa-agent-result.md"
       },
       {
         "agent": "flaky-test-qa",
-        "task_id": "/root/production_qa1_flaky",
+        "task_id": "/root/final_closeout_flaky",
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6.1-sol",
         "effort": "high",
         "status": "completed",
         "fenced_json_received": true,
         "verdict": "PASS",
-        "result_path": "/tmp/phaseb-cursor-orchestration/production-readiness-qa1/flaky-test-qa-result.md"
+        "result_path": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/flaky-test-qa-result.md"
       }
     ],
-    "open_findings": [
-      "EXT-PROD-001",
-      "RSH-PROD-001"
-    ],
+    "open_findings": [],
     "triage_ttl_paths": [
       ".triage/b/findings/EXT-PROD-001.ttl",
       ".triage/b/findings/RSH-PROD-001.ttl"
     ],
-    "coordinator_task_id": "/root/production_qa1_enforcer",
+    "coordinator_task_id": "/root/final_closeout_enforcer",
     "fix_bead": "run-03z.31.1",
     "ceremony_screens": {
       "EXT-PROD-001": "not_applicable",
@@ -7332,6 +7325,17 @@
       "missing_reviewers": [],
       "unparsed_reviewers": []
     },
-    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541748892"
+    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541748892",
+    "final_qa_pass": "qa-phase-b-closeout-final-1",
+    "upstream_kit": {
+      "pr_url": "https://github.com/randlee/sc-publish/pull/137",
+      "head": "9677ab083e7dd3feb258235a342e321ca1b45d8d",
+      "status": "open_ready_for_review",
+      "merge_required_for_qualified_pin": false
+    },
+    "fixed_findings": [
+      "EXT-PROD-001",
+      "RSH-PROD-001"
+    ]
   }
 }
