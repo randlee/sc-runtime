@@ -50,7 +50,7 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa3_reviewers_pass_zero_findings_ci_pending",
+      "status": "qa_ci_pass_pending_shared_artifact_integration_sequence",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b15_developer",
       "pr_number": 91,
@@ -85,7 +85,7 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "all6_fix_artifact_pushed_scoped_qa2_in_progress",
+      "status": "qa2_five_fixes_verified_path_alias_boundary_carry_open_execution_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
@@ -135,7 +135,61 @@
         "bead": "run-03z.27.1",
         "commit": "a3bc74efa3817f500b3b310850c38c678bc71a81",
         "status": "validated_and_consumed"
-      }
+      },
+      "qa2_dispatched": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "source_check_complete_pending_execution_evidence"
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/cursor_b13_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/cursor_b15_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/cursor_b13_qa1_service",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b13_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "execution_pending"
+        }
+      ]
     },
     "b-13": {
       "task_id": "run-03z.1",
@@ -1918,7 +1972,7 @@
     {
       "qa_pass": "qa-b-15-3",
       "commit": "df37ac8c7addf54b6f32bbf963748a51d16b1314",
-      "verdict": "IN-FLIGHT",
+      "verdict": "PASS",
       "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/91#issuecomment-6537576028",
       "reviewer_manifest": [
         {
@@ -1982,22 +2036,18 @@
         "branch": "sprint/b-15-sc-cron-observability",
         "commit": "df37ac8c7addf54b6f32bbf963748a51d16b1314",
         "pr": 91,
-        "verdict": "IN-FLIGHT",
-        "deliverables": {
-          "complete": 13,
-          "total": 13,
-          "percent": 100
-        },
+        "verdict": "PASS",
         "findings": {
           "blocking": 0,
           "important": 0,
           "minor": 0
         },
         "blocking_ids": [],
-        "merge_readiness": "not ready",
-        "merge_reason": "Three exact PR #91 workflows for DF37 completed successfully. The exact PR #91 Crate CI run is still active (Lint succeeded; Test is in progress). Canceled runs from PR #92 sharing the SHA are excluded.",
-        "next_action": "Wait for exact PR #91 Crate CI run 41158195306 to complete; resume this enforcer for CI/publication-only completion.",
-        "owner": "parent orchestrator",
+        "merge_readiness": "ready",
+        "merge_reason": "All three required reviewers PASS; deliverables are 13/13; TODO scan is clean; no findings remain; all four required PR #91 workflows for DF37 succeeded.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "QA PASS. Parent may proceed with the planned integration sequence after correlating this Machine Status and handling B16 sequencing.",
         "reviewer_spawn_gate": "pass",
         "reviewer_manifest": [
           {
@@ -2090,12 +2140,10 @@
             "rows": 0
           },
           "ci_snapshot": {
-            "green": 3,
-            "pending": 1,
+            "green": 4,
+            "pending": 0,
             "failing": 0,
-            "pending_checks": [
-              "Crate CI run 41158195306: job `just lint and just test`; Lint succeeded and Test is in progress."
-            ],
+            "all_exact_pr91_df37_workflows_succeeded": true,
             "actual_pr91_runs": [
               {
                 "run_id": 41158195305,
@@ -2129,8 +2177,8 @@
                 "workflow": "Crate CI",
                 "pr_number": 91,
                 "head_sha": "df37ac8c7addf54b6f32bbf963748a51d16b1314",
-                "status": "in_progress",
-                "conclusion": null,
+                "status": "completed",
+                "conclusion": "success",
                 "url": "https://github.com/randlee/sc-runtime/actions/runs/41158195306"
               }
             ],
@@ -2151,10 +2199,24 @@
           },
           "parent_correlation_required": true
         },
-        "missing_reviewers": [],
-        "unparsed_reviewers": [],
         "aggregation_source": "reviewer_fenced_json_union_todo_scan"
-      }
+      },
+      "resolved_finding_ids": [
+        "REQ-QA-001",
+        "REQ-QA-002",
+        "REQ-QA-003",
+        "REQ-QA-004",
+        "RBQA-B15-001",
+        "QA-001",
+        "QA-002",
+        "QA-003",
+        "QA-004",
+        "QA-005",
+        "RBP-F001",
+        "FTQ-003",
+        "FTQ-004",
+        "REQ-QA-005"
+      ]
     },
     {
       "qa_pass": "qa-b-16-1",
