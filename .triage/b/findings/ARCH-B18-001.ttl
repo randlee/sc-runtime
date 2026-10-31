@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18:qa1:ARCH-B18-001>
+  qa:id "ARCH-B18-001" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "arch-qa" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "docs/plans/phase-b/sprint-b-18-template-observability-integration.md:40" ;
+  qa:issue "The single adrs list contains 10 valid binding IDs but omits 10 governing existing ADRs for the actual expanded B18 deliverables: ADR-RT-0004, ADR-RUN-0001, ADR-RUN-0003, ADR-RUN-0005, ADR-RUN-0008, ADR-RUN-0009, ADR-RUN-0015, ADR-RUN-0303, ADR-RUN-0401, ADR-RUN-0402. New app assembly/graph, standard just/lint infrastructure, standard-composition admission, isolated process tests, retained controlled-host release benchmark gate, generation/no-edits mechanics, and the new real local fixture proof are governed by these decisions. Code compliance and successful validation do not satisfy the required plan inventory." ;
+  qa:recommendation "Add the ten missing IDs to the existing adrs list, retaining all ten current IDs, for the exact 20-ID governing inventory recorded in plan_coverage.expected_ids. Add concise concrete applicability notes matching adr_checks, especially RUN-0015 as retained later-release controlled-host gate and RT-0004 solely for B18 local fixture proof. Preserve the phase plan exclusion for unchanged RT-0003; do not copy every referenced-crate ADR indiscriminately. This is a docs-only existing-authority trace correction: no new ADR, sprint, owner decision, implementation change, or release-gate relaxation is needed." .

@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18:qa1:FTQ-B18-001>
+  qa:id "FTQ-B18-001" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "tests/integration/generation/snapshot_just.py:29" ;
+  qa:issue "The snapshot wrapper bounds only the direct just process. A stuck recipe makes subprocess.run kill/reap just at 900s while its shell/cargo/test descendants keep running. The surrounding generation calls likewise kill only their direct process. Timed-out test cleanup can remove the generated directory while leaked recipe children continue using it and shared Cargo resources, contaminating subsequent validation." ;
+  qa:recommendation "Run generated command trees in an owned process session/job and always terminate the complete owned tree on timeout/failure, with bounded direct-child reap and closed pipes. Use the same ownership helper for wrapper and outer generation/cargo calls; retain the hard deadlines. Add an explicit ready handshake in a safe descendant fault witness and verify descendant cleanup as well as direct-child exit." .
