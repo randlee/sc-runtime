@@ -336,4 +336,11 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                         next(i for i, check in enumerate(preflight) if check["id"] == "release-contract-sources"))
         self.assertFalse(any("test_release_mode_uses_registry" in check["run"] for check in preflight),
                          "postpublication proof cannot block the publication preflight")
+        command = ("SC_RUNTIME_REGISTRY_PROOF=1 python3 -m unittest "
+                   "tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry")
+        guide = (ROOT / "docs/development/sc-publish.md").read_text()
+        self.assertIn("after all five publications", guide)
+        self.assertLess(guide.index("after all five publications"), guide.index(command))
+        plan = (ROOT / "docs/plans/phase-b/sprint-b-18-template-observability-integration.md").read_text()
+        self.assertLess(plan.index("Deferred release validation (`run-h0h`)"), plan.index(command))
         subprocess.run([sys.executable, "-m", "unittest", "tests.integration.generation.test_driver.DriverTests.test_release_mode_skips_the_patch"], cwd=ROOT, check=True)
