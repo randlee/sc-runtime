@@ -1,10 +1,11 @@
 """Prepublication contracts for the observability release and publishing kit."""
 
-import hashlib
 import importlib.util
 import json
 import os
 import signal
+import shlex
+import shutil
 import socket
 import time
 import subprocess
@@ -31,6 +32,37 @@ def signal_test_enabled(environment):
 
 
 class GeneratedObservabilityIntegration(unittest.TestCase):
+    def generated_app(self):
+        temp = tempfile.TemporaryDirectory(prefix="sc-runtime-generated-test-")
+        self.addCleanup(temp.cleanup)
+        app = Path(temp.name) / "app"
+        subprocess.run(
+            ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
+            cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
+        )
+        manifest = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())
+        return app, manifest["package"]["name"]
+
+    def run_generated_test(self, app, package, target, name):
+        result = subprocess.run(
+            ["cargo", "test", "-p", package, "--features", "cron", *target, name, "--", "--exact"],
+            cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL,
+            text=True, capture_output=True,
+        )
+        self.assertIn("running 1 test", result.stdout, result.stdout + result.stderr)
+        self.assertIn("test result: ok. 1 passed", result.stdout, result.stdout + result.stderr)
+
+    def test_observability(self):
+        app, package = self.generated_app()
+        self.run_generated_test(app, package, ["--test", "observability"],
+                                "production_http_and_cron_share_jsonl_and_release_handles")
+
+    def test_schedule_limit_mapping(self):
+        app, package = self.generated_app()
+        for name in ("zero_is_unlimited_and_the_default_is_ten", "json_null_is_unlimited", "configured_database_and_row_limits_reach_store"):
+            with self.subTest(name=name):
+                self.run_generated_test(app, package, ["--lib"], "cron::tests::" + name)
+
     def test_pr_fixture_matrix_one_entry_per_fixture(self):
         workflow = (ROOT / ".github/workflows/template.yml").read_text()
         fixtures = sorted(p.name for p in (ROOT / "wizard/fixtures").glob("*.json"))
@@ -38,29 +70,45 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.assertIn('pathlib.Path("wizard/fixtures").glob("*.json")', workflow)
         self.assertIn('fixture: ${{ fromJson(needs.fixtures.outputs.names) }}', workflow)
         self.assertIn('wizard/fixtures/${{ matrix.fixture }}', workflow)
-        self.assertEqual(len(fixtures), len(set(fixtures)))
+        actual = json.loads(subprocess.check_output(
+            [sys.executable, "-c", 'import json, pathlib; print(json.dumps(sorted(path.name for path in pathlib.Path("wizard/fixtures").glob("*.json"))))'],
+            cwd=ROOT, text=True, timeout=10,
+        ))
+        self.assertEqual(actual, fixtures)
+        self.assertEqual(len(actual), len(set(actual)))
         self.assertIn("sqlite-mcp.json", fixtures)
 
     def test_sqlite_mcp_no_edits_sequence(self):
-        def snapshot(root):
-            return {
-                str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-                for p in root.rglob("*")
-                if p.is_file() and not any(part in {"target", ".git"} for part in p.relative_to(root).parts)
-            }
-
+        real_just = shutil.which("just")
+        self.assertIsNotNone(real_just)
         with tempfile.TemporaryDirectory(prefix="sc-runtime-no-edits-") as temp:
-            app = Path(temp) / "app"
+            root = Path(temp)
+            app = root / "app"
+            wrapper_dir = root / "bin"
+            wrapper_dir.mkdir()
+            helper = ROOT / "tests/integration/generation/snapshot_just.py"
+            if os.name == "nt":
+                wrapper = wrapper_dir / "just.cmd"
+                wrapper.write_text(f'@"{sys.executable}" "{helper}" %*\r\n')
+            else:
+                wrapper = wrapper_dir / "just"
+                wrapper.write_text(f"#!/bin/sh\nexec {shlex.quote(sys.executable)} {shlex.quote(str(helper))} \"$@\"\n")
+                wrapper.chmod(0o755)
+            log = root / "snapshots.jsonl"
+            env = {**os.environ, "PATH": str(wrapper_dir) + os.pathsep + os.environ.get("PATH", ""),
+                   "SC_TEST_REAL_JUST": real_just, "SC_TEST_SNAPSHOT_LOG": str(log)}
             subprocess.run(
-                ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
-                cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
+                [real_just, "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
+                cwd=ROOT, env=env, check=True, timeout=1800, stdin=subprocess.DEVNULL,
             )
-            before = snapshot(app)
-            self.assertTrue(before)
-            for recipe in ("setup", "lint", "test", "build-cli", "build-daemon"):
-                with self.subTest(recipe=recipe):
-                    subprocess.run(["just", recipe], cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL)
-                    self.assertEqual(before, snapshot(app), f"{recipe} changed generated source")
+            records = [json.loads(line) for line in log.read_text().splitlines()]
+            self.assertEqual([record["recipe"] for record in records],
+                             [[name] for name in ("setup", "lint", "test", "build-cli", "build-daemon")])
+            baseline = records[0]["before"]
+            self.assertTrue(baseline)
+            for record in records:
+                self.assertEqual(baseline, record["before"], record["recipe"])
+                self.assertEqual(baseline, record["after"], record["recipe"])
 
     def test_signal_guard_refuses_partial_markers(self):
         self.assertFalse(signal_test_enabled({}))
