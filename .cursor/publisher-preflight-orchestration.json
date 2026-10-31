@@ -16,7 +16,7 @@
     "candidate_authorization": false,
     "publication_authorization": false,
     "host_tools_prepared": true,
-    "real_benchmark_pending_quiet_host": true,
+    "real_benchmark_pending_quiet_host": false,
     "controlled_host_prerequisites": {
       "host": "rand-m5",
       "ssh_connectivity": true,
@@ -24,6 +24,84 @@
       "cli": "sc-compose1.7.0",
       "isolated_python": "3.14.7/sc-compose1.7.0",
       "benchmark_not_run_reason": "Other user Rust compilation observed; operator quiet-host rule"
+    },
+    "controlled_host_proof": {
+      "success": true,
+      "mode": "nonpublishing_controlled_host_execution",
+      "command": [
+        "python3",
+        "scripts/benchmark/run_remote_gate.py"
+      ],
+      "exit_status": 0,
+      "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
+      "host": "rand-m5",
+      "campaign_id": "20261031T222211Z-rand-m5",
+      "utc": "2026-10-31T22:22:11Z",
+      "cargo_profile": "release",
+      "rustc": "rustc 1.96.1 (31fca3adb 2026-06-26)",
+      "sc_compose_cli_version": "sc-compose 1.7.0",
+      "python_sc_compose": true,
+      "campaign_status": "MEASURED",
+      "numeric_performance_ceilings_configured": false,
+      "performance_ceiling_pass_claimed": false,
+      "cases": [
+        {
+          "id": "cli",
+          "status": "MEASURED",
+          "skipped": false,
+          "timed_iters": 30,
+          "ms_per_run": 2.305562,
+          "max_ms_per_run": null
+        },
+        {
+          "id": "py_render",
+          "status": "MEASURED",
+          "skipped": false,
+          "timed_iters": 30,
+          "ms_per_run": 14.151438,
+          "max_ms_per_run": null
+        },
+        {
+          "id": "py_hook",
+          "status": "MEASURED",
+          "skipped": false,
+          "timed_iters": 30,
+          "ms_per_run": 17.186318,
+          "max_ms_per_run": null
+        },
+        {
+          "id": "monty",
+          "status": "MEASURED",
+          "skipped": false,
+          "timed_iters": 30,
+          "ms_per_run": 2.162109,
+          "max_ms_per_run": null
+        },
+        {
+          "id": "production_bridge",
+          "status": "MEASURED",
+          "skipped": false,
+          "timed_iters": 30,
+          "ms_per_run": 3.5398729999999996,
+          "max_ms_per_run": null
+        }
+      ],
+      "local_campaign": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/publish-preflight/target/benchmark-preflight/595aad06db5b198a6bb3a4db77ddd03abed2e13d/run-jjaicx6y/site/reports/benchmark-monty/20261031T222211Z-rand-m5.campaign.json",
+      "local_html": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/publish-preflight/target/benchmark-preflight/595aad06db5b198a6bb3a4db77ddd03abed2e13d/run-jjaicx6y/site/reports/benchmark-monty/20261031T222211Z-rand-m5.html",
+      "remote_evidence": "~/.local/state/sc-runtime/benchmark-preflight/595aad06db5b198a6bb3a4db77ddd03abed2e13d/run-z61nhoi_",
+      "evidence_retained_remote_and_local": true,
+      "operator_preconditions": "Other Rust/Cargo compilation had finished; pre-run controlled-host process scan was empty for compilers.",
+      "no_publication_or_tag": true
+    },
+    "corrected_hosted_preflight": {
+      "run_id": 41248340490,
+      "ref": "codex/publish-preflight",
+      "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
+      "status": "NOT_READY",
+      "remaining": [
+        "missing release-candidate-v0.1.1",
+        "GitHub Actions DNS cannot resolve rand-m5"
+      ]
     }
   },
   "qa": {
@@ -142,23 +220,21 @@
       "branch": "codex/publish-preflight",
       "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
       "pr": 100,
-      "verdict": "IN-FLIGHT",
+      "verdict": "PASS",
       "deliverables": {
-        "complete": 3,
+        "complete": 5,
         "total": 5,
-        "percent": 60.0
+        "percent": 100.0
       },
       "findings": {
-        "blocking": 1,
+        "blocking": 0,
         "important": 0,
         "minor": 0
       },
-      "blocking_ids": [
-        "PREFLIGHT-REQ-005"
-      ],
-      "merge_readiness": "blocked",
-      "merge_reason": "The existing PREFLIGHT-REQ-005 execution gate remains open: actual hosted CI for commit 595aad06db5b198a6bb3a4db77ddd03abed2e13d and the controlled-host SSH benchmark have not yet been evidenced. Four source findings are closed; this round adds no source findings.",
-      "next_action": "parent_execution_and_ci_proof_then_same_task_proof_only_closeout",
+      "blocking_ids": [],
+      "merge_readiness": "source-QA-pass; parent-correlation required; release publication blocked",
+      "merge_reason": "Source QA on commit 595aad06db5b198a6bb3a4db77ddd03abed2e13d passes with all five deliverables, all five required reviewers passing, zero findings, 17/17 hosted checks successful, and the real controlled-host gate exiting 0 with five MEASURED cases. This is not release authorization: corrected hosted release preflight 41248340490 remains blocked only by missing candidate v0.1.1 and GitHub Actions DNS failure resolving rand-m5. No numeric performance ceiling PASS is claimed.",
+      "next_action": "parent_correlation_then_merge_review; resolve_missing_candidate_and_GHA_DNS_before_any_release_publication",
       "owner": "parent-orchestrator",
       "reviewer_spawn_gate": "pass",
       "reviewer_manifest": [
@@ -167,9 +243,9 @@
           "task_id": "/root/preflight_qa2_req",
           "spawn_actor": "parent-orchestrator",
           "fenced_json_received": true,
-          "verdict": "FAIL",
+          "verdict": "PASS",
           "findings": {
-            "blocking": 1,
+            "blocking": 0,
             "important": 0,
             "minor": 0
           }
@@ -261,7 +337,60 @@
           }
         ],
         "pr_number": 100,
-        "parent_correlation_required": true
+        "parent_correlation_required": true,
+        "hosted_ci": {
+          "head_sha": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
+          "merge_state": "CLEAN",
+          "checks_total": 17,
+          "checks_success": 17
+        },
+        "controlled_host_execution": {
+          "host": "rand-m5",
+          "campaign_id": "20261031T222211Z-rand-m5",
+          "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
+          "exit_status": 0,
+          "campaign_status": "MEASURED",
+          "cases": [
+            {
+              "id": "cli",
+              "status": "MEASURED",
+              "skipped": false
+            },
+            {
+              "id": "py_render",
+              "status": "MEASURED",
+              "skipped": false
+            },
+            {
+              "id": "py_hook",
+              "status": "MEASURED",
+              "skipped": false
+            },
+            {
+              "id": "monty",
+              "status": "MEASURED",
+              "skipped": false
+            },
+            {
+              "id": "production_bridge",
+              "status": "MEASURED",
+              "skipped": false
+            }
+          ],
+          "numeric_performance_ceilings_configured": false,
+          "performance_ceiling_pass_claimed": false,
+          "campaign_path": "target/benchmark-preflight/595aad06db5b198a6bb3a4db77ddd03abed2e13d/run-jjaicx6y/site/reports/benchmark-monty/20261031T222211Z-rand-m5.campaign.json",
+          "html_path": "target/benchmark-preflight/595aad06db5b198a6bb3a4db77ddd03abed2e13d/run-jjaicx6y/site/reports/benchmark-monty/20261031T222211Z-rand-m5.html"
+        },
+        "release_preflight": {
+          "run_id": 41248340490,
+          "status": "FAIL",
+          "reason": [
+            "candidate v0.1.1 missing",
+            "GitHub Actions DNS cannot resolve rand-m5"
+          ],
+          "scope": "external release operations; not a source-QA finding"
+        }
       },
       "missing_reviewers": [],
       "unparsed_reviewers": []
@@ -571,7 +700,7 @@
       {
         "qa_pass": "qa-publisher-readiness-2",
         "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
-        "verdict": "IN-FLIGHT",
+        "verdict": "PASS",
         "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/100#issuecomment-6549863224",
         "reviewer_manifest": [
           {
@@ -579,9 +708,9 @@
             "task_id": "/root/preflight_qa2_req",
             "spawn_actor": "parent-orchestrator",
             "fenced_json_received": true,
-            "verdict": "FAIL",
+            "verdict": "PASS",
             "findings": {
-              "blocking": 1,
+              "blocking": 0,
               "important": 0,
               "minor": 0
             }
@@ -642,11 +771,190 @@
           ".triage/publisher-readiness/findings/PREFLIGHT-FTQ-003.ttl",
           ".triage/publisher-readiness/findings/PREFLIGHT-REQ-005.ttl"
         ],
-        "finding_ids": [
-          "PREFLIGHT-REQ-005"
-        ],
+        "finding_ids": [],
         "coordinator_task_id": "/root/preflight_qa2_enforcer",
         "machine_status": {
+          "sprint": "publisher-readiness-tooling",
+          "task": "qa-publisher-readiness-2",
+          "branch": "codex/publish-preflight",
+          "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
+          "pr": 100,
+          "verdict": "PASS",
+          "deliverables": {
+            "complete": 5,
+            "total": 5,
+            "percent": 100.0
+          },
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          },
+          "blocking_ids": [],
+          "merge_readiness": "source-QA-pass; parent-correlation required; release publication blocked",
+          "merge_reason": "Source QA on commit 595aad06db5b198a6bb3a4db77ddd03abed2e13d passes with all five deliverables, all five required reviewers passing, zero findings, 17/17 hosted checks successful, and the real controlled-host gate exiting 0 with five MEASURED cases. This is not release authorization: corrected hosted release preflight 41248340490 remains blocked only by missing candidate v0.1.1 and GitHub Actions DNS failure resolving rand-m5. No numeric performance ceiling PASS is claimed.",
+          "next_action": "parent_correlation_then_merge_review; resolve_missing_candidate_and_GHA_DNS_before_any_release_publication",
+          "owner": "parent-orchestrator",
+          "reviewer_spawn_gate": "pass",
+          "reviewer_manifest": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/preflight_qa2_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/preflight_qa2_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/preflight_qa2_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-service-hardening-agent",
+              "task_id": "/root/preflight_qa2_service",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "flaky-test-qa",
+              "task_id": "/root/preflight_qa2_flaky",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            }
+          ],
+          "evidence_chain": {
+            "qa_pass": "qa-publisher-readiness-2",
+            "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
+            "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/100#issuecomment-6549863224",
+            "coordinator_task_id": "/root/preflight_qa2_enforcer",
+            "triage": {
+              "ttl_paths": [
+                ".triage/publisher-readiness/findings/PREFLIGHT-RSH-001.ttl",
+                ".triage/publisher-readiness/findings/PREFLIGHT-RSH-002.ttl",
+                ".triage/publisher-readiness/findings/PREFLIGHT-FTQ-002.ttl",
+                ".triage/publisher-readiness/findings/PREFLIGHT-FTQ-003.ttl",
+                ".triage/publisher-readiness/findings/PREFLIGHT-REQ-005.ttl"
+              ],
+              "phase_id": "publisher-readiness"
+            },
+            "reviewer_tasks": [
+              {
+                "agent": "req-qa",
+                "task_id": "/root/preflight_qa2_req"
+              },
+              {
+                "agent": "arch-qa",
+                "task_id": "/root/preflight_qa2_arch"
+              },
+              {
+                "agent": "rust-qa-agent",
+                "task_id": "/root/preflight_qa2_rust"
+              },
+              {
+                "agent": "rust-service-hardening-agent",
+                "task_id": "/root/preflight_qa2_service"
+              },
+              {
+                "agent": "flaky-test-qa",
+                "task_id": "/root/preflight_qa2_flaky"
+              }
+            ],
+            "pr_number": 100,
+            "parent_correlation_required": true,
+            "hosted_ci": {
+              "head_sha": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
+              "merge_state": "CLEAN",
+              "checks_total": 17,
+              "checks_success": 17
+            },
+            "controlled_host_execution": {
+              "host": "rand-m5",
+              "campaign_id": "20261031T222211Z-rand-m5",
+              "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
+              "exit_status": 0,
+              "campaign_status": "MEASURED",
+              "cases": [
+                {
+                  "id": "cli",
+                  "status": "MEASURED",
+                  "skipped": false
+                },
+                {
+                  "id": "py_render",
+                  "status": "MEASURED",
+                  "skipped": false
+                },
+                {
+                  "id": "py_hook",
+                  "status": "MEASURED",
+                  "skipped": false
+                },
+                {
+                  "id": "monty",
+                  "status": "MEASURED",
+                  "skipped": false
+                },
+                {
+                  "id": "production_bridge",
+                  "status": "MEASURED",
+                  "skipped": false
+                }
+              ],
+              "numeric_performance_ceilings_configured": false,
+              "performance_ceiling_pass_claimed": false,
+              "campaign_path": "target/benchmark-preflight/595aad06db5b198a6bb3a4db77ddd03abed2e13d/run-jjaicx6y/site/reports/benchmark-monty/20261031T222211Z-rand-m5.campaign.json",
+              "html_path": "target/benchmark-preflight/595aad06db5b198a6bb3a4db77ddd03abed2e13d/run-jjaicx6y/site/reports/benchmark-monty/20261031T222211Z-rand-m5.html"
+            },
+            "release_preflight": {
+              "run_id": 41248340490,
+              "status": "FAIL",
+              "reason": [
+                "candidate v0.1.1 missing",
+                "GitHub Actions DNS cannot resolve rand-m5"
+              ],
+              "scope": "external release operations; not a source-QA finding"
+            }
+          },
+          "missing_reviewers": [],
+          "unparsed_reviewers": []
+        },
+        "execution_pending_status": {
           "sprint": "publisher-readiness-tooling",
           "task": "qa-publisher-readiness-2",
           "branch": "codex/publish-preflight",
@@ -838,16 +1146,14 @@
           "result_path": "/tmp/sc-runtime-publisher-preflight/qa2/flaky-test-qa-result.md"
         }
       ],
-      "status": "execution_only_in_flight",
+      "status": "PASS",
       "source_findings_claimed_fixed": [
         "PREFLIGHT-RSH-001",
         "PREFLIGHT-RSH-002",
         "PREFLIGHT-FTQ-002",
         "PREFLIGHT-FTQ-003"
       ],
-      "execution_pending": [
-        "PREFLIGHT-REQ-005"
-      ],
+      "execution_pending": [],
       "coordinator_task_id": "/root/preflight_qa2_enforcer",
       "source_findings_closed": [
         "PREFLIGHT-RSH-001",
