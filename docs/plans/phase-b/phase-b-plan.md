@@ -241,7 +241,7 @@ second path inventory.
 
 Phase-close critical path 3 (`b-4` → `b-5` → `b-8`, and `b-1` → `b-3` → `b-9`). Width 4 (wave 2). Sprint count for that close: 9 (merged to `develop`).
 
-b-11 also owns the **publish preflight gate**: `release/publish-preflight.toml` runs `benchmark-gate` for every registered benchmark subsystem, so a binary publish requires a passing benchmark (this replaces the earlier "campaign is manual only" rule; publishing a report to `site/reports/` stays an operator step). Campaign and index HTML must carry code examples (hook snippet, `feed_start`/resume loop, `sc-compose` argv), not only timing tables. Details: [sprint-b-11-benchmark-monty-reports.md](sprint-b-11-benchmark-monty-reports.md).
+b-11 also owns the **publish preflight gate**: `release/publish-preflight.toml` verifies reviewed, committed controlled-host benchmark evidence for every registered benchmark subsystem, so a binary publish requires a passing benchmark (this replaces the earlier "campaign is manual only" rule; publishing a report to `site/reports/` stays an operator step). Campaign and index HTML must carry code examples (hook snippet, `feed_start`/resume loop, `sc-compose` argv), not only timing tables. Details: [sprint-b-11-benchmark-monty-reports.md](sprint-b-11-benchmark-monty-reports.md).
 
 Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Row-limit path 1 (`b-12` on `integrate/phase-b-monty`, parallel with Monty). Phase-end on `integrate/phase-b-monty`, then merge to `develop`. Combined sprint count 12.
 

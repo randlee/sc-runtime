@@ -126,6 +126,32 @@ older campaign to make a result look better. Changing a floor in
 `baselines.json` requires the new floor, the campaigns that justify it, and a
 rationale in the same commit. Existing campaign JSON stays immutable.
 
+## Release evidence review
+
+A developer runs a fresh campaign from a clean, pushed source revision on
+`atmbench@rand-m5`, then submits the JSON/HTML and regenerated index using the
+publication steps above. A workstation may invoke
+`python3 scripts/benchmark/run_remote_gate.py` over its existing SSH route;
+GitHub-hosted workflows do not contact the controlled host. Quality manager
+reviews the committed campaign and identifies the measured source revision in
+the public QA report; it may tag that build using the existing release policy.
+No new tag namespace or signing process is required.
+
+Release preflight runs `python3 scripts/benchmark/check_release_evidence.py`.
+It verifies committed reports, canonical index, host/profile/tool metadata, all
+five cases, current baselines, and exact source equivalence. After measurement,
+only additions of benchmark campaign JSON/HTML and updates to their indexes
+may differ. Source, dependency, toolchain, harness, baseline, or documentation
+changes require a new campaign. Squash merges with identical source remain
+valid; the measured commit must resolve locally or be fetchable by its exact
+SHA from origin. QA review supplies the independent assessment; this verifier
+does not authenticate report authors or prove measurements were honestly made.
+
+For the first release, build the benchmark against the pinned workspace source.
+An installed `/prerelease` archive or registry-published SDK is not required.
+Registry-only generated-consumer checks remain a separate postpublication
+proof. Existing release-candidate provenance requirements still apply.
+
 ## 5. Failure policy
 
 - Harness or environment error before measurement: not a campaign. Fix it and
