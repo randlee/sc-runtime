@@ -5,7 +5,7 @@
 
 ## Goal
 
-A project rendered from `template/` uses the caret-compatible requirement
+The production release target for a project rendered from `template/` uses the caret-compatible requirement
 **`sc-observability` 1.5.1** (with exact `1.5.1` lock resolution) in
 `main`, logs to the same on-disk layout as other SC consumers, and **injects**
 that logger into the two participating workspace libraries (`sc-runtime` and
@@ -86,7 +86,10 @@ below remains the final upstream contract.
 
 Optimized development builds and benchmarks are permitted. Both local
 packages remain unpublished with `publish = false`, and the publication
-guard stays active. b-18 release acceptance requires the real matching
+guard stays active. Per the owner's 2026-10-30 timing decision, Phase B may
+complete its real development JSONL/composition/lifecycle proof with this
+adapter. Release epic `run-h0h`, including external prerequisite `run-03z.7`,
+requires the real matching
 `1.5.1` registry pair and published adapter proof, removal of development
 workspace path overrides and the local adapter, replacement of newtype
 construction with direct upstream `Arc<Logger>` coercion, and real registry
@@ -103,7 +106,9 @@ Order is fixed ([REQ-RUN-0309](../requirements.md)):
 3. Build **`LoggerConfig::default_for(ServiceName::new(APP_NAME)?, log_root)`**
    and apply `LogSettings` from config (level, console/file sinks).
 4. **`LoggerBuilder::build()`** → store it in `Arc<Logger>` until `main`
-   returns, and coerce an Arc clone to `SharedCanonicalLog`.
+   returns. For development, derive `SharedCanonicalLog` with the approved
+   `LoggerAdapter` around an Arc clone of that real logger; at release, coerce
+   the Arc clone directly through the published upstream trait implementation.
 5. Pass a **shareable handle** into assembly:
    - **`Daemon::builder(...).logger(handle)`** in any builder state; it adds
    no typestate or run step.
@@ -242,14 +247,18 @@ migration; it is not required to change the event contract.
 The repository public crates move to workspace version `0.1.1`; b-13 makes
 `sc-cron` publishable but performs no publication. b-18 owns the existing
 sc-publish consumer update, real installation and complete output sync from
-the exact pinned kit revision, authorization/order proof, and registry-only
-generated build.
-The publication evidence and registry-only proof bind to one source commit,
+the exact qualified pinned kit revision, publish-order/preflight source
+contracts, and development generated-process/lifecycle proof. Actual release
+authorization/publication and registry-only generated builds follow Phase B in
+`run-h0h`. The phase-end readiness review after fixes must report the remaining
+release limits explicitly. The publication evidence and registry-only proof bind to one source commit,
 which is tagged `v0.1.1` without an intervening source or manifest change.
 The currently pinned kit is not a valid b-18 input because it installs an
-upstream `docs/sprints/**` artifact. b-18 remains blocked until an exact later
-revision excludes that class; its inventory gate must enumerate installed
-destinations and reject any `docs/sprints/**` path.
+upstream `docs/sprints/**` artifact. The kit install requires a qualified later
+full SHA whose complete actual installer destination inventory excludes that
+class; it also rejects traversal, unsafe symlinks, and package-unsafe paths.
+Upstream source may retain its history. Kit preparation can progress
+independently; final runtime composition still consumes approved parent merges.
 This contract does not authorize or perform publication of either upstream
 observability crate.
 

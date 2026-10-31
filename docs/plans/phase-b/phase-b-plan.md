@@ -64,7 +64,7 @@ requirements:
 
 `b`. The owner named this phase b. That is an exception to the letter-pair default in `.claude/project/quality-policy.md`, consistent with the grandfathered phase id `a`.
 
-Entry state is the workspace at tag `v0.1.0`: four library crates, template `store-sqlite` on sqlx 0.9 with no write actor, `just lint` running boundary, line-counts, fmt, and clippy. The original b-1 through b-12 cut does not retag `v0.1.0` or publish; the continuation establishes and releases the new `0.1.1` public contract under b-13/b-18.
+Entry state is the workspace at tag `v0.1.0`: four library crates, template `store-sqlite` on sqlx 0.9 with no write actor, `just lint` running boundary, line-counts, fmt, and clippy. The original b-1 through b-12 cut does not retag `v0.1.0` or publish; the continuation establishes the new `0.1.1` public contract under b-13/b-18; actual publication follows Phase B under release epic `run-h0h`.
 
 ## Objective
 
@@ -79,7 +79,8 @@ tracks integrate on
 `integrate/phase-b-observability`; their wave-8 sprint branches remain
 parallel, with only the declared b-15/b-16 shared-file writer window below.
 b-17 then consumes b-15's final cron paths and b-16's
-feature/example before b-18 performs release integration.
+feature/example before b-18 performs generated development composition and
+release-kit/source-contract preparation.
 This amendment is authored on `plan/spinoff-monty-observability`; sprint
 dispatch uses the branches declared in each sprint frontmatter.
 
@@ -90,6 +91,24 @@ residual product/injection surfaces proven absent at the current integration
 head; it does not relabel or materially expand b-10 through b-12.
 
 `just new` creates an application with no database, SQLite only, Postgres only, MySQL only, SQLite plus Postgres, or SQLite plus MySQL. Each generated package is named `<project>-<role>`, including the store crates and the adaptor. `<project>-schema` holds the tables, the columns, and the row structs. `<project>-types` holds non-database types. The adaptor depends on `<project>-schema`. Paired stores use the same schema or a similar schema, and one shared trait or a trait per store. Generated stores implement `EngineStore`, whose `read_rows` and `write_rows` are what the adaptor calls. Each engine's SQL stays in that engine's crate. The adaptor is generated for a two-store layout. `store-sqlite` stays the sqlx store it is. The rusqlite writer is a separate building block. `sc-cron` is the scheduler the application uses. The lint profile is the one every crate in this phase runs.
+
+## Owner completion applicability — 2026-10-30
+
+The owner directed that upstream `1.5.1` will follow Phase B. The phase closes
+on actual development composition, a shared real logger, HTTP+cron JSONL,
+shutdown precedence, real isolated-CI signal lifecycle, qualified kit install,
+and pre-publication source contracts. The approved real registry `1.5.0`
+logger/development adapter supports those proofs. This is a timing amendment;
+requirements, ADRs, locked anchors, public interfaces, all eight b-18 acceptance
+criteria, and release safety remain in force. It does not mark b-18 or the
+phase complete.
+
+Release epic `run-h0h`, including external prerequisite `run-03z.7`, owns
+matching published `1.5.1`, direct upstream Arc coercion, facade/adapter/path
+removal, five internal `0.1.1` publications, registry-only generated proof,
+and the same-source `v0.1.1` tag. These remain required for production release,
+not phase completion. The readiness review after phase-ending fixes must
+explicitly report these release limits. No release guard is bypassed.
 
 ## Boundary map
 
@@ -112,7 +131,7 @@ head; it does not relabel or materially expand b-10 through b-12.
 | `sc-cron` canonical events | `b-15` | due-run/worker event taxonomy and residual stable failure tokens | `b-13`, which owns scheduler and component logger seams plus component-owned events |
 | extensible Monty product surface | `b-16` | application-defined host registry, `sc_compose_run` and `atm_run` CLI adapters, production tool-crate exclusion, both template dependency inventories, opt-in Cargo features, checked examples | `b-10` resume-loop artifact and b-13 graph/REQ amendments; parallel with b-14 and b-15 |
 | shared Python/Monty hook environment | `b-17` | daemon process-name allowlist; per-schedule absolute `.env`, set, reference, and clear operations; one Python/Monty snapshot; release-v1 schema consolidation; generated config wiring | `b-15` final cron call sites and b-16 generated feature/example |
-| generated observability composition and release proof | `b-18` | one Arc-owned logger injected into runtime and real scheduler; HTTP+cron JSONL; exact pinned-kit install and complete installed-output ownership; sc-publish `0.1.1` order/preflight, registry-only release build, and same-commit `v0.1.1` tag | `b-14`, `b-17`; human release authorization and credentials |
+| generated observability composition and release preparation | `b-18` | one Arc-owned real development logger injected into runtime and scheduler; HTTP+cron JSONL and lifecycle; exact pinned-kit install and complete output ownership; sc-publish `0.1.1` order/preflight source contracts. Actual publication, registry-only proof, and tag follow in `run-h0h` | `b-14`, `b-17` for final composition; kit preparation may proceed independently |
 
 ### Continuation boundary edges
 
@@ -121,7 +140,7 @@ head; it does not relabel or materially expand b-10 through b-12.
 | upstream observability crates | published `CanonicalLog`, `NoopCanonicalLog`, `SharedCanonicalLog`; `CanonicalLog for v2::Logger` | no upstream source path is owned here | external release prerequisite; development-only types exception below |
 | `BOUNDARY-sc-runtime` | direct `sc-observability-types`; `DaemonBuilder::logger(SharedCanonicalLog)` with fixed `sc-runtime` Noop | `sc-observability`, OTLP, config, and cron | b-13 contract; b-14 event implementation |
 | `BOUNDARY-sc-cron` | direct `sc-observability-types`; `SqliteScheduleStore::open_with_logger`, generic `Scheduler::new_with_logger` preserving supplied components plus coherent `Scheduler::open_with_logger` constructing logger-aware built-ins, `supervise_with_logger`, logger-aware Python hook API, and internal Monty propagation, all with source-compatible Noop legacy entry points | full observability runtime and every other workspace library | b-13 contract/component/hook API; b-15 worker call site and worker/due-run events |
-| generated daemon | direct full logger/types/transport/command edges in one composition root; Arc coercion and injection to both libraries; optional cron/monty features | libraries do not depend back on daemon | b-13 owns graph authority; b-16 owns both template Cargo inventories; b-17 owns hook-environment config; b-18 owns observability wiring and registry-release proof |
+| generated daemon | direct full logger/types/transport/command edges in one composition root; approved development adapter now, direct upstream Arc coercion at release, and injection to both libraries; optional cron/monty features | libraries do not depend back on daemon | b-13 owns graph authority; b-16 owns both template Cargo inventories; b-17 owns hook-environment config; b-18 owns observability wiring and release source contracts; `run-h0h` owns actual registry-release proof |
 | Python/Monty hook environment | daemon-scoped process-name and exact-file/root allowlists plus schedule `.env`, set, reference, and clear operations; three empty generated defaults; identical resolved snapshot for Python and Monty | implicit caller capture, full daemon inheritance, value-bearing debug/log paths, relative `.env` paths, Rust pseudo-sandboxing | b-17 |
 | Monty host extensions and examples | opt-in `monty`, application-defined host registration, `sc_compose_run` and `atm_run` supporting any command/subcommand, filtered `Getenv`/`GetEnviron` | no MVP signing/approval gate or consumer option; no implicit host registration, tool-crate production linkage, or sandbox claim | b-16 registry/adapters/features/examples; b-17 environment extension |
 
@@ -190,7 +209,7 @@ support all command/subcommands rather than a render-only library policy.
 | canonical cron event taxonomy | b-15 `observability` test | b-17 preserves and b-18 consumes the events |
 | host registration, both CLI adapters, production tool-crate exclusion, and generated features/examples | b-16 `monty_host_bridge`, `test_production_tool_boundary`, and `test_monty_example` | b-17 supplies environment inputs through the completed registry/adapters without reopening Cargo features |
 | shared Python/Monty hook environment and release-v1 schedule schema | b-17 `hook_environment`, `monty_host_bridge`, `test_cron_environment`, and the `windows-latest` parity job | b-18 consumes the generated configuration and real scheduler path |
-| generated composition, JSONL, release, and signal-shutdown proof | b-18 `test_observability` and consumer preflight | none; this is the continuation integration close |
+| generated composition, JSONL, and signal-shutdown proof plus release preparation | b-18 `test_observability`, qualified-kit inventory/install, and release/preflight source contracts | none for phase implementation; actual registry proof and publication remain `run-h0h` |
 
 Static review must parse the six frontmatter blocks, reject duplicate exact
 owned paths inside a wave except the three declared b-15/b-16 sole-writer
@@ -273,8 +292,11 @@ deadline/process-group driver. Both CLI adapters keep the approved deadline
 and per-stream output caps; rejecting emission cannot change their results.
 
 The current sc-publish pin is not a valid b-18 input because its installer
-package includes upstream sprint history under `docs/sprints/**`. b-18 is
-blocked until an exact later qualifying revision exists; it then owns the pin
+package includes upstream sprint history under `docs/sprints/**`. The install waits
+for a later qualified exact revision with no `docs/sprints/**` installer/package
+destination; upstream source may retain its history. Kit preparation may proceed
+independently, while final runtime composition consumes approved b-14/b-17
+merges. b-18 then owns the pin
 advance and proves the installer destination inventory is complete,
 package-safe, and excludes `docs/sprints/**`. Product inventory validation is
 independent of sprint frontmatter. This plan does not invent the future
@@ -331,16 +353,18 @@ construction, flush, and shutdown, and adapter tests exercise the real
 queue/sinks, saturation, and shutdown rather than Noop substitutes. Optimized
 development builds and benchmarks are permitted. This does not claim an
 upstream `1.5.1` implementation. Public requirements, trait signatures, and
-release versions remain unchanged. b-18 follows the
-[shim removal procedure](../../../dev/observability-types-shim/README.md),
+release versions remain unchanged. After Phase B, release epic `run-h0h` follows
+the [shim removal procedure](../../../dev/observability-types-shim/README.md),
 removes the development workspace path overrides and local adapter, replaces
 newtype construction with direct upstream `Arc<Logger>` coercion, proves real
 matching registry `1.5.1` root/generated locks and the production Logger
 adapter, and passes the active release guard
 without disabling it. b-13 establishes but does not publish this repository's
-`0.1.1` contract; b-18 closes only after the human-authorized sc-publish order
-and a no-checkout-patch registry render succeed, with the publication/proof
-commit tagged `v0.1.1` before any further source or manifest change.
+`0.1.1` contract. b-18 closes on the development implementation and kit/source
+contracts described above. The later release closes only after the
+human-authorized sc-publish order and a no-checkout-patch registry render
+succeed, with the publication/proof commit tagged `v0.1.1` before any further
+source or manifest change.
 
 ## Out of this phase
 
@@ -376,9 +400,11 @@ python3 -m unittest tests.unit.generation.test_cron_environment
 python3 -m unittest tests.integration.generation.test_observability
 # Run b-18's clean-checkout pinned-kit fetch, real install, repeat dry-run,
 # inventory rejection of docs/sprints/**, and clean git-drift block before
-# the generated consumer preflight.
-bash .github/scripts/run-consumer-preflight.sh
-python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
+# phase implementation acceptance; preserve consumer preflight source wiring.
+# Later release only (run-h0h), after published contracts and bridge removal:
+# bash .github/scripts/run-consumer-preflight.sh
+# python3 scripts/check_observability_release.py
+# python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
 ```
 
 The tree commands show a direct `sc-observability-types` edge and no full
@@ -386,6 +412,9 @@ runtime/OTLP dependency in either library. Development may use the declared
 local facade; release acceptance requires the real registry pair after
 workspace path-override removal and a passing release guard. The generated
 integration test
-parses one HTTP and one real scheduler event from the same JSONL file.
+parses one HTTP and one real scheduler event from the same JSONL file. Use
+`--development-observability` and explicit `--justfile Justfile` for the phase
+reproduction recipes in b-18; development evidence never counts as a passing
+registry-only or published `1.5.1` adapter proof.
 
 The old narrative at `docs/plan/phase-B/phase-B-plan.md` is a pointer to this file.
