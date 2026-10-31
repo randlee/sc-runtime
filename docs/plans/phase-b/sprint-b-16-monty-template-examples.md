@@ -15,7 +15,9 @@ requirements:
   - REQ-RUN-0309
   - REQ-RUN-0301
   - REQ-RUN-0329
+  - REQ-RUN-0501
   - REQ-RUN-0503
+  - REQ-RUN-0701
   - REQ-RUN-0005
   - REQ-CRON-0001
   - REQ-CRON-0003
@@ -25,11 +27,35 @@ requirements:
   - NFR-RUN-0005
   - NFR-RUN-0008
 adrs:
+  - ADR-CFG-0001
+  - ADR-CFG-0002
+  - ADR-CFG-0003
+  - ADR-CMD-0001
+  - ADR-CMD-0002
+  - ADR-CMD-0003
+  - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
+  - ADR-RT-0004
+  - ADR-RUN-0001
   - ADR-RUN-0002
   - ADR-RUN-0003
+  - ADR-RUN-0004
+  - ADR-RUN-0005
+  - ADR-RUN-0007
+  - ADR-RUN-0008
   - ADR-RUN-0011
   - ADR-RUN-0013
+  - ADR-RUN-0015
   - ADR-RUN-0303
+  - ADR-RUN-0401
+  - ADR-RUN-0402
+  - ADR-TRN-0001
+  - ADR-TRN-0002
+  - ADR-TRN-0003
+  - ADR-TRN-0004
+  - ADR-TRN-0005
+  - ADR-TRN-0006
 owned_paths:
   - docs/architecture.md
   - docs/requirements.md
@@ -148,6 +174,22 @@ reuse `sc-observability-types`, and sc-lint supplies boundary and source-size
 checks. REQ-RUN-0005 traces the production dependency/import exclusions;
 NFR-RUN-0008 traces every owned production Rust file to the existing
 `sc-lint lint line-counts` check in `just lint gates` and full `just lint`.
+
+ADR applicability: RUN-0001/0004/0007/0008 govern the project-owned reusable
+registry, direct canonical emission, types-only library edge and blocking-feed
+handoff. RUN-0002/0003/0011/0013/0303 govern release inventories, crate boundaries,
+deadlines and the optional cron/Monty graph. RUN-0005/0015/0401/0402 govern the
+existing sc-lint/just checks, production benchmark/campaign callers, generation
+pipeline and checkout/release rendering. The CFG, TRN, CMD and RT inventories
+are listed because this sprint owns their boundary manifests; their untouched
+configuration, errors, endpoints, routers and lifecycle behavior is preserved.
+RT-0002/TRN-0006 lifecycle execution proof remains b-18; RT-0003 remains
+inapplicable to this continuation, and RT-0004 remains b-14's fixture reference.
+REQ-RUN-0501 traces the explicit development generation mode and its unchanged
+pipeline in deliverable 8 and acceptance 1/6/7; REQ-RUN-0701 traces the two
+explicit non-tag template CI callers exercising that mode. The literal
+validation recipes below retain that existing checkout proof; release rendering
+and actual registry proof remain b-18's acceptance.
 
 ## Public host-extension contract
 
@@ -322,7 +364,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    `sc-compose`, `sc-compose-*`, `agent-team-mail`, `agent-team-mail-core`, and
    `atm-*`; the ATM Rust library name `atm_core` is also covered by import
    checks. Renamed dependency fixtures must fail as production edges.
-8. NFR-RUN-0005 / REQ-RUN-0503: require the freshly generated, unedited checkout
+8. NFR-RUN-0005 / REQ-RUN-0501 / REQ-RUN-0503 / REQ-RUN-0701: require the freshly generated, unedited checkout
    to pass `just setup`, `just lint`, `just test`, `just build-cli`, then
    `just build-daemon`; also compile the daemon with and without `monty`.
    Assert that a checkout render contains the
@@ -332,7 +374,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 
 ## Acceptance criteria
 
-1. `REQ-CRON-0001`: `test_monty_example` and the two generated `cargo check`
+1. `REQ-CRON-0001` / `REQ-RUN-0501` / `REQ-RUN-0701`: `test_monty_example` and the two generated `cargo check`
    commands pass with the generated daemon as the only generated crate with
    the optional `sc-cron` edge; the feature-off build does not link it.
 2. `REQ-CRON-0003`: `monty_host_bridge` passes empty-default, custom

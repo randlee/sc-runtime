@@ -2,6 +2,9 @@
 import ast
 import hashlib
 import importlib.util
+import os
+import signal
+import sys
 from pathlib import Path
 import shutil
 import subprocess
@@ -21,7 +24,90 @@ def driver():
     return module
 
 
+def stop_generation(process):
+    """Terminate the owned session/tree and boundedly reap its direct child."""
+    try:
+        if os.name == "posix":
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            try:
+                process.wait(timeout=1)
+            except subprocess.TimeoutExpired:
+                pass
+            finally:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+        elif process.poll() is None:
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(process.pid)],
+                           capture_output=True, timeout=5, check=False)
+    finally:
+        if process.poll() is None:
+            process.kill()
+        try:
+            process.wait(timeout=5)
+        finally:
+            for pipe in (process.stdout, process.stderr):
+                if pipe is not None:
+                    pipe.close()
+
+
+def run_generation(command, timeout=120):
+    """Bound cargo/plugin/hooks independently of the unittest or CI job."""
+    options = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               text=True, **options)
+    try:
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired as error:
+            raise AssertionError(f"generation command exceeded {timeout}s: {command!r}; captured output: {error.output!r}; stderr: {error.stderr!r}") from error
+        return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+    finally:
+        stop_generation(process)
+
+
 class MontyExampleTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "posix", "Unix session cleanup witness")
+    def test_stalled_generation_times_out_and_reaps_owned_tree(self):
+        import queue
+        import threading
+        original = subprocess.Popen
+        captured = []
+        children = []
+        script = """import subprocess, signal, sys
+child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])
+def stop(*_):
+    child.wait(timeout=5)
+    sys.exit(0)
+signal.signal(signal.SIGTERM, stop)
+print(child.pid, flush=True)
+signal.pause()
+"""
+        def ready_process(*args, **kwargs):
+            process = original(*args, **kwargs)
+            captured.append(process)
+            ready = queue.Queue()
+            reader = threading.Thread(target=lambda: ready.put(process.stdout.readline()), daemon=True)
+            reader.start()
+            try:
+                children.append(int(ready.get(timeout=10)))
+            except BaseException:
+                stop_generation(process)
+                raise
+            finally:
+                reader.join(timeout=1)
+            return process
+        with patch.object(subprocess, "Popen", side_effect=ready_process):
+            with self.assertRaisesRegex(AssertionError, "generation command exceeded"):
+                run_generation([sys.executable, "-c", script], timeout=0.1)
+        self.assertIsNotNone(captured[0].returncode)
+        with self.assertRaises(ProcessLookupError):
+            os.kill(children[0], 0)
+
     def test_manifest_inventory_and_default_off_features(self):
         for name in ("Cargo.toml", "workspace.template.toml"):
             dependencies = tomllib.loads((ROOT / "template" / name).read_text())["workspace"]["dependencies"]
@@ -67,7 +153,7 @@ class MontyExampleTests(unittest.TestCase):
             root = Path(tmp)
             values = root / "values.toml"
             values.write_text('[values]\ndb = "sqlite"\nmcp = true\nlicence = "MIT"\n')
-            result = subprocess.run(["cargo", "generate", "--path", str(ROOT / "template"), "--name", "widget-app", "--destination", str(root), "--silent", "--allow-commands", "--template-values-file", str(values)], capture_output=True, text=True, check=False)
+            result = run_generation(["cargo", "generate", "--path", str(ROOT / "template"), "--name", "widget-app", "--destination", str(root), "--silent", "--allow-commands", "--template-values-file", str(values)])
             self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
             output = root / "widget-app"
             self.assertTrue((output / "examples/monty/cron.py").is_file())

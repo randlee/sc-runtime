@@ -258,22 +258,28 @@ fn reap_after_kill(
     correlation: &crate::worker::RunCorrelation,
 ) {
     let _ = child.start_kill();
-    if !matches!(wait_until(child, deadline), Ok(Some(_)))
-        && let Some(mut event) = crate::component_event(
-            logger.service_name().clone(),
-            "cron.monty.compose",
-            "child.kill_timeout",
-            sc_observability_types::Level::Warn,
-            "timeout",
-            Some("COMPOSE_CHILD_KILL_TIMEOUT"),
-            serde_json::json!({"deadline_remaining_ms": 0, "pid": child.id()})
-                .as_object()
-                .cloned()
-                .unwrap_or_default(),
-        )
-    {
-        event.correlation_id = correlation.clone();
-        let _ = logger.emit(event);
+    match wait_until(child, deadline) {
+        Ok(None) => {
+            if let Some(mut event) = crate::component_event(
+                logger.service_name().clone(),
+                "cron.monty.compose",
+                "child.kill_timeout",
+                sc_observability_types::Level::Warn,
+                "timeout",
+                Some("COMPOSE_CHILD_KILL_TIMEOUT"),
+                serde_json::json!({"deadline_remaining_ms": 0, "pid": child.id()})
+                    .as_object()
+                    .cloned()
+                    .unwrap_or_default(),
+            ) {
+                event.correlation_id = correlation.clone();
+                let _ = logger.emit(event);
+            }
+        }
+        Ok(Some(_)) => {}
+        // An observation error is not evidence that the reap deadline elapsed.
+        // Cleanup remains best effort and does not replace the caller's result.
+        Err(_) => {}
     }
 }
 
@@ -348,6 +354,95 @@ mod tests {
         assert_eq!(child.kills, 1);
         assert_eq!(rejecting.attempts(), 1);
     }
+    #[derive(Debug)]
+    struct WaitError(Unreapable);
+    impl ChildWrapper for WaitError {
+        fn inner(&self) -> &dyn ChildWrapper {
+            self
+        }
+        fn inner_mut(&mut self) -> &mut dyn ChildWrapper {
+            self
+        }
+        fn into_inner(self: Box<Self>) -> Box<dyn ChildWrapper> {
+            self
+        }
+        fn id(&self) -> u32 {
+            self.0.id()
+        }
+        fn start_kill(&mut self) -> io::Result<()> {
+            self.0.start_kill()
+        }
+        fn try_wait(&mut self) -> io::Result<Option<ExitStatus>> {
+            Err(io::Error::other("injected immediate wait failure"))
+        }
+    }
+
+    #[test]
+    fn immediate_wait_error_does_not_claim_an_elapsed_reap_deadline() {
+        let recording = Arc::new(RecordingCanonicalLog::new(
+            ServiceName::new("wait-error").expect("service"),
+        ));
+        let logger: SharedCanonicalLog = recording.clone();
+        let mut child = WaitError(Unreapable { kills: 0 });
+        reap_after_kill(
+            &mut child,
+            Instant::now() + Duration::from_secs(60),
+            &logger,
+            &None,
+        );
+        assert_eq!(child.0.kills, 1);
+        assert!(recording.events().is_empty());
+        let rejecting = Arc::new(RejectingCanonicalLog::new(
+            ServiceName::new("reject").expect("service"),
+        ));
+        let logger: SharedCanonicalLog = rejecting.clone();
+        reap_after_kill(
+            &mut child,
+            Instant::now() + Duration::from_secs(60),
+            &logger,
+            &None,
+        );
+        assert_eq!(child.0.kills, 2);
+        assert_eq!(rejecting.attempts(), 0);
+    }
+
+    #[cfg(unix)]
+    struct TestChild(Box<dyn ChildWrapper>, Arc<std::sync::atomic::AtomicBool>);
+    #[cfg(unix)]
+    impl Drop for TestChild {
+        fn drop(&mut self) {
+            let _ = self.0.start_kill();
+            let result = wait_until(
+                &mut *self.0,
+                Instant::now() + crate::process::REAP_AFTER_KILL,
+            );
+            self.1.store(
+                matches!(result, Ok(Some(_))),
+                std::sync::atomic::Ordering::Release,
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn readiness_failure_unwind_kills_and_reaps_the_owned_test_group() {
+        let mut command = CommandWrap::from({
+            let mut command = Command::new("/bin/sh");
+            command.args(["-c", "exec /bin/sleep 20"]);
+            command
+        });
+        command.wrap(ProcessGroup::leader());
+        let reaped = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let observed = Arc::clone(&reaped);
+        let child = TestChild(command.spawn().expect("spawn test group"), observed);
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(move || {
+            let _owned = child;
+            panic!("injected readiness assertion failure");
+        }));
+        assert!(result.is_err());
+        assert!(reaped.load(std::sync::atomic::Ordering::Acquire));
+    }
+
     #[cfg(unix)]
     #[test]
     fn a_started_group_is_killed_when_its_row_deadline_expires() {
@@ -366,7 +461,10 @@ mod tests {
             .stdin(Stdio::null());
         let mut command = CommandWrap::from(command);
         command.wrap(ProcessGroup::leader());
-        let mut child = ChildGuard(command.spawn().expect("spawn group"));
+        let mut child = TestChild(
+            command.spawn().expect("spawn group"),
+            Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        );
         let stdout = child.0.stdout().take().expect("startup pipe");
         let (ready, observed) = mpsc::sync_channel(1);
         let reader = thread::spawn(move || {
