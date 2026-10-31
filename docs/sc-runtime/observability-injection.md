@@ -256,14 +256,18 @@ authorization/publication and registry-only generated builds follow Phase B in
 `run-h0h`. The phase-end readiness review after fixes must report the remaining
 release limits explicitly. The publication evidence and registry-only proof bind to one source commit,
 which is tagged `v0.1.1` without an intervening source or manifest change.
-The currently pinned kit is not a valid b-18 input because it installs an
-upstream `docs/sprints/**` artifact. The kit install requires a qualified later
-full SHA whose complete actual installer destination inventory excludes that
-class; it also rejects traversal, unsafe symlinks, and package-unsafe paths.
-Upstream source may retain its history. Kit preparation can progress
-independently; final runtime composition still consumes approved parent merges.
-This contract does not authorize or perform publication of either upstream
-observability crate.
+Historically, the former sc-publish pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` was
+rejected because its actual installer/package destinations included upstream
+`docs/sprints/**` history. The current pin, `9677ab083e7dd3feb258235a342e321ca1b45d8d`, is
+the qualified and installed immutable revision. Its qualification enumerated all 85 actual
+copy/render/package destinations, compared the complete inventory with real install outputs,
+excluded `docs/sprints/**` destinations, and rejected traversal, absolute or duplicate
+paths, unsafe symlinks, and package-unsafe paths. Upstream PR 137 remains draft and
+unmerged; that status is distinct from qualification of the available immutable revision and
+adds no merge prerequisite. Upstream source may retain its sprint history. Kit preparation
+can proceed independently; final runtime composition still consumes approved parent merges.
+This contract does not authorize or perform publication of either upstream observability
+crate.
 
 ## Acceptance for template
 

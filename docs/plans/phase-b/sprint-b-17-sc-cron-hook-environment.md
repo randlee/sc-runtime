@@ -477,7 +477,7 @@ their boundary manifests merely because their earlier artifacts are consumed.
 6. Canary cases include ENV, HOST, :, and 1: redaction must not alter fixed
    codes/recovery or metadata. All scheduled diagnostics/outcomes/events/reasons
    and Debug strings omit values; direct raw HookOutput fields are the stated
-   exception. Initialization/runtime exceptions and both CLI streams are covered.
+   exception. Initialization/runtime exceptions and both CLI streams are covered. [roots: `req:NFR-CRON-0002`]
 7. SQLite cases prove fresh schema creation, canonical round-trip, empty
    defaults, corrupt-row handling, and non-destructive rejection of an
    incompatible table. No historical migration fixture is required.
@@ -487,7 +487,7 @@ their boundary manifests merely because their earlier artifacts are consumed.
    A freshly generated project passes REQ-RUN-0503's setup, lint,
    test, build-cli, and build-daemon sequence with no generated source edits.
    Default feature builds exclude Monty and boundary lint permits only the
-   declared types/dependencies.
+   declared types/dependencies. [roots: `req:REQ-CRON-0019`]
 
 ## Required validation
 

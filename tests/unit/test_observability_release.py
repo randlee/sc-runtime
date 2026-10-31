@@ -106,8 +106,10 @@ class ReleaseGuardTests(unittest.TestCase):
         declared = json.loads((root / "release/sc-publish-consumer-input.json").read_text())["preflight_checks"]
         installed = tomllib.loads((root / "release/publish-preflight.toml").read_text())["checks"]
         self.assertEqual(declared, installed)
-        self.assertEqual([check["id"] for check in installed],
-                         ["observability-registry-only", "benchmark-pass"])
+        self.assertEqual(
+            [check["id"] for check in installed],
+            ["observability-registry-only", "release-contract-sources", "benchmark-pass"],
+        )
         self.assertEqual(installed[0]["run"], "python3 scripts/check_observability_release.py")
 
     def check_raises(self, manifest=None, metadata=None):

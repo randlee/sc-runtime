@@ -450,12 +450,12 @@ registry-only generated build.
 1. ADR-RUN-0004 / ADR-RUN-0007 / ADR-RUN-0013 / ADR-RT-0001:
    `observability_contract` for both crates passes against the documented
    object-safe trait, Arc ownership, Noop defaults, dependency edges, and
-   best-effort failure policy.
+   best-effort failure policy. [roots: `req:NFR-RT-0001`]
 2. ADR-RUN-0004: the required `sc-lint lint sc-boundary` command exits zero
-   with both types-only edges allowed and the full runtime and OTLP rejected.
+   with both types-only edges allowed and the full runtime and OTLP rejected. [roots: `req:NFR-RT-0002`, `req:NFR-RT-0003`]
 3. `boundary:BOUNDARY-sc-runtime`: the runtime `observability_contract` test
    passes only when `DaemonBuilder::logger` preserves typestate and the public
-   builder surface remains `logger`, `stores`, `routes`, `mcp`, and `run`.
+   builder surface remains `logger`, `stores`, `routes`, `mcp`, and `run`. [roots: `req:REQ-RT-0001`]
 4. `boundary:BOUNDARY-sc-cron`: the cron `observability_contract` and
    `observability_components` tests pass only when legacy constructors use a
    Noop and `open_with_logger` installs one identical handle in store, jitter,

@@ -376,7 +376,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 
 1. `REQ-CRON-0001` / `REQ-RUN-0501` / `REQ-RUN-0701`: `test_monty_example` and the two generated `cargo check`
    commands pass with the generated daemon as the only generated crate with
-   the optional `sc-cron` edge; the feature-off build does not link it.
+   the optional `sc-cron` edge; the feature-off build does not link it. [roots: `req:REQ-CRON-0001`, `req:REQ-RUN-0301`]
 2. `REQ-CRON-0003`: `monty_host_bridge` passes empty-default, custom
    closure call/result, handler error, multiple-call, invalid/duplicate/reserved
    registration, unregistered-name denial, and both opt-in CLI adapter cases.
@@ -391,10 +391,10 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    The production registration assertion derives names from the configured
    registry rather than requiring a fixed global list.
    Driver tests assert the transferred `COMPOSE_CHILD_KILL_TIMEOUT` event row
-   and prove rejected emission leaves timeout/cleanup results unchanged.
+   and prove rejected emission leaves timeout/cleanup results unchanged. [roots: `req:REQ-CRON-0003`]
 3. `NFR-CRON-0001`: the required `cargo tree` command passes inspection with
    no Monty crate in the default tree and no `monty-pool`, `monty-fs`, or
-   `monty-runtime` in the Monty tree.
+   `monty-runtime` in the Monty tree. [roots: `req:NFR-CRON-0001`]
 4. `NFR-RUN-0005`: `test_monty_example` passes using a temporary output and
    no sleep, network, globally fixed project path, or external compose process.
 5. ADR-RUN-0013: `monty_host_bridge` and `test_monty_example` pass only when
@@ -422,7 +422,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
     renamed and transitive packages, for its supported production features.
     Fixture cases prove a production Rust import is rejected and a test-only
     dependency/import is accepted. Executable names in adapter configuration
-    and documentation are not Rust crate references.
+    and documentation are not Rust crate references. [roots: `req:REQ-RUN-0005`]
 
 ## Required validation
 

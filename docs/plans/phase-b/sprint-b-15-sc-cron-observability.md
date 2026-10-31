@@ -224,7 +224,7 @@ wire, environment, payload or hook-source data.
 1. `boundary:BOUNDARY-sc-cron`: `observability` passes only when native and
    Monty runs emit one terminal event from the complete `RunOutcome` table,
    arbitrary strings are copied rather than parsed, and each resolver/join
-   origin emits its fixed code.
+   origin emits its fixed code. [roots: `req:REQ-CRON-0005`]
 2. ADR-RUN-0013: `observability` passes only when rejecting every event leaves
    stop and retry decisions unchanged.
 3. `boundary:BOUNDARY-sc-cron`: `observability` and `monty_hook` pass with
