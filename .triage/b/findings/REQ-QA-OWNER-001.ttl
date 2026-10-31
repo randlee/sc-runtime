@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-owner:REQ-QA-OWNER-001>
+  qa:id "REQ-QA-OWNER-001" ;
+  qa:sprint "b-owner-amendment" ;
+  qa:qaPass "qa-b-owner-amendment-2" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "fff04216828e088fb7443e281721f03279b3a2f4" ;
+  qa:location "docs/requirements.md:3654; docs/architecture.md:41" ;
+  qa:issue "The timing amendment moves the matching 1.5.1 release, five-crate publication evidence, registry-only generated proof, and v0.1.1 tag from Phase B/b-18 to release epic run-h0h, while active REQ-RUN-0702 still says b-18 owns the single integration acceptance root and release evidence and requires b-18 release evidence plus the release-mode registry proof and same-source tag (including Success Criteria 6-7). The unchanged architecture baseline also says actual publication remains the gated b-18 release step. The changed plans simultaneously state these requirements and architecture/ADRs remain unchanged, so owner timing direction is not yet represented consistently by governing documents." ;
+  qa:recommendation "Keep REQ-RUN-0702's b-18 release evidence and architecture's b-18 release gate in scope, or make a planned and reviewed amendment to the governing requirement and architecture that relocates the same release obligations to run-h0h while retaining every production safety predicate. Then align the six documentation changes to that approved source-of-truth update; do not treat the owner timing direction alone as a waiver of active requirements." .
