@@ -233,6 +233,24 @@ A cache-sync adaptor in the consumer repo exposes the sync methods. The schedule
 
 `CronError` is `#[non_exhaustive]` and implements `Display` and `std::error::Error`. Variants: `BadExpression(String)`, `InvalidSpec(String)`, `AlreadyActive(ScheduleName)`, `NotFound(ScheduleName)`, `HookFailed(String)`, `Store(StoreError)`, `Fenced { id, generation }`. Codes: `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, `FENCED`. `StoreError` is this crate's error for the schedule table. It is not the schema crate's `StoreError`. It wraps `rusqlite::Error` through `Error::source` and uses the code `STORE_FAILED`. The `BadExpression` recovery text tells the caller to use a five-field string, a six-field seconds-first string, or `@hourly` through `@yearly`.
 
+`WorkerHandle::shutdown(deadline)` signals stop, then joins the worker to
+physical completion even after the deadline. It returns `false` when that
+deadline was missed and retains the existing `shutdown.worker_timeout` and
+`shutdown.deadline_exceeded` event contracts. With no Monty feed outstanding,
+it cancels and joins remaining cooperative Rust/Python runs without writing
+an outcome for those cancellations. With Monty outstanding, those siblings
+retain their `TimedOut` outcomes and the feed is joined when it returns.
+Removed/replaced cooperative slots are also cancelled and joined. The worker
+itself is never aborted by shutdown, so its awaited blocking store call cannot
+be detached while retaining a logger Arc. SQLite lock waits use the existing
+busy timeout; custom stores/native work must cooperate. The deadline is not a
+promise of forced thread preemption. Callers must await shutdown to completion,
+drop their scheduler/store handles, then consume logger shutdown. Dropping the
+handle or shutdown future cannot await those joins. Blocking dotenv reads
+capture only immutable file/root authorization sets, not the full environment
+host or its application resolver, so an abandoned read cannot retain injected
+logger handles through that resolver.
+
 `Scheduler::open` is the production path. It takes the path of the schedule database and a `ScheduleLimits`, opens the store with that value, and returns `CronError::InvalidSpec` when that value does not match the opened store's `limits()`. The comparison is the store this call opened, not another writer's ceiling. The ceiling is not written into the file. `Scheduler::new` reads `ScheduleStore::limits` and does not take a second copy. `Scheduler::limits` reads the same store value, and the store enforces it when a new name is inserted. That file is not the application's `store-sqlite` file.
 
 ## What this crate is not

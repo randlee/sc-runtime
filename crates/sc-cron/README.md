@@ -106,6 +106,12 @@ Runtime notes:
   the worker.
 - Stop the worker by awaiting `WorkerHandle::shutdown`. Dropping the handle
   drains detached, and in-flight outcomes can be lost at process exit.
+  A shutdown deadline cancels and joins cooperative runs; the worker itself
+  remains owned until all runs and its active blocking store call finish.
+  `false` means the deadline was missed, not that ownership was detached.
+  Physical completion can exceed the deadline for a store or native job that
+  does not cooperate; Tokio cannot forcibly preempt running blocking work.
+  Await shutdown to completion before consuming the application's logger.
 
 ## Feature flags
 

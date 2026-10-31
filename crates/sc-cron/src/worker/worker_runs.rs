@@ -24,10 +24,11 @@ where
 {
     /// Joins every in-flight run at once.
     ///
-    /// Rust and Python still abort at their own monotonic deadline when no
-    /// Monty feed is outstanding. A handle deadline aborts those siblings,
-    /// and records `TimedOut`, only while a Monty feed is still outstanding.
-    /// Monty joins are not aborted.
+    /// Rust and Python abort and join at their own monotonic deadline when
+    /// no Monty feed is outstanding. At a handle deadline they are cancelled
+    /// and joined without a new outcome, unless a Monty feed is outstanding;
+    /// then those siblings retain their `TimedOut` outcomes. Monty joins are
+    /// not aborted.
     pub(super) async fn drain(&mut self) {
         let mut siblings_aborted = false;
         loop {
