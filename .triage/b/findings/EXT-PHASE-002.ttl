@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:phase-b-end:qa1:EXT-PHASE-002>
+  qa:id "EXT-PHASE-002" ;
+  qa:sprint "phase-b-end" ;
+  qa:qaPass "qa-phase-b-end-1" ;
+  qa:severity "Minor" ;
+  qa:status "open" ;
+  qa:reviewer "extensibility-qa" ;
+  qa:commit "a117c53a68a39bfa08bcfa64b0528ae8abcd7194" ;
+  qa:location "docs/sc-runtime/observability-injection.md:259" ;
+  qa:issue "Active integration guidance still calls the qualified current kit invalid" ;
+  qa:recommendation "Make both paragraphs explicitly historical: identify former 16457 as the rejected pin and current 9677 as qualified/installed. Retain complete inventory, traversal/symlink and docs/sprints destination exclusion requirements, and keep upstream PR137 draft/unmerged status distinct from qualification of its immutable available revision. Do not introduce a new upstream-merge prerequisite." .

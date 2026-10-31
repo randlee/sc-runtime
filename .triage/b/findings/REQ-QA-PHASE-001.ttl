@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:phase-b-end:qa1:REQ-QA-PHASE-001>
+  qa:id "REQ-QA-PHASE-001" ;
+  qa:sprint "phase-b-end" ;
+  qa:qaPass "qa-phase-b-end-1" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "a117c53a68a39bfa08bcfa64b0528ae8abcd7194" ;
+  qa:location "docs/plans/phase-b/phase-b-plan.md:206" ;
+  qa:issue "The phase plan claims 28 continuation REQ/NFR identifiers (NFR-CRON-0001, NFR-CRON-0002, NFR-RT-0001, NFR-RT-0002, NFR-RT-0003, NFR-RT-0004, NFR-RUN-0002, NFR-RUN-0005, NFR-RUN-0008, NFR-RUN-0009, NFR-RUN-0010, REQ-CRON-0001, REQ-CRON-0003, REQ-CRON-0004, REQ-CRON-0005, REQ-CRON-0019, REQ-RT-0001, REQ-RT-0004, REQ-RT-0005, REQ-RUN-0002, REQ-RUN-0003, REQ-RUN-0004, REQ-RUN-0005, REQ-RUN-0301, REQ-RUN-0309, REQ-RUN-0503, REQ-RUN-0701, REQ-RUN-0702) and the six sprint frontmatter lists requirements, but none of the six sprint acceptance-criteria sections declares a `req:<ID>` root. The phase acceptance table maps six product surfaces to test suites, not each requirement identifier to exactly one owner criterion, so phase-level ownership of each claimed REQ/NFR cannot be verified. The per-sprint passes establish deliverable and behavior closure but do not supply the missing explicit requirement-root mapping." ;
+  qa:recommendation "Add an explicit `req:<ID>` root to the acceptance criterion that owns each phase continuation REQ/NFR, assign each claimed requirement to exactly one integration sprint, and reconcile the six additional requirement IDs present in sprint frontmatter but absent from the phase plan\u2019s continuation-governance list. Preserve consuming-sprint references as constraints without duplicating ownership roots." .

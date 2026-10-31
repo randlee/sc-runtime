@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:phase-b-end:qa1:ARCH-PHASE-B-001>
+  qa:id "ARCH-PHASE-B-001" ;
+  qa:sprint "phase-b-end" ;
+  qa:qaPass "qa-phase-b-end-1" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "arch-qa" ;
+  qa:commit "a117c53a68a39bfa08bcfa64b0528ae8abcd7194" ;
+  qa:location "template/crates/daemon/src/composition.rs:69" ;
+  qa:issue "Generated composition opens and initializes its cron SQLite store before runtime endpoint validation and daemon.lock acquisition. CronServices::open_scheduler at lines66\u201372 reaches Connection::open, journal_mode=WAL and schema initialization before DaemonBuilder.run. Thus an invalid-endpoint or losing concurrent daemon can create/open/mutate cron.db despite the active lock-before-stores startup contract. Deferring only spawn_worker to the stores callback does not defer this store initialization." ;
+  qa:recommendation "Move only the generated daemon open_scheduler call into its existing post-lock stores startup callback, and transfer the scheduler plus worker to the existing cleanup owner so both remain retained through worker join. Preserve exact DAEMON.CRON_OPEN cause/recovery and primary/secondary result formatting. Add a generated production-composition regression that holds daemon.lock with a fresh configured cron path and verifies the losing invocation returns the lock-held failure without creating that database, plus an invalid-endpoint case that likewise leaves the cron path absent. Keep sc-cron standalone/external configuration behavior, SDK dependencies and the generic cleanup API unchanged." .

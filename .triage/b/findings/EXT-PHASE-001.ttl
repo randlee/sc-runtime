@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:phase-b-end:qa1:EXT-PHASE-001>
+  qa:id "EXT-PHASE-001" ;
+  qa:sprint "phase-b-end" ;
+  qa:qaPass "qa-phase-b-end-1" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "extensibility-qa" ;
+  qa:commit "a117c53a68a39bfa08bcfa64b0528ae8abcd7194" ;
+  qa:location "tests/unit/test_observability_release.py:104" ;
+  qa:issue "Release guard regression test rejects the required source-contract preflight entry" ;
+  qa:recommendation "Update the expected IDs to include release-contract-sources in its actual required order. Preserve declared==installed, observability-registry-only first, the active strict registry guard, and the source-check versus postpublication registry-proof distinction. Rerun this unit module; do not remove the required manifest entry or relax either release gate." .
