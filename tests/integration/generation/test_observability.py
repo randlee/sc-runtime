@@ -357,7 +357,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         contract_runner = (ROOT / "scripts/check_release_contract_sources.sh").read_text()
         self.assertIn("requirements-generation.txt", contract_runner)
         self.assertIn("GeneratedObservabilityIntegration.test_release_contract_sources", contract_runner)
-        self.assertEqual(checks["benchmark-pass"], "python3 scripts/benchmark/check_gate.py")
+        self.assertEqual(checks["benchmark-pass"], "python3 scripts/benchmark/run_remote_gate.py")
         preflight = consumer["preflight_checks"]
         self.assertLess(next(i for i, check in enumerate(preflight) if check["id"] == "observability-registry-only"),
                         next(i for i, check in enumerate(preflight) if check["id"] == "release-contract-sources"))
