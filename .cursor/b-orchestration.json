@@ -6040,6 +6040,293 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
+    },
+    {
+      "qa_pass": "qa-phase-b-closeout-final-1",
+      "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
+      "reviewer_manifest": [
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/final_closeout_ext",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/final_closeout_service",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "req-qa",
+          "task_id": "/root/final_closeout_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/final_closeout_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/final_closeout_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/final_closeout_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-PHASE-001.ttl",
+        ".triage/b/findings/ARCH-PHASE-B-001.ttl",
+        ".triage/b/findings/EXT-PHASE-001.ttl",
+        ".triage/b/findings/EXT-PHASE-002.ttl",
+        ".triage/b/findings/FTQ-PHASEB-001.ttl",
+        ".triage/b/findings/RUST-QA-PHASE-001.ttl",
+        ".triage/b/findings/EXT-PROD-001.ttl",
+        ".triage/b/findings/RSH-PROD-001.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/final_closeout_enforcer",
+      "machine_status": {
+        "sprint": "phase-b-final-closeout",
+        "task": "qa-phase-b-closeout-final-1",
+        "branch": "integrate/phase-b-observability",
+        "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+        "pr": 96,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 98,
+          "total": 98,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head execution remains pending: parent-refreshed snapshot has 16/17 checks successful and one running, the sole pending hosted check is aggregate job 124504564224; the full local just test also remains developer-central and running. Phase admission awaits terminal successful evidence. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
+        "next_action": "await_ci",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/final_closeout_ext",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/final_closeout_service",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "req-qa",
+            "task_id": "/root/final_closeout_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/final_closeout_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/final_closeout_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/final_closeout_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-phase-b-closeout-final-1",
+          "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+          "pr_number": 96,
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
+          "coordinator_task_id": "/root/final_closeout_enforcer",
+          "reviewer_tasks": [
+            {
+              "agent": "extensibility-qa",
+              "task_id": "/root/final_closeout_ext",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-service-hardening-agent",
+              "task_id": "/root/final_closeout_service",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "req-qa",
+              "task_id": "/root/final_closeout_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/final_closeout_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/final_closeout_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "flaky-test-qa",
+              "task_id": "/root/final_closeout_flaky",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            }
+          ],
+          "triage": {
+            "phase_id": "b",
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-PHASE-001.ttl",
+              ".triage/b/findings/ARCH-PHASE-B-001.ttl",
+              ".triage/b/findings/EXT-PHASE-001.ttl",
+              ".triage/b/findings/EXT-PHASE-002.ttl",
+              ".triage/b/findings/FTQ-PHASEB-001.ttl",
+              ".triage/b/findings/RUST-QA-PHASE-001.ttl",
+              ".triage/b/findings/EXT-PROD-001.ttl",
+              ".triage/b/findings/RSH-PROD-001.ttl"
+            ]
+          },
+          "parent_correlation_required": true
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
     }
   ],
   "model_authority": "User: yes, use terra/sol/luna where appropriate",
@@ -7004,7 +7291,7 @@
   },
   "phase_end": {
     "bead": "run-03z.30",
-    "status": "joint_final_six_reviews_pass_execution_pending",
+    "status": "joint_final_inflight_only_execution_gates_pending",
     "review_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa1",
     "review_branch": "integrate/phase-b-observability",
     "coordination_branch": "codex/phase-b-review-state",
@@ -7102,11 +7389,207 @@
     },
     "qa3_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa3",
     "qa3_bead": "run-03z.30.3",
-    "local_full_gates": "/tmp/phaseb-combined-full-gates-1e6931b.json"
+    "local_full_gates": "/tmp/phaseb-combined-full-gates-1e6931b.json",
+    "machine_status": {
+      "sprint": "phase-b-final-closeout",
+      "task": "qa-phase-b-closeout-final-1",
+      "branch": "integrate/phase-b-observability",
+      "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+      "pr": 96,
+      "verdict": "IN-FLIGHT",
+      "deliverables": {
+        "complete": 98,
+        "total": 98,
+        "percent": 100.0
+      },
+      "findings": {
+        "blocking": 0,
+        "important": 0,
+        "minor": 0
+      },
+      "blocking_ids": [],
+      "merge_readiness": "not ready",
+      "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head execution remains pending: parent-refreshed snapshot has 16/17 checks successful and one running, the sole pending hosted check is aggregate job 124504564224; the full local just test also remains developer-central and running. Phase admission awaits terminal successful evidence. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
+      "next_action": "await_ci",
+      "owner": "parent-orchestrator",
+      "reviewer_spawn_gate": "pass",
+      "reviewer_manifest": [
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/final_closeout_ext",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/final_closeout_service",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "req-qa",
+          "task_id": "/root/final_closeout_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/final_closeout_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/final_closeout_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/final_closeout_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "evidence_chain": {
+        "qa_pass": "qa-phase-b-closeout-final-1",
+        "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+        "pr_number": 96,
+        "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
+        "coordinator_task_id": "/root/final_closeout_enforcer",
+        "reviewer_tasks": [
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/final_closeout_ext",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/final_closeout_service",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "req-qa",
+            "task_id": "/root/final_closeout_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/final_closeout_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/final_closeout_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/final_closeout_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "triage": {
+          "phase_id": "b",
+          "ttl_paths": [
+            ".triage/b/findings/REQ-QA-PHASE-001.ttl",
+            ".triage/b/findings/ARCH-PHASE-B-001.ttl",
+            ".triage/b/findings/EXT-PHASE-001.ttl",
+            ".triage/b/findings/EXT-PHASE-002.ttl",
+            ".triage/b/findings/FTQ-PHASEB-001.ttl",
+            ".triage/b/findings/RUST-QA-PHASE-001.ttl",
+            ".triage/b/findings/EXT-PROD-001.ttl",
+            ".triage/b/findings/RSH-PROD-001.ttl"
+          ]
+        },
+        "parent_correlation_required": true
+      },
+      "missing_reviewers": [],
+      "unparsed_reviewers": []
+    },
+    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539"
   },
   "production_readiness": {
     "bead": "run-03z.31",
-    "status": "joint_final_six_scoped_reviews_pass_zero_findings_execution_pending",
+    "status": "joint_final_inflight_only_execution_gates_pending",
     "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
     "qa_pass": "qa-phase-b-production-1",
     "reviewer_manifest": [
@@ -7189,92 +7672,32 @@
       "RSH-PROD-001": "not_applicable"
     },
     "machine_status": {
-      "sprint": "phase-b-production-readiness",
-      "task": "/root/production_qa1_enforcer",
+      "sprint": "phase-b-final-closeout",
+      "task": "qa-phase-b-closeout-final-1",
       "branch": "integrate/phase-b-observability",
-      "commit": "1e6931bed0130d8452a35a9a6ec17b30ace11302",
+      "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
       "pr": 96,
-      "verdict": "FAIL",
+      "verdict": "IN-FLIGHT",
       "deliverables": {
-        "complete": 3,
-        "total": 3,
+        "complete": 98,
+        "total": 98,
         "percent": 100.0
       },
       "findings": {
         "blocking": 0,
-        "important": 2,
+        "important": 0,
         "minor": 0
       },
       "blocking_ids": [],
       "merge_readiness": "not ready",
-      "merge_reason": "Two distinct Important findings remain open (EXT-PROD-001 and RSH-PROD-001). PR #96 also has one required hosted aggregate check still in progress at the current snapshot, and phase-ending QA3 remains publicly IN-FLIGHT. Production release admission is separately not yet admissible pending the documented run-h0h gates.",
-      "next_action": "triage_and_fix",
+      "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head execution remains pending: parent-refreshed snapshot has 16/17 checks successful and one running, the sole pending hosted check is aggregate job 124504564224; the full local just test also remains developer-central and running. Phase admission awaits terminal successful evidence. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
+      "next_action": "await_ci",
       "owner": "parent-orchestrator",
       "reviewer_spawn_gate": "pass",
       "reviewer_manifest": [
         {
-          "agent": "req-qa",
-          "task_id": "/root/production_qa1_req",
-          "spawn_actor": "parent-orchestrator",
-          "fenced_json_received": true,
-          "verdict": "PASS",
-          "findings": {
-            "blocking": 0,
-            "important": 0,
-            "minor": 0
-          }
-        },
-        {
-          "agent": "arch-qa",
-          "task_id": "/root/production_qa1_arch",
-          "spawn_actor": "parent-orchestrator",
-          "fenced_json_received": true,
-          "verdict": "PASS",
-          "findings": {
-            "blocking": 0,
-            "important": 0,
-            "minor": 0
-          }
-        },
-        {
-          "agent": "ruthless-boundary-qa",
-          "task_id": "/root/production_qa1_boundary",
-          "spawn_actor": "parent-orchestrator",
-          "fenced_json_received": true,
-          "verdict": "PASS",
-          "findings": {
-            "blocking": 0,
-            "important": 0,
-            "minor": 0
-          }
-        },
-        {
           "agent": "extensibility-qa",
-          "task_id": "/root/production_qa1_ext",
-          "spawn_actor": "parent-orchestrator",
-          "fenced_json_received": true,
-          "verdict": "FAIL",
-          "findings": {
-            "blocking": 0,
-            "important": 1,
-            "minor": 0
-          }
-        },
-        {
-          "agent": "rust-qa-agent",
-          "task_id": "/root/production_qa1_rust",
-          "spawn_actor": "parent-orchestrator",
-          "fenced_json_received": true,
-          "verdict": "FAIL",
-          "findings": {
-            "blocking": 0,
-            "important": 1,
-            "minor": 0
-          }
-        },
-        {
-          "agent": "rust-best-practices-agent",
-          "task_id": "/root/production_qa1_rbp",
+          "task_id": "/root/final_closeout_ext",
           "spawn_actor": "parent-orchestrator",
           "fenced_json_received": true,
           "verdict": "PASS",
@@ -7286,19 +7709,55 @@
         },
         {
           "agent": "rust-service-hardening-agent",
-          "task_id": "/root/production_qa1_service",
+          "task_id": "/root/final_closeout_service",
           "spawn_actor": "parent-orchestrator",
           "fenced_json_received": true,
-          "verdict": "FAIL",
+          "verdict": "PASS",
           "findings": {
             "blocking": 0,
-            "important": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "req-qa",
+          "task_id": "/root/final_closeout_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/final_closeout_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/final_closeout_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
             "minor": 0
           }
         },
         {
           "agent": "flaky-test-qa",
-          "task_id": "/root/production_qa1_flaky",
+          "task_id": "/root/final_closeout_flaky",
           "spawn_actor": "parent-orchestrator",
           "fenced_json_received": true,
           "verdict": "PASS",
@@ -7310,22 +7769,104 @@
         }
       ],
       "evidence_chain": {
-        "qa_pass": "production-readiness-qa1",
-        "commit": "1e6931bed0130d8452a35a9a6ec17b30ace11302",
-        "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541748892",
-        "coordinator_task_id": "/root/production_qa1_enforcer",
+        "qa_pass": "qa-phase-b-closeout-final-1",
+        "commit": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+        "pr_number": 96,
+        "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
+        "coordinator_task_id": "/root/final_closeout_enforcer",
+        "reviewer_tasks": [
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/final_closeout_ext",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/final_closeout_service",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "req-qa",
+            "task_id": "/root/final_closeout_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/final_closeout_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/final_closeout_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/final_closeout_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
         "triage": {
-          "branch": "codex/phase-b-review-state",
+          "phase_id": "b",
           "ttl_paths": [
+            ".triage/b/findings/REQ-QA-PHASE-001.ttl",
+            ".triage/b/findings/ARCH-PHASE-B-001.ttl",
+            ".triage/b/findings/EXT-PHASE-001.ttl",
+            ".triage/b/findings/EXT-PHASE-002.ttl",
+            ".triage/b/findings/FTQ-PHASEB-001.ttl",
+            ".triage/b/findings/RUST-QA-PHASE-001.ttl",
             ".triage/b/findings/EXT-PROD-001.ttl",
             ".triage/b/findings/RSH-PROD-001.ttl"
           ]
-        }
+        },
+        "parent_correlation_required": true
       },
       "missing_reviewers": [],
       "unparsed_reviewers": []
     },
-    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541748892",
+    "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
     "final_qa_pass": "qa-phase-b-closeout-final-1",
     "upstream_kit": {
       "pr_url": "https://github.com/randlee/sc-publish/pull/137",
