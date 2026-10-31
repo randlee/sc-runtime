@@ -13,10 +13,11 @@ default = []
 default = ["general-db"]
 {% endif %}
 general-db = []
-cron = ["dep:sc-cron"]
+cron = ["dep:sc-cron", "dep:async-trait"]
 monty = ["cron", "sc-cron/monty"]
 
 [dependencies]
+async-trait = { version = "0.1", optional = true }
 api-types = { path = "../api-types", features = ["schema"] }
 service = { path = "../service" }
 clap.workspace = true
@@ -48,3 +49,5 @@ path = "src/main.rs"
 
 [dev-dependencies]
 async-trait = "0.1"
+sc-runtime = { workspace = true, features = ["test-util"] }
+tempfile = "3"

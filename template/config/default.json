@@ -17,6 +17,7 @@
     "enableFileSink": true
   },
   "cron": {
+    "database_path": "cron.db",
     "max_schedule_rows": 10,
     "environment": {
       "allow_process": [],

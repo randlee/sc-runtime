@@ -345,6 +345,23 @@ def apply_development_observability(dest: Path, root: Path) -> None:
                         f'sc-observability-types = {{ version = "1.5.1", path = "{types}" }}\n'
                         f'sc-observability-dev-adapter = {{ version = "0.0.0", path = "{adapter}" }}')
     manifest.write_text(text, encoding="utf-8")
+    daemon_manifest = dest / "crates/daemon/Cargo.toml"
+    text = daemon_manifest.read_text(encoding="utf-8")
+    if "sc-observability-dev-adapter.workspace = true" not in text:
+        text = text.replace(
+            "sc-observability.workspace = true",
+            "sc-observability.workspace = true\nsc-observability-dev-adapter.workspace = true",
+        )
+    daemon_manifest.write_text(text, encoding="utf-8")
+    observability = dest / "crates/daemon/src/observability.rs"
+    text = observability.read_text(encoding="utf-8")
+    text = text.replace(
+        "let shared: SharedCanonicalLog = logger.clone();",
+        "let shared: SharedCanonicalLog = Arc::new(\n"
+        "            sc_observability_dev_adapter::LoggerAdapter::new(Arc::clone(&logger)),\n"
+        "        );",
+    )
+    observability.write_text(text, encoding="utf-8")
 
 
 def render_documents(dest: Path, compose: str, answers_path: Path) -> None:

@@ -1,11 +1,13 @@
 //! Process-wide `sc-observability` logger for the generated daemon.
 //!
 //! `main` constructs [`Observability`] after config load and keeps it alive for
-//! the whole process. Library crates (`sc-runtime`, `sc-cron`, …) will receive
-//! an injected handle from this type once the workspace exposes a
-//! `sc-observability-types` emit trait (sc-runtime observability-injection doc).
+//! the whole process. Runtime and cron share one canonical handle. The caller
+//! drains and drops both consumers before consuming the owner with `shutdown`.
 
 use std::path::PathBuf;
+use std::sync::Arc;
+
+use sc_observability_types::SharedCanonicalLog;
 
 use sc_observability::{LogSettings, LoggerConfig, ServiceName};
 
@@ -22,7 +24,8 @@ impl std::fmt::Display for ObservabilityStart {
 
 /// Running logger: file + console sinks under the resolved log root.
 pub struct Observability {
-    logger: sc_observability::v2::Logger,
+    logger: Arc<sc_observability::v2::Logger>,
+    shared: SharedCanonicalLog,
 }
 
 impl Observability {
@@ -55,13 +58,25 @@ impl Observability {
             .map_err(observe)?
             .build()
             .map_err(observe)?;
-        Ok(Self { logger })
+        let logger = Arc::new(logger);
+        let shared: SharedCanonicalLog = logger.clone();
+        Ok(Self { logger, shared })
     }
 
     /// Handle for library injection (`Daemon::builder().logger(...)`, cron scheduler).
     #[must_use]
-    pub fn logger(&self) -> &sc_observability::v2::Logger {
-        &self.logger
+    pub fn logger(&self) -> SharedCanonicalLog {
+        Arc::clone(&self.shared)
+    }
+
+    /// Flushes and joins the logger after all injected consumers have dropped.
+    ///
+    /// # Errors
+    /// Returns the production logger's sink or drain failure.
+    pub fn shutdown(self) -> Result<(), sc_observability::v2::ShutdownError> {
+        let Self { logger, shared } = self;
+        drop(shared);
+        logger.shutdown()
     }
 }
 
