@@ -411,3 +411,5 @@ fn error_is_a_std_error() {
     fn assert_bounds<T: std::error::Error + Send + Sync + 'static>() {}
     assert_bounds::<RuntimeError>();
 }
+
+mod lifecycle;

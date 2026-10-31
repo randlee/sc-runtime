@@ -229,8 +229,11 @@ impl HookEnvironmentHost {
     ) -> Result<(), EnvironmentFailure> {
         for source in &policy.sources {
             let source = source.clone();
-            let host = self.clone();
-            let work = tokio::task::spawn_blocking(move || dotenv::read(&source, &host));
+            // File authorization needs no resolver or other application-owned
+            // state. A timed-out file read must not retain its logger handles.
+            let files = self.files.clone();
+            let roots = self.roots.clone();
+            let work = tokio::task::spawn_blocking(move || dotenv::read(&source, &files, &roots));
             let result = tokio::select! {
                 entries = work => entries,
                 () = crate::clock::sleep_until_monotonic(clock, deadline) => return Err(EnvironmentFailure::TimedOut),

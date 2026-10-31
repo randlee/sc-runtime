@@ -136,16 +136,15 @@ fn expected(path: &Path) -> Result<PathBuf, EnvironmentFailure> {
 
 pub(super) fn read(
     source: &DotenvSource,
-    host: &HookEnvironmentHost,
+    allowed_files: &BTreeSet<PathBuf>,
+    allowed_roots: &BTreeSet<PathBuf>,
 ) -> Result<BTreeMap<EnvName, String>, EnvironmentFailure> {
     let canonical = expected(source.path())?;
-    let files = host
-        .files
+    let files = allowed_files
         .iter()
         .map(|p| expected(p))
         .collect::<Result<Vec<_>, _>>()?;
-    let roots = host
-        .roots
+    let roots = allowed_roots
         .iter()
         .map(|p| expected(p))
         .collect::<Result<Vec<_>, _>>()?;

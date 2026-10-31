@@ -88,15 +88,15 @@ sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
 The same crate owns the one endpoint resolver that the daemon and the CLI
 share ([ADR-TRN-0002](../sc-transport/architecture.md)), so some component of
-the daemon has to call it, and the builder has only five methods through
-which inputs could arrive.
+the daemon has to call it, and the builder has a fixed assembly surface; endpoint inputs arrive in the
+configuration, not lifecycle methods.
 
 ### Decision
 
 `DaemonBuilder` uses consuming typestate. The markers are `NeedStores`,
 `NeedRoutes`, and `Ready`. `stores` consumes `NeedStores` and returns
-`NeedRoutes`. `routes` consumes `NeedRoutes` and returns `Ready`. `run`
-exists only on `Ready`. `mcp` is optional and is implemented only on
+`NeedRoutes`. `routes` consumes `NeedRoutes` and returns `Ready`. `run` and `run_with_cleanup`
+exist only on `Ready`. `mcp` is optional and is implemented only on
 `Ready`. `logger` is optional on all three states and returns the same state;
 it replaces the fixed `sc-runtime` Noop handle and creates no `NeedLogger`
 state or run step. The markers are `pub` so the builder can be named across crates.
@@ -132,16 +132,28 @@ endpoint does not take the lock or open stores. Signal streams are registered
 before bind. The lock is taken before the stores closure is called. Binding is
 the last step. A failure in any step returns a `RuntimeError` and no later
 step runs.
-The builder has no hook, callback, plugin registry or option that inserts
+The builder has no startup hook, plugin registry or option that inserts
 work between steps or changes their order (decided in this document; the
 design lists the five steps and calls the crate a bootstrap, not a framework
 layer). The caller-facing sequence is consuming typestate. `Daemon::builder` takes
 `&sc_transport::AppName` and `&DaemonConfig` and returns a builder on which
-`run` is not implemented. `stores` then `routes` consume the builder. `mcp`
-and `run` exist only after `routes`. `mcp` is optional and returns the same
+`run` is not implemented. `stores` then `routes` consume the builder. `mcp`, `run`,
+and `run_with_cleanup` exist only after `routes`. `mcp` is optional and returns the same
 ready builder. `logger` is optional before or after either transition and
 preserves `NeedStores` -> `NeedRoutes` -> `Ready`. This crate does not define
 `sc_runtime::AppName`.
+
+`run_with_cleanup(cleanup)` preserves this assembly order and returns the same
+`Result<(), RuntimeError>` as `run`. Its single `FnOnce() -> Future<Output = ()>`
+callback runs after serving/listener disposal, on both success and startup
+errors, before successful stores, instance ownership, and the retained runtime
+logger are dropped. The unused stores closure is dropped before invoking
+cleanup on an earlier failure, so awaiting a worker-ownership channel cannot
+hang on an unused sender. Cleanup does not replace the primary error. `run()`
+delegates with empty cleanup, preserving its default behavior. The caller must
+await completion: dropping the run future or panicking cannot await cleanup.
+This narrow ownership boundary does not change startup order, add a registry,
+or make `sc-runtime` depend on a scheduler or application task type.
 
 v0.1 binds exactly one listener. `TransportConfig` is `#[non_exhaustive]` and
 has no `additional_endpoints` field. `sc-transport` can bind either kind of
@@ -183,7 +195,7 @@ by [REQ-RT-0001](requirements.md); the explicit-instance-root and
 endpoint-override tests of [REQ-RT-0008](requirements.md), and its check that
 `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
 line outside test code; `arch-qa` architecture review of the public surface
-of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `logger`, `run`).
+of `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`, `run_with_cleanup`).
 
 ### Related Documents
 
@@ -218,7 +230,10 @@ both start. Both need clean-up code that does not run on a crash.
 `sc-runtime` takes an OS exclusive file lock, using the `fd-lock` crate, on
 the file `<instance-root>/daemon.lock`. The lock is taken in `run()` before
 the project's stores closure is called and before any listener is bound, and
-is held for the life of the process. If the lock is already held, `run()`
+is held until `run` returns. With `run_with_cleanup`, it also covers the
+application's awaited background drain and join, including startup errors after
+worker creation. A replacement daemon cannot open stores while the old daemon's
+cleanup is pending. If the lock is already held, `run()`
 returns the "lock held" variant of `RuntimeError` without waiting: the
 attempt is a non-blocking try-lock (decided in this document; the design
 states the exclusive lock but not whether the attempt waits). The crate

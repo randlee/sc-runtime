@@ -236,8 +236,9 @@ where
     /// Cleanup runs once after serving stops, including on startup errors. The
     /// unused stores closure is dropped before cleanup on errors preceding
     /// stores, so a receiver may safely await ownership sent by that closure.
-    /// Any acquired instance lock remains held until cleanup finishes. This
-    /// does not change startup order or introduce a dependency on application
+    /// Successful stores, the runtime logger, and any acquired instance lock
+    /// remain owned until cleanup finishes. This does not change startup order
+    /// or introduce a dependency on application
     /// background tasks. The application owns cleanup and logger shutdown.
     ///
     /// Await this future to completion: dropping it cannot await cleanup, and
