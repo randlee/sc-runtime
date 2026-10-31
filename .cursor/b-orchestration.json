@@ -5174,6 +5174,45 @@
         }
       },
       "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/95#issuecomment-6540478899"
+    },
+    {
+      "qa_pass": "qa-phase-b-end-1",
+      "commit": "a117c53a68a39bfa08bcfa64b0528ae8abcd7194",
+      "verdict": "IN-FLIGHT",
+      "pr_number": 96,
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/phase_end_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "running",
+          "fenced_json_received": false
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/phase_end_qa1_arch",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "running",
+          "fenced_json_received": false
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/phase_end_qa1_rust",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-terra",
+          "effort": "high",
+          "status": "running",
+          "fenced_json_received": false
+        }
+      ],
+      "coordinator_task_id": null,
+      "finding_ids": [],
+      "triage_ttl_paths": [],
+      "note": "Full8requiredroles, first3actuallydispatched, capacityboundedwaves; frozenintegrationPRsourcea117, separatecoordinationbranchstateupdates. No phaseapproval yet."
     }
   ],
   "model_authority": "User: yes, use terra/sol/luna where appropriate",
@@ -6138,12 +6177,45 @@
   },
   "phase_end": {
     "bead": "run-03z.30",
-    "status": "preparing_integration_pr_full_review",
+    "status": "full_qa1_running",
     "review_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa1",
     "review_branch": "integrate/phase-b-observability",
     "coordination_branch": "codex/phase-b-review-state",
     "coordination_worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/phase-b-review-state",
-    "state_policy": "After this implementation snapshot, phase review manifests and exact public machine statuses persist in coordination branch .cursor/b-orchestration.json. Integration review commit remains frozen during CI. Beads remains task tracking; no new sprint or product gate."
+    "state_policy": "After this implementation snapshot, phase review manifests and exact public machine statuses persist in coordination branch .cursor/b-orchestration.json. Integration review commit remains frozen during CI. Beads remains task tracking; no new sprint or product gate.",
+    "pr_number": 96,
+    "pr_url": "https://github.com/randlee/sc-runtime/pull/96",
+    "head": "a117c53a68a39bfa08bcfa64b0528ae8abcd7194",
+    "reviewer_manifest": [
+      {
+        "agent": "req-qa",
+        "task_id": "/root/phase_end_qa1_req",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6-luna",
+        "effort": "high",
+        "status": "running",
+        "fenced_json_received": false
+      },
+      {
+        "agent": "arch-qa",
+        "task_id": "/root/phase_end_qa1_arch",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "running",
+        "fenced_json_received": false
+      },
+      {
+        "agent": "rust-qa-agent",
+        "task_id": "/root/phase_end_qa1_rust",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "status": "running",
+        "fenced_json_received": false
+      }
+    ],
+    "state_branch": "codex/phase-b-review-state"
   },
   "production_readiness": {
     "bead": "run-03z.31",
