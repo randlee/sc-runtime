@@ -472,10 +472,25 @@ resumable Monty initialization, generated daemon policy, checked example and
 Windows execution job. Runtime production modules remain below 1000 lines;
 worker assertions are separated into test-only modules.
 
-Initial focused evidence: hook_environment with Monty 23/23, monty_host_bridge
-16/16, generated environment/example Python tests 9/9, sc-cron all-feature
-Clippy and workspace default Clippy PASS. Full sprint validation follows the
-first push. Parent owns independent QA/CI/merge and project-plan status.
+The final local matrix passes all required default/Monty/handshake tests,
+Clippy, formatting, feature-tree, generation, boundary and repository lint gates.
+The final async child fixtures pass 21 default environment tests and 27 Monty
+environment tests. Their child entry points use Tokio test runtimes directly;
+no explicit runtime blocking bridge or lint allowance is added.
+
+A fresh project generated with the explicit `--development-observability` flag
+passes setup, lint, test, build-cli and build-daemon with all 26 rendered source
+hashes unchanged. Optional generated daemon cron and Monty tests each pass seven
+cases, including prebuilt resolver preservation through `cron::open`.
+
+Windows execution on runtime source b268edd44629867b5ad5a583aa4b31de9cc6572b
+passes all named roots: default environment 20/20, Monty environment 28/28 and
+Monty host bridge 7/7. Evidence is Actions run 41149558907, job 124382610146.
+The subsequent source checkpoint only converts isolated child test entry points
+to async Tokio tests for the ADR lint gate; its hosted execution is pending.
+This sprint remains in progress until that final platform evidence is verified.
+Parent owns independent QA/CI/merge and project-plan status. Canonical matching
+registry 1.5.1 release proof remains a B18 responsibility.
 
 The additional owned implementation seams support the approved environment
 contract: serde/wire dependency and lock inventory, value-free error recovery,

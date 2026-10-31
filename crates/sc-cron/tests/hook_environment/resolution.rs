@@ -324,26 +324,64 @@ fn daemon_environment_is_read_only_at_execution_and_python_never_inherits_unlist
         String::from_utf8_lossy(&output.stderr)
     );
 }
-#[test]
-fn process_environment_child() {
+#[tokio::test]
+async fn process_environment_child() {
     if std::env::var("SC_CRON_ENV_CHILD").as_deref() != Ok("python") {
         return;
     }
-    tokio::runtime::Runtime::new().expect("runtime").block_on(async {
-        let root=tempfile::tempdir().expect("root");let first=root.path().join("first.env");let second=root.path().join("second.env");
-        std::fs::write(&first,"SC_ENV_INHERITED=file-one\nCLEAR_ME=file\nORDER=first\n").expect("first");
-        std::fs::write(&second,"ORDER=second\n").expect("second");
-        let source=format!("import os,json,sys\nhook=json.load(sys.stdin)\nassert os.getenv('ATM_IDENTITY')=='planner-7'\nassert os.getenv('ATM_TEAM')=='runtime'\nassert os.getenv('SC_ENV_INHERITED')=='file-one'\nassert os.getenv('ORDER')=='second'\nassert os.getenv('REFERENCE')=='reference-canary'\nassert os.getenv('CLEAR_ME') is None\nassert os.getenv('SC_ENV_UNLISTED') is None\nassert os.getenv('SC_CRON_ENV_CHILD') is None\nassert os.getenv('PATH') is None\nif hook['event']=='cron.stop':\n    open({},'w').write('ORDER=changed\\n')\n    print('{{\"action\":\"continue\"}}')\n",serde_json::to_string(&second.to_string_lossy()).expect("path"));
-        let module=python_file(root.path(),&source);
-        let resolver=Arc::new(RecordingResolver::default());
-        let host=HookEnvironmentHost::new().allow_process(["SC_ENV_INHERITED","ATM_IDENTITY","ATM_TEAM"]).expect("allow").allow_dotenv_root(root.path()).expect("root").with_reference_resolver(resolver.clone());
-        let policy=HookEnvironment::new().dotenv(&first,true).expect("first").dotenv(&second,true).expect("second").set("ATM_IDENTITY","planner-7").expect("identity").set("ATM_TEAM","runtime").expect("team").clear("CLEAR_ME").expect("clear").reference("REFERENCE","value:reference-canary").expect("reference");
-        let mut fixture=common::Fixture::new();fixture.scheduler=fixture.scheduler.with_hook_environment(host);
-        let row=fixture.start(spec("python-parity",HookTarget::python(module).expect("hook"),policy.clone()));
-        assert_eq!(due(&fixture).await,RunOutcome::Ok);
-        assert_eq!(resolver.calls.lock().expect("calls").len(),1,"stop and tick share one resolution");
-        assert_eq!(fixture.row(&row).spec.environment,policy,"resolution never writes back values");
-    });
+
+    let root = tempfile::tempdir().expect("root");
+    let first = root.path().join("first.env");
+    let second = root.path().join("second.env");
+    std::fs::write(
+        &first,
+        "SC_ENV_INHERITED=file-one\nCLEAR_ME=file\nORDER=first\n",
+    )
+    .expect("first");
+    std::fs::write(&second, "ORDER=second\n").expect("second");
+    let source = format!(
+        "import os,json,sys\nhook=json.load(sys.stdin)\nassert os.getenv('ATM_IDENTITY')=='planner-7'\nassert os.getenv('ATM_TEAM')=='runtime'\nassert os.getenv('SC_ENV_INHERITED')=='file-one'\nassert os.getenv('ORDER')=='second'\nassert os.getenv('REFERENCE')=='reference-canary'\nassert os.getenv('CLEAR_ME') is None\nassert os.getenv('SC_ENV_UNLISTED') is None\nassert os.getenv('SC_CRON_ENV_CHILD') is None\nassert os.getenv('PATH') is None\nif hook['event']=='cron.stop':\n    open({},'w').write('ORDER=changed\\n')\n    print('{{\"action\":\"continue\"}}')\n",
+        serde_json::to_string(&second.to_string_lossy()).expect("path")
+    );
+    let module = python_file(root.path(), &source);
+    let resolver = Arc::new(RecordingResolver::default());
+    let host = HookEnvironmentHost::new()
+        .allow_process(["SC_ENV_INHERITED", "ATM_IDENTITY", "ATM_TEAM"])
+        .expect("allow")
+        .allow_dotenv_root(root.path())
+        .expect("root")
+        .with_reference_resolver(resolver.clone());
+    let policy = HookEnvironment::new()
+        .dotenv(&first, true)
+        .expect("first")
+        .dotenv(&second, true)
+        .expect("second")
+        .set("ATM_IDENTITY", "planner-7")
+        .expect("identity")
+        .set("ATM_TEAM", "runtime")
+        .expect("team")
+        .clear("CLEAR_ME")
+        .expect("clear")
+        .reference("REFERENCE", "value:reference-canary")
+        .expect("reference");
+    let mut fixture = common::Fixture::new();
+    fixture.scheduler = fixture.scheduler.with_hook_environment(host);
+    let row = fixture.start(spec(
+        "python-parity",
+        HookTarget::python(module).expect("hook"),
+        policy.clone(),
+    ));
+    assert_eq!(due(&fixture).await, RunOutcome::Ok);
+    assert_eq!(
+        resolver.calls.lock().expect("calls").len(),
+        1,
+        "stop and tick share one resolution"
+    );
+    assert_eq!(
+        fixture.row(&row).spec.environment,
+        policy,
+        "resolution never writes back values"
+    );
 }
 
 #[test]
@@ -375,22 +413,19 @@ fn invalid_nonunicode_or_oversized_allowlisted_process_values_fail_without_captu
         );
     }
 }
-#[test]
-fn invalid_process_child() {
+#[tokio::test]
+async fn invalid_process_child() {
     if std::env::var("SC_CRON_ENV_CHILD").as_deref() != Ok("invalid") {
         return;
     }
-    tokio::runtime::Runtime::new()
-        .expect("runtime")
-        .block_on(async {
-            let host = HookEnvironmentHost::new()
-                .allow_process(["SC_ENV_INVALID"])
-                .expect("allow");
-            assert_code(
-                &run_policy(HookEnvironment::new(), host).await,
-                "ENV_PROCESS_INVALID",
-            );
-        });
+
+    let host = HookEnvironmentHost::new()
+        .allow_process(["SC_ENV_INVALID"])
+        .expect("allow");
+    assert_code(
+        &run_policy(HookEnvironment::new(), host).await,
+        "ENV_PROCESS_INVALID",
+    );
 }
 
 #[tokio::test]
