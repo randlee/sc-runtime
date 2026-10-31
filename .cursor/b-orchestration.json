@@ -3305,6 +3305,110 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
+    },
+    {
+      "qa_pass": "qa-b-owner-amendment-2",
+      "commit": "fff04216828e088fb7443e281721f03279b3a2f4",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/94#issuecomment-6538630188",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-OWNER-001.ttl"
+      ],
+      "finding_ids": [
+        "REQ-QA-OWNER-001"
+      ],
+      "coordinator_task_id": "/root/cursor_owner_amendment_enforcer",
+      "machine_status": {
+        "sprint": "b-owner-amendment",
+        "task": "qa-b-owner-amendment-2",
+        "branch": "codex/phase-b-release-boundary",
+        "commit": "fff04216828e088fb7443e281721f03279b3a2f4",
+        "pr": 94,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 6,
+          "total": 8,
+          "percent": 75
+        },
+        "findings": {
+          "blocking": 1,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [
+          "REQ-QA-OWNER-001"
+        ],
+        "merge_readiness": "NOT_READY",
+        "merge_reason": "One blocking REQ-QA-OWNER-001 remains: active REQ-RUN-0702 and docs/architecture.md still assign release evidence, registry-only proof, and same-source tag to b-18, while the scoped plan moves them to run-h0h. Preserve the production safety predicates while aligning the governing requirement and architecture with the authorized timing change.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator / plan owner",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/cursor_b15_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/cursor_b13_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-b-owner-amendment-2",
+          "commit": "fff04216828e088fb7443e281721f03279b3a2f4",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/94#issuecomment-6538630188",
+          "coordinator_task_id": "/root/cursor_owner_amendment_enforcer",
+          "triage": {
+            "ttl_paths": [
+              "/Volumes/Extreme Pro/github/sc-runtime-worktrees/integrate/phase-b-observability/.triage/b/findings/REQ-QA-OWNER-001.ttl"
+            ]
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
     }
   ],
   "model_authority": "User: yes, use terra/sol/luna where appropriate",
@@ -4255,6 +4359,12 @@
     "plan_amendment_pr": 94,
     "kit_upstream_pr": "https://github.com/randlee/sc-publish/pull/137",
     "qualified_kit_candidate": "9677ab083e7dd3feb258235a342e321ca1b45d8d",
-    "release_guard_retained": true
+    "release_guard_retained": true,
+    "authority_fix": {
+      "bead": "run-03z.37",
+      "task_id": "/root/phaseb_owner_authority_fix",
+      "status": "in_progress",
+      "finding": "REQ-QA-OWNER-001"
+    }
   }
 }
