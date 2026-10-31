@@ -165,7 +165,7 @@ fn cli_environment_child() {
     tokio::runtime::Runtime::new().expect("runtime").block_on(async{
         let root=tempfile::tempdir().expect("root");let selected=root.path().join("selected");std::fs::create_dir(&selected).expect("cwd");
         let registry=MontyHostRegistry::new().with_sc_compose(ScComposeHostConfig::new(python_program()).expect("config").with_working_directory(&selected).expect("cwd")).expect("compose").with_atm(AtmHostConfig::new(python_program()).expect("config").with_working_directory(&selected).expect("cwd")).expect("atm");
-        let script="import os,sys,json; print(json.dumps({'env':dict(os.environ),'args':sys.argv[1:],'cwd':os.getcwd()}))";
+        let script="import os,sys,json; print(json.dumps({'env':dict(os.environ),'args':sys.argv[1:],'cwd':os.path.realpath(os.getcwd())}))";
         let script=serde_json::to_string(script).expect("script string");let canonical = selected.canonicalize().expect("canonical cwd");
         let text = canonical.to_string_lossy();
         let text = text.strip_prefix(r"\\?\").unwrap_or(&text);

@@ -34,6 +34,7 @@ owned_paths:
   - docs/sc-cron/architecture.md
   - boundaries/sc-cron/sc-cron.toml
   - crates/sc-cron/src/lib.rs
+  - crates/sc-cron/README.md
   - crates/sc-cron/src/types.rs
   - crates/sc-cron/src/sqlite.rs
   - crates/sc-cron/src/environment.rs

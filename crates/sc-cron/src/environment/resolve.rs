@@ -213,11 +213,12 @@ impl HookEnvironmentHost {
             let source = source.clone();
             let host = self.clone();
             let work = tokio::task::spawn_blocking(move || dotenv::read(&source, &host));
-            let entries = tokio::select! {
-                entries = work => entries.map_err(|_| EnvironmentFailure::FileInvalid)??,
+            let result = tokio::select! {
+                entries = work => entries,
                 () = crate::clock::sleep_until_monotonic(clock, deadline) => return Err(EnvironmentFailure::TimedOut),
             };
             check_deadline(clock, deadline)?;
+            let entries = result.map_err(|_| EnvironmentFailure::FileInvalid)??;
             for (name, value) in entries {
                 snapshot.insert(&name, value, EnvironmentFailure::FileInvalid)?;
             }
@@ -277,11 +278,13 @@ impl HookEnvironmentHost {
             deadline,
         };
         let result = tokio::select! {
-            result = resolver.resolve(request) => result.map_err(|_| EnvironmentFailure::Reference)?.ok_or(EnvironmentFailure::Reference)?,
+            result = resolver.resolve(request) => result,
             () = crate::clock::sleep_until_monotonic(clock, deadline) => return Err(EnvironmentFailure::TimedOut),
         };
         check_deadline(clock, deadline)?;
-        Ok(result)
+        result
+            .map_err(|_| EnvironmentFailure::Reference)?
+            .ok_or(EnvironmentFailure::Reference)
     }
 }
 fn check_deadline<C: Clock + ?Sized>(

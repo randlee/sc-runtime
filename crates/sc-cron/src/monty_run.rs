@@ -452,7 +452,7 @@ fn resume_os(
         #[cfg(not(feature = "monty-test-handshake"))]
         {
             let operation: &'static str = call.function_call.into();
-            return Err(denied_os(stage, operation));
+            Err(denied_os(stage, operation))
         }
     }
 }

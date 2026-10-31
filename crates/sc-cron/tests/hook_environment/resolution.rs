@@ -356,6 +356,11 @@ fn invalid_nonunicode_or_oversized_allowlisted_process_values_fail_without_captu
         use std::os::unix::ffi::OsStringExt;
         cases.push(std::ffi::OsString::from_vec(vec![255]));
     }
+    #[cfg(windows)]
+    {
+        use std::os::windows::ffi::OsStringExt;
+        cases.push(std::ffi::OsString::from_wide(&[0xd800]));
+    }
     for value in cases {
         let output = std::process::Command::new(std::env::current_exe().expect("self"))
             .args(["--exact", "resolution::invalid_process_child"])
@@ -578,4 +583,32 @@ async fn python_worker_resolves_one_snapshot_for_both_hook_processes() {
     fixture.store.wait_recorded(&row, RunOutcome::Ok).await;
     assert_eq!(resolver.calls.lock().expect("calls").len(), 1);
     common::shutdown(worker).await;
+}
+
+struct ExpiredResolver(Arc<ManualClock>);
+#[async_trait::async_trait]
+impl EnvironmentReferenceResolver for ExpiredResolver {
+    async fn resolve(
+        &self,
+        _: EnvironmentReferenceRequest<'_>,
+    ) -> Result<Option<String>, EnvironmentReferenceError> {
+        self.0.advance(chrono::Duration::seconds(21));
+        Err(EnvironmentReferenceError::Denied)
+    }
+}
+#[tokio::test]
+async fn an_expired_row_wins_over_a_provider_error_returned_after_the_deadline() {
+    let mut fixture = common::Fixture::new();
+    let resolver = Arc::new(ExpiredResolver(fixture.clock.clone()));
+    fixture.scheduler = fixture
+        .scheduler
+        .with_hook_environment(HookEnvironmentHost::new().with_reference_resolver(resolver));
+    fixture.start(spec(
+        "expired-error",
+        HookTarget::python("unexecuted.py").expect("hook"),
+        HookEnvironment::new()
+            .reference("KEY", "opaque")
+            .expect("reference"),
+    ));
+    assert_eq!(due(&fixture).await, RunOutcome::TimedOut);
 }
