@@ -215,7 +215,7 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-17-sc-cron-hook-environment",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa3_zero_open_findings_local_full_validation_and_windows_pass_pending_linux_ci",
+      "status": "qa3_pass_all16ci_success_pending_merge",
       "developer_task_id": "/root/phaseb_b17_developer",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
       "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2",
@@ -3965,7 +3965,7 @@
     {
       "qa_pass": "qa-b-17-3",
       "commit": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
-      "verdict": "IN-FLIGHT",
+      "verdict": "PASS",
       "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/93#issuecomment-6539030036",
       "reviewer_manifest": [
         {
@@ -3973,7 +3973,7 @@
           "task_id": "/root/cursor_b15_qa1_req",
           "spawn_actor": "parent-orchestrator",
           "fenced_json_received": true,
-          "verdict": "FAIL",
+          "verdict": "PASS",
           "findings": {
             "blocking": 0,
             "important": 0,
@@ -4038,22 +4038,18 @@
         "branch": "sprint/b-17-sc-cron-hook-environment",
         "commit": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
         "pr": 93,
-        "verdict": "IN-FLIGHT",
-        "deliverables": {
-          "complete": 14,
-          "total": 15,
-          "percent": 93.3
-        },
+        "verdict": "PASS",
         "findings": {
           "blocking": 0,
           "important": 0,
           "minor": 0
         },
         "blocking_ids": [],
-        "merge_readiness": "not ready",
-        "merge_reason": "The four actual QA3 reviewer outputs contain zero open code findings, and the TODO scan is clean. Req-qa remains at its reported 14/15 deliverables (93.3%) only because the hosted Linux aggregate `just lint and just test` job 124439421926 is still pending. The single PR snapshot shows 15 passed and 1 pending; Windows hook environment job 124439421951 passed. Local full validation/lint evidence is recorded, but neither this report nor req-qa treats the pending hosted aggregate gate as complete. No source fix is indicated by this status.",
-        "next_action": "await_hosted_linux_aggregate_ci_terminal_and_req_qa_evidence_update",
-        "owner": "parent-orchestrator",
+        "merge_readiness": "ready",
+        "merge_reason": "Final req-qa evidence reports 15/15 deliverables complete. All four required reviewer outputs are PASS with zero findings, the TODO scan is clean, and the saved PR snapshot for the exact frozen commit shows all 16 required checks SUCCESS, including the Linux aggregate completed at 04:50:26 UTC and the Windows hook-environment roots at 22/33/7 passing. All eleven prior triage paths are retained in the evidence chain as resolved history.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Merge",
         "reviewer_spawn_gate": "pass",
         "reviewer_manifest": [
           {
@@ -4061,7 +4057,7 @@
             "task_id": "/root/cursor_b15_qa1_req",
             "spawn_actor": "parent-orchestrator",
             "fenced_json_received": true,
-            "verdict": "FAIL",
+            "verdict": "PASS",
             "findings": {
               "blocking": 0,
               "important": 0,
@@ -4117,7 +4113,7 @@
               "task_id": "/root/cursor_b15_qa1_req",
               "spawn_actor": "parent-orchestrator",
               "fenced_json_received": true,
-              "verdict": "FAIL"
+              "verdict": "PASS"
             },
             {
               "agent": "arch-qa",
@@ -4158,25 +4154,44 @@
             ]
           },
           "parent_correlation_required": true,
+          "req_qa_deliverables": {
+            "status": "PASS",
+            "complete": 15,
+            "total": 15,
+            "percent": 100.0,
+            "reviewed_commit": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
+            "result_ref": "/tmp/phaseb-cursor-orchestration/b17-qa3/req-qa-result.json"
+          },
           "ci_snapshot": {
-            "observed_at": "2026-10-31 04:30 UTC",
-            "pr_number": 93,
-            "checks_passed": 15,
-            "checks_pending": 1,
-            "pending": [
-              {
-                "name": "just lint and just test",
-                "job_id": 124439421926,
-                "url": "https://github.com/randlee/sc-runtime/actions/runs/41167900078/job/124439421926"
-              }
-            ],
+            "source_ref": "/tmp/phaseb-cursor-orchestration/b17-qa3/final-ci.json",
+            "head_ref_oid": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
+            "pr_state": "OPEN",
+            "checks_total": 16,
+            "checks_success": 16,
+            "checks_pending": 0,
+            "checks_failing": 0,
+            "linux_aggregate": {
+              "name": "just lint and just test",
+              "job_id": 124439421926,
+              "status": "completed",
+              "conclusion": "success",
+              "completed_at": "2026-10-31T04:50:26Z",
+              "url": "https://github.com/randlee/sc-runtime/actions/runs/41167900078/job/124439421926",
+              "source_ref": "/tmp/phaseb-cursor-orchestration/b17-qa3/final-linux-job.json"
+            },
             "windows": {
               "name": "Windows hook environment execution",
-              "status": "pass",
               "job_id": 124439421951,
+              "status": "success",
+              "roots": {
+                "environment_default": 22,
+                "environment_monty": 33,
+                "bridge": 7
+              },
+              "evidence_ref": "/tmp/phaseb-cursor-orchestration/b17-qa3/final-windows-job.log",
               "url": "https://github.com/randlee/sc-runtime/actions/runs/41167900078/job/124439421951"
             },
-            "polling": "single one-shot `gh pr checks 93`; no watch/wait"
+            "polling": "No new live CI poll in closure; final saved snapshot reviewed once."
           },
           "local_validation": {
             "source_commit": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
@@ -4193,10 +4208,21 @@
           "todo_scan": {
             "command": "python3 .claude/skills/todo-triage/scripts/find_todos.py",
             "result": "clean"
-          }
-        },
-        "missing_reviewers": [],
-        "unparsed_reviewers": []
+          },
+          "resolved_finding_ids": [
+            "REQ-QA-B17-001",
+            "ARCH-B17-001",
+            "B17-RUST-001",
+            "EXT-B17-001",
+            "RSH-B17-001",
+            "RBQA-B17-001",
+            "RBQA-B17-002",
+            "RBP-F001",
+            "FTQ-007",
+            "FTQ-008",
+            "B17-VALIDATION-001"
+          ]
+        }
       }
     }
   ],
