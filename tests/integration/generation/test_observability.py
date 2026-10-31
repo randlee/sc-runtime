@@ -43,9 +43,10 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         manifest = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())
         return app, manifest["package"]["name"]
 
-    def run_generated_test(self, app, package, target, name):
+    def run_generated_test(self, app, package, target, name, *, monty=False):
+        cargo = ["cargo", "+1.96.1"] if monty else ["cargo"]
         result = subprocess.run(
-            ["cargo", "test", "-p", package, "--features", "cron", *target, name, "--", "--exact"],
+            [*cargo, "test", "-p", package, "--features", "monty" if monty else "cron", *target, name, "--", "--exact"],
             cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL,
             text=True, capture_output=True,
         )
@@ -56,12 +57,21 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         app, package = self.generated_app()
         self.run_generated_test(app, package, ["--test", "observability"],
                                 "production_http_and_cron_share_jsonl_and_release_handles")
+        self.run_generated_test(app, package, ["--test", "cron_environment"],
+                                "generated_policy_resolver_and_custom_registry_preserve_python_monty_snapshots", monty=True)
 
     def test_schedule_limit_mapping(self):
         app, package = self.generated_app()
         for name in ("zero_is_unlimited_and_the_default_is_ten", "json_null_is_unlimited", "configured_database_and_row_limits_reach_store"):
             with self.subTest(name=name):
                 self.run_generated_test(app, package, ["--lib"], "cron::tests::" + name)
+
+    def test_agent_error_inventory(self):
+        app, package = self.generated_app()
+        self.run_generated_test(app, package, ["--lib"],
+                                "agent_error::tests::operation_remains_primary_and_shutdown_only_fails_success")
+        self.run_generated_test(app, package, ["--bin", "widget-app-daemon"],
+                                "tests::config_startup_uses_each_library_code_once")
 
     def test_pr_fixture_matrix_one_entry_per_fixture(self):
         workflow = (ROOT / ".github/workflows/template.yml").read_text()
@@ -145,9 +155,21 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                 ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
                 cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
             )
-            subprocess.run(
+            def build_executable(command, cwd, name):
+                result = subprocess.run(
+                    [*command, "--message-format=json"], cwd=cwd, check=True,
+                    timeout=900, stdin=subprocess.DEVNULL, text=True, capture_output=True,
+                )
+                executables = [message["executable"] for line in result.stdout.splitlines()
+                               if (message := json.loads(line)).get("reason") == "compiler-artifact"
+                               and message.get("target", {}).get("name") == name
+                               and message.get("executable")]
+                self.assertEqual(len(executables), 1, result.stdout + result.stderr)
+                return Path(executables[0])
+
+            binary = build_executable(
                 ["cargo", "build", "-p", "widget-app-daemon", "--features", "cron"],
-                cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL,
+                app, "widget-app-daemon",
             )
             # Deserialize every output line with the actual released LogEvent type.
             parser = root / "log-event-parser"
@@ -162,9 +184,10 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                 'let line = line.unwrap(); let _: sc_observability_types::LogEvent = '
                 'serde_json::from_str(&line).expect("canonical LogEvent"); } }\n'
             )
-            subprocess.run(["cargo", "build", "--manifest-path", str(parser / "Cargo.toml")],
-                           check=True, timeout=900, stdin=subprocess.DEVNULL)
-            binary = app / "target/debug/widget-app-daemon"
+            parser_binary = build_executable(
+                ["cargo", "build", "--manifest-path", str(parser / "Cargo.toml")],
+                parser, "log-event-parser",
+            )
             self.assertTrue(binary.is_file(), str(binary))
             for sig in (signal.SIGINT, signal.SIGTERM):
                 with self.subTest(signal=sig.name):
@@ -172,7 +195,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                     runtime.mkdir()
                     (runtime / "config").mkdir()
                     config = json.loads((app / "config/default.json").read_text())
-                    config["daemon"] = {"instance_root": str(runtime)}
+                    config["instance_root"] = str(runtime)
                     config["logging"] = {"enableConsoleSink": False, "enableFileSink": True, "logRoot": str(runtime)}
                     (runtime / "config/default.json").write_text(json.dumps(config))
                     sock = runtime / "daemon.sock"
@@ -217,7 +240,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                     logs = list((runtime / "logs").glob("*.jsonl"))
                     self.assertEqual(len(logs), 1, str(logs))
                     with logs[0].open("rb") as log_input:
-                        subprocess.run([str(parser / "target/debug/log-event-parser")],
+                        subprocess.run([str(parser_binary)],
                                        stdin=log_input, check=True, timeout=30)
                     events = [json.loads(line) for line in logs[0].read_text().splitlines()]
                     self.assertTrue(events)
