@@ -22,6 +22,8 @@ crates, and the registry-backed fixture matrix at that tag still need release
 authorization and registry credentials. Merging the release kit onto
 `integrate/phase-a` is the integration record for that later publish.
 
+`complete` in sprint frontmatter records implementation delivery. This index separately records QA and merge progress; `implemented; QA pending` means those gates remain open.
+
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | a-1 compatibility spike | [sprint-a-1](plans/phase-a/sprint-a-1-compatibility-spike.md) | complete | `sprint/a-1-compatibility-spike` |
@@ -69,7 +71,7 @@ revision excludes `docs/sprints/**`; the current pin is not a valid input.
 | b-10 sc-cron Monty host bridge | [sprint-b-10](plans/phase-b/sprint-b-10-sc-cron-monty-host-bridge.md) | complete | `sprint/b-10-sc-cron-monty-host-bridge` |
 | b-11 benchmark Monty reports | [sprint-b-11](plans/phase-b/sprint-b-11-benchmark-monty-reports.md) | complete | `sprint/b-11-benchmark-monty-reports` |
 | b-12 sc-cron schedule row limit | [sprint-b-12](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md) | complete | `sprint/b-12-sc-cron-schedule-row-limit` |
-| b-13 observability contract | [sprint-b-13](plans/phase-b/sprint-b-13-observability-contract.md) | implemented; QA pending | `sprint/b-13-observability-contract` |
+| b-13 observability contract | [sprint-b-13](plans/phase-b/sprint-b-13-observability-contract.md) | complete | `sprint/b-13-observability-contract` |
 | b-14 runtime observability | [sprint-b-14](plans/phase-b/sprint-b-14-sc-runtime-observability.md) | implemented; QA pending | `sprint/b-14-sc-runtime-observability` |
 | b-15 cron observability | [sprint-b-15](plans/phase-b/sprint-b-15-sc-cron-observability.md) | implemented; QA pending | `sprint/b-15-sc-cron-observability` |
 | b-16 Monty template examples | [sprint-b-16](plans/phase-b/sprint-b-16-monty-template-examples.md) | implemented; QA pending | `sprint/b-16-monty-template-examples` |
