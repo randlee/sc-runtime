@@ -55,6 +55,22 @@ owned_paths:
   - dev/observability-logger-adapter/Cargo.lock
   - dev/observability-logger-adapter/src/lib.rs
   - dev/observability-logger-adapter/tests/real_logger.rs
+  - Justfile
+  - scripts/new_project.py
+  - scripts/run_lifecycle_signal_test.py
+  - template/config/default.json
+  - template/config/cron.schema.json
+  - template/crates/daemon/Cargo.toml
+  - template/crates/daemon/src/lib.rs
+  - template/crates/daemon/src/agent_error.rs
+  - template/crates/daemon/tests/observability.rs
+  - template/crates/daemon/tests/cron_environment.rs
+  - tests/unit/generation/test_development_observability.py
+  - tests/unit/generation/test_monty_example.py
+  - tests/unit/generation/test_cron_environment.py
+  - tests/integration/generation/snapshot_just.py
+  - docs/sc-cron/monty-generated-example.md
+  - docs/project-plan.md
   - template/crates/daemon/src/main.rs
   - template/crates/daemon/src/observability.rs
   - template/crates/daemon/src/cron.rs
@@ -242,14 +258,14 @@ observability registry patch, or non-registry/wrong-version release
 resolution; removing or disabling the guard is not a substitute for removing
 the shim.
 
-The current pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` is not a valid
+The former pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` was not a valid
 b-18 starting artifact because that kit package includes upstream sprint
 history at `docs/sprints/fix-homebrew-formula-bundled-paths-tojson.md`.
-The kit install is blocked until a later qualified exact revision has no
+The kit install required a later qualified exact revision with no
 `docs/sprints/**` installer/package destination. This does not block independent
 kit preparation or runtime composition after approved parent merges. Upstream
 source may retain its own sprint history; source-checkout absence is not the
-package-safety predicate. This plan does not invent that future SHA. Once available, b-18 updates
+package-safety predicate. The installed qualified revision is `9677ab083e7dd3feb258235a342e321ca1b45d8d`. b-18 updated
 `release/sc-publish-pin.toml`, installs only from that exact revision, and
 proves the installer destination inventory is complete and package-safe; the
 leaked upstream sprint-history document is never copied or owned here.
@@ -561,7 +577,7 @@ must not set it):
 test "${GITHUB_ACTIONS:-}" = true
 test "${RUNNER_ENVIRONMENT:-}" = github-hosted
 test "${SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST:-}" = 1
-python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_signal_shutdown_isolated_ci
+just --justfile Justfile test lifecycle-signal
 ```
 
 Deferred release validation (`run-h0h`), after matching upstream publication,
@@ -589,3 +605,24 @@ than hand-editing installed files.
 
 - OTLP defaults, library-owned sink lifecycle, a cron workload example, or
   observability injection into config/transport/command/store crates.
+
+
+## Implementation scope clarification
+
+The owner authorized necessary generation glue alongside the Rust composition:
+`new_project.py` substitutes the approved real `1.5.0` adapter and adds its
+normal daemon dependency only in explicit development generation. Canonical
+release source retains direct upstream Arc coercion and has no adapter
+dependency. The daemon's `async-trait` normal dependency is optional and enabled
+only by `cron`; runtime fixture and temporary directory dependencies are test-only.
+The two B17 generation assertions that named the former parameter/local feature
+list were updated narrowly for the fixed B18 signature and optional worker
+implementation dependency. Environment behavior remains covered by the B17
+regression suite plus the generated Python/Monty resolver/registry proof.
+
+The standard root `just test lifecycle-signal` selector shares the integration
+suite's marker predicate and refuses a developer host before invoking the
+real-signal test. No recipe enables any marker. Tests use production logger
+ownership and the existing signal-free `DaemonFixture` for local HTTP/cron
+JSONL proof; synthetic typed shutdown error values exercise result selection
+without injecting faults into a running production logger.
