@@ -139,12 +139,8 @@ async fn worker_retains_shared_logger_without_reattachment() {
 fn manifest_and_owned_sources_do_not_construct_full_runtime() {
     let manifest = include_str!("../Cargo.toml");
     assert!(manifest.contains("sc-observability-types.workspace = true"));
-    assert!(
-        !manifest
-            .lines()
-            .any(|line| line.starts_with("sc-observability =")
-                || line.starts_with("sc-observability-otlp"))
-    );
+    // Resolved normal package identities are enforced for both libraries by
+    // the shared observability-dependencies check in the existing CI test path.
     for source in [
         include_str!("../src/coord.rs"),
         include_str!("../src/scheduler.rs"),

@@ -35,8 +35,9 @@ allowed_dependencies = [
   "rmcp",
   "tracing",
 ]
-# Full observability runtime and OTLP remain forbidden; cargo-tree contract
-# tests enforce external package identities that sc-boundary cannot target.
+# Full runtime, OTLP, and development adapter remain forbidden. Both libraries
+# use scripts/check_observability_dependencies.py in the existing CI test path
+# to inspect resolved normal package identities, including aliases/transitive edges.
 forbidden_edges = [
   "sc-runtime -> sc-config",
   "sc-runtime -> sc-runtime-db-sqlite",

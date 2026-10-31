@@ -176,16 +176,16 @@ pub(crate) fn noop_logger() -> sc_observability_types::SharedCanonicalLog {
     ))
 }
 
-/// Emits a trusted, synchronous, best-effort canonical component event.
-pub(crate) fn emit_event(
-    logger: &sc_observability_types::SharedCanonicalLog,
+/// Constructs a canonical component event without performing emission.
+pub(crate) fn component_event(
+    service: sc_observability_types::ServiceName,
     target: &'static str,
     action: &'static str,
     level: sc_observability_types::Level,
     outcome: &'static str,
     code: Option<&'static str>,
     fields: serde_json::Map<String, serde_json::Value>,
-) {
+) -> Option<sc_observability_types::LogEvent> {
     use sc_observability_types::{
         ActionName, ErrorCode, ErrorContext, LogEvent, OBSERVATION_SCHEMA_VERSION, OutcomeLabel,
         ProcessIdentity, Remediation, TargetCategory, Timestamp,
@@ -195,7 +195,7 @@ pub(crate) fn emit_event(
         ActionName::new(action),
         OutcomeLabel::new(outcome),
     ) else {
-        return;
+        return None;
     };
     let timestamp = Timestamp::now_utc();
     let diagnostic = code.map(|code| {
@@ -208,11 +208,11 @@ pub(crate) fn emit_event(
         diagnostic.timestamp = timestamp;
         diagnostic
     });
-    let _ = logger.emit(LogEvent {
+    Some(LogEvent {
         version: (*OBSERVATION_SCHEMA_VERSION).clone(),
         timestamp,
         level,
-        service: logger.service_name().clone(),
+        service,
         target,
         action,
         message: None,
@@ -224,5 +224,5 @@ pub(crate) fn emit_event(
         diagnostic,
         state_transition: None,
         fields,
-    });
+    })
 }
