@@ -15,7 +15,10 @@ import tomllib
 import unittest
 from pathlib import Path, PureWindowsPath
 
-from tests.integration.generation.owned_process import run as run_owned
+try:
+    from tests.integration.generation.owned_process import run as run_owned
+except ModuleNotFoundError:
+    from owned_process import run as run_owned
 
 def owned_check_output(args, **kwargs):
     return run_owned(args, capture_output=True, check=True, **kwargs).stdout
