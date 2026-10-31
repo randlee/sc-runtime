@@ -50,11 +50,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa1_fix_artifact_pushed_tests_and_validation_pending",
+      "status": "final_fix_validated_qa2_in_progress",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b15_developer",
       "pr_number": 91,
-      "head": "b2de6d21f34134681d2c7c6de858fd2045107214",
+      "head": "e9d19647851a0a04a69214b1c4fa1945468c05a4",
       "state_path": "/tmp/phaseb-cursor-orchestration/b-15-developer-state.json",
       "fix_task_id": "/root/phaseb_b15_qa1_fixes",
       "fix_bead": "run-03z.21",
@@ -71,7 +71,12 @@
           "RBQA-B15-001"
         ],
         "head": "62be4592e28bd65239f665f1b085fddbf7a3f99c"
-      }
+      },
+      "validation_report": "/tmp/phaseb-cursor-orchestration/b15-qa1/fix-validation.json",
+      "qa2_bead": "run-03z.22",
+      "qa2_packet": "/tmp/phaseb-cursor-orchestration/b15-qa2",
+      "qa2_new_finding": "REQ-QA-005",
+      "qa2_doc_fix_bead": "run-03z.23"
     },
     "b-16": {
       "task_id": "run-03z.4",
@@ -79,11 +84,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa1_fix_artifact_pushed_tests_and_validation_pending",
+      "status": "final_fix_validated_qa2_in_progress",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
-      "head": "b2de6d21f34134681d2c7c6de858fd2045107214"
+      "head": "e9d19647851a0a04a69214b1c4fa1945468c05a4"
     },
     "b-13": {
       "task_id": "run-03z.1",
@@ -106,10 +111,10 @@
       "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
       "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2",
       "pr_number": 93,
-      "head": "33b81b3280b482c766caa1f5283efc6744c79029",
+      "head": "c478c134128d6773ab44765e15ea572ba5a5f968",
       "windows_run": 41154463873,
       "windows_job": 124398355367,
-      "evidence": "/tmp/phaseb-cursor-orchestration/b-17-linux-repair-inflight.json",
+      "evidence": "/tmp/phaseb-cursor-orchestration/b-17-dev-validation-checkpoint.json",
       "windows_status": "success",
       "linux_status": "success",
       "shared_portability_commit": "021ec1bc6642419e162cec21aaea5dcc38d3e779",
@@ -118,7 +123,8 @@
         "tests/integration/wizard/test_output_equivalence.py"
       ],
       "run": 41154463873,
-      "linux_job": 124398355347
+      "linux_job": 124398355347,
+      "validated_source": "33b81b3280b482c766caa1f5283efc6744c79029"
     },
     "b-18": {
       "task_id": "run-03z.6",
