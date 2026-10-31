@@ -72,6 +72,9 @@ owned_paths:
   - template/examples/monty/cron.py
   - docs/sc-cron/monty-generated-example.md
   - tests/unit/generation/test_cron_environment.py
+  - tests/__init__.py
+  - tests/unit/generation/test_monty_example.py
+  - tests/integration/wizard/test_output_equivalence.py
   - .github/workflows/crates.yml
 must_follow: [b-15, b-16]
 parallel_safe: []
@@ -483,12 +486,16 @@ passes setup, lint, test, build-cli and build-daemon with all 26 rendered source
 hashes unchanged. Optional generated daemon cron and Monty tests each pass seven
 cases, including prebuilt resolver preservation through `cron::open`.
 
-Windows execution on runtime source b268edd44629867b5ad5a583aa4b31de9cc6572b
-passes all named roots: default environment 20/20, Monty environment 28/28 and
-Monty host bridge 7/7. Evidence is Actions run 41149558907, job 124382610146.
-The subsequent source checkpoint only converts isolated child test entry points
-to async Tokio tests for the ADR lint gate; its hosted execution is pending.
-This sprint remains in progress until that final platform evidence is verified.
+Windows execution on source 7f6e9586be60a5c2f7e9b0f23ae98de013d49aef passes
+all named default environment, Monty environment and Monty host bridge roots.
+Evidence is Actions run 41150476565, job 124385608381. That run's Linux job
+124385608392 failed generation tests: discovery imported an installed `tests`
+package, a recipe assertion used lowercase `justfile` on Linux, and the live
+wizard equivalence pipeline omitted explicit development observability selection.
+The narrow portability repair uses the tracked `Justfile` spelling, makes test
+imports unambiguous, and selects the existing development bridge for both live
+comparison paths while retaining every recipe and the unequal-fixture control.
+This sprint remains in progress until the repaired hosted gates pass.
 Parent owns independent QA/CI/merge and project-plan status. Canonical matching
 registry 1.5.1 release proof remains a B18 responsibility.
 
@@ -499,3 +506,6 @@ and test-only worker assertions. Generated daemon test support validates the
 prebuilt policy/resolver handoff. The observability component fixture consumes
 the parent-delivered B13 deterministic pipe witness while retaining B16 registry
 calls and B15 event cardinality. No additional product API or behavior is added.
+The additional generation test caller paths are a necessary validation exception:
+they repair portable execution of the existing B16 development bridge without
+changing canonical release pins, release tests, generated source or product code.

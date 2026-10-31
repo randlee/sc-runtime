@@ -7,9 +7,10 @@ import unittest
 from unittest.mock import patch
 import jsonschema
 
-from tests.unit.generation.test_cron_schema import render_default
-
 ROOT = Path(__file__).resolve().parents[3]
+# Discovery imports these suites as top-level modules. Resolve the sibling by
+# file so an installed package named `tests` cannot shadow this checkout.
+render_default = runpy.run_path(str(Path(__file__).with_name("test_cron_schema.py")))["render_default"]
 
 
 class CronEnvironmentTests(unittest.TestCase):
