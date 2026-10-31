@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:REQ-QA-003> qa:sprint "b-15" ;
+  qa:severity "Blocking" ;
+  qa:reviewer "req-qa" ;
+  qa:location "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md:12" ;
+  qa:issue "The sprint owns and changes production Rust source files governed by the 1000-source-line limit, but omits active NFR-RUN-0008 from the requirements list and does not trace the files to the line-count check." ;
+  qa:remedy "Add NFR-RUN-0008 to the sprint requirements list and state how the owned production files are checked by sc-lint line-counts." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

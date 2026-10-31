@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:RBP-F001> qa:sprint "b-15" ;
+  qa:severity "minor" ;
+  qa:reviewer "rust-best-practices-agent" ;
+  qa:location "crates/sc-cron/src/monty_host.rs:23" ;
+  qa:issue "The public MontyHostCall exposes the registered host-function name as an unconstrained String, although the registry treats host names as validated identifiers." ;
+  qa:remedy "Introduce a validated host-function-name newtype and use it for registry keys and MontyHostCall.name, exposing as_str() for display and lookup where needed." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .
