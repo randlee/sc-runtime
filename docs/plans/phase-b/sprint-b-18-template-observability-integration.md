@@ -555,7 +555,7 @@ root recipe commands, plus the current small Liquid composition bodies.
 
 1. REQ-RUN-0309 / REQ-RUN-0004: `test_observability` passes only when config
    -> log root -> logger -> shared injection -> run -> shutdown order is
-   explicit and observed.
+   explicit and observed. [roots: `req:REQ-RUN-0004`, `req:REQ-RUN-0309`]
 2. REQ-RT-0001 / REQ-RT-0004 / NFR-RT-0001 / NFR-RT-0002 /
    NFR-RT-0003 / NFR-RT-0004: `test_observability` passes only when the
    rendered daemon injects through unchanged builder typestate and writes
@@ -576,11 +576,11 @@ root recipe commands, plus the current small Liquid composition bodies.
    changing sc-cron, proving custom handlers survive composition.
    Exact-file/root authorization and redaction also survive composition. b-17's
    `test_cron_environment` reruns unchanged as a regression root rather than
-   becoming a b-18-owned test file.
+   becoming a b-18-owned test file. [roots: `req:REQ-CRON-0004`]
 4. ADR-RUN-0007 / NFR-RUN-0002 / NFR-RUN-0009: b-14/b-15
    rejecting-emitter contract tests remain the authoritative
    immediate, best-effort proof; `test_observability` passes only for reachable
-   generated-process result/shutdown precedence and production JSONL output.
+   generated-process result/shutdown precedence and production JSONL output. [roots: `req:NFR-RUN-0009`]
 5. REQ-RUN-0005: `cargo tree` for the generated daemon and b-13's direct-tree
    checks pass only when workspace libraries exclude the full observability
    runtime and the generated daemon remains its sole composition root.
@@ -600,14 +600,14 @@ root recipe commands, plus the current small Liquid composition bodies.
    `1.5.1` root/generated lock resolution, the unchanged active release guard,
    and the published production Logger adapter's non-blocking proof. The
    registry-only test is required later; an unmet release prerequisite is
-   recorded as deferred release work, never as a passing registry proof.
-7. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006:
+   recorded as deferred release work, never as a passing registry proof. [roots: `req:REQ-RUN-0002`, `req:REQ-RUN-0003`, `req:REQ-RUN-0503`, `req:REQ-RUN-0701`, `req:REQ-RUN-0702`]
+7. REQ-RT-0002 (inherited constraint) / REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006:
    `test_signal_shutdown_isolated_ci` passes in the dedicated GitHub-hosted
    ephemeral job for both real SIGINT and SIGTERM paths with
    temporary instance roots, released instance/endpoint locks, removed
-   sockets, and no leaked process or shared logger handle.
+   sockets, and no leaked process or shared logger handle. [roots: `req:NFR-RUN-0005`, `req:NFR-RUN-0010`, `req:REQ-RT-0005`]
 8. NFR-RUN-0008: `just lint gates` exits zero with the line-count gate clean
-   for all generated production Rust sources; no behavior claim is attached.
+   for all generated production Rust sources; no behavior claim is attached. [roots: `req:NFR-RUN-0008`]
 
 ## Required validation
 

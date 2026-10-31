@@ -25,6 +25,12 @@ def main() -> None:
     for kind, name in SUITES:
         folder = ROOT / "tests" / kind / name
         suite.addTests(loader.discover(str(folder), pattern="test_*.py", top_level_dir=str(folder)))
+    # Include the existing bounded root-level release source-contract module.
+    suite.addTests(loader.discover(
+        str(ROOT / "tests" / "unit"),
+        pattern="test_observability_release.py",
+        top_level_dir=str(ROOT / "tests" / "unit"),
+    ))
     result = unittest.TextTestRunner(verbosity=1).run(suite)
     raise SystemExit(0 if result.wasSuccessful() else 1)
 

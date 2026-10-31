@@ -294,16 +294,18 @@ post-kill deadline) and its acceptance belong to b-16's already-planned
 deadline/process-group driver. Both CLI adapters keep the approved deadline
 and per-stream output caps; rejecting emission cannot change their results.
 
-The current sc-publish pin is not a valid b-18 input because its installer
-package includes upstream sprint history under `docs/sprints/**`. The install waits
-for a later qualified exact revision with no `docs/sprints/**` installer/package
-destination; upstream source may retain its history. Kit preparation may proceed
-independently, while final runtime composition consumes approved b-14/b-17
-merges. b-18 then owns the pin
-advance and proves the installer destination inventory is complete,
-package-safe, and excludes `docs/sprints/**`. Product inventory validation is
-independent of sprint frontmatter. This plan does not invent the future
-revision.
+Historically, the former sc-publish pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` was
+rejected because its actual installer/package destinations included upstream
+`docs/sprints/**` history. The current pin, `9677ab083e7dd3feb258235a342e321ca1b45d8d`, is
+the qualified and installed immutable revision. Its qualification enumerated all 85 actual
+copy/render/package destinations, compared the complete inventory with real install outputs,
+excluded `docs/sprints/**` destinations, and rejected traversal, absolute or duplicate
+paths, unsafe symlinks, and package-unsafe paths. Upstream PR 137 remains draft and
+unmerged; that status is distinct from qualification of the available immutable revision and
+adds no merge prerequisite. Upstream source may retain its sprint history. Kit preparation
+can proceed independently; final runtime composition still consumes approved parent merges.
+This contract does not authorize or perform publication of either upstream observability
+crate.
 
 `b-10` and `b-11` are not one wave. Their `owned_paths` are disjoint, so the `must_follow` edge is not a shared file. `b-11` consumes `render_template` from `b-10`. A lab-only publisher in wave 4 would be a thin sprint and would not remove that edge. The cron chain `b-1` → `b-3` → `b-9` → `b-10` → `b-11` is length 5 because waves 4–5 sit after the Monty target. Those waves are not on the phase-close critical path. [phase-b-integration-close.md](phase-b-integration-close.md) records that split.
 
@@ -336,6 +338,11 @@ Stores/router/rmcp pass-through; that decision remains unchanged and is
 inapplicable to this continuation. ADR-RT-0004 is referenced narrowly by
 b-14's existing real-daemon fixture regression; it is not amended or added as
 phase-wide authority.
+The six additional requirement IDs present in b-13 through b-18 frontmatter are inherited
+constraints, not continuation-governed outcomes: NFR-RUN-0004, REQ-RT-0002, REQ-RT-0006,
+REQ-RT-0007, REQ-RUN-0329, and REQ-RUN-0501. Their existing consuming-sprint references
+remain binding constraints; in particular, REQ-RT-0002 constrains b-18 lifecycle and signal-
+shutdown behavior and is not a duplicate continuation root.
 Matching published patches of `sc-observability-types` and
 `sc-observability` at `1.5.1` remain an external release prerequisite.
 The owner authorized a temporary development exception on 2026-10-30:

@@ -119,20 +119,20 @@ project stores/router/MCP pass-through.
    drains and joins with deadline polling rather than fixed sleeps.
 4. ADR-RUN-0004 / ADR-RUN-0007 / NFR-RUN-0002: `observability_http` passes only when
    queue-full and disconnected rejection returns immediately and changes no
-   status, body, header, counter, request deadline, or error.
+   status, body, header, counter, request deadline, or error. [roots: `req:NFR-RUN-0002`]
 5. `boundary:BOUNDARY-sc-runtime`: the required boundary lint and
    `cargo check --workspace` pass with tests using the types test double, not
    another workspace crate or a full runtime sink.
    All production release crates exclude sc-compose and ATM crate dependencies
    and Rust imports, enforced by boundary lint; test/benchmark references are
-   permitted (ANC-031).
+   permitted (ANC-031). [roots: `req:NFR-RT-0004`]
 6. `boundary:BOUNDARY-sc-runtime`: `observability_http` passes only when an
    arbitrary application 5xx has no diagnostic and the two framework timeout
    branches carry exactly their fixed codes.
 7. `boundary:BOUNDARY-sc-runtime`: table-driven 1xx/2xx/3xx/4xx/5xx and
    unmatched-route cases prove total outcome mapping, matched-template path
    cardinality, and one terminal event per started request without recording
-   raw path parameters.
+   raw path parameters. [roots: `req:REQ-RT-0004`]
 
 ## Required validation
 
