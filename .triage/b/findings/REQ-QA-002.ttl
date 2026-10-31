@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-14:REQ-QA-002> qa:sprint "b-14" ;
+  qa:severity "Important" ;
+  qa:reviewer "req-qa" ;
+  qa:location "docs/plans/phase-b/sprint-b-14-sc-runtime-observability.md:4" ;
+  qa:issue "The authoritative b-14 sprint document marks the sprint complete, while the project-plan sprint index still marks b-14 planned." ;
+  qa:remedy "Synchronize the b-14 status in docs/project-plan.md with the authoritative sprint document, or document the repository's distinct meaning for the two status fields." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .

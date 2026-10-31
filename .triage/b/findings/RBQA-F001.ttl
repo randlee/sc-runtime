@@ -7,3 +7,12 @@
   qa:remedy "Add one shared resolved-normal-dependency check for sc-runtime and sc-cron to the existing test/CI path. Reject sc-observability, sc-observability-otlp, and sc-observability-dev-adapter by actual package identity anywhere reachable, while permitting the authorized types facade. Reuse that check for both libraries and make the boundary-manifest enforcement comment accurate." ;
   qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-14:RBQA-F001> qa:sprint "b-14" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-runtime/tests/observability_contract.rs:80" ;
+  qa:issue "The inherited types-only dependency contract still lacks mechanical enforcement of resolved normal package identities. Manifest substring assertions do not detect dependency aliases or transitive paths to the full logger, OTLP package, or development adapter." ;
+  qa:remedy "Add one shared CI/test-path check over resolved normal dependency graphs for sc-runtime and sc-cron; reject forbidden packages by actual package identity while allowing the types facade." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .

@@ -7,3 +7,12 @@
   qa:remedy "Handle timer creation failure by completing supervision through a bounded fail-closed cleanup/error path rather than awaiting pending forever. Preserve the existing monotonic/realtime timing semantics and distinguish timer-start failure from a genuinely elapsed reap deadline. Add deterministic coverage through an injectable timer-start failure seam with an unreapable child." ;
   qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-14:RSH-001> qa:sprint "b-14" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-service-hardening-agent" ;
+  qa:location "crates/sc-cron/src/process.rs:356" ;
+  qa:issue "Failure to create the reap timer thread disables the documented post-kill bound. If thread::Builder::spawn returns Err while the killed child cannot be reaped, the public supervisor remains pending indefinitely after expiry instead of returning after REAP_AFTER_KILL." ;
+  qa:remedy "Consume the independently reviewed B13 fix from c00cb59eb921d2a67012c7be094f99f412425f52, preserving its immediate error propagation, cleanup retry, realtime timer semantics and deterministic failure coverage when merging forward." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .

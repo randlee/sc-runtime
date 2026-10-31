@@ -20,8 +20,8 @@ use rmcp::transport::streamable_http_server::StreamableHttpService;
 use sc_command::{Envelope, ErrorKind, OpError};
 use sc_observability_types::{
     ActionName, CorrelationId, ErrorCode, ErrorContext, Level, LogEvent,
-    OBSERVATION_SCHEMA_VERSION, OutcomeLabel, ProcessIdentity, Remediation, SharedCanonicalLog,
-    TargetCategory, Timestamp,
+    OBSERVATION_SCHEMA_VERSION, OutcomeLabel, ProcessIdentity, Remediation, ServiceName,
+    SharedCanonicalLog, TargetCategory, Timestamp,
 };
 use serde::Serialize;
 use utoipa::openapi::OpenApi;
@@ -162,33 +162,37 @@ async fn stamp_request_id(
         .map_or("<unmatched>", MatchedPath::as_str)
         .to_owned();
     let started = tokio::time::Instant::now();
-    emit_request(&logger, &id, &method, &path, None);
+    if let Some(event) = request_event(logger.service_name(), &id, &method, &path, None) {
+        let _ = logger.emit(event);
+    }
     let mut response = next.run(request).await;
     let code = response
         .extensions_mut()
         .remove::<DeadlineCode>()
         .map(|code| code.0);
     let elapsed = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
-    emit_request(
-        &logger,
+    if let Some(event) = request_event(
+        logger.service_name(),
         &id,
         &method,
         &path,
         Some((response.status(), elapsed, code)),
-    );
+    ) {
+        let _ = logger.emit(event);
+    }
     if let Ok(value) = axum::http::HeaderValue::from_str(&id) {
         response.headers_mut().insert(REQUEST_ID, value);
     }
     response
 }
 
-fn emit_request(
-    logger: &SharedCanonicalLog,
+fn request_event(
+    service: &ServiceName,
     request_id: &str,
     method: &str,
     path: &str,
     terminal: Option<(axum::http::StatusCode, u64, Option<&'static str>)>,
-) {
+) -> Option<LogEvent> {
     let (action, outcome, code, level) = match terminal {
         None => ("request.start", None, None, Level::Info),
         Some((_, _, Some(code))) => ("request.error", Some("timeout"), Some(code), Level::Error),
@@ -205,7 +209,7 @@ fn emit_request(
         ActionName::new(action),
         CorrelationId::new(request_id),
     ) else {
-        return;
+        return None;
     };
     let timestamp = Timestamp::now_utc();
     let diagnostic = code.map(|code| {
@@ -222,7 +226,7 @@ fn emit_request(
         version: (*OBSERVATION_SCHEMA_VERSION).clone(),
         timestamp,
         level,
-        service: logger.service_name().clone(),
+        service: service.clone(),
         target,
         action,
         message: None,
@@ -248,7 +252,7 @@ fn emit_request(
                 .insert("deadline_remaining_ms".into(), 0_u64.into());
         }
     }
-    let _ = logger.emit(event);
+    Some(event)
 }
 
 async fn count_request(

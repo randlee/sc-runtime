@@ -12,6 +12,7 @@ integration_branch: integrate/phase-b-observability
 requirements:
   - REQ-RT-0004
   - REQ-RT-0005
+  - REQ-RT-0006
   - NFR-RT-0002
   - NFR-RT-0003
   - NFR-RT-0004
@@ -23,6 +24,8 @@ adrs:
   - ADR-RUN-0007
   - ADR-RUN-0011
   - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
   - ADR-RT-0004
 owned_paths:
   - crates/sc-runtime/src/builder.rs
@@ -92,6 +95,17 @@ attempt or changes request execution.
 7. ADR-RUN-0011: production changes add no sleep or `block_on` call and hold
    no `std::sync::Mutex` guard across `.await`; test deadline polling is
    exempt.
+8. REQ-RT-0006 / ADR-RT-0004: `DaemonFixture::start_with_logger` uses the
+   existing production builder and fixture startup path. It preserves a fresh
+   temporary instance root per fixture, caller-owned endpoint selection, the
+   connected client, per-fixture shutdown and join, and the existing typed
+   `RuntimeError` startup/serving contract. Injecting the logger adds no shared
+   fixture state or separate daemon mode.
+
+ADR-RT-0002 and ADR-RT-0003 remain binding for these owned runtime paths;
+their applicability is unchanged. The builder edit only forwards the existing
+logger handle, preserving singleton locking, assembly order, and opaque
+project stores/router/MCP pass-through.
 
 ## Acceptance criteria
 

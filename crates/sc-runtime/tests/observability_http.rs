@@ -172,13 +172,24 @@ async fn deadline_codes_and_rejection_are_best_effort() {
             Duration::from_millis(30),
         );
         let (url, task) = start(router).await;
-        let response = reqwest::get(format!("{url}/hang")).await.unwrap();
-        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
-        let id = response.headers()["x-request-id"]
-            .to_str()
-            .unwrap()
-            .to_owned();
-        let body: serde_json::Value = response.json().await.unwrap();
+        // This bound is independent of the middleware deadlines under test and
+        // covers body collection too. Clean up before reporting either failure.
+        let exchange = tokio::time::timeout(Duration::from_secs(3), async {
+            let response = reqwest::get(format!("{url}/hang")).await?;
+            let status = response.status();
+            let headers = response.headers().clone();
+            let body = response.json::<serde_json::Value>().await?;
+            Ok::<_, reqwest::Error>((status, headers, body))
+        })
+        .await;
+        task.abort();
+        let _ = task.await;
+        drop(stop);
+        let (status, headers, body) = exchange
+            .expect("HTTP deadline exchange exceeded independent 3-second bound")
+            .expect("HTTP deadline exchange failed");
+        assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+        let id = headers["x-request-id"].to_str().unwrap().to_owned();
         assert_eq!(body["error"]["code"], expected);
         let events = recorder.events();
         assert_eq!(events.len(), 2);
@@ -189,8 +200,6 @@ async fn deadline_codes_and_rejection_are_best_effort() {
             events[1].diagnostic.as_ref().unwrap().code.as_str(),
             expected
         );
-        drop(stop);
-        task.abort();
     }
     let rejecting = Arc::new(RejectingCanonicalLog::new(
         ServiceName::new("reject").unwrap(),
