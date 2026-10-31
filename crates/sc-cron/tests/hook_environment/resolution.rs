@@ -240,7 +240,9 @@ async fn pending_resolver_is_cancelled_at_the_row_deadline_before_source_executi
     fixture.clock.advance(chrono::Duration::seconds(60));
     let run = fixture.scheduler.run_due(common::idle_job());
     tokio::pin!(run);
-    tokio::select! {_=resolver.0.notified()=>{}, result=&mut run=>panic!("resolver should remain pending: {result:?}")}
+    tokio::time::timeout(common::WAIT, async {
+        tokio::select! {_=resolver.0.notified()=>{}, result=&mut run=>panic!("resolver should remain pending: {result:?}")}
+    }).await.expect("resolver readiness timed out");
     fixture.clock.advance(chrono::Duration::seconds(21));
     let rows = tokio::time::timeout(common::WAIT, run)
         .await
@@ -305,19 +307,20 @@ async fn final_snapshot_block_ceiling_and_resolved_entry_limit_are_portable() {
 
 #[test]
 fn daemon_environment_is_read_only_at_execution_and_python_never_inherits_unlisted_values() {
-    let output = std::process::Command::new(std::env::current_exe().expect("self"))
-        .args([
-            "--exact",
-            "resolution::process_environment_child",
-            "--nocapture",
-        ])
-        .env("SC_CRON_ENV_CHILD", "python")
-        .env("SC_ENV_INHERITED", "daemon-value")
-        .env("SC_ENV_UNLISTED", "unlisted-secret")
-        .env("ATM_IDENTITY", "daemon-identity")
-        .env("ATM_TEAM", "daemon-team")
-        .output()
-        .expect("child");
+    let output = super::owned_child::output(
+        std::process::Command::new(std::env::current_exe().expect("self"))
+            .args([
+                "--exact",
+                "resolution::process_environment_child",
+                "--nocapture",
+            ])
+            .env("SC_CRON_ENV_CHILD", "python")
+            .env("SC_ENV_INHERITED", "daemon-value")
+            .env("SC_ENV_UNLISTED", "unlisted-secret")
+            .env("ATM_IDENTITY", "daemon-identity")
+            .env("ATM_TEAM", "daemon-team"),
+        super::common::WAIT,
+    );
     assert!(
         output.status.success(),
         "{}",
@@ -400,12 +403,13 @@ fn invalid_nonunicode_or_oversized_allowlisted_process_values_fail_without_captu
         cases.push(std::ffi::OsString::from_wide(&[0xd800]));
     }
     for value in cases {
-        let output = std::process::Command::new(std::env::current_exe().expect("self"))
-            .args(["--exact", "resolution::invalid_process_child"])
-            .env("SC_CRON_ENV_CHILD", "invalid")
-            .env("SC_ENV_INVALID", value)
-            .output()
-            .expect("child");
+        let output = super::owned_child::output(
+            std::process::Command::new(std::env::current_exe().expect("self"))
+                .args(["--exact", "resolution::invalid_process_child"])
+                .env("SC_CRON_ENV_CHILD", "invalid")
+                .env("SC_ENV_INVALID", value),
+            super::common::WAIT,
+        );
         assert!(
             output.status.success(),
             "{}",
