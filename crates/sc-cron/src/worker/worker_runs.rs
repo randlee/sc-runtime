@@ -236,6 +236,18 @@ where
             )
             .await
         });
+        self.install_feed(index, RunHandle::Monty(handle), deadline, guard, launching);
+    }
+
+    #[cfg(feature = "monty")]
+    fn install_feed(
+        &mut self,
+        index: usize,
+        handle: RunHandle,
+        deadline: Instant,
+        guard: MontyFeedGuard,
+        launching: bool,
+    ) {
         let Some(slot) = self.slots.get_mut(index) else {
             drop(guard);
             return;
@@ -249,7 +261,7 @@ where
             );
         }
         slot.run = Some(InFlight {
-            handle: Some(RunHandle::Monty(handle)),
+            handle: Some(handle),
             deadline,
             guard: Some(guard),
         });
@@ -539,203 +551,46 @@ pub(crate) enum Event {
     #[cfg(feature = "monty")]
     FeedJoinFailed,
 }
+#[path = "event_rows.rs"]
+mod event_rows;
 impl Event {
     fn row(self) -> EventRow {
-        use sc_observability_types::Level;
         match self {
-            Self::TargetResolveFailed => (
-                "cron.worker",
-                "target.resolve_failed",
-                Level::Warn,
-                Some("failed"),
-                Some("TARGET_RESOLVE_FAILED"),
-            ),
-            Self::ScheduleReloadFailed => (
-                "cron.worker",
-                "schedule.reload_failed",
-                Level::Error,
-                Some("failed"),
-                Some("SCHEDULE_RELOAD_FAILED"),
-            ),
-            Self::ScheduleCancelled => (
-                "cron.worker",
-                "schedule.cancelled",
-                Level::Info,
-                Some("stopped"),
-                None,
-            ),
-            Self::RunTimedOut => (
-                "cron.worker",
-                "run.timed_out",
-                Level::Warn,
-                Some("timeout"),
-                Some("RUN_TIMEOUT"),
-            ),
-            Self::RunSkippedInFlight => (
-                "cron.worker",
-                "run.skipped_in_flight",
-                Level::Info,
-                None,
-                None,
-            ),
-            Self::RunMissedSkipped => {
-                ("cron.worker", "run.missed_skipped", Level::Info, None, None)
-            }
-            Self::RunMissedReplayed => (
-                "cron.worker",
-                "run.missed_replayed",
-                Level::Info,
-                None,
-                None,
-            ),
-            Self::RunLaunched => ("cron.worker", "run.launched", Level::Info, None, None),
-            Self::RunFinished => ("cron.worker", "run.finished", Level::Info, None, None),
-            Self::RunRecordFailed => (
-                "cron.worker",
-                "run.record_failed",
-                Level::Error,
-                Some("failed"),
-                Some("RUN_RECORD_FAILED"),
-            ),
-            Self::ScheduleNextFailed => (
-                "cron.worker",
-                "schedule.next_failed",
-                Level::Error,
-                Some("failed"),
-                Some("SCHEDULE_NEXT_FAILED"),
-            ),
-            Self::ScheduleStopped => (
-                "cron.worker",
-                "schedule.stopped",
-                Level::Info,
-                Some("stopped"),
-                None,
-            ),
-            Self::ScheduleStopFailed => (
-                "cron.worker",
-                "schedule.stop_failed",
-                Level::Error,
-                Some("failed"),
-                Some("SCHEDULE_STOP_FAILED"),
-            ),
-            Self::ScheduleDisabled => (
-                "cron.worker",
-                "schedule.disabled",
-                Level::Info,
-                Some("stopped"),
-                None,
-            ),
-            Self::ScheduleDisableFailed => (
-                "cron.worker",
-                "schedule.disable_failed",
-                Level::Error,
-                Some("failed"),
-                Some("SCHEDULE_DISABLE_FAILED"),
-            ),
-            Self::RunFenced => (
-                "cron.worker",
-                "run.fenced",
-                Level::Warn,
-                Some("fenced"),
-                Some("SCHEDULE_FENCED"),
-            ),
-            Self::DueLaunched => ("cron.scheduler", "due.launched", Level::Info, None, None),
-            Self::DueFinished => ("cron.scheduler", "due.finished", Level::Info, None, None),
-            Self::DueFenced => (
-                "cron.scheduler",
-                "due.fenced",
-                Level::Warn,
-                Some("fenced"),
-                Some("SCHEDULE_FENCED"),
-            ),
-            Self::DuePartialWrite => (
-                "cron.scheduler",
-                "due.partial_write",
-                Level::Warn,
-                Some("partial"),
-                Some("FOLLOW_UP_FENCED"),
-            ),
-            Self::DueFollowUpFailed => (
-                "cron.scheduler",
-                "due.follow_up_failed",
-                Level::Error,
-                Some("partial"),
-                Some("FOLLOW_UP_WRITE_FAILED"),
-            ),
-            Self::DueRecordFailed => (
-                "cron.scheduler",
-                "due.record_failed",
-                Level::Error,
-                Some("failed"),
-                Some("RUN_RECORD_FAILED"),
-            ),
-            Self::DueStopped => (
-                "cron.scheduler",
-                "due.stopped",
-                Level::Info,
-                Some("stopped"),
-                None,
-            ),
-            Self::DueStopFailed => (
-                "cron.scheduler",
-                "due.stop_failed",
-                Level::Error,
-                Some("failed"),
-                Some("SCHEDULE_STOP_FAILED"),
-            ),
-            Self::DueNextFailed => (
-                "cron.scheduler",
-                "due.next_failed",
-                Level::Error,
-                Some("failed"),
-                Some("SCHEDULE_NEXT_FAILED"),
-            ),
-            Self::JobJoinFailed => (
-                "cron.worker",
-                "job.join_failed",
-                Level::Error,
-                Some("failed"),
-                Some("JOB_JOIN_FAILED"),
-            ),
+            Self::TargetResolveFailed => event_rows::TARGET_RESOLVE_FAILED,
+            Self::ScheduleReloadFailed => event_rows::SCHEDULE_RELOAD_FAILED,
+            Self::ScheduleCancelled => event_rows::SCHEDULE_CANCELLED,
+            Self::RunTimedOut => event_rows::RUN_TIMED_OUT,
+            Self::RunSkippedInFlight => event_rows::RUN_SKIPPED_IN_FLIGHT,
+            Self::RunMissedSkipped => event_rows::RUN_MISSED_SKIPPED,
+            Self::RunMissedReplayed => event_rows::RUN_MISSED_REPLAYED,
+            Self::RunLaunched => event_rows::RUN_LAUNCHED,
+            Self::RunFinished => event_rows::RUN_FINISHED,
+            Self::RunRecordFailed => event_rows::RUN_RECORD_FAILED,
+            Self::ScheduleNextFailed => event_rows::SCHEDULE_NEXT_FAILED,
+            Self::ScheduleStopped => event_rows::SCHEDULE_STOPPED,
+            Self::ScheduleStopFailed => event_rows::SCHEDULE_STOP_FAILED,
+            Self::ScheduleDisabled => event_rows::SCHEDULE_DISABLED,
+            Self::ScheduleDisableFailed => event_rows::SCHEDULE_DISABLE_FAILED,
+            Self::RunFenced => event_rows::RUN_FENCED,
+            Self::DueLaunched => event_rows::DUE_LAUNCHED,
+            Self::DueFinished => event_rows::DUE_FINISHED,
+            Self::DueFenced => event_rows::DUE_FENCED,
+            Self::DuePartialWrite => event_rows::DUE_PARTIAL_WRITE,
+            Self::DueFollowUpFailed => event_rows::DUE_FOLLOW_UP_FAILED,
+            Self::DueRecordFailed => event_rows::DUE_RECORD_FAILED,
+            Self::DueStopped => event_rows::DUE_STOPPED,
+            Self::DueStopFailed => event_rows::DUE_STOP_FAILED,
+            Self::DueNextFailed => event_rows::DUE_NEXT_FAILED,
+            Self::JobJoinFailed => event_rows::JOB_JOIN_FAILED,
             #[cfg(feature = "monty")]
-            Self::DueJoinFailed => (
-                "cron.scheduler",
-                "due.join_failed",
-                Level::Error,
-                Some("failed"),
-                Some("DUE_JOIN_FAILED"),
-            ),
-            Self::DueTaskFailed => (
-                "cron.scheduler",
-                "due.task_failed",
-                Level::Error,
-                Some("failed"),
-                Some("RUN_TASK_FAILED"),
-            ),
+            Self::DueJoinFailed => event_rows::DUE_JOIN_FAILED,
+            Self::DueTaskFailed => event_rows::DUE_TASK_FAILED,
             #[cfg(feature = "monty")]
-            Self::MontyResolveFailed => (
-                "cron.scheduler",
-                "monty.resolve_failed",
-                Level::Error,
-                Some("failed"),
-                Some("MONTY_RESOLVE"),
-            ),
+            Self::MontyResolveFailed => event_rows::MONTY_RESOLVE_FAILED,
             #[cfg(feature = "monty")]
-            Self::MontyTickFailed => (
-                "cron.scheduler",
-                "monty.tick_failed",
-                Level::Error,
-                Some("failed"),
-                Some("MONTY_TICK"),
-            ),
+            Self::MontyTickFailed => event_rows::MONTY_TICK_FAILED,
             #[cfg(feature = "monty")]
-            Self::FeedJoinFailed => (
-                "cron.monty",
-                "feed.join_failed",
-                Level::Error,
-                Some("failed"),
-                Some("FEED_JOIN_FAILED"),
-            ),
+            Self::FeedJoinFailed => event_rows::FEED_JOIN_FAILED,
         }
     }
 }

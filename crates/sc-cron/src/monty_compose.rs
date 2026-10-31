@@ -52,27 +52,7 @@ pub(crate) fn run_cli(
         program: program.display().to_string(),
         source,
     };
-    let resolved = crate::process::resolve_program(program).map_err(spawn_error)?;
-    let cwd = cwd.ok_or_else(|| {
-        spawn_error(io::Error::other(
-            "working directory unavailable at configuration",
-        ))
-    })?;
-    let mut command = Command::new(resolved);
-    command
-        .current_dir(cwd)
-        .args(args)
-        .env_clear()
-        .envs(environment.iter())
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    let mut command = CommandWrap::from(command);
-    #[cfg(unix)]
-    command.wrap(ProcessGroup::leader());
-    #[cfg(windows)]
-    command.wrap(JobObject);
-    let mut child = ChildGuard(command.spawn().map_err(spawn_error)?);
+    let mut child = spawn_cli(program, cwd, args, environment)?;
     let captures = capture_pipes(&mut *child.0).map_err(|source| {
         reap_after_kill(
             &mut *child.0,
@@ -120,6 +100,39 @@ pub(crate) fn run_cli(
         stderr,
         exit_code: status.and_then(|status| status.code()),
     })
+}
+
+fn spawn_cli(
+    program: &Path,
+    cwd: Option<&Path>,
+    args: &[String],
+    environment: &crate::environment::EnvironmentSnapshot,
+) -> Result<ChildGuard, ComposeHostError> {
+    let spawn_error = |source| ComposeHostError::Spawn {
+        program: program.display().to_string(),
+        source,
+    };
+    let resolved = crate::process::resolve_program(program).map_err(spawn_error)?;
+    let cwd = cwd.ok_or_else(|| {
+        spawn_error(io::Error::other(
+            "working directory unavailable at configuration",
+        ))
+    })?;
+    let mut command = Command::new(resolved);
+    command
+        .current_dir(cwd)
+        .args(args)
+        .env_clear()
+        .envs(environment.iter())
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let mut command = CommandWrap::from(command);
+    #[cfg(unix)]
+    command.wrap(ProcessGroup::leader());
+    #[cfg(windows)]
+    command.wrap(JobObject);
+    Ok(ChildGuard(command.spawn().map_err(spawn_error)?))
 }
 
 type PipeReceiver = mpsc::Receiver<io::Result<crate::process::Capped>>;

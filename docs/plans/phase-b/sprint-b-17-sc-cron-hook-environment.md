@@ -47,6 +47,7 @@ owned_paths:
   - crates/sc-cron/src/environment/wire.rs
   - crates/sc-cron/src/worker/tests.rs
   - crates/sc-cron/src/worker/event_contract_tests.rs
+  - crates/sc-cron/src/worker/event_rows.rs
   - crates/sc-cron/tests/hook_environment/model.rs
   - crates/sc-cron/tests/hook_environment/resolution.rs
   - crates/sc-cron/tests/hook_environment/monty.rs

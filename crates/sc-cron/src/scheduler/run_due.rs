@@ -73,7 +73,23 @@ where
         Report::Delete(_) => "stop",
         Report::Ran(_) => "record_run",
     };
-    let result = blocking(move || match report {
+    let result =
+        blocking(move || persist_due_report(&core, (id, generation), at, report, next)).await;
+    notify_due_record(&logger, row, &recorded, operation, result);
+    DueRun {
+        name: row.spec.name.clone(),
+        outcome: recorded,
+    }
+}
+
+fn persist_due_report<S: ScheduleStore, C: Clock, J: JitterSource>(
+    core: &Core<S, C, J>,
+    (id, generation): (crate::ScheduleId, crate::Generation),
+    at: Timestamp,
+    report: Report,
+    next: Option<DateTime<Utc>>,
+) -> Result<Finish, CronError> {
+    match report {
         Report::Disable(reason) => core
             .store
             .disable(id, generation, at, &reason)
@@ -106,44 +122,47 @@ where
             };
             Ok(follow_up_finish(follow_up))
         }
-    })
-    .await;
+    }
+}
+fn notify_due_record(
+    logger: &sc_observability_types::SharedCanonicalLog,
+    row: &Schedule,
+    recorded: &RunOutcome,
+    operation: &str,
+    result: Result<Finish, CronError>,
+) {
     match result {
-        Ok(Finish::Recorded) => terminal(&logger, Event::DueFinished, row, &recorded),
+        Ok(Finish::Recorded) => terminal(logger, Event::DueFinished, row, recorded),
         Ok(Finish::Fenced) => emit(
-            &logger,
+            logger,
             Event::DueFenced,
             Some(row),
             serde_json::json!({"operation": operation}),
         ),
         Ok(Finish::Partial) => {
-            terminal(&logger, Event::DueFinished, row, &recorded);
+            terminal(logger, Event::DueFinished, row, recorded);
             emit(
-                &logger,
+                logger,
                 Event::DuePartialWrite,
                 Some(row),
                 serde_json::json!({"outcome": recorded.to_string()}),
             );
         }
         Ok(Finish::FollowUp(error)) => {
-            terminal(&logger, Event::DueFinished, row, &recorded);
+            terminal(logger, Event::DueFinished, row, recorded);
             emit(
-                &logger,
+                logger,
                 Event::DueFollowUpFailed,
                 Some(row),
                 serde_json::json!({"outcome": recorded.to_string(), "error": error.to_string()}),
             );
         }
         Err(error) => emit(
-            &logger,
+            logger,
             Event::DueRecordFailed,
             Some(row),
             serde_json::json!({"error": error.to_string()}),
         ),
-    }
-    DueRun {
-        name: row.spec.name.clone(),
-        outcome: recorded,
     }
 }
 
@@ -511,6 +530,27 @@ impl Drop for DueTask {
 }
 
 #[cfg(feature = "monty")]
+fn monty_due_source(
+    schedule: &Schedule,
+    logger: &sc_observability_types::SharedCanonicalLog,
+) -> Result<String, Report> {
+    let HookTarget::Monty { source } = &schedule.spec.hook else {
+        emit(
+            logger,
+            Event::MontyResolveFailed,
+            Some(schedule),
+            serde_json::json!({"error": "monty path used for another hook"}),
+        );
+        return Err(Report::Ran(monty_failed(
+            CODE_MONTY_RESOLVE,
+            "monty path used for another hook",
+            MONTY_RESOLVE_RECOVERY,
+        )));
+    };
+    Ok(source.clone())
+}
+
+#[cfg(feature = "monty")]
 async fn run_monty_due<C: Clock + 'static>(
     coord: Arc<RunCoord>,
     clock: Arc<C>,
@@ -521,21 +561,9 @@ async fn run_monty_due<C: Clock + 'static>(
     environment_host: Arc<crate::HookEnvironmentHost>,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::{FeedResult, MontyPhase};
-    let HookTarget::Monty { source } = schedule.spec.hook.clone() else {
-        emit(
-            &coord.logger,
-            Event::MontyResolveFailed,
-            Some(&schedule),
-            serde_json::json!({"error": "monty path used for another hook"}),
-        );
-        return (
-            Report::Ran(monty_failed(
-                CODE_MONTY_RESOLVE,
-                "monty path used for another hook",
-                MONTY_RESOLVE_RECOVERY,
-            )),
-            stop_guard,
-        );
+    let source = match monty_due_source(&schedule, &coord.logger) {
+        Ok(source) => source,
+        Err(report) => return (report, stop_guard),
     };
     let environment = match environment_host
         .snapshot(clock.as_ref(), &schedule, deadline)

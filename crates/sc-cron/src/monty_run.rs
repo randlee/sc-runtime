@@ -402,50 +402,58 @@ fn drive_progress(
                     environment,
                 )?
             }
-            ReplProgress::OsCall(call) => {
-                let result = match &call.function_call {
-                    monty_types::OsFunctionCall::Getenv(args) => Some(ExtFunctionResult::Return(
-                        environment.get(&args.key).map_or_else(
-                            || args.default.clone(),
-                            |value| MontyObject::string(value.to_owned()),
-                        ),
-                    )),
-                    monty_types::OsFunctionCall::GetEnviron => Some(ExtFunctionResult::Return(
-                        MontyObject::dict(environment.iter().map(|(name, value)| {
-                            (
-                                MontyObject::string(name.to_owned()),
-                                MontyObject::string(value.to_owned()),
-                            )
-                        })),
-                    )),
-                    _ => None,
-                };
-                if let Some(result) = result {
-                    call.resume(result, PrintWriter::Disabled)
-                        .map_err(|error| from_exception(error.error, stage, environment))?
-                } else {
-                    #[cfg(feature = "monty-test-handshake")]
-                    {
-                        if stage == FeedStage::Compile
-                            || !crate::monty_test_os::os_call_allowed_in_tests(&call)
-                        {
-                            let operation: &'static str = call.function_call.into();
-                            return Err(denied_os(stage, operation));
-                        }
-                        crate::monty_test_os::resume_test_os(call, Some(deadline))?
-                    }
-                    #[cfg(not(feature = "monty-test-handshake"))]
-                    {
-                        let operation: &'static str = call.function_call.into();
-                        return Err(denied_os(stage, operation));
-                    }
-                }
-            }
+            ReplProgress::OsCall(call) => resume_os(call, stage, deadline, environment)?,
             ReplProgress::NameLookup(lookup) => {
                 return Err(undefined_name(stage, &environment.redact(&lookup.name)));
             }
             ReplProgress::ResolveFutures(_) => return Err(denied(stage, "unresolved futures")),
         };
+    }
+}
+
+fn resume_os(
+    call: monty::ReplOsCall,
+    stage: FeedStage,
+    deadline: Instant,
+    environment: &EnvironmentSnapshot,
+) -> Result<ReplProgress, FeedDone> {
+    #[cfg(not(feature = "monty-test-handshake"))]
+    let _ = deadline;
+    let result = match &call.function_call {
+        monty_types::OsFunctionCall::Getenv(args) => Some(ExtFunctionResult::Return(
+            environment.get(&args.key).map_or_else(
+                || args.default.clone(),
+                |value| MontyObject::string(value.to_owned()),
+            ),
+        )),
+        monty_types::OsFunctionCall::GetEnviron => Some(ExtFunctionResult::Return(
+            MontyObject::dict(environment.iter().map(|(name, value)| {
+                (
+                    MontyObject::string(name.to_owned()),
+                    MontyObject::string(value.to_owned()),
+                )
+            })),
+        )),
+        _ => None,
+    };
+    if let Some(result) = result {
+        call.resume(result, PrintWriter::Disabled)
+            .map_err(|error| from_exception(error.error, stage, environment))
+    } else {
+        #[cfg(feature = "monty-test-handshake")]
+        {
+            if stage == FeedStage::Compile || !crate::monty_test_os::os_call_allowed_in_tests(&call)
+            {
+                let operation: &'static str = call.function_call.into();
+                return Err(denied_os(stage, operation));
+            }
+            crate::monty_test_os::resume_test_os(call, Some(deadline))
+        }
+        #[cfg(not(feature = "monty-test-handshake"))]
+        {
+            let operation: &'static str = call.function_call.into();
+            return Err(denied_os(stage, operation));
+        }
     }
 }
 

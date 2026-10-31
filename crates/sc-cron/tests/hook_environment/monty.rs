@@ -166,7 +166,10 @@ fn cli_environment_child() {
         let root=tempfile::tempdir().expect("root");let selected=root.path().join("selected");std::fs::create_dir(&selected).expect("cwd");
         let registry=MontyHostRegistry::new().with_sc_compose(ScComposeHostConfig::new(python_program()).expect("config").with_working_directory(&selected).expect("cwd")).expect("compose").with_atm(AtmHostConfig::new(python_program()).expect("config").with_working_directory(&selected).expect("cwd")).expect("atm");
         let script="import os,sys,json; print(json.dumps({'env':dict(os.environ),'args':sys.argv[1:],'cwd':os.getcwd()}))";
-        let script=serde_json::to_string(script).expect("script string");let cwd=serde_json::to_string(&selected.canonicalize().expect("canonical cwd").to_string_lossy()).expect("cwd string");
+        let script=serde_json::to_string(script).expect("script string");let canonical = selected.canonicalize().expect("canonical cwd");
+        let text = canonical.to_string_lossy();
+        let text = text.strip_prefix(r"\\?\").unwrap_or(&text);
+        let cwd = serde_json::to_string(text).expect("cwd string");
         let source=format!("import os\nimport json\ninitial=os.getenv('ATM_IDENTITY')\ndef cron_stop(hook):\n    assert initial=='planner-7'\n    assert os.getenv('SC_ENV_UNLISTED') is None\n    return {{'action':'continue'}}\ndef cron_tick(hook):\n    a=sc_compose_run('-c',[{script},'arbitrary command','--flag=with space','tail'])\n    b=atm_run('-c',[{script},'arbitrary command','--flag=with space','tail'])\n    for item in [a,b]:\n        assert item['exit_code']==0\n        data=json.loads(item['stdout'])\n        env=data['env']\n        assert env['ATM_IDENTITY']=='planner-7'\n        assert env['ATM_TEAM']=='runtime'\n        assert env['SC_ENV_INHERITED']=='allowed-value'\n        assert env['REFERENCE']=='reference-value'\n        assert 'SC_ENV_UNLISTED' not in env\n        assert 'SC_CRON_ENV_CHILD' not in env\n        assert 'CLEAR_ME' not in env\n        assert data['args']==['arbitrary command','--flag=with space','tail']\n        assert data['cwd']=={cwd}\n        assert os.getenv('SC_ENV_INHERITED')==env['SC_ENV_INHERITED']\n");
         let host=HookEnvironmentHost::new().allow_process(["SC_ENV_INHERITED","ATM_IDENTITY","ATM_TEAM"]).expect("allow").with_reference_resolver(Arc::new(RecordingResolver::default()));
         let policy=HookEnvironment::new().set("ATM_IDENTITY","planner-7").expect("identity").set("ATM_TEAM","runtime").expect("team").clear("CLEAR_ME").expect("clear").reference("REFERENCE","value:reference-value").expect("reference");
@@ -201,6 +204,24 @@ async fn initialization_runtime_return_and_both_cli_streams_redact_without_touch
                 _ => assert_eq!(outcome, RunOutcome::Refused("[REDACTED_ENV]".into())),
             }
         }
+        let message = value.to_owned();
+        let custom = MontyHostRegistry::new()
+            .register("fail", move |_: &MontyHostCall| {
+                Err(CronError::InvalidSpec(message.clone()))
+            })
+            .expect("custom");
+        let outcome = run(
+            "def cron_stop(h): return {'action':'continue'}\ndef cron_tick(h): fail()",
+            policy.clone(),
+            HookEnvironmentHost::new(),
+            custom,
+        )
+        .await;
+        assert_code(&outcome, "HOST_CALL_FAILED");
+        assert!(outcome.to_string().contains("[REDACTED_ENV]"));
+        let outcome = run("import os\ndef cron_stop(h): return {'action':'bad-'+os.getenv('KEY')}\ndef cron_tick(h): return None", policy.clone(), HookEnvironmentHost::new(), MontyHostRegistry::new()).await;
+        assert_code(&outcome, "HOST_REPLY");
+        assert!(outcome.to_string().contains("[REDACTED_ENV]"));
         let registry = MontyHostRegistry::new()
             .with_sc_compose(ScComposeHostConfig::new(python_program()).expect("compose"))
             .expect("registry")

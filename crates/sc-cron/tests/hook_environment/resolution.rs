@@ -44,7 +44,7 @@ async fn file_authorization_precedes_absence_and_accepts_exact_files_or_roots() 
     let path = root.path().join("present.env");
     std::fs::write(
         &path,
-        "A=one\r\nexport B = 'two # literal'\nC=\"escaped\\nline\\t\\\\\\\"\" # comment\nEMPTY=\n",
+        "A=one\r\nexport B = 'two # literal'\nDOLLAR=$5\nC=\"escaped\\nline\\t\\\\\\\"\" # comment\nEMPTY=\n",
     )
     .expect("file");
     let host = HookEnvironmentHost::new()
@@ -525,4 +525,57 @@ async fn cross_layer_ascii_case_collisions_are_rejected_for_set_reference_and_cl
             RunOutcome::Failed(_)
         ));
     }
+}
+
+#[tokio::test]
+async fn python_reply_errors_redact_detail_and_preserve_fixed_code_and_recovery() {
+    for value in ["ENV", "HOST", ":", "1"] {
+        let root = tempfile::tempdir().expect("root");
+        let module = python_file(
+            root.path(),
+            "import os,json,sys\njson.load(sys.stdin)\nprint(json.dumps({'action':'bad-'+os.getenv('KEY')}))\n",
+        );
+        let fixture = common::Fixture::new();
+        fixture.start(spec(
+            "reply",
+            HookTarget::python(module).expect("hook"),
+            HookEnvironment::new().set("KEY", value).expect("set"),
+        ));
+        let outcome = due(&fixture).await;
+        assert_code(&outcome, "HOST_REPLY");
+        let parts = outcome.failure_parts().expect("parts");
+        assert!(parts.message.contains("[REDACTED_ENV]"));
+        assert!(
+            parts
+                .recovery
+                .expect("recovery")
+                .starts_with("Return an object")
+        );
+    }
+}
+
+#[tokio::test]
+async fn python_worker_resolves_one_snapshot_for_both_hook_processes() {
+    let root = tempfile::tempdir().expect("root");
+    let module = python_file(
+        root.path(),
+        "import os,json,sys\nhook=json.load(sys.stdin)\nassert os.getenv('KEY')=='worker-reference'\nif hook['event']=='cron.stop': print('{\"action\":\"continue\"}')\n",
+    );
+    let resolver = Arc::new(RecordingResolver::default());
+    let mut fixture = common::Fixture::new();
+    fixture.scheduler = fixture.scheduler.with_hook_environment(
+        HookEnvironmentHost::new().with_reference_resolver(resolver.clone()),
+    );
+    let row = fixture.start(spec(
+        "worker-python",
+        HookTarget::python(module).expect("hook"),
+        HookEnvironment::new()
+            .reference("KEY", "value:worker-reference")
+            .expect("reference"),
+    ));
+    let worker = fixture.worker(common::idle_job()).await;
+    fixture.step(60).await;
+    fixture.store.wait_recorded(&row, RunOutcome::Ok).await;
+    assert_eq!(resolver.calls.lock().expect("calls").len(), 1);
+    common::shutdown(worker).await;
 }

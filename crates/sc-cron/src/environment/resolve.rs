@@ -60,6 +60,9 @@ impl fmt::Debug for EnvironmentSnapshot {
     }
 }
 impl EnvironmentSnapshot {
+    fn check_limit(&self) -> Result<(), EnvironmentFailure> {
+        check_block(self.entries.iter().map(|(n, v)| (n.as_str(), v.as_str())))
+    }
     pub(crate) fn child_env(&self) -> crate::process::ChildEnv {
         crate::process::ChildEnv::Only {
             keep: vec![],
@@ -172,34 +175,41 @@ impl HookEnvironmentHost {
         schedule: &Schedule,
         deadline: Instant,
     ) -> Result<EnvironmentSnapshot, EnvironmentFailure> {
-        let check_deadline = || {
-            if clock.monotonic_now() >= deadline {
-                Err(EnvironmentFailure::TimedOut)
-            } else {
-                Ok(())
-            }
-        };
-        check_deadline()?;
+        check_deadline(clock, deadline)?;
+        let mut snapshot = self.process_snapshot()?;
+        self.apply_files(clock, &schedule.spec.environment, deadline, &mut snapshot)
+            .await?;
+        self.apply_operations(clock, schedule, deadline, &mut snapshot)
+            .await?;
+        check_deadline(clock, deadline)?;
+        Ok(snapshot)
+    }
+
+    fn process_snapshot(&self) -> Result<EnvironmentSnapshot, EnvironmentFailure> {
         let mut snapshot = EnvironmentSnapshot::default();
         for name in &self.process {
-            match std::env::var_os(name.as_str()) {
-                Some(value) => snapshot.insert(
+            if let Some(value) = std::env::var_os(name.as_str()) {
+                snapshot.insert(
                     name,
                     value
                         .into_string()
                         .map_err(|_| EnvironmentFailure::ProcessInvalid)?,
                     EnvironmentFailure::ProcessInvalid,
-                )?,
-                None => continue,
+                )?;
             }
         }
-        check_block(
-            snapshot
-                .entries
-                .iter()
-                .map(|(n, v)| (n.as_str(), v.as_str())),
-        )?;
-        for source in &schedule.spec.environment.sources {
+        snapshot.check_limit()?;
+        Ok(snapshot)
+    }
+
+    async fn apply_files<C: Clock + ?Sized>(
+        &self,
+        clock: &C,
+        policy: &HookEnvironment,
+        deadline: Instant,
+        snapshot: &mut EnvironmentSnapshot,
+    ) -> Result<(), EnvironmentFailure> {
+        for source in &policy.sources {
             let source = source.clone();
             let host = self.clone();
             let work = tokio::task::spawn_blocking(move || dotenv::read(&source, &host));
@@ -207,19 +217,24 @@ impl HookEnvironmentHost {
                 entries = work => entries.map_err(|_| EnvironmentFailure::FileInvalid)??,
                 () = crate::clock::sleep_until_monotonic(clock, deadline) => return Err(EnvironmentFailure::TimedOut),
             };
-            check_deadline()?;
+            check_deadline(clock, deadline)?;
             for (name, value) in entries {
                 snapshot.insert(&name, value, EnvironmentFailure::FileInvalid)?;
             }
-            check_block(
-                snapshot
-                    .entries
-                    .iter()
-                    .map(|(n, v)| (n.as_str(), v.as_str())),
-            )?;
+            snapshot.check_limit()?;
         }
+        Ok(())
+    }
+
+    async fn apply_operations<C: Clock + ?Sized>(
+        &self,
+        clock: &C,
+        schedule: &Schedule,
+        deadline: Instant,
+        snapshot: &mut EnvironmentSnapshot,
+    ) -> Result<(), EnvironmentFailure> {
         for (name, operation) in &schedule.spec.environment.variables {
-            check_deadline()?;
+            check_deadline(clock, deadline)?;
             match operation {
                 Operation::Set(value) => {
                     snapshot.insert(name, value.clone(), EnvironmentFailure::SnapshotLimit)?
@@ -233,32 +248,49 @@ impl HookEnvironmentHost {
                     snapshot.entries.remove(&key);
                 }
                 Operation::Reference(reference) => {
-                    let resolver = self
-                        .resolver
-                        .as_ref()
-                        .ok_or(EnvironmentFailure::Reference)?;
-                    let request = EnvironmentReferenceRequest {
-                        schedule: &schedule.spec.name,
-                        variable: name,
-                        reference,
-                        deadline,
-                    };
-                    let result = tokio::select! {
-                        result = resolver.resolve(request) => result.map_err(|_| EnvironmentFailure::Reference)?.ok_or(EnvironmentFailure::Reference)?,
-                        () = crate::clock::sleep_until_monotonic(clock, deadline) => return Err(EnvironmentFailure::TimedOut),
-                    };
-                    check_deadline()?;
+                    let result = self
+                        .reference_value(clock, &schedule.spec.name, name, reference, deadline)
+                        .await?;
                     snapshot.insert(name, result, EnvironmentFailure::Reference)?;
                 }
             }
         }
-        check_block(
-            snapshot
-                .entries
-                .iter()
-                .map(|(n, v)| (n.as_str(), v.as_str())),
-        )?;
-        check_deadline()?;
-        Ok(snapshot)
+        snapshot.check_limit()
+    }
+
+    async fn reference_value<C: Clock + ?Sized>(
+        &self,
+        clock: &C,
+        schedule: &ScheduleName,
+        variable: &EnvName,
+        reference: &str,
+        deadline: Instant,
+    ) -> Result<String, EnvironmentFailure> {
+        let resolver = self
+            .resolver
+            .as_ref()
+            .ok_or(EnvironmentFailure::Reference)?;
+        let request = EnvironmentReferenceRequest {
+            schedule,
+            variable,
+            reference,
+            deadline,
+        };
+        let result = tokio::select! {
+            result = resolver.resolve(request) => result.map_err(|_| EnvironmentFailure::Reference)?.ok_or(EnvironmentFailure::Reference)?,
+            () = crate::clock::sleep_until_monotonic(clock, deadline) => return Err(EnvironmentFailure::TimedOut),
+        };
+        check_deadline(clock, deadline)?;
+        Ok(result)
+    }
+}
+fn check_deadline<C: Clock + ?Sized>(
+    clock: &C,
+    deadline: Instant,
+) -> Result<(), EnvironmentFailure> {
+    if clock.monotonic_now() >= deadline {
+        Err(EnvironmentFailure::TimedOut)
+    } else {
+        Ok(())
     }
 }

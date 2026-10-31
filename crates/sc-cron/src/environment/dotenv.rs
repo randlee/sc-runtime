@@ -51,10 +51,18 @@ fn value(text: &str) -> Result<String, EnvironmentFailure> {
         }
         out.push_str(horizontal(body));
     }
-    if out.contains('$') || out.contains('`') || !text_valid(&out, MAX_ENV_VALUE_BYTES) {
+    if shell_expansion(&out) || !text_valid(&out, MAX_ENV_VALUE_BYTES) {
         return Err(file_invalid());
     }
     Ok(out)
+}
+
+fn shell_expansion(value: &str) -> bool {
+    value.contains('`')
+        || value.as_bytes().windows(2).any(|pair| {
+            pair[0] == b'$'
+                && (pair[1].is_ascii_alphabetic() || matches!(pair[1], b'_' | b'{' | b'('))
+        })
 }
 
 pub(super) fn parse(input: &[u8]) -> Result<BTreeMap<EnvName, String>, EnvironmentFailure> {
