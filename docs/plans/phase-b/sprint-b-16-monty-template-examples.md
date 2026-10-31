@@ -15,19 +15,47 @@ requirements:
   - REQ-RUN-0309
   - REQ-RUN-0301
   - REQ-RUN-0329
+  - REQ-RUN-0501
   - REQ-RUN-0503
+  - REQ-RUN-0701
   - REQ-RUN-0005
   - REQ-CRON-0001
   - REQ-CRON-0003
   - REQ-CRON-0005
   - NFR-CRON-0001
+  - NFR-RUN-0004
   - NFR-RUN-0005
+  - NFR-RUN-0008
 adrs:
+  - ADR-CFG-0001
+  - ADR-CFG-0002
+  - ADR-CFG-0003
+  - ADR-CMD-0001
+  - ADR-CMD-0002
+  - ADR-CMD-0003
+  - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
+  - ADR-RT-0004
+  - ADR-RUN-0001
   - ADR-RUN-0002
   - ADR-RUN-0003
+  - ADR-RUN-0004
+  - ADR-RUN-0005
+  - ADR-RUN-0007
+  - ADR-RUN-0008
   - ADR-RUN-0011
   - ADR-RUN-0013
+  - ADR-RUN-0015
   - ADR-RUN-0303
+  - ADR-RUN-0401
+  - ADR-RUN-0402
+  - ADR-TRN-0001
+  - ADR-TRN-0002
+  - ADR-TRN-0003
+  - ADR-TRN-0004
+  - ADR-TRN-0005
+  - ADR-TRN-0006
 owned_paths:
   - docs/architecture.md
   - docs/requirements.md
@@ -134,6 +162,34 @@ already forwards option arguments unchanged.
 Canonical template/release inventories remain `1.5.1`; no generated source is
 edited after this explicit development render. This proves development only,
 with the real registry release proof still owned by b-18.
+
+NFR-RUN-0004: the standard tools considered and reused are Monty's external-call
+suspension protocol, `std::process::Command` and `process-wrap` for child/group
+operations, and the sc-compose/ATM CLIs for their command implementations.
+Those tools do not choose application handlers or supply sc-cron's immutable
+registry, row-deadline context, bounded capture and hook-result mapping; this
+small integration seam supplies those library-specific values and forwards
+commands unchanged. Generation remains cargo-generate-owned, canonical events
+reuse `sc-observability-types`, and sc-lint supplies boundary and source-size
+checks. REQ-RUN-0005 traces the production dependency/import exclusions;
+NFR-RUN-0008 traces every owned production Rust file to the existing
+`sc-lint lint line-counts` check in `just lint gates` and full `just lint`.
+
+ADR applicability: RUN-0001/0004/0007/0008 govern the project-owned reusable
+registry, direct canonical emission, types-only library edge and blocking-feed
+handoff. RUN-0002/0003/0011/0013/0303 govern release inventories, crate boundaries,
+deadlines and the optional cron/Monty graph. RUN-0005/0015/0401/0402 govern the
+existing sc-lint/just checks, production benchmark/campaign callers, generation
+pipeline and checkout/release rendering. The CFG, TRN, CMD and RT inventories
+are listed because this sprint owns their boundary manifests; their untouched
+configuration, errors, endpoints, routers and lifecycle behavior is preserved.
+RT-0002/TRN-0006 lifecycle execution proof remains b-18; RT-0003 remains
+inapplicable to this continuation, and RT-0004 remains b-14's fixture reference.
+REQ-RUN-0501 traces the explicit development generation mode and its unchanged
+pipeline in deliverable 8 and acceptance 1/6/7; REQ-RUN-0701 traces the two
+explicit non-tag template CI callers exercising that mode. The literal
+validation recipes below retain that existing checkout proof; release rendering
+and actual registry proof remain b-18's acceptance.
 
 ## Public host-extension contract
 
@@ -308,7 +364,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
    `sc-compose`, `sc-compose-*`, `agent-team-mail`, `agent-team-mail-core`, and
    `atm-*`; the ATM Rust library name `atm_core` is also covered by import
    checks. Renamed dependency fixtures must fail as production edges.
-8. NFR-RUN-0005 / REQ-RUN-0503: require the freshly generated, unedited checkout
+8. NFR-RUN-0005 / REQ-RUN-0501 / REQ-RUN-0503 / REQ-RUN-0701: require the freshly generated, unedited checkout
    to pass `just setup`, `just lint`, `just test`, `just build-cli`, then
    `just build-daemon`; also compile the daemon with and without `monty`.
    Assert that a checkout render contains the
@@ -318,7 +374,7 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 
 ## Acceptance criteria
 
-1. `REQ-CRON-0001`: `test_monty_example` and the two generated `cargo check`
+1. `REQ-CRON-0001` / `REQ-RUN-0501` / `REQ-RUN-0701`: `test_monty_example` and the two generated `cargo check`
    commands pass with the generated daemon as the only generated crate with
    the optional `sc-cron` edge; the feature-off build does not link it.
 2. `REQ-CRON-0003`: `monty_host_bridge` passes empty-default, custom
@@ -374,12 +430,12 @@ while `scripts/new_project.py --release` suppresses every checkout patch.
 python3 -m unittest tests.unit.generation.test_monty_example tests.unit.test_production_tool_boundary
 cargo +1.96.1 test -p sc-cron --features monty --test monty_host_bridge
 cargo +1.96.1 test -p sc-cron --features monty --test sc_compose_bench
-just new generated/test-monty --var-file wizard/fixtures/sqlite-mcp.json
-just --justfile generated/test-monty/justfile setup
-just --justfile generated/test-monty/justfile lint
-just --justfile generated/test-monty/justfile test
-just --justfile generated/test-monty/justfile build-cli
-just --justfile generated/test-monty/justfile build-daemon
+just new generated/test-monty --var-file wizard/fixtures/sqlite-mcp.json --development-observability
+just --justfile generated/test-monty/Justfile setup
+just --justfile generated/test-monty/Justfile lint
+just --justfile generated/test-monty/Justfile test
+just --justfile generated/test-monty/Justfile build-cli
+just --justfile generated/test-monty/Justfile build-daemon
 cargo check --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon
 cargo +1.96.1 check --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-monty/Cargo.toml -p widget-app-daemon -e features
@@ -393,7 +449,10 @@ just adr-run-0011
 
 The generation test owns cleanup of its temporary output; the literal
 `generated/test-monty` commands are the operator reproduction form and require
-that destination to be absent before the first command.
+that destination to be absent before the first command. These checkout recipes
+explicitly select the accepted development mode. The retained `--release` path
+omits that flag and every development override; matching registry `1.5.1`
+resolution and the registry-only generated build remain b-18 release gates.
 
 ## This sprint does not close
 
@@ -403,22 +462,28 @@ that destination to be absent before the first command.
 
 ## Implementation validation
 
-Implementation is delivered; parent-managed implementation QA remains separate.
-The combined branch consumes b-13 `0a6a9dc` and b-15 `9452d80`. Native sc-cron
-tests, the full Rust 1.96.1 all-feature suite, workspace/default and all-feature
-Clippy with denied warnings, formatting, the focused generation/boundary tests,
-production dependency-tree gate, `just lint gates`, campaign self-check, and
-`just adr-run-0011` passed. The benchmark test target passes with its operator
-measurement case ignored by default; no performance measurement is claimed.
+Implementation is delivered; independent b-16 QA remains separate. Current
+shared source is the validated b-15 repair `e9d19647851a0a04a69214b1c4fa1945468c05a4`
+with the README-only follow-up `df37ac8c7addf54b6f32bbf963748a51d16b1314`.
+The e9d record proves actual full `just lint` and `just test`, locked Rust 1.94.1
+workspace/all-target checking, Rust 1.96.1 native and all-feature Clippy with
+warnings denied, 18 Monty handshake cases and the injected spurious-wait witness.
+The df37 record proves the protected source/test/Cargo/generation/CI files are
+byte-identical to that validated source. This sprint-doc-only amendment reuses
+that proof; it does not claim a new runtime-suite run or independent b-16 QA.
+The benchmark target's operator measurement remains ignored by default; no
+performance measurement is claimed.
 
-A fresh explicit development render at `generated/test-monty-network` passed
+The existing b-16 fresh explicit development render at `generated/test-monty-network` passed
 setup, lint, test, build-cli, build-daemon, and daemon checks with and without
 Monty. Hashes for all 38 generated crate/example files matched before and after
 those recipes. Feature trees show no sc-cron/Monty edge by default and only
 `monty`/`monty-types` when enabled, with no pool/fs/runtime crates. The lockfile
 records real registry logger/types `1.5.0` plus the local types facade `1.5.1`;
 this is development evidence, and matching registry `1.5.1` release proof remains
-b-18's acceptance condition. Temporary generated output is not a shipped artifact.
+b-18's acceptance condition. That prior generated-development proof is reused
+here; these recipes were not rerun for this documentation amendment. Temporary
+generated output is not a shipped artifact.
 
 ## Contract propagation before implementation QA
 
