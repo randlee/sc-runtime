@@ -4,6 +4,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+import tempfile
 import tomllib
 import unittest
 from pathlib import Path, PureWindowsPath
@@ -16,7 +17,12 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         pin = tomllib.loads((ROOT / "release/sc-publish-pin.toml").read_text())["sc-publish"]
         self.assertEqual(pin["repository"], "https://github.com/randlee/sc-publish")
         self.assertEqual(pin["revision"], "9677ab083e7dd3feb258235a342e321ca1b45d8d")
-        checkout = ROOT / ".sc-publish-kit"
+        temp = tempfile.TemporaryDirectory(prefix="sc-publish-inventory-")
+        self.addCleanup(temp.cleanup)
+        checkout = Path(temp.name)
+        subprocess.run(["git", "init", "--quiet", str(checkout)], check=True)
+        subprocess.run(["git", "-C", str(checkout), "fetch", "--quiet", "--depth", "1", pin["repository"], pin["revision"]], check=True)
+        subprocess.run(["git", "-C", str(checkout), "checkout", "--quiet", "--detach", "FETCH_HEAD"], check=True)
         actual = subprocess.check_output(["git", "-C", str(checkout), "rev-parse", "HEAD"], text=True).strip()
         self.assertEqual(actual, pin["revision"])
         installer = checkout / "plugins/sc-publish/install.py"
