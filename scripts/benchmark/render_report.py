@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""Validate and render benchmark campaign example blocks.
+"""Render complete deterministic campaign HTML and shared example blocks.
 
-``--index-only`` on a subsystem campaign script calls ``require_examples``
-and rewrites published HTML from the stored ``examples`` object. A campaign
-missing ``examples.hook_source``, ``examples.resume_loop``, or
-``examples.cli_argv`` exits non-zero.
+Producers write the complete JSON rendering; release verification compares its
+exact bytes. Index refreshes preserve immutable historical report twins.
 """
 
 from __future__ import annotations
 
 import html
 import json
-import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,8 +19,6 @@ _EXAMPLE_TITLES = {
     "resume_loop": "production drive_feed resume loop",
     "cli_argv": "sc-compose CLI argv",
 }
-_PRE_CODE = re.compile(r"<pre><code>.*?</code></pre>", re.DOTALL)
-_H3_AND_PRE = re.compile(r"<h3>.*?</h3>\s*<pre><code>.*?</code></pre>", re.DOTALL)
 
 
 class ReportError(Exception):
@@ -49,45 +44,10 @@ def _example_titled(examples: dict[str, Any], key: str) -> str:
     return f"<h3>{title}</h3>\n{_example_pre(examples, key)}"
 
 
-def _splice(page: str, matches: list[re.Match[str]], blocks: list[str]) -> str:
-    pieces: list[str] = []
-    cursor = 0
-    for match, block in zip(matches, blocks, strict=True):
-        pieces.append(page[cursor : match.start()])
-        pieces.append(block)
-        cursor = match.end()
-    pieces.append(page[cursor:])
-    return "".join(pieces)
-
-
 def example_blocks_html(examples: dict[str, Any]) -> str:
     """Render the three required example blocks as ``<pre><code>``."""
     require_examples({"examples": examples}, label="examples")
     return "\n".join(_example_titled(examples, key) for key in REQUIRED_EXAMPLE_KEYS)
-
-
-def apply_examples_to_html(page: str, examples: dict[str, Any]) -> str:
-    """Put campaign JSON examples into the published HTML.
-
-    The first three example blocks are replaced in ``hook_source``,
-    ``resume_loop``, ``cli_argv`` order. A heading immediately before a
-    code block is retitled with that block (the resume loop is the
-    production ``execute_feed_with_compose_program`` excerpt). A page that does not already
-    have those blocks gains a code-examples section.
-    """
-    require_examples({"examples": examples}, label="campaign")
-    titled = [_example_titled(examples, key) for key in REQUIRED_EXAMPLE_KEYS]
-    headed = list(_H3_AND_PRE.finditer(page))
-    if len(headed) >= len(titled):
-        return _splice(page, headed[: len(titled)], titled)
-    blocks = [_example_pre(examples, key) for key in REQUIRED_EXAMPLE_KEYS]
-    matches = list(_PRE_CODE.finditer(page))
-    if len(matches) >= len(blocks):
-        return _splice(page, matches[: len(blocks)], blocks)
-    section = "<section>\n<h2>Code examples</h2>\n" + example_blocks_html(examples) + "\n</section>\n"
-    if "</body>" in page:
-        return page.replace("</body>", section + "</body>", 1)
-    return page + section
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -100,6 +60,91 @@ def main(argv: list[str] | None = None) -> int:
         payload = json.loads(path.read_text(encoding="utf-8"))
         require_examples(payload, label=str(path))
     return 0
+
+
+
+
+def render_campaign_html(campaign: dict[str, Any]) -> str:
+    """Render the complete published report from its immutable JSON twin.
+
+    Both producer and release verifier use this exact rendering. No raw harness
+    HTML, ambient timestamp, file content, or unreviewed prose is interpolated.
+    """
+    require_examples(campaign, label="campaign")
+    def esc(value: Any) -> str:
+        return html.escape(str(value))
+
+    def number(value: Any) -> str:
+        return "not measured" if value is None else f"{value:.6f}"
+
+    rows = []
+    for case in campaign["cases"]:
+        memory = []
+        for key, title in (("subprocess", "Subprocess"), ("in_process", "In-process")):
+            size = case.get(f"{key}_rss_bytes")
+            if size is not None:
+                memory.append(f"{title}: {size / 1048576:.2f} MiB — {case.get(f'{key}_rss_note')}")
+        limit = case.get("max_ms_per_run")
+        ceiling = "none (unratified)" if limit is None else f"{number(limit)} ms"
+        rows.append(
+            f'<tr id="{esc(case["id"])}"><td><strong>{esc(case.get("label", case["id"]))}</strong>'
+            f'<p class="strategy">{esc(case.get("strategy", ""))}</p></td>'
+            f'<td>{esc(number(case.get("ms_per_run")))} ms</td>'
+            f'<td>{esc(number(case.get("total_ms")))} ms total</td>'
+            f'<td>{esc(case.get("timed_iters"))} + 1 warmup</td>'
+            f'<td>{esc(case.get("status"))}<br>{esc(case.get("skip_reason") or "")}</td>'
+            f'<td>{esc(ceiling)}</td><td>{esc("; ".join(memory) or "Not measured")}</td></tr>'
+        )
+    examples = example_blocks_html(campaign["examples"])
+    for key, title in (("compose_run", "sc_compose_run hook"),
+                       ("lab_resume_loop", "Lab feed_start / resume loop")):
+        if key in campaign["examples"]:
+            examples += f'\n<h3>{title}</h3>\n<pre><code>{esc(campaign["examples"][key])}</code></pre>'
+    metadata = "\n".join(
+        f'<dt>{esc(key)}</dt><dd><code>{esc(campaign.get(key))}</code></dd>'
+        for key in ("campaign_id", "utc", "host", "git_sha", "rustc", "cargo_profile",
+                    "harness", "sc_compose_cli_version", "python_sc_compose")
+    )
+    body = "\n".join(rows)
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sc-runtime Monty benchmark — {esc(campaign['campaign_id'])}</title>
+<style>
+:root {{ color-scheme: dark; }}
+body {{ font: 16px system-ui, sans-serif; max-width: 72rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; background: #0f1419; color: #e7ecf3; }}
+section {{ background: #1a2332; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; overflow-x: auto; }}
+th, td {{ padding: .5rem; text-align: left; vertical-align: top; border-bottom: 1px solid #30363d; }}
+table {{ width: 100%; border-collapse: collapse; }}
+pre {{ background: #0b0f14; padding: .75rem; overflow-x: auto; }}
+.strategy, dt {{ color: #9aa8bc; }}
+dd {{ overflow-wrap: anywhere; }}
+</style>
+</head>
+<body>
+<h1>Monty compose hook benchmark</h1>
+<section><h2>Campaign</h2><dl>
+{metadata}
+</dl><p>Campaign status: <strong>{esc(campaign['status'])}</strong>.</p>
+<p>MEASURED means complete execution with one or more unratified (null) numerical ceilings; it is not a numerical performance PASS.</p></section>
+<section><h2>Methodology</h2>
+<p>Release-profile Rust harness. Each case has one untimed warmup before its recorded timed iterations. Wall-clock measurements use Rust Instant over the timed block only.</p>
+<p>Subprocess RSS uses a separate one-shot macOS /usr/bin/time -l invocation. In-process RSS is getrusage(RUSAGE_SELF) high-water after the timed block and includes the test binary and Monty VM; it is not an isolated daemon measurement. Per-case memory notes identify the measurement method.</p></section>
+<section><h2>Results</h2><table>
+<thead><tr><th>Case and strategy</th><th>Mean / run</th><th>Total</th><th>Iterations</th><th>Status / reason</th><th>Ceiling</th><th>Memory</th></tr></thead>
+<tbody>
+{body}
+</tbody></table></section>
+<section><h2>Code examples</h2>
+{examples}
+</section>
+<section><h2>Reproduce</h2><pre>just --justfile scripts/benchmark/justfile benchmark monty</pre>
+<p>Run on the controlled host from the recorded source revision. Raw Rust harness JSON/HTML remain local diagnostics; this complete published HTML is rendered from the campaign JSON.</p></section>
+</body>
+</html>
+"""
 
 
 if __name__ == "__main__":

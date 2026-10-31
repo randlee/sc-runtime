@@ -2,7 +2,7 @@
 """Package sc_compose_bench output into site/reports/benchmark-monty/.
 
 The harness writes HTML and JSON under ``target/sc-compose-bench/`` (or
-``$CARGO_TARGET_DIR/sc-compose-bench``). This script copies that evidence
+``$CARGO_TARGET_DIR/sc-compose-bench``). This script packages that evidence
 into an immutable campaign and regenerates index.html from every
 ``*.campaign.json`` file. Default CI does not invoke it.
 
@@ -16,7 +16,6 @@ import argparse
 import html
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -30,9 +29,9 @@ from check_gate import GateHostError, assert_gate_host  # noqa: E402
 from check_gate import host_label as gate_host_label  # noqa: E402
 from render_report import (  # noqa: E402
     ReportError,
-    apply_examples_to_html,
     example_blocks_html,
     require_examples,
+    render_campaign_html,
 )
 
 SUBSYSTEM_DIR = Path(__file__).resolve().parent
@@ -441,7 +440,8 @@ def package_campaign(
         raise CampaignError("harness examples must be an object")
     require_production_resume_loop(examples)
     report_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(html_path, dest_html)
+    if not html_path.is_file():
+        raise CampaignError("raw harness HTML diagnostic is missing")
     payload = {
         "schema": CAMPAIGN_SCHEMA,
         "campaign_id": campaign_id,
@@ -459,37 +459,15 @@ def package_campaign(
         "examples": examples,
     }
     assert_examples(payload, label=campaign_id)
-    dest_html.write_text(
-        stamp_report_html(dest_html.read_text(encoding="utf-8"), payload),
-        encoding="utf-8",
-    )
+    dest_html.write_bytes(render_campaign_html(payload).encode("utf-8"))
     json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     write_index(report_dir)
     return payload
 
 
-_META_RE = re.compile(r"<!-- campaign-meta --><p class=\"subtitle\">.*?</p>", re.DOTALL)
-
-
-def stamp_report_html(page: str, campaign: dict) -> str:
-    """Record host, git SHA, and rustc on the published campaign HTML."""
-    page = apply_examples_to_html(page, campaign["examples"])
-    meta = (
-        "<!-- campaign-meta --><p class=\"subtitle\">"
-        f"Campaign {html.escape(str(campaign['campaign_id']))}"
-        f" · host {html.escape(str(campaign['host']))}"
-        f" · git <code>{html.escape(str(campaign['git_sha']))}</code>"
-        f" · {html.escape(str(campaign['rustc']))}</p>"
-    )
-    if "<!-- campaign-meta -->" in page:
-        return _META_RE.sub(meta, page, count=1)
-    if "<body>" in page:
-        return page.replace("<body>", "<body>\n" + meta, 1)
-    return meta + "\n" + page
-
 
 def index_only(report_dir: Path) -> None:
-    """Regenerate index and campaign HTML from JSON. Does not run cargo."""
+    """Regenerate the index; validate and preserve immutable campaign twins."""
     paths = sorted(report_dir.glob("*.campaign.json"))
     for path in paths:
         payload = load_json(path)
@@ -500,10 +478,8 @@ def index_only(report_dir: Path) -> None:
         html_path = report_dir / html_name
         if not html_path.is_file():
             raise CampaignError(f"{path}: missing report {html_name}")
-        html_path.write_text(
-            stamp_report_html(html_path.read_text(encoding="utf-8"), payload),
-            encoding="utf-8",
-        )
+        # Campaign HTML is immutable. New reports are fully rendered at packaging;
+        # historical Rust-generated twins retain their original bytes.
     write_index(report_dir)
 
 

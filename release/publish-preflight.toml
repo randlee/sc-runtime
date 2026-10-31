@@ -14,5 +14,5 @@ description = "Verify prepublication release-generation source contracts."
 run = "bash scripts/check_release_contract_sources.sh"
 [[checks]]
 id = "benchmark-pass"
-description = "Monty benchmark gate on the controlled host (scripts/benchmark/check_gate.py)."
-run = "python3 scripts/benchmark/run_remote_gate.py"
+description = "Verify committed controlled-host benchmark evidence matches the release source and current baselines."
+run = "python3 scripts/benchmark/check_release_evidence.py"

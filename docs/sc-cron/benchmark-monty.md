@@ -28,8 +28,9 @@ Legacy names `benchmark-monty*` call the same Monty campaign.
 |------|------|
 | `scripts/benchmark/monty/campaign.py` | runs release `sc_compose_bench`, packages campaigns |
 | `scripts/benchmark/monty/baselines.json` | optional ms/run floors per case id |
-| `scripts/benchmark/check_gate.py` | publish preflight entry (`benchmark-gate`) |
-| `scripts/benchmark/render_report.py` | validates `examples.hook_source`, `examples.resume_loop`, and `examples.cli_argv`; `campaign.py --index-only` regenerates index and campaign HTML from those keys and exits non-zero when one is missing |
+| `scripts/benchmark/check_gate.py` | fresh controlled-host execution (`benchmark-gate`) |
+| `scripts/benchmark/check_release_evidence.py` | hosted preflight verification of committed reports and measured-source equivalence |
+| `scripts/benchmark/render_report.py` | validates `examples.hook_source`, `examples.resume_loop`, and `examples.cli_argv`; renders complete campaign HTML from JSON; `campaign.py --index-only` validates examples and refreshes the index while preserving immutable report twins |
 | `site/reports/benchmark-monty/` | immutable `*.campaign.json`, HTML, `index.html` |
 | `crates/sc-cron/tests/sc_compose_bench.rs` | harness (ignored unless `SC_CRON_BENCH=1`) |
 | `target/sc-compose-bench/` | harness HTML and JSON that `campaign.py` packages |
@@ -38,16 +39,28 @@ Hook interpretation: [`hooks-sc-compose.md`](hooks-sc-compose.md).
 
 ## Publish preflight
 
-Release publish runs `benchmark-gate` from
-[`release/publish-preflight.toml`](../../release/publish-preflight.toml) on the
-controlled host **`atmbench@rand-m5`**. A skipped **`production_bridge`** case
-fails the gate. The gate also rejects a host label that is not `rand-m5` and
-not listed in `scripts/benchmark/monty/baselines.json` (`allowed_hosts`),
-unless `SC_BENCH_GATE_ALLOW_ANY_HOST=1` (local development only). Floors are
-read from that baselines file. `site/reports/benchmark-monty/` does not carry
-a second copy.
+A developer runs a fresh campaign from clean, pushed workspace source on
+**`atmbench@rand-m5`**, using the procedure above or the optional workstation
+SSH producer `scripts/benchmark/run_remote_gate.py`. Submit the immutable
+JSON/HTML and regenerated index under `site/reports/benchmark-monty/`, then
+have quality manager independently review the campaign and measured build.
+First-release measurement does not require an installed prerelease archive or
+already-published SDK.
 
-`campaign.py --gate` on **`atmbench@rand-m5`** is publish preflight. Pull-request
-CI does not run that gate. The committed Mac campaign in
-`site/reports/benchmark-monty/` is the evidence stored in this repository.
-A Mac measurement stays labeled `Mac`.
+Hosted publish preflight runs `scripts/benchmark/check_release_evidence.py`
+through [`release/publish-preflight.toml`](../../release/publish-preflight.toml).
+It never connects to the controlled host. It requires committed canonical
+report pairs/index, matching HTML measurements, five complete cases without
+skips, and current baseline semantics. It selects the newest campaign matching
+the release source before accepting its status: a later applicable failure or
+invalid result cannot be hidden by an older success. Source changes beyond
+added report pairs/index updates invalidate evidence; identical source across
+a squash merge remains eligible. Existing quality review and release-candidate
+tag policy apply, without a new signing or approval-record framework.
+
+Ceilings are read from `scripts/benchmark/monty/baselines.json`. Null ceilings
+produce `MEASURED`: complete execution evidence, not a numerical performance
+PASS. A skipped case, FAIL, INCOMPLETE, malformed report, or stale index blocks
+preflight. Publish all measured attempts unchanged, including failures.
+Historical Mac campaigns remain labeled `Mac`; they do not establish
+controlled-host release evidence. PR CI does not run fresh benchmark campaigns.
