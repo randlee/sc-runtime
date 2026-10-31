@@ -16,11 +16,51 @@ use serde_json::{Map, Number, Value};
 use crate::monty_compose_common::ComposeHostError;
 use crate::{CronError, HookEvent, ScheduleName};
 
+/// A validated, non-reserved Monty host-function identifier.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct MontyHostName(String);
+
+impl MontyHostName {
+    /// Validates an application host-function name.
+    ///
+    /// # Errors
+    /// Invalid identifiers and reserved hook names return InvalidSpec.
+    pub fn new(name: impl Into<String>) -> Result<Self, CronError> {
+        let name = name.into();
+        if !crate::is_identifier(&name)
+            || matches!(name.as_str(), "__hook" | "cron_stop" | "cron_tick")
+        {
+            return Err(CronError::InvalidSpec(format!(
+                "invalid or reserved Monty host name: {name}"
+            )));
+        }
+        Ok(Self(name))
+    }
+
+    /// Borrows the validated identifier.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::borrow::Borrow<str> for MontyHostName {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl fmt::Display for MontyHostName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 /// An owned JSON-shaped invocation of an application host function.
 #[derive(Clone, Debug)]
 pub struct MontyHostCall {
     /// Registered function name.
-    pub name: String,
+    pub name: MontyHostName,
     /// Positional JSON arguments in source order.
     pub args: Vec<Value>,
     /// Keyword JSON arguments.
@@ -64,7 +104,7 @@ enum HostEntry {
 /// Immutable application host registrations; a new registry is empty.
 #[derive(Clone, Default)]
 pub struct MontyHostRegistry {
-    entries: BTreeMap<String, HostEntry>,
+    entries: BTreeMap<MontyHostName, HostEntry>,
 }
 
 impl fmt::Debug for MontyHostRegistry {
@@ -115,16 +155,14 @@ impl MontyHostRegistry {
 
     /// Returns configured names in stable identifier order.
     pub fn names(&self) -> impl Iterator<Item = &str> {
-        self.entries.keys().map(String::as_str)
+        self.entries.keys().map(MontyHostName::as_str)
     }
 
     fn insert(&mut self, name: String, entry: HostEntry) -> Result<(), CronError> {
-        if !crate::is_identifier(&name)
-            || matches!(name.as_str(), "__hook" | "cron_stop" | "cron_tick")
-            || self.entries.contains_key(&name)
-        {
+        let name = MontyHostName::new(name)?;
+        if self.entries.contains_key(&name) {
             return Err(CronError::InvalidSpec(format!(
-                "invalid, reserved or duplicate Monty host name: {name}"
+                "duplicate Monty host name: {name}"
             )));
         }
         self.entries.insert(name, entry);
@@ -135,6 +173,7 @@ impl MontyHostRegistry {
         &self,
         call: &MontyHostCall,
         logger: &SharedCanonicalLog,
+        correlation: &crate::worker::RunCorrelation,
     ) -> Result<Value, HostDispatchError> {
         match self.entries.get(&call.name) {
             None => Err(HostDispatchError::Undefined),
@@ -149,6 +188,7 @@ impl MontyHostRegistry {
                     &args,
                     call.deadline,
                     logger,
+                    correlation,
                 )
                 .map_err(HostDispatchError::Child)?;
                 Ok(

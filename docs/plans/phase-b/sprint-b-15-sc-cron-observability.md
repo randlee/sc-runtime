@@ -10,6 +10,9 @@ branch: sprint/b-15-sc-cron-observability
 worktree: sprint/b-15-sc-cron-observability
 integration_branch: integrate/phase-b-observability
 requirements:
+  - REQ-RUN-0005
+  - NFR-RUN-0004
+  - NFR-RUN-0008
   - REQ-CRON-0001
   - REQ-CRON-0003
   - REQ-CRON-0005
@@ -83,6 +86,23 @@ owns logger construction, flush, and shutdown. Explicit workspace path
 overrides select the development packages, with no observability registry
 patch. The real matching `1.5.1` pair, direct upstream Arc coercion, and
 development-package removal remain b-18's release gate.
+
+The QA1 corrective window additionally owns private correlation transport in
+`hook.rs`, `process.rs`, `monty_run.rs`, `monty_host.rs`, and `monty_compose.rs`,
+and correlation assertions in `tests/observability_components.rs`. It also owns
+the validated `MontyHostName` public model, facade declaration and documentation.
+Public supervisor, `HookCall`, `Job`, `ChildSpec`, and schedule signatures stay
+unchanged. These narrow shared-file repairs do not change driver policy.
+
+NFR-RUN-0004: the standard tool considered is `sc-observability-types`, whose
+canonical `LogEvent`, identifiers, diagnostic and logger contract are reused.
+Those types do not supply cron-specific target/action/outcome mappings or know
+which existing scheduler branch owns an observation; the small pure event
+mapping here supplies that domain data while owners emit directly. sc-lint
+supplies source and function-length checks, without custom counting tooling.
+REQ-RUN-0005 is verified by `boundary:BOUNDARY-sc-cron`, types-only dependency
+checks and production tool-package checks. NFR-RUN-0008 is verified for every
+owned production Rust file by `sc-lint lint line-counts` in full `just lint`.
 
 ## Event contract
 
@@ -187,6 +207,17 @@ field keys. Every failed emission is ignored after the attempt.
 6. ADR-RUN-0011: production changes add no sleep or `block_on` call and hold
    no `std::sync::Mutex` guard across `.await`; deadline-based test polling is
    exempt.
+
+An invocation carries one observation-only canonical `CorrelationId`, formatted
+from its numeric schedule ID, generation and selected due timestamp as
+`cron-s<ID>-g<GEN>-t<SECONDS>-n<NANOSECONDS>`. The due occurrence is captured
+before advancing the next occurrence. This identifies a logical occurrence
+within its scheduler/store domain; it is not a globally unique execution
+attempt. Private in-flight, Python supervisor and Monty feed/CLI state retain
+it through stop/tick, completion, abort, expiry and recording. All invocation
+records place it only in top-level `correlation_id`; lifecycle, reload, store,
+jitter and skipped pre-launch observations keep `None`. It adds no persistence,
+wire, environment, payload or hook-source data.
 
 ## Acceptance criteria
 

@@ -46,7 +46,7 @@ const BUDGET: Duration = Duration::from_secs(10);
 #[tokio::test]
 async fn custom_host_without_cli() {
     let host = |call: &MontyHostCall| {
-        assert_eq!(call.name, "jev_call");
+        assert_eq!(call.name.as_str(), "jev_call");
         assert_eq!(call.schedule.as_str(), "host-test");
         assert_eq!(call.phase, HookEvent::Tick);
         assert!(call.deadline > Instant::now());

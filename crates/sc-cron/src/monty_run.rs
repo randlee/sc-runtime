@@ -116,6 +116,7 @@ impl fmt::Display for StopReplyError {
 pub(crate) struct FeedLaunch {
     /// Repl from the previous feed of this generation, if any.
     pub(crate) logger: sc_observability_types::SharedCanonicalLog,
+    pub(crate) correlation: crate::worker::RunCorrelation,
     pub(crate) session: Option<MontySession>,
     /// Hook source.
     pub(crate) source: String,
@@ -145,6 +146,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
 ) -> FeedDone {
     let FeedLaunch {
         logger,
+        correlation,
         session,
         source,
         phase,
@@ -184,6 +186,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
             &hosts,
             run_deadline,
             logger,
+            correlation,
         )
     })
     .await
@@ -220,6 +223,7 @@ pub(crate) fn execute_feed(
         &MontyHostRegistry::new(),
         run_deadline,
         crate::noop_logger(),
+        None,
     )
 }
 
@@ -238,6 +242,7 @@ pub(crate) fn execute_feed_with_logger(
     hosts: &MontyHostRegistry,
     run_deadline: Instant,
     logger: sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
 ) -> FeedDone {
     let (mut session, call_budget) = match open_session(session, source, generation, budget) {
         Ok(ready) => ready,
@@ -247,7 +252,15 @@ pub(crate) fn execute_feed_with_logger(
         .repl
         .tracker_mut()
         .set_max_feed_duration(feed_budget(call_budget));
-    resume_started_feed(session, phase, hook, hosts, run_deadline, &logger)
+    resume_started_feed(
+        session,
+        phase,
+        hook,
+        hosts,
+        run_deadline,
+        &logger,
+        &correlation,
+    )
 }
 
 /// Keeps a repl only when its generation matches, otherwise compiles `source`.
@@ -281,6 +294,7 @@ fn resume_started_feed(
     hosts: &MontyHostRegistry,
     run_deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: &crate::worker::RunCorrelation,
 ) -> FeedDone {
     let stage = FeedStage::from_phase(phase);
     #[cfg(feature = "monty-test-handshake")]
@@ -298,7 +312,16 @@ fn resume_started_feed(
     loop {
         progress = match progress {
             ReplProgress::FunctionCall(call) => {
-                match resume_host(call, stage, phase, hook, hosts, run_deadline, logger) {
+                match resume_host(
+                    call,
+                    stage,
+                    phase,
+                    hook,
+                    hosts,
+                    run_deadline,
+                    logger,
+                    correlation,
+                ) {
                     Ok(next) => next,
                     Err(done) => return done,
                 }
@@ -478,7 +501,8 @@ fn host_call(
     )
     .map_err(|_| "invalid schedule context")?;
     Ok(MontyHostCall {
-        name: call.function_name.clone(),
+        name: crate::MontyHostName::new(call.function_name.clone())
+            .map_err(|_| "invalid host name")?,
         args,
         kwargs,
         schedule,
@@ -502,18 +526,21 @@ fn resume_host(
     hosts: &MontyHostRegistry,
     deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: &crate::worker::RunCorrelation,
 ) -> Result<ReplProgress, FeedDone> {
     if Instant::now() >= deadline {
         return Err(timed_out());
     }
     let context = host_call(&call, phase, hook, deadline).map_err(|why| denied(stage, why))?;
-    let result = hosts.invoke(&context, logger);
+    let result = hosts.invoke(&context, logger, correlation);
     if Instant::now() >= deadline {
         return Err(timed_out());
     }
     let value = match result {
         Ok(value) => value,
-        Err(HostDispatchError::Undefined) => return Err(undefined_name(stage, &context.name)),
+        Err(HostDispatchError::Undefined) => {
+            return Err(undefined_name(stage, context.name.as_str()));
+        }
         Err(HostDispatchError::Denied(why)) => return Err(denied(stage, why)),
         Err(HostDispatchError::Handler(error)) => {
             return Err(failed(format!(

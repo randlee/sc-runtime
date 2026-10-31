@@ -36,7 +36,7 @@ use std::time::{Duration, Instant};
 use serde_json::{Value, json};
 
 use crate::clock::wall_after;
-use crate::process::{Capped, ChildEnv, ChildSpec, TempCwd, supervise_with_logger};
+use crate::process::{Capped, ChildEnv, ChildSpec, TempCwd, supervise_with_correlation};
 use crate::{Clock, CronError, Job, RunOutcome, RunTimeout, ScheduleName, StopDecision, Timestamp};
 
 /// The `protocol` member of every hook request.
@@ -118,6 +118,7 @@ impl HookEvent {
 #[derive(Clone)]
 pub struct PythonHook {
     logger: sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
     program: PathBuf,
     module: PathBuf,
     env: ChildEnv,
@@ -201,9 +202,15 @@ impl PythonHook {
         Ok(Self {
             program: PathBuf::from("python3"),
             logger,
+            correlation: None,
             module,
             env: ChildEnv::Inherit,
         })
+    }
+
+    pub(crate) fn with_correlation(mut self, correlation: crate::worker::RunCorrelation) -> Self {
+        self.correlation = correlation;
+        self
     }
 
     /// Runs `program` instead of `python3`.
@@ -295,11 +302,12 @@ impl PythonHook {
             input: input.as_bytes(),
             env: self.env.clone(),
         };
-        let captured = supervise_with_logger(
+        let captured = supervise_with_correlation(
             &spec,
             MAX_HOOK_OUTPUT_BYTES,
             expiry,
             Arc::clone(&self.logger),
+            self.correlation.clone(),
         )
         .await
         .map_err(|error| {
