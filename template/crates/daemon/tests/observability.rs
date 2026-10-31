@@ -21,15 +21,9 @@ async fn production_http_and_cron_share_jsonl_and_release_handles() {
     let shared = observability.logger();
     let weak = Arc::downgrade(&shared);
     let config = cron::CronConfig::default();
-    let scheduler = cron::open(
-        &config,
-        root.path(),
-        Arc::clone(&shared),
-        config.hook_environment_host().expect("policy"),
-        #[cfg(feature = "monty")]
-        sc_cron::MontyHostRegistry::new(),
-    )
-    .expect("real scheduler");
+    let scheduler = daemon::composition::CronServices::default()
+        .open_scheduler(&config, root.path(), Arc::clone(&shared))
+        .expect("production scheduler composition");
     let worker = scheduler.spawn_worker(Arc::new(cron::ApplicationJob));
     let mut config = DaemonConfig::default();
     config.endpoint_flag = Some("tcp:127.0.0.1:0".to_owned());

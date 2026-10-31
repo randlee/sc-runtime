@@ -271,6 +271,30 @@ mod tests {
         }
     }
 
+    #[cfg(all(feature = "cron", unix))]
+    #[test]
+    fn database_symlink_cannot_escape_the_instance_root() {
+        let root = tempfile::tempdir().expect("root");
+        let outside = tempfile::tempdir().expect("outside");
+        std::os::unix::fs::symlink(outside.path(), root.path().join("redirect")).expect("symlink");
+        let config = CronConfig {
+            database_path: "redirect/escaped.db".into(),
+            ..CronConfig::default()
+        };
+        let result = super::open(
+            &config,
+            root.path(),
+            std::sync::Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                sc_observability_types::ServiceName::new("symlink-proof").expect("service"),
+            )),
+            config.hook_environment_host().expect("policy"),
+            #[cfg(feature = "monty")]
+            sc_cron::MontyHostRegistry::new(),
+        );
+        assert!(matches!(result, Err(sc_cron::CronError::InvalidSpec(_))));
+        assert!(!outside.path().join("escaped.db").exists());
+    }
+
     #[cfg(feature = "cron")]
     #[test]
     fn configured_database_and_row_limits_reach_store() {
