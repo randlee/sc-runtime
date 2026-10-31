@@ -5,7 +5,7 @@
   qa:sprint "b-owner-amendment" ;
   qa:qaPass "qa-b-owner-amendment-2" ;
   qa:severity "Blocking" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "req-qa" ;
   qa:commit "fff04216828e088fb7443e281721f03279b3a2f4" ;
   qa:location "docs/requirements.md:3654; docs/architecture.md:41" ;
