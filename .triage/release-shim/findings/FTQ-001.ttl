@@ -1,5 +1,7 @@
 @prefix qa: <urn:sc-runtime:qa:> .
-<urn:sc-runtime:release-shim:FTQ-001> qa:id "FTQ-001" ; qa:severity "important" ; qa:status "open" ;
+<urn:sc-runtime:release-shim:FTQ-001> qa:id "FTQ-001" ; qa:severity "important" ; qa:status "closed" ;
  qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
  qa:file "template/crates/daemon/src/observability_adapter_tests.rs" ; qa:line 145 ; qa:summary "The admission deadline does not bound the test. After result_rx.recv_timeout(WAIT) expires, the test drops the sink release sender but then unconditionally joins the admission worker before examining the timeout. If admission is stuck on a logger lock or otherwise fails to finish after the sink is released, the test blocks forever instead of reporting its deadline failure. The first two synchronous adapter.emit calls also run outside the result deadline." ;
  qa:reviewers "flaky-test-qa" .
+
+<urn:sc-runtime:release-shim:FTQ-001> qa:fixCommit "504f34c5a4604192872ce1def2b5ea372a8865b1" ; qa:verifiedBy "/root/shim_qa3_flaky" ; qa:verificationCommit "d224c62cdef8174f021a05e5a5c65a9c31a22702" ; qa:provenance "Actual scoped reviewer closure; unchanged source mapping preserves QA2 service findings closure." .

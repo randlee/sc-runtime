@@ -21,7 +21,7 @@
     "url": "https://github.com/randlee/sc-runtime/pull/98",
     "status": "qa1_correction_active",
     "head": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27",
-    "commit": "0b2eb92d06ef2abf6abc2ba3c74167393ad2a9af"
+    "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702"
   },
   "cleanup_issue": "https://github.com/randlee/sc-runtime/issues/97",
   "coordination": {
@@ -805,73 +805,99 @@
       "unparsed_reviewers": []
     },
     "active_round": {
-      "qa_pass": "qa-release-shim-2",
-      "commit": "0b2eb92d06ef2abf6abc2ba3c74167393ad2a9af",
+      "qa_pass": "qa-release-shim-3",
+      "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702",
+      "status": "enforcer_publishing_in_flight",
       "reviewer_manifest": [
         {
           "agent": "req-qa",
-          "task_id": "/root/shim_qa2_req",
+          "task_id": "/root/shim_qa3_req",
           "spawn_actor": "parent-orchestrator",
           "model": "gpt-6-luna",
           "effort": "high",
           "status": "completed",
           "fenced_json_received": true,
           "verdict": "FAIL",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/req-qa-result.md"
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa3/req-qa-result.md"
         },
         {
           "agent": "arch-qa",
-          "task_id": "/root/shim_qa2_arch",
+          "task_id": "/root/shim_qa3_arch",
           "spawn_actor": "parent-orchestrator",
           "model": "gpt-6.1-sol",
           "effort": "high",
           "status": "completed",
           "fenced_json_received": true,
           "verdict": "PASS",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/arch-qa-result.md"
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa3/arch-qa-result.md"
         },
         {
           "agent": "rust-qa-agent",
-          "task_id": "/root/shim_qa2_rust",
+          "task_id": "/root/shim_qa3_rust",
           "spawn_actor": "parent-orchestrator",
           "model": "gpt-6.1-terra",
           "effort": "high",
           "status": "completed",
           "fenced_json_received": true,
           "verdict": "PASS",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/rust-qa-agent-result.md"
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa3/rust-qa-agent-result.md"
         },
         {
-          "agent": "rust-service-hardening-agent",
-          "task_id": "/root/shim_qa2_service",
+          "agent": "flaky-test-qa",
+          "task_id": "/root/shim_qa3_flaky",
           "spawn_actor": "parent-orchestrator",
           "model": "gpt-6.1-sol",
           "effort": "high",
           "status": "completed",
           "fenced_json_received": true,
           "verdict": "PASS",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/rust-service-hardening-agent-result.md"
-        },
-        {
-          "agent": "flaky-test-qa",
-          "task_id": "/root/shim_qa2_flaky",
-          "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6.1-sol",
-          "effort": "high",
-          "status": "completed",
-          "fenced_json_received": true,
-          "verdict": "FINDINGS",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/flaky-test-qa-result.md"
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa3/flaky-test-qa-result.md"
         }
       ],
-      "coordinator_task_id": "/root/shim_qa2_enforcer",
-      "status": "fail_fix_dispatched",
-      "new_findings": [
-        "FTQ-003"
-      ],
+      "scope": "Only15deletions onePythonunitfile; preserveQA2sourcecoverage and actualfull0b2lint/test, currentfocused12+18+8; currentCIrequired",
+      "coordinator_task_id": "/root/shim_qa3_enforcer",
+      "source_findings_open": [],
       "execution_pending": [
         "REQ-QA-002"
       ]
+    },
+    "source_finding_closures": {
+      "REQ-QA-001": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa3_req"
+      },
+      "ARCH-001": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa3_arch"
+      },
+      "ARCH-002": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa3_arch"
+      },
+      "QA-001": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa3_rust"
+      },
+      "RSH-001": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa2_service"
+      },
+      "RSH-002": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa2_service"
+      },
+      "FTQ-001": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa3_flaky"
+      },
+      "FTQ-002": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa3_flaky"
+      },
+      "FTQ-003": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa3_flaky"
+      }
     }
   },
   "release": {

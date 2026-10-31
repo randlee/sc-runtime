@@ -1,5 +1,7 @@
 @prefix qa: <urn:sc-runtime:qa:> .
-<urn:sc-runtime:release-shim:REQ-QA-001> qa:id "REQ-QA-001" ; qa:severity "blocking" ; qa:status "open" ;
+<urn:sc-runtime:release-shim:REQ-QA-001> qa:id "REQ-QA-001" ; qa:severity "blocking" ; qa:status "closed" ;
  qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
  qa:file "See reviewer evidence" ; qa:line 0 ; qa:summary "The authoritative document is dispatched as the sprint plan but has no YAML front matter or requirements list. The Req-QA contract requires each sprint document to list every applicable REQ/NFR; the authority line names only REQ-RUN-0702 while ADR-RUN-0017 amends multiple repository and crate requirements (docs/architecture.md:217-220)." ;
  qa:reviewers "req-qa" .
+
+<urn:sc-runtime:release-shim:REQ-QA-001> qa:fixCommit "504f34c5a4604192872ce1def2b5ea372a8865b1" ; qa:verifiedBy "/root/shim_qa3_req" ; qa:verificationCommit "d224c62cdef8174f021a05e5a5c65a9c31a22702" ; qa:provenance "Actual scoped reviewer closure; unchanged source mapping preserves QA2 service findings closure." .

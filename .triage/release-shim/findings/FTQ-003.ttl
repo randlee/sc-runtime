@@ -1,5 +1,7 @@
 @prefix qa: <urn:sc-runtime:qa:> .
-<urn:sc-runtime:release-shim:FTQ-003> qa:id "FTQ-003" ; qa:severity "minor" ; qa:status "open" ;
+<urn:sc-runtime:release-shim:FTQ-003> qa:id "FTQ-003" ; qa:severity "minor" ; qa:status "closed" ;
  qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "0b2eb92d06ef2abf6abc2ba3c74167393ad2a9af" ;
  qa:file "scripts/tests/test_observability_dependencies.py" ; qa:line 132 ; qa:summary "The newly added descendant-cleanup regression can pass without a descendant ever executing. The parent has only 0.2s to start through the owned launcher, and neither parent nor descendant acknowledges readiness before timeout. The assertion checks only absence of a marker after a fixed 0.8s sleep; the descendant itself sleeps 0.7s before writing. Delayed startup or scheduling can therefore leave the marker absent even if no descendant was launched or a hypothetical surviving descendant has not yet run its write. This makes the new negative witness nondeterministic and permits false-green cleanup evidence." ;
  qa:reviewers "flaky-test-qa" ; qa:remedy "Remove redundant weak witness; retain wrapper forwarding/error units and execute unchanged readiness/PID ownership helper suite. No new process framework." .
+
+<urn:sc-runtime:release-shim:FTQ-003> qa:fixCommit "d224c62cdef8174f021a05e5a5c65a9c31a22702" ; qa:verifiedBy "/root/shim_qa3_flaky" ; qa:verificationCommit "d224c62cdef8174f021a05e5a5c65a9c31a22702" ; qa:provenance "Actual scoped reviewer closure; unchanged source mapping preserves QA2 service findings closure." .
