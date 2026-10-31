@@ -106,9 +106,19 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                              [[name] for name in ("setup", "lint", "test", "build-cli", "build-daemon")])
             baseline = records[0]["before"]
             self.assertTrue(baseline)
+            # Cargo may create a lockfile during lint when the template has
+            # none. Once created, it too must stay unchanged.
+            generated_lock = None
             for record in records:
-                self.assertEqual(baseline, record["before"], record["recipe"])
-                self.assertEqual(baseline, record["after"], record["recipe"])
+                for moment in ("before", "after"):
+                    current = dict(record[moment])
+                    if "Cargo.lock" not in baseline:
+                        lock = current.pop("Cargo.lock", None)
+                        if generated_lock is not None:
+                            self.assertEqual(lock, generated_lock, record["recipe"])
+                        elif lock is not None:
+                            generated_lock = lock
+                    self.assertEqual(baseline, current, record["recipe"])
 
     def test_signal_guard_refuses_partial_markers(self):
         self.assertFalse(signal_test_enabled({}))
