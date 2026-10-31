@@ -215,12 +215,12 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-17-sc-cron-hook-environment",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa1_fail_all_findings_in_corrective_pass",
+      "status": "qa1_fixes_pushed_qa2_and_validation_in_progress",
       "developer_task_id": "/root/phaseb_b17_developer",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
       "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2",
       "pr_number": 93,
-      "head": "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0",
+      "head": "216e2e38f52a5418ce0951ce6873d6335cabd497",
       "shared_portability_commit": "021ec1bc6642419e162cec21aaea5dcc38d3e779",
       "shared_portability_paths": [
         "tests/unit/generation/test_monty_example.py",
@@ -246,7 +246,18 @@
         "commit": "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0",
         "all_required_checks": "success",
         "evidence": "/tmp/phaseb-cursor-orchestration/b17-qa1/qa-report.md"
-      }
+      },
+      "qa2_bead": "run-03z.38",
+      "qa2_packet": "/tmp/phaseb-cursor-orchestration/b17-qa2",
+      "qa2_dispatched": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high"
+        }
+      ]
     },
     "b-18": {
       "task_id": "run-03z.6",
@@ -270,7 +281,11 @@
       "qualified_kit_pr": "https://github.com/randlee/sc-publish/pull/137",
       "kit_preparation_task_id": "/root/phaseb_b18_kit_install",
       "kit_preparation_bead": "run-03z.6.1",
-      "kit_preparation_assignment": "/tmp/phaseb-cursor-orchestration/b18-kit-preparation-assignment.xml"
+      "kit_preparation_assignment": "/tmp/phaseb-cursor-orchestration/b18-kit-preparation-assignment.xml",
+      "kit_preparation_worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit",
+      "kit_preparation_branch": "codex/b-18-publishing-kit",
+      "kit_preparation_pr": 95,
+      "kit_preparation_head": "ef5c0e829df74867566e89c7b6bec68151af26a3"
     }
   },
   "qa_rounds": [
@@ -3402,6 +3417,106 @@
           "qa_pass": "qa-b-owner-amendment-2",
           "commit": "fff04216828e088fb7443e281721f03279b3a2f4",
           "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/94#issuecomment-6538630188",
+          "coordinator_task_id": "/root/cursor_owner_amendment_enforcer",
+          "triage": {
+            "ttl_paths": [
+              "/Volumes/Extreme Pro/github/sc-runtime-worktrees/integrate/phase-b-observability/.triage/b/findings/REQ-QA-OWNER-001.ttl"
+            ]
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
+    },
+    {
+      "qa_pass": "qa-b-owner-amendment-3",
+      "commit": "6821d5dd5602d1d27d574807df6be04926e7a121",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/94#issuecomment-6538709330",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-OWNER-001.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/cursor_owner_amendment_enforcer",
+      "machine_status": {
+        "sprint": "b-owner-amendment",
+        "task": "qa-b-owner-amendment-3",
+        "branch": "codex/phase-b-release-boundary",
+        "commit": "6821d5dd5602d1d27d574807df6be04926e7a121",
+        "pr": 94,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 8,
+          "total": 8,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "IN_FLIGHT",
+        "merge_reason": "All scoped plan QA checks pass at the exact open PR94 head: req-qa and arch-qa PASS, 8/8 deliverables, zero findings, and REQ-QA-OWNER-001 is resolved on this branch. PR94 is OPEN, but eight required checks remain pending (postgres.json, sqlite-apache.json, sqlite-mcp.json, sqlite-mysql.json, sqlite-no-mcp.json, mysql.json, sqlite-postgres.json, and just lint and just test).",
+        "next_action": "monitor_ci",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/cursor_b15_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/cursor_b13_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-b-owner-amendment-3",
+          "commit": "6821d5dd5602d1d27d574807df6be04926e7a121",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/94#issuecomment-6538709330",
           "coordinator_task_id": "/root/cursor_owner_amendment_enforcer",
           "triage": {
             "ttl_paths": [
