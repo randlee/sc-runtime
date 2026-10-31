@@ -5,11 +5,14 @@
   qa:sprint "phase-b-end" ;
   qa:qaPass "qa-phase-b-end-2" ;
   qa:severity "Important" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "rust-qa-agent" ;
   qa:commit "92f384834a78ed15ba68b3df02cd00267ea4d41e" ;
   qa:location "template/crates/daemon/src/main.rs:233" ;
   qa:issue "The new Liquid conditional encloses a Rust test body, causing the existing template conditional budget and body invariant to fail. The canonical full test gate fails at this revision." ;
   qa:recommendation "Remove the body-varying Liquid conditional while retaining an explicitly executed cron startup failure witness for a suitable generated fixture; rerun the unchanged guard and full test gate." ;
   qa:implementationCommit "1e6931bed0130d8452a35a9a6ec17b30ace11302" ;
-  qa:verification "Forward correction targeted2Liquid+17allfeature+1exactignoredfixture passed; freshQA3andcanonicalfullgatespending, notphaseapproval." .
+  qa:verification "Forward correction targeted2Liquid+17allfeature+1exactignoredfixture passed; freshQA3andcanonicalfullgatespending, notphaseapproval." ;
+  qa:fixedCommit "1e6931bed0130d8452a35a9a6ec17b30ace11302" ;
+  qa:verifiedBy "/root/phase_end_qa3_rust" ;
+  qa:sourceVerification "FouractualQA3rolesPASS; canonicalexactheadlocalfullLint+TestEXIT0. Remotephaseartifactpending." .
