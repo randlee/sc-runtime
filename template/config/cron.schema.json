@@ -10,10 +10,11 @@
       "additionalProperties": false,
       "properties": {
         "database_path": {
-          "description": "Schedule SQLite database path. Relative paths resolve below the instance root.",
+          "description": "Relative schedule SQLite database path below the instance root. Absolute paths, parent traversal and symlink traversal are rejected.",
           "type": "string",
           "default": "cron.db",
-          "minLength": 1
+          "minLength": 1,
+          "pattern": "^(?![A-Za-z]:)(?!.*(?:^|/)\\.{1,2}(?:/|$))[^/\\\\:]+(?:/[^/\\\\:]+)*$"
         },
         "max_schedule_rows": {
           "description": "Maximum schedule rows, enabled and disabled. JSON null or 0 means unlimited. A missing key defaults to 10, the same value as CronConfig's serde default.",

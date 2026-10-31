@@ -80,8 +80,8 @@ the adapter during generation; setup and subsequent recipes never edit Rust.
 
 The generated `main` opens `cron.database_path` (default `cron.db`) relative
 to the instance root, starts the worker, then joins it after runtime drain
-before dropping the scheduler and consuming the logger owner. Absolute database
-paths retain their configured location. `ApplicationJob` refuses Rust jobs
+before dropping the scheduler and consuming the logger owner. Absolute and parent-traversal database paths are rejected before any database
+is opened; configured paths remain below the instance root. `ApplicationJob` refuses Rust jobs
 until the application provides its own implementation; stored Python/Monty
 hooks need no Rust workload implementation.
 
@@ -112,12 +112,12 @@ impl EnvironmentReferenceResolver for RecordingResolver {
     }
 }
 let resolver = Arc::new(RecordingResolver(Mutex::new(Vec::new())));
-let host = config.cron.hook_environment_host()?
-    .with_reference_resolver(resolver.clone());
-// Retain the resolver object in application ownership. cron::open takes the
-// prebuilt policy, preserving that resolver instead of rebuilding defaults.
-let scheduler = cron::open(
-    &config.cron, std::path::Path::new("/var/lib/widget-app"), logger, host, registry,
+// Use the same application-owned production composition path as main.
+let services = daemon::composition::CronServices::default()
+    .with_reference_resolver(resolver.clone())
+    .with_monty_hosts(registry);
+let scheduler = services.open_scheduler(
+    &config.cron, std::path::Path::new("/var/lib/widget-app"), logger,
 )?;
 let environment = HookEnvironment::new()
     .dotenv("/var/lib/widget-app/agents/planner-7/.env", true)?

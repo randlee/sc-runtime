@@ -20,6 +20,7 @@ requirements:
   - REQ-RUN-0701
   - REQ-RUN-0702
   - REQ-RT-0001
+  - REQ-RT-0002
   - REQ-RT-0004
   - REQ-RT-0005
   - NFR-RT-0001
@@ -47,6 +48,16 @@ adrs:
   - ADR-RT-0001
   - ADR-RT-0002
   - ADR-TRN-0006
+  - ADR-RUN-0001
+  - ADR-RUN-0003
+  - ADR-RUN-0005
+  - ADR-RUN-0008
+  - ADR-RUN-0009
+  - ADR-RUN-0015
+  - ADR-RUN-0303
+  - ADR-RUN-0401
+  - ADR-RUN-0402
+  - ADR-RT-0004
 owned_paths:
   - scripts/check_observability_release.py
   - dev/observability-logger-adapter/Cargo.toml
@@ -60,6 +71,7 @@ owned_paths:
   - template/config/cron.schema.json
   - template/crates/daemon/Cargo.toml
   - template/crates/daemon/src/lib.rs
+  - template/crates/daemon/src/composition.rs
   - template/crates/daemon/src/agent_error.rs
   - template/crates/daemon/tests/observability.rs
   - template/crates/daemon/tests/cron_environment.rs
@@ -313,8 +325,11 @@ Ok(scheduler)
 `Scheduler::open_with_logger` constructs
 `SystemJitter::with_logger(logger.clone())` internally, so callers cannot
 pair the store and `RunCoord` handle with a differently configured jitter.
-`main` builds `hook_environment` through b-17's typed config builder and
-passes it with the application's resolver into `cron::open` unchanged.
+`main` calls the application-owned production `composition::run` path. Its
+`CronServices` builds `hook_environment` through b-17's typed config builder,
+attaches the optional application-owned resolver, and passes that exact policy
+and application registry into `cron::open` unchanged. Defaults choose no
+built-in reference provider and an empty registry.
 ANC-034/035: Python and Monty use identical schedule-environment settings and
 resolution; daemon values enter only through names explicitly allowed by
 daemon config. Load scheduled dotenv sources by absolute path only when
@@ -370,6 +385,50 @@ the three literal codes above and do not duplicate the layout.
 | daemon run fails | succeeds or fails | daemon error remains primary; shutdown failure is secondary |
 | daemon run succeeds | fails | `DAEMON.OBSERVABILITY_SHUTDOWN` becomes primary process failure |
 | daemon run succeeds | succeeds | success |
+
+## Governing ADR applicability
+
+The binding inventory contains the existing ten decisions and the ten QA1
+trace corrections above. Their concrete scope is:
+
+- ADR-RUN-0001 and ADR-RUN-0008 govern application-owned assembly and standard
+  tools. The generated `composition` module supplies the resolver/registry
+  extension seam; the SDK does not choose a provider or import application cron.
+- ADR-RUN-0002, ADR-RUN-0003 and ADR-RUN-0303 govern published crate identities,
+  the types-only library graph, daemon-only full logger, and default-off cron
+  and Monty features. No compose/ATM release dependency is introduced.
+- ADR-RUN-0004 and ADR-RUN-0007 govern the one shared logger, direct owner
+  emission, structured code/message/cause/recovery, and final owner shutdown.
+- ADR-RUN-0005 governs standard sc-lint/just infrastructure and routing the
+  generated-feature workflow checks through the root recipes.
+- ADR-RUN-0009 and ADR-TRN-0006 govern real daemon-process signals and endpoint
+  cleanup only on isolated ephemeral CI; no local real-signal path is enabled.
+- ADR-RUN-0011 governs async cleanup, owned blocking operations and child joins,
+  without a synchronous guard across await or a production blocking bridge.
+- ADR-RUN-0013, ADR-RUN-0014 and ADR-RUN-0016 govern cron ownership, mapped row
+  limits, the unchanged prebuilt environment/resolver and host registry contract,
+  beneath-instance database paths, shared snapshots and redaction.
+- ADR-RUN-0015 remains the controlled-host benchmark gate for later authorized
+  release acceptance. This sprint retains its preflight and claims no new
+  benchmark campaign or release acceptance.
+- ADR-RUN-0401 and ADR-RUN-0402 govern cargo-generate/sc-compose mechanics,
+  explicit development generation, fixture admission and source-unchanged setup,
+  lint, test and build sequences.
+- ADR-RT-0001 and ADR-RT-0002 also govern the QA1 SDK cleanup extension: the
+  ready builder consumes a general application cleanup future after server
+  disposal, before stores/instance-lock/logger teardown, without importing cron.
+  REQ-RT-0002 requires lock acquisition before the stores callback and retention
+  through that cleanup; REQ-RT-0005 retains the graceful runtime signal path.
+- ADR-RT-0004 governs B18's real in-process fixture proof, including local
+  request/JSONL and lock-held cleanup regressions. It does not authorize local
+  process-signal execution or replace the isolated daemon-process proof.
+
+ADR-RT-0003 remains outside the phase plan's binding inventory: project Stores,
+router and rmcp service still pass through unchanged, with no wrapper or field
+inspection. Retaining the successful Stores owner through the new general
+cleanup callback changes lifecycle ownership under ADR-RT-0001/0002, not the
+Stores/router/service pass-through contract. No referenced-crate ADR is copied
+merely because that crate is consumed.
 
 ## Required work and deliverables
 
@@ -636,8 +695,10 @@ strict dependency guard; they neither invoke nor skip a production registry
 proof. Ordinary phase discovery skips the unavailable later proof. No current
 registry success is claimed.
 Cron workers start inside the runtime stores callback only after the runtime
-holds `daemon.lock` and application stores open. A losing concurrent daemon
-therefore cannot run schedules before its instance-lock failure.
+holds `daemon.lock` and application stores open. Runtime invokes the general
+cleanup callback before releasing that lock, so application drain cannot
+overlap a replacement worker. A losing concurrent daemon cannot run schedules
+before its instance-lock failure.
 
 
 ## Implementation delivered

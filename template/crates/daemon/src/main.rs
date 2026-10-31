@@ -37,17 +37,13 @@ async fn main() -> ExitCode {
     let transport_name = match sc_transport::AppName::new(daemon::APP_NAME) {
         Ok(name) => name,
         Err(err) => {
-            return startup_exit(err.code(), err, "fix the generated application name");
+            return transport_exit(&err);
         }
     };
     let log_root = match log_root(&config, &transport_name) {
         Ok(path) => path,
         Err(err) => {
-            return startup_exit(
-                err.code(),
-                err,
-                "set logging.log_root or a writable instance root",
-            );
+            return transport_exit(&err);
         }
     };
     let observability = match daemon::observability::Observability::init(
@@ -64,7 +60,10 @@ async fn main() -> ExitCode {
             );
         }
     };
-    let result = run(&config, &transport_name, &observability).await;
+    let result = daemon::composition::run(
+        &config, &transport_name, &observability,
+        #[cfg(feature = "cron")] daemon::composition::CronServices::default(),
+    ).await;
     // `run` has joined both library users and dropped every injected handle.
     match daemon::agent_error::finish(result, observability.shutdown()) {
         Ok(()) => ExitCode::SUCCESS,
@@ -75,72 +74,6 @@ async fn main() -> ExitCode {
     }
 }
 
-async fn run(
-    config: &daemon::AppConfig,
-    transport_name: &sc_transport::AppName,
-    observability: &daemon::observability::Observability,
-) -> Result<(), String> {
-    let targets = daemon::store_targets(config, transport_name).map_err(|err| {
-        daemon::agent_error::format_agent_error(
-            err.code(), err, "set database configuration or a writable instance root",
-        )
-    })?;
-    #[cfg(feature = "cron")]
-    let scheduler = {
-        let instance_root = daemon::instance_root(config, transport_name).map_err(|err| {
-            daemon::agent_error::format_agent_error(
-                err.code(), err, "set database configuration or a writable instance root",
-            )
-        })?;
-        let hook_environment = config.cron.hook_environment_host().map_err(cron_error)?;
-        // Attach an application reference resolver to this prebuilt policy here.
-        #[cfg(feature = "monty")]
-        let monty_hosts = sc_cron::MontyHostRegistry::new();
-        std::sync::Arc::new(daemon::cron::open(
-            &config.cron, &instance_root, observability.logger(), hook_environment,
-            #[cfg(feature = "monty")] monty_hosts,
-        ).map_err(cron_error)?)
-    };
-    #[cfg(feature = "cron")]
-    let scheduler_for_stores = std::sync::Arc::clone(&scheduler);
-    #[cfg(feature = "cron")]
-    let (worker_tx, worker_rx) = tokio::sync::oneshot::channel();
-    let result = sc_runtime::Daemon::builder(transport_name, &config.daemon)
-        .logger(observability.logger())
-        .stores(move || async move {
-            let stores = daemon::open_stores(targets).await?;
-            #[cfg(feature = "cron")]
-            {
-                // The runtime holds daemon.lock before invoking this closure.
-                let worker = scheduler_for_stores.spawn_worker(std::sync::Arc::new(daemon::cron::ApplicationJob));
-                let _ = worker_tx.send(worker);
-            }
-            Ok(stores)
-        })
-        .routes(daemon::routes::router)
-        {% if mcp %}.mcp(daemon::mcp::service){% endif %}
-        .run()
-        .await;
-    #[cfg(feature = "cron")]
-    {
-        // shutdown consumes the handle and always joins, including timeout paths.
-        let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(5);
-        if let Ok(worker) = worker_rx.await {
-            let _drained = worker.shutdown(deadline).await;
-        }
-        drop(scheduler);
-    }
-    result.map_err(|err| {
-        daemon::agent_error::format_agent_error(err.code(), err, "read the cause and retry")
-    })
-}
-
-#[cfg(feature = "cron")]
-fn cron_error(err: sc_cron::CronError) -> String {
-    daemon::agent_error::format_agent_error(
-        "DAEMON.CRON_OPEN", err, "fix cron configuration or database path and retry",
-    )
-}
 
 fn log_root(
     config: &daemon::AppConfig,
@@ -150,6 +83,11 @@ fn log_root(
         return Ok(root.clone());
     }
     daemon::instance_root(config, app)
+}
+
+fn transport_exit(error: &sc_transport::TransportError) -> ExitCode {
+    eprintln!("{}", daemon::agent_error::transport_error(error));
+    ExitCode::from(1)
 }
 
 fn startup_exit(code: &str, cause: impl std::fmt::Display, recovery: &str) -> ExitCode {
@@ -234,9 +172,9 @@ mod tests {
         let weak = std::sync::Arc::downgrade(&observability.logger());
         let app = sc_transport::AppName::new(daemon::APP_NAME).expect("app");
         let error = tokio::time::timeout(
-            std::time::Duration::from_secs(5), super::run(&config, &app, &observability),
+            std::time::Duration::from_secs(5), daemon::composition::run(&config, &app, &observability, daemon::composition::CronServices::default()),
         ).await.expect("no worker handle exists before the stores closure runs").expect_err("endpoint rejected");
-        assert!(error.starts_with("RUNTIME.ENDPOINT_FAILED "), "{error}");
+        assert_eq!(error, "RUNTIME.ENDPOINT_FAILED the endpoint could not be resolved: TRANSPORT.INVALID_ENDPOINT: source=invalid-endpoint: endpoint must start with uds: or tcp: — Use uds:<path> or tcp:<socket-addr>.");
         assert_eq!(weak.strong_count(), 1, "only owner retains logger handle");
         observability.shutdown().expect("consuming shutdown");
         assert!(weak.upgrade().is_none());

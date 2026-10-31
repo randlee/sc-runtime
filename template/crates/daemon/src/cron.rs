@@ -11,7 +11,7 @@ use serde::Deserialize;
 /// `cron` object in the application configuration file.
 #[derive(Debug, Deserialize)]
 pub struct CronConfig {
-    /// Schedule database; relative paths resolve below the instance root.
+    /// Relative schedule database path below the instance root; no parent traversal.
     #[serde(default = "default_database_path")]
     pub database_path: std::path::PathBuf,
     /// Maximum schedule rows, enabled and disabled.
@@ -153,6 +153,18 @@ pub fn open(
     sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>,
     sc_cron::CronError,
 > {
+    // Validate before creating the instance directory or opening any database.
+    let configured = &config.database_path;
+    if configured.as_os_str().is_empty()
+        || configured
+            .components()
+            .any(|component| !matches!(component, std::path::Component::Normal(_)))
+        || configured.to_string_lossy().contains(['\\', ':'])
+    {
+        return Err(sc_cron::CronError::InvalidSpec(
+            "cron.database_path must be a relative path without parent traversal".to_owned(),
+        ));
+    }
     std::fs::create_dir_all(instance_root).map_err(|error| {
         sc_cron::CronError::Store(
             sc_cron::StoreError::new(
@@ -162,7 +174,18 @@ pub fn open(
             .with_source(error),
         )
     })?;
-    let database_path = instance_root.join(&config.database_path);
+    let database_path = instance_root.join(configured);
+    let mut component_path = instance_root.to_path_buf();
+    for component in configured.components() {
+        component_path.push(component.as_os_str());
+        if std::fs::symlink_metadata(&component_path)
+            .is_ok_and(|metadata| metadata.file_type().is_symlink())
+        {
+            return Err(sc_cron::CronError::InvalidSpec(
+                "cron.database_path must not traverse symlinks".to_owned(),
+            ));
+        }
+    }
     let limits = sc_cron::ScheduleLimits::with_max_schedule_rows(config.row_limit());
     let scheduler = sc_cron::Scheduler::open_with_logger(
         database_path,
@@ -208,6 +231,45 @@ pub struct CronScheduleLimitsFields {
 #[cfg(test)]
 mod tests {
     use super::CronConfig;
+
+    #[cfg(feature = "cron")]
+    #[test]
+    fn absolute_and_parent_database_paths_are_rejected_before_side_effects() {
+        use std::sync::Arc;
+        let root = tempfile::tempdir().expect("root");
+        let outside = root.path().join("outside.db");
+        for database_path in [
+            outside.clone(),
+            "../outside.db".into(),
+            "nested/../../outside.db".into(),
+            "C:\\outside.db".into(),
+        ] {
+            let instance = root.path().join("absent-instance");
+            let config = CronConfig {
+                database_path,
+                ..CronConfig::default()
+            };
+            let result = super::open(
+                &config,
+                &instance,
+                Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                    sc_observability_types::ServiceName::new("path-proof").expect("service"),
+                )),
+                config.hook_environment_host().expect("policy"),
+                #[cfg(feature = "monty")]
+                sc_cron::MontyHostRegistry::new(),
+            );
+            assert!(matches!(result, Err(sc_cron::CronError::InvalidSpec(_))));
+            assert!(
+                !instance.exists(),
+                "invalid path must not create the instance root"
+            );
+            assert!(
+                !outside.exists(),
+                "invalid path must not create an outside database"
+            );
+        }
+    }
 
     #[cfg(feature = "cron")]
     #[test]
@@ -354,7 +416,7 @@ mod environment_tests {
             sc_observability_types::ServiceName::new("cron-policy-test").expect("service"),
         ));
         let mut config = config;
-        config.database_path = path.clone();
+        config.database_path = path.file_name().expect("file name").into();
         let scheduler = open(
             &config,
             &std::env::temp_dir(),

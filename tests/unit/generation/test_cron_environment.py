@@ -31,6 +31,15 @@ class CronEnvironmentTests(unittest.TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             validator.validate({"cron": {"environment": {"allow_process": ["bad-name"]}}})
 
+    def test_scheduler_database_schema_rejects_outside_paths(self):
+        schema = json.loads((ROOT / "template/config/cron.schema.json").read_text())
+        validator = jsonschema.Draft202012Validator(schema)
+        for path in ("cron.db", "schedules/cron.db"):
+            validator.validate({"cron": {"database_path": path}})
+        for path in ("/outside.db", "../outside.db", "nested/../../outside.db", r"C:\outside.db", r"\\server\share\outside.db"):
+            with self.subTest(path=path), self.assertRaises(jsonschema.ValidationError):
+                validator.validate({"cron": {"database_path": path}})
+
     def test_prebuilt_typed_policy_keeps_resolver_and_separately_wires_files_roots(self):
         source = (ROOT / "template/crates/daemon/src/cron.rs").read_text()
         for token in ("pub fn hook_environment_host", ".allow_process(", ".allow_dotenv_file(", ".allow_dotenv_root(", "environment: sc_cron::HookEnvironmentHost", ".with_hook_environment(hook_environment)", "prebuilt_policy_retains_application_reference_resolver_through_open", "config.row_limit()"):
@@ -61,7 +70,7 @@ class CronEnvironmentTests(unittest.TestCase):
         source = (ROOT / "template/examples/monty/cron.py").read_text()
         self.assertNotIn("render_template", source)
         doc = (ROOT / "docs/sc-cron/monty-generated-example.md").read_text()
-        for token in ("RecordingResolver", ".with_environment(", ".set(\"ATM_IDENTITY\"", ".set(\"ATM_TEAM\"", ".clear(\"OPENAI_API_KEY\"", ".reference(\"OTHER_API_KEY\"", ".dotenv(", "cron::open", "[REDACTED_ENV]"):
+        for token in ("RecordingResolver", ".with_environment(", ".set(\"ATM_IDENTITY\"", ".set(\"ATM_TEAM\"", ".clear(\"OPENAI_API_KEY\"", ".reference(\"OTHER_API_KEY\"", ".dotenv(", "CronServices", "open_scheduler", "[REDACTED_ENV]"):
             self.assertIn(token, doc)
 
 

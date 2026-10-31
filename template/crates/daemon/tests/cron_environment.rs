@@ -6,7 +6,10 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
-use daemon::cron::{self, CronConfig};
+use daemon::{
+    composition::CronServices,
+    cron::{self, CronConfig},
+};
 use sc_cron::{
     Clock, EnvironmentReferenceError, EnvironmentReferenceRequest, EnvironmentReferenceResolver,
     HookEnvironment, HookTarget, MontyHostCall, MontyHostRegistry, NewSchedule, RunOutcome,
@@ -122,10 +125,6 @@ async fn generated_policy_resolver_and_custom_registry_preserve_python_monty_sna
         assert_eq!(empty.dotenv_files().count(), 0);
         assert_eq!(empty.dotenv_roots().count(), 0);
         let resolver = Arc::new(RecordingResolver(AtomicUsize::new(0)));
-        let host = config
-            .hook_environment_host()
-            .expect("typed policy")
-            .with_reference_resolver(resolver.clone());
         let observations = Arc::new(std::sync::Mutex::new(Vec::new()));
         let recorded = Arc::clone(&observations);
         let registry = MontyHostRegistry::new()
@@ -137,16 +136,18 @@ async fn generated_policy_resolver_and_custom_registry_preserve_python_monty_sna
                 Ok(Value::Null)
             })
             .expect("custom application registry");
-        let scheduler = cron::open(
-            &config,
-            root.path(),
-            Arc::new(sc_observability_types::NoopCanonicalLog::new(
-                sc_observability_types::ServiceName::new("generated-environment").expect("service"),
-            )),
-            host,
-            registry,
-        )
-        .expect("generated open");
+        let scheduler = CronServices::default()
+            .with_reference_resolver(resolver.clone())
+            .with_monty_hosts(registry)
+            .open_scheduler(
+                &config,
+                root.path(),
+                Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                    sc_observability_types::ServiceName::new("generated-environment")
+                        .expect("service"),
+                )),
+            )
+            .expect("same production composition path as main");
         due(
             &scheduler,
             "python",
@@ -198,6 +199,13 @@ async fn generated_policy_resolver_and_custom_registry_preserve_python_monty_sna
         assert!(persisted.contains("recording://application/value"));
         assert!(!persisted.contains("file-canary-value"));
         assert!(!persisted.contains("resolved-canary-value"));
+        scheduler
+            .set_enabled_many_async(vec![
+                (sc_cron::ScheduleName::new("python").expect("name"), false),
+                (sc_cron::ScheduleName::new("monty").expect("name"), false),
+            ])
+            .await
+            .expect("retire verified recurring rows");
         let denied_root = tempfile::tempdir().expect("unauthorized root");
         let denied = denied_root.path().join("denied.env");
         std::fs::write(&denied, "FILE_ONLY=denied-canary").expect("denied file");
@@ -214,6 +222,10 @@ async fn generated_policy_resolver_and_custom_registry_preserve_python_monty_sna
             .expect("denied run");
         assert_eq!(runs.len(), 1);
         assert!(runs[0].outcome.to_string().contains("ENV_FILE_DENIED"));
+        scheduler
+            .set_enabled_async(&sc_cron::ScheduleName::new("denied").expect("name"), false)
+            .await
+            .expect("retire denied recurring row");
         let redacted = "import os\ndef cron_stop(h): return {'action':'continue'}\ndef cron_tick(h): raise RuntimeError(os.getenv('REFERENCE'))";
         due(
             &scheduler,

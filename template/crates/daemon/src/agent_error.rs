@@ -6,6 +6,66 @@ pub fn format_agent_error(code: &str, cause: impl std::fmt::Display, recovery: &
     format!("{code} {cause} — {recovery}")
 }
 
+/// Formats runtime fields once, retaining the library's actionable recovery.
+#[must_use]
+pub fn runtime_error(error: &sc_runtime::RuntimeError) -> String {
+    let cause = match error.cause() {
+        Some(cause) => format!("{}: {cause}", error.message()),
+        None => error.message().to_owned(),
+    };
+    format_agent_error(error.code(), cause, error.remediation())
+}
+
+/// Formats transport facts without embedding its Display code or recovery.
+#[must_use]
+pub fn transport_error(error: &sc_transport::TransportError) -> String {
+    use sc_transport::TransportError;
+    let cause = match error {
+        TransportError::InvalidName { name, detail, .. } => format!("{name}: {detail}"),
+        TransportError::InvalidEndpoint { source, detail, .. } => format!("{source}: {detail}"),
+        TransportError::MissingTcpPort { detail, .. } => (*detail).to_owned(),
+        TransportError::InstanceRootUnavailable { detail, .. } => detail.clone(),
+        TransportError::ResponseDecode {
+            status,
+            cause,
+            body_preview,
+            ..
+        } => {
+            if body_preview.is_empty() {
+                format!("http {status}: {cause}")
+            } else {
+                format!("http {status}: {cause}: {body_preview}")
+            }
+        }
+        TransportError::DaemonNotRunning {
+            endpoint, cause, ..
+        }
+        | TransportError::TimedOut {
+            endpoint, cause, ..
+        }
+        | TransportError::Request {
+            endpoint, cause, ..
+        }
+        | TransportError::Bind {
+            endpoint, cause, ..
+        }
+        | TransportError::EndpointBusy {
+            endpoint, cause, ..
+        }
+        | TransportError::NotASocket {
+            endpoint, cause, ..
+        }
+        | TransportError::UnsupportedEndpoint {
+            endpoint, cause, ..
+        } => format!("{endpoint}: {cause}"),
+        _ => std::error::Error::source(error).map_or_else(
+            || "transport operation failed".to_owned(),
+            ToString::to_string,
+        ),
+    };
+    format_agent_error(error.code(), cause, error.recovery())
+}
+
 /// Preserves an operation failure and reports a logger shutdown failure second.
 ///
 /// The caller has already drained and dropped runtime and scheduler consumers.
@@ -47,6 +107,37 @@ mod tests {
                 Remediation::not_recoverable("inspect sink"),
             )),
         }
+    }
+
+    #[test]
+    fn structured_runtime_and_transport_errors_keep_exact_library_recovery() {
+        let error = sc_runtime::RuntimeError::stores_failed(
+            "STORE.OPEN",
+            "opening application stores failed",
+            "repair the database path",
+            Some("permission denied".to_owned()),
+        );
+        assert_eq!(
+            super::runtime_error(&error),
+            "STORE.OPEN opening application stores failed: permission denied — repair the database path"
+        );
+        let error = sc_runtime::RuntimeError::stores_failed(
+            "STORE.OPEN",
+            "opening stores failed",
+            "repair stores",
+            None,
+        );
+        assert_eq!(
+            super::runtime_error(&error),
+            "STORE.OPEN opening stores failed — repair stores"
+        );
+        let error = "invalid-endpoint"
+            .parse::<sc_transport::Endpoint>()
+            .expect_err("endpoint rejected");
+        assert_eq!(
+            super::transport_error(&error),
+            "TRANSPORT.INVALID_ENDPOINT invalid-endpoint: endpoint must start with uds: or tcp: — Use uds:<path> or tcp:<socket-addr>."
+        );
     }
 
     #[test]

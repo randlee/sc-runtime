@@ -8,6 +8,7 @@
 pub mod mcp;
 {% endif %}
 pub mod agent_error;
+pub mod composition;
 pub mod cron;
 pub mod observability;
 pub mod routes;
