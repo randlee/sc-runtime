@@ -42,7 +42,12 @@ adrs:
   - ADR-RUN-0013
   - ADR-RUN-0303
   - ADR-CMD-0001
+  - ADR-CMD-0002
+  - ADR-CMD-0003
   - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
+  - ADR-RT-0004
 owned_paths:
   - Cargo.toml
   - Cargo.lock
@@ -73,6 +78,10 @@ owned_paths:
   - crates/sc-cron/src/monty_run.rs
   - crates/sc-cron/tests/observability_contract.rs
   - crates/sc-cron/tests/observability_components.rs
+  - crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.lock
+  - scripts/check_observability_dependencies.py
+  - scripts/tests/test_observability_dependencies.py
+  - sc-lint.toml
 must_follow: []
 parallel_safe: []
 recommended_agent: solar
@@ -141,6 +150,14 @@ The b-13 implementation includes a narrow mechanical handoff in
 `FeedLaunch` constructions receive the shared `RunCoord` logger. No worker
 event taxonomy or execution policy changes in that handoff; b-15 owns later
 changes to those files after consuming the pushed contract.
+
+The QA-1 corrective scope also owns the SQLite resolve fixture lockfile and
+one shared resolved-normal-package checker with its negative fixtures, wired
+through the existing `sc-lint.toml` test path for both runtime and cron. These
+are validation repairs for this contract, with no new functional scope.
+The complete ADR enumeration includes ADR-RT-0002/0003/0004 and
+ADR-CMD-0002/0003 from the owned crate architecture files. Their decisions
+remain unchanged, as do the phase plan's reference-only applicability notes.
 
 ## Upstream artifact consumed
 

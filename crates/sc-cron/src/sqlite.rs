@@ -249,15 +249,17 @@ impl SqliteScheduleStore {
         if let Some(name) = name {
             fields.insert("schedule_name".into(), name.into());
         }
-        crate::emit_event(
-            &self.logger,
+        if let Some(event) = crate::component_event(
+            self.logger.service_name().clone(),
             "cron.store",
             "row.corrupt",
             sc_observability_types::Level::Warn,
             "failed",
             Some("CORRUPT_SCHEDULE_ROW"),
             fields,
-        );
+        ) {
+            let _ = self.logger.emit(event);
+        }
     }
 
     fn lock(&self) -> MutexGuard<'_, Connection> {
