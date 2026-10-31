@@ -10,6 +10,10 @@ branch: sprint/b-17-sc-cron-hook-environment
 worktree: sprint/b-17-sc-cron-hook-environment
 integration_branch: integrate/phase-b-observability
 requirements:
+  - REQ-RUN-0002
+  - REQ-RUN-0003
+  - REQ-RUN-0004
+  - REQ-RUN-0005
   - REQ-CRON-0001
   - REQ-CRON-0003
   - REQ-CRON-0004
@@ -24,11 +28,24 @@ requirements:
   - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
+  - ADR-RUN-0001
   - ADR-RUN-0002
+  - ADR-RUN-0003
+  - ADR-RUN-0004
+  - ADR-RUN-0005
+  - ADR-RUN-0006
+  - ADR-RUN-0007
+  - ADR-RUN-0008
+  - ADR-RUN-0009
   - ADR-RUN-0011
+  - ADR-RUN-0012
   - ADR-RUN-0013
   - ADR-RUN-0014
+  - ADR-RUN-0015
   - ADR-RUN-0016
+  - ADR-RUN-0303
+  - ADR-RUN-0401
+  - ADR-RUN-0402
 owned_paths:
   - docs/architecture.md
   - docs/sc-cron/requirements.md
@@ -386,6 +403,35 @@ remains sc-lint-owned. NFR-RUN-0008 traces all changed production Rust files to
 the existing `sc-lint lint line-counts` check in `just lint gates` and full
 `just lint`; no separate counter or new gate is introduced.
 
+## ADR applicability
+
+The owned library is sc-cron, including its boundary manifest. Its architecture
+declares ADR-RUN-0013 and ADR-RUN-0016 binding and references ADR-RUN-0014; it has
+no separate crate-prefixed ADR headings. The generated daemon paths are project
+composition under the repository decisions below. This inventory does not add
+ownership of sc-config, sc-transport, sc-command or sc-runtime library paths or
+their boundary manifests merely because their earlier artifacts are consumed.
+
+- ADR-RUN-0001 and ADR-RUN-0008 retain application-owned policy/resolvers and
+  standard-tool reuse; no command framework or consumer-specific host is added.
+- ADR-RUN-0002, ADR-RUN-0003 and ADR-RUN-0303 preserve published crate identities,
+  the types-only dependency graph and default-off generated cron/Monty features.
+- ADR-RUN-0004, ADR-RUN-0006, ADR-RUN-0007 and ADR-RUN-0011 govern the identical
+  injected logger, direct owner emission, typed value-free failures, asynchronous
+  resolution, blocking file/VM/child work and original deadline handoff.
+- ADR-RUN-0005 governs reuse of sc-lint/just. ADR-RUN-0009's daemon-test boundary
+  remains intact: these hook-child and configuration tests do not introduce an
+  in-process replacement for a real-daemon suite or a VM provisioner.
+- ADR-RUN-0012 and ADR-RUN-0013 preserve the separate schedule SQLite table and
+  crate, without migrating consumer stores or adopting their SqliteWriter.
+  ADR-RUN-0014 preserves embedder row limits; ADR-RUN-0016 supplies the approved
+  public environment model, persisted wire form and shared execution policy.
+- ADR-RUN-0401 and ADR-RUN-0402 govern the unchanged cargo-generate/sc-compose
+  pipeline and fresh unedited generated-project proof. ADR-RUN-0015's controlled
+  benchmark/release rules remain intact; no new measurement or release acceptance
+  is claimed here. Matching registry publication, real signal/endpoint/instance
+  lock lifecycle execution and release proof remain B18 responsibilities.
+
 ## Required work and deliverables
 
 1. REQ-CRON-0001 / REQ-CRON-0003 / REQ-CRON-0004 / REQ-CRON-0005 /
@@ -518,8 +564,15 @@ This is a preserved validated implementation checkpoint. The final B15 artifact
 e9d19647851a0a04a69214b1c4fa1945468c05a4 is now consumed through a forward-only
 merge. Its private occurrence correlation and validated `MontyHostName` are
 retained alongside B17's environment snapshot, redaction and original deadline.
-The combined source is undergoing fresh local and hosted validation; the sprint
-remains in progress pending that proof and independent QA.
+Combined source 944b613313f5da74161fabefdac130c13fed0a05 passes all 15 required
+local command groups and a fresh development generation through setup, lint,
+test and both builds. Optional generated cron/Monty tests pass seven cases
+each, with all 26 source hashes unchanged. Actions run 41158679611 Windows job
+124411408338 executes and passes the named roots 20/28/7; Linux job
+124411408371 remains in progress at this handoff. The subsequent plan trace
+clarification preserves that runtime tree. The sprint remains in progress
+pending final hosted proof, parent-authorized corrective handoffs and independent
+QA; this record does not claim developer completion or QA acceptance.
 The validated B15/B16 parent artifact e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437
 is consumed with pure event factories and direct emission by worker/due owners.
 The B17 persistence observation helper now constructs a bounded pair of events;
