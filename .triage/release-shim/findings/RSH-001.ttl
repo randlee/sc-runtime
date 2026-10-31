@@ -1,0 +1,5 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:release-shim:RSH-001> qa:id "RSH-001" ; qa:severity "important" ; qa:status "open" ;
+ qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
+ qa:file "template/crates/daemon/src/observability_adapter_tests.rs" ; qa:line 88 ; qa:summary "The real 1.5.0 adapter validation omits the explicitly required disconnected-writer and poisoned-runtime cases. The native error test shuts down the Logger and asserts LOGGER_SHUTDOWN; the unwind test panics in a Redactor before the writer lock is acquired. Neither exercises real disconnected admission or a poisoned admission lock. These are distinct failure paths in the pinned logger, so the active shim acceptance proof is incomplete." ;
+ qa:reviewers "rust-service-hardening-agent" .

@@ -1,0 +1,5 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:release-shim:RSH-002> qa:id "RSH-002" ; qa:severity "important" ; qa:status "open" ;
+ qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
+ qa:file "crates/sc-cron/src/sqlite.rs" ; qa:line 397 ; qa:summary "Corrupt-row reporting invokes the open CanonicalLog receiver while list_active still owns the SQLite connection MutexGuard and prepared statement. A receiver that synchronously queries the same store reenters its non-reentrant mutex and deadlocks. The list operation and a worker waiting for it cannot finish, including during awaited shutdown. This is an existing behavior in the directly migrated public injection path, not a newly added shim algorithm." ;
+ qa:reviewers "rust-service-hardening-agent" .

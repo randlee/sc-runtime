@@ -1,0 +1,5 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:release-shim:FTQ-002> qa:id "FTQ-002" ; qa:severity "important" ; qa:status "open" ;
+ qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
+ qa:file "scripts/check_observability_dependencies.py" ; qa:line 112 ; qa:summary "The newly added standalone default/Monty dependency probes synchronously wait for cargo metadata without any hard deadline. Even with --offline, Cargo can block waiting for another process to release its package-cache lock. A stuck competing Cargo process therefore hangs this mandatory local lint gate indefinitely rather than producing a bounded failure. The shared resolved_metadata path used by test_actual_workspace_normal_and_build_graph_for_all_libraries also has no timeout." ;
+ qa:reviewers "flaky-test-qa" .

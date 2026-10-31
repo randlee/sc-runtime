@@ -1,0 +1,5 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:release-shim:ARCH-001> qa:id "ARCH-001" ; qa:severity "blocking" ; qa:status "open" ;
+ qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
+ qa:file "scripts/check_observability_release.py" ; qa:line 123 ; qa:summary "The installed readiness guard never refreshes registry availability or runs upstream capability detection. main only calls cargo metadata --locked against the exact 1.5.0 selection and validates that graph, then reports OK. Consequently a published matching 1.5.1 pair with the required upstream trait/direct Arc capability, a published incompatible pair, or indeterminate registry discovery all leave shim readiness accepted when the pinned metadata remains valid. This contradicts the active ADR removal/readiness decision; the installed preflight description claims that cleanup is enforced." ;
+ qa:reviewers "arch-qa", "extensibility-qa" .

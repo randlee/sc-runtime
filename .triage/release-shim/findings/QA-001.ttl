@@ -1,0 +1,5 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:release-shim:QA-001> qa:id "QA-001" ; qa:severity "important" ; qa:status "open" ;
+ qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
+ qa:file "tests/integration/wizard/test_output_equivalence.py" ; qa:line 207 ; qa:summary "Real-pipeline wizard equivalence and negative-control tests pass the removed --development-observability option to the generator, causing argument parsing to fail whenever sc-compose is available. CI explicitly requires that real pipeline." ;
+ qa:reviewers "rust-qa-agent" .

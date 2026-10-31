@@ -1,0 +1,5 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:release-shim:REQ-QA-001> qa:id "REQ-QA-001" ; qa:severity "blocking" ; qa:status "open" ;
+ qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
+ qa:file "See reviewer evidence" ; qa:line 0 ; qa:summary "The authoritative document is dispatched as the sprint plan but has no YAML front matter or requirements list. The Req-QA contract requires each sprint document to list every applicable REQ/NFR; the authority line names only REQ-RUN-0702 while ADR-RUN-0017 amends multiple repository and crate requirements (docs/architecture.md:217-220)." ;
+ qa:reviewers "req-qa" .

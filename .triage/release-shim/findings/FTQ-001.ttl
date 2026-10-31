@@ -1,0 +1,5 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:release-shim:FTQ-001> qa:id "FTQ-001" ; qa:severity "important" ; qa:status "open" ;
+ qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
+ qa:file "template/crates/daemon/src/observability_adapter_tests.rs" ; qa:line 145 ; qa:summary "The admission deadline does not bound the test. After result_rx.recv_timeout(WAIT) expires, the test drops the sink release sender but then unconditionally joins the admission worker before examining the timeout. If admission is stuck on a logger lock or otherwise fails to finish after the sink is released, the test blocks forever instead of reporting its deadline failure. The first two synchronous adapter.emit calls also run outside the result deadline." ;
+ qa:reviewers "flaky-test-qa" .
