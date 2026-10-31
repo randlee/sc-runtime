@@ -79,6 +79,23 @@ class ObservabilityDependencies(unittest.TestCase):
             with self.subTest(variant=variant), self.assertRaises(ValueError):
                 CHECK.check_cron_manifest(variant)
 
+    def test_only_checkout_dev_self_may_omit_path_version(self):
+        import copy
+        good = {"dependencies": {"sc-command": {"version": "0.1.1", "path": "../sc-command", "default-features": False}},
+                "dev-dependencies": {"sc-cron": {"path": ".", "features": ["test-utils"]}}}
+        CHECK.check_cron_manifest(good)
+        for spec in ({"path": "."}, {"path": ".", "features": ["test-utils", "monty"]},
+                     {"path": ".", "features": ["test-utils"], "version": "0.1.0"},
+                     {"path": ".", "features": ["test-utils"], "version": "0.1.1"}):
+            bad = copy.deepcopy(good)
+            bad["dev-dependencies"]["sc-cron"] = spec
+            with self.subTest(spec=spec), self.assertRaisesRegex(ValueError, "workspace"):
+                CHECK.check_cron_manifest(bad)
+        bad = copy.deepcopy(good)
+        bad["target"] = {"cfg(unix)": {"dev-dependencies": {"sc-cron": {"path": ".", "features": ["test-utils"]}}}}
+        with self.assertRaisesRegex(ValueError, "workspace"):
+            CHECK.check_cron_manifest(bad)
+
     def test_mixed_edge_still_rejects_normal_reachability(self):
         metadata = graph("sc-runtime", "sc-observability")
         metadata["resolve"]["nodes"][0]["deps"][0]["dep_kinds"].append(

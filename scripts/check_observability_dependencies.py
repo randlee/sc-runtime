@@ -63,6 +63,24 @@ def check_cron_manifest(manifest):
     for tables in manifest.get("target", {}).values():
         for kind in ("dependencies", "build-dependencies"):
             reject_extra(tables.get(kind, {}))
+    # SCB-MANIFEST-002 cannot represent Cargo's versionless checkout-only
+    # dev self edge. Its one manifest/rule exclusion is replaced here with
+    # exact equivalent alignment checks for every other path dependency.
+    def check_path_versions(entries, global_dev=False):
+        for alias, spec in entries.items():
+            if not isinstance(spec, dict) or "path" not in spec:
+                continue
+            if spec.get("path") == "." or spec.get("package", alias) == "sc-cron":
+                if global_dev and alias == "sc-cron" and spec == {"path": ".", "features": ["test-utils"]}:
+                    continue
+                raise ValueError("cron workspace self edge must be exactly checkout-only dev test-utils")
+            if spec.get("version") != "0.1.1":
+                raise ValueError(f"cron path dependency {alias} must match workspace 0.1.1")
+    for kind in ("dependencies", "build-dependencies", "dev-dependencies"):
+        check_path_versions(manifest.get(kind, {}), global_dev=kind == "dev-dependencies")
+    for tables in manifest.get("target", {}).values():
+        for kind in ("dependencies", "build-dependencies", "dev-dependencies"):
+            check_path_versions(tables.get(kind, {}))
     for feature, entries in manifest.get("features", {}).items():
         if any(entry.startswith(("sc-command/", "sc-command?/", "dep:sc-command")) for entry in entries):
             raise ValueError(f"cron feature {feature} activates sc-command")

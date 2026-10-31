@@ -80,6 +80,12 @@ gates = ["boundary", "production-tool-boundary", "observability-boundary", "line
 # Full maintainer gate once the workspace exists (a-5+).
 full = ["boundary", "production-tool-boundary", "observability-boundary", "line-counts", "fmt", "clippy", "clippy-sc-cron", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
 
+# Cargo removes the versionless checkout-only cron dev-self edge at packaging.
+# sc-lint 0.8.0 requires a version on that edge. The mandatory observability
+# guard checks every other cron path version and the exact self-test exception.
+[tool.sc-lint.analyzers.boundary.exclude_paths_by_rule]
+"SCB-MANIFEST-002" = ["crates/sc-cron/Cargo.toml"]
+
 [tool.sc-lint.analyzers.portability]
 exclude_rules = []
 fail_rules = ["PORT-001", "PORT-002", "PORT-003", "PORT-004", "PORT-005", "PORT-006", "PORT-007", "PORT-008", "PORT-009", "PORT-010"]

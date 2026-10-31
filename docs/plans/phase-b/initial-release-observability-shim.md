@@ -271,7 +271,13 @@ dev content. Record Cargo/source identities, checksums and verified builds.
 The single dry run selects all five interdependent SDKs before any upload;
 Cargo supports this in the pinned toolchains. A list-only or `--no-verify`
 result is not build proof. No independent single-package dry-run prerequisite
-should force publication of siblings to verify the source release.
+should force publication of siblings to verify the source release. Cron's
+checkout-only dev self-reference must omit a version so Cargo strips it from
+the published manifest. sc-lint 0.8.0 cannot express that Cargo distinction:
+exclude only SCB-MANIFEST-002 at the cron manifest and preserve its effective
+coverage in the mandatory exact-edge guard, which checks every other cron
+path version and allows only the exact global dev self-test edge. All other
+boundary rules remain active. Verify the normalized archive omits the self edge.
 
 Acceptance includes one trait/types identity, shared Arc identity, legacy
 Noops, downstream custom receiver compile tests, ordered recorder/clear,
