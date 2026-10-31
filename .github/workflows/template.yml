@@ -109,9 +109,12 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           cargo generate --version | grep -F '0.25.1'
 
-      - name: Install sc-compose
+      - name: Restore Rust builds and generation tool
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        run: cargo install sc-compose --version 1.7.0 --locked
+        uses: ./.github/actions/rust-build-cache
+        with:
+          namespace: template-${{ matrix.fixture }}-default-general-db-off-debug-release
+          toolchains: 1.94.1
 
       # A tag selects the driver's release mode (no checkout path patch).
       - name: Generate
@@ -186,6 +189,15 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           cargo generate --version | grep -F '0.25.1'
 
+      - name: Restore plain generation builds
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        uses: ./.github/actions/rust-build-cache
+        with:
+          namespace: plain-cargo-generate-default-debug
+          target: plain
+          toolchains: 1.94.1
+          compose: 'false'
+
       - name: Generate without the driver
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: |
@@ -222,11 +234,16 @@ jobs:
           mkdir -p "$HOME/.local/bin"
           curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin" --tag 1.58.0
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Restore isolated lifecycle builds and generation tool
+        uses: ./.github/actions/rust-build-cache
+        with:
+          namespace: isolated-signal-cron-debug-release
+          target: lifecycle
+          toolchains: 1.94.1
       - name: Install generation dependencies
         run: |
           set -euo pipefail
           python3 -m pip install -r requirements-generation.txt
-          cargo install sc-compose --version 1.7.0 --locked
           mkdir -p "$HOME/.local/bin"
           arch="$(uname -m)"
           case "$arch" in

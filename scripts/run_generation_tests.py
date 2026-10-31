@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run generation unit and integration tests."""
 
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -20,6 +21,10 @@ SUITES = (
 
 
 def main() -> None:
+    # CI reuses this target across sequential temporary apps. Keep root Cargo
+    # artifacts separate; local runs retain Cargo's normal target selection.
+    if target := os.environ.get("SC_RUNTIME_GENERATED_TARGET_DIR"):
+        os.environ["CARGO_TARGET_DIR"] = str(Path(target).resolve())
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     for kind, name in SUITES:
