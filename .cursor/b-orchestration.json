@@ -85,7 +85,7 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa2_five_fixes_verified_path_alias_boundary_carry_open_execution_pending",
+      "status": "qa2_reported_single_boundary_carry_combining_alias_correction",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
@@ -189,7 +189,8 @@
           "effort": "high",
           "status": "execution_pending"
         }
-      ]
+      ],
+      "alias_fix_commit": "f68c6d2e7b6c3226472785c08897daaf1fe5b90e"
     },
     "b-13": {
       "task_id": "run-03z.1",
@@ -2539,6 +2540,224 @@
           "parent_correlation_required": true,
           "todo_scan": "clean (0 Rust TODO hits)",
           "ci_snapshot": "one required check pending; snapshot only"
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
+    },
+    {
+      "qa_pass": "qa-b-16-2",
+      "commit": "809a0387eee90f1d3a6c661a4964f9e100fbf45b",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/92#issuecomment-6538015913",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/cursor_b13_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/cursor_b15_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/cursor_b13_qa1_service",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b13_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-B16-001.ttl",
+        ".triage/b/findings/ARCH-B16-001.ttl",
+        ".triage/b/findings/RBQA-B16-001.ttl",
+        ".triage/b/findings/RSH-B16-001.ttl",
+        ".triage/b/findings/FTQ-005.ttl",
+        ".triage/b/findings/FTQ-006.ttl"
+      ],
+      "finding_ids": [
+        "RBQA-B16-001"
+      ],
+      "resolved_finding_ids": [
+        "REQ-QA-B16-001",
+        "ARCH-B16-001",
+        "RSH-B16-001",
+        "FTQ-005",
+        "FTQ-006"
+      ],
+      "coordinator_task_id": "/root/cursor_b16_qa2_enforcer",
+      "machine_status": {
+        "sprint": "b-16",
+        "task": "run-03z.28",
+        "branch": "sprint/b-16-monty-template-examples",
+        "commit": "809a0387eee90f1d3a6c661a4964f9e100fbf45b",
+        "pr": 92,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 17,
+          "total": 19,
+          "percent": 89.5
+        },
+        "findings": {
+          "blocking": 1,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [
+          "RBQA-B16-001"
+        ],
+        "merge_readiness": "BLOCKED",
+        "merge_reason": "One blocking carried finding remains open, and the required CI check was pending in the snapshot. Local lint/test/MSRV evidence does not waive the production dual-path witness.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/cursor_b15_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/cursor_b13_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/cursor_b13_qa1_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/cursor_b15_qa1_boundary",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/cursor_b13_qa1_service",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/cursor_b13_qa2_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-b-16-2",
+          "commit": "809a0387eee90f1d3a6c661a4964f9e100fbf45b",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/92#issuecomment-6538015913",
+          "coordinator_task_id": "/root/cursor_b16_qa2_enforcer",
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "triage": {
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-B16-001.ttl",
+              ".triage/b/findings/ARCH-B16-001.ttl",
+              ".triage/b/findings/RBQA-B16-001.ttl",
+              ".triage/b/findings/RSH-B16-001.ttl",
+              ".triage/b/findings/FTQ-005.ttl",
+              ".triage/b/findings/FTQ-006.ttl"
+            ]
+          }
         },
         "missing_reviewers": [],
         "unparsed_reviewers": []
