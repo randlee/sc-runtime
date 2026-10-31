@@ -156,6 +156,22 @@ pub(super) fn read(
     {
         return Err(EnvironmentFailure::FileDenied);
     }
+    // Authorization precedes absence classification. Reject special targets
+    // before open: a FIFO without a writer would otherwise strand the blocking
+    // task and runtime teardown. Authorized roots follow the administrator trust
+    // model; the opened-handle checks below still guard the actual read.
+    match std::fs::metadata(&canonical) {
+        Ok(metadata) if metadata.is_file() => {}
+        Ok(_) => return Err(file_invalid()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return if source.required {
+                Err(EnvironmentFailure::FileMissing)
+            } else {
+                Ok(BTreeMap::new())
+            };
+        }
+        Err(_) => return Err(file_invalid()),
+    }
     let mut file = match std::fs::File::open(&canonical) {
         Ok(file) => file,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {

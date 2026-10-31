@@ -1,6 +1,8 @@
 //! Shared policy, store, resolver, Python/Monty/CLI parity and redaction canaries.
 #![expect(clippy::expect_used, reason = "integration assertions")]
 mod common;
+#[path = "hook_environment/failure_boundaries.rs"]
+mod failure_boundaries;
 #[path = "hook_environment/model.rs"]
 mod model;
 #[cfg(feature = "monty")]

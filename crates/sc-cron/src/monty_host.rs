@@ -71,6 +71,26 @@ pub struct MontyHostCall {
     pub phase: HookEvent,
     /// Monotonic deadline shared by the whole row execution.
     pub deadline: Instant,
+    pub(crate) environment: Arc<crate::environment::EnvironmentSnapshot>,
+}
+
+impl MontyHostCall {
+    /// Looks up a value in this occurrence's immutable resolved environment.
+    ///
+    /// Cleared and absent names return `None`. Lookup is case-insensitive on
+    /// Windows, matching Monty's `os.getenv` and CLI child delivery.
+    #[must_use]
+    pub fn environment_value(&self, name: &str) -> Option<&str> {
+        self.environment.get(name)
+    }
+
+    /// Borrows resolved names and values in stable name order.
+    ///
+    /// This is the same snapshot used by stop, tick, and supplied CLI adapters;
+    /// values are never read from or written to the daemon process environment.
+    pub fn environment_variables(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.environment.iter()
+    }
 }
 
 impl fmt::Debug for MontyHostCall {
@@ -449,6 +469,7 @@ mod tests {
             schedule: ScheduleName::new("host").unwrap(),
             phase: HookEvent::Tick,
             deadline: Instant::now(),
+            environment: Arc::new(crate::environment::EnvironmentSnapshot::default()),
         };
         let value = registry
             .invoke(

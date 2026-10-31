@@ -123,7 +123,8 @@ impl Serialize for HookEnvironment {
 }
 impl<'de> Deserialize<'de> for HookEnvironment {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let wire = Wire::deserialize(deserializer)?;
+        let wire = Wire::deserialize(deserializer)
+            .map_err(|_| serde::de::Error::custom("invalid hook environment"))?;
         let build = || -> Result<Self, CronError> {
             let mut policy = Self::new();
             for source in wire.dotenv {

@@ -493,16 +493,21 @@ where
                     return Err(CronError::HookFailed("due run has no task".to_owned()));
                 };
                 let report = handle.await.unwrap_or_else(|error| {
+                    let detail = if matches!(row.spec.hook, HookTarget::Rust) {
+                        error.to_string()
+                    } else {
+                        "hook or environment provider task panicked or was cancelled".to_owned()
+                    };
                     if let Some(mut event) = event_record(
                         scheduler.coord.logger.service_name().clone(),
                         Event::DueTaskFailed,
                         Some(&row),
-                        serde_json::json!({"error": error.to_string()}),
+                        serde_json::json!({"error": detail}),
                     ) {
                         event.correlation_id = correlation.clone();
                         let _ = scheduler.coord.logger.emit(event);
                     };
-                    Report::Ran(run_task_failed(&error))
+                    Report::Ran(run_task_failed(&detail))
                 });
                 slot.take();
                 done.push(
@@ -516,25 +521,25 @@ where
                 let Some(handle) = slot.as_mut() else {
                     return Err(CronError::HookFailed("due run has no task".to_owned()));
                 };
-                let recorded = handle.await.unwrap_or_else(|error| {
-                    if let Some(mut event) = event_record(
-                        scheduler.coord.logger.service_name().clone(),
-                        Event::DueJoinFailed,
-                        Some(&row),
-                        serde_json::json!({"error": error.to_string()}),
-                    ) {
-                        event.correlation_id = correlation.clone();
-                        let _ = scheduler.coord.logger.emit(event);
-                    };
-                    DueRun {
-                        name: row.spec.name.clone(),
-                        outcome: monty_failed(
-                            CODE_DUE_JOIN_FAILED,
-                            format!("monty due task panicked or was cancelled: {error}"),
-                            DUE_JOIN_RECOVERY,
-                        ),
+                let recorded = match handle.await {
+                    Ok(recorded) => recorded,
+                    Err(_) => {
+                        let detail = "monty due task panicked or was cancelled";
+                        if let Some(mut event) = event_record(
+                            scheduler.coord.logger.service_name().clone(),
+                            Event::DueJoinFailed,
+                            Some(&row),
+                            serde_json::json!({"error": detail}),
+                        ) {
+                            event.correlation_id = correlation.clone();
+                            let _ = scheduler.coord.logger.emit(event);
+                        };
+                        let outcome = monty_failed(CODE_DUE_JOIN_FAILED, detail, DUE_JOIN_RECOVERY);
+                        scheduler
+                            .finish_due(&row, Report::Ran(outcome), next, correlation.clone())
+                            .await
                     }
-                });
+                };
                 slot.take();
                 done.push(recorded);
             }

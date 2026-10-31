@@ -16,17 +16,35 @@ pub(super) enum EnvironmentFailure {
 }
 impl EnvironmentFailure {
     fn outcome(self) -> RunOutcome {
-        let code = match self {
+        let (code, recovery) = match self {
             Self::TimedOut => return RunOutcome::TimedOut,
-            Self::ProcessInvalid => "ENV_PROCESS_INVALID",
-            Self::FileInvalid => "ENV_FILE_INVALID",
-            Self::FileMissing => "ENV_FILE_MISSING",
-            Self::FileDenied => "ENV_FILE_DENIED",
-            Self::Reference => "ENV_REFERENCE",
-            Self::SnapshotLimit => "ENV_SNAPSHOT_LIMIT",
+            Self::ProcessInvalid => (
+                "ENV_PROCESS_INVALID",
+                "Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist.",
+            ),
+            Self::FileInvalid => (
+                "ENV_FILE_INVALID",
+                "Fix the bounded data-file syntax. Shell expansion is not supported.",
+            ),
+            Self::FileMissing => (
+                "ENV_FILE_MISSING",
+                "Restore the absolute file or mark the source optional.",
+            ),
+            Self::FileDenied => (
+                "ENV_FILE_DENIED",
+                "Authorize the canonical file/root or remove the schedule source.",
+            ),
+            Self::Reference => (
+                "ENV_REFERENCE",
+                "Configure the daemon resolver and restore the referenced value.",
+            ),
+            Self::SnapshotLimit => (
+                "ENV_SNAPSHOT_LIMIT",
+                "Remove variables or reduce values before retrying.",
+            ),
         };
         RunOutcome::Failed(format!(
-            "{code}: hook environment could not be resolved; Check daemon environment policy and schedule configuration."
+            "{code}: hook environment could not be resolved; {recovery}"
         ))
     }
 }
@@ -295,5 +313,52 @@ fn check_deadline<C: Clock + ?Sized>(
         Err(EnvironmentFailure::TimedOut)
     } else {
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolution_failure_recovery_matches_the_documented_operator_action() {
+        for (failure, code, recovery) in [
+            (
+                EnvironmentFailure::ProcessInvalid,
+                "ENV_PROCESS_INVALID",
+                "Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist.",
+            ),
+            (
+                EnvironmentFailure::FileDenied,
+                "ENV_FILE_DENIED",
+                "Authorize the canonical file/root or remove the schedule source.",
+            ),
+            (
+                EnvironmentFailure::FileMissing,
+                "ENV_FILE_MISSING",
+                "Restore the absolute file or mark the source optional.",
+            ),
+            (
+                EnvironmentFailure::FileInvalid,
+                "ENV_FILE_INVALID",
+                "Fix the bounded data-file syntax. Shell expansion is not supported.",
+            ),
+            (
+                EnvironmentFailure::Reference,
+                "ENV_REFERENCE",
+                "Configure the daemon resolver and restore the referenced value.",
+            ),
+            (
+                EnvironmentFailure::SnapshotLimit,
+                "ENV_SNAPSHOT_LIMIT",
+                "Remove variables or reduce values before retrying.",
+            ),
+        ] {
+            let outcome = failure.outcome();
+            let parts = outcome.failure_parts().expect("structured failure");
+            assert_eq!(parts.code, Some(code));
+            assert_eq!(parts.recovery, Some(recovery));
+        }
+        assert_eq!(EnvironmentFailure::TimedOut.outcome(), RunOutcome::TimedOut);
     }
 }

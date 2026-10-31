@@ -892,7 +892,11 @@ where
             }
             Ok(Report::Ran(outcome)) => self.record(&schedule, outcome, correlation.clone()).await,
             Err(error) if error.is_panic() => {
-                let message = panic_message(error);
+                let message = if matches!(schedule.spec.hook, HookTarget::Rust) {
+                    panic_message(error)
+                } else {
+                    "hook or environment provider task panicked".to_owned()
+                };
                 if let Some(mut event) = event_record(
                     self.coord.logger.service_name().clone(),
                     Event::JobJoinFailed,

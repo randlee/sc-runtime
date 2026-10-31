@@ -363,7 +363,7 @@ fn resume_started_feed(
         hosts,
         run_deadline,
         logger,
-        environment,
+        &snapshot,
         correlation,
     ) {
         Ok((repl, value)) => finish_phase(phase, generation, repl, &value, snapshot, deadline),
@@ -383,7 +383,7 @@ fn drive_progress(
     hosts: &MontyHostRegistry,
     deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
-    environment: &EnvironmentSnapshot,
+    environment: &Arc<EnvironmentSnapshot>,
     correlation: &crate::worker::RunCorrelation,
 ) -> Result<(MontyRepl, MontyObject), FeedDone> {
     loop {
@@ -615,6 +615,7 @@ fn host_call(
     phase: MontyPhase,
     hook: &Value,
     deadline: Instant,
+    environment: Arc<EnvironmentSnapshot>,
 ) -> Result<MontyHostCall, &'static str> {
     let args = call
         .args
@@ -648,6 +649,7 @@ fn host_call(
             MontyPhase::Tick => crate::HookEvent::Tick,
         },
         deadline,
+        environment,
     })
 }
 
@@ -663,13 +665,14 @@ fn resume_host(
     hosts: &MontyHostRegistry,
     deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
-    environment: &EnvironmentSnapshot,
+    environment: &Arc<EnvironmentSnapshot>,
     correlation: &crate::worker::RunCorrelation,
 ) -> Result<ReplProgress, FeedDone> {
     if Instant::now() >= deadline {
         return Err(timed_out());
     }
-    let context = host_call(&call, phase, hook, deadline).map_err(|why| denied(stage, why))?;
+    let context = host_call(&call, phase, hook, deadline, Arc::clone(environment))
+        .map_err(|why| denied(stage, why))?;
     let result = hosts.invoke(&context, logger, environment, correlation);
     if Instant::now() >= deadline {
         return Err(timed_out());

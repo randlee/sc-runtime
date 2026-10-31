@@ -327,7 +327,7 @@ where
         match result {
             Ok(done) => Some((done, guard)),
             Err(error) if error.is_panic() => {
-                let message = panic_message(error);
+                let message = "monty feed task panicked";
                 if let Some(slot) = self.slots.get(index) {
                     let schedule = slot.schedule.clone();
                     if let Some(mut event) = event_record(
