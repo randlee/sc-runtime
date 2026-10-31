@@ -1,13 +1,13 @@
 ---
 id: b-18
 phase: b
-status: planned
+status: complete
 closure_type: integration
 target_boundary: generated-daemon-observability
 track: observability
 wave: 10
-branch: sprint/b-18-template-observability-integration
-worktree: sprint/b-18-template-observability-integration
+branch: codex/b-18-publishing-kit
+worktree: /Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit
 integration_branch: integrate/phase-b-observability
 requirements:
   - REQ-RUN-0002
@@ -48,8 +48,6 @@ adrs:
   - ADR-RT-0002
   - ADR-TRN-0006
 owned_paths:
-  - Cargo.toml
-  - Cargo.lock
   - scripts/check_observability_release.py
   - dev/observability-logger-adapter/Cargo.toml
   - dev/observability-logger-adapter/Cargo.lock
@@ -187,8 +185,9 @@ including Success Criteria 6–7, and [architecture](../../architecture.md)
 (System shape and ADR-RUN-0004/0007) are amended with this plan to assign
 production release acceptance to `run-h0h` after Phase B. Public interfaces,
 version inventories, and every release safety predicate remain unchanged.
-b-18 remains planned until its implementation and QA are delivered; this
-documentation amendment is not sprint or phase acceptance.
+The timing amendment itself did not complete b-18. The sprint status records
+implementation delivery; independent parent QA and CI remain required for
+acceptance and do not follow from that metadata alone.
 
 Phase completion requires the real development composition, shared ownership,
 HTTP+cron JSONL, shutdown precedence, isolated-CI signal lifecycle, qualified
@@ -639,3 +638,33 @@ registry success is claimed.
 Cron workers start inside the runtime stores callback only after the runtime
 holds `daemon.lock` and application stores open. A losing concurrent daemon
 therefore cannot run schedules before its instance-lock failure.
+
+
+## Implementation delivered
+
+The generated daemon owns one real Arc logger and one shared canonical handle.
+Every layout injects it through the unchanged runtime builder. The optional
+cron path maps config limits, preserves prebuilt environment policy/resolver
+and the application Monty registry, and retains the scheduler throughout the
+runtime. Worker startup occurs only inside the post-lock successful stores
+callback. After runtime drain, the owner receives and joins the worker, drops
+scheduler/shared consumers, and consumes observability shutdown. Centralized
+agent formatting preserves primary config/transport/runtime errors while
+reporting logger shutdown failures secondarily.
+
+Generated Rust proofs cover typed production HTTP+cron JSONL with one service
+and correlated HTTP request IDs, consuming handle release, real database
+limits, early runtime failure before worker startup, all result/shutdown
+precedence cases, and identical Python/Monty environment snapshots through the
+application resolver/custom registry. The Python integration entrypoints
+require actual Rust test execution, enforce the fixture matrix and a complete
+source snapshot across the sqlite-mcp no-edits sequence, and provide the
+three-marker isolated-GitHub-hosted signal lifecycle job. Real signals are
+not local validation. The qualified publishing inventory remains all 85 exact
+safe outputs from revision `9677ab083e7dd3feb258235a342e321ca1b45d8d`.
+
+Root `Cargo.toml` and `Cargo.lock` were supplied by approved parent merges and
+remain unchanged by this sprint. Their release transition belongs to
+`run-h0h`. The final source is submitted for full maintainer gates, independent
+QA, and CI; this implementation record does not claim those later review
+results or the deferred production registry proof.
