@@ -289,47 +289,14 @@ async fn a_failing_tick_hook_is_recorded_failed_and_the_schedule_goes_on() {
 }
 
 #[tokio::test]
-async fn a_python_row_written_before_schema_4_still_runs() {
-    const SCHEMA_V3: &str = "CREATE TABLE sc_cron_schedule (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        generation INTEGER NOT NULL,
-        name TEXT NOT NULL UNIQUE,
-        expr TEXT NOT NULL,
-        timeout_ms INTEGER NOT NULL,
-        jitter_ms INTEGER NOT NULL,
-        payload TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        next_run_at TEXT,
-        last_run_at TEXT,
-        last_outcome TEXT,
-        ended_at TEXT,
-        stop_reason TEXT,
-        enabled INTEGER NOT NULL DEFAULT 1,
-        hook_kind TEXT NOT NULL DEFAULT 'rust',
-        hook_module TEXT NOT NULL DEFAULT ''
-    );";
+async fn a_python_row_in_the_first_release_schema_runs_with_empty_environment() {
     let stub = Stub::new();
     stub.reply("stop", r#"{"action": "continue", "reason": "ok"}"#);
     let root = tempfile::tempdir().expect("tempdir");
     let path = root.path().join("cron.db");
-    {
-        let old = rusqlite::Connection::open(&path).expect("connection");
-        old.execute_batch(SCHEMA_V3).expect("v3 schema");
-        old.execute(
-            "INSERT INTO sc_cron_schedule
-                (generation, name, expr, timeout_ms, jitter_ms, payload, created_at, next_run_at,
-                 enabled, hook_kind, hook_module)
-             VALUES (1, 'kept', '0 * * * * *', 20000, 0, '{}',
-                     '2026-10-19T00:00:00.000000Z', '2026-10-19T00:01:00.000000Z',
-                     1, 'python', ?1)",
-            [stub.module().to_string_lossy().as_ref()],
-        )
-        .expect("python row");
-        old.pragma_update(None, "user_version", 3).expect("v3");
-    }
     let store = std::sync::Arc::new(
         sc_cron::SqliteScheduleStore::open(&path, sc_cron::ScheduleLimits::default())
-            .expect("upgrade"),
+            .expect("first-release store"),
     );
     let clock = std::sync::Arc::new(sc_cron::ManualClock::new(at("2026-10-19T00:00:00Z")));
     let scheduler = sc_cron::Scheduler::new(
@@ -337,29 +304,22 @@ async fn a_python_row_written_before_schema_4_still_runs() {
         clock.clone(),
         std::sync::Arc::new(sc_cron::SeqJitter::default()),
     );
-    let row = store.list_active().expect("list").remove(0);
-    assert!(matches!(row.spec.hook, sc_cron::HookTarget::Python { .. }));
-    let parks = clock.parks();
-    let worker = scheduler.spawn_worker(common::idle_job());
-    clock.wait_parks_above(parks).await;
-    clock.advance_settled(chrono::Duration::seconds(60)).await;
-    let id = row.id;
-    let recorded = tokio::time::timeout(Duration::from_secs(10), async {
-        loop {
-            let current = store.get(id).expect("get").expect("row");
-            if current.last_outcome.is_some() {
-                return current;
-            }
-            tokio::time::sleep(Duration::from_millis(20)).await; // allow: test polls subprocess output after clock advance
-        }
-    })
-    .await
-    .expect("python hook recorded an outcome");
-    shutdown(worker).await;
-    assert_eq!(recorded.last_outcome, Some(RunOutcome::Ok));
-    assert!(
-        stub.calls().len() >= 2,
-        "stop and tick both ran: {:?}",
-        stub.calls().len()
+    let spec = sc_cron::ScheduleSpec::with_hook(
+        "stored-python",
+        "0 * * * * *",
+        Duration::from_secs(20),
+        serde_json::json!({}),
+        sc_cron::HookTarget::python(stub.module()).expect("target"),
+    )
+    .expect("spec");
+    let row = scheduler.start(spec).expect("start");
+    assert!(row.spec.environment.is_empty());
+    clock.advance(chrono::Duration::seconds(60));
+    let runs = scheduler.run_due(common::idle_job()).await.expect("due");
+    assert_eq!(runs[0].outcome, RunOutcome::Ok);
+    assert_eq!(
+        store.get(row.id).expect("get").expect("row").last_outcome,
+        Some(RunOutcome::Ok)
     );
+    assert_eq!(stub.calls().len(), 2, "stop and tick both ran");
 }

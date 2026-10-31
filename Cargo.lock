@@ -2100,6 +2100,7 @@ dependencies = [
  "rusqlite",
  "sc-cron",
  "sc-observability-types 1.5.1",
+ "serde",
  "serde_json",
  "tempfile",
  "tokio",

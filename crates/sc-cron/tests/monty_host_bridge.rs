@@ -296,14 +296,48 @@ async fn checked_generated_example_uses_both_opt_in_adapters() {
     let registry = compose(&program)
         .with_atm(AtmHostConfig::new(&program).expect("ATM config"))
         .expect("both adapters");
+    struct RecordingResolver;
+    #[async_trait::async_trait]
+    impl sc_cron::EnvironmentReferenceResolver for RecordingResolver {
+        async fn resolve(
+            &self,
+            request: sc_cron::EnvironmentReferenceRequest<'_>,
+        ) -> Result<Option<String>, sc_cron::EnvironmentReferenceError> {
+            assert_eq!(request.schedule().as_str(), "generated-example");
+            assert_eq!(request.variable().as_str(), "OTHER_API_KEY");
+            assert_eq!(request.reference(), "recording://example");
+            Ok(Some("recording-value".into()))
+        }
+    }
+    let root = tempfile::tempdir().expect("dotenv root");
+    let dotenv = root.path().join("agent.env");
+    std::fs::write(&dotenv, "AGENT_MODE=recording\n").expect("dotenv");
+    let host = sc_cron::HookEnvironmentHost::new()
+        .allow_dotenv_file(&dotenv)
+        .expect("file policy")
+        .with_reference_resolver(Arc::new(RecordingResolver));
+    let environment = sc_cron::HookEnvironment::new()
+        .dotenv(&dotenv, true)
+        .expect("source")
+        .set("ATM_IDENTITY", "planner-7")
+        .expect("identity")
+        .set("ATM_TEAM", "runtime")
+        .expect("team")
+        .clear("OPENAI_API_KEY")
+        .expect("clear")
+        .reference("OTHER_API_KEY", "recording://example")
+        .expect("reference");
     let mut fixture = Fixture::new();
-    fixture.scheduler = fixture.scheduler.with_monty_hosts(registry);
+    fixture.scheduler = fixture
+        .scheduler
+        .with_monty_hosts(registry)
+        .with_hook_environment(host);
     let source = include_str!("../../../template/examples/monty/cron.py");
     fixture.start(ScheduleSpec::with_hook(
         "generated-example", "* * * * *", BUDGET,
-        json!({"compose_args": ["--root", "/application/templates", "--mode", "file", "--file", "note.j2"]}),
+        json!({"identity": "planner-7", "team": "runtime", "compose_args": ["--root", "/application/templates", "--mode", "file", "--file", "note.j2"]}),
         HookTarget::monty(source).expect("checked example source"),
-    ).expect("schedule"));
+    ).expect("schedule").with_environment(environment).expect("environment"));
     fixture.clock.advance(chrono::Duration::seconds(60));
     let runs = tokio::time::timeout(common::WAIT, fixture.scheduler.run_due(idle_job()))
         .await

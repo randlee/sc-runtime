@@ -5,7 +5,7 @@
   qa:sprint "b-17" ;
   qa:qaPass "qa-b-17-2-validation" ;
   qa:severity "Important" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "developer-full-test" ;
   qa:commit "216e2e38f52a5418ce0951ce6873d6335cabd497" ;
   qa:location "crates/sc-cron/src/scheduler/run_due.rs:940" ;

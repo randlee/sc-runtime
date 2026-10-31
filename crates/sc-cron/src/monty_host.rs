@@ -57,7 +57,7 @@ impl fmt::Display for MontyHostName {
 }
 
 /// An owned JSON-shaped invocation of an application host function.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct MontyHostCall {
     /// Registered function name.
     pub name: MontyHostName,
@@ -71,6 +71,39 @@ pub struct MontyHostCall {
     pub phase: HookEvent,
     /// Monotonic deadline shared by the whole row execution.
     pub deadline: Instant,
+    pub(crate) environment: Arc<crate::environment::EnvironmentSnapshot>,
+}
+
+impl MontyHostCall {
+    /// Looks up a value in this occurrence's immutable resolved environment.
+    ///
+    /// Cleared and absent names return `None`. Lookup is case-insensitive on
+    /// Windows, matching Monty's `os.getenv` and CLI child delivery.
+    #[must_use]
+    pub fn environment_value(&self, name: &str) -> Option<&str> {
+        self.environment.get(name)
+    }
+
+    /// Borrows resolved names and values in stable name order.
+    ///
+    /// This is the same snapshot used by stop, tick, and supplied CLI adapters;
+    /// values are never read from or written to the daemon process environment.
+    pub fn environment_variables(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.environment.iter()
+    }
+}
+
+impl fmt::Debug for MontyHostCall {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("MontyHostCall")
+            .field("name", &self.name)
+            .field("argument_count", &self.args.len())
+            .field("keyword_names", &self.kwargs.keys())
+            .field("schedule", &self.schedule)
+            .field("phase", &self.phase)
+            .field("deadline", &self.deadline)
+            .finish()
+    }
 }
 
 /// A trusted synchronous application extension point, intentionally open.
@@ -173,6 +206,7 @@ impl MontyHostRegistry {
         &self,
         call: &MontyHostCall,
         logger: &SharedCanonicalLog,
+        environment: &crate::environment::EnvironmentSnapshot,
         correlation: &crate::worker::RunCorrelation,
     ) -> Result<Value, HostDispatchError> {
         match self.entries.get(&call.name) {
@@ -188,6 +222,7 @@ impl MontyHostRegistry {
                     &args,
                     call.deadline,
                     logger,
+                    environment,
                     correlation,
                 )
                 .map_err(HostDispatchError::Child)?;
@@ -206,10 +241,19 @@ pub(crate) enum HostDispatchError {
     Child(ComposeHostError),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 struct CliConfig {
     program: PathBuf,
     cwd: Option<PathBuf>,
+}
+
+impl fmt::Debug for CliConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("CliConfig")
+            .field("program_configured", &!self.program.as_os_str().is_empty())
+            .field("working_directory_configured", &self.cwd.is_some())
+            .finish()
+    }
 }
 
 impl CliConfig {
@@ -225,6 +269,7 @@ impl CliConfig {
         } else {
             program
         };
+        let program = crate::process::resolve_program(&program).unwrap_or(program);
         Ok(Self {
             program,
             cwd: Some(cwd),
@@ -232,7 +277,8 @@ impl CliConfig {
     }
     fn default_program(program: &str) -> Self {
         Self {
-            program: PathBuf::from(program),
+            program: crate::process::resolve_program(Path::new(program))
+                .unwrap_or_else(|_| PathBuf::from(program)),
             cwd: std::env::current_dir().ok(),
         }
     }
@@ -423,9 +469,15 @@ mod tests {
             schedule: ScheduleName::new("host").unwrap(),
             phase: HookEvent::Tick,
             deadline: Instant::now(),
+            environment: Arc::new(crate::environment::EnvironmentSnapshot::default()),
         };
         let value = registry
-            .invoke(&call, &crate::noop_logger(), &None)
+            .invoke(
+                &call,
+                &crate::noop_logger(),
+                &crate::environment::EnvironmentSnapshot::default(),
+                &None,
+            )
             .unwrap_or_else(|_| panic!("registered host"));
         assert_eq!(value, call.args[0]);
     }

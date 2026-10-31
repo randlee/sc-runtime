@@ -17,6 +17,11 @@
     "enableFileSink": true
   },
   "cron": {
-    "max_schedule_rows": 10
+    "max_schedule_rows": 10,
+    "environment": {
+      "allow_process": [],
+      "allow_dotenv_files": [],
+      "allow_dotenv_roots": []
+    }
   }
 }

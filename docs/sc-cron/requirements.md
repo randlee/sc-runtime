@@ -66,7 +66,7 @@ With feature `monty`, a feed may record `RunOutcome::Failed` or `RunOutcome::Tim
 | Allowlisted daemon variable is not Unicode or exceeds the value cap | `ENV_PROCESS_INVALID` | `Failed` — value-free detail | Restart the daemon with a bounded UTF-8 value or remove the name from the allowlist. |
 | `.env` path outside daemon policy | `ENV_FILE_DENIED` | `Failed` — value-free detail | Authorize the canonical file/root or remove the schedule source. |
 | Required `.env` file missing | `ENV_FILE_MISSING` | `Failed` — value-free detail | Restore the absolute file or mark the source optional. |
-| `.env` file invalid | `ENV_FILE_INVALID` | `Failed` — value-free detail | Fix the bounded data-file syntax; shell expansion is not supported. |
+| `.env` file invalid | `ENV_FILE_INVALID` | `Failed` — value-free detail | Fix the bounded data-file syntax. Shell expansion is not supported. |
 | Reference missing or resolver failed | `ENV_REFERENCE` | `Failed` — value-free detail | Configure the daemon resolver and restore the referenced value. |
 | Resolved entry-count or encoded-block limit exceeded | `ENV_SNAPSHOT_LIMIT` | `Failed` — value-free detail | Remove variables or reduce values before retrying. |
 | Monty raises during the feed | `HOST_RAISED` | `Failed` | The detail is the exception message. |
@@ -134,7 +134,7 @@ remain outside an untrusted-code boundary.
 
 ## NFR-CRON-0001: Allowed third-party dependencies
 
-This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. No other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
+This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. No other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
 
 The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM crates are forbidden in production dependencies/imports; test and benchmark references are permitted. CLI process invocation does not create a crate dependency.
 
@@ -175,3 +175,40 @@ returning `Result<MontyHostRegistry, CronError>`. The generated development
 example and custom closure setup are in [monty-generated-example.md](monty-generated-example.md).
 The b-16 child environment is explicitly empty; the resolved-snapshot text
 above is the b-17 successor contract.
+
+
+### Shared hook environment implementation (B17)
+
+`sc-cron::HookEnvironment` is the validated, canonical schedule policy;
+`HookEnvironmentHost` is separately injected daemon authorization. Names use
+portable ASCII identifiers and reject ASCII case collisions. Administrator
+process-name, exact dotenv-file, and dotenv-root allowlists default empty.
+Absolute normalized file paths are authorized after canonicalization, including
+nearest-existing-ancestor resolution for missing suffixes. Bounded regular-file
+reads run on the blocking pool. The dotenv parser never evaluates shell or
+reads ambient values. Application-owned `EnvironmentReferenceResolver` receives
+schedule, variable, opaque locator, and row deadline; missing, denied, unavailable
+and invalid provider results use fixed value-free `ENV_REFERENCE` diagnostics.
+
+One occurrence resolves daemon → ordered files → Set/Reference/Clear into an
+immutable snapshot before stop, then reuses it for tick, Monty initialization,
+and both opt-in CLI adapters. Python starts with `ChildEnv::Only`; direct trusted
+callers can explicitly choose Inherit. Monty permits only environment OS reads,
+including top-level reads, and denies registered application host calls during
+initialization. Retained module globals initialize once per generation;
+function-time getenv uses the current occurrence. Executables resolve before
+child PATH clearing, independently of configured child working directories.
+Windows snapshot names are uppercase and getenv lookup ignores case. Rust jobs
+retain their application process environment and reject nonempty schedule policy.
+
+Explicit Set values and opaque reference metadata are intentional plaintext
+configuration. Resolved process/file/reference values never persist in registry
+writes. Runtime details and reasons redact distinct nonempty snapshot values,
+longest first, before caps and fixed diagnostic/recovery assembly. Debug exposes
+names/kinds/counts only; trusted raw HookOutput fields remain accessible.
+Exact replacement mitigates accidental disclosure and does not isolate hostile
+source. The complete first-release SQLite schema is version 1 with canonical
+`hook_environment` default `{"dotenv":[],"variables":{}}`; semantic schema checks
+reject incompatible unreleased development tables without migrating/overwriting.
+The library remains general purpose, with open application host registrations,
+no signing/approval gates, and no production dependency on sc-compose or ATM.

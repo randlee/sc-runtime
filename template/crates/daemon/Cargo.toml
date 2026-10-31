@@ -45,3 +45,6 @@ utoipa-axum = "0.2.0"
 [[bin]]
 name = "{{project-name}}-daemon"
 path = "src/main.rs"
+
+[dev-dependencies]
+async-trait = "0.1"

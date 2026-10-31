@@ -156,7 +156,7 @@ Monty source defines `cron_stop(hook)` and `cron_tick(hook)`. One REPL is retain
 
 ### Application-owned Monty hosts
 
-Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its validated `MontyHostName`, positional/keyword JSON arguments, schedule name, hook phase, and row deadline and returns `Result<serde_json::Value, CronError>`; matching closures are supported. `MontyHostName::new` validates the identifier and `as_str()` borrows it; registry keys use the same type while registration still accepts strings. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`. Bridge argument conversion and supplied CLI adapter shape rejection fail with `HOST_DENIED`; a custom handler's returned error, including `CronError::InvalidSpec`, records `HOST_CALL_FAILED` after configured-value redaction. Private typed dispatch preserves supplied-adapter errors without parsing custom error prose. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
+Monty hosts are application-owned registrations in an immutable `MontyHostRegistry` installed with `Scheduler::with_monty_hosts`. The empty registry registers no application call. `MontyHostHandler: Send + Sync` accepts a `MontyHostCall` containing its validated `MontyHostName`, positional/keyword JSON arguments, schedule name, hook phase, row deadline, and read-only access to the same resolved occurrence environment through `environment_value` / `environment_variables`, and returns `Result<serde_json::Value, CronError>`; matching closures are supported. `MontyHostName::new` validates the identifier and `as_str()` borrows it; registry keys use the same type while registration still accepts strings. Registration rejects invalid identifiers, duplicate names, and reserved `__hook`, `cron_stop`, and `cron_tick` bindings with `InvalidSpec`. Source can invoke registered functions but cannot install or replace handlers. An unregistered name fails with `HOST_UNDEFINED`. Bridge argument conversion and supplied CLI adapter shape rejection fail with `HOST_DENIED`; a custom handler's returned error, including `CronError::InvalidSpec`, records `HOST_CALL_FAILED` after configured-value redaction. Private typed dispatch preserves supplied-adapter errors without parsing custom error prose. The host checks the row deadline before and after a synchronous handler, but cannot preempt arbitrary application code.
 
 Phase B supplies opt-in `sc_compose_run(subcommand, args)` and `atm_run(subcommand, args)` adapters through this same registry. `ScComposeHostConfig` and `AtmHostConfig` select non-empty executable paths (defaults `sc-compose` and `atm`) and working directories (default the daemon directory captured at configuration). Each adapter accepts one command/subcommand string and an optional list of string arguments, with no keyword arguments. It forwards the non-empty command/subcommand followed by those ordered arguments directly as argv, never through a shell. Every command/subcommand is supported; flags including `--root` are forwarded unchanged. Neither adapter forces render arguments or temp-root staging. Scripts choose arguments, not the configured executable or working directory. Both adapters share the existing blocking child driver in `monty_compose`, generalized for argv/cwd, with row deadline, process-group termination, and `MAX_HOOK_OUTPUT_BYTES` per stream. They do not call the async `process::supervise` from the blocking feed thread or introduce a runtime/`block_on` bridge. A completed child returns `{stdout, stderr, exit_code}`, including nonzero exits; script code decides how that result affects its hook. A deadline expiration records `TimedOut`; spawn, decoding, and capture-limit failures record stable host errors. The adapters receive the resolved environment snapshot from ADR-RUN-0016. Neither CLI is required when its adapter is unused. `render_template` is not a product requirement; an internal helper may remain an implementation convenience without becoming a mandatory registered host function.
 
@@ -243,5 +243,42 @@ The implemented registry builder uses `register(name, handler)`,
 `with_sc_compose(ScComposeHostConfig)`, and `with_atm(AtmHostConfig)`, each
 returning `Result<MontyHostRegistry, CronError>`. The generated development
 example and custom closure setup are in [monty-generated-example.md](monty-generated-example.md).
-The b-16 child environment is explicitly empty; the resolved-snapshot text
-above is the b-17 successor contract.
+B17 implements the resolved snapshot above for Python, Monty initialization,
+worker/due-run stop and tick, and both CLI children.
+
+
+### Shared hook environment implementation (B17)
+
+`sc-cron::HookEnvironment` is the validated, canonical schedule policy;
+`HookEnvironmentHost` is separately injected daemon authorization. Names use
+portable ASCII identifiers and reject ASCII case collisions. Administrator
+process-name, exact dotenv-file, and dotenv-root allowlists default empty.
+Absolute normalized file paths are authorized after canonicalization, including
+nearest-existing-ancestor resolution for missing suffixes. Bounded regular-file
+reads run on the blocking pool. The dotenv parser never evaluates shell or
+reads ambient values. Application-owned `EnvironmentReferenceResolver` receives
+schedule, variable, opaque locator, and row deadline; missing, denied, unavailable
+and invalid provider results use fixed value-free `ENV_REFERENCE` diagnostics.
+
+One occurrence resolves daemon → ordered files → Set/Reference/Clear into an
+immutable snapshot before stop, then reuses it for tick, Monty initialization,
+and both opt-in CLI adapters. Python starts with `ChildEnv::Only`; direct trusted
+callers can explicitly choose Inherit. Monty permits only environment OS reads,
+including top-level reads, and denies registered application host calls during
+initialization. Retained module globals initialize once per generation;
+function-time getenv uses the current occurrence. Executables resolve before
+child PATH clearing, independently of configured child working directories.
+Windows snapshot names are uppercase and getenv lookup ignores case. Rust jobs
+retain their application process environment and reject nonempty schedule policy.
+
+Explicit Set values and opaque reference metadata are intentional plaintext
+configuration. Resolved process/file/reference values never persist in registry
+writes. Runtime details and reasons redact distinct nonempty snapshot values,
+longest first, before caps and fixed diagnostic/recovery assembly. Debug exposes
+names/kinds/counts only; trusted raw HookOutput fields remain accessible.
+Exact replacement mitigates accidental disclosure and does not isolate hostile
+source. The complete first-release SQLite schema is version 1 with canonical
+`hook_environment` default `{"dotenv":[],"variables":{}}`; semantic schema checks
+reject incompatible unreleased development tables without migrating/overwriting.
+The library remains general purpose, with open application host registrations,
+no signing/approval gates, and no production dependency on sc-compose or ATM.
