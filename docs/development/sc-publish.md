@@ -112,6 +112,51 @@ Ordinary pre-publication discovery skips that unavailable proof. The opted-in
 proof must actually execute and fail on unmet release prerequisites; it may
 never report a skipped test as registry evidence.
 
+The consumer source-contract check uses `scripts/check_release_contract_sources.sh`
+to create a temporary virtual environment, install the existing generation pin
+from `requirements-generation.txt` (`jsonschema==4.26.0`), and run the contract
+test with that interpreter. Its Python runner reuses the command-ownership
+helper with 120-second venv, 300-second pip, and 120-second test deadlines.
+Cancellation unwinds owned child trees before removing the environment,
+including on failure. This supplies nested generation checks on ephemeral hosted runners.
+Workspace membership lists all six existing crates explicitly so the qualified
+kit's literal manifest validator retains the five publish crates and the
+unpublished SQLite crate.
+
+The benchmark check invokes `python3 scripts/benchmark/run_remote_gate.py`.
+Using existing SSH configuration and strict known-host verification, it connects
+noninteractively to `atmbench@rand-m5`, fetches the current committed source SHA
+into an isolated temporary checkout, verifies its identity and clean state,
+and runs `scripts/benchmark/check_gate.py` there with the existing command
+ownership helper. No host-label override or local-development bypass is carried
+into the gate. Each setup command is bounded to two minutes, the fresh gate to
+30 minutes, and the SSH session to one hour. Owned processes and temporary
+files are cleaned up; other remote checkouts are not changed. Fresh campaign
+JSON and HTML, including measured failures, are transferred over that same SSH
+session (bounded to 8 MiB) into unique local run directories under
+`target/benchmark-preflight/<source-sha>/` before remote cleanup. Canonical report
+pairs also remain in unique directories under the service account's
+`~/.local/state/sc-runtime/benchmark-preflight/<source-sha>/`, so a broken
+connection cannot erase a measured campaign. All pairs are copied before any
+transport output; successful SSH results require canonical `PASS` or `MEASURED`
+campaign statuses. Negative and invalid-status evidence is retained while
+the bridge fails closed. Logs retain the transfer payload
+and report source SHA, status and artifact paths; publishing reviewed campaign
+evidence remains the operator procedure. The remote bootstrap prefers the
+operator-prepared `~/.cache/sc-runtime/benchmark-python/bin/python3`, falling
+back to ordinary `python3` with an actionable prerequisite failure when
+`sc_compose` is unavailable. `SC_BENCH_PYTHON` may instead name an absolute
+remote virtual-environment `bin/python3`; the bridge selects it before importing
+its Python helpers and prepends its directory to remote `PATH` for all Python
+benchmark subprocesses.
+It does not install Python packages or infer their version. SSH access,
+known-host trust, Rust 1.96.1 and the
+existing benchmark prerequisites must already work on the controlled host.
+Unreachable hosts, authentication failures, missing prerequisites, and real
+benchmark failures return nonzero; the bridge provisions no credentials.
+The existing numeric baselines are all null: the current gate accepts a
+`MEASURED` campaign, which is not proof of ratified performance ceilings.
+
 ## Install (a-7 or release maintainer)
 
 ```bash

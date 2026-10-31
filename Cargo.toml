@@ -1,6 +1,13 @@
 [workspace]
 resolver = "2"
-members = ["crates/*"]
+members = [
+    "crates/sc-config",
+    "crates/sc-transport",
+    "crates/sc-command",
+    "crates/sc-runtime",
+    "crates/sc-cron",
+    "crates/sc-runtime-db-sqlite",
+]
 
 [workspace.package]
 version = "0.1.1"
