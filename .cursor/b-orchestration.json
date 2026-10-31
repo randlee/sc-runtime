@@ -5187,8 +5187,10 @@
           "spawn_actor": "parent-orchestrator",
           "model": "gpt-6-luna",
           "effort": "high",
-          "status": "running",
-          "fenced_json_received": false
+          "status": "completed",
+          "fenced_json_received": true,
+          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/req-qa-result.md",
+          "verdict": "FAIL"
         },
         {
           "agent": "arch-qa",
@@ -5196,14 +5198,67 @@
           "spawn_actor": "parent-orchestrator",
           "model": "gpt-6.1-sol",
           "effort": "high",
-          "status": "running",
-          "fenced_json_received": false
+          "status": "completed",
+          "fenced_json_received": true,
+          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/arch-qa-result.md",
+          "verdict": "PASS"
         },
         {
           "agent": "rust-qa-agent",
           "task_id": "/root/phase_end_qa1_rust",
           "spawn_actor": "parent-orchestrator",
           "model": "gpt-6.1-terra",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/rust-qa-agent-result.md",
+          "verdict": "PASS"
+        },
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/phase_end_qa1_ext",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/extensibility-qa-result.md",
+          "verdict": "FAIL"
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/phase_end_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "running",
+          "fenced_json_received": false
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/phase_end_qa1_service",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/rust-service-hardening-agent-result.md",
+          "verdict": "PASS"
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/phase_end_qa1_rbp",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "running",
+          "fenced_json_received": false
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/phase_end_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
           "effort": "high",
           "status": "running",
           "fenced_json_received": false
@@ -5212,7 +5267,7 @@
       "coordinator_task_id": null,
       "finding_ids": [],
       "triage_ttl_paths": [],
-      "note": "Full8requiredroles, first3actuallydispatched, capacityboundedwaves; frozenintegrationPRsourcea117, separatecoordinationbranchstateupdates. No phaseapproval yet."
+      "note": "All8requiredroles actuallyparent-spawned; Req/Extreported3findings, Rust/Arch/ServicePASS; Boundary/RBP/Flakyinprogress. Ceremonyfullunion beforepublication/fixes. ExactphaseCIseparatependinggate."
     }
   ],
   "model_authority": "User: yes, use terra/sol/luna where appropriate",
@@ -6177,7 +6232,7 @@
   },
   "phase_end": {
     "bead": "run-03z.30",
-    "status": "full_qa1_running",
+    "status": "full_qa1_all8_roles_dispatched",
     "review_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa1",
     "review_branch": "integrate/phase-b-observability",
     "coordination_branch": "codex/phase-b-review-state",
@@ -6193,8 +6248,10 @@
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6-luna",
         "effort": "high",
-        "status": "running",
-        "fenced_json_received": false
+        "status": "completed",
+        "fenced_json_received": true,
+        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/req-qa-result.md",
+        "verdict": "FAIL"
       },
       {
         "agent": "arch-qa",
@@ -6202,14 +6259,67 @@
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6.1-sol",
         "effort": "high",
-        "status": "running",
-        "fenced_json_received": false
+        "status": "completed",
+        "fenced_json_received": true,
+        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/arch-qa-result.md",
+        "verdict": "PASS"
       },
       {
         "agent": "rust-qa-agent",
         "task_id": "/root/phase_end_qa1_rust",
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6.1-terra",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/rust-qa-agent-result.md",
+        "verdict": "PASS"
+      },
+      {
+        "agent": "extensibility-qa",
+        "task_id": "/root/phase_end_qa1_ext",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/extensibility-qa-result.md",
+        "verdict": "FAIL"
+      },
+      {
+        "agent": "ruthless-boundary-qa",
+        "task_id": "/root/phase_end_qa1_boundary",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "running",
+        "fenced_json_received": false
+      },
+      {
+        "agent": "rust-service-hardening-agent",
+        "task_id": "/root/phase_end_qa1_service",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "result_path": "/tmp/phaseb-cursor-orchestration/phase-end-qa1/rust-service-hardening-agent-result.md",
+        "verdict": "PASS"
+      },
+      {
+        "agent": "rust-best-practices-agent",
+        "task_id": "/root/phase_end_qa1_rbp",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6-luna",
+        "effort": "high",
+        "status": "running",
+        "fenced_json_received": false
+      },
+      {
+        "agent": "flaky-test-qa",
+        "task_id": "/root/phase_end_qa1_flaky",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
         "effort": "high",
         "status": "running",
         "fenced_json_received": false
