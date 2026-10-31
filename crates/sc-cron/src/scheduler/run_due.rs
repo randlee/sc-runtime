@@ -929,7 +929,7 @@ mod tests {
                 .unwrap();
             let runs = super::collect_runs(
                 &scheduler,
-                vec![(row, None, super::DueTask::monty(task), None)],
+                vec![(row.clone(), None, super::DueTask::monty(task), None)],
             )
             .await
             .unwrap();
@@ -937,8 +937,33 @@ mod tests {
                 runs[0].outcome.failure_parts().unwrap().code,
                 Some("DUE_JOIN_FAILED")
             );
-            assert_eq!(log.events().len(), 1);
-            assert_eq!(log.events()[0].action.as_str(), "due.join_failed");
+            let events = log.events();
+            assert_eq!(
+                events
+                    .iter()
+                    .map(|event| event.action.as_str())
+                    .collect::<Vec<_>>(),
+                ["due.join_failed", "due.finished"]
+            );
+            assert_eq!(
+                events[0].diagnostic.as_ref().unwrap().code.as_str(),
+                "DUE_JOIN_FAILED"
+            );
+            assert_eq!(
+                events[1].diagnostic.as_ref().unwrap().code.as_str(),
+                "JOB_FAILED"
+            );
+            use crate::ScheduleStore;
+            assert_eq!(
+                scheduler
+                    .core
+                    .store
+                    .get(row.id)
+                    .unwrap()
+                    .unwrap()
+                    .last_outcome,
+                Some(runs[0].outcome.clone())
+            );
         }
     }
 
