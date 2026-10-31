@@ -8,3 +8,15 @@
   qa:remedy "Split the recording path into smaller helpers while preserving outcome/event ordering and best-effort emission semantics." ;
   qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-18:qa2:QA-002>
+  qa:id "QA-002" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-2" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:commit "fad0aeaaa7c1946e5443a1994e8ce4e6f44eecf2" ;
+  qa:location "tests/unit/generation/test_general_db_disable.py:14" ;
+  qa:issue "Three generation unit tests still assert obsolete workflow commands or the previous MCP composition path, causing the requested full test gate to fail at the frozen revision. The other assertions are at tests/unit/generation/test_prefix_packages.py:160 and tests/unit/generation/test_liquid.py:38." ;
+  qa:recommendation "Update the tests to follow and verify the workflow-to-Justfile selectors and their concrete cargo commands, preserving sqlite-mcp condition, all three general-db-off checks, SQLX_OFFLINE and fixture matrix coverage; update the exact Liquid body expectation for crate::mcp::service and preserve the small conditional and exact-body checks. Rerun full just test after ensuring adequate disk capacity." .
