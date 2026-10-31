@@ -9,7 +9,10 @@ import time
 import unittest
 from pathlib import Path
 
-from tests.integration.generation.owned_process import run
+try:
+    from tests.integration.generation.owned_process import run
+except ModuleNotFoundError:
+    from owned_process import run
 
 
 class OwnedProcessTests(unittest.TestCase):
@@ -27,11 +30,11 @@ class OwnedProcessTests(unittest.TestCase):
                 handle = kernel.OpenProcess(0x1000, False, pid)
                 if not handle:
                     return
-                code = wintypes.DWORD()
-                ok = kernel.GetExitCodeProcess(handle, ctypes.byref(code))
+                kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+                result = kernel.WaitForSingleObject(handle, 0)
                 kernel.CloseHandle(handle)
-                if ok and code.value != 259:
-                    return
+                self.assertEqual(result, 0, f"owned process {pid} remained active when run returned")
+                return
             else:
                 try:
                     os.kill(pid, 0)
@@ -43,7 +46,7 @@ class OwnedProcessTests(unittest.TestCase):
             time.sleep(0.02)
         self.fail(f"owned witness process {pid} survived cleanup")
 
-    def witness(self, failure):
+    def witness(self, failure, new_group=False):
         with tempfile.TemporaryDirectory(prefix="owned-witness-") as temp:
             root = Path(temp)
             ready = root / "ready"
@@ -53,7 +56,7 @@ class OwnedProcessTests(unittest.TestCase):
             parent = root / "parent.py"
             parent.write_text(
                 "import json, os, pathlib, subprocess, sys, time\n"
-                "r=pathlib.Path(sys.argv[1]); p=subprocess.Popen([sys.executable,sys.argv[2],str(r)])\n"
+                "r=pathlib.Path(sys.argv[1]); opts={'process_group':0} if sys.argv[4]=='1' and os.name!='nt' else {}; p=subprocess.Popen([sys.executable,sys.argv[2],str(r)], **opts)\n"
                 "deadline=time.monotonic()+5\n"
                 "while not r.exists():\n"
                 " if time.monotonic()>deadline: raise RuntimeError('ready timeout')\n"
@@ -61,7 +64,7 @@ class OwnedProcessTests(unittest.TestCase):
                 "pathlib.Path(sys.argv[3]).write_text(json.dumps([os.getpid(), p.pid]))\n"
                 + ("sys.exit(7)\n" if failure else "while True: time.sleep(1)\n")
             )
-            args = [sys.executable, str(parent), str(ready), str(grandchild), str(pidfile)]
+            args = [sys.executable, str(parent), str(ready), str(grandchild), str(pidfile), "1" if new_group else "0"]
             if failure:
                 with self.assertRaises(subprocess.CalledProcessError):
                     run(args, timeout=8, check=True, capture_output=True)
@@ -78,6 +81,12 @@ class OwnedProcessTests(unittest.TestCase):
 
     def test_failure_cleans_ready_descendant(self):
         self.witness(True)
+
+    def test_timeout_cleans_descendant_in_new_process_group(self):
+        self.witness(False, new_group=True)
+
+    def test_failure_cleans_descendant_in_new_process_group(self):
+        self.witness(True, new_group=True)
 
     def test_nested_timeout_aborts_enclosing_tree(self):
         with tempfile.TemporaryDirectory(prefix="owned-nested-") as temp:

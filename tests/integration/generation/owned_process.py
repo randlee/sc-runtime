@@ -63,6 +63,74 @@ def _windows_job(process):
     return kernel, job
 
 
+def _stop_owned_session(leader):
+    """Stop all ordinary process groups in our pinned Unix session."""
+    try:
+        os.killpg(leader, signal.SIGSTOP)
+        deadline = time.monotonic() + 10
+        while True:
+            listing = subprocess.run(["ps", "-axo", "pid=,stat="], capture_output=True,
+                                     text=True, check=True, timeout=2)
+            active = []
+            for line in listing.stdout.splitlines():
+                fields = line.split()
+                if len(fields) < 2 or fields[1].startswith("Z"):
+                    continue
+                pid = int(fields[0])
+                if pid == leader:
+                    continue
+                try:
+                    if os.getsid(pid) == leader:
+                        active.append(pid)
+                except (ProcessLookupError, PermissionError):
+                    pass
+            if not active:
+                break
+            for pid in active:
+                try:
+                    if os.getsid(pid) == leader:
+                        os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            if time.monotonic() >= deadline:
+                raise TimeoutError("owned session descendants did not exit")
+            time.sleep(0.02)
+    finally:
+        try:
+            os.killpg(leader, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
+def _terminate_windows_job(kernel, handle):
+    import ctypes
+    from ctypes import wintypes
+
+    class Accounting(ctypes.Structure):
+        _fields_ = [(name, ctypes.c_longlong) for name in (
+            "TotalUserTime", "TotalKernelTime", "ThisPeriodTotalUserTime", "ThisPeriodTotalKernelTime"
+        )] + [(name, wintypes.DWORD) for name in (
+            "TotalPageFaultCount", "TotalProcesses", "ActiveProcesses", "TotalTerminatedProcesses"
+        )]
+
+    kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    kernel.QueryInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
+                                                 wintypes.DWORD, ctypes.c_void_p]
+    if not kernel.TerminateJobObject(handle, 1):
+        raise ctypes.WinError(ctypes.get_last_error())
+    deadline = time.monotonic() + 10
+    while True:
+        accounting = Accounting()
+        if not kernel.QueryInformationJobObject(handle, 1, ctypes.byref(accounting),
+                                                ctypes.sizeof(accounting), None):
+            raise ctypes.WinError(ctypes.get_last_error())
+        if accounting.ActiveProcesses == 0:
+            return
+        if time.monotonic() >= deadline:
+            raise TimeoutError("owned Windows job processes did not exit")
+        time.sleep(0.02)
+
+
 def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_output=False, check=False):
     """Run a command in an owned tree; timeout and failure clean up descendants."""
     nested = _is_nested()
@@ -97,27 +165,22 @@ def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_ou
                     result = json.loads(status.read_text())["returncode"]
             finally:
                 # The launcher stays alive until cleanup, pinning the process-group ID.
-                if job is not None:
-                    import ctypes
-                    from ctypes import wintypes
-                    kernel, handle = job
-                    kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
-                    if not kernel.TerminateJobObject(handle, 1):
-                        error = ctypes.get_last_error()
-                        kernel.CloseHandle(handle)
-                        raise ctypes.WinError(error)
-                    kernel.CloseHandle(handle)
-                elif not nested and os.name != "nt":
-                    try:
-                        os.killpg(child.pid, signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                else:
-                    try:
-                        child.kill()
-                    except ProcessLookupError:
-                        pass
-                child.wait(timeout=10)
+                try:
+                    if job is not None:
+                        kernel, handle = job
+                        try:
+                            _terminate_windows_job(kernel, handle)
+                        finally:
+                            kernel.CloseHandle(handle)
+                    elif not nested and os.name != "nt":
+                        _stop_owned_session(child.pid)
+                    else:
+                        try:
+                            child.kill()
+                        except ProcessLookupError:
+                            pass
+                finally:
+                    child.wait(timeout=10)
                 if nested and os.name != "nt" and (timed_out or result != 0):
                     # Abort the enclosing owned tree as well: descendants may
                     # still hold the driver's captured output pipes open.
