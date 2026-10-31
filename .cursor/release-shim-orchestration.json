@@ -20,7 +20,8 @@
     "pr": 98,
     "url": "https://github.com/randlee/sc-runtime/pull/98",
     "status": "qa1_correction_active",
-    "head": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27"
+    "head": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27",
+    "commit": "0b2eb92d06ef2abf6abc2ba3c74167393ad2a9af"
   },
   "cleanup_issue": "https://github.com/randlee/sc-runtime/issues/97",
   "coordination": {
@@ -589,6 +590,75 @@
       },
       "missing_reviewers": [],
       "unparsed_reviewers": []
+    },
+    "active_round": {
+      "qa_pass": "qa-release-shim-2",
+      "commit": "0b2eb92d06ef2abf6abc2ba3c74167393ad2a9af",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/shim_qa2_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/req-qa-result.md"
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/shim_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/arch-qa-result.md"
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/shim_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-terra",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/rust-qa-agent-result.md"
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/shim_qa2_service",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/rust-service-hardening-agent-result.md"
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/shim_qa2_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "FINDINGS",
+          "result_path": "/tmp/sc-runtime-shim-orchestration/qa2/flaky-test-qa-result.md"
+        }
+      ],
+      "coordinator_task_id": "/root/shim_qa2_enforcer",
+      "status": "publishing_fail",
+      "new_findings": [
+        "FTQ-003"
+      ],
+      "execution_pending": [
+        "REQ-QA-002"
+      ]
     }
   },
   "release": {
