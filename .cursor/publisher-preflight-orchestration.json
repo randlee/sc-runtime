@@ -5,7 +5,9 @@
     "branch": "codex/publish-preflight",
     "commit": "595aad06db5b198a6bb3a4db77ddd03abed2e13d",
     "base": "2a93925363eab051e3c103202901f38600b87c34",
-    "pr": 100
+    "pr": 100,
+    "merged_pr": 100,
+    "merged_develop": "ceb2f386c0d8f7378c5f1c6024632f29a8f56e43"
   },
   "publisher": {
     "mode": "preflight",
@@ -1162,5 +1164,18 @@
         "PREFLIGHT-FTQ-003"
       ]
     }
+  },
+  "benchmark_evidence_correction": {
+    "bead": "run-h0h.6",
+    "status": "in_progress",
+    "branch": "codex/benchmark-release-evidence",
+    "developer_task": "/root/benchmark_evidence_flow_design",
+    "owner_direction": "Developer runs benchmark by workstation SSH, commits site/reports artifacts; quality manager reviews tested build; publishing preflight verifies evidence and must not reach private host. First release has no prerequisite installed prerelease.",
+    "readiness_run": {
+      "id": 41249079639,
+      "sha": "ceb2f386c0d8f7378c5f1c6024632f29a8f56e43",
+      "conclusion": "failure"
+    },
+    "production_publication_authorized": false
   }
 }
