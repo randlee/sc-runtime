@@ -157,7 +157,18 @@ class AdaptorSourceTests(unittest.TestCase):
         import json
 
         workflow = (ROOT / ".github" / "workflows" / "template.yml").read_text(encoding="utf-8")
-        self.assertIn("SQLX_OFFLINE=true cargo check --workspace", workflow)
+        step = (
+            workflow.split("      - name: Workspace check\n", 1)[1].split("      - name: Store layout general-db disable", 1)[0]
+        )
+        self.assertIn("SQLX_OFFLINE: 'true'", step)
+        self.assertIn("SC_RUNTIME_GENERATED_DIR: ${{ runner.temp }}/app", step)
+        self.assertIn("run: just test generated-workspace", step)
+        recipe = (ROOT / "Justfile").read_text(encoding="utf-8")
+        command = (
+            recipe.split('layer == "generated-workspace"', 1)[1]
+            .split('else if layer ==', 1)[0]
+        )
+        self.assertIn("cargo check --workspace", command)
         values = set()
         for path in (ROOT / "wizard" / "fixtures").glob("*.json"):
             values.add(json.loads(path.read_text(encoding="utf-8"))["db"])

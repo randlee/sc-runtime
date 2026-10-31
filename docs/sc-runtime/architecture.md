@@ -1,9 +1,9 @@
 # `sc-runtime` Architecture
 
-**ID Range:** ADR-RT-0001 through ADR-RT-0004  
+**ID Range:** ADR-RT-0001 through ADR-RT-0005  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-10-30  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -68,6 +68,7 @@ decision.
 ## ADR-RT-0001: `DaemonBuilder` `run()` is assembly only, in a fixed order
 
 **Status:** Active  
+**Amended by:** [ADR-RT-0005](#adr-rt-0005-await-application-cleanup-before-releasing-runtime-ownership) for the additive ready-state cleanup boundary.  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19, section "The crates" (sc-runtime is a bootstrap, not a framework layer); applies repo [ADR-RUN-0001](../architecture.md), [ADR-RUN-0201](../architecture.md)  
 
@@ -88,15 +89,15 @@ sc-transport, or an explicitly supplied path; its default location is
 undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
 The same crate owns the one endpoint resolver that the daemon and the CLI
 share ([ADR-TRN-0002](../sc-transport/architecture.md)), so some component of
-the daemon has to call it, and the builder has a fixed assembly surface; endpoint inputs arrive in the
-configuration, not lifecycle methods.
+the daemon has to call it, and the builder has only five methods through
+which inputs could arrive.
 
 ### Decision
 
 `DaemonBuilder` uses consuming typestate. The markers are `NeedStores`,
 `NeedRoutes`, and `Ready`. `stores` consumes `NeedStores` and returns
-`NeedRoutes`. `routes` consumes `NeedRoutes` and returns `Ready`. `run` and `run_with_cleanup`
-exist only on `Ready`. `mcp` is optional and is implemented only on
+`NeedRoutes`. `routes` consumes `NeedRoutes` and returns `Ready`. `run`
+exists only on `Ready`. `mcp` is optional and is implemented only on
 `Ready`. `logger` is optional on all three states and returns the same state;
 it replaces the fixed `sc-runtime` Noop handle and creates no `NeedLogger`
 state or run step. The markers are `pub` so the builder can be named across crates.
@@ -132,28 +133,16 @@ endpoint does not take the lock or open stores. Signal streams are registered
 before bind. The lock is taken before the stores closure is called. Binding is
 the last step. A failure in any step returns a `RuntimeError` and no later
 step runs.
-The builder has no startup hook, plugin registry or option that inserts
+The builder has no hook, callback, plugin registry or option that inserts
 work between steps or changes their order (decided in this document; the
 design lists the five steps and calls the crate a bootstrap, not a framework
 layer). The caller-facing sequence is consuming typestate. `Daemon::builder` takes
 `&sc_transport::AppName` and `&DaemonConfig` and returns a builder on which
-`run` is not implemented. `stores` then `routes` consume the builder. `mcp`, `run`,
-and `run_with_cleanup` exist only after `routes`. `mcp` is optional and returns the same
+`run` is not implemented. `stores` then `routes` consume the builder. `mcp`
+and `run` exist only after `routes`. `mcp` is optional and returns the same
 ready builder. `logger` is optional before or after either transition and
 preserves `NeedStores` -> `NeedRoutes` -> `Ready`. This crate does not define
 `sc_runtime::AppName`.
-
-`run_with_cleanup(cleanup)` preserves this assembly order and returns the same
-`Result<(), RuntimeError>` as `run`. Its single `FnOnce() -> Future<Output = ()>`
-callback runs after serving/listener disposal, on both success and startup
-errors, before successful stores, instance ownership, and the retained runtime
-logger are dropped. The unused stores closure is dropped before invoking
-cleanup on an earlier failure, so awaiting a worker-ownership channel cannot
-hang on an unused sender. Cleanup does not replace the primary error. `run()`
-delegates with empty cleanup, preserving its default behavior. The caller must
-await completion: dropping the run future or panicking cannot await cleanup.
-This narrow ownership boundary does not change startup order, add a registry,
-or make `sc-runtime` depend on a scheduler or application task type.
 
 v0.1 binds exactly one listener. `TransportConfig` is `#[non_exhaustive]` and
 has no `additional_endpoints` field. `sc-transport` can bind either kind of
@@ -195,7 +184,7 @@ by [REQ-RT-0001](requirements.md); the explicit-instance-root and
 endpoint-override tests of [REQ-RT-0008](requirements.md), and its check that
 `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
 line outside test code; `arch-qa` architecture review of the public surface
-of `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`, `run_with_cleanup`).
+of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `logger`, `run`).
 
 ### Related Documents
 
@@ -209,6 +198,7 @@ of `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`, `run_with_cleanu
 ## ADR-RT-0002: Daemon singleton by `fd-lock` on `daemon.lock`
 
 **Status:** Active  
+**Amended by:** [ADR-RT-0005](#adr-rt-0005-await-application-cleanup-before-releasing-runtime-ownership) for the additive ready-state cleanup boundary.  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19, section "Runtime architecture"  
 
@@ -230,10 +220,7 @@ both start. Both need clean-up code that does not run on a crash.
 `sc-runtime` takes an OS exclusive file lock, using the `fd-lock` crate, on
 the file `<instance-root>/daemon.lock`. The lock is taken in `run()` before
 the project's stores closure is called and before any listener is bound, and
-is held until `run` returns. With `run_with_cleanup`, it also covers the
-application's awaited background drain and join, including startup errors after
-worker creation. A replacement daemon cannot open stores while the old daemon's
-cleanup is pending. If the lock is already held, `run()`
+is held for the life of the process. If the lock is already held, `run()`
 returns the "lock held" variant of `RuntimeError` without waiting: the
 attempt is a non-blocking try-lock (decided in this document; the design
 states the exclusive lock but not whether the attempt waits). The crate
@@ -429,6 +416,80 @@ serve path.
 - [REQ-RT-0006](requirements.md)
 - [REQ-RT-0005](requirements.md)
 - [NFR-RUN-0005](../requirements.md)
+
+## ADR-RT-0005: Await application cleanup before releasing runtime ownership
+
+**Status:** Active  
+**Decision Date:** 2026-10-30  
+**Amends:** ADR-RT-0001 and ADR-RT-0002  
+**Source:** B18 corrective lifecycle integration; preserves the existing startup contract and application-owned workers/logger.
+
+### Context
+
+An application can start a background worker from its existing stores closure
+after the runtime acquires `daemon.lock`. Releasing that lock when HTTP serving
+stops, before the application joins its worker, permits a replacement daemon to
+start overlapping work. The SDK must provide a general cleanup boundary without
+importing cron or choosing application policy.
+
+### Decision
+
+1. The ready-state `DaemonBuilder` adds `run_with_cleanup(cleanup)`, with
+   `FCleanup: FnOnce() -> Cleanup` and `Cleanup: Future<Output = ()>`. It
+   consumes the same ready builder as `run()`. Existing `run()` delegates with
+   empty cleanup. No cleanup hook exists on earlier builder states; no startup
+   hook, registry, JobContext, or new startup phase is introduced.
+
+2. The    existing startup order remains unchanged: take the loaded
+   configuration,    resolve instance/endpoint, register signal streams, acquire
+   the singleton    lock, invoke the application stores closure, then assemble
+   and bind the    existing router/MCP service. The cleanup extension does not
+   inspect project    `Stores` or wrap routes or services.
+
+3. When awaited normally, cleanup runs    exactly once after serving/listener
+   disposal, including typed startup and    serving failure paths. Unused
+   startup closures are dropped before early-error    cleanup, so cleanup may
+   await ownership sent by a stores closure without an    unused SDK-held sender
+   keeping its channel alive.
+
+4. Any acquired instance    lock, the successful `Stores` owner, and the
+   retained runtime logger remain    alive through cleanup. Teardown order is
+   application cleanup, retained    `Stores`, instance lock, retained runtime
+   logger, then return the original    `RuntimeError` or success. Cleanup
+   returns unit and does not replace that    primary result.
+
+5. The application owns worker drain/join and concrete logger    shutdown. The
+   SDK has no cron dependency, logger wrapper, secret provider, or
+   application policy. The application consumes concrete logger shutdown only
+   after the runtime and cleanup return and their shared handles drop.
+
+6. The    caller must await the run future to completion. Dropping/canceling the
+   future    or panicking inside cleanup cannot promise asynchronous cleanup.
+   Deadlines    bound cooperative work; arbitrary native code or synchronous
+   operations    cannot be forcibly preempted. Ownership must be joined before
+   claiming    cleanup completion, even when a cooperative deadline was missed.
+
+### Consequences
+
+This explicitly amends ADR-RT-0001's no-callback restriction only for the
+additive ready-state cleanup boundary and ADR-RT-0002's lifetime-of-the-process
+wording: on an awaited run, the instance lock is retained through cleanup and
+released before that run returns, after the successful stores owner is dropped.
+Other startup and builder decisions remain in force. ADR-RT-0003's project
+`Stores`/router/service pass-through is unchanged. The original typed errors and
+application-owned observability lifecycle remain unchanged.
+
+### Implementation
+
+**Enforced by:** the runtime lifecycle regressions in
+`crates/sc-runtime/src/tests/lifecycle.rs`, including retained successful
+stores/lock/logger during cleanup, replacement-daemon rejection until cleanup
+returns, and early unused-closure disposal; the generated production composition
+and cron worker/store ownership regressions. [REQ-RT-0001](requirements.md),
+[REQ-RT-0002](requirements.md), and [REQ-RT-0005](requirements.md) retain their
+startup, singleton, and graceful-shutdown obligations.
+
+---
 
 ## Runtime error inventory
 

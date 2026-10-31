@@ -5,9 +5,10 @@
   qa:sprint "b-18" ;
   qa:qaPass "qa-b-18-2" ;
   qa:severity "Blocking" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "arch-qa" ;
   qa:commit "fad0aeaaa7c1946e5443a1994e8ce4e6f44eecf2" ;
   qa:location "docs/sc-runtime/architecture.md:98" ;
   qa:issue "The new public run_with_cleanup lifecycle boundary is authorized by rewriting Active ADR-RT-0001 and ADR-RT-0002 in place (new Ready method/callback at lines98,135,146 and lock-lifetime text at233). The assigned architecture role requires a later ADR naming the decisions it amends; none exists. The necessary generic API and physical ownership fixes are sound, but these edits cannot themselves supply the required structural authority." ;
+  qa:remedy "Active ADR-RT-0005 explicitly amends RT-0001/0002; historical wording restored with amendment references; B18 binding inventory now21." ;
   qa:recommendation "Add the next available ADR-RT-0005 as Active, explicitly Amends ADR-RT-0001 and ADR-RT-0002. Record the additive Ready-only FnOnce()->Future<Output=()> cleanup boundary after listener disposal, retaining successful Stores, singleton lock and runtime logger until cleanup completes; preserve run with empty cleanup, fixed startup order, typed primary errors, early unused-closure drop, caller-await/drop/panic limits and native cooperation limits, with no cron dependency. Restore historical decision wording (or retain it with explicit amendment references) rather than silently rewriting it. Add ADR-RT-0005 to B18 adrs/applicability and name this amendment as the corrective deliverable. Keep implementation and regressions. This is an autonomous documentation authority repair, not a new owner product-policy decision." .

@@ -58,6 +58,7 @@ adrs:
   - ADR-RUN-0401
   - ADR-RUN-0402
   - ADR-RT-0004
+  - ADR-RT-0005
 owned_paths:
   - scripts/check_observability_release.py
   - dev/observability-logger-adapter/Cargo.toml
@@ -78,6 +79,9 @@ owned_paths:
   - tests/unit/generation/test_development_observability.py
   - tests/unit/generation/test_monty_example.py
   - tests/unit/generation/test_cron_environment.py
+  - tests/unit/generation/test_general_db_disable.py
+  - tests/unit/generation/test_prefix_packages.py
+  - tests/unit/generation/test_liquid.py
   - tests/integration/generation/snapshot_just.py
   - docs/sc-cron/monty-generated-example.md
   - docs/project-plan.md
@@ -410,8 +414,9 @@ the three literal codes above and do not duplicate the layout.
 
 ## Governing ADR applicability
 
-The binding inventory contains the existing ten decisions and the ten QA1
-trace corrections above. Their concrete scope is:
+The binding inventory contains 21 decisions: the existing ten, the ten QA1
+trace corrections, and the explicit QA2 amendment ADR-RT-0005. Their concrete
+scope is:
 
 - ADR-RUN-0001 and ADR-RUN-0008 govern application-owned assembly and standard
   tools. The generated `composition` module supplies the resolver/registry
@@ -436,7 +441,8 @@ trace corrections above. Their concrete scope is:
 - ADR-RUN-0401 and ADR-RUN-0402 govern cargo-generate/sc-compose mechanics,
   explicit development generation, fixture admission and source-unchanged setup,
   lint, test and build sequences.
-- ADR-RT-0001 and ADR-RT-0002 also govern the QA1 SDK cleanup extension: the
+- ADR-RT-0005 explicitly amends ADR-RT-0001 and ADR-RT-0002 for the SDK cleanup
+  extension while preserving their historical decisions: the
   ready builder consumes a general application cleanup future after server
   disposal, before stores/instance-lock/logger teardown, without importing cron.
   REQ-RT-0002 requires lock acquisition before the stores callback and retention
@@ -448,11 +454,19 @@ trace corrections above. Their concrete scope is:
 ADR-RT-0003 remains outside the phase plan's binding inventory: project Stores,
 router and rmcp service still pass through unchanged, with no wrapper or field
 inspection. Retaining the successful Stores owner through the new general
-cleanup callback changes lifecycle ownership under ADR-RT-0001/0002, not the
+cleanup callback changes lifecycle ownership under ADR-RT-0005, amending
+ADR-RT-0001/0002, not the
 Stores/router/service pass-through contract. No referenced-crate ADR is copied
 merely because that crate is consumed.
 
 ## Required work and deliverables
+
+QA2 corrective deliverable: Active ADR-RT-0005 explicitly amends ADR-RT-0001
+and ADR-RT-0002 for the implemented Ready-only cleanup boundary. Historical
+decision text is retained with amendment references; production behavior and
+existing lifecycle regressions remain unchanged. QA-002 updates the three
+existing generation assertions to verify the workflow selectors and their exact
+root recipe commands, plus the current small Liquid composition bodies.
 
 1. ADR-RUN-0004 / REQ-RUN-0004 / REQ-RUN-0309: change generated `Observability` to Arc ownership and expose only the
    types-level shared handle to library consumers.
