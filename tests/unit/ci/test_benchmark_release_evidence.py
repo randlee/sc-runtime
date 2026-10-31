@@ -46,12 +46,12 @@ class ReleaseEvidenceTests(unittest.TestCase):
 
     def save(self):
         self.json_path.write_text(json.dumps(self.payload))
-        (self.report_dir / self.payload["report_html"]).write_text(
-            " ".join(str(self.payload[key]) for key in ("campaign_id", "host", "git_sha", "status")))
         script = self.root / "scripts/benchmark/monty/campaign.py"
         spec = importlib.util.spec_from_file_location("fixture_campaign", script)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
+        (self.report_dir / self.payload["report_html"]).write_text(
+            module.stamp_report_html("<html><body>fixture</body></html>", self.payload))
         try:
             module.write_index(self.report_dir)
         except module.CampaignError:

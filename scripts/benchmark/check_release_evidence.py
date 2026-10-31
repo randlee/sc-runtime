@@ -106,7 +106,7 @@ def verify_campaign(root: Path, payload: dict, path: Path, module, directories: 
         raise EvidenceError("campaign is not complete and accepted by current baselines")
     module.validate_gate(payload)
     html = (path.parent / payload["report_html"]).read_text(encoding="utf-8")
-    if any(value not in html for value in (campaign_id, sha, payload["host"], payload["status"])):
+    if any(value not in html for value in (campaign_id, sha, payload["host"], payload["rustc"])):
         raise EvidenceError("HTML report metadata does not match campaign")
 
 
