@@ -25,3 +25,15 @@
   qa:remedy "Trace and correct the generated project's failing lint step or its generation-test invocation so both equivalence cases complete successfully, while retaining the wizard-versus-var-file tree comparison." ;
   qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-18:qa1:QA-001>
+  qa:id "QA-001" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "template/crates/daemon/src/main.rs:122" ;
+  qa:issue "The runtime releases the instance lock before the generated application stops its cron worker. A new daemon can acquire the lock and start its own worker while the old worker is still running or draining, allowing overlapping execution of schedules." ;
+  qa:recommendation "Ensure the instance lock remains held until the cron worker has stopped and joined, including startup-error paths. Add a regression that holds an old worker in flight during restart and proves the replacement cannot run until it drains." .
