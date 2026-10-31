@@ -24,10 +24,11 @@ where
 {
     /// Joins every in-flight run at once.
     ///
-    /// Rust and Python still abort at their own monotonic deadline when no
-    /// Monty feed is outstanding. A handle deadline aborts those siblings,
-    /// and records `TimedOut`, only while a Monty feed is still outstanding.
-    /// Monty joins are not aborted.
+    /// Rust and Python abort and join at their own monotonic deadline when
+    /// no Monty feed is outstanding. At a handle deadline they are cancelled
+    /// and joined without a new outcome, unless a Monty feed is outstanding;
+    /// then those siblings retain their `TimedOut` outcomes. Monty joins are
+    /// not aborted.
     pub(super) async fn drain(&mut self) {
         let mut siblings_aborted = false;
         loop {
@@ -40,9 +41,7 @@ where
             } else {
                 self.nearest_abortable_deadline()
             };
-            let shutdown_at = self
-                .handle_deadline
-                .filter(|_| monty_busy && !siblings_aborted);
+            let shutdown_at = self.handle_deadline.filter(|_| !siblings_aborted);
             let clock = Arc::clone(&self.clock);
             tokio::select! {
                 biased;
@@ -57,10 +56,23 @@ where
                         wait_shutdown_deadline(deadline).await;
                     }
                 }, if shutdown_at.is_some() => {
-                    self.coord.note_shutdown_deadline();
                     siblings_aborted = true;
-                    self.abort_all_abortable().await;
+                    if monty_busy {
+                        self.coord.note_shutdown_deadline();
+                        self.abort_all_abortable().await;
+                    } else {
+                        self.discard_abortable().await;
+                    }
                 }
+            }
+        }
+    }
+
+    /// Joins cancelled runs without introducing outcomes after a handle timeout.
+    async fn discard_abortable(&mut self) {
+        for slot in &mut self.slots {
+            if !slot.run.as_ref().is_some_and(InFlight::is_monty) {
+                cancel_slot_run(slot).await;
             }
         }
     }
@@ -480,6 +492,13 @@ pub(super) enum Finished {
     Report(Result<Report, JoinError>),
     #[cfg(feature = "monty")]
     Monty(Result<crate::monty_run::FeedDone, JoinError>),
+}
+
+/// Cancels a removed slot and retains its handle until cancellation completes.
+pub(super) async fn cancel_slot_run(slot: &mut Slot) {
+    if let Some(run) = slot.run.take() {
+        let _ = await_aborted(run).await;
+    }
 }
 
 /// Aborts a cooperative run and reads `TimedOut` from that cancellation.

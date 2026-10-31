@@ -135,19 +135,19 @@ jobs:
 
       - name: Workspace check
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        working-directory: ${{ runner.temp }}/app
-        run: SQLX_OFFLINE=true cargo check --workspace
+        env:
+          SC_RUNTIME_GENERATED_DIR: ${{ runner.temp }}/app
+          SQLX_OFFLINE: 'true'
+        run: just test generated-workspace
 
       # REQ-RUN-0331 success criterion 2. Store layouts default the flag on, so
       # this sqlite-mcp job is the one that compiles CLI, MCP, and HTTP with it off.
       - name: Store layout general-db disable
         if: ${{ needs.ci-scope.outputs.runtime == 'true' && matrix.fixture == 'sqlite-mcp.json' }}
-        working-directory: ${{ runner.temp }}/app
-        run: |
-          set -euo pipefail
-          SQLX_OFFLINE=true cargo test -p widget-app-cli --no-default-features --lib general_db_off_omits_delete_commands
-          SQLX_OFFLINE=true cargo test -p widget-app-daemon --no-default-features --lib openapi_paths_omit_general_delete
-          SQLX_OFFLINE=true cargo test -p widget-app-cli --no-default-features --test widget_mcp
+        env:
+          SC_RUNTIME_GENERATED_DIR: ${{ runner.temp }}/app
+          SQLX_OFFLINE: 'true'
+        run: just test generated-general-db-off
 
   plain-cargo-generate:
     name: plain cargo generate
@@ -202,3 +202,38 @@ jobs:
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         working-directory: ${{ runner.temp }}/plain
         run: cargo build --workspace
+
+  isolated-signal-lifecycle:
+    name: isolated signal lifecycle
+    needs: ci-scope
+    if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.94.1
+        with:
+          components: rustfmt, clippy
+      - name: Install just
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin"
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin" --tag 1.58.0
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install generation dependencies
+        run: |
+          set -euo pipefail
+          python3 -m pip install -r requirements-generation.txt
+          cargo install sc-compose --version 1.7.0 --locked
+          mkdir -p "$HOME/.local/bin"
+          arch="$(uname -m)"
+          case "$arch" in
+            x86_64) target="x86_64-unknown-linux-gnu" ;;
+            aarch64) target="aarch64-unknown-linux-gnu" ;;
+            *) echo "unsupported runner arch: $arch" >&2; exit 1 ;;
+          esac
+          curl -fsSL "https://github.com/cargo-generate/cargo-generate/releases/download/v0.25.1/cargo-generate-v0.25.1-${target}.tar.gz" | tar xz -C "$HOME/.local/bin" cargo-generate
+      - name: Exercise real daemon signals
+        run: just test lifecycle-signal

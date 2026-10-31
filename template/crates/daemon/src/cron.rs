@@ -11,6 +11,9 @@ use serde::Deserialize;
 /// `cron` object in the application configuration file.
 #[derive(Debug, Deserialize)]
 pub struct CronConfig {
+    /// Relative schedule database path below the instance root; no parent traversal.
+    #[serde(default = "default_database_path")]
+    pub database_path: std::path::PathBuf,
     /// Maximum schedule rows, enabled and disabled.
     ///
     /// [`None`] is JSON `null` and means unlimited. `Some(0)` is also
@@ -23,6 +26,10 @@ pub struct CronConfig {
     pub environment: CronEnvironmentConfig,
 }
 
+fn default_database_path() -> std::path::PathBuf {
+    "cron.db".into()
+}
+
 fn default_max_schedule_rows() -> Option<u64> {
     Some(10)
 }
@@ -30,6 +37,7 @@ fn default_max_schedule_rows() -> Option<u64> {
 impl Default for CronConfig {
     fn default() -> Self {
         Self {
+            database_path: default_database_path(),
             max_schedule_rows: default_max_schedule_rows(),
             environment: CronEnvironmentConfig::default(),
         }
@@ -136,22 +144,81 @@ impl CronConfig {
 /// Returns schedule database open or configuration errors from sc-cron.
 #[cfg(feature = "cron")]
 pub fn open(
-    path: impl AsRef<std::path::Path>,
     config: &CronConfig,
-    environment: sc_cron::HookEnvironmentHost,
+    instance_root: &std::path::Path,
     logger: sc_observability_types::SharedCanonicalLog,
+    hook_environment: sc_cron::HookEnvironmentHost,
+    #[cfg(feature = "monty")] monty_hosts: sc_cron::MontyHostRegistry,
 ) -> Result<
     sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>,
     sc_cron::CronError,
 > {
+    // Validate before creating the instance directory or opening any database.
+    let configured = &config.database_path;
+    if configured.as_os_str().is_empty()
+        || configured
+            .components()
+            .any(|component| !matches!(component, std::path::Component::Normal(_)))
+        || configured.to_string_lossy().contains(['\\', ':'])
+    {
+        return Err(sc_cron::CronError::InvalidSpec(
+            "cron.database_path must be a relative path without parent traversal".to_owned(),
+        ));
+    }
+    std::fs::create_dir_all(instance_root).map_err(|error| {
+        sc_cron::CronError::Store(
+            sc_cron::StoreError::new(
+                sc_cron::StoreErrorKind::Unavailable,
+                "failed to prepare cron instance root",
+            )
+            .with_source(error),
+        )
+    })?;
+    let database_path = instance_root.join(configured);
+    let mut component_path = instance_root.to_path_buf();
+    for component in configured.components() {
+        component_path.push(component.as_os_str());
+        if std::fs::symlink_metadata(&component_path)
+            .is_ok_and(|metadata| metadata.file_type().is_symlink())
+        {
+            return Err(sc_cron::CronError::InvalidSpec(
+                "cron.database_path must not traverse symlinks".to_owned(),
+            ));
+        }
+    }
     let limits = sc_cron::ScheduleLimits::with_max_schedule_rows(config.row_limit());
-    sc_cron::Scheduler::open_with_logger(
-        path,
+    let scheduler = sc_cron::Scheduler::open_with_logger(
+        database_path,
         limits,
         std::sync::Arc::new(sc_cron::SystemClock),
         logger,
-    )
-    .map(|scheduler| scheduler.with_hook_environment(environment))
+    )?
+    .with_hook_environment(hook_environment);
+    #[cfg(feature = "monty")]
+    let scheduler = scheduler.with_monty_hosts(monty_hosts);
+    Ok(scheduler)
+}
+
+/// Application Rust-job extension point; Python and Monty use their stored hooks.
+///
+/// Replace this implementation when the application registers Rust schedules.
+#[cfg(feature = "cron")]
+pub struct ApplicationJob;
+
+#[cfg(feature = "cron")]
+#[async_trait::async_trait]
+impl sc_cron::Job for ApplicationJob {
+    async fn run(
+        &self,
+        _payload: &serde_json::Value,
+        _deadline: std::time::Instant,
+    ) -> sc_cron::RunOutcome {
+        sc_cron::RunOutcome::Refused("no application Rust job is registered".to_owned())
+    }
+
+    async fn should_stop(&self, _payload: &serde_json::Value) -> sc_cron::StopDecision {
+        sc_cron::StopDecision::Continue
+    }
 }
 
 /// Row-cap fields for `sc_cron::ScheduleLimits` (see [`CronConfig::schedule_limits_fields`]).
@@ -164,6 +231,116 @@ pub struct CronScheduleLimitsFields {
 #[cfg(test)]
 mod tests {
     use super::CronConfig;
+
+    #[cfg(feature = "cron")]
+    #[test]
+    fn absolute_and_parent_database_paths_are_rejected_before_side_effects() {
+        use std::sync::Arc;
+        let root = tempfile::tempdir().expect("root");
+        let outside = root.path().join("outside.db");
+        for database_path in [
+            outside.clone(),
+            "../outside.db".into(),
+            "nested/../../outside.db".into(),
+            "C:\\outside.db".into(),
+        ] {
+            let instance = root.path().join("absent-instance");
+            let config = CronConfig {
+                database_path,
+                ..CronConfig::default()
+            };
+            let result = super::open(
+                &config,
+                &instance,
+                Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                    sc_observability_types::ServiceName::new("path-proof").expect("service"),
+                )),
+                config.hook_environment_host().expect("policy"),
+                #[cfg(feature = "monty")]
+                sc_cron::MontyHostRegistry::new(),
+            );
+            assert!(matches!(result, Err(sc_cron::CronError::InvalidSpec(_))));
+            assert!(
+                !instance.exists(),
+                "invalid path must not create the instance root"
+            );
+            assert!(
+                !outside.exists(),
+                "invalid path must not create an outside database"
+            );
+        }
+    }
+
+    #[cfg(all(feature = "cron", unix))]
+    #[test]
+    fn database_symlink_cannot_escape_the_instance_root() {
+        let root = tempfile::tempdir().expect("root");
+        let outside = tempfile::tempdir().expect("outside");
+        std::os::unix::fs::symlink(outside.path(), root.path().join("redirect")).expect("symlink");
+        let config = CronConfig {
+            database_path: "redirect/escaped.db".into(),
+            ..CronConfig::default()
+        };
+        let result = super::open(
+            &config,
+            root.path(),
+            std::sync::Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                sc_observability_types::ServiceName::new("symlink-proof").expect("service"),
+            )),
+            config.hook_environment_host().expect("policy"),
+            #[cfg(feature = "monty")]
+            sc_cron::MontyHostRegistry::new(),
+        );
+        assert!(matches!(result, Err(sc_cron::CronError::InvalidSpec(_))));
+        assert!(!outside.path().join("escaped.db").exists());
+    }
+
+    #[cfg(feature = "cron")]
+    #[test]
+    fn configured_database_and_row_limits_reach_store() {
+        use std::sync::Arc;
+        use std::time::Duration;
+
+        for (value, capped) in [
+            (serde_json::json!(null), false),
+            (serde_json::json!(0), false),
+            (serde_json::json!(1), true),
+        ] {
+            let root = tempfile::tempdir().expect("instance root");
+            let config: CronConfig = serde_json::from_value(serde_json::json!({
+                "database_path": "configured.db", "max_schedule_rows": value,
+            }))
+            .expect("config");
+            let scheduler = super::open(
+                &config,
+                root.path(),
+                Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                    sc_observability_types::ServiceName::new("limit-proof").expect("service"),
+                )),
+                config.hook_environment_host().expect("policy"),
+                #[cfg(feature = "monty")]
+                sc_cron::MontyHostRegistry::new(),
+            )
+            .expect("open");
+            assert!(root.path().join("configured.db").is_file());
+            let spec = |name| {
+                sc_cron::ScheduleSpec::new(
+                    name,
+                    "* * * * *",
+                    Duration::from_secs(1),
+                    serde_json::json!({}),
+                )
+                .expect("spec")
+            };
+            scheduler.start(spec("first")).expect("first row");
+            let second = scheduler.start(spec("second"));
+            if capped {
+                assert!(matches!(second, Err(sc_cron::CronError::InvalidSpec(_))));
+            } else {
+                second.expect("unlimited row");
+            }
+        }
+    }
 
     #[test]
     fn zero_is_unlimited_and_the_default_is_ten() {
@@ -262,7 +439,17 @@ mod environment_tests {
         let logger = Arc::new(sc_observability_types::NoopCanonicalLog::new(
             sc_observability_types::ServiceName::new("cron-policy-test").expect("service"),
         ));
-        let scheduler = open(&path, &config, host, logger).expect("open");
+        let mut config = config;
+        config.database_path = path.file_name().expect("file name").into();
+        let scheduler = open(
+            &config,
+            &std::env::temp_dir(),
+            logger,
+            host,
+            #[cfg(feature = "monty")]
+            sc_cron::MontyHostRegistry::new(),
+        )
+        .expect("open");
         let now = sc_cron::Timestamp::from_datetime(sc_cron::Clock::now(&sc_cron::SystemClock));
         let spec = sc_cron::ScheduleSpec::with_hook(
             "resolver-preserved",

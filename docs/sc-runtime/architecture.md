@@ -1,9 +1,9 @@
 # `sc-runtime` Architecture
 
-**ID Range:** ADR-RT-0001 through ADR-RT-0004  
+**ID Range:** ADR-RT-0001 through ADR-RT-0005  
 **Status:** Draft  
 **Created:** 2026-09-19  
-**Last Updated:** 2026-10-23  
+**Last Updated:** 2026-10-30  
 **Owner:** sc-runtime maintainers  
 
 ---
@@ -68,6 +68,7 @@ decision.
 ## ADR-RT-0001: `DaemonBuilder` `run()` is assembly only, in a fixed order
 
 **Status:** Active  
+**Amended by:** [ADR-RT-0005](#adr-rt-0005-await-application-cleanup-before-releasing-runtime-ownership) for the additive ready-state cleanup boundary.  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19, section "The crates" (sc-runtime is a bootstrap, not a framework layer); applies repo [ADR-RUN-0001](../architecture.md), [ADR-RUN-0201](../architecture.md)  
 
@@ -197,6 +198,7 @@ of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `logger`, `run`).
 ## ADR-RT-0002: Daemon singleton by `fd-lock` on `daemon.lock`
 
 **Status:** Active  
+**Amended by:** [ADR-RT-0005](#adr-rt-0005-await-application-cleanup-before-releasing-runtime-ownership) for the additive ready-state cleanup boundary.  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19, section "Runtime architecture"  
 
@@ -414,6 +416,80 @@ serve path.
 - [REQ-RT-0006](requirements.md)
 - [REQ-RT-0005](requirements.md)
 - [NFR-RUN-0005](../requirements.md)
+
+## ADR-RT-0005: Await application cleanup before releasing runtime ownership
+
+**Status:** Active  
+**Decision Date:** 2026-10-30  
+**Amends:** ADR-RT-0001 and ADR-RT-0002  
+**Source:** B18 corrective lifecycle integration; preserves the existing startup contract and application-owned workers/logger.
+
+### Context
+
+An application can start a background worker from its existing stores closure
+after the runtime acquires `daemon.lock`. Releasing that lock when HTTP serving
+stops, before the application joins its worker, permits a replacement daemon to
+start overlapping work. The SDK must provide a general cleanup boundary without
+importing cron or choosing application policy.
+
+### Decision
+
+1. The ready-state `DaemonBuilder` adds `run_with_cleanup(cleanup)`, with
+   `FCleanup: FnOnce() -> Cleanup` and `Cleanup: Future<Output = ()>`. It
+   consumes the same ready builder as `run()`. Existing `run()` delegates with
+   empty cleanup. No cleanup hook exists on earlier builder states; no startup
+   hook, registry, JobContext, or new startup phase is introduced.
+
+2. The    existing startup order remains unchanged: take the loaded
+   configuration,    resolve instance/endpoint, register signal streams, acquire
+   the singleton    lock, invoke the application stores closure, then assemble
+   and bind the    existing router/MCP service. The cleanup extension does not
+   inspect project    `Stores` or wrap routes or services.
+
+3. When awaited normally, cleanup runs    exactly once after serving/listener
+   disposal, including typed startup and    serving failure paths. Unused
+   startup closures are dropped before early-error    cleanup, so cleanup may
+   await ownership sent by a stores closure without an    unused SDK-held sender
+   keeping its channel alive.
+
+4. Any acquired instance    lock, the successful `Stores` owner, and the
+   retained runtime logger remain    alive through cleanup. Teardown order is
+   application cleanup, retained    `Stores`, instance lock, retained runtime
+   logger, then return the original    `RuntimeError` or success. Cleanup
+   returns unit and does not replace that    primary result.
+
+5. The application owns worker drain/join and concrete logger    shutdown. The
+   SDK has no cron dependency, logger wrapper, secret provider, or
+   application policy. The application consumes concrete logger shutdown only
+   after the runtime and cleanup return and their shared handles drop.
+
+6. The    caller must await the run future to completion. Dropping/canceling the
+   future    or panicking inside cleanup cannot promise asynchronous cleanup.
+   Deadlines    bound cooperative work; arbitrary native code or synchronous
+   operations    cannot be forcibly preempted. Ownership must be joined before
+   claiming    cleanup completion, even when a cooperative deadline was missed.
+
+### Consequences
+
+This explicitly amends ADR-RT-0001's no-callback restriction only for the
+additive ready-state cleanup boundary and ADR-RT-0002's lifetime-of-the-process
+wording: on an awaited run, the instance lock is retained through cleanup and
+released before that run returns, after the successful stores owner is dropped.
+Other startup and builder decisions remain in force. ADR-RT-0003's project
+`Stores`/router/service pass-through is unchanged. The original typed errors and
+application-owned observability lifecycle remain unchanged.
+
+### Implementation
+
+**Enforced by:** the runtime lifecycle regressions in
+`crates/sc-runtime/src/tests/lifecycle.rs`, including retained successful
+stores/lock/logger during cleanup, replacement-daemon rejection until cleanup
+returns, and early unused-closure disposal; the generated production composition
+and cron worker/store ownership regressions. [REQ-RT-0001](requirements.md),
+[REQ-RT-0002](requirements.md), and [REQ-RT-0005](requirements.md) retain their
+startup, singleton, and graceful-shutdown obligations.
+
+---
 
 ## Runtime error inventory
 

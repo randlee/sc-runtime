@@ -887,11 +887,19 @@ impl WorkerHandle {
     ///
     /// The worker stops launching runs, then waits for each in-flight run
     /// until that run's own deadline, recording its outcome. If `deadline`
-    /// passes while no Monty feed is outstanding, the worker task is aborted
-    /// and records nothing. While a Monty feed is outstanding the worker is
-    /// not aborted: Rust and Python siblings are recorded `TimedOut`, and the
-    /// Monty feed runs until it returns. Returns whether the worker finished
-    /// before `deadline`.
+    /// passes while no Monty feed is outstanding, cooperative runs are aborted
+    /// and joined without recording outcomes. While a Monty feed is outstanding,
+    /// Rust and Python siblings are recorded `TimedOut`, and the Monty feed runs
+    /// until it returns. The worker itself is never aborted: every running store
+    /// operation and owned run must finish joining before this method returns.
+    /// Returns whether the worker finished before `deadline`.
+    ///
+    /// The deadline bounds cooperative work, not arbitrary native code or a
+    /// synchronous store operation. A started blocking store call cannot be
+    /// preempted by Tokio; shutdown awaits its actual completion. SQLite lock
+    /// waits use the configured busy timeout. Custom stores and native jobs must
+    /// cooperate. Await shutdown to completion before consuming logger shutdown;
+    /// dropping this future cannot finish an asynchronous join.
     pub async fn shutdown(mut self, deadline: tokio::time::Instant) -> bool {
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
@@ -918,7 +926,6 @@ impl WorkerHandle {
             ) {
                 let _ = self.logger.emit(event);
             }
-            task.abort();
             let _ = task.await;
             return false;
         }

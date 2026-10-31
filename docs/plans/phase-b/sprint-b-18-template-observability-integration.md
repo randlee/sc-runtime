@@ -1,13 +1,13 @@
 ---
 id: b-18
 phase: b
-status: planned
+status: complete
 closure_type: integration
 target_boundary: generated-daemon-observability
 track: observability
 wave: 10
-branch: sprint/b-18-template-observability-integration
-worktree: sprint/b-18-template-observability-integration
+branch: codex/b-18-publishing-kit
+worktree: /Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit
 integration_branch: integrate/phase-b-observability
 requirements:
   - REQ-RUN-0002
@@ -20,6 +20,7 @@ requirements:
   - REQ-RUN-0701
   - REQ-RUN-0702
   - REQ-RT-0001
+  - REQ-RT-0002
   - REQ-RT-0004
   - REQ-RT-0005
   - NFR-RT-0001
@@ -47,14 +48,43 @@ adrs:
   - ADR-RT-0001
   - ADR-RT-0002
   - ADR-TRN-0006
+  - ADR-RUN-0001
+  - ADR-RUN-0003
+  - ADR-RUN-0005
+  - ADR-RUN-0008
+  - ADR-RUN-0009
+  - ADR-RUN-0015
+  - ADR-RUN-0303
+  - ADR-RUN-0401
+  - ADR-RUN-0402
+  - ADR-RT-0004
+  - ADR-RT-0005
 owned_paths:
-  - Cargo.toml
-  - Cargo.lock
   - scripts/check_observability_release.py
   - dev/observability-logger-adapter/Cargo.toml
   - dev/observability-logger-adapter/Cargo.lock
   - dev/observability-logger-adapter/src/lib.rs
   - dev/observability-logger-adapter/tests/real_logger.rs
+  - Justfile
+  - scripts/new_project.py
+  - scripts/run_lifecycle_signal_test.py
+  - template/config/default.json
+  - template/config/cron.schema.json
+  - template/crates/daemon/Cargo.toml
+  - template/crates/daemon/src/lib.rs
+  - template/crates/daemon/src/composition.rs
+  - template/crates/daemon/src/agent_error.rs
+  - template/crates/daemon/tests/observability.rs
+  - template/crates/daemon/tests/cron_environment.rs
+  - tests/unit/generation/test_development_observability.py
+  - tests/unit/generation/test_monty_example.py
+  - tests/unit/generation/test_cron_environment.py
+  - tests/unit/generation/test_general_db_disable.py
+  - tests/unit/generation/test_prefix_packages.py
+  - tests/unit/generation/test_liquid.py
+  - tests/integration/generation/snapshot_just.py
+  - docs/sc-cron/monty-generated-example.md
+  - docs/project-plan.md
   - template/crates/daemon/src/main.rs
   - template/crates/daemon/src/observability.rs
   - template/crates/daemon/src/cron.rs
@@ -148,6 +178,28 @@ owned_paths:
   - .github/workflows/scoop-publish.yml
   - .github/workflows/template.yml
   - .github/workflows/winget-publish.yml
+  - crates/sc-runtime/src/builder.rs
+  - crates/sc-runtime/src/lib.rs
+  - crates/sc-runtime/src/tests.rs
+  - crates/sc-runtime/src/tests/lifecycle.rs
+  - crates/sc-runtime/README.md
+  - docs/sc-runtime/architecture.md
+  - docs/sc-runtime/requirements.md
+  - crates/sc-cron/src/scheduler.rs
+  - crates/sc-cron/src/worker.rs
+  - crates/sc-cron/src/worker/worker_runs.rs
+  - crates/sc-cron/src/environment/dotenv.rs
+  - crates/sc-cron/src/environment/resolve.rs
+  - crates/sc-cron/src/job.rs
+  - crates/sc-cron/tests/worker.rs
+  - crates/sc-cron/tests/worker/lifecycle.rs
+  - crates/sc-cron/tests/observability_components.rs
+  - crates/sc-cron/README.md
+  - docs/sc-cron/architecture.md
+  - tests/integration/generation/owned_process.py
+  - tests/integration/generation/test_owned_process.py
+  - tests/integration/generation/test_workflow_dispatch.py
+  - .github/workflows/crates.yml
 must_follow: [b-14, b-17]
 parallel_safe: []
 recommended_agent: arch-ctm
@@ -171,8 +223,9 @@ including Success Criteria 6–7, and [architecture](../../architecture.md)
 (System shape and ADR-RUN-0004/0007) are amended with this plan to assign
 production release acceptance to `run-h0h` after Phase B. Public interfaces,
 version inventories, and every release safety predicate remain unchanged.
-b-18 remains planned until its implementation and QA are delivered; this
-documentation amendment is not sprint or phase acceptance.
+The timing amendment itself did not complete b-18. The sprint status records
+implementation delivery; independent parent QA and CI remain required for
+acceptance and do not follow from that metadata alone.
 
 Phase completion requires the real development composition, shared ownership,
 HTTP+cron JSONL, shutdown precedence, isolated-CI signal lifecycle, qualified
@@ -242,15 +295,15 @@ observability registry patch, or non-registry/wrong-version release
 resolution; removing or disabling the guard is not a substitute for removing
 the shim.
 
-The current pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` is not a valid
+The former pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` was not a valid
 b-18 starting artifact because that kit package includes upstream sprint
 history at `docs/sprints/fix-homebrew-formula-bundled-paths-tojson.md`.
-The kit install is blocked until a later qualified exact revision has no
+The kit install required a later qualified exact revision with no
 `docs/sprints/**` installer/package destination. This does not block independent
 kit preparation or runtime composition after approved parent merges. Upstream
 source may retain its own sprint history; source-checkout absence is not the
-package-safety predicate. This plan does not invent that future SHA. Once available, b-18 updates
-`release/sc-publish-pin.toml`, installs only from that exact revision, and
+package-safety predicate. The installed qualified revision is `9677ab083e7dd3feb258235a342e321ca1b45d8d`. b-18 updated
+`release/sc-publish-pin.toml`, installed only from that exact revision, and
 proves the installer destination inventory is complete and package-safe; the
 leaked upstream sprint-history document is never copied or owned here.
 
@@ -298,8 +351,11 @@ Ok(scheduler)
 `Scheduler::open_with_logger` constructs
 `SystemJitter::with_logger(logger.clone())` internally, so callers cannot
 pair the store and `RunCoord` handle with a differently configured jitter.
-`main` builds `hook_environment` through b-17's typed config builder and
-passes it with the application's resolver into `cron::open` unchanged.
+`main` calls the application-owned production `composition::run` path. Its
+`CronServices` builds `hook_environment` through b-17's typed config builder,
+attaches the optional application-owned resolver, and passes that exact policy
+and application registry into `cron::open` unchanged. Defaults choose no
+built-in reference provider and an empty registry.
 ANC-034/035: Python and Monty use identical schedule-environment settings and
 resolution; daemon values enter only through names explicitly allowed by
 daemon config. Load scheduled dotenv sources by absolute path only when
@@ -356,7 +412,61 @@ the three literal codes above and do not duplicate the layout.
 | daemon run succeeds | fails | `DAEMON.OBSERVABILITY_SHUTDOWN` becomes primary process failure |
 | daemon run succeeds | succeeds | success |
 
+## Governing ADR applicability
+
+The binding inventory contains 21 decisions: the existing ten, the ten QA1
+trace corrections, and the explicit QA2 amendment ADR-RT-0005. Their concrete
+scope is:
+
+- ADR-RUN-0001 and ADR-RUN-0008 govern application-owned assembly and standard
+  tools. The generated `composition` module supplies the resolver/registry
+  extension seam; the SDK does not choose a provider or import application cron.
+- ADR-RUN-0002, ADR-RUN-0003 and ADR-RUN-0303 govern published crate identities,
+  the types-only library graph, daemon-only full logger, and default-off cron
+  and Monty features. No compose/ATM release dependency is introduced.
+- ADR-RUN-0004 and ADR-RUN-0007 govern the one shared logger, direct owner
+  emission, structured code/message/cause/recovery, and final owner shutdown.
+- ADR-RUN-0005 governs standard sc-lint/just infrastructure and routing the
+  generated-feature workflow checks through the root recipes.
+- ADR-RUN-0009 and ADR-TRN-0006 govern real daemon-process signals and endpoint
+  cleanup only on isolated ephemeral CI; no local real-signal path is enabled.
+- ADR-RUN-0011 governs async cleanup, owned blocking operations and child joins,
+  without a synchronous guard across await or a production blocking bridge.
+- ADR-RUN-0013, ADR-RUN-0014 and ADR-RUN-0016 govern cron ownership, mapped row
+  limits, the unchanged prebuilt environment/resolver and host registry contract,
+  beneath-instance database paths, shared snapshots and redaction.
+- ADR-RUN-0015 remains the controlled-host benchmark gate for later authorized
+  release acceptance. This sprint retains its preflight and claims no new
+  benchmark campaign or release acceptance.
+- ADR-RUN-0401 and ADR-RUN-0402 govern cargo-generate/sc-compose mechanics,
+  explicit development generation, fixture admission and source-unchanged setup,
+  lint, test and build sequences.
+- ADR-RT-0005 explicitly amends ADR-RT-0001 and ADR-RT-0002 for the SDK cleanup
+  extension while preserving their historical decisions: the
+  ready builder consumes a general application cleanup future after server
+  disposal, before stores/instance-lock/logger teardown, without importing cron.
+  REQ-RT-0002 requires lock acquisition before the stores callback and retention
+  through that cleanup; REQ-RT-0005 retains the graceful runtime signal path.
+- ADR-RT-0004 governs B18's real in-process fixture proof, including local
+  request/JSONL and lock-held cleanup regressions. It does not authorize local
+  process-signal execution or replace the isolated daemon-process proof.
+
+ADR-RT-0003 remains outside the phase plan's binding inventory: project Stores,
+router and rmcp service still pass through unchanged, with no wrapper or field
+inspection. Retaining the successful Stores owner through the new general
+cleanup callback changes lifecycle ownership under ADR-RT-0005, amending
+ADR-RT-0001/0002, not the
+Stores/router/service pass-through contract. No referenced-crate ADR is copied
+merely because that crate is consumed.
+
 ## Required work and deliverables
+
+QA2 corrective deliverable: Active ADR-RT-0005 explicitly amends ADR-RT-0001
+and ADR-RT-0002 for the implemented Ready-only cleanup boundary. Historical
+decision text is retained with amendment references; production behavior and
+existing lifecycle regressions remain unchanged. QA-002 updates the three
+existing generation assertions to verify the workflow selectors and their exact
+root recipe commands, plus the current small Liquid composition bodies.
 
 1. ADR-RUN-0004 / REQ-RUN-0004 / REQ-RUN-0309: change generated `Observability` to Arc ownership and expose only the
    types-level shared handle to library consumers.
@@ -561,7 +671,7 @@ must not set it):
 test "${GITHUB_ACTIONS:-}" = true
 test "${RUNNER_ENVIRONMENT:-}" = github-hosted
 test "${SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST:-}" = 1
-python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_signal_shutdown_isolated_ci
+just --justfile Justfile test lifecycle-signal
 ```
 
 Deferred release validation (`run-h0h`), after matching upstream publication,
@@ -571,7 +681,7 @@ claimed to pass during Phase B:
 ```sh
 bash .github/scripts/run-consumer-preflight.sh
 python3 scripts/check_observability_release.py
-python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
+SC_RUNTIME_REGISTRY_PROOF=1 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
 test "$(git rev-list -n 1 v0.1.1)" = "$(git rev-parse HEAD)"
 ```
 
@@ -589,3 +699,110 @@ than hand-editing installed files.
 
 - OTLP defaults, library-owned sink lifecycle, a cron workload example, or
   observability injection into config/transport/command/store crates.
+
+
+## Implementation scope clarification
+
+The owner authorized necessary generation glue alongside the Rust composition:
+`new_project.py` substitutes the approved real `1.5.0` adapter and adds its
+normal daemon dependency only in explicit development generation. Canonical
+release source retains direct upstream Arc coercion and has no adapter
+dependency. The daemon's `async-trait` normal dependency is optional and enabled
+only by `cron`; runtime fixture and temporary directory dependencies are test-only.
+The two B17 generation assertions that named the former parameter/local feature
+list were updated narrowly for the fixed B18 signature and optional worker
+implementation dependency. Environment behavior remains covered by the B17
+regression suite plus the generated Python/Monty resolver/registry proof.
+
+The standard root `just test lifecycle-signal` selector shares the integration
+suite's marker predicate and refuses a developer host before invoking the
+real-signal test. No recipe enables any marker. Tests use production logger
+ownership and the existing signal-free `DaemonFixture` for local HTTP/cron
+JSONL proof; synthetic typed shutdown error values exercise result selection
+without injecting faults into a running production logger.
+
+
+The qualified kit exposes pre-publication consumer checks but no generic
+post-publication consumer command hook. The actual registry-only proof must
+therefore remain a mandatory explicit release-owner action in `run-h0h`, after
+all five internal publications, using `SC_RUNTIME_REGISTRY_PROOF=1` as shown
+above. Pre-publication consumer checks retain the static source contract and
+strict dependency guard; they neither invoke nor skip a production registry
+proof. Ordinary phase discovery skips the unavailable later proof. No current
+registry success is claimed.
+Cron workers start inside the runtime stores callback only after the runtime
+holds `daemon.lock` and application stores open. Runtime invokes the general
+cleanup callback before releasing that lock, so application drain cannot
+overlap a replacement worker. A losing concurrent daemon cannot run schedules
+before its instance-lock failure.
+
+
+## Implementation delivered
+
+The generated daemon owns one real Arc logger and one shared canonical handle.
+Every layout injects it through the unchanged runtime builder. The optional
+cron path maps config limits, preserves prebuilt environment policy/resolver
+and the application Monty registry, and retains the scheduler throughout the
+runtime. Worker startup occurs only inside the post-lock successful stores
+callback. After runtime drain, the owner receives and joins the worker, drops
+scheduler/shared consumers, and consumes observability shutdown. Centralized
+agent formatting preserves primary config/transport/runtime errors while
+reporting logger shutdown failures secondarily.
+
+Generated Rust proofs cover typed production HTTP+cron JSONL with one service
+and correlated HTTP request IDs, consuming handle release, real database
+limits, early runtime failure before worker startup, all result/shutdown
+precedence cases, and identical Python/Monty environment snapshots through the
+application resolver/custom registry. The Python integration entrypoints
+require actual Rust test execution, enforce the fixture matrix and a complete
+source snapshot across the sqlite-mcp no-edits sequence, and provide the
+three-marker isolated-GitHub-hosted signal lifecycle job. Real signals are
+not local validation. The qualified publishing inventory remains all 85 exact
+safe outputs from revision `9677ab083e7dd3feb258235a342e321ca1b45d8d`.
+
+Root `Cargo.toml` and `Cargo.lock` were supplied by approved parent merges and
+remain unchanged by this sprint. Their release transition belongs to
+`run-h0h`. The final source is submitted for full maintainer gates, independent
+QA, and CI; this implementation record does not claim those later review
+results or the deferred production registry proof.
+
+
+## QA1 corrective implementation
+
+All ten published QA1 findings are implemented on the corrective descendant;
+independent QA2 and current hosted CI remain acceptance gates. Application main
+and the recording-resolver/real-logger proofs share `composition::run` and its
+`CronServices::open_scheduler` production assembly. The application may supply
+its resolver and completed registry; defaults choose neither a built-in provider
+nor implicit CLI adapters. Cron database paths reject absolute/parent components
+before creating the instance root and reject symlink traversal before opening a
+file outside it. Schema and negative regressions match that contract.
+
+Runtime and transport failures retain structured library code, message/cause
+and original recovery without embedding Display's repeated code/recovery. The
+reachable early runtime failure checks the entire resulting agent line.
+Previously verified recurring schedule rows are disabled before the next
+real-clock denied/redaction case; no timing retry or result filtering is used.
+
+The generic SDK cleanup callback joins application workers while the singleton
+lock and successful Stores owner remain alive. Worker shutdown joins active
+blocking-store and child-run ownership even after its cooperative deadline;
+a false deadline result does not detach native work. Private dotenv blocking
+reads capture only file/root authorization, not a resolver that might retain
+an injected logger. Canceled futures and noncooperative native code retain their
+existing documented limits; no forced thread-preemption guarantee is claimed.
+
+Workflow feature checks now use root just selectors. The common test command
+owner cleans ordinary process groups within its pinned POSIX session, waits for
+Windows job active-process count zero, and bounds direct-child reap/output.
+Readiness witnesses cover timeout, failure, nested ownership and a normal child
+creating a new process group. Windows runs all seven witnesses through an early
+standard selector with an explicit nonzero-test-count guard before the existing
+three environment roots. Deliberately detached new sessions remain outside this
+MVP; cleanup does not hunt unrelated sessions or introduce a process framework.
+The new helpers load under both package-based unittest and the repository's
+standard top-level discovery shape.
+
+Root Cargo manifests/lock, the actual development Logger adapter, qualified kit
+revision and every later-publication predicate remain unchanged. No local real
+daemon signals or premature registry proof form part of these corrective proofs.

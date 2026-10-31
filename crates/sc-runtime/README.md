@@ -14,6 +14,14 @@ SIGINT, SIGTERM, and Windows Ctrl-C stop accepting connections, drain
 in-flight requests up to a bound, and return `Ok(())`. Each request has a
 handler timeout.
 
+Applications with background work can use ready-state
+`run_with_cleanup(|| async { /* stop and join application tasks */ })`.
+The callback runs on success and startup errors after the listener is disposed,
+while successful stores, the instance lock, and the runtime logger remain owned.
+Unused startup closures drop before cleanup, so an ownership-channel receiver
+can observe that no worker started. Await the run future to completion; dropping
+it cannot await cleanup. `run()` keeps its existing behavior with empty cleanup.
+
 ```rust,no_run
 use sc_runtime::{Daemon, DaemonConfig};
 use sc_transport::AppName;

@@ -197,8 +197,14 @@ struct RecordingStore {
 
 impl RecordingStore {
     fn new() -> Self {
+        Self::from_inner(
+            SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"),
+        )
+    }
+
+    fn from_inner(inner: SqliteScheduleStore) -> Self {
         Self {
-            inner: SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"),
+            inner,
             writes: watch::Sender::new(Vec::new()),
             list_gate: Mutex::new(None),
             listing: watch::Sender::new(0),
@@ -974,3 +980,6 @@ async fn a_new_schedule_starts_at_the_first_generation() {
         RunTimeout::new(Duration::from_secs(20)).expect("timeout")
     );
 }
+
+#[path = "worker/lifecycle.rs"]
+mod lifecycle;

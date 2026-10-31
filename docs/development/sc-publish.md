@@ -47,13 +47,14 @@ output ownership plus repeat dry-run/drift. It also delivers the real developmen
 composition, shared logger, HTTP+cron JSONL, shutdown precedence, and isolated-CI
 signal lifecycle using the approved real registry `1.5.0` adapter.
 
-The current kit pin is rejected because its actual installer destination
-inventory includes `docs/sprints/**`. Qualification must enumerate every actual
+The previous kit pin was rejected because its actual installer destination
+inventory included `docs/sprints/**`. The current pin is the qualified exact
+revision `9677ab083e7dd3feb258235a342e321ca1b45d8d`, from unmerged upstream
+[PR 137](https://github.com/randlee/sc-publish/pull/137). Qualification must enumerate every actual
 copy/render/package destination, reject that class plus traversal, absolute or
 duplicate paths and unsafe symlinks, and compare the inventory with real install
 outputs. Upstream source history may remain in `docs/sprints/**`; checking source
-checkout absence is not sufficient or required. Select an exact qualified remote
-full SHA before installing; this timing amendment does not change the pin. Kit
+checkout absence is not sufficient or required. Install from the exact qualified remote full SHA. Kit
 preparation may proceed independently of runtime parents; final composition
 consumes their approved merges. b-18's [validation recipe](../plans/phase-b/sprint-b-18-template-observability-integration.md#required-validation)
 is authoritative for that install and inventory check.
@@ -66,17 +67,33 @@ removal and direct upstream Arc coercion, then human-authorized publication of
 `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron` in that
 order. `sc-runtime-db-sqlite` remains unpublished. Registry-only generation
 (`scripts/new_project.py --release`), consumer release preflight, and
-`test_release_mode_uses_registry` must pass later, without patches/paths or a
+`test_release_mode_uses_registry` must pass later with explicit
+`SC_RUNTIME_REGISTRY_PROOF=1`, without patches/paths or a
 weakened `scripts/check_observability_release.py`. Publication/proof and tag
 `v0.1.1` bind to one unchanged source commit. Phase completion does not claim
 these deferred release checks passed; readiness review after phase-ending fixes
 must state the limits explicitly. Canonical `1.5.1` release inventories remain.
 
+Pre-publication consumer preflight runs static release source contracts and
+its active dependency guard. It cannot execute the registry-only generated
+proof before the five internal crates are published. The qualified kit has no
+consumer command hook after the crate-publication stage. The later `run-h0h`
+release owner must run the explicit proof after all five publications and
+before accepting the same-source release/tag evidence:
+
+```sh
+SC_RUNTIME_REGISTRY_PROOF=1 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
+```
+
+Ordinary pre-publication discovery skips that unavailable proof. The opted-in
+proof must actually execute and fail on unmet release prerequisites; it may
+never report a skipped test as registry evidence.
+
 ## Install (a-7 or release maintainer)
 
 ```bash
 # Fetch exactly the qualified consumer pin into a fresh isolated cache.
-# The current rejected pin must be advanced by b-18 before this install.
+# Verify the pinned revision and inventory before installation.
 SC_PUBLISH_REPOSITORY="$(sed -n 's/^repository = "\([^" ]*\)"/\1/p' release/sc-publish-pin.toml)"
 SC_PUBLISH_REVISION="$(sed -n 's/^revision = "\([0-9a-f]*\)"/\1/p' release/sc-publish-pin.toml)"
 test -n "$SC_PUBLISH_REPOSITORY"

@@ -74,8 +74,16 @@ internal crate patches. The generated source stays unedited through setup,
 lint, test, build-cli, and build-daemon. The flag conflicts with `--release`
 and release-mode environment selection before output is created. Canonical
 template manifests retain the matching `1.5.1` requirements. Development builds
-and benchmarks are permitted; the publication guard remains active. b-18 owns
-removal of development paths/adapter and the real registry-only release proof.
+and benchmarks are permitted; the publication guard remains active. release epic `run-h0h` owns removal of development paths/adapter and the real
+registry-only release proof after Phase B. The development renderer selects
+the adapter during generation; setup and subsequent recipes never edit Rust.
+
+The generated `main` opens `cron.database_path` (default `cron.db`) relative
+to the instance root, starts the worker, then joins it after runtime drain
+before dropping the scheduler and consuming the logger owner. Absolute and parent-traversal database paths are rejected before any database
+is opened; configured paths remain below the instance root. `ApplicationJob` refuses Rust jobs
+until the application provides its own implementation; stored Python/Monty
+hooks need no Rust workload implementation.
 
 The shared environment is built independently of the registry. Empty administrator
 allowlists are generated under `cron.environment.allow_process`,
@@ -104,12 +112,13 @@ impl EnvironmentReferenceResolver for RecordingResolver {
     }
 }
 let resolver = Arc::new(RecordingResolver(Mutex::new(Vec::new())));
-let host = config.cron.hook_environment_host()?
-    .with_reference_resolver(resolver.clone());
-// Retain the resolver object in application ownership. cron::open takes the
-// prebuilt policy, preserving that resolver instead of rebuilding defaults.
-let scheduler = cron::open("/var/lib/widget-app/cron.db", &config.cron, host, logger)?
+// Use the same application-owned production composition path as main.
+let services = daemon::composition::CronServices::default()
+    .with_reference_resolver(resolver.clone())
     .with_monty_hosts(registry);
+let scheduler = services.open_scheduler(
+    &config.cron, std::path::Path::new("/var/lib/widget-app"), logger,
+)?;
 let environment = HookEnvironment::new()
     .dotenv("/var/lib/widget-app/agents/planner-7/.env", true)?
     .set("ATM_IDENTITY", "planner-7")?
