@@ -19,7 +19,7 @@
     "docs_baseline": "054e31a",
     "pr": 98,
     "url": "https://github.com/randlee/sc-runtime/pull/98",
-    "status": "qa1_full_set_running_source_frozen",
+    "status": "qa1_correction_active",
     "head": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27"
   },
   "cleanup_issue": "https://github.com/randlee/sc-runtime/issues/97",
@@ -100,9 +100,9 @@
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6.1-sol",
         "effort": "high",
-        "status": "running",
-        "fenced_json_received": false,
-        "verdict": null,
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
         "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/ruthless-boundary-qa-result.md"
       },
       {
@@ -122,15 +122,474 @@
         "spawn_actor": "parent-orchestrator",
         "model": "gpt-6.1-sol",
         "effort": "high",
-        "status": "running",
-        "fenced_json_received": false,
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FAIL",
         "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/rust-service-hardening-agent-result.md"
+      },
+      {
+        "agent": "extensibility-qa",
+        "task_id": "/root/shim_qa1_ext",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FAIL",
+        "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/extensibility-qa-result.md"
+      },
+      {
+        "agent": "rust-best-practices-agent",
+        "task_id": "/root/shim_qa1_rbp",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6-luna",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/rust-best-practices-agent-result.md"
+      },
+      {
+        "agent": "flaky-test-qa",
+        "task_id": "/root/shim_qa1_flaky",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FAIL",
+        "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/flaky-test-qa-result.md"
       }
     ],
-    "qa_rounds": [],
+    "qa_rounds": [
+      {
+        "qa_pass": "qa-release-shim-1",
+        "commit": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27",
+        "verdict": "FAIL",
+        "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/98#issuecomment-6548051396",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/shim_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 2,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/shim_qa1_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 2,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/shim_qa1_boundary",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/shim_qa1_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/shim_qa1_service",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 2,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/shim_qa1_ext",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/shim_qa1_rbp",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/shim_qa1_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 2,
+              "minor": 0
+            }
+          }
+        ],
+        "coordinator_task_id": "/root/shim_qa1_enforcer",
+        "triage_ttl_paths": [
+          ".triage/release-shim/findings/REQ-QA-001.ttl",
+          ".triage/release-shim/findings/REQ-QA-002.ttl",
+          ".triage/release-shim/findings/ARCH-001.ttl",
+          ".triage/release-shim/findings/ARCH-002.ttl",
+          ".triage/release-shim/findings/QA-001.ttl",
+          ".triage/release-shim/findings/RSH-001.ttl",
+          ".triage/release-shim/findings/RSH-002.ttl",
+          ".triage/release-shim/findings/FTQ-001.ttl",
+          ".triage/release-shim/findings/FTQ-002.ttl"
+        ],
+        "finding_ids": [
+          "REQ-QA-001",
+          "REQ-QA-002",
+          "ARCH-001",
+          "ARCH-002",
+          "QA-001",
+          "RSH-001",
+          "RSH-002",
+          "FTQ-001",
+          "FTQ-002"
+        ],
+        "machine_status": {
+          "sprint": "initial-release-observability-shim",
+          "task": "qa-release-shim-1",
+          "branch": "codex/plan-release-observability-shim",
+          "commit": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27",
+          "pr": 98,
+          "verdict": "FAIL",
+          "deliverables": {
+            "complete": 14,
+            "total": 15,
+            "percent": 93.3
+          },
+          "findings": {
+            "blocking": 4,
+            "important": 5,
+            "minor": 0
+          },
+          "blocking_ids": [
+            "REQ-QA-001",
+            "REQ-QA-002",
+            "ARCH-001",
+            "ARCH-002"
+          ],
+          "merge_readiness": "not ready",
+          "merge_reason": "Nine canonical findings remain open; exact-head validation is pending and the required lint/test CI check is still in progress.",
+          "next_action": "triage_and_fix; fix all nine findings and complete exact-head validation before QA-2. CI monitoring was intentionally not awaited for this findings pass.",
+          "owner": "parent-orchestrator / rust-developer",
+          "reviewer_spawn_gate": "pass",
+          "reviewer_manifest": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/shim_qa1_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL",
+              "findings": {
+                "blocking": 2,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/shim_qa1_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL",
+              "findings": {
+                "blocking": 2,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "ruthless-boundary-qa",
+              "task_id": "/root/shim_qa1_boundary",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/shim_qa1_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL",
+              "findings": {
+                "blocking": 0,
+                "important": 1,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-service-hardening-agent",
+              "task_id": "/root/shim_qa1_service",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL",
+              "findings": {
+                "blocking": 0,
+                "important": 2,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "extensibility-qa",
+              "task_id": "/root/shim_qa1_ext",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL",
+              "findings": {
+                "blocking": 1,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-best-practices-agent",
+              "task_id": "/root/shim_qa1_rbp",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "flaky-test-qa",
+              "task_id": "/root/shim_qa1_flaky",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL",
+              "findings": {
+                "blocking": 0,
+                "important": 2,
+                "minor": 0
+              }
+            }
+          ],
+          "evidence_chain": {
+            "qa_pass": "qa-release-shim-1",
+            "commit": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27",
+            "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/98#issuecomment-6548051396",
+            "coordinator_task_id": "/root/shim_qa1_enforcer",
+            "triage": {
+              "ttl_paths": [
+                ".triage/release-shim/findings/REQ-QA-001.ttl",
+                ".triage/release-shim/findings/REQ-QA-002.ttl",
+                ".triage/release-shim/findings/ARCH-001.ttl",
+                ".triage/release-shim/findings/ARCH-002.ttl",
+                ".triage/release-shim/findings/QA-001.ttl",
+                ".triage/release-shim/findings/RSH-001.ttl",
+                ".triage/release-shim/findings/RSH-002.ttl",
+                ".triage/release-shim/findings/FTQ-001.ttl",
+                ".triage/release-shim/findings/FTQ-002.ttl"
+              ]
+            }
+          },
+          "missing_reviewers": [],
+          "unparsed_reviewers": []
+        }
+      }
+    ],
     "enforcer": "cursor-quality-mgr",
     "gate": "All actual reviewer JSON + TODO union zero findings at all severities, deliverables100percent, actual current-head required CI SUCCESS; every round public PR report.",
-    "qa_pass": "qa-release-shim-1"
+    "qa_pass": "qa-release-shim-1",
+    "status": "qa1_fail_correction_batch_active",
+    "machine_status": {
+      "sprint": "initial-release-observability-shim",
+      "task": "qa-release-shim-1",
+      "branch": "codex/plan-release-observability-shim",
+      "commit": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27",
+      "pr": 98,
+      "verdict": "FAIL",
+      "deliverables": {
+        "complete": 14,
+        "total": 15,
+        "percent": 93.3
+      },
+      "findings": {
+        "blocking": 4,
+        "important": 5,
+        "minor": 0
+      },
+      "blocking_ids": [
+        "REQ-QA-001",
+        "REQ-QA-002",
+        "ARCH-001",
+        "ARCH-002"
+      ],
+      "merge_readiness": "not ready",
+      "merge_reason": "Nine canonical findings remain open; exact-head validation is pending and the required lint/test CI check is still in progress.",
+      "next_action": "triage_and_fix; fix all nine findings and complete exact-head validation before QA-2. CI monitoring was intentionally not awaited for this findings pass.",
+      "owner": "parent-orchestrator / rust-developer",
+      "reviewer_spawn_gate": "pass",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/shim_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 2,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/shim_qa1_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 2,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/shim_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/shim_qa1_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/shim_qa1_service",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 2,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/shim_qa1_ext",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/shim_qa1_rbp",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/shim_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 2,
+            "minor": 0
+          }
+        }
+      ],
+      "evidence_chain": {
+        "qa_pass": "qa-release-shim-1",
+        "commit": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27",
+        "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/98#issuecomment-6548051396",
+        "coordinator_task_id": "/root/shim_qa1_enforcer",
+        "triage": {
+          "ttl_paths": [
+            ".triage/release-shim/findings/REQ-QA-001.ttl",
+            ".triage/release-shim/findings/REQ-QA-002.ttl",
+            ".triage/release-shim/findings/ARCH-001.ttl",
+            ".triage/release-shim/findings/ARCH-002.ttl",
+            ".triage/release-shim/findings/QA-001.ttl",
+            ".triage/release-shim/findings/RSH-001.ttl",
+            ".triage/release-shim/findings/RSH-002.ttl",
+            ".triage/release-shim/findings/FTQ-001.ttl",
+            ".triage/release-shim/findings/FTQ-002.ttl"
+          ]
+        }
+      },
+      "missing_reviewers": [],
+      "unparsed_reviewers": []
+    }
   },
   "release": {
     "publication_authorized": false,
