@@ -137,4 +137,7 @@ class OwnedProcessTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(OwnedProcessTests)
+    if suite.countTestCases() < 7:
+        raise SystemExit("owned-process witness suite is incomplete")
+    sys.exit(0 if unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful() else 1)
