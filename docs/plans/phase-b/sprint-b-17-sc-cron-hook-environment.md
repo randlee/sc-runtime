@@ -19,6 +19,7 @@ requirements:
   - REQ-RUN-0503
   - NFR-CRON-0001
   - NFR-CRON-0002
+  - NFR-RUN-0004
   - NFR-RUN-0005
   - NFR-RUN-0008
   - NFR-RUN-0009
@@ -372,6 +373,19 @@ not exact SQL text or column order. Reject incompatible data with recreate
 guidance without overwriting it. The crate does not inspect or migrate
 consumer tables or create a second environment/secret table.
 
+NFR-RUN-0004: reuse `std::env::vars_os` for process input,
+`std::fs::canonicalize` and metadata for file identity, serde/serde_json for the
+wire representation, `Command::envs` and the existing process-wrap supervisor
+for child delivery, and Monty's suspended OS calls for lookup/enumeration.
+These standard ports do not choose administrator authorization, schedule-layer
+precedence, the fixed dotenv grammar/limits, or application-owned reference
+resolution. The small shared policy/parser seam supplies those approved values
+once for Python and Monty, without shell evaluation or process-environment
+mutation. Generation remains cargo-generate-owned and lint infrastructure
+remains sc-lint-owned. NFR-RUN-0008 traces all changed production Rust files to
+the existing `sc-lint lint line-counts` check in `just lint gates` and full
+`just lint`; no separate counter or new gate is introduced.
+
 ## Required work and deliverables
 
 1. REQ-CRON-0001 / REQ-CRON-0003 / REQ-CRON-0004 / REQ-CRON-0005 /
@@ -444,12 +458,13 @@ just test sc-cron-tree-default
 just test sc-cron-tree-monty
 python3 -m unittest tests.unit.generation.test_cron_environment
 python3 -m unittest tests.unit.generation.test_monty_example
-just new generated/test-cron-env --var-file wizard/fixtures/sqlite-mcp.json
-just --justfile generated/test-cron-env/justfile setup
-just --justfile generated/test-cron-env/justfile lint
-just --justfile generated/test-cron-env/justfile test
-just --justfile generated/test-cron-env/justfile build-cli
-just --justfile generated/test-cron-env/justfile build-daemon
+mkdir -p generated
+just new generated/test-cron-env --var-file wizard/fixtures/sqlite-mcp.json --development-observability
+just --justfile generated/test-cron-env/Justfile setup
+just --justfile generated/test-cron-env/Justfile lint
+just --justfile generated/test-cron-env/Justfile test
+just --justfile generated/test-cron-env/Justfile build-cli
+just --justfile generated/test-cron-env/Justfile build-daemon
 ! rg -n 'std::env::set_var|std::env::remove_var' crates/sc-cron/src
 sc-lint lint sc-boundary --root . --config sc-lint.toml
 just lint
@@ -458,6 +473,10 @@ just lint
 The windows-latest crates.yml job executes the same named hook_environment and
 monty_host_bridge roots; compilation or skipped parity cases do not count as
 Windows execution evidence.
+The literal checkout-generation recipes require an absent destination and
+explicitly select the accepted development bridge. The retained `--release`
+path omits that flag and development overrides; matching registry 1.5.1 proof
+remains a B18 release gate.
 
 ## This sprint does not close
 

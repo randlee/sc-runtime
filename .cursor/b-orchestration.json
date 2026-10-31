@@ -50,12 +50,33 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "contract_fix_propagated_developer_validated_qa_pending",
+      "status": "qa2_runtime_fixes_verified_readme_correction_in_progress",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b15_developer",
       "pr_number": 91,
-      "head": "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437",
-      "state_path": "/tmp/phaseb-cursor-orchestration/b-15-developer-state.json"
+      "head": "e9d19647851a0a04a69214b1c4fa1945468c05a4",
+      "state_path": "/tmp/phaseb-cursor-orchestration/b-15-developer-state.json",
+      "fix_task_id": "/root/phaseb_b15_qa1_fixes",
+      "fix_bead": "run-03z.21",
+      "fix_branch": "fix/b-15-qa1",
+      "parallel_fix": {
+        "task_id": "/root/phaseb_b15_test_portability",
+        "bead": "run-03z.21.1",
+        "branch": "codex/b-15-test-portability",
+        "model": "gpt-6.1-terra",
+        "effort": "medium",
+        "finding_ids": [
+          "QA-001",
+          "FTQ-004",
+          "RBQA-B15-001"
+        ],
+        "head": "62be4592e28bd65239f665f1b085fddbf7a3f99c"
+      },
+      "validation_report": "/tmp/phaseb-cursor-orchestration/b15-qa1/fix-validation.json",
+      "qa2_bead": "run-03z.22",
+      "qa2_packet": "/tmp/phaseb-cursor-orchestration/b15-qa2",
+      "qa2_new_finding": "REQ-QA-005",
+      "qa2_doc_fix_bead": "run-03z.23"
     },
     "b-16": {
       "task_id": "run-03z.4",
@@ -63,11 +84,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "contract_fix_propagated_developer_validated_qa_pending",
+      "status": "final_fix_validated_qa2_in_progress",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
-      "head": "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437"
+      "head": "e9d19647851a0a04a69214b1c4fa1945468c05a4"
     },
     "b-13": {
       "task_id": "run-03z.1",
@@ -85,24 +106,25 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-17-sc-cron-hook-environment",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "merged_parent_all15local_validation_pass_hosted_ci_pending",
+      "status": "local_validation_pass_linux_windows_pass_parent_fix_handoff_pending",
       "developer_task_id": "/root/phaseb_b17_developer",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
       "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2",
       "pr_number": 93,
-      "head": "33b81b3280b482c766caa1f5283efc6744c79029",
-      "windows_run": 41150476565,
+      "head": "c478c134128d6773ab44765e15ea572ba5a5f968",
+      "windows_run": 41154463873,
       "windows_job": 124398355367,
-      "evidence": "/tmp/phaseb-cursor-orchestration/b-17-linux-repair-inflight.json",
+      "evidence": "/tmp/phaseb-cursor-orchestration/b-17-dev-validation-checkpoint.json",
       "windows_status": "success",
-      "linux_status": "failure_developer_diagnosing",
+      "linux_status": "success",
       "shared_portability_commit": "021ec1bc6642419e162cec21aaea5dcc38d3e779",
       "shared_portability_paths": [
         "tests/unit/generation/test_monty_example.py",
         "tests/integration/wizard/test_output_equivalence.py"
       ],
       "run": 41154463873,
-      "linux_job": 124398355347
+      "linux_job": 124398355347,
+      "validated_source": "33b81b3280b482c766caa1f5283efc6744c79029"
     },
     "b-18": {
       "task_id": "run-03z.6",
@@ -1152,6 +1174,697 @@
         },
         "aggregation_source": "reviewer_fenced_json_union_todo_scan"
       }
+    },
+    {
+      "qa_pass": "qa-b-15-1",
+      "commit": "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/91#issuecomment-6537162147",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 4,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/cursor_b15_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "findings",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 1
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b13_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "findings",
+          "findings": {
+            "blocking": 0,
+            "important": 5,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/cursor_b14_qa1_ext",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/cursor_b14_qa1_rbp",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "findings",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 1
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/cursor_b13_qa1_service",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "pass",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/cursor_b13_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "findings",
+          "findings": {
+            "blocking": 0,
+            "important": 2,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-001.ttl",
+        ".triage/b/findings/REQ-QA-002.ttl",
+        ".triage/b/findings/REQ-QA-003.ttl",
+        ".triage/b/findings/REQ-QA-004.ttl",
+        ".triage/b/findings/RBQA-B15-001.ttl",
+        ".triage/b/findings/QA-001.ttl",
+        ".triage/b/findings/QA-002.ttl",
+        ".triage/b/findings/QA-003.ttl",
+        ".triage/b/findings/QA-004.ttl",
+        ".triage/b/findings/QA-005.ttl",
+        ".triage/b/findings/RBP-F001.ttl",
+        ".triage/b/findings/FTQ-003.ttl",
+        ".triage/b/findings/FTQ-004.ttl"
+      ],
+      "finding_ids": [
+        "REQ-QA-001",
+        "REQ-QA-002",
+        "REQ-QA-003",
+        "REQ-QA-004",
+        "RBQA-B15-001",
+        "QA-001",
+        "QA-002",
+        "QA-003",
+        "QA-004",
+        "QA-005",
+        "RBP-F001",
+        "FTQ-003",
+        "FTQ-004"
+      ],
+      "coordinator_task_id": "/root/cursor_b15_qa1_enforcer",
+      "machine_status": {
+        "sprint": "b-15",
+        "task": "run-03z.20",
+        "branch": "sprint/b-15-sc-cron-observability",
+        "commit": "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437",
+        "pr": 91,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 12,
+          "total": 13,
+          "percent": 92.3
+        },
+        "findings": {
+          "blocking": 4,
+          "important": 7,
+          "minor": 2
+        },
+        "blocking_ids": [
+          "REQ-QA-001",
+          "REQ-QA-002",
+          "REQ-QA-003",
+          "REQ-QA-004"
+        ],
+        "merge_readiness": "not ready",
+        "merge_reason": "One-shot PR check snapshot: `just lint and just test` is failing; the other listed checks pass. Open reviewer findings remain and req-qa reports 92.3% deliverable completion.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/cursor_b15_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 4,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/cursor_b13_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/cursor_b15_qa1_boundary",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "findings",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 1
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/cursor_b13_qa2_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "findings",
+            "findings": {
+              "blocking": 0,
+              "important": 5,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/cursor_b14_qa1_ext",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/cursor_b14_qa1_rbp",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "findings",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 1
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/cursor_b13_qa1_service",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "pass",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/cursor_b13_qa1_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "findings",
+            "findings": {
+              "blocking": 0,
+              "important": 2,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-b-15-1",
+          "commit": "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437",
+          "pr_number": 91,
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/91#issuecomment-6537162147",
+          "coordinator_task_id": "/root/cursor_b15_qa1_enforcer",
+          "reviewer_tasks": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/cursor_b15_qa1_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL",
+              "findings": {
+                "blocking": 4,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/cursor_b13_qa2_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "ruthless-boundary-qa",
+              "task_id": "/root/cursor_b15_qa1_boundary",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "findings",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 1
+              }
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/cursor_b13_qa2_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "findings",
+              "findings": {
+                "blocking": 0,
+                "important": 5,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "extensibility-qa",
+              "task_id": "/root/cursor_b14_qa1_ext",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-best-practices-agent",
+              "task_id": "/root/cursor_b14_qa1_rbp",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "findings",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 1
+              }
+            },
+            {
+              "agent": "rust-service-hardening-agent",
+              "task_id": "/root/cursor_b13_qa1_service",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "pass",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "flaky-test-qa",
+              "task_id": "/root/cursor_b13_qa1_flaky",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "findings",
+              "findings": {
+                "blocking": 0,
+                "important": 2,
+                "minor": 0
+              }
+            }
+          ],
+          "triage": {
+            "phase_id": "b",
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-001.ttl",
+              ".triage/b/findings/REQ-QA-002.ttl",
+              ".triage/b/findings/REQ-QA-003.ttl",
+              ".triage/b/findings/REQ-QA-004.ttl",
+              ".triage/b/findings/RBQA-B15-001.ttl",
+              ".triage/b/findings/QA-001.ttl",
+              ".triage/b/findings/QA-002.ttl",
+              ".triage/b/findings/QA-003.ttl",
+              ".triage/b/findings/QA-004.ttl",
+              ".triage/b/findings/QA-005.ttl",
+              ".triage/b/findings/RBP-F001.ttl",
+              ".triage/b/findings/FTQ-003.ttl",
+              ".triage/b/findings/FTQ-004.ttl"
+            ],
+            "branch": "integrate/phase-b-observability",
+            "commit": "5457f9df1c00424cbf7ec4572c11ab7e24055209"
+          },
+          "parent_correlation_required": true
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
+    },
+    {
+      "qa_pass": "qa-b-15-2",
+      "commit": "e9d19647851a0a04a69214b1c4fa1945468c05a4",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/91#issuecomment-6537522383",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b13_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/cursor_b13_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/cursor_b15_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/cursor_b14_qa1_rbp",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-001.ttl",
+        ".triage/b/findings/REQ-QA-002.ttl",
+        ".triage/b/findings/REQ-QA-003.ttl",
+        ".triage/b/findings/REQ-QA-004.ttl",
+        ".triage/b/findings/RBQA-B15-001.ttl",
+        ".triage/b/findings/QA-001.ttl",
+        ".triage/b/findings/QA-002.ttl",
+        ".triage/b/findings/QA-003.ttl",
+        ".triage/b/findings/QA-004.ttl",
+        ".triage/b/findings/QA-005.ttl",
+        ".triage/b/findings/RBP-F001.ttl",
+        ".triage/b/findings/FTQ-003.ttl",
+        ".triage/b/findings/FTQ-004.ttl",
+        ".triage/b/findings/REQ-QA-005.ttl"
+      ],
+      "finding_ids": [
+        "REQ-QA-005"
+      ],
+      "resolved_finding_ids": [
+        "REQ-QA-001",
+        "REQ-QA-002",
+        "REQ-QA-003",
+        "REQ-QA-004",
+        "RBQA-B15-001",
+        "QA-001",
+        "QA-002",
+        "QA-003",
+        "QA-004",
+        "QA-005",
+        "RBP-F001",
+        "FTQ-003",
+        "FTQ-004"
+      ],
+      "coordinator_task_id": "/root/cursor_b15_qa2_enforcer",
+      "machine_status": {
+        "sprint": "b-15",
+        "task": "run-03z.22",
+        "branch": "sprint/b-15-sc-cron-observability",
+        "commit": "e9d19647851a0a04a69214b1c4fa1945468c05a4",
+        "pr": 91,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 13,
+          "total": 13,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 1,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [
+          "REQ-QA-005"
+        ],
+        "merge_readiness": "not ready",
+        "merge_reason": "REQ-QA-005 remains Blocking. The TODO scan is clean; PR CI has one pending check (just lint and just test).",
+        "next_action": "Fix REQ-QA-005, push the README correction, then run QA-3.",
+        "owner": "parent orchestrator / rust-developer",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/cursor_b15_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/cursor_b13_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/cursor_b13_qa2_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/cursor_b13_qa1_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/cursor_b15_qa1_boundary",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/cursor_b14_qa1_rbp",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-b-15-2",
+          "commit": "e9d19647851a0a04a69214b1c4fa1945468c05a4",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/91#issuecomment-6537522383",
+          "coordinator_task_id": "/root/cursor_b15_qa2_enforcer",
+          "reviewer_tasks": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/cursor_b15_qa1_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL"
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/cursor_b13_qa2_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/cursor_b13_qa2_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            },
+            {
+              "agent": "flaky-test-qa",
+              "task_id": "/root/cursor_b13_qa1_flaky",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            },
+            {
+              "agent": "ruthless-boundary-qa",
+              "task_id": "/root/cursor_b15_qa1_boundary",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            },
+            {
+              "agent": "rust-best-practices-agent",
+              "task_id": "/root/cursor_b14_qa1_rbp",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            }
+          ],
+          "triage": {
+            "phase_id": "b",
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-001.ttl",
+              ".triage/b/findings/REQ-QA-002.ttl",
+              ".triage/b/findings/REQ-QA-003.ttl",
+              ".triage/b/findings/REQ-QA-004.ttl",
+              ".triage/b/findings/RBQA-B15-001.ttl",
+              ".triage/b/findings/QA-001.ttl",
+              ".triage/b/findings/QA-002.ttl",
+              ".triage/b/findings/QA-003.ttl",
+              ".triage/b/findings/QA-004.ttl",
+              ".triage/b/findings/QA-005.ttl",
+              ".triage/b/findings/RBP-F001.ttl",
+              ".triage/b/findings/FTQ-003.ttl",
+              ".triage/b/findings/FTQ-004.ttl",
+              ".triage/b/findings/REQ-QA-005.ttl"
+            ]
+          },
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "todo_scan": {
+            "script": "python3 .claude/skills/todo-triage/scripts/find_todos.py",
+            "rows": 0
+          },
+          "ci_snapshot": {
+            "green": 14,
+            "pending": 1,
+            "failing": 0,
+            "pending_checks": [
+              "just lint and just test"
+            ]
+          },
+          "parent_correlation_required": true
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      }
     }
   ],
   "model_authority": "User: yes, use terra/sol/luna where appropriate",
@@ -2072,7 +2785,19 @@
       "sprint/b-16-monty-template-examples"
     ],
     "status": "all_required_developer_validation_pass_qa_pending",
-    "evidence": "/tmp/phaseb-cursor-orchestration/b15-b16-propagation/completion-report.json"
+    "evidence": "/tmp/phaseb-cursor-orchestration/b15-b16-propagation/completion-report.json",
+    "b15_qa1_first_fix": {
+      "task_id": "/root/phaseb_worktree_next_wave",
+      "commit": "b2de6d21f34134681d2c7c6de858fd2045107214",
+      "branches": [
+        "sprint/b-15-sc-cron-observability",
+        "sprint/b-16-monty-template-examples"
+      ],
+      "remote_verified": true,
+      "tracked_clean": true,
+      "untracked_preserved": true,
+      "qa_status": "pending final tests and validation"
+    }
   },
   "qa_snapshot_preparation": {
     "task_id": "/root/phaseb_worktree_next_wave",
