@@ -31,7 +31,7 @@
   qa:sprint "b-18" ;
   qa:qaPass "qa-b-18-1" ;
   qa:severity "Important" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "rust-qa-agent" ;
   qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
   qa:location "template/crates/daemon/src/main.rs:122" ;

@@ -174,6 +174,28 @@ owned_paths:
   - .github/workflows/scoop-publish.yml
   - .github/workflows/template.yml
   - .github/workflows/winget-publish.yml
+  - crates/sc-runtime/src/builder.rs
+  - crates/sc-runtime/src/lib.rs
+  - crates/sc-runtime/src/tests.rs
+  - crates/sc-runtime/src/tests/lifecycle.rs
+  - crates/sc-runtime/README.md
+  - docs/sc-runtime/architecture.md
+  - docs/sc-runtime/requirements.md
+  - crates/sc-cron/src/scheduler.rs
+  - crates/sc-cron/src/worker.rs
+  - crates/sc-cron/src/worker/worker_runs.rs
+  - crates/sc-cron/src/environment/dotenv.rs
+  - crates/sc-cron/src/environment/resolve.rs
+  - crates/sc-cron/src/job.rs
+  - crates/sc-cron/tests/worker.rs
+  - crates/sc-cron/tests/worker/lifecycle.rs
+  - crates/sc-cron/tests/observability_components.rs
+  - crates/sc-cron/README.md
+  - docs/sc-cron/architecture.md
+  - tests/integration/generation/owned_process.py
+  - tests/integration/generation/test_owned_process.py
+  - tests/integration/generation/test_workflow_dispatch.py
+  - .github/workflows/crates.yml
 must_follow: [b-14, b-17]
 parallel_safe: []
 recommended_agent: arch-ctm
@@ -729,3 +751,44 @@ remain unchanged by this sprint. Their release transition belongs to
 `run-h0h`. The final source is submitted for full maintainer gates, independent
 QA, and CI; this implementation record does not claim those later review
 results or the deferred production registry proof.
+
+
+## QA1 corrective implementation
+
+All ten published QA1 findings are implemented on the corrective descendant;
+independent QA2 and current hosted CI remain acceptance gates. Application main
+and the recording-resolver/real-logger proofs share `composition::run` and its
+`CronServices::open_scheduler` production assembly. The application may supply
+its resolver and completed registry; defaults choose neither a built-in provider
+nor implicit CLI adapters. Cron database paths reject absolute/parent components
+before creating the instance root and reject symlink traversal before opening a
+file outside it. Schema and negative regressions match that contract.
+
+Runtime and transport failures retain structured library code, message/cause
+and original recovery without embedding Display's repeated code/recovery. The
+reachable early runtime failure checks the entire resulting agent line.
+Previously verified recurring schedule rows are disabled before the next
+real-clock denied/redaction case; no timing retry or result filtering is used.
+
+The generic SDK cleanup callback joins application workers while the singleton
+lock and successful Stores owner remain alive. Worker shutdown joins active
+blocking-store and child-run ownership even after its cooperative deadline;
+a false deadline result does not detach native work. Private dotenv blocking
+reads capture only file/root authorization, not a resolver that might retain
+an injected logger. Canceled futures and noncooperative native code retain their
+existing documented limits; no forced thread-preemption guarantee is claimed.
+
+Workflow feature checks now use root just selectors. The common test command
+owner cleans ordinary process groups within its pinned POSIX session, waits for
+Windows job active-process count zero, and bounds direct-child reap/output.
+Readiness witnesses cover timeout, failure, nested ownership and a normal child
+creating a new process group. Windows runs all seven witnesses through an early
+standard selector with an explicit nonzero-test-count guard before the existing
+three environment roots. Deliberately detached new sessions remain outside this
+MVP; cleanup does not hunt unrelated sessions or introduce a process framework.
+The new helpers load under both package-based unittest and the repository's
+standard top-level discovery shape.
+
+Root Cargo manifests/lock, the actual development Logger adapter, qualified kit
+revision and every later-publication predicate remain unchanged. No local real
+daemon signals or premature registry proof form part of these corrective proofs.
