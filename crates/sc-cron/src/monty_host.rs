@@ -17,7 +17,7 @@ use crate::monty_compose_common::ComposeHostError;
 use crate::{CronError, HookEvent, ScheduleName};
 
 /// An owned JSON-shaped invocation of an application host function.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct MontyHostCall {
     /// Registered function name.
     pub name: String,
@@ -31,6 +31,19 @@ pub struct MontyHostCall {
     pub phase: HookEvent,
     /// Monotonic deadline shared by the whole row execution.
     pub deadline: Instant,
+}
+
+impl fmt::Debug for MontyHostCall {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("MontyHostCall")
+            .field("name", &self.name)
+            .field("argument_count", &self.args.len())
+            .field("keyword_names", &self.kwargs.keys())
+            .field("schedule", &self.schedule)
+            .field("phase", &self.phase)
+            .field("deadline", &self.deadline)
+            .finish()
+    }
 }
 
 /// A trusted synchronous application extension point, intentionally open.
@@ -168,10 +181,19 @@ pub(crate) enum HostDispatchError {
     Child(ComposeHostError),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 struct CliConfig {
     program: PathBuf,
     cwd: Option<PathBuf>,
+}
+
+impl fmt::Debug for CliConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("CliConfig")
+            .field("program_configured", &!self.program.as_os_str().is_empty())
+            .field("working_directory_configured", &self.cwd.is_some())
+            .finish()
+    }
 }
 
 impl CliConfig {

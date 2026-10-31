@@ -105,7 +105,30 @@ impl EnvironmentSnapshot {
                 at += ch.len_utf8();
             }
         }
+        if out.len() > crate::MAX_HOOK_OUTPUT_BYTES {
+            let mut end = crate::MAX_HOOK_OUTPUT_BYTES;
+            while !out.is_char_boundary(end) {
+                end -= 1;
+            }
+            out.truncate(end);
+        }
         out
+    }
+    fn check_spelling(
+        &mut self,
+        name: &EnvName,
+        invalid: EnvironmentFailure,
+    ) -> Result<(), EnvironmentFailure> {
+        let folded = name.0.to_ascii_uppercase();
+        if self
+            .spellings
+            .get(&folded)
+            .is_some_and(|old| old != name.as_str())
+        {
+            return Err(invalid);
+        }
+        self.spellings.insert(folded, name.0.clone());
+        Ok(())
     }
     fn insert(
         &mut self,
@@ -122,15 +145,7 @@ impl EnvironmentSnapshot {
         let key = name.0.clone();
         // Cross-layer spelling changes are also rejected on Unix, where they
         // would otherwise create a different map than on Windows.
-        let folded = name.0.to_ascii_uppercase();
-        if self
-            .spellings
-            .get(&folded)
-            .is_some_and(|old| old != name.as_str())
-        {
-            return Err(invalid);
-        }
-        self.spellings.insert(folded, name.0.clone());
+        self.check_spelling(name, invalid)?;
         self.entries.insert(key, value);
         Ok(())
     }
@@ -210,6 +225,7 @@ impl HookEnvironmentHost {
                     snapshot.insert(name, value.clone(), EnvironmentFailure::SnapshotLimit)?
                 }
                 Operation::Clear => {
+                    snapshot.check_spelling(name, EnvironmentFailure::SnapshotLimit)?;
                     #[cfg(windows)]
                     let key = name.0.to_ascii_uppercase();
                     #[cfg(not(windows))]

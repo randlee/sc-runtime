@@ -190,7 +190,7 @@ impl RunTimeout {
 /// [`sc-cron.hook.v1`](crate::hook::HOOK_PROTOCOL) JSON object (required
 /// `protocol`, `event`, `schedule`, `payload`, and `deadline`). Python
 /// writes it to the child's stdin; Monty passes it as the hook argument.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum HookTarget {
     /// Call the worker's in-process job.
@@ -208,6 +208,22 @@ pub enum HookTarget {
         /// Trusted Python-compatible hook program text.
         source: String,
     },
+}
+
+impl fmt::Debug for HookTarget {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Rust => f.write_str("Rust"),
+            Self::Python { module } => f
+                .debug_struct("Python")
+                .field("module_bytes", &module.as_os_str().len())
+                .finish(),
+            Self::Monty { source } => f
+                .debug_struct("Monty")
+                .field("source_bytes", &source.len())
+                .finish(),
+        }
+    }
 }
 
 impl HookTarget {
@@ -325,7 +341,7 @@ impl HookKind {
 /// [`ScheduleSpec::new`], by [`Scheduler::start`](crate::Scheduler::start)
 /// and by the store, with one rule. `hook` says whether the row calls that
 /// job or a Python file.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct ScheduleSpec {
     /// Unique name; an active schedule's name cannot be started again.
     pub name: ScheduleName,
@@ -339,6 +355,18 @@ pub struct ScheduleSpec {
     pub hook: HookTarget,
     /// Explicit shared Python/Monty environment policy; empty for Rust jobs.
     pub environment: crate::HookEnvironment,
+}
+
+impl fmt::Debug for ScheduleSpec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ScheduleSpec")
+            .field("name", &self.name)
+            .field("expr", &self.expr)
+            .field("timeout", &self.timeout)
+            .field("hook", &self.hook)
+            .field("environment", &self.environment)
+            .finish_non_exhaustive()
+    }
 }
 
 impl ScheduleSpec {

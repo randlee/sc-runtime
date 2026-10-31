@@ -78,19 +78,35 @@ pub struct CronEnvironmentConfig {
 }
 impl std::fmt::Debug for CronEnvironmentConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CronEnvironmentConfig").field("allow_process", &self.allow_process)
-            .field("file_count", &self.allow_dotenv_files.len()).field("root_count", &self.allow_dotenv_roots.len()).finish()
+        f.debug_struct("CronEnvironmentConfig")
+            .field("allow_process", &self.allow_process)
+            .field("file_count", &self.allow_dotenv_files.len())
+            .field("root_count", &self.allow_dotenv_roots.len())
+            .finish()
     }
 }
-fn absolute_paths<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Vec<std::path::PathBuf>, D::Error> {
+fn absolute_paths<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<std::path::PathBuf>, D::Error> {
     let paths = Vec::<String>::deserialize(deserializer)?;
-    paths.into_iter().map(|text| {
-        let path = std::path::PathBuf::from(&text);
-        if !path.is_absolute() || text.contains('\0') || text.len() > 4096 || path.components().any(|c| c == std::path::Component::ParentDir) {
-            return Err(serde::de::Error::custom("dotenv authorization requires an absolute normalized path"));
-        }
-        Ok(path)
-    }).collect()
+    paths
+        .into_iter()
+        .map(|text| {
+            let path = std::path::PathBuf::from(&text);
+            if !path.is_absolute()
+                || text.contains('\0')
+                || text.len() > 4096
+                || path
+                    .components()
+                    .any(|c| c == std::path::Component::ParentDir)
+            {
+                return Err(serde::de::Error::custom(
+                    "dotenv authorization requires an absolute normalized path",
+                ));
+            }
+            Ok(path)
+        })
+        .collect()
 }
 
 #[cfg(feature = "cron")]
@@ -99,10 +115,17 @@ impl CronConfig {
     ///
     /// # Errors
     /// Invalid configured names or paths return sc-cron's value-free InvalidSpec.
-    pub fn hook_environment_host(&self) -> Result<sc_cron::HookEnvironmentHost, sc_cron::CronError> {
-        let mut host = sc_cron::HookEnvironmentHost::new().allow_process(&self.environment.allow_process)?;
-        for path in &self.environment.allow_dotenv_files { host = host.allow_dotenv_file(path)?; }
-        for path in &self.environment.allow_dotenv_roots { host = host.allow_dotenv_root(path)?; }
+    pub fn hook_environment_host(
+        &self,
+    ) -> Result<sc_cron::HookEnvironmentHost, sc_cron::CronError> {
+        let mut host =
+            sc_cron::HookEnvironmentHost::new().allow_process(&self.environment.allow_process)?;
+        for path in &self.environment.allow_dotenv_files {
+            host = host.allow_dotenv_file(path)?;
+        }
+        for path in &self.environment.allow_dotenv_roots {
+            host = host.allow_dotenv_root(path)?;
+        }
         Ok(host)
     }
 }
@@ -117,10 +140,18 @@ pub fn open(
     config: &CronConfig,
     environment: sc_cron::HookEnvironmentHost,
     logger: sc_observability_types::SharedCanonicalLog,
-) -> Result<sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>, sc_cron::CronError> {
+) -> Result<
+    sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>,
+    sc_cron::CronError,
+> {
     let limits = sc_cron::ScheduleLimits::with_max_schedule_rows(config.row_limit());
-    sc_cron::Scheduler::open_with_logger(path, limits, std::sync::Arc::new(sc_cron::SystemClock), logger)
-        .map(|scheduler| scheduler.with_hook_environment(environment))
+    sc_cron::Scheduler::open_with_logger(
+        path,
+        limits,
+        std::sync::Arc::new(sc_cron::SystemClock),
+        logger,
+    )
+    .map(|scheduler| scheduler.with_hook_environment(environment))
 }
 
 /// Row-cap fields for `sc_cron::ScheduleLimits` (see [`CronConfig::schedule_limits_fields`]).
@@ -176,13 +207,22 @@ mod tests {
 #[cfg(all(test, feature = "cron"))]
 mod environment_tests {
     use super::*;
-    use sc_cron::{EnvironmentReferenceError, EnvironmentReferenceRequest, EnvironmentReferenceResolver, ScheduleStore};
-    use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+    use sc_cron::{
+        EnvironmentReferenceError, EnvironmentReferenceRequest, EnvironmentReferenceResolver,
+        ScheduleStore,
+    };
+    use std::sync::{
+        Arc,
+        atomic::{AtomicUsize, Ordering},
+    };
 
     struct RecordingResolver(AtomicUsize);
     #[async_trait::async_trait]
     impl EnvironmentReferenceResolver for RecordingResolver {
-        async fn resolve(&self, request: EnvironmentReferenceRequest<'_>) -> Result<Option<String>, EnvironmentReferenceError> {
+        async fn resolve(
+            &self,
+            request: EnvironmentReferenceRequest<'_>,
+        ) -> Result<Option<String>, EnvironmentReferenceError> {
             assert_eq!(request.schedule().as_str(), "resolver-preserved");
             assert_eq!(request.variable().as_str(), "OTHER_API_KEY");
             assert_eq!(request.reference(), "recording://example");
@@ -193,30 +233,67 @@ mod environment_tests {
     struct Idle;
     #[async_trait::async_trait]
     impl sc_cron::Job for Idle {
-        async fn should_stop(&self, _: &serde_json::Value) -> sc_cron::StopDecision { sc_cron::StopDecision::Continue }
-        async fn run(&self, _: &serde_json::Value, _: std::time::Instant) -> sc_cron::RunOutcome { sc_cron::RunOutcome::Ok }
+        async fn should_stop(&self, _: &serde_json::Value) -> sc_cron::StopDecision {
+            sc_cron::StopDecision::Continue
+        }
+        async fn run(&self, _: &serde_json::Value, _: std::time::Instant) -> sc_cron::RunOutcome {
+            sc_cron::RunOutcome::Ok
+        }
     }
 
     #[tokio::test]
     async fn prebuilt_policy_retains_application_reference_resolver_through_open() {
         let config = CronConfig::default();
-        let host = config.hook_environment_host().expect("empty administrator policy");
+        let host = config
+            .hook_environment_host()
+            .expect("empty administrator policy");
         assert_eq!(host.process_names().len(), 0);
         assert_eq!(host.dotenv_files().len(), 0);
         assert_eq!(host.dotenv_roots().len(), 0);
         let resolver = Arc::new(RecordingResolver(AtomicUsize::new(0)));
         let host = host.with_reference_resolver(resolver.clone());
         assert!(host.has_reference_resolver());
-        let nonce = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).expect("time").as_nanos();
-        let path = std::env::temp_dir().join(format!("cron-policy-{}-{nonce}.db",std::process::id()));
-        let logger = Arc::new(sc_observability_types::NoopCanonicalLog::new(sc_observability_types::ServiceName::new("cron-policy-test").expect("service")));
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("time")
+            .as_nanos();
+        let path =
+            std::env::temp_dir().join(format!("cron-policy-{}-{nonce}.db", std::process::id()));
+        let logger = Arc::new(sc_observability_types::NoopCanonicalLog::new(
+            sc_observability_types::ServiceName::new("cron-policy-test").expect("service"),
+        ));
         let scheduler = open(&path, &config, host, logger).expect("open");
         let now = sc_cron::Timestamp::from_datetime(sc_cron::Clock::now(&sc_cron::SystemClock));
-        let spec = sc_cron::ScheduleSpec::with_hook("resolver-preserved", "* * * * *", std::time::Duration::from_secs(20), serde_json::json!({}), sc_cron::HookTarget::python("unexecuted.py").expect("target"))
-            .expect("spec").with_environment(sc_cron::HookEnvironment::new().reference("OTHER_API_KEY", "recording://example").expect("reference")).expect("environment");
-        scheduler.store().create(&sc_cron::NewSchedule { spec, jitter: std::time::Duration::ZERO, next_run_at: now }, now).expect("due row");
+        let spec = sc_cron::ScheduleSpec::with_hook(
+            "resolver-preserved",
+            "* * * * *",
+            std::time::Duration::from_secs(20),
+            serde_json::json!({}),
+            sc_cron::HookTarget::python("unexecuted.py").expect("target"),
+        )
+        .expect("spec")
+        .with_environment(
+            sc_cron::HookEnvironment::new()
+                .reference("OTHER_API_KEY", "recording://example")
+                .expect("reference"),
+        )
+        .expect("environment");
+        scheduler
+            .store()
+            .create(
+                &sc_cron::NewSchedule {
+                    spec,
+                    jitter: std::time::Duration::ZERO,
+                    next_run_at: now,
+                },
+                now,
+            )
+            .expect("due row");
         let runs = scheduler.run_due(Arc::new(Idle)).await.expect("run due");
-        assert_eq!(runs[0].outcome.failure_parts().and_then(|p|p.code), Some("ENV_REFERENCE"));
+        assert_eq!(
+            runs[0].outcome.failure_parts().and_then(|p| p.code),
+            Some("ENV_REFERENCE")
+        );
         assert_eq!(resolver.0.load(Ordering::SeqCst), 1);
         drop(scheduler);
         std::fs::remove_file(path).expect("remove test database");
@@ -228,8 +305,19 @@ mod environment_tests {
         let file = root.join("agent.env");
         let config: CronConfig = serde_json::from_value(serde_json::json!({"environment": {"allow_process": ["JEV_API_KEY"], "allow_dotenv_files": [file], "allow_dotenv_roots": [root]}})).expect("config");
         let host = config.hook_environment_host().expect("host");
-        assert_eq!(host.dotenv_files().collect::<Vec<_>>(), vec![file.as_path()]);
-        assert_eq!(host.dotenv_roots().collect::<Vec<_>>(), vec![root.as_path()]);
-        assert!(serde_json::from_value::<CronConfig>(serde_json::json!({"environment": {"allow_dotenv_files": ["relative.env"]}})).is_err());
+        assert_eq!(
+            host.dotenv_files().collect::<Vec<_>>(),
+            vec![file.as_path()]
+        );
+        assert_eq!(
+            host.dotenv_roots().collect::<Vec<_>>(),
+            vec![root.as_path()]
+        );
+        assert!(
+            serde_json::from_value::<CronConfig>(
+                serde_json::json!({"environment": {"allow_dotenv_files": ["relative.env"]}})
+            )
+            .is_err()
+        );
     }
 }

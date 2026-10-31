@@ -503,3 +503,26 @@ async fn scheduled_python_details_reasons_and_events_redact_values_before_fixed_
         }
     }
 }
+
+#[tokio::test]
+async fn cross_layer_ascii_case_collisions_are_rejected_for_set_reference_and_clear() {
+    let root = tempfile::tempdir().expect("root");
+    let path = root.path().join("case.env");
+    std::fs::write(&path, "Name=value\n").expect("file");
+    let host = HookEnvironmentHost::new()
+        .allow_dotenv_file(&path)
+        .expect("file policy")
+        .with_reference_resolver(Arc::new(RecordingResolver::default()));
+    for policy in [
+        HookEnvironment::new().set("NAME", "new").expect("set"),
+        HookEnvironment::new()
+            .reference("NAME", "value:result")
+            .expect("reference"),
+        HookEnvironment::new().clear("NAME").expect("clear"),
+    ] {
+        assert!(matches!(
+            run_policy(policy.dotenv(&path, true).expect("source"), host.clone()).await,
+            RunOutcome::Failed(_)
+        ));
+    }
+}

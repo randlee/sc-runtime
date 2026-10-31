@@ -236,12 +236,21 @@ impl TempCwd {
 }
 
 /// Up to a cap of one pipe's output, and whether more arrived.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct Capped {
     /// The bytes kept, at most the cap.
     pub bytes: Vec<u8>,
     /// Whether more bytes arrived than were kept.
     pub truncated: bool,
+}
+
+impl std::fmt::Debug for Capped {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Capped")
+            .field("bytes", &self.bytes.len())
+            .field("truncated", &self.truncated)
+            .finish()
+    }
 }
 
 impl Capped {
