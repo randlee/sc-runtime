@@ -102,6 +102,85 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+
+
+def validate_measurement_html(page: str, campaign: dict[str, Any]) -> None:
+    """Check the existing harness result table against its canonical JSON twin."""
+    import math
+    from html.parser import HTMLParser
+
+    class Table(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__(convert_charrefs=True)
+            self.stack: list[str] = []
+            self.rows: dict[str, list[str]] = {}
+            self.row: str | None = None
+            self.cell: list[str] | None = None
+            self.seen: set[str] = set()
+
+        def handle_starttag(self, tag, attrs):
+            self.seen.add(tag)
+            if tag not in {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}:
+                self.stack.append(tag)
+            if tag == "tr" and dict(attrs).get("id") is not None:
+                self.row = dict(attrs)["id"]
+                if self.row in self.rows:
+                    raise ReportError("duplicate HTML measurement row")
+                self.rows[self.row] = []
+            if tag == "td" and self.row is not None:
+                self.cell = []
+
+        def handle_startendtag(self, tag, attrs):
+            self.handle_starttag(tag, attrs)
+            if tag not in {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}:
+                self.handle_endtag(tag)
+
+        def handle_data(self, data):
+            if self.cell is not None:
+                self.cell.append(data)
+
+        def handle_endtag(self, tag):
+            if not self.stack or self.stack.pop() != tag:
+                raise ReportError("malformed report HTML structure")
+            if tag == "td" and self.cell is not None:
+                self.rows[self.row].append(" ".join(" ".join(self.cell).split()))
+                self.cell = None
+            if tag == "tr":
+                self.row = None
+
+    table = Table()
+    table.feed(page)
+    table.close()
+    if table.stack or not {"html", "body", "table", "tbody"}.issubset(table.seen):
+        raise ReportError("report HTML must contain a complete measurement document")
+    expected = {case["id"]: case for case in campaign["cases"]}
+    if set(table.rows) != set(expected):
+        raise ReportError("HTML measurement cases do not match campaign JSON")
+    for case_id, case in expected.items():
+        cells = table.rows[case_id]
+        if len(cells) != 5:
+            raise ReportError(f"HTML {case_id}: expected five measurement cells")
+        label = " ".join((case["label"] + " " + case["strategy"]).split())
+        if cells[0] != label or cells[1] != f"{case['ms_per_run']:.3f} ms":
+            raise ReportError(f"HTML {case_id}: label/strategy/mean contradict campaign JSON")
+        duration = re.fullmatch(r"([0-9]+(?:\.[0-9]+)?)(ns|µs|μs|ms|s) total", cells[2])
+        factors = {"ns": 1e-6, "µs": 1e-3, "μs": 1e-3, "ms": 1, "s": 1000}
+        if duration is None or not math.isclose(float(duration[1]) * factors[duration[2]], case["total_ms"], rel_tol=1e-9, abs_tol=1e-6):
+            raise ReportError(f"HTML {case_id}: total contradicts campaign JSON")
+        if cells[3] != f"{case['timed_iters']} + 1 warmup":
+            raise ReportError(f"HTML {case_id}: iterations contradict campaign JSON")
+        rss = []
+        sub = case.get("subprocess_rss_bytes")
+        parent = case.get("in_process_rss_bytes")
+        if sub is not None:
+            rss.extend((["subprocess"] if parent is not None else []) + [f"{sub / 1048576:.2f} MiB", case["subprocess_rss_note"]])
+        if parent is not None:
+            rss.extend((["parent"] if sub is not None else []) + [f"{parent / 1048576:.2f} MiB" + (" (in-process)" if sub is None else ""), case["in_process_rss_note"]])
+        memory = " ".join(" ".join(rss).split()) if rss else "Not measured"
+        if cells[4] != memory:
+            raise ReportError(f"HTML {case_id}: memory contradicts campaign JSON")
+
+
 if __name__ == "__main__":
     try:
         raise SystemExit(main())

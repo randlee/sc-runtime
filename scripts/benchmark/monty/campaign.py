@@ -33,6 +33,7 @@ from render_report import (  # noqa: E402
     apply_examples_to_html,
     example_blocks_html,
     require_examples,
+    validate_measurement_html,
 )
 
 SUBSYSTEM_DIR = Path(__file__).resolve().parent

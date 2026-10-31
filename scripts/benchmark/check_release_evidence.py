@@ -47,6 +47,23 @@ def positive_number(value: object) -> bool:
             and math.isfinite(value) and value > 0)
 
 
+def source_equivalent(root: Path, sha: object, directories: set[str]) -> bool:
+    if not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{40}", sha):
+        raise EvidenceError("invalid measured source SHA")
+    try:
+        resolved = git(root, "rev-parse", "--verify", f"{sha}^{{commit}}").strip()
+    except EvidenceError:
+        # Squash merges may leave the measured commit outside branch ancestry.
+        # Fetch only that immutable GitHub object; no benchmark host is contacted.
+        git(root, "fetch", "--no-tags", "origin", sha)
+        resolved = git(root, "rev-parse", "--verify", f"{sha}^{{commit}}").strip()
+    if resolved != sha:
+        raise EvidenceError("measured SHA is not a commit")
+    changes = git(root, "diff", "--name-status", "--no-renames", sha, "HEAD").splitlines()
+    if any(not report_change(line, directories) for line in changes):
+        return False
+    return True
+
 def verify_campaign(root: Path, payload: dict, path: Path, module, directories: set[str]) -> None:
     campaign_id = payload.get("campaign_id")
     if payload.get("schema") != module.CAMPAIGN_SCHEMA:
@@ -67,21 +84,6 @@ def verify_campaign(root: Path, payload: dict, path: Path, module, directories: 
             or payload.get("python_sc_compose") is not True
             or not str(payload.get("sc_compose_cli_version", "")).startswith("sc-compose ")):
         raise EvidenceError("wrong host, profile, harness, or tool metadata")
-    sha = payload.get("git_sha")
-    if not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{40}", sha):
-        raise EvidenceError("invalid measured source SHA")
-    try:
-        resolved = git(root, "rev-parse", "--verify", f"{sha}^{{commit}}").strip()
-    except EvidenceError:
-        # Squash merges may leave the measured commit outside branch ancestry.
-        # Fetch only that immutable GitHub object; no benchmark host is contacted.
-        git(root, "fetch", "--no-tags", "origin", sha)
-        resolved = git(root, "rev-parse", "--verify", f"{sha}^{{commit}}").strip()
-    if resolved != sha:
-        raise EvidenceError("measured SHA is not a commit")
-    changes = git(root, "diff", "--name-status", "--no-renames", sha, "HEAD").splitlines()
-    if any(not report_change(line, directories) for line in changes):
-        raise EvidenceError("release source differs from measured source outside added reports/index")
     raw_cases = payload.get("cases")
     if (not isinstance(raw_cases, list) or len(raw_cases) != len(CASES)
             or any(not isinstance(case, dict) for case in raw_cases)
@@ -105,9 +107,13 @@ def verify_campaign(root: Path, payload: dict, path: Path, module, directories: 
     if payload.get("status") != module.campaign_status(expected) or payload.get("status") not in {"PASS", "MEASURED"}:
         raise EvidenceError("campaign is not complete and accepted by current baselines")
     module.validate_gate(payload)
+    sha = payload["git_sha"]
     html = (path.parent / payload["report_html"]).read_text(encoding="utf-8")
     if any(value not in html for value in (campaign_id, sha, payload["host"], payload["rustc"])):
         raise EvidenceError("HTML report metadata does not match campaign")
+    if module.stamp_report_html(html, payload) != html:
+        raise EvidenceError("HTML examples/metadata contradict canonical campaign rendering")
+    module.validate_measurement_html(html, payload)
 
 
 def verify(root: Path = ROOT) -> list[str]:
@@ -136,17 +142,20 @@ def verify(root: Path = ROOT) -> list[str]:
             module.check_index(report_dir)
         except (module.CampaignError, OSError, ValueError, TypeError, KeyError) as exc:
             raise EvidenceError(str(exc)) from exc
-        failures = []
         for path in sorted(report_dir.glob("*.campaign.json"), reverse=True):
+            payload = module.load_json(path)
+            if not source_equivalent(root, payload.get("git_sha"), directories):
+                continue
+            # Choose the newest applicable run BEFORE accepting its result.
+            # Never hide a later failure by falling back to an older success.
             try:
-                payload = module.load_json(path)
                 verify_campaign(root, payload, path, module, directories)
-                accepted.append(f"{path.relative_to(root)} source={payload['git_sha']} status={payload['status']}")
-                break
-            except (EvidenceError, module.CampaignError, OSError, ValueError, TypeError, KeyError) as exc:
-                failures.append(f"{path.name}: {exc}")
+            except (module.CampaignError, module.ReportError, OSError, ValueError, TypeError, KeyError) as exc:
+                raise EvidenceError(f"latest applicable campaign {path.name}: {exc}") from exc
+            accepted.append(f"{path.relative_to(root)} source={payload['git_sha']} status={payload['status']}")
+            break
         else:
-            raise EvidenceError("no applicable reviewed-build evidence; " + "; ".join(failures))
+            raise EvidenceError("no applicable reviewed-build evidence: release source differs from measured source")
     return accepted
 
 

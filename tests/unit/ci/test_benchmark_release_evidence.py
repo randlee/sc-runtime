@@ -2,6 +2,7 @@
 import copy
 import importlib.util
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -50,8 +51,14 @@ class ReleaseEvidenceTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("fixture_campaign", script)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        (self.report_dir / self.payload["report_html"]).write_text(
-            module.stamp_report_html("<html><body>fixture</body></html>", self.payload))
+        # Start with a real Rust-harness report, then use its canonical packager.
+        page = (ROOT / "site/reports/benchmark-monty/20261028T230213Z-Mac.html").read_text()
+        for case in self.payload["cases"]:
+            pattern = (r'(<tr id="' + re.escape(case["id"]) + r'".*?<td class="num">)[^<]*'
+                       r'(</td><td class="num">)[^<]*(</td><td class="num">)[^<]*')
+            page = re.sub(pattern, lambda m: (m[1] + f"{case['ms_per_run']:.3f} ms" + m[2]
+                          + f"{case['total_ms']}ms total" + m[3] + f"{case['timed_iters']} + 1 warmup"), page)
+        (self.report_dir / self.payload["report_html"]).write_text(module.stamp_report_html(page, self.payload))
         try:
             module.write_index(self.report_dir)
         except module.CampaignError:
@@ -136,6 +143,73 @@ class ReleaseEvidenceTests(unittest.TestCase):
         self.commit("stale index")
         with self.assertRaisesRegex(Exception, "stale"):
             evidence.verify(self.root)
+
+    def test_metadata_only_malformed_and_contradictory_html_are_rejected(self):
+        path = self.report_dir / self.payload["report_html"]
+        canonical = path.read_text()
+        mutations = [" ".join(str(self.payload[key]) for key in ("campaign_id", "host", "git_sha", "rustc")),
+                     canonical.replace(f"{self.payload['cases'][0]['ms_per_run']:.3f} ms", "999999.000 ms", 1),
+                     canonical.replace("</td>", "</div>", 1),
+                     canonical.replace("30 + 1 warmup", "3000 + 1 warmup", 1),
+                     canonical.replace("6.47 MiB", "99999 MiB")]
+        # The final case corrupts a known actual RSS cell rather than inventing a fixture document.
+        rss = self.payload["cases"][0]["subprocess_rss_bytes"] / 1048576
+        mutations[-1] = canonical.replace(f"{rss:.2f} MiB", "99999 MiB", 1)
+        for page in mutations:
+            path.write_text(page)
+            self.commit("corrupt real canonical HTML")
+            self.rejects()
+
+    def test_newest_applicable_failure_blocks_older_pass(self):
+        self.git("rm", "-r", "site/reports/benchmark-monty")
+        baseline_path = self.root / "scripts/benchmark/monty/baselines.json"
+        baseline = json.loads(baseline_path.read_text())
+        for spec in baseline["cases"].values():
+            spec["max_ms_per_run"] = 100
+        baseline_path.write_text(json.dumps(baseline))
+        self.commit("measurement source with ratified test ceilings")
+        self.source = self.git("rev-parse", "HEAD").strip()
+        self.report_dir.mkdir(parents=True)
+        self.payload["git_sha"] = self.source
+        self.payload["status"] = "PASS"
+        for case in self.payload["cases"]:
+            case.update(max_ms_per_run=100, status="PASS")
+        self.save()
+        self.commit("older passing campaign")
+        self.assertEqual(len(evidence.verify(self.root)), 1)
+        older = copy.deepcopy(self.payload)
+        for kind in ("FAIL", "INCOMPLETE", "malformed"):
+            self.payload = copy.deepcopy(older)
+            self.payload.update(campaign_id="20261029T230213Z-rand-m5", utc="2026-10-29T23:02:13Z",
+                                report_html="20261029T230213Z-rand-m5.html", status=kind)
+            self.json_path = self.report_dir / (self.payload["campaign_id"] + ".campaign.json")
+            if kind == "FAIL":
+                self.payload["cases"][0].update(ms_per_run=101, total_ms=3030, status="FAIL")
+            elif kind == "INCOMPLETE":
+                self.payload["cases"][0].update(skipped=True, status="SKIPPED")
+            else:
+                self.payload["cases"].pop()
+            self.save()
+            self.commit("later applicable negative campaign")
+            self.rejects()
+
+    def test_inapplicable_newer_failure_does_not_hide_current_source_evidence(self):
+        original = copy.deepcopy(self.payload)
+        (self.root / "source.rs").write_text("new source\n")
+        self.commit("new source")
+        self.source = self.git("rev-parse", "HEAD").strip()
+        self.payload.update(campaign_id="20261029T230213Z-rand-m5", utc="2026-10-29T23:02:13Z",
+                            report_html="20261029T230213Z-rand-m5.html", git_sha=self.source)
+        self.json_path = self.report_dir / (self.payload["campaign_id"] + ".campaign.json")
+        self.save()
+        self.commit("new source measured")
+        self.payload = original
+        self.payload.update(campaign_id="20261030T230213Z-rand-m5", utc="2026-10-30T23:02:13Z",
+                            report_html="20261030T230213Z-rand-m5.html", status="FAIL")
+        self.json_path = self.report_dir / (self.payload["campaign_id"] + ".campaign.json")
+        self.save()
+        self.commit("historical old-source failure submitted later")
+        self.assertIn(self.source, evidence.verify(self.root)[0])
 
     def test_existing_campaign_cannot_be_rewritten_after_measurement(self):
         # Evidence that existed at the measured source must remain immutable.
