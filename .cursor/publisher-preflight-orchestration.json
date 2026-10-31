@@ -1167,7 +1167,7 @@
   },
   "benchmark_evidence_correction": {
     "bead": "run-h0h.6",
-    "status": "qa1_fixes_in_progress",
+    "status": "ready_awaiting_user_quiet_window_go",
     "branch": "codex/benchmark-release-evidence",
     "developer_task": "/root/benchmark_evidence_flow_design",
     "owner_direction": "Developer runs benchmark by workstation SSH, commits site/reports artifacts; quality manager reviews tested build; publishing preflight verifies evidence and must not reach private host. First release has no prerequisite installed prerelease.",
@@ -1183,7 +1183,7 @@
     "first_campaign": "20261031T225057Z-rand-m5",
     "first_evidence_commit": "b071a8d",
     "qa_started": false,
-    "source_sha": "a8cb4af1474cbaae0be59a7015a39513ff899d9e",
+    "source_sha": "396ad6a86f8edf9598aa07195e4889f68655af56",
     "evidence_head": "a29f8103c58ee1bdc0f6a337f1cbe46a71677480",
     "campaign": "20261031T225222Z-rand-m5",
     "hosted_preflight": {
@@ -1507,7 +1507,211 @@
           "missing_reviewers": [],
           "unparsed_reviewers": []
         }
+      },
+      {
+        "qa_pass": "qa-benchmark-evidence-2",
+        "commit": "0cdcebe4293567c489bdb54d63c80fc200b28909",
+        "verdict": "FAIL",
+        "pr_comment_url": null,
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/evidence_qa2_req",
+            "spawn_actor": "parent-orchestrator",
+            "model": "gpt-6-luna",
+            "status": "completed",
+            "result_path": "/tmp/sc-runtime-benchmark-evidence/qa2/req-qa-result.md",
+            "fenced_json_received": true,
+            "verdict": "FAIL"
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/evidence_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "model": "gpt-6.1-sol",
+            "status": "completed",
+            "result_path": "/tmp/sc-runtime-benchmark-evidence/qa2/arch-qa-result.md",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/evidence_qa2_rust",
+            "spawn_actor": "parent-orchestrator",
+            "model": "gpt-6.1-terra",
+            "status": "completed",
+            "result_path": "/tmp/sc-runtime-benchmark-evidence/qa2/rust-qa-agent-result.md",
+            "fenced_json_received": true,
+            "verdict": "FINDINGS"
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/evidence_qa2_boundary",
+            "spawn_actor": "parent-orchestrator",
+            "model": "gpt-6.1-sol",
+            "result_path": "/tmp/sc-runtime-benchmark-evidence/qa2/ruthless-boundary-qa-result.md",
+            "status": "completed",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          }
+        ],
+        "finding_ids": [
+          "BENCH-EVIDENCE-001",
+          "BENCH-EVIDENCE-004"
+        ],
+        "coordinator_task_id": "/root/evidence_qa2_enforcer",
+        "machine_status": {
+          "sprint": "benchmark-release-evidence",
+          "task": "qa-benchmark-evidence-2",
+          "branch": "codex/benchmark-release-evidence",
+          "commit": "0cdcebe4293567c489bdb54d63c80fc200b28909",
+          "pr": 101,
+          "verdict": "FAIL",
+          "deliverables": {
+            "complete": 3,
+            "total": 5,
+            "percent": 60
+          },
+          "findings": {
+            "blocking": 0,
+            "important": 2,
+            "minor": 0
+          },
+          "blocking_ids": [],
+          "merge_readiness": "not ready",
+          "merge_reason": "Two Important findings remain open; deliverable completion is 3/5 (60%), and current-head PR checks are not green or available.",
+          "next_action": "triage_and_fix",
+          "owner": "parent-orchestrator",
+          "reviewer_spawn_gate": "pass",
+          "reviewer_manifest": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/evidence_qa2_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL",
+              "findings": {
+                "blocking": 0,
+                "important": 2,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/evidence_qa2_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/evidence_qa2_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FINDINGS",
+              "findings": {
+                "blocking": 0,
+                "important": 1,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "ruthless-boundary-qa",
+              "task_id": "/root/evidence_qa2_boundary",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            }
+          ],
+          "evidence_chain": {
+            "qa_pass": "qa-2",
+            "commit": "0cdcebe4293567c489bdb54d63c80fc200b28909",
+            "pr_comment_url": null,
+            "coordinator_task_id": "/root/evidence_qa2_enforcer",
+            "reviewer_tasks": [
+              "/root/evidence_qa2_req",
+              "/root/evidence_qa2_arch",
+              "/root/evidence_qa2_rust",
+              "/root/evidence_qa2_boundary"
+            ],
+            "pr_number": 101,
+            "triage": {
+              "ttl_paths": [
+                ".triage/benchmark-evidence/findings/BENCH-EVIDENCE-001.ttl",
+                ".triage/benchmark-evidence/findings/BENCH-EVIDENCE-002.ttl",
+                ".triage/benchmark-evidence/findings/BENCH-EVIDENCE-003.ttl",
+                ".triage/benchmark-evidence/findings/BENCH-EVIDENCE-004.ttl"
+              ]
+            }
+          },
+          "missing_reviewers": [],
+          "unparsed_reviewers": []
+        },
+        "public_posting_block": "Automatic approval review rejected two posting attempts and requires explicit human authorization for this report/destination. No bypass attempted."
       }
-    ]
+    ],
+    "quiet_window": "Owner says wait for host quiet; offered four-minute team build pause when parent can start within one minute. Parent must send ready-to-start signal after fix validation, before benchmark.",
+    "source_focused_tests": 29,
+    "source_qa3": {
+      "req_sourcefix": "PASS",
+      "arch": "PASS",
+      "rust": "PASS",
+      "source_findings": 0,
+      "reviewer_manifest": [
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/evidence_qa3_arch",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-sol",
+          "status": "completed",
+          "result_path": "/tmp/sc-runtime-benchmark-evidence/qa3/arch-qa-result.md",
+          "fenced_json_received": true,
+          "verdict": "PASS"
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/evidence_qa3_rust",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6.1-terra",
+          "status": "completed",
+          "result_path": "/tmp/sc-runtime-benchmark-evidence/qa3/rust-qa-agent-result.md",
+          "fenced_json_received": true,
+          "verdict": "PASS"
+        },
+        {
+          "agent": "req-qa",
+          "task_id": "/root/evidence_qa3_req",
+          "spawn_actor": "parent-orchestrator",
+          "model": "gpt-6-luna",
+          "result_path": "/tmp/sc-runtime-benchmark-evidence/qa3/req-qa-result.md",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "FAIL"
+        }
+      ],
+      "full_gate": "in_flight: current campaign/report-onlyHEAD/CI/publicpost pending"
+    },
+    "benchmark_coordination": {
+      "user_instruction": "Wait for quiet host; notify when can start within one minute. User can arrange fourminute no-buildwindow.",
+      "ready_notice_sent": true,
+      "go_received": false,
+      "producer_task": "/root/benchmark_evidence_flow_design",
+      "producer_idle_ready_for_followup": true
+    },
+    "public_report_permission": {
+      "qa2_comment": "blocked_auto_review_twice",
+      "request_sent": true,
+      "user_response": null
+    }
   }
 }
