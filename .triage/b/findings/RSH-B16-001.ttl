@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-16:RSH-B16-001>
+  qa:id "RSH-B16-001" ;
+  qa:sprint "b-16" ;
+  qa:qaPass "qa-b-16-1" ;
+  qa:severity "Minor" ;
+  qa:status "open" ;
+  qa:reviewer "rust-service-hardening-agent" ;
+  qa:commit "326a7a6a10e26ceb071e60cd02b7a1ef30800732" ;
+  qa:location "crates/sc-cron/src/monty_compose.rs:261" ;
+  qa:issue "An immediate child-wait I/O error is reported as an elapsed post-kill deadline. The negated matches expression accepts both Ok(None) and Err, so a try_wait failure before the deadline emits child.kill_timeout/COMPOSE_CHILD_KILL_TIMEOUT with deadline_remaining_ms=0. This produces false timeout telemetry and conceals the distinction between inability to observe child status and actual reap expiry." ;
+  qa:recommendation "Match the wait result explicitly. Reserve the timeout event and zero remaining duration for Ok(None), which represents elapsed deadline. Handle Err separately while preserving existing cleanup and result policy; do not manufacture an elapsed-deadline event. Add a deterministic ChildWrapper fake returning a wait error before a future deadline alongside the existing unreapable-child event test." .

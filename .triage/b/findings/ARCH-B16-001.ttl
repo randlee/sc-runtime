@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-16:ARCH-B16-001>
+  qa:id "ARCH-B16-001" ;
+  qa:sprint "b-16" ;
+  qa:qaPass "qa-b-16-1" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "arch-qa" ;
+  qa:commit "326a7a6a10e26ceb071e60cd02b7a1ef30800732" ;
+  qa:location "docs/plans/phase-b/sprint-b-16-monty-template-examples.md:27" ;
+  qa:issue "The sole adrs list contains only RUN-0002/0003/0011/0013/0303. It omits governing repo ADRs RUN-0001 (project-owned extension versus command framework), RUN-0004 (direct canonical emission and types-only library boundary), RUN-0005 (standard sc-lint/just integration), RUN-0007 (blocking feed handoff and retained injected logger), RUN-0008 (general reusable seam and standard-tool rationale), RUN-0015 (production benchmark caller/campaign migration), RUN-0401 and RUN-0402 (generator, template CI, checkout/release rendering). It also omits all 16 binding owned-crate ADR IDs: CFG-0001/0002/0003, TRN-0001/0002/0003/0004/0005/0006, CMD-0001/0002/0003, RT-0001/0002/0003/0004. The sprint owns their boundary manifests at lines35-38, so RULE-ADR-PLAN requires that crate inventory even where an individual decision is unchanged or not applicable. The phase-plan applicability notes do not replace per-sprint enumeration. No implementation violation of these ADRs was found." ;
+  qa:recommendation "Add the 24 omitted IDs to the existing adrs list and add concise applicability notes: repository IDs govern the actual B16 registry/logging/driver/generation/benchmark work; crate-specific IDs are enumerated because their manifests are owned, while untouched error/config/endpoint/router/lifecycle domains stay unchanged. Preserve the phase plan: RT-0002/TRN-0006 lifecycle execution proof remains B18, RT-0003 remains inapplicable to the continuation, RT-0004 remains the B14 fixture reference. This is a documentation trace correction only; no new tests, product changes, signing gates, B17 environment work, or B18 release prerequisites are required." .
