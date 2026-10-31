@@ -364,7 +364,7 @@
       "branch": "codex/b-18-publishing-kit",
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit",
       "head": "08e2513865e546242e33f388d8d46c3aee1eaec5",
-      "status": "approved_pending_normal_merge",
+      "status": "merged_to_integration",
       "must_follow_heads": {
         "b-14": "72897f2b58f4d40cd25b80d2c425b592e57b2e90",
         "b-17": "d8d589e7c40ef216e4143d87665722dd61a04e06"
@@ -588,7 +588,11 @@
         "proof": "/tmp/phaseb-cursor-orchestration/b18-qa1/fix-validation/qa2-scope-proof.json",
         "capacity_proof": "/tmp/phaseb-cursor-orchestration/b18-qa1/fix-validation/qa2-capacity-remediation.json",
         "targeted_checks": "11 PASS; formatting/supplychain PASS; fulljusttest running external target"
-      }
+      },
+      "merge_commit": "5edba608442f0f3de949d938d5330da149334f0b",
+      "merged_at": "2026-10-31T07:39:33Z",
+      "merge_gate": "PublicQA3PASS+actualTaskcorrelation+all17CIgreen; normalmerge exactcandidate/actualtree match verified by delegatedworktree agent",
+      "merge_tree": "ded5e3f61df0881a86cc34e68c54e8db6a65b4f6"
     }
   },
   "qa_rounds": [
@@ -6131,5 +6135,18 @@
       "merge_commit": "66ecb270be3c4ee99056621768b19b56e1403ce1",
       "merged_at": "2026-10-31T04:21:21Z"
     }
+  },
+  "phase_end": {
+    "bead": "run-03z.30",
+    "status": "preparing_integration_pr_full_review",
+    "review_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa1",
+    "review_branch": "integrate/phase-b-observability",
+    "coordination_branch": "codex/phase-b-review-state",
+    "coordination_worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/phase-b-review-state",
+    "state_policy": "After this implementation snapshot, phase review manifests and exact public machine statuses persist in coordination branch .cursor/b-orchestration.json. Integration review commit remains frozen during CI. Beads remains task tracking; no new sprint or product gate."
+  },
+  "production_readiness": {
+    "bead": "run-03z.31",
+    "status": "pending_phase_end_fixes_and_approval"
   }
 }
