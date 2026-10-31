@@ -92,7 +92,7 @@ pub const REAP_AFTER_KILL: std::time::Duration = std::time::Duration::from_secs(
 /// variables, the user site and the working directory on `sys.path`; it
 /// does not clear the environment. A caller that must not leak its
 /// environment to the child uses [`ChildEnv::Only`].
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub enum ChildEnv {
     /// The child inherits this process's environment.
     #[default]
@@ -111,7 +111,6 @@ pub enum ChildEnv {
 
 /// What to run: a program, its arguments, its working directory, its input
 /// and its environment.
-#[derive(Debug)]
 pub struct ChildSpec<'a> {
     /// The program; an absolute path, or a bare name looked up on `PATH`.
     pub program: &'a Path,
@@ -123,6 +122,86 @@ pub struct ChildSpec<'a> {
     pub input: &'a [u8],
     /// Its environment.
     pub env: ChildEnv,
+}
+
+impl std::fmt::Debug for ChildEnv {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Inherit => f.write_str("ChildEnv::Inherit"),
+            Self::Only { keep, set } => f
+                .debug_struct("ChildEnv::Only")
+                .field("kept_names", keep)
+                .field("set_names", &set.iter().map(|(n, _)| n).collect::<Vec<_>>())
+                .finish(),
+        }
+    }
+}
+impl std::fmt::Debug for ChildSpec<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ChildSpec")
+            .field("argument_count", &self.args.len())
+            .field("input_bytes", &self.input.len())
+            .field("env", &self.env)
+            .finish_non_exhaustive()
+    }
+}
+
+/// Resolves a launch executable using the daemon PATH before child env clearing.
+/// Relative components are anchored to the daemon cwd, independently of child cwd.
+pub(crate) fn resolve_program(program: &Path) -> io::Result<std::path::PathBuf> {
+    if program.is_absolute() {
+        return Ok(program.to_path_buf());
+    }
+    let cwd = std::env::current_dir()?;
+    if program.components().count() > 1 {
+        return Ok(cwd.join(program));
+    }
+    let path = std::env::var_os("PATH").ok_or_else(|| {
+        io::Error::new(io::ErrorKind::NotFound, "daemon launch PATH is unavailable")
+    })?;
+    #[cfg(windows)]
+    let extensions = std::env::var("PATHEXT").unwrap_or_else(|_| ".COM;.EXE;.BAT;.CMD".into());
+    for dir in std::env::split_paths(&path) {
+        let dir = if dir.is_absolute() {
+            dir
+        } else {
+            cwd.join(dir)
+        };
+        let candidate = dir.join(program);
+        if executable(&candidate) {
+            return Ok(candidate);
+        }
+        #[cfg(windows)]
+        for extension in extensions.split(';').filter(|s| !s.is_empty()) {
+            let mut name = candidate.as_os_str().to_os_string();
+            name.push(extension);
+            let candidate = std::path::PathBuf::from(name);
+            if executable(&candidate) {
+                return Ok(candidate);
+            }
+        }
+    }
+    Err(io::Error::new(
+        io::ErrorKind::NotFound,
+        "configured executable not found on daemon PATH",
+    ))
+}
+fn executable(path: &Path) -> bool {
+    let Ok(metadata) = path.metadata() else {
+        return false;
+    };
+    if !metadata.is_file() {
+        return false;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        metadata.permissions().mode() & 0o111 != 0
+    }
+    #[cfg(not(unix))]
+    {
+        true
+    }
 }
 
 /// A fresh private working directory for a child, removed when dropped.
@@ -157,12 +236,21 @@ impl TempCwd {
 }
 
 /// Up to a cap of one pipe's output, and whether more arrived.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct Capped {
     /// The bytes kept, at most the cap.
     pub bytes: Vec<u8>,
     /// Whether more bytes arrived than were kept.
     pub truncated: bool,
+}
+
+impl std::fmt::Debug for Capped {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Capped")
+            .field("bytes", &self.bytes.len())
+            .field("truncated", &self.truncated)
+            .finish()
+    }
 }
 
 impl Capped {

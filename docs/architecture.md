@@ -2874,3 +2874,40 @@ identity checks cover normal/build, renamed and target-specific dependencies,
 production Rust imports, and Cargo normal/build transitive trees for supported
 production features. Dev-only fixtures remain permitted. The Monty registry
 and optional adapters are documented in [the generated example](sc-cron/monty-generated-example.md).
+
+
+### Shared hook environment implementation (B17)
+
+`sc-cron::HookEnvironment` is the validated, canonical schedule policy;
+`HookEnvironmentHost` is separately injected daemon authorization. Names use
+portable ASCII identifiers and reject ASCII case collisions. Administrator
+process-name, exact dotenv-file, and dotenv-root allowlists default empty.
+Absolute normalized file paths are authorized after canonicalization, including
+nearest-existing-ancestor resolution for missing suffixes. Bounded regular-file
+reads run on the blocking pool. The dotenv parser never evaluates shell or
+reads ambient values. Application-owned `EnvironmentReferenceResolver` receives
+schedule, variable, opaque locator, and row deadline; missing, denied, unavailable
+and invalid provider results use fixed value-free `ENV_REFERENCE` diagnostics.
+
+One occurrence resolves daemon → ordered files → Set/Reference/Clear into an
+immutable snapshot before stop, then reuses it for tick, Monty initialization,
+and both opt-in CLI adapters. Python starts with `ChildEnv::Only`; direct trusted
+callers can explicitly choose Inherit. Monty permits only environment OS reads,
+including top-level reads, and denies registered application host calls during
+initialization. Retained module globals initialize once per generation;
+function-time getenv uses the current occurrence. Executables resolve before
+child PATH clearing, independently of configured child working directories.
+Windows snapshot names are uppercase and getenv lookup ignores case. Rust jobs
+retain their application process environment and reject nonempty schedule policy.
+
+Explicit Set values and opaque reference metadata are intentional plaintext
+configuration. Resolved process/file/reference values never persist in registry
+writes. Runtime details and reasons redact distinct nonempty snapshot values,
+longest first, before caps and fixed diagnostic/recovery assembly. Debug exposes
+names/kinds/counts only; trusted raw HookOutput fields remain accessible.
+Exact replacement mitigates accidental disclosure and does not isolate hostile
+source. The complete first-release SQLite schema is version 1 with canonical
+`hook_environment` default `{"dotenv":[],"variables":{}}`; semantic schema checks
+reject incompatible unreleased development tables without migrating/overwriting.
+The library remains general purpose, with open application host registrations,
+no signing/approval gates, and no production dependency on sc-compose or ATM.

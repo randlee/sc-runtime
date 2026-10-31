@@ -33,6 +33,7 @@ getrandom = "0.4"
 # Default features stay off. `bundled` builds SQLite here.
 rusqlite = { version = "0.39", default-features = false, features = ["bundled"] }
 serde_json = "1"
+serde = { version = "1", features = ["derive"] }
 # Per-invocation temporary working directory for a Python hook.
 tempfile = "3"
 # `process` and `io-util` run a hook child and read its capped output.

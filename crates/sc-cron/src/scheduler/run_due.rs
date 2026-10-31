@@ -14,7 +14,8 @@ use crate::coord::NameInFlightGuard;
 #[cfg(feature = "monty")]
 use crate::coord::RunCoord;
 use crate::worker::{
-    Event, RunCorrelation, event_record, resolve, run_correlation, run_target, terminal_event,
+    Event, RunCorrelation, event_record, resolve, run_correlation, run_target_with_environment,
+    terminal_event,
 };
 
 #[cfg(feature = "monty")]
@@ -354,7 +355,7 @@ where
         deadline,
         clock,
         Arc::clone(&scheduler.coord.logger),
-        correlation,
+        (Arc::clone(&scheduler.environment), correlation),
     ))
 }
 
@@ -408,8 +409,9 @@ fn spawn_abortable_due<C: Clock + 'static>(
     deadline: std::time::Instant,
     clock: Arc<C>,
     logger: sc_observability_types::SharedCanonicalLog,
-    correlation: RunCorrelation,
+    execution: (Arc<crate::HookEnvironmentHost>, RunCorrelation),
 ) -> Launched {
+    let (environment, correlation) = execution;
     let target = resolve(job, &row, &logger, correlation.clone());
     let schedule = row.clone();
     let handle = tokio::spawn(async move {
@@ -417,7 +419,13 @@ fn spawn_abortable_due<C: Clock + 'static>(
             Ok(target) => target,
             Err(outcome) => return Report::Ran(outcome),
         };
-        let run = run_target(target, Arc::clone(&clock), &schedule, deadline);
+        let run = run_target_with_environment(
+            target,
+            Arc::clone(&clock),
+            &schedule,
+            deadline,
+            &environment,
+        );
         tokio::select! {
             report = run => report,
             () = sleep_until_monotonic(clock.as_ref(), deadline) => Report::Ran(RunOutcome::TimedOut),
@@ -444,6 +452,7 @@ where
     let coord = Arc::clone(&scheduler.coord);
     let core = Arc::clone(&scheduler.core);
     let hosts = Arc::clone(&scheduler.hosts);
+    let environment_host = Arc::clone(&scheduler.environment);
     let schedule = row.clone();
     let feed_guard = crate::coord::MontyFeedGuard::enter(&scheduler.coord);
     let logger = Arc::clone(&coord.logger);
@@ -457,7 +466,7 @@ where
             deadline,
             feed_guard,
             hosts,
-            run_correlation.clone(),
+            (environment_host, run_correlation.clone()),
         )
         .await;
         let recorded = record_due(core, logger, &schedule, report, next, run_correlation).await;
@@ -484,16 +493,21 @@ where
                     return Err(CronError::HookFailed("due run has no task".to_owned()));
                 };
                 let report = handle.await.unwrap_or_else(|error| {
+                    let detail = if matches!(row.spec.hook, HookTarget::Rust) {
+                        error.to_string()
+                    } else {
+                        "hook or environment provider task panicked or was cancelled".to_owned()
+                    };
                     if let Some(mut event) = event_record(
                         scheduler.coord.logger.service_name().clone(),
                         Event::DueTaskFailed,
                         Some(&row),
-                        serde_json::json!({"error": error.to_string()}),
+                        serde_json::json!({"error": detail}),
                     ) {
                         event.correlation_id = correlation.clone();
                         let _ = scheduler.coord.logger.emit(event);
                     };
-                    Report::Ran(run_task_failed(&error))
+                    Report::Ran(run_task_failed(&detail))
                 });
                 slot.take();
                 done.push(
@@ -507,25 +521,25 @@ where
                 let Some(handle) = slot.as_mut() else {
                     return Err(CronError::HookFailed("due run has no task".to_owned()));
                 };
-                let recorded = handle.await.unwrap_or_else(|error| {
-                    if let Some(mut event) = event_record(
-                        scheduler.coord.logger.service_name().clone(),
-                        Event::DueJoinFailed,
-                        Some(&row),
-                        serde_json::json!({"error": error.to_string()}),
-                    ) {
-                        event.correlation_id = correlation.clone();
-                        let _ = scheduler.coord.logger.emit(event);
-                    };
-                    DueRun {
-                        name: row.spec.name.clone(),
-                        outcome: monty_failed(
-                            CODE_DUE_JOIN_FAILED,
-                            format!("monty due task panicked or was cancelled: {error}"),
-                            DUE_JOIN_RECOVERY,
-                        ),
+                let recorded = match handle.await {
+                    Ok(recorded) => recorded,
+                    Err(_) => {
+                        let detail = "monty due task panicked or was cancelled";
+                        if let Some(mut event) = event_record(
+                            scheduler.coord.logger.service_name().clone(),
+                            Event::DueJoinFailed,
+                            Some(&row),
+                            serde_json::json!({"error": detail}),
+                        ) {
+                            event.correlation_id = correlation.clone();
+                            let _ = scheduler.coord.logger.emit(event);
+                        };
+                        let outcome = monty_failed(CODE_DUE_JOIN_FAILED, detail, DUE_JOIN_RECOVERY);
+                        scheduler
+                            .finish_due(&row, Report::Ran(outcome), next, correlation.clone())
+                            .await
                     }
-                });
+                };
                 slot.take();
                 done.push(recorded);
             }
@@ -573,6 +587,18 @@ impl Drop for DueTask {
 }
 
 #[cfg(feature = "monty")]
+fn monty_due_source(schedule: &Schedule) -> Result<String, Report> {
+    let HookTarget::Monty { source } = &schedule.spec.hook else {
+        return Err(Report::Ran(monty_failed(
+            CODE_MONTY_RESOLVE,
+            "monty path used for another hook",
+            MONTY_RESOLVE_RECOVERY,
+        )));
+    };
+    Ok(source.clone())
+}
+
+#[cfg(feature = "monty")]
 async fn run_monty_due<C: Clock + 'static>(
     coord: Arc<RunCoord>,
     clock: Arc<C>,
@@ -580,39 +606,42 @@ async fn run_monty_due<C: Clock + 'static>(
     deadline: std::time::Instant,
     stop_guard: crate::coord::MontyFeedGuard,
     hosts: Arc<crate::MontyHostRegistry>,
-    correlation: RunCorrelation,
+    execution: (Arc<crate::HookEnvironmentHost>, RunCorrelation),
 ) -> (Report, crate::coord::MontyFeedGuard) {
+    let (environment_host, correlation) = execution;
     use crate::monty_run::{FeedResult, MontyPhase};
-    let HookTarget::Monty { source } = schedule.spec.hook.clone() else {
-        if let Some(mut event) = event_record(
-            coord.logger.service_name().clone(),
-            Event::MontyResolveFailed,
-            Some(&schedule),
-            serde_json::json!({"error": "monty path used for another hook"}),
-        ) {
-            event.correlation_id = correlation.clone();
-            let _ = coord.logger.emit(event);
-        };
-        return (
-            Report::Ran(monty_failed(
-                CODE_MONTY_RESOLVE,
-                "monty path used for another hook",
-                MONTY_RESOLVE_RECOVERY,
-            )),
-            stop_guard,
-        );
+    let source = match monty_due_source(&schedule) {
+        Ok(source) => source,
+        Err(report) => {
+            if let Some(mut event) = event_record(
+                coord.logger.service_name().clone(),
+                Event::MontyResolveFailed,
+                Some(&schedule),
+                serde_json::json!({"error": "monty path used for another hook"}),
+            ) {
+                event.correlation_id = correlation.clone();
+                let _ = coord.logger.emit(event);
+            }
+            return (report, stop_guard);
+        }
     };
-    let generation = schedule.generation;
-    let session = coord.take_repl(&schedule.spec.name);
+    let environment = match environment_host
+        .snapshot(clock.as_ref(), &schedule, deadline)
+        .await
+    {
+        Ok(environment) => environment,
+        Err(outcome) => return (Report::Ran(outcome), stop_guard),
+    };
     let stop = feed_once(
-        session,
+        coord.take_repl(&schedule.spec.name),
         source.clone(),
         MontyPhase::Stop,
-        generation,
+        schedule.generation,
         clock.as_ref(),
         &schedule,
         deadline,
         Arc::clone(&hosts),
+        Arc::clone(&environment),
         Arc::clone(&coord.logger),
         correlation.clone(),
     )
@@ -642,6 +671,7 @@ async fn run_monty_due<C: Clock + 'static>(
                 deadline,
                 (stop, source),
                 hosts,
+                environment,
                 correlation,
             )
             .await
@@ -650,6 +680,10 @@ async fn run_monty_due<C: Clock + 'static>(
 }
 
 #[cfg(feature = "monty")]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "tick retains the stop snapshot and original deadline"
+)]
 async fn run_monty_tick_after_stop<C: Clock + 'static>(
     coord: Arc<RunCoord>,
     clock: Arc<C>,
@@ -657,6 +691,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
     deadline: std::time::Instant,
     stopped: (crate::monty_run::FeedDone, String),
     hosts: Arc<crate::MontyHostRegistry>,
+    environment: Arc<crate::environment::EnvironmentSnapshot>,
     correlation: RunCorrelation,
 ) -> (Report, crate::coord::MontyFeedGuard) {
     use crate::monty_run::MontyPhase;
@@ -671,6 +706,7 @@ async fn run_monty_tick_after_stop<C: Clock + 'static>(
         &schedule,
         deadline,
         hosts,
+        environment,
         Arc::clone(&coord.logger),
         correlation.clone(),
     )
@@ -728,6 +764,7 @@ async fn feed_once<C: Clock + ?Sized>(
     schedule: &Schedule,
     deadline: std::time::Instant,
     hosts: Arc<crate::MontyHostRegistry>,
+    environment: Arc<crate::environment::EnvironmentSnapshot>,
     logger: sc_observability_types::SharedCanonicalLog,
     correlation: RunCorrelation,
 ) -> crate::monty_run::FeedDone {
@@ -745,6 +782,7 @@ async fn feed_once<C: Clock + ?Sized>(
             timeout: schedule.spec.timeout,
             deadline,
             hosts,
+            environment,
         },
     )
     .await
@@ -891,7 +929,7 @@ mod tests {
                 .unwrap();
             let runs = super::collect_runs(
                 &scheduler,
-                vec![(row, None, super::DueTask::monty(task), None)],
+                vec![(row.clone(), None, super::DueTask::monty(task), None)],
             )
             .await
             .unwrap();
@@ -899,8 +937,33 @@ mod tests {
                 runs[0].outcome.failure_parts().unwrap().code,
                 Some("DUE_JOIN_FAILED")
             );
-            assert_eq!(log.events().len(), 1);
-            assert_eq!(log.events()[0].action.as_str(), "due.join_failed");
+            let events = log.events();
+            assert_eq!(
+                events
+                    .iter()
+                    .map(|event| event.action.as_str())
+                    .collect::<Vec<_>>(),
+                ["due.join_failed", "due.finished"]
+            );
+            assert_eq!(
+                events[0].diagnostic.as_ref().unwrap().code.as_str(),
+                "DUE_JOIN_FAILED"
+            );
+            assert_eq!(
+                events[1].diagnostic.as_ref().unwrap().code.as_str(),
+                "JOB_FAILED"
+            );
+            use crate::ScheduleStore;
+            assert_eq!(
+                scheduler
+                    .core
+                    .store
+                    .get(row.id)
+                    .unwrap()
+                    .unwrap()
+                    .last_outcome,
+                Some(runs[0].outcome.clone())
+            );
         }
     }
 
@@ -942,7 +1005,7 @@ mod tests {
             std::time::Instant::now(),
             guard,
             Arc::clone(&scheduler.hosts),
-            None,
+            (Arc::clone(&scheduler.environment), None),
         )
         .await;
         assert!(matches!(report, super::Report::Ran(RunOutcome::Failed(_))));

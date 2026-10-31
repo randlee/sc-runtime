@@ -4,7 +4,7 @@
 //! gets a process group/job object, explicit cwd, argv, and empty environment.
 
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{Command, ExitStatus, Stdio};
 use std::sync::mpsc;
 use std::thread;
@@ -29,35 +29,6 @@ pub(crate) struct ComposeRunResult {
     pub(crate) exit_code: Option<i32>,
 }
 
-/// Resolves the program before clearing the child environment.
-fn resolve_program(program: &Path) -> io::Result<PathBuf> {
-    if program.is_absolute() {
-        return Ok(program.to_path_buf());
-    }
-    if program.components().count() > 1 {
-        return std::env::current_dir().map(|cwd| cwd.join(program));
-    }
-    let path = std::env::var_os("PATH")
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "PATH is unavailable"))?;
-    for dir in std::env::split_paths(&path) {
-        let candidate = dir.join(program);
-        if candidate.is_file() {
-            return candidate.canonicalize();
-        }
-        #[cfg(windows)]
-        for extension in ["exe", "com", "cmd", "bat"] {
-            let candidate = candidate.with_extension(extension);
-            if candidate.is_file() {
-                return candidate.canonicalize();
-            }
-        }
-    }
-    Err(io::Error::new(
-        io::ErrorKind::NotFound,
-        "configured executable not found on PATH",
-    ))
-}
-
 /// Owns cleanup on every return, including capture and thread-spawn failures.
 struct ChildGuard(Box<dyn ChildWrapper>);
 impl Drop for ChildGuard {
@@ -72,12 +43,13 @@ pub(crate) fn run_cli(
     args: &[String],
     deadline: Instant,
     logger: &SharedCanonicalLog,
+    environment: &crate::environment::EnvironmentSnapshot,
     correlation: &crate::worker::RunCorrelation,
 ) -> Result<ComposeRunResult, ComposeHostError> {
     if Instant::now() >= deadline {
         return Err(ComposeHostError::TimedOut);
     }
-    let mut child = spawn_cli(program, cwd, args)?;
+    let mut child = spawn_cli(program, cwd, args, environment)?;
     let spawn_error = |source| ComposeHostError::Spawn {
         program: program.display().to_string(),
         source,
@@ -140,12 +112,13 @@ fn spawn_cli(
     program: &Path,
     cwd: Option<&Path>,
     args: &[String],
+    environment: &crate::environment::EnvironmentSnapshot,
 ) -> Result<ChildGuard, ComposeHostError> {
     let spawn_error = |source| ComposeHostError::Spawn {
         program: program.display().to_string(),
         source,
     };
-    let resolved = resolve_program(program).map_err(spawn_error)?;
+    let resolved = crate::process::resolve_program(program).map_err(spawn_error)?;
     let cwd = cwd.ok_or_else(|| {
         spawn_error(io::Error::other(
             "working directory unavailable at configuration",
@@ -156,6 +129,7 @@ fn spawn_cli(
         .current_dir(cwd)
         .args(args)
         .env_clear()
+        .envs(environment.iter())
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
