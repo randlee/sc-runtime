@@ -47,13 +47,14 @@ output ownership plus repeat dry-run/drift. It also delivers the real developmen
 composition, shared logger, HTTP+cron JSONL, shutdown precedence, and isolated-CI
 signal lifecycle using the approved real registry `1.5.0` adapter.
 
-The current kit pin is rejected because its actual installer destination
-inventory includes `docs/sprints/**`. Qualification must enumerate every actual
+The previous kit pin was rejected because its actual installer destination
+inventory included `docs/sprints/**`. The current pin is the qualified exact
+revision `9677ab083e7dd3feb258235a342e321ca1b45d8d`, from unmerged upstream
+[PR 137](https://github.com/randlee/sc-publish/pull/137). Qualification must enumerate every actual
 copy/render/package destination, reject that class plus traversal, absolute or
 duplicate paths and unsafe symlinks, and compare the inventory with real install
 outputs. Upstream source history may remain in `docs/sprints/**`; checking source
-checkout absence is not sufficient or required. Select an exact qualified remote
-full SHA before installing; this timing amendment does not change the pin. Kit
+checkout absence is not sufficient or required. Install from the exact qualified remote full SHA. Kit
 preparation may proceed independently of runtime parents; final composition
 consumes their approved merges. b-18's [validation recipe](../plans/phase-b/sprint-b-18-template-observability-integration.md#required-validation)
 is authoritative for that install and inventory check.
@@ -76,7 +77,7 @@ must state the limits explicitly. Canonical `1.5.1` release inventories remain.
 
 ```bash
 # Fetch exactly the qualified consumer pin into a fresh isolated cache.
-# The current rejected pin must be advanced by b-18 before this install.
+# Verify the pinned revision and inventory before installation.
 SC_PUBLISH_REPOSITORY="$(sed -n 's/^repository = "\([^" ]*\)"/\1/p' release/sc-publish-pin.toml)"
 SC_PUBLISH_REVISION="$(sed -n 's/^revision = "\([0-9a-f]*\)"/\1/p' release/sc-publish-pin.toml)"
 test -n "$SC_PUBLISH_REPOSITORY"
