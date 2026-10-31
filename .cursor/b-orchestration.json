@@ -85,11 +85,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa1_finding_fail_all6_fixes_in_progress",
+      "status": "all6_fix_artifact_pushed_scoped_qa2_in_progress",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
-      "head": "326a7a6a10e26ceb071e60cd02b7a1ef30800732",
+      "head": "809a0387eee90f1d3a6c661a4964f9e100fbf45b",
       "preqa_bead": "run-03z.25",
       "qa1_bead": "run-03z.26",
       "qa1_packet": "/tmp/phaseb-cursor-orchestration/b16-qa1",
@@ -125,7 +125,17 @@
       ],
       "fix_bead": "run-03z.27",
       "fix_task_id": "/root/phaseb_b16_developer",
-      "fix_branch": "fix/b-16-qa1"
+      "fix_branch": "fix/b-16-qa1",
+      "qa2_bead": "run-03z.28",
+      "qa2_packet": "/tmp/phaseb-cursor-orchestration/b16-qa2",
+      "parallel_boundary_fix": {
+        "task_id": "/root/phaseb_b16_test_module_policy",
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "bead": "run-03z.27.1",
+        "commit": "a3bc74efa3817f500b3b310850c38c678bc71a81",
+        "status": "validated_and_consumed"
+      }
     },
     "b-13": {
       "task_id": "run-03z.1",
