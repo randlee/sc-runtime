@@ -50,11 +50,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa1_findings_fix_in_progress",
+      "status": "qa1_fix_artifact_pushed_tests_and_validation_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b15_developer",
       "pr_number": 91,
-      "head": "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437",
+      "head": "b2de6d21f34134681d2c7c6de858fd2045107214",
       "state_path": "/tmp/phaseb-cursor-orchestration/b-15-developer-state.json",
       "fix_task_id": "/root/phaseb_b15_qa1_fixes",
       "fix_bead": "run-03z.21",
@@ -69,7 +69,8 @@
           "QA-001",
           "FTQ-004",
           "RBQA-B15-001"
-        ]
+        ],
+        "head": "62be4592e28bd65239f665f1b085fddbf7a3f99c"
       }
     },
     "b-16": {
@@ -78,11 +79,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "contract_fix_propagated_developer_validated_qa_pending",
+      "status": "qa1_fix_artifact_pushed_tests_and_validation_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
-      "head": "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437"
+      "head": "b2de6d21f34134681d2c7c6de858fd2045107214"
     },
     "b-13": {
       "task_id": "run-03z.1",
@@ -2477,7 +2478,19 @@
       "sprint/b-16-monty-template-examples"
     ],
     "status": "all_required_developer_validation_pass_qa_pending",
-    "evidence": "/tmp/phaseb-cursor-orchestration/b15-b16-propagation/completion-report.json"
+    "evidence": "/tmp/phaseb-cursor-orchestration/b15-b16-propagation/completion-report.json",
+    "b15_qa1_first_fix": {
+      "task_id": "/root/phaseb_worktree_next_wave",
+      "commit": "b2de6d21f34134681d2c7c6de858fd2045107214",
+      "branches": [
+        "sprint/b-15-sc-cron-observability",
+        "sprint/b-16-monty-template-examples"
+      ],
+      "remote_verified": true,
+      "tracked_clean": true,
+      "untracked_preserved": true,
+      "qa_status": "pending final tests and validation"
+    }
   },
   "qa_snapshot_preparation": {
     "task_id": "/root/phaseb_worktree_next_wave",
