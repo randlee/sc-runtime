@@ -7,6 +7,10 @@ import tempfile
 import json
 import tomllib
 import unittest
+import subprocess
+from unittest import mock
+import urllib.error
+import io
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts/check_observability_release.py"
 spec = importlib.util.spec_from_file_location("observability_guard", SCRIPT)
@@ -119,6 +123,98 @@ class ReleaseGuardTests(unittest.TestCase):
                 metadata["packages"][0][field] = value
                 self.check_raises(metadata=metadata)
 
+
+    def test_probe_timeout_uses_validated_tree_owner(self):
+        with mock.patch.object(guard._owned, "run", side_effect=subprocess.TimeoutExpired("cargo", 1)) as run:
+            with self.assertRaisesRegex(ValueError, "upstream.*timed out.*terminated and reaped"):
+                guard.run_probe_cargo(["cargo"], self.root, {}, "upstream", timeout=1)
+            self.assertEqual(run.call_args.kwargs["timeout"], 1)
+            self.assertEqual(run.call_args.kwargs["env"], {})
+
+    def test_registry_absence_partial_and_probe_outcomes(self):
+        checksum = "a" * 64
+        with mock.patch.object(guard, "registry_version", side_effect=[None, None]), \
+             mock.patch.object(guard, "probe_upstream") as probe:
+            guard.check_upstream_readiness()
+            probe.assert_not_called()
+        with mock.patch.object(guard, "registry_version", side_effect=[None, checksum]):
+            with self.assertRaisesRegex(ValueError, "partial"):
+                guard.check_upstream_readiness()
+        with mock.patch.object(guard, "registry_version", side_effect=[checksum, checksum]), \
+             mock.patch.object(guard, "probe_upstream", side_effect=ValueError("compile failed")):
+            with self.assertRaisesRegex(ValueError, "incompatible.*compile failed"):
+                guard.check_upstream_readiness()
+        with mock.patch.object(guard, "registry_version", side_effect=[checksum, checksum]), \
+             mock.patch.object(guard, "probe_upstream"):
+            with self.assertRaisesRegex(ValueError, "cleanup.*issues/97"):
+                guard.check_upstream_readiness()
+
+    def test_registry_http_and_metadata_fail_closed(self):
+        url = "https://crates.io/api/v1/crates/sc-observability-types/1.5.1"
+        class Response:
+            def __init__(self, data, source=url):
+                self.data, self.source = data, source
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def geturl(self): return self.source
+            def read(self, limit): return json.dumps(self.data).encode()
+        good = {"version": {"crate": guard.NAME, "num": "1.5.1", "yanked": False, "checksum": "a" * 64}}
+        with mock.patch.object(guard.urllib.request, "urlopen", return_value=Response(good)) as fetch:
+            self.assertEqual(guard.registry_version(guard.NAME), "a" * 64)
+            request = fetch.call_args.args[0]
+            self.assertEqual(request.get_header("Cache-control"), "no-cache, no-store")
+            self.assertEqual(fetch.call_args.kwargs["timeout"], 15)
+        for data, source in (({}, url), ({"version": {**good["version"], "yanked": True}}, url),
+                             ({"version": {**good["version"], "checksum": "bad"}}, url),
+                             (good, "https://evil.example/x")):
+            with self.subTest(data=data, source=source), mock.patch.object(guard.urllib.request, "urlopen", return_value=Response(data, source)):
+                with self.assertRaises(ValueError): guard.registry_version(guard.NAME)
+        for code in (404, 500):
+            error = urllib.error.HTTPError(url, code, "error", {}, io.BytesIO())
+            with mock.patch.object(guard.urllib.request, "urlopen", side_effect=error):
+                if code == 404: self.assertIsNone(guard.registry_version(guard.NAME))
+                else:
+                    with self.assertRaises(ValueError): guard.registry_version(guard.NAME)
+        with mock.patch.object(guard.urllib.request, "urlopen", side_effect=urllib.error.URLError("offline")):
+            with self.assertRaises(ValueError): guard.registry_version(guard.NAME)
+
+    def test_probe_builds_exact_isolated_workspace_and_checks_metadata(self):
+        checksums = {name: "a" * 64 for name in guard.UPSTREAM_NAMES}
+        packages = [{"name": name, "version": "1.5.1", "source": guard.REGISTRY, "id": name} for name in guard.UPSTREAM_NAMES]
+        metadata = {"packages": packages, "resolve": {"nodes": [{"id": name} for name in guard.UPSTREAM_NAMES]}}
+        def run(args, root, env, context):
+            manifest = tomllib.loads((root / "Cargo.toml").read_text())
+            self.assertEqual(manifest["dependencies"], {name: "=1.5.1" for name in guard.UPSTREAM_NAMES})
+            self.assertIn("workspace", manifest)
+            self.assertEqual(env["CARGO_HOME"], str(root / "cargo-home"))
+            source = (root / "src/lib.rs").read_text()
+            self.assertIn("Arc<sc_observability::v2::Logger>", source)
+            self.assertIn("-> SharedCanonicalLog", source)
+            if args[1] == "metadata":
+                lock = "".join('[[package]]\nname = "' + name + '"\nversion = "1.5.1"\nsource = "' + guard.REGISTRY + '"\nchecksum = "' + checksums[name] + '"\n' for name in guard.UPSTREAM_NAMES)
+                (root / "Cargo.lock").write_text(lock)
+                return json.dumps(metadata)
+            self.assertEqual(args, ["cargo", "check", "--locked"])
+            return ""
+        with mock.patch.object(guard, "run_probe_cargo", side_effect=run) as cargo:
+            guard.probe_upstream(checksums)
+            self.assertEqual(cargo.call_count, 2)
+
+    def test_probe_metadata_and_checksum(self):
+        checksums = {name: "a" * 64 for name in guard.UPSTREAM_NAMES}
+        packages = [{"name": name, "version": "1.5.1", "source": guard.REGISTRY, "id": name} for name in guard.UPSTREAM_NAMES]
+        metadata = {"packages": packages, "resolve": {"nodes": [{"id": name} for name in guard.UPSTREAM_NAMES]}}
+        lock = {"package": [{"name": name, "version": "1.5.1", "source": guard.REGISTRY, "checksum": checksums[name]} for name in guard.UPSTREAM_NAMES]}
+        guard.validate_probe(metadata, lock, checksums)
+        for change in ("source", "version", "checksum", "duplicate"):
+            bad = copy.deepcopy(lock)
+            if change == "duplicate": bad["package"].append(copy.deepcopy(bad["package"][0]))
+            else: bad["package"][0][change] = "invalid"
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                guard.validate_probe(metadata, bad, checksums)
+        bad_metadata = copy.deepcopy(metadata)
+        bad_metadata["packages"][0]["source"] = None
+        with self.assertRaises(ValueError): guard.validate_probe(bad_metadata, lock, checksums)
 
     def test_consumer_input_and_installed_manifest_include_guard_and_benchmark(self):
         root = SCRIPT.parents[1]

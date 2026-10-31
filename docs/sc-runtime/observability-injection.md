@@ -64,6 +64,16 @@ never include event/provider values or recursively log the failure.
 This containment does not repair poison, catch panic=abort or suppress the
 application-owned panic hook, which may print before unwinding. It catches no
 arbitrary receiver/startup/shutdown callback and installs no global hook.
+Pinned 1.5.0 exposes no safe public operation that deliberately poisons its
+private writer RwLock. `try_log_with_outcome_in_mode` runs custom redactors
+before acquiring its read guard; readers cannot poison an RwLock.
+`shutdown_with_timeout` takes the writer out under a private write guard and
+drops that guard before invoking writer shutdown. A panicking registered sink
+can terminate the writer and prove real disconnected admission, but does not
+poison this lock. Tests therefore prove real custom-redactor unwind containment,
+fixed mapping, native saturation/disconnection/shutdown, and static coverage of
+the entire try_log call; they make no dynamic private writer-poison claim.
+
 Healthy admission does not wait for queue capacity or perform sink I/O, but
 internal locks may contend: it is not wait-free. Custom receivers remain
 trusted prompt-return/no-panic boundaries. Native rejection and contained

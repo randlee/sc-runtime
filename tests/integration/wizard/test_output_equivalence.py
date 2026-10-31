@@ -202,9 +202,7 @@ class OutputEquivalenceTests(unittest.TestCase):
             env = os.environ.copy()
             env["WYVERN_BIN"] = str(wyvern)
             env.pop("SC_RUNTIME_RELEASE", None)
-            # Exercise all real recipes against the checkout's explicit
-            # development bridge until the canonical packages are released.
-            args = [*args, "--development-observability"]
+            # Exercise the canonical shim template with the normal SDK checkout patches.
         try:
             return subprocess.run(
                 [sys.executable, str(DRIVER), *args],

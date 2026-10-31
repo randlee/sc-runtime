@@ -2,12 +2,20 @@
 """Enforce the five-SDK observability boundary on resolved normal and build package identities."""
 
 import json
+import importlib.util
+import os
 from pathlib import Path
 import subprocess
 import tomllib
 import tempfile
 
 ROOT = Path(__file__).resolve().parent.parent
+# Repo-only preflight reuses the validated session/Windows Job owner. Resolve
+# from this file, never the caller's cwd; marker state is set only in children.
+_owned_spec = importlib.util.spec_from_file_location(
+    "sc_runtime_owned_commands", ROOT / "tests/integration/generation/owned_process.py")
+_owned = importlib.util.module_from_spec(_owned_spec)
+_owned_spec.loader.exec_module(_owned)
 OWNERS = ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron")
 NO_TYPES = frozenset({"sc-config", "sc-transport"})
 FORBIDDEN = frozenset({
@@ -86,14 +94,25 @@ def check_cron_manifest(manifest):
             raise ValueError(f"cron feature {feature} activates sc-command")
 
 
+def run_metadata(command, cwd, context, timeout=120):
+    """Bound Cargo and all owned descendants using the shared validated helper."""
+    try:
+        result = _owned.run(command, cwd=cwd, timeout=timeout, stdin=subprocess.DEVNULL,
+                            capture_output=True, text=True)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"{context}: Cargo metadata timed out after {timeout}s; owned tree terminated and reaped") from exc
+    except (OSError, RuntimeError, TimeoutError, subprocess.SubprocessError) as exc:
+        raise RuntimeError(f"{context}: owned Cargo metadata execution or cleanup failed: {exc}") from exc
+    if result.returncode:
+        raise RuntimeError(f"{context}: Cargo metadata failed ({result.returncode}): {result.stderr.strip()}")
+    return json.loads(result.stdout)
+
+
 def resolved_metadata():
     # All supported features include cron's optional Monty production graph.
     # Cargo metadata resolves packages without compiling the higher-MSRV feature.
-    result = subprocess.run(
-        ["cargo", "metadata", "--locked", "--all-features", "--format-version", "1"],
-        cwd=ROOT, check=True, capture_output=True, text=True,
-    )
-    return json.loads(result.stdout)
+    return run_metadata(["cargo", "metadata", "--locked", "--all-features", "--format-version", "1"],
+                        ROOT, "workspace observability graph")
 
 
 def check_isolated_features():
@@ -109,11 +128,9 @@ def check_isolated_features():
                 f'path = {json.dumps(str(ROOT / "crates/sc-cron"))}\n'
                 f'default-features = false\nfeatures = {json.dumps(features)}\n'
             )
-            result = subprocess.run(
-                ["cargo", "metadata", "--offline", "--format-version", "1"],
-                cwd=root, check=True, capture_output=True, text=True,
-            )
-            check_isolated_graph(json.loads(result.stdout))
+            context = "isolated cron Monty graph" if features else "isolated cron default graph"
+            metadata = run_metadata(["cargo", "metadata", "--offline", "--format-version", "1"], root, context)
+            check_isolated_graph(metadata)
 
 
 def check_isolated_graph(metadata):

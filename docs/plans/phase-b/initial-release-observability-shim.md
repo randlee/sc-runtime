@@ -1,3 +1,76 @@
+---
+requirements:
+  - REQ-RUN-0002
+  - REQ-RUN-0003
+  - REQ-RUN-0004
+  - REQ-RUN-0005
+  - REQ-RUN-0309
+  - REQ-RUN-0503
+  - REQ-RUN-0603
+  - REQ-RUN-0701
+  - REQ-RUN-0702
+  - NFR-RUN-0001
+  - NFR-RUN-0002
+  - NFR-RUN-0003
+  - NFR-RUN-0009
+  - NFR-RUN-0010
+  - REQ-CMD-0001
+  - REQ-CMD-0002
+  - REQ-CMD-0003
+  - REQ-CMD-0004
+  - REQ-CMD-0005
+  - REQ-CMD-0006
+  - NFR-CMD-0001
+  - NFR-CMD-0002
+  - NFR-CMD-0003
+  - REQ-RT-0001
+  - REQ-RT-0002
+  - REQ-RT-0003
+  - REQ-RT-0004
+  - REQ-RT-0005
+  - REQ-RT-0006
+  - REQ-RT-0007
+  - REQ-RT-0008
+  - NFR-RT-0001
+  - NFR-RT-0002
+  - NFR-RT-0003
+  - NFR-RT-0004
+  - REQ-CRON-0001
+  - REQ-CRON-0003
+  - REQ-CRON-0004
+  - REQ-CRON-0005
+  - REQ-CRON-0019
+  - NFR-CRON-0001
+  - NFR-CRON-0002
+adrs:
+  - ADR-RUN-0001
+  - ADR-RUN-0002
+  - ADR-RUN-0003
+  - ADR-RUN-0004
+  - ADR-RUN-0005
+  - ADR-RUN-0006
+  - ADR-RUN-0007
+  - ADR-RUN-0008
+  - ADR-RUN-0009
+  - ADR-RUN-0011
+  - ADR-RUN-0013
+  - ADR-RUN-0014
+  - ADR-RUN-0015
+  - ADR-RUN-0016
+  - ADR-RUN-0017
+  - ADR-RUN-0303
+  - ADR-RUN-0401
+  - ADR-RUN-0402
+  - ADR-CMD-0001
+  - ADR-CMD-0002
+  - ADR-CMD-0003
+  - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
+  - ADR-RT-0004
+  - ADR-RT-0005
+---
+
 # Initial release observability shim
 
 **Status:** Approved release amendment, 2026-10-31; implementation under verification.
@@ -150,8 +223,14 @@ global hook or claim universal panic isolation. Healthy-state admission has
 no queue-capacity wait or sink I/O but takes internal locks; it is not
 wait-free and may block on lock contention. Custom receivers remain trusted
 prompt-return/no-panic callbacks. Best-effort rejection never changes HTTP,
-store, cron or runtime outcomes. Test real poison/unwind mapping separately
-from native saturation/disconnection and abort limitations.
+store, cron or runtime outcomes. Test actual try_log unwind through the public custom-redactor seam and fixed
+mapping separately from native saturation/disconnection. The pinned logger's
+writer RwLock and write-guard operations are private: external code cannot
+induce genuine writer-lock poison through a safe public API. Redactor unwind
+occurs before the admission read lock; a panicking sink terminates the writer
+but does not poison that lock. Neither is a writer-poison witness. Retain the
+catch around the whole try_log call and document this source-grounded proof
+limit, together with abort and hook limits; do not fabricate private state.
 
 ## Implementation owned_paths
 
@@ -282,7 +361,7 @@ boundary rules remain active. Verify the normalized archive omits the self edge.
 Acceptance includes one trait/types identity, shared Arc identity, legacy
 Noops, downstream custom receiver compile tests, ordered recorder/clear,
 rejecting attempts and poison recovery. Port real 1.5.0 adapter JSONL/admission,
-queue-full, disconnected, poison/unwind and lifecycle tests to generated daemon
+queue-full, real disconnected, public-redactor unwind and lifecycle tests to generated daemon
 tests. Use deterministic barriers for saturation, not timing-only sleeps.
 Retain HTTP/cron JSONL, no-edits generation, shutdown precedence and isolated
 SIGINT/SIGTERM lifecycle proof. Record exact isolated cron default/Monty and

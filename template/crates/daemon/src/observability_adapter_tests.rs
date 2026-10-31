@@ -1,5 +1,6 @@
+use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex, mpsc};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use super::LoggerAdapter;
 use sc_command::observability::CanonicalLog;
@@ -114,8 +115,96 @@ impl LogSink for BlockingSink {
     }
 }
 
+// Each adversarial fixture owns only Rust threads, so killing its process
+// bounds every admission, sink callback, shutdown and thread join together.
+struct FixtureChild(Child);
+
+impl Drop for FixtureChild {
+    fn drop(&mut self) {
+        if !matches!(self.0.try_wait(), Ok(Some(_))) {
+            let _ = self.0.kill();
+        }
+        let _ = self.0.wait();
+    }
+}
+
+fn run_fixture_child(name: &str, deadline: Duration) -> Result<(), String> {
+    let marker = tempfile::tempdir().map_err(|_| "fixture marker directory failed")?;
+    let done = marker.path().join("completed");
+    let mut child = FixtureChild(
+        Command::new(std::env::current_exe().map_err(|_| "test executable unavailable")?)
+            .args(["--exact", name, "--nocapture"])
+            .env("SC_ADAPTER_FIXTURE", name)
+            .env("SC_ADAPTER_FIXTURE_DONE", &done)
+            .stdin(Stdio::null())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .map_err(|_| "fixture child could not start")?,
+    );
+    let until = Instant::now() + deadline;
+    loop {
+        match child
+            .0
+            .try_wait()
+            .map_err(|_| "fixture status inspection failed")?
+        {
+            Some(status) => {
+                if !status.success() {
+                    return Err("fixture child failed".into());
+                }
+                if std::fs::read(&done).ok().as_deref() != Some(b"completed") {
+                    return Err("fixture did not execute its exact test".into());
+                }
+                return Ok(());
+            }
+            None if Instant::now() >= until => {
+                child
+                    .0
+                    .kill()
+                    .map_err(|_| "fixture timeout: child kill failed")?;
+                child
+                    .0
+                    .wait()
+                    .map_err(|_| "fixture timeout: child reap failed")?;
+                return Err("fixture timed out; child killed and reaped".into());
+            }
+            None => std::thread::sleep(Duration::from_millis(10)),
+        }
+    }
+}
+
+fn bounded_fixture(name: &str, scenario: fn()) {
+    if std::env::var("SC_ADAPTER_FIXTURE").ok().as_deref() == Some(name) {
+        scenario();
+        let done = std::env::var_os("SC_ADAPTER_FIXTURE_DONE").expect("completion marker");
+        std::fs::write(done, b"completed").expect("fixture completion");
+    } else {
+        run_fixture_child(name, WAIT).expect("bounded real logger fixture");
+    }
+}
+
+#[test]
+fn fixture_timeout_kills_and_reaps_child() {
+    const NAME: &str = "observability::adapter_tests::fixture_timeout_kills_and_reaps_child";
+    if std::env::var("SC_ADAPTER_FIXTURE").ok().as_deref() == Some(NAME) {
+        loop {
+            std::thread::park();
+        }
+    }
+    let error = run_fixture_child(NAME, Duration::from_millis(100)).unwrap_err();
+    assert_eq!(error, "fixture timed out; child killed and reaped");
+}
+
 #[test]
 fn saturated_real_queue_rejects_without_waiting_for_sink() {
+    bounded_fixture(
+        "observability::adapter_tests::saturated_real_queue_rejects_without_waiting_for_sink",
+        saturation_scenario,
+    );
+}
+
+fn saturation_scenario() {
     let root = tempfile::tempdir().expect("temp root");
     let (entered_tx, entered_rx) = mpsc::channel();
     let (release_tx, release_rx) = mpsc::channel();
@@ -129,28 +218,90 @@ fn saturated_real_queue_rejects_without_waiting_for_sink() {
     });
     adapter
         .emit(event(adapter.service_name().clone()))
-        .expect("initial");
+        .expect("initial admission");
     entered_rx.recv_timeout(WAIT).expect("writer entered sink");
     adapter
         .emit(event(adapter.service_name().clone()))
         .expect("queue slot");
-    let worker_adapter = Arc::clone(&adapter);
-    let (result_tx, result_rx) = mpsc::channel();
-    let worker = std::thread::spawn(move || {
-        let result = worker_adapter.emit(event(worker_adapter.service_name().clone()));
-        let _ = result_tx.send(result);
-    });
-    let result = result_rx.recv_timeout(WAIT);
-    drop(release_tx);
-    worker.join().expect("worker");
-    let error = result
-        .expect("admission must return while sink is blocked")
+    // Sink remains blocked while this real capacity-one queue rejects admission.
+    let error = adapter
+        .emit(event(adapter.service_name().clone()))
         .expect_err("queue full");
     assert_eq!(
         error.diagnostic().code,
         sc_observability::error_codes::LOGGER_QUEUE_FULL
     );
+    drop(release_tx);
     logger.shutdown().expect("owner shutdown");
+}
+
+struct PanickingSink(mpsc::Sender<()>);
+
+impl LogSink for PanickingSink {
+    fn write(&self, _event: &LogEvent) -> Result<(), LogSinkError> {
+        let _ = self.0.send(());
+        panic!("test-only sink panic terminates the actual writer");
+    }
+    fn health(&self) -> SinkHealth {
+        health()
+    }
+}
+
+#[test]
+fn disconnected_writer_preserves_native_error_context_and_classification() {
+    bounded_fixture(
+        "observability::adapter_tests::disconnected_writer_preserves_native_error_context_and_classification",
+        disconnected_scenario,
+    );
+}
+
+fn disconnected_scenario() {
+    let root = tempfile::tempdir().expect("temp root");
+    let (entered_tx, entered_rx) = mpsc::channel();
+    let logger = logger(root.path(), Arc::new(PanickingSink(entered_tx)), 8);
+    let adapter = LoggerAdapter {
+        logger: Arc::clone(&logger),
+    };
+    adapter
+        .emit(event(adapter.service_name().clone()))
+        .expect("initial admission");
+    entered_rx
+        .recv_timeout(WAIT)
+        .expect("writer entered panicking sink");
+    // This real failed flush synchronizes with receiver disconnection after unwind.
+    logger
+        .flush_with_timeout(WAIT)
+        .expect_err("writer receiver is disconnected");
+    let direct = logger
+        .try_log(event(logger.service_name().clone()))
+        .expect_err("native disconnect");
+    let forwarded = adapter
+        .emit(event(adapter.service_name().clone()))
+        .expect_err("forwarded disconnect");
+    assert!(matches!(
+        forwarded,
+        sc_observability_types::v2::EventError::Routing { .. }
+    ));
+    assert_eq!(
+        forwarded.diagnostic().code,
+        sc_observability::error_codes::LOGGER_WRITER_DEGRADED
+    );
+    assert_eq!(
+        forwarded.failure_classification(),
+        direct.failure_classification()
+    );
+    let mut expected = serde_json::to_value(direct.diagnostic()).expect("native diagnostic");
+    let mut actual = serde_json::to_value(forwarded.diagnostic()).expect("forwarded diagnostic");
+    // Native admissions create separate timestamps; all native context is unchanged.
+    expected.as_object_mut().unwrap().remove("timestamp");
+    actual.as_object_mut().unwrap().remove("timestamp");
+    assert_eq!(actual, expected);
+    assert_eq!(
+        forwarded.diagnostic().message,
+        "writer thread disconnected while admitting non-blocking log work"
+    );
+    drop(adapter);
+    let _ = logger.shutdown_with_timeout(WAIT);
 }
 
 #[test]
