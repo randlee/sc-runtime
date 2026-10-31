@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:QA-002> qa:sprint "b-15" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-cron/src/scheduler/run_due.rs:52" ;
+  qa:issue "The required function-length gate rejects the new 132-code-line `record_due` function." ;
+  qa:remedy "Split the recording path into smaller helpers while preserving outcome/event ordering and best-effort emission semantics." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

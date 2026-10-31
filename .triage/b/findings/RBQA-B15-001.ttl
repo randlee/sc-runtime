@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:RBQA-B15-001> qa:sprint "b-15" ;
+  qa:severity "minor" ;
+  qa:reviewer "ruthless-boundary-qa" ;
+  qa:location "crates/sc-cron/README.md:45" ;
+  qa:issue "The README still describes corrupt-row diagnostics as a tracing warning, although the store now emits through the injected canonical logger." ;
+  qa:remedy "Replace the tracing claim with the actual cron.store/row.corrupt canonical event behavior and briefly state that observing it requires a logger-aware store/open construction; legacy constructors install the fixed Noop. This is a wording correction only." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

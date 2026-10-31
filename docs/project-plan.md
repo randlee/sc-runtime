@@ -72,7 +72,7 @@ revision excludes `docs/sprints/**`; the current pin is not a valid input.
 | b-11 benchmark Monty reports | [sprint-b-11](plans/phase-b/sprint-b-11-benchmark-monty-reports.md) | complete | `sprint/b-11-benchmark-monty-reports` |
 | b-12 sc-cron schedule row limit | [sprint-b-12](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md) | complete | `sprint/b-12-sc-cron-schedule-row-limit` |
 | b-13 observability contract | [sprint-b-13](plans/phase-b/sprint-b-13-observability-contract.md) | complete | `sprint/b-13-observability-contract` |
-| b-14 runtime observability | [sprint-b-14](plans/phase-b/sprint-b-14-sc-runtime-observability.md) | implemented; QA pending | `sprint/b-14-sc-runtime-observability` |
+| b-14 runtime observability | [sprint-b-14](plans/phase-b/sprint-b-14-sc-runtime-observability.md) | complete | `sprint/b-14-sc-runtime-observability` |
 | b-15 cron observability | [sprint-b-15](plans/phase-b/sprint-b-15-sc-cron-observability.md) | implemented; QA pending | `sprint/b-15-sc-cron-observability` |
 | b-16 Monty template examples | [sprint-b-16](plans/phase-b/sprint-b-16-monty-template-examples.md) | implemented; QA pending | `sprint/b-16-monty-template-examples` |
 | b-17 sc-cron hook environment | [sprint-b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md) | planned | `sprint/b-17-sc-cron-hook-environment` |
