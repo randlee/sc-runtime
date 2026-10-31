@@ -310,10 +310,12 @@ where
     Cleanup: Future<Output = ()>,
 {
     let mut instance = None;
+    let mut retained_stores = None;
     let serve_logger = Arc::clone(&logger);
     // This inner future owns startup closures, including unused senders, and
     // is dropped before cleanup is called even when an early step fails.
     let retained_instance = &mut instance;
+    let stores_for_cleanup = &mut retained_stores;
     let result = async move {
         let root = resolve_root(app, config)?;
         let endpoint = resolve_endpoint(app, config, &root)?;
@@ -327,6 +329,7 @@ where
                 })??,
         );
         let stores = stores_fn().await?;
+        *stores_for_cleanup = Some(stores.clone());
         let openapi = routes_fn(stores.clone());
         let router = match router::with_runtime_routes(openapi, check_mcp) {
             Ok(router) => apply_mcp(router, stores),
@@ -336,6 +339,7 @@ where
     }
     .await;
     cleanup().await;
+    drop(retained_stores);
     drop(instance);
     drop(logger);
     result
