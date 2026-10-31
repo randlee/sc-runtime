@@ -52,7 +52,7 @@ use crate::{
 mod worker_runs;
 
 pub(crate) use worker_runs::{Event, event_record, terminal_event};
-use worker_runs::{WorkerFailure, await_aborted, finished, panic_message};
+use worker_runs::{WorkerFailure, await_aborted, cancel_slot_run, finished, panic_message};
 
 pub(crate) type RunCorrelation = Option<sc_observability_types::CorrelationId>;
 
@@ -135,9 +135,9 @@ impl InFlight {
     }
 }
 
-/// Dropping a Rust or Python run cancels it. A Monty run is detached instead,
-/// so a dropped slot does not abort the interpreter. The feed guard still
-/// drops, which is what lets shutdown proceed after a panic.
+/// A fallback for unwinding or dropping the worker future. Normal removal and
+/// shutdown take and join the handle before this drop. Async cleanup cannot run
+/// from Drop; callers must await `WorkerHandle::shutdown` to completion.
 impl Drop for InFlight {
     fn drop(&mut self) {
         if let Some(RunHandle::Abortable(handle)) = self.handle.take() {
@@ -595,9 +595,11 @@ where
                 let mut slot = previous.swap_remove(index);
                 if schedule.enabled {
                     self.slots.push(slot);
+                    continue;
                 } else if slot.run.as_ref().is_some_and(InFlight::is_monty) {
                     slot.queued = Queued::Disable;
                     self.slots.push(slot);
+                    continue;
                 } else if slot.run.is_some()
                     && let Some(mut event) = detail_event(
                         self.coord.logger.service_name().clone(),
@@ -610,6 +612,7 @@ where
                         slot.run.as_ref().and_then(|run| run.correlation.clone());
                     let _ = self.coord.logger.emit(event);
                 }
+                cancel_slot_run(&mut slot).await;
                 continue;
             }
             if let Some(index) = previous.iter().position(|slot| {
@@ -638,6 +641,7 @@ where
                     slot.queued = Queued::Delete;
                 }
                 self.slots.push(slot);
+                continue;
             } else if slot.run.is_some()
                 && let Some(mut event) = detail_event(
                     self.coord.logger.service_name().clone(),
@@ -649,6 +653,7 @@ where
                 event.correlation_id = slot.run.as_ref().and_then(|run| run.correlation.clone());
                 let _ = self.coord.logger.emit(event);
             }
+            cancel_slot_run(&mut slot).await;
         }
     }
 

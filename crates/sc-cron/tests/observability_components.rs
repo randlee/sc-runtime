@@ -220,9 +220,6 @@ async fn shutdown_branch(
     observed: &tokio::sync::Notify,
 ) -> bool {
     let (worker, release) = WorkerHandle::shutdown_probe(log, feeds);
-    if feeds == 0 {
-        return worker.shutdown(tokio::time::Instant::now()).await;
-    }
     let shutdown = tokio::spawn(worker.shutdown(tokio::time::Instant::now()));
     tokio::time::timeout(Duration::from_secs(2), observed.notified())
         .await
