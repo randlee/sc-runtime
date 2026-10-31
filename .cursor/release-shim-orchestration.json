@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "scope": "Initial 0.1.1 observability compatibility release preparation; not a new phase",
+  "governing_skill": ".cursor/skills/cursor-orchestration/SKILL.md",
+  "lead": "codexis",
+  "beads": {
+    "release_epic": "run-h0h",
+    "plan": "run-h0h.1",
+    "plan_status": "closed",
+    "implementation": "run-h0h.2",
+    "implementation_status": "in_progress",
+    "future_cleanup": "run-3wo",
+    "upstream_availability": "run-03z.7"
+  },
+  "source": {
+    "branch": "codex/plan-release-observability-shim",
+    "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/plan-release-observability-shim",
+    "base": "c3295c2320c7d7bc801665b99d9aee008fef2a1c",
+    "docs_baseline": "054e31a",
+    "pr": 98,
+    "url": "https://github.com/randlee/sc-runtime/pull/98",
+    "status": "implementation_and_validation_active"
+  },
+  "cleanup_issue": "https://github.com/randlee/sc-runtime/issues/97",
+  "coordination": {
+    "branch": "codex/phase-b-review-state",
+    "policy": "All post-freeze QA/status metadata persists only on this branch. Do not merge coordination checkout into product; retain product exact-head CI."
+  },
+  "design": {
+    "contract_home": "sc-command::observability",
+    "temporary_new_normal_edge": "sc-cron -> sc-command (default-features=false)",
+    "logger_adapter": "private generated application module using registry sc-observability 1.5.0",
+    "additional_published_crates": 0,
+    "publication_set": [
+      "sc-config",
+      "sc-transport",
+      "sc-command",
+      "sc-runtime",
+      "sc-cron"
+    ],
+    "retained_exclusions": [
+      "all five SDKs exclude full logger and OTLP normal/build/transitive",
+      "all production SDKs exclude sc-compose/ATM normal/build/transitive and Rust imports"
+    ]
+  },
+  "actors": [
+    {
+      "task_id": "/root/shim_release_plan_author",
+      "role": "rust-developer",
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "status": "active_main_single_committer"
+    },
+    {
+      "task_id": "/root/shim_release_guard_dev",
+      "role": "guard developer",
+      "model": "gpt-6.1-terra",
+      "effort": "high",
+      "status": "completed_handed_back_four_files"
+    }
+  ],
+  "qa": {
+    "required_reviewers": [
+      "req-qa",
+      "arch-qa",
+      "extensibility-qa",
+      "ruthless-boundary-qa",
+      "rust-qa-agent",
+      "rust-best-practices-agent",
+      "rust-service-hardening-agent",
+      "flaky-test-qa"
+    ],
+    "reviewer_manifest": [],
+    "qa_rounds": [],
+    "enforcer": "cursor-quality-mgr",
+    "gate": "All actual reviewer JSON + TODO union zero findings at all severities, deliverables100percent, actual current-head required CI SUCCESS; every round public PR report."
+  },
+  "release": {
+    "publication_authorized": false,
+    "tag_authorized": false,
+    "dispatch_authorized": false,
+    "actual_postpublication_registry_consumer_proof": "After all five internal publications; no skipped test counted as release proof",
+    "future_1_5_1_cleanup": "Separate issue97/run-3wo; not initialrelease blocker"
+  }
+}
