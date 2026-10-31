@@ -60,34 +60,73 @@ async fn main() -> ExitCode {
             return startup_exit(
                 "DAEMON.OBSERVABILITY",
                 err,
-                "check log_root and the logging settings",
+                "fix logging configuration or sink paths and retry",
             );
         }
     };
-    let targets = match daemon::store_targets(&config, &transport_name) {
-        Ok(targets) => targets,
-        Err(err) => {
-            return startup_exit(
-                err.code(),
-                err,
-                "set database configuration or a writable instance root",
-            );
+    let result = run(&config, &transport_name, &observability).await;
+    // `run` has joined both library users and dropped every injected handle.
+    match daemon::agent_error::finish(result, observability.shutdown()) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("{error}");
+            ExitCode::from(1)
         }
+    }
+}
+
+async fn run(
+    config: &daemon::AppConfig,
+    transport_name: &sc_transport::AppName,
+    observability: &daemon::observability::Observability,
+) -> Result<(), String> {
+    let targets = daemon::store_targets(config, transport_name).map_err(|err| {
+        daemon::agent_error::format_agent_error(
+            err.code(), err, "set database configuration or a writable instance root",
+        )
+    })?;
+    #[cfg(feature = "cron")]
+    let scheduler = {
+        let instance_root = daemon::instance_root(config, transport_name).map_err(|err| {
+            daemon::agent_error::format_agent_error(
+                err.code(), err, "set database configuration or a writable instance root",
+            )
+        })?;
+        let hook_environment = config.cron.hook_environment_host().map_err(cron_error)?;
+        // Attach an application reference resolver to this prebuilt policy here.
+        #[cfg(feature = "monty")]
+        let monty_hosts = sc_cron::MontyHostRegistry::new();
+        daemon::cron::open(
+            &config.cron, &instance_root, observability.logger(), hook_environment,
+            #[cfg(feature = "monty")] monty_hosts,
+        ).map_err(cron_error)?
     };
-    // Library injection: pass `observability.logger()` into `Daemon::builder`
-    // and into `sc_cron::Scheduler` once sc-runtime/sc-cron accept the types
-    // trait (see docs/sc-runtime/observability-injection.md).
-    let result = sc_runtime::Daemon::builder(&transport_name, &config.daemon)
+    #[cfg(feature = "cron")]
+    let worker = scheduler.spawn_worker(std::sync::Arc::new(daemon::cron::ApplicationJob));
+    let result = sc_runtime::Daemon::builder(transport_name, &config.daemon)
+        .logger(observability.logger())
         .stores(move || async move { daemon::open_stores(targets).await })
         .routes(daemon::routes::router)
         {% if mcp %}.mcp(daemon::mcp::service){% endif %}
         .run()
         .await;
-    drop(observability);
-    match result {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(err) => startup_exit(err.code(), err, "read the cause and retry"),
+    #[cfg(feature = "cron")]
+    {
+        // shutdown consumes the handle and always joins, including timeout paths.
+        let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(5);
+        let _drained = worker.shutdown(deadline).await;
+        drop(scheduler);
     }
+    result.map_err(|err| {
+        daemon::agent_error::format_agent_error(err.code(), err, "read the cause and retry")
+    })
+}
+
+#[cfg(feature = "cron")]
+fn cron_error(err: sc_cron::CronError) -> String {
+    daemon::agent_error::format_agent_error(
+        "DAEMON.CRON_OPEN", err, "fix cron configuration or database path and retry",
+    )
 }
 
 fn log_root(
@@ -101,7 +140,7 @@ fn log_root(
 }
 
 fn startup_exit(code: &str, cause: impl std::fmt::Display, recovery: &str) -> ExitCode {
-    eprintln!("{code} {cause} — {recovery}");
+    eprintln!("{}", daemon::agent_error::format_agent_error(code, cause, recovery));
     ExitCode::from(1)
 }
 
@@ -135,7 +174,7 @@ fn usage(err: clap::Error) -> ExitCode {
         .lines()
         .find(|line| !line.is_empty())
         .unwrap_or("invalid arguments");
-    eprintln!("CLI.USAGE {cause} — run with --help");
+    eprintln!("{}", daemon::agent_error::format_agent_error("CLI.USAGE", cause, "run with --help"));
     ExitCode::from(2)
 }
 
@@ -149,7 +188,7 @@ mod tests {
     use super::config_cause;
 
     fn startup_line(err: &ConfigError) -> String {
-        format!("{} {} — {}", err.code(), config_cause(err), err.recovery())
+        daemon::agent_error::format_agent_error(err.code(), config_cause(err), err.recovery())
     }
 
     fn assert_library_line(err: &ConfigError) {

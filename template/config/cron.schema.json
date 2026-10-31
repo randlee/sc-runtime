@@ -2,13 +2,19 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/randlee/sc-runtime/template/config/cron.schema.json",
   "title": "Generated application cron configuration",
-  "description": "Runtime check for the cron object in config/default.json. This is not a generation option. Generation answers stay the four keys in wizard/answers.schema.json. cargo-generate exclude copies a file without Liquid rendering and does not omit it; that list is AGENTS.md.j2 and CLAUDE.md.j2. This schema is on [template] ignore, so a generated project does not contain it and does not contain answers.schema.json. The daemon reads cron.max_schedule_rows from config/default.json. Keys other than cron are outside this check. No layout opens the scheduler yet; the layout that does passes CronConfig::row_limit into sc_cron::ScheduleLimits. Hook environment administrator defaults inherit nothing. Absolute dotenv files and roots authorize different scopes; attach an application resolver to the built policy before cron::open.",
+  "description": "Runtime check for the cron object in config/default.json. This is not a generation option. Generation answers stay the four keys in wizard/answers.schema.json. cargo-generate exclude copies a file without Liquid rendering and does not omit it; that list is AGENTS.md.j2 and CLAUDE.md.j2. This schema is on [template] ignore, so a generated project does not contain it and does not contain answers.schema.json. The daemon reads cron.max_schedule_rows from config/default.json. Keys other than cron are outside this check. The cron feature opens the scheduler and passes CronConfig::row_limit into sc_cron::ScheduleLimits. Hook environment administrator defaults inherit nothing. Absolute dotenv files and roots authorize different scopes; attach an application resolver to the built policy before cron::open.",
   "type": "object",
   "properties": {
     "cron": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "database_path": {
+          "description": "Schedule SQLite database path. Relative paths resolve below the instance root.",
+          "type": "string",
+          "default": "cron.db",
+          "minLength": 1
+        },
         "max_schedule_rows": {
           "description": "Maximum schedule rows, enabled and disabled. JSON null or 0 means unlimited. A missing key defaults to 10, the same value as CronConfig's serde default.",
           "default": 10,

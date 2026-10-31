@@ -11,6 +11,9 @@ use serde::Deserialize;
 /// `cron` object in the application configuration file.
 #[derive(Debug, Deserialize)]
 pub struct CronConfig {
+    /// Schedule database; relative paths resolve below the instance root.
+    #[serde(default = "default_database_path")]
+    pub database_path: std::path::PathBuf,
     /// Maximum schedule rows, enabled and disabled.
     ///
     /// [`None`] is JSON `null` and means unlimited. `Some(0)` is also
@@ -23,6 +26,10 @@ pub struct CronConfig {
     pub environment: CronEnvironmentConfig,
 }
 
+fn default_database_path() -> std::path::PathBuf {
+    "cron.db".into()
+}
+
 fn default_max_schedule_rows() -> Option<u64> {
     Some(10)
 }
@@ -30,6 +37,7 @@ fn default_max_schedule_rows() -> Option<u64> {
 impl Default for CronConfig {
     fn default() -> Self {
         Self {
+            database_path: default_database_path(),
             max_schedule_rows: default_max_schedule_rows(),
             environment: CronEnvironmentConfig::default(),
         }
@@ -136,22 +144,58 @@ impl CronConfig {
 /// Returns schedule database open or configuration errors from sc-cron.
 #[cfg(feature = "cron")]
 pub fn open(
-    path: impl AsRef<std::path::Path>,
     config: &CronConfig,
-    environment: sc_cron::HookEnvironmentHost,
+    instance_root: &std::path::Path,
     logger: sc_observability_types::SharedCanonicalLog,
+    hook_environment: sc_cron::HookEnvironmentHost,
+    #[cfg(feature = "monty")] monty_hosts: sc_cron::MontyHostRegistry,
 ) -> Result<
     sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>,
     sc_cron::CronError,
 > {
+    std::fs::create_dir_all(instance_root).map_err(|error| {
+        sc_cron::CronError::Store(
+            sc_cron::StoreError::new(
+                sc_cron::StoreErrorKind::Unavailable,
+                "failed to prepare cron instance root",
+            )
+            .with_source(error),
+        )
+    })?;
+    let database_path = instance_root.join(&config.database_path);
     let limits = sc_cron::ScheduleLimits::with_max_schedule_rows(config.row_limit());
-    sc_cron::Scheduler::open_with_logger(
-        path,
+    let scheduler = sc_cron::Scheduler::open_with_logger(
+        database_path,
         limits,
         std::sync::Arc::new(sc_cron::SystemClock),
         logger,
-    )
-    .map(|scheduler| scheduler.with_hook_environment(environment))
+    )?
+    .with_hook_environment(hook_environment);
+    #[cfg(feature = "monty")]
+    let scheduler = scheduler.with_monty_hosts(monty_hosts);
+    Ok(scheduler)
+}
+
+/// Application Rust-job extension point; Python and Monty use their stored hooks.
+///
+/// Replace this implementation when the application registers Rust schedules.
+#[cfg(feature = "cron")]
+pub struct ApplicationJob;
+
+#[cfg(feature = "cron")]
+#[async_trait::async_trait]
+impl sc_cron::Job for ApplicationJob {
+    async fn run(
+        &self,
+        _payload: &serde_json::Value,
+        _deadline: std::time::Instant,
+    ) -> sc_cron::RunOutcome {
+        sc_cron::RunOutcome::Refused("no application Rust job is registered".to_owned())
+    }
+
+    async fn should_stop(&self, _payload: &serde_json::Value) -> sc_cron::StopDecision {
+        sc_cron::StopDecision::Continue
+    }
 }
 
 /// Row-cap fields for `sc_cron::ScheduleLimits` (see [`CronConfig::schedule_limits_fields`]).
@@ -262,7 +306,17 @@ mod environment_tests {
         let logger = Arc::new(sc_observability_types::NoopCanonicalLog::new(
             sc_observability_types::ServiceName::new("cron-policy-test").expect("service"),
         ));
-        let scheduler = open(&path, &config, host, logger).expect("open");
+        let mut config = config;
+        config.database_path = path.clone();
+        let scheduler = open(
+            &config,
+            &std::env::temp_dir(),
+            logger,
+            host,
+            #[cfg(feature = "monty")]
+            sc_cron::MontyHostRegistry::new(),
+        )
+        .expect("open");
         let now = sc_cron::Timestamp::from_datetime(sc_cron::Clock::now(&sc_cron::SystemClock));
         let spec = sc_cron::ScheduleSpec::with_hook(
             "resolver-preserved",
