@@ -264,7 +264,7 @@
       "branch": "sprint/b-18-template-observability-integration",
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-18-template-observability-integration",
       "head": "3b4b686fc6712ee63a50b683cf89750f0f01e445",
-      "status": "qualified_kit_install_in_progress_pending_b17_merge_for_runtime",
+      "status": "kit_preparation_validated_runtime_pending_b17_merge",
       "must_follow_heads": {
         "b-14": "e47ce120dd24035a6bbcb9ec67cc028c47181fdf",
         "b-17": "ce9cc6088d2da2a3c6b1e5301d8a0975ae742f35"
@@ -285,7 +285,16 @@
       "kit_preparation_worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit",
       "kit_preparation_branch": "codex/b-18-publishing-kit",
       "kit_preparation_pr": 95,
-      "kit_preparation_head": "ef5c0e829df74867566e89c7b6bec68151af26a3"
+      "kit_preparation_head": "ef5c0e829df74867566e89c7b6bec68151af26a3",
+      "kit_preparation_validation": "/tmp/phaseb-cursor-orchestration/b18-kit-install/summary.txt",
+      "kit_preparation_report": "https://github.com/randlee/sc-runtime/pull/95#issuecomment-6538723351",
+      "kit_preparation_complete": true,
+      "kit_preparation_limits": [
+        "upstream PR137 remains unmerged",
+        "full consumer preflight fails retained development shim and benchmark host rand-m5 requirement; release source contracts pass",
+        "B18 composition/lifecycle implementation and full QA remain required",
+        "no workflow dispatch/publication/tag/registry-only proof claimed"
+      ]
     }
   },
   "qa_rounds": [
