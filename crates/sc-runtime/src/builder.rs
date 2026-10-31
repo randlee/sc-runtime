@@ -13,7 +13,7 @@ use utoipa_axum::router::OpenApiRouter;
 
 use crate::config::DaemonConfig;
 use crate::error::{RuntimeError, TransportStep};
-use crate::lock::{self, InstanceLock};
+use crate::lock;
 use crate::router;
 use crate::shutdown::{self, RunControl};
 
@@ -228,6 +228,34 @@ where
     /// }
     /// ```
     pub async fn run(self) -> Result<(), RuntimeError> {
+        self.run_with_cleanup(|| async {}).await
+    }
+
+    /// Runs the daemon, then awaits application cleanup while retaining its instance lock.
+    ///
+    /// Cleanup runs once after serving stops, including on startup errors. The
+    /// unused stores closure is dropped before cleanup on errors preceding
+    /// stores, so a receiver may safely await ownership sent by that closure.
+    /// Any acquired instance lock remains held until cleanup finishes. This
+    /// does not change startup order or introduce a dependency on application
+    /// background tasks. The application owns cleanup and logger shutdown.
+    ///
+    /// Await this future to completion: dropping it cannot await cleanup, and
+    /// dropping or panicking inside cleanup releases the instance lock normally.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same startup and serving errors as [`Self::run`], after
+    /// cleanup. Cleanup returns no runtime error; applications may retain their
+    /// own cleanup result separately without replacing the primary error.
+    pub async fn run_with_cleanup<FCleanup, Cleanup>(
+        self,
+        cleanup: FCleanup,
+    ) -> Result<(), RuntimeError>
+    where
+        FCleanup: FnOnce() -> Cleanup,
+        Cleanup: Future<Output = ()>,
+    {
         let DaemonBuilder {
             app,
             config,
@@ -251,6 +279,7 @@ where
                 Some(mount) => mount(router, stores),
                 None => router,
             },
+            cleanup,
         )
         .await
     }
@@ -260,7 +289,7 @@ where
     clippy::too_many_arguments,
     reason = "assembly retains the existing closures and control plus shared logger"
 )]
-async fn drive<S, FStores, Fut, FRoutes, Apply>(
+async fn drive<S, FStores, Fut, FRoutes, Apply, FCleanup, Cleanup>(
     app: &AppName,
     config: &DaemonConfig,
     mut control: RunControl,
@@ -269,6 +298,7 @@ async fn drive<S, FStores, Fut, FRoutes, Apply>(
     routes_fn: FRoutes,
     check_mcp: bool,
     apply_mcp: Apply,
+    cleanup: FCleanup,
 ) -> Result<(), RuntimeError>
 where
     S: Clone + Send + 'static,
@@ -276,46 +306,51 @@ where
     Fut: Future<Output = Result<S, RuntimeError>>,
     FRoutes: FnOnce(S) -> OpenApiRouter,
     Apply: FnOnce(axum::Router, S) -> axum::Router,
+    FCleanup: FnOnce() -> Cleanup,
+    Cleanup: Future<Output = ()>,
 {
-    let root = resolve_root(app, config)?;
-    let endpoint = resolve_endpoint(app, config, &root)?;
-    let signals = shutdown::install(control.listen_for_signals).await?;
-    let root_for_lock = root.clone();
-    let lock = tokio::task::spawn_blocking(move || lock::acquire(&root_for_lock))
-        .await
-        .map_err(|err| {
-            RuntimeError::instance_failed(format!("instance lock task failed: {err}"))
-        })??;
-    let stores = match stores_fn().await {
-        Ok(stores) => stores,
-        Err(err) => {
-            drop(lock);
-            return Err(err);
-        }
-    };
-    let openapi = routes_fn(stores.clone());
-    let router = match router::with_runtime_routes(openapi, check_mcp) {
-        Ok(router) => apply_mcp(router, stores),
-        Err(err) => {
-            drop(lock);
-            return Err(err);
-        }
-    };
-    serve(router, &endpoint, &mut control, lock, signals, logger).await
+    let mut instance = None;
+    let serve_logger = Arc::clone(&logger);
+    // This inner future owns startup closures, including unused senders, and
+    // is dropped before cleanup is called even when an early step fails.
+    let retained_instance = &mut instance;
+    let result = async move {
+        let root = resolve_root(app, config)?;
+        let endpoint = resolve_endpoint(app, config, &root)?;
+        let signals = shutdown::install(control.listen_for_signals).await?;
+        let root_for_lock = root.clone();
+        *retained_instance = Some(
+            tokio::task::spawn_blocking(move || lock::acquire(&root_for_lock))
+                .await
+                .map_err(|err| {
+                    RuntimeError::instance_failed(format!("instance lock task failed: {err}"))
+                })??,
+        );
+        let stores = stores_fn().await?;
+        let openapi = routes_fn(stores.clone());
+        let router = match router::with_runtime_routes(openapi, check_mcp) {
+            Ok(router) => apply_mcp(router, stores),
+            Err(err) => return Err(err),
+        };
+        serve(router, &endpoint, &mut control, signals, serve_logger).await
+    }
+    .await;
+    cleanup().await;
+    drop(instance);
+    drop(logger);
+    result
 }
 
 async fn serve(
     router: axum::Router,
     endpoint: &Endpoint,
     control: &mut RunControl,
-    lock: InstanceLock,
     signals: Option<shutdown::Signals>,
     logger: SharedCanonicalLog,
 ) -> Result<(), RuntimeError> {
     let listener = match sc_transport::bind(endpoint).await {
         Ok(listener) => listener,
         Err(err) => {
-            drop(lock);
             return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
@@ -323,7 +358,6 @@ async fn serve(
         Ok(bound) => bound,
         Err(err) => {
             drop(listener);
-            drop(lock);
             return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
@@ -356,7 +390,7 @@ async fn serve(
         () = shutdown::wait(signals, cancel) => None,
     };
     if let Some(result) = early {
-        return finish_serve(served, lock, result);
+        return finish_serve(served, result);
     }
 
     let _ = drain_tx.send(true);
@@ -367,17 +401,15 @@ async fn serve(
         Ok(result) => result,
         Err(_elapsed) => Ok(()),
     };
-    finish_serve(served, lock, result)
+    finish_serve(served, result)
 }
 
-/// Drops the server (and its listener) before the instance lock.
+/// Drops the server and listener before application cleanup and instance release.
 fn finish_serve<F>(
     served: std::pin::Pin<Box<F>>,
-    lock: InstanceLock,
     result: Result<(), std::io::Error>,
 ) -> Result<(), RuntimeError> {
     drop(served);
-    drop(lock);
     result.map_err(RuntimeError::serve_failed_io)
 }
 
