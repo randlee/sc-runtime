@@ -472,7 +472,7 @@ The implementation now provides the validated public model, strict canonical
 wire form, immutable deadline-bounded occurrence resolver, normalized dotenv
 authorization/parser, complete first-release schema, Python/Monty/CLI delivery,
 resumable Monty initialization, generated daemon policy, checked example and
-Windows execution job. Runtime production modules remain below 1000 lines;
+Windows execution job. Production source remains within the 1000-line gate;
 worker assertions are separated into test-only modules.
 
 The final local matrix passes all required default/Monty/handshake tests,
@@ -496,6 +496,11 @@ The narrow portability repair uses the tracked `Justfile` spelling, makes test
 imports unambiguous, and selects the existing development bridge for both live
 comparison paths while retaining every recipe and the unequal-fixture control.
 This sprint remains in progress until the repaired hosted gates pass.
+The validated B15/B16 parent artifact e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437
+is consumed with pure event factories and direct emission by worker/due owners.
+The B17 persistence observation helper now constructs a bounded pair of events;
+it neither receives nor invokes a logger. Slot retirement remains a separate
+lifecycle operation so launch handling satisfies the unchanged function gate.
 Parent owns independent QA/CI/merge and project-plan status. Canonical matching
 registry 1.5.1 release proof remains a B18 responsibility.
 

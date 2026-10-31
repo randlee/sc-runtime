@@ -7,3 +7,12 @@
   qa:remedy "Have the owning component call the injected CanonicalLog::emit directly. Shared pure event construction can return a canonical LogEvent without owning emission; alternatively a narrowly scoped Active ADR amendment must explicitly permit this helper before retaining it. Preserve existing event rows and best-effort result handling." ;
   qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-14:ARCH-002> qa:sprint "b-14" ;
+  qa:severity "BLOCKING" ;
+  qa:reviewer "arch-qa" ;
+  qa:location "crates/sc-cron/src/lib.rs:178" ;
+  qa:issue "Inherited B13 finding, still present at the assigned B14 head. emit_event is a new generic logging wrapper: component callers supply target/action/level/outcome/code/fields, and this helper constructs and emits the event through logger.emit at line 209. ADR-RUN-0004 decision 2 (docs/architecture.md:608-609) explicitly forbids library logging wrapper functions, without a crate-private exception. All new jitter, store, process, compose and scheduler events route through it (jitter.rs:77; sqlite.rs:252; process.rs:374,396; monty_compose.rs:194; scheduler.rs:297,904,920). The authorized development LoggerAdapter is a separate, explicitly permitted bridge and is not this finding." ;
+  qa:remedy "Have the owning component call the injected CanonicalLog::emit directly. Shared pure event construction can return a canonical LogEvent without owning emission; alternatively a narrowly scoped Active ADR amendment must explicitly permit this helper before retaining it. Preserve existing event rows and best-effort result handling." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .

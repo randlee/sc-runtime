@@ -237,3 +237,15 @@ sc-lint lint sc-boundary --root . --config sc-lint.toml
 
 - New Monty host functions, compose lifecycle redesign, schedule-row limits,
   template wiring, or a repository-wide diagnostics dependency cleanup.
+
+## Contract propagation before implementation QA
+
+The combined b-15/b-16 artifact consumes validated b-13 `c00cb59`. Event
+construction helpers are pure value factories; each owning worker, due-run,
+scheduler, or CLI-driver branch invokes its injected logger directly and
+discards emission rejection. The fixed taxonomy, outcome tokens, shared Arc,
+registry/adapters, and deadline policy are preserved. The production pipe
+witness retains b-13 descriptor readiness, release, watchdog, kill and reap,
+with b-16 registered `sc_compose_run` and b-15's four rejection attempts.
+This narrow caller propagation precedes independent QA and does not assert
+QA acceptance or change the registry release gate.

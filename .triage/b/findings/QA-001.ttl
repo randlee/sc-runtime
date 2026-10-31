@@ -7,3 +7,12 @@
   qa:remedy "Refresh and commit crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.lock for the fixture's current path dependency and supported Cargo version, then rerun the workspace test suite." ;
   qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-14:QA-001> qa:sprint "b-14" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs:21" ;
+  qa:issue "The inherited SQLx resolve fixture test fails because its committed nested lockfile does not match the current path dependency version. Cargo metadata exits before resolving the dependency graph when run with --locked." ;
+  qa:remedy "Refresh crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.lock for sc-runtime-db-sqlite 0.1.1, commit it, and rerun the workspace suite." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .

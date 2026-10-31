@@ -94,12 +94,14 @@ where
                 index += 1;
                 continue;
             };
-            log(
-                &self.coord.logger,
+            if let Some(event) = detail_event(
+                self.coord.logger.service_name().clone(),
                 &self.slots[index].schedule,
                 Event::RunTimedOut,
                 "run deadline passed",
-            );
+            ) {
+                let _ = self.coord.logger.emit(event);
+            };
             let result = await_aborted(run).await;
             if !self.complete(index, result).await {
                 index += 1;
@@ -122,12 +124,14 @@ where
                 index += 1;
                 continue;
             };
-            log(
-                &self.coord.logger,
+            if let Some(event) = detail_event(
+                self.coord.logger.service_name().clone(),
                 &self.slots[index].schedule,
                 Event::RunTimedOut,
                 "shutdown deadline passed while a Monty feed is in flight",
-            );
+            ) {
+                let _ = self.coord.logger.emit(event);
+            };
             let result = await_aborted(run).await;
             if !self.complete(index, result).await {
                 index += 1;
@@ -252,13 +256,15 @@ where
             drop(guard);
             return;
         };
-        if launching {
-            emit(
-                &self.coord.logger,
+        if launching
+            && let Some(event) = event_record(
+                self.coord.logger.service_name().clone(),
                 Event::RunLaunched,
                 Some(&slot.schedule),
                 serde_json::json!({"deadline_remaining_ms": deadline.saturating_duration_since(self.clock.monotonic_now()).as_millis() as u64}),
-            );
+            )
+        {
+            let _ = self.coord.logger.emit(event);
         }
         slot.run = Some(InFlight {
             handle: Some(handle),
@@ -293,12 +299,14 @@ where
                 let message = panic_message(error);
                 if let Some(slot) = self.slots.get(index) {
                     let schedule = slot.schedule.clone();
-                    emit(
-                        &self.coord.logger,
+                    if let Some(event) = event_record(
+                        self.coord.logger.service_name().clone(),
                         Event::FeedJoinFailed,
                         Some(&schedule),
                         serde_json::json!({"error": message}),
-                    );
+                    ) {
+                        let _ = self.coord.logger.emit(event);
+                    };
                     self.record(
                         &schedule,
                         RunOutcome::Failed(format!(
@@ -312,13 +320,15 @@ where
                 None
             }
             Err(error) => {
-                if let Some(slot) = self.slots.get(index) {
-                    log(
-                        &self.coord.logger,
+                if let Some(slot) = self.slots.get(index)
+                    && let Some(event) = detail_event(
+                        self.coord.logger.service_name().clone(),
                         &slot.schedule,
                         Event::ScheduleCancelled,
                         &error.to_string(),
-                    );
+                    )
+                {
+                    let _ = self.coord.logger.emit(event);
                 }
                 drop(guard);
                 None
@@ -595,19 +605,20 @@ impl Event {
     }
 }
 
-pub(crate) fn emit(
-    logger: &sc_observability_types::SharedCanonicalLog,
+/// Constructs the fixed origin row without owning or invoking a logger.
+pub(crate) fn event_record(
+    service: sc_observability_types::ServiceName,
     event: Event,
     schedule: Option<&Schedule>,
     fields: serde_json::Value,
-) {
+) -> Option<sc_observability_types::LogEvent> {
     let (target, action, level, outcome, code) = event.row();
-    emit_row(
-        logger,
+    event_row(
+        service,
         (target, action, level, outcome, code),
         schedule,
         fields,
-    );
+    )
 }
 
 type EventRow = (
@@ -617,19 +628,19 @@ type EventRow = (
     Option<&'static str>,
     Option<&'static str>,
 );
-fn emit_row(
-    logger: &sc_observability_types::SharedCanonicalLog,
+fn event_row(
+    service: sc_observability_types::ServiceName,
     row: EventRow,
     schedule: Option<&Schedule>,
     fields: serde_json::Value,
-) {
+) -> Option<sc_observability_types::LogEvent> {
     use sc_observability_types::{
         ActionName, ErrorCode, ErrorContext, LogEvent, OBSERVATION_SCHEMA_VERSION, OutcomeLabel,
         ProcessIdentity, Remediation, TargetCategory, Timestamp,
     };
     let (target, action, level, outcome, code) = row;
     let (Ok(target), Ok(action)) = (TargetCategory::new(target), ActionName::new(action)) else {
-        return;
+        return None;
     };
     let mut fields = fields.as_object().cloned().unwrap_or_default();
     if let Some(schedule) = schedule {
@@ -649,11 +660,11 @@ fn emit_row(
         diagnostic.timestamp = timestamp;
         diagnostic
     });
-    let _ = logger.emit(LogEvent {
+    Some(LogEvent {
         version: (*OBSERVATION_SCHEMA_VERSION).clone(),
         timestamp,
         level,
-        service: logger.service_name().clone(),
+        service,
         target,
         action,
         message: None,
@@ -665,15 +676,16 @@ fn emit_row(
         diagnostic,
         state_transition: None,
         fields,
-    });
+    })
 }
 
-pub(crate) fn terminal(
-    logger: &sc_observability_types::SharedCanonicalLog,
+/// Constructs a terminal row without changing persistence or emitting it.
+pub(crate) fn terminal_event(
+    service: sc_observability_types::ServiceName,
     event: Event,
     schedule: &Schedule,
     outcome: &RunOutcome,
-) {
+) -> Option<sc_observability_types::LogEvent> {
     use sc_observability_types::Level;
     let (level, label, code, fields) = match outcome {
         RunOutcome::Ok => (Level::Info, "success", None, serde_json::json!({})),
@@ -697,12 +709,12 @@ pub(crate) fn terminal(
         ),
     };
     let (target, action, _, _, _) = event.row();
-    emit_row(
-        logger,
+    event_row(
+        service,
         (target, action, level, Some(label), code),
         Some(schedule),
         fields,
-    );
+    )
 }
 
 #[cfg(test)]
