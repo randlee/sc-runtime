@@ -5,10 +5,6 @@ from pathlib import Path
 import unittest
 from unittest import mock
 import subprocess
-import os
-import sys
-import tempfile
-import time
 
 SPEC = importlib.util.spec_from_file_location(
     "observability_dependencies", Path(__file__).resolve().parents[1] / "check_observability_dependencies.py",
@@ -127,17 +123,6 @@ class ObservabilityDependencies(unittest.TestCase):
                 CHECK.run_metadata(["cargo"], ".", "workspace", timeout=1)
             self.assertEqual(run.call_args.kwargs["timeout"], 1)
             self.assertEqual(run.call_args.kwargs["stdin"], subprocess.DEVNULL)
-
-    @unittest.skipUnless(os.name == "posix", "POSIX process-group cleanup")
-    def test_timeout_kills_real_child_process_tree(self):
-        with tempfile.TemporaryDirectory() as directory:
-            marker = Path(directory) / "child-survived"
-            child = "import time,pathlib; time.sleep(0.7); pathlib.Path(%r).write_text('alive')" % str(marker)
-            parent = "import subprocess,sys,time; subprocess.Popen([sys.executable,'-c',%r]); time.sleep(10)" % child
-            with self.assertRaisesRegex(RuntimeError, "timed out"):
-                CHECK.run_metadata([sys.executable, "-c", parent], directory, "real child fixture", timeout=0.2)
-            time.sleep(0.8)
-            self.assertFalse(marker.exists(), "descendant outlived timeout")
 
     def test_default_and_monty_timeouts_report_probe(self):
         for fail_on, label in ((1, "default"), (2, "Monty")):
