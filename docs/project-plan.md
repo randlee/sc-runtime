@@ -22,6 +22,8 @@ crates, and the registry-backed fixture matrix at that tag still need release
 authorization and registry credentials. Merging the release kit onto
 `integrate/phase-a` is the integration record for that later publish.
 
+`complete` in sprint frontmatter records implementation delivery. This index separately records QA and merge progress; `implemented; QA pending` means those gates remain open.
+
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | a-1 compatibility spike | [sprint-a-1](plans/phase-a/sprint-a-1-compatibility-spike.md) | complete | `sprint/a-1-compatibility-spike` |

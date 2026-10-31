@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-14:ARCH-B14-002> qa:sprint "b-14" ;
+  qa:severity "BLOCKING" ;
+  qa:reviewer "arch-qa" ;
+  qa:location "crates/sc-runtime/src/router.rs:185" ;
+  qa:issue "B14 introduces effectful logging wrapper emit_request: stamp_request_id routes both lifecycle emissions through it at lines 165 and 172, and the helper owns logger.emit at line 251. ADR-RUN-0004 decision 2 explicitly forbids library logging wrapper functions and has no crate-private or HTTP-specific exception. This newly extends the same forbidden emission-ownership pattern as inherited B13 ARCH-002." ;
+  qa:remedy "Keep event construction in a pure helper returning a canonical LogEvent, then call the injected logger.emit directly at the two owning middleware sites with best-effort result handling. Alternatively obtain a narrowly scoped Active ADR amendment explicitly permitting such wrappers before retaining the helper. Preserve event fields, ordering, deadlines and response behavior." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .
