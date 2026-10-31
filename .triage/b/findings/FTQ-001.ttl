@@ -7,3 +7,12 @@
   qa:remedy "Replace the timed descendant sleep with explicit readiness and release handshakes. Keep stdout open until an observed pipe.drain_timeout event releases the descendant, including for the rejecting logger, and give the owning test a hard watchdog plus unconditional child/group kill and reap on failure. Preserve the production-path assertion; increasing either timeout or sleep does not remove this race." ;
   qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-14:FTQ-001> qa:sprint "b-14" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-cron/tests/observability_components.rs:250" ;
+  qa:issue "The inherited Monty pipe timeout test still relies on a descendant sleeping six seconds while the parent starts its five-second drain timeout only after child.wait returns. A delayed parent wait can let the descendant close stdout before the drain timeout begins, making the required timeout outcome flaky." ;
+  qa:remedy "Replace the fixed sleep with explicit readiness and release handshakes, release on the observed pipe.drain_timeout event even when logging rejects it, and retain a watchdog with unconditional group kill and reap." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .
