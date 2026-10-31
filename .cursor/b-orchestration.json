@@ -7724,7 +7724,12 @@
           "log": "/tmp/phaseb-production-fix-full-test-2ed1dfe.log"
         }
       ]
-    }
+    },
+    "bead_status": "closed",
+    "merged_to": "develop",
+    "merge_commit": "c3295c2320c7d7bc801665b99d9aee008fef2a1c",
+    "merged_at": "2026-10-31T10:46:36Z",
+    "merged_tree": "63b36d715a784c4ac60c6c104b94dd1a3ef18c7a"
   },
   "production_readiness": {
     "bead": "run-03z.31",
@@ -8077,6 +8082,41 @@
       }
     ],
     "production_release_admission": "NOT_YET_ADMISSIBLE",
-    "release_epic": "run-h0h"
+    "release_epic": "run-h0h",
+    "bead_status": "closed"
+  },
+  "completion": {
+    "phase_bead": "run-03z",
+    "phase_bead_status": "closed",
+    "phase_descendants_closed": 62,
+    "pr_url": "https://github.com/randlee/sc-runtime/pull/96",
+    "merged_to": "develop",
+    "merge_commit": "c3295c2320c7d7bc801665b99d9aee008fef2a1c",
+    "reviewed_source_head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+    "merged_tree_equals_reviewed_tree": true,
+    "final_qa_report": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541966539",
+    "required_ci_success": 17,
+    "publishing_kit": {
+      "revision": "9677ab083e7dd3feb258235a342e321ca1b45d8d",
+      "safe_installed_destinations": 85,
+      "upstream_pr": "https://github.com/randlee/sc-publish/pull/137",
+      "upstream_status": "ready_for_review_unmerged",
+      "upstream_merge_is_new_gate": false
+    },
+    "release": {
+      "epic": "run-h0h",
+      "status": "deferred_until_post_phase_prerequisites",
+      "publication_performed": false,
+      "tag_performed": false,
+      "workflow_dispatch_performed": false
+    },
+    "primary_checkout": {
+      "branch": "develop",
+      "head": "a09c28fa012ce8419959bf0ccc322f0de2034d2d",
+      "checkout_updated": false,
+      "reason": "Preserve staged user Beads export; skill-supported updater requires clean checkout",
+      "staged_beads_and_stashes_preserved": true
+    },
+    "worktree_integrity_report": "/tmp/phaseb-cursor-orchestration/final-closeout-qa/postmerge-worktree-verification.json"
   }
 }
