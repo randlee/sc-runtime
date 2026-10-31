@@ -6151,7 +6151,7 @@
         },
         "blocking_ids": [],
         "merge_readiness": "not ready",
-        "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head execution remains pending: parent-refreshed snapshot has 16/17 checks successful and one running, the sole pending hosted check is aggregate job 124504564224; the full local just test also remains developer-central and running. Phase admission awaits terminal successful evidence. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
+        "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head canonical local full gates are terminal PASS: just lint exit 0 in 15.338 seconds and just test exit 0 in 996.435 seconds. Fresh hosted snapshot is 16/17 SUCCESS with the sole hosted aggregate job 124504564224 still IN_PROGRESS, so phase admission remains IN-FLIGHT pending that terminal hosted check. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
         "next_action": "await_ci",
         "owner": "parent-orchestrator",
         "reviewer_spawn_gate": "pass",
@@ -7389,7 +7389,22 @@
     },
     "qa3_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa3",
     "qa3_bead": "run-03z.30.3",
-    "local_full_gates": "/tmp/phaseb-combined-full-gates-1e6931b.json",
+    "local_full_gates": [
+      {
+        "gate": "lint",
+        "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+        "exit": 0,
+        "duration_seconds": 15.338,
+        "log": "/tmp/phaseb-production-fix-full-lint-2ed1dfe.log"
+      },
+      {
+        "gate": "test",
+        "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+        "exit": 0,
+        "duration_seconds": 996.435,
+        "log": "/tmp/phaseb-production-fix-full-test-2ed1dfe.log"
+      }
+    ],
     "machine_status": {
       "sprint": "phase-b-final-closeout",
       "task": "qa-phase-b-closeout-final-1",
@@ -7409,7 +7424,7 @@
       },
       "blocking_ids": [],
       "merge_readiness": "not ready",
-      "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head execution remains pending: parent-refreshed snapshot has 16/17 checks successful and one running, the sole pending hosted check is aggregate job 124504564224; the full local just test also remains developer-central and running. Phase admission awaits terminal successful evidence. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
+      "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head canonical local full gates are terminal PASS: just lint exit 0 in 15.338 seconds and just test exit 0 in 996.435 seconds. Fresh hosted snapshot is 16/17 SUCCESS with the sole hosted aggregate job 124504564224 still IN_PROGRESS, so phase admission remains IN-FLIGHT pending that terminal hosted check. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
       "next_action": "await_ci",
       "owner": "parent-orchestrator",
       "reviewer_spawn_gate": "pass",
@@ -7690,7 +7705,7 @@
       },
       "blocking_ids": [],
       "merge_readiness": "not ready",
-      "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head execution remains pending: parent-refreshed snapshot has 16/17 checks successful and one running, the sole pending hosted check is aggregate job 124504564224; the full local just test also remains developer-central and running. Phase admission awaits terminal successful evidence. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
+      "merge_reason": "The six-reviewer source gate passes at exact head: 98/98 phase deliverables, 73 requirement checks and 3/3 separate production claims are closed, all eight historical TTL findings are fixed, and the TODO scan is clean. Earlier phase-end QA3 was IN-FLIGHT and is not final approval. This joint phase QA4 / production QA2 closes source review only. Exact-head canonical local full gates are terminal PASS: just lint exit 0 in 15.338 seconds and just test exit 0 in 996.435 seconds. Fresh hosted snapshot is 16/17 SUCCESS with the sole hosted aggregate job 124504564224 still IN_PROGRESS, so phase admission remains IN-FLIGHT pending that terminal hosted check. Production release remains NOT YET ADMISSIBLE under run-h0h until matching registry 1.5.1, development facade/adapter/path removal with direct Arc proof, five actual 0.1.1 publications and registry-only proof, controlled-host benchmark/preflight/credentials, and same-source tag; no publication, tag, or dispatch occurred. Qualified kit 9677 with 85 safe destinations is unchanged; upstream PR 137 is open/ready for review but unmerged and is not a merge prerequisite.",
       "next_action": "await_ci",
       "owner": "parent-orchestrator",
       "reviewer_spawn_gate": "pass",
@@ -7877,6 +7892,22 @@
     "fixed_findings": [
       "EXT-PROD-001",
       "RSH-PROD-001"
+    ],
+    "local_full_gates": [
+      {
+        "gate": "lint",
+        "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+        "exit": 0,
+        "duration_seconds": 15.338,
+        "log": "/tmp/phaseb-production-fix-full-lint-2ed1dfe.log"
+      },
+      {
+        "gate": "test",
+        "head": "2ed1dfef12eb6ac3241f9e58d5f7f7116f6b4661",
+        "exit": 0,
+        "duration_seconds": 996.435,
+        "log": "/tmp/phaseb-production-fix-full-test-2ed1dfe.log"
+      }
     ]
   }
 }
