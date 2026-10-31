@@ -439,6 +439,12 @@ test. Routing CI through the same recipes means a green local `just lint` and
 
 ## REQ-RUN-0005: Boundary manifests for every crate
 
+**2026-10-31 amendment:** ADR-RUN-0017 permits exactly cron -> command
+(defaults off/no features), pending implementation. All five SDK normal/build
+closures must exclude full logger/OTLP by resolved identity, including aliases
+and transitive edges. Direct-depth normal-only checks below are historical
+minimum checks and no longer sufficient proof. All tool-crate exclusions remain.
+
 **Status:** Active  
 
 ### Requirement Statement
@@ -471,11 +477,11 @@ state it.
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | MUST: `sc-observability-types` for the injected canonical logger contract | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is an allowed dependency of `sc-command`,
-`sc-runtime`, and `sc-cron`; the latter two use only the types-level injected
-logger contract. The full `sc-observability` runtime remains forbidden in
+`sc-runtime`, and `sc-cron`; the latter two import the temporary command
+contract and direct canonical values under ADR-RUN-0017. The full `sc-observability` runtime remains forbidden in
 every library crate.
 In addition to the table, every production release crate (`sc-config`,
 `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron`) MUST exclude
@@ -500,8 +506,8 @@ so b-13's types-only rule is measured with direct-depth `cargo tree` checks
 for `sc-runtime` and `sc-cron`; each may print `sc-observability-types ` but
 must print no direct `sc-observability ` or `sc-observability-otlp ` line.
 `allowed_dependents` is empty for `sc-config`, `sc-runtime`,
-`sc-runtime-db-sqlite`, and `sc-cron`, and is `sc-runtime` only for
-`sc-transport` and `sc-command`. The edge `sc-runtime` -> `sc-config` is absent, so it is not an
+`sc-runtime-db-sqlite`, and `sc-cron`; it is `sc-runtime` for
+`sc-transport`, and temporarily runtime+cron for `sc-command` under ADR-RUN-0017. The edge `sc-runtime` -> `sc-config` is absent, so it is not an
 `allowed_dependents` entry and it is a `forbidden_edges` entry
 `sc-runtime -> sc-config`. The measurement is the sprint a-1 evidence record
 for the other edges, and sprint a-5 for this absent edge.
@@ -2125,11 +2131,14 @@ and on a fresh clone without a database.
 This applies to `crates/daemon` of a project rendered from `template/`.
 `sc-observability` is the SC logging crate.
 
-1. `crates/daemon/Cargo.toml` MUST use the normal caret-compatible semver
-   requirement `1.5.1` for `sc-observability`. The matching
-   `sc-observability-types` requirement is `1.5.1`; the generated lockfile
-   proves both resolve exactly to `1.5.1`. These are version requirements,
-   not manifest exact pins.
+1. For the initial 0.1.1 release, `crates/daemon/Cargo.toml` MUST use real
+   registry `sc-observability = "=1.5.0"` and
+   `sc-observability-types = "=1.5.0"`; root/generated lock evidence proves
+   matching registry identity. The temporary contract is defined once in
+   `sc_command::observability`, with a private inline generated LoggerAdapter.
+   [ADR-RUN-0017](architecture.md#adr-run-0017-initial-release-observability-shim)
+   specifies the exact pin, panic dispositions, dependency and removal policy.
+   Future published upstream trait/direct Arc proof is a cleanup gate.
 2. `crates/daemon/src/main.rs` MUST perform these three steps, in this order:
    1. load the project's configuration with `sc-config` into the project's
       own config struct; on error, report it and return a failure exit code
@@ -2170,12 +2179,11 @@ This applies to `crates/daemon` of a project rendered from `template/`.
    `sc-observability` or its OpenTelemetry export crate
    `sc-observability-otlp`; the forbidden edges are owned by
    [REQ-RUN-0005](requirements.md). The only observability dependency inside
-   library crates is `sc-observability-types`: `sc-command` retains its
-   tested-minimum caret requirement `1.5.0`, while `sc-runtime` and
-   `sc-cron` require `1.5.1` for the injected canonical logger types. The
-   workspace lockfile may unify all three at exact `1.5.1`. It is not allowed on
-   `sc-config` or `sc-transport`. The logging runtime stays forbidden on all
-   library crates. `Remediation` stays on `sc-command` only.
+   library crates is registry `sc-observability-types`: command temporarily
+   pins `=1.5.0`, runtime/cron use compatible `1.5.0`, and root lock resolution
+   is exact registry 1.5.0. Runtime/cron receive the command-owned neutral port;
+   no library wraps or links the full logger. Types remain forbidden on
+   config/transport and remediation stays on command only.
    `DaemonNotRunning` carries `code: &'static str`
    (`DAEMON.NOT_RUNNING`) plus the endpoint and the cause, and does not
    carry `sc_observability_types::ErrorCode`
@@ -2207,8 +2215,8 @@ is logged.
 ### Success Criteria
 
 1. Rendered `crates/daemon/Cargo.toml` lists the caret-compatible requirement
-   `sc-observability = "1.5.1"`, lists no OpenTelemetry crate, and the
-   generated lockfile resolves both observability crates exactly to `1.5.1`.
+   `sc-observability = "=1.5.0"` and types `=1.5.0`, lists no OpenTelemetry
+   crate, and proves the actual registry pair exactly at 1.5.0 under ADR-RUN-0017.
 2. In rendered `crates/daemon/src/main.rs`, the `sc-config` load call comes
    before `daemon::observability::Observability::build`, which comes before
    `Daemon::builder`. The named `Observability` owner lives until runtime and
@@ -3271,7 +3279,7 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
    between that writes to that directory, and it exits 0.
 4. The same job then runs `just test` in `$RUNNER_TEMP/app`, and it exits 0.
    `just test` includes the observability grep: `crates/daemon` requires
-   `sc-observability` at 1.5.1, does not require `sc-observability-otlp`, and
+   `sc-observability` at exact registry 1.5.0 under ADR-RUN-0017, does not require `sc-observability-otlp`, and
    the logging-crate token does not match `sc-observability-types`.
 5. The same job then runs `just build-cli` in `$RUNNER_TEMP/app`, and it
    exits 0. That recipe includes `cargo tree -p <project>-cli -e normal --prefix none`.
@@ -3511,7 +3519,7 @@ this order and MUST fail when any of them exits non-zero:
 3. `just lint` inside the generated project at `<dest>`.
 4. `just test` inside the generated project at `<dest>`. It includes the
    observability grep: rendered `crates/daemon` requires `sc-observability`
-   at 1.5.1, does not require `sc-observability-otlp`, and the logging-crate
+   at exact registry 1.5.0 under ADR-RUN-0017, does not require `sc-observability-otlp`, and the logging-crate
    token does not match `sc-observability-types`.
 5. `just build-cli` inside the generated project at `<dest>`. It includes
    `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
@@ -3665,29 +3673,36 @@ pre-publication source/preflight contracts. REQ-RUN-0701's fixture matrix and
 b-18's no-edits generation sequence remain phase acceptance gates. This
 amendment does not accept b-18 or Phase B as complete.
 
-Release epic `run-h0h`, after Phase B, owns the release acceptance root and
-all publication evidence. Before internal publication it MUST consume the
-real matching registry `sc-observability-types` / `sc-observability` `1.5.1`
-pair (external prerequisite `run-03z.7`), remove both development packages and
-all development workspace path overrides/local adapter dependencies, replace
-newtype construction with direct upstream `Arc<Logger>` coercion, prove exact
-matching `1.5.1` root/generated release lock resolution, and verify the
-published production Logger adapter's immediate queue-full/disconnected
-rejection. Development bridge tests cannot satisfy that published-adapter
-proof. The active release guard MUST pass unchanged, rejecting development
-paths/adapters, observability registry patches, and non-registry or
-wrong-version resolution. Human release authorization and credentials remain
-required for the five internal publications in the order above.
+**Initial release amendment — 2026-10-31:** Release epic `run-h0h` owns the
+initial five-package 0.1.1 release with the actual registry 1.5.0 shim profile
+in [ADR-RUN-0017](architecture.md#adr-run-0017-initial-release-observability-shim).
+It MUST remove both development packages and every facade/adapter path/rewrite,
+use the command-owned canonical port and private generated adapter, prove the
+exact registry 1.5.0 logger/types pair, and retain real admission/saturation/
+disconnection, unwind mapping, lifecycle and best-effort proof. The existing
+code/guards still implement the old development/future-upstream split until
+implementation; update their predicates to enforce this profile, never bypass
+them. Full logger/OTLP and sc-compose/ATM SDK exclusions remain mandatory.
 
-The exact commit published and proven by `run-h0h` MUST be tagged `v0.1.1`;
-no source or manifest change may occur between the five crate publications,
-the registry-only generated proof, and that tag. The registry-only proof
-MUST render with `scripts/new_project.py --release`, contain no checkout
-patch/path/git override, and build/test the generated daemon with `cron` and
-`monty`. The phase-end readiness review MUST report these remaining release
-limits explicitly; development acceptance is never passing registry-only or
-published `1.5.1` evidence. This amendment changes delivery ownership/timing
-only; all production safety predicates remain binding.
+Matching published 1.5.1, upstream trait/direct Arc proof and restoration of
+cron's command prohibition are a separate future cleanup task, outside this
+initial release epic. At release readiness refresh registry discovery; an
+indeterminate result fails closed. Actual publication plus capability, not a
+version string, triggers cleanup as specified by ADR-RUN-0017. Published but
+incompatible capability blocks release for remediation; working capability
+prevents a further shim release until cleanup. Human authorization and
+credentials remain required for publication in the five-package order above.
+
+Before any upload, run one verified multi-package Cargo dry run selecting all
+five packages together and inspect normalized `.crate` manifests/contents.
+The exact commit published and proven MUST be tagged `v0.1.1`; no source or
+manifest change may intervene between the five publications, registry-only
+generated proof and tag. That explicit proof runs only **after** all five
+publications/index availability with `scripts/new_project.py --release`, no
+checkout paths/git/patches, and cron/Monty build/tests. Preserve the qualified
+kit/preflight, no-edits fixture generation, controlled-host benchmarks and
+isolated lifecycle requirements. This plan grants no publication or tag action
+and records no QA/proof pass.
 
 ### Rationale
 
@@ -3714,9 +3729,10 @@ the point at which generated projects become upgradeable by a normal
    five `0.1.1` crates published in the order above, records
    `sc-runtime-db-sqlite` as unpublished, and proves a release-mode generated
    workspace resolves those five packages from crates.io without checkout
-   patch/path/git overrides. Its evidence includes every `1.5.1`, bridge
-   removal, direct Arc coercion, non-blocking published-adapter, unchanged
-   release-guard, and human-authorization predicate above. b-18 supplies the
+   patch/path/git overrides. Its evidence includes the initial 1.5.0 bridge
+   profile, development package removal, real admission/unwind/lifecycle proof,
+   updated strict guards and human-authorization predicates above. Future
+   upstream direct Arc cleanup is tracked separately. b-18 supplies the
    required phase implementation, qualified kit/install, and source-contract
    evidence; it does not supply or waive this later release evidence.
 7. At `run-h0h` release acceptance, `git tag -l v0.1.1` prints `v0.1.1`, the
@@ -3815,6 +3831,10 @@ the only process that opens the local database.
 ---
 
 ## NFR-RUN-0002: Async end to end
+
+**2026-10-31 clarification:** ADR-RUN-0017 permits only application-adapter
+try_log admission, which has no capacity wait/sink I/O but takes internal locks.
+This is not a wait-free guarantee; all other request-path rules below apply.
 
 **Status:** Active  
 
@@ -4222,6 +4242,12 @@ comments and spacing are never a reason to split a file or to strip comments.
 ---
 
 ## NFR-RUN-0009: Library errors are values
+
+**2026-10-31 bounded amendment:** ADR-RUN-0017 explicitly permits the fixed
+Noop fallback literal invariant under exact types 1.5.0 and the foreign
+CanonicalLog::emit EventError signature. It also defines application-only
+try_log unwind containment and its abort/hook limits. This is the only named
+exception to the otherwise absolute banned-construct rule below.
 
 **Status:** Active  
 

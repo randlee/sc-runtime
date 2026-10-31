@@ -5,20 +5,24 @@
 ## REQ-CRON-0001: Workspace member
 
 `crates/sc-cron` is a workspace member, ported from beads-cache
-`crates/sc-cron` at `develop`. It depends on no other workspace crate and
-uses `sc-observability-types` only for its injected canonical logger contract.
+`crates/sc-cron` at `develop`. For the initial release ADR-RUN-0017 permits
+only a temporary normal `sc-command` 0.1.1 dependency with
+`default-features = false` and no features for the canonical port. Canonical
+event values remain direct registry `sc-observability-types` imports.
 `sc-runtime` does not name it. The generated daemon may name it only as the
 optional `cron` dependency selected by the embedding application; default
 generated builds do not link it. Here "name" means a Cargo or other manifest
 dependency. Documented wiring may reference the crate in comments and schema
 descriptions.
 
-The Phase B injection API is packaged at workspace version `0.1.1`, with
-`sc-cron` publishable as the fifth public library. Its normal observability
-edge is only `sc-observability-types` with caret `1.5.1`; `test-util` is enabled
-only in dev-dependencies. During the authorized development exception that
-edge inherits the local facade path; actual publication remains gated on
-removing local paths and the real matching registry pair.
+The injection API is packaged at workspace version `0.1.1`, with cron the
+fifth public library. Registry types use compatible `1.5.0`, unified to exact
+1.5.0 by command's temporary pin. Normal cron enables neither command/server
+nor command/test-util; test doubles use dev-dependencies only. The current
+local facade is removed during implementation before initial publication.
+Capability-proven upstream cleanup removes cron -> command and restores the
+original no-sibling boundary. Isolated default/Monty consumers must prove no
+axum/rmcp/server leakage; workspace feature unification is not that proof.
 
 ## REQ-CRON-0002: Normal crontab strings
 
@@ -134,7 +138,8 @@ remain outside an untrusted-code boundary.
 
 ## NFR-CRON-0001: Allowed third-party dependencies
 
-This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. No other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
+This item owns the third-party crates `sc-cron` may depend on. The `allowed_dependencies` list is the normal dependencies: `async-trait`, `chrono`, `cron`, `getrandom`, `process-wrap`, `rusqlite` (bundled), `sc-observability-types`, `serde`, `serde_json`, `tempfile`, `tokio`, and `tracing`. `sc-lint-boundary` accepts only workspace package names, so `monty` and `monty-types` are not entries in that list. Feature `monty` stays optional and is enforced by the `sc-cron-tree-default` and `sc-cron-tree-monty` cargo-tree gates in `sc-lint.toml`: the default tree has no `monty` edge, and `--features monty` links `monty` and `monty-types` only. `monty-pool`, `monty-fs`, and `monty-runtime` are not allowed. Only the temporary defaults-off command contract edge in ADR-RUN-0017
+is allowed; no other workspace crate is allowed. [REQ-RUN-0005](../requirements.md) point 4 points here.
 
 The tool-crate exclusion in REQ-RUN-0005 applies to sc-cron: sc-compose and ATM crates are forbidden in production dependencies/imports; test and benchmark references are permitted. CLI process invocation does not create a crate dependency.
 

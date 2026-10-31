@@ -101,6 +101,13 @@ recommended_model: sol
 vertical_rationale: One boundary owns the persisted schedule policy, daemon resolver, Python subprocess environment, Monty OS-call bridge, generated configuration, and checked example so no layer invents a second precedence or redaction rule.
 ---
 
+> **Release prerequisite supersession — 2026-10-31:** This completed Phase B
+> body is historical. Only its initial-publication 1.5.1/direct-Arc prerequisite
+> is superseded by the [initial release shim amendment](initial-release-observability-shim.md)
+> and ADR-RUN-0017. Its approved implementation/evidence is not rewritten;
+> future cleanup is tracked in [issue 97](https://github.com/randlee/sc-runtime/issues/97).
+
+
 # Sprint b-17 — shared Python/Monty hook environment
 
 ## Goal and relations

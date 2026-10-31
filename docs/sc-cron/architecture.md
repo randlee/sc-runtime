@@ -6,6 +6,11 @@ Port source: beads-cache `integrate/phase-b` commit `d5fbed94f6c3b7fa9e5a5627879
 
 ## What this crate is
 
+**2026-10-31 planned initial-release amendment:** [ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim)
+permits exactly cron -> command 0.1.1 with defaults off/no features for the
+neutral canonical port. Published types 1.5.0 supply values. No server/runtime
+link is allowed, and capability-proven upstream cleanup restores no sibling edge.
+
 An optional general-purpose scheduler for application-defined jobs. The consumer adds one SQLite table. A row is a cron string plus a hook. The crate fires that hook. A richer start/stop API is something the consumer may build on top.
 
 ## Schedule strings

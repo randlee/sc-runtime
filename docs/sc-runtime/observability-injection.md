@@ -1,103 +1,75 @@
 # Injectable observability for generated projects
 
-**Status:** Phase B b-13 contract (library contract implemented; development-only bridge active)
-**Related:** [ADR-RUN-0003](../architecture.md), [ADR-RUN-0004](../architecture.md), [ADR-RUN-0007](../architecture.md), [ADR-RUN-0011](../architecture.md), [ADR-RUN-0014](../architecture.md), [ADR-RUN-0303](../architecture.md), [ADR-RT-0002](architecture.md), [ADR-TRN-0006](../sc-transport/architecture.md), [REQ-RUN-0309](../requirements.md), [NFR-RUN-0002](../requirements.md), [NFR-RUN-0010](../requirements.md), [NFR-RT-0002](requirements.md)
+**Status:** Phase B contract implemented with local development packages;
+initial release shim is planned under
+[ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim).
+Current source and guards await implementation of this amendment.
+**Plan:** [Initial release observability shim](../plans/phase-b/initial-release-observability-shim.md).
+**Cleanup:** [Issue 97](https://github.com/randlee/sc-runtime/issues/97), future
+work outside the initial release epic.
 
-## Goal
+## Initial 0.1.1 release contract
 
-The production release target for a project rendered from `template/` uses the caret-compatible requirement
-**`sc-observability` 1.5.1** (with exact `1.5.1` lock resolution) in
-`main`, logs to the same on-disk layout as other SC consumers, and **injects**
-that logger into the two participating workspace libraries (`sc-runtime` and
-`sc-cron`) so they emit
-**`LogEvent`** records with canonical **`TargetCategory`** / **`ActionName`**
-fields—not ad hoc `tracing` key/value pairs that never reach JSONL sinks.
-
-Libraries MUST NOT call `LoggerBuilder` or depend on `sc-observability`. The
-daemon owns construction; libraries accept this object-safe handle defined by
-the matching published **`sc-observability-types`** patch:
+The generated application uses the real registry `sc-observability = "=1.5.0"`
+and `sc-observability-types = "=1.5.0"`. One temporary unconditional
+`sc_command::observability` module owns this public port:
 
 ```rust
 pub trait CanonicalLog: Send + Sync {
-    fn service_name(&self) -> &ServiceName;
-    fn emit(&self, event: LogEvent) -> Result<(), v2::EventError>;
-}
-
-pub struct NoopCanonicalLog { /* service name only */ }
-impl NoopCanonicalLog {
-    pub fn new(service_name: ServiceName) -> Self;
-    pub fn named_or_default(service: &'static str) -> Self;
+    fn service_name(&self) -> &sc_observability_types::ServiceName;
+    fn emit(&self, event: sc_observability_types::LogEvent)
+        -> Result<(), sc_observability_types::v2::EventError>;
 }
 pub type SharedCanonicalLog = std::sync::Arc<dyn CanonicalLog>;
 ```
 
-`sc-observability` 1.5.1 implements the trait for `v2::Logger` by calling
-`Logger::try_log`, or an equivalent operation guaranteed never to wait. It
-must not call `Logger::log`, `enqueue_blocking`, or any blocking/backpressure
-path. Queue-full and disconnected rejection returns an immediate
-`EventError`; library callers apply the best-effort policy below.
-This repository consumes those releases; it does not own their source or
-publication. `Logger` is not assumed to be `Clone`.
-The trait is a trusted synchronous injection boundary: custom implementations
-must return promptly, perform no blocking sink I/O or capacity wait, and must
-not panic. The libraries do not spawn or time-box `emit`; their non-blocking
-guarantee is proven for the published Logger adapter, Noop, and supplied test
-doubles rather than for an adversarial third-party implementation.
+The same module supplies `NoopCanonicalLog::{new, named_or_default}` and
+non-default std-only `test-util` recorder/rejector doubles. Runtime uses its
+existing command dependency; cron temporarily uses command 0.1.1 with defaults
+off/no features. Canonical values/errors remain direct actual registry types.
+Command temporarily pins types `=1.5.0` to bound the inspected validator and
+identity; runtime/cron retain compatible 1.5.0 requirements. These exact pins
+intentionally prevent incompatible newer-types consumer selections until the
+coordinated upstream migration. Command adds no dependency or server feature.
 
-`named_or_default` never exposes validation failure: the runtime and cron
-legacy constructors use the fixed names `sc-runtime` and `sc-cron`, with the
-upstream Noop identity as fallback. They never convert or unwrap an
-application name. The real generated application identity appears only after
-the daemon injects its production logger.
+A private inline generated `LoggerAdapter` holds an Arc to the real v2 Logger,
+forwards identity, and calls only `try_log(event)`. Ordinary native EventErrors
+pass through unchanged. It adds no queue, sink or lifecycle policy. Build one
+Logger, create one shared adapter, and clone that same handle into runtime and
+cron. Library normal/build graphs must exclude full logger/OTLP directly,
+aliased or transitively in all production feature combinations. Config and
+transport have no types dependency. All sc-compose/ATM production exclusions
+remain binding. No sixth crate is published.
 
-With the upstream `test-util` feature, `RecordingCanonicalLog::new` exposes
-ordered cloned events through `events()` and `clear()`, while
-`RejectingCanonicalLog::new` exposes `attempts()` and returns a fresh routing
-`EventError` for every emit. Both are Arc-safe and recover poisoned test-only
-locks without panicking. Library crates enable this feature only in
-dev-dependencies.
+The old local `dev/observability-types-shim` impersonating types 1.5.1 and
+`dev/observability-logger-adapter` 0.0.0 are current development implementation
+only. Delete them, their paths/lock identities and generation rewrites during
+implementation before initial publication; they are not release dependencies.
 
-## Temporary development exception
+## Explicit panic and admission limits
 
-The owner authorized library development before upstream publication on
-2026-10-30. The unpublished local package in
-[`dev/observability-types-shim`](../../dev/observability-types-shim/README.md)
-is named `sc-observability-types` at `1.5.1`; it reexports exact registry
-`1.5.0` values/errors and adds only the fixed trait, Noop/shared handle, and
-`test-util` doubles above. The root workspace dependency
-`sc-observability-types = { version = "1.5.1", path =
-"dev/observability-types-shim" }` selects this facade for development;
-runtime/cron use that workspace entry and sc-command retains its existing
-registry `1.5.0` requirement. Reexports preserve canonical value/error type
-identity, with no observability registry patch. The development lock
-intentionally contains real registry `1.5.0` and local `1.5.1` without
-changing dependency requirements.
+ADR-RUN-0017 makes two narrow policy amendments. Noop's fixed fallback
+`ServiceName::new("noop")` may retain its invariant expect only under exact
+inspected types 1.5.0 and fixed-literal validation tests. No caller/environment
+value may reach it. This is an explicit exception to ADR-RUN-0006/NFR-RUN-0009/
+NFR-CMD-0003, not a comment-only waiver or a broad no-panic claim.
 
-Development applications can inject the real registry `sc-observability`
-`1.5.0` logger through the unpublished `sc-observability-dev-adapter` `0.0.0`
-package in `dev/observability-logger-adapter`. Its `LoggerAdapter` newtype
-holds `Arc<v2::Logger>` and implements the planned interface by forwarding
-actual `service_name` and `try_log` calls. The application constructs,
-flushes, and shuts down the real logger. The adapter adds no queue, sink, or
-lifecycle policy; its tests exercise real `1.5.0` admission/sink, saturation,
-and shutdown behavior independently of Noop/recording doubles. Development
-injection uses an Arc around that newtype; the direct Arc coercion described
-below remains the final upstream contract.
+Published 1.5.0 `try_log` can panic on poisoned internal runtime state. Catch
+unwind locally around only that call using the justified AssertUnwindSafe
+boundary; return fixed value-free `EventError::Routing` with code
+`DAEMON.OBSERVABILITY_ADMISSION_PANIC`, cause `Logging admission panicked.`
+and recovery `Restart the daemon to restore logging; the application operation
+is unaffected.` Use infallible `ErrorCode::new_static`, `ErrorContext::new`,
+`Remediation::recoverable` and an empty command list. Discard panic payload;
+never include event/provider values or recursively log the failure.
 
-Optimized development builds and benchmarks are permitted. Both local
-packages remain unpublished with `publish = false`, and the publication
-guard stays active. The 2026-10-30 governing timing amendment in
-[REQ-RUN-0702](../requirements.md), including Success Criteria 6–7, and
-[architecture](../architecture.md) (System shape and ADR-RUN-0004/0007)
-permits Phase B's real development JSONL/composition/lifecycle proof with
-this adapter and assigns production release acceptance after Phase B to
-`run-h0h`. That epic, including external prerequisite `run-03z.7`,
-requires the real matching
-`1.5.1` registry pair and published adapter proof, removal of development
-workspace path overrides and the local adapter, replacement of newtype
-construction with direct upstream `Arc<Logger>` coercion, and real registry
-root/generated lock resolution. The local `0.0.0` adapter is no claim of
-published `1.5.1` support. Follow the linked removal procedure before publication.
+This containment does not repair poison, catch panic=abort or suppress the
+application-owned panic hook, which may print before unwinding. It catches no
+arbitrary receiver/startup/shutdown callback and installs no global hook.
+Healthy admission does not wait for queue capacity or perform sink I/O, but
+internal locks may contend: it is not wait-free. Custom receivers remain
+trusted prompt-return/no-panic boundaries. Native rejection and contained
+unwind are best effort and never change business outcomes.
 
 ## Generated daemon responsibilities
 
@@ -109,9 +81,9 @@ Order is fixed ([REQ-RUN-0309](../requirements.md)):
 3. Build **`LoggerConfig::default_for(ServiceName::new(APP_NAME)?, log_root)`**
    and apply `LogSettings` from config (level, console/file sinks).
 4. **`LoggerBuilder::build()`** → store it in `Arc<Logger>` until `main`
-   returns. For development, derive `SharedCanonicalLog` with the approved
-   `LoggerAdapter` around an Arc clone of that real logger; at release, coerce
-   the Arc clone directly through the published upstream trait implementation.
+   returns. For initial release, derive the command-owned `SharedCanonicalLog`
+   through the private inline adapter around an Arc clone. Direct upstream
+   Arc coercion is future capability-proven cleanup.
 5. Pass a **shareable handle** into assembly:
    - **`Daemon::builder(...).logger(handle)`** in any builder state; it adds
    no typestate or run step.
@@ -182,12 +154,12 @@ consumers without extra steps.
 
 | Crate | Today | Target |
 |-------|--------|--------|
-| `sc-runtime` | `tracing` spans in router | Injected logger; HTTP lifecycle as `LogEvent` |
-| `sc-cron` | `tracing` with informal `subsystem`/`action` | Injected logger; stable `cron.*` targets |
-| `sc-command` | `sc-observability-types` for errors only | unchanged wire types |
+| `sc-runtime` | Injected logger; HTTP lifecycle as `LogEvent` | command-owned port during initial release |
+| `sc-cron` | Injected logger; stable `cron.*` targets | same command-owned port |
+| `sc-command` | registry types for errors | temporary neutral port/Noop/test doubles; unchanged wire types |
 | `sc-config` / `sc-transport` | silent | optional inject later; not required for v1 |
 
-Tests use **`Noop`** / in-memory fakes implementing the same types trait—no
+Tests use **`Noop`** / in-memory fakes implementing the same command-owned trait—no
 `sc-observability` in dev-dependencies of library crates unless the test is an
 integration test in the **daemon** crate.
 
@@ -225,37 +197,34 @@ is copied to `reason`/`error` fields and is never parsed into a diagnostic
 code; internal resolver and join sites emit their separately fixed origin
 diagnostics before returning the persisted outcome.
 
-## Boundary changes required
+## Release enforcement and upstream cleanup
 
-Before library code can accept injection:
+[ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim)
+and the [bounded implementation plan](../plans/phase-b/initial-release-observability-shim.md)
+name exact paths, tests and boundary amendments. Expand the observability
+identity guard to all five normal/build closures. Enforce only the temporary
+cron-command edge and prove isolated cron default/Monty feature trees have no
+command/server, axum or rmcp leakage. Retain all other negative boundaries.
+Regenerate kit-owned preflight files through the qualified installer.
 
-1. **Amend ADR-RUN-0004 and ADR-RUN-0007** — allow
-   **`sc-observability-types`** (not the logging
-   runtime) on `sc-runtime` and `sc-cron`; consume the matching published
-   types/runtime **1.5.1** patches for release, using only the explicit
-   temporary types-facade exception above during development.
-   `sc-transport` remains out of this cut.
-2. Update **`REQ-RUN-0005`** forbidden/allowed edges and run `sc-lint-boundary`.
-3. Amend ADR-RUN-0003/0303 and ADR-CMD-0001 so the library and generated
-   feature graphs, and the command crate's types dependency, are consistent.
-4. Resolve the open **`tracing` bridge** item in [requirements](../requirements.md):
-   prefer explicit **`LogEvent`** emission via injection; drop library `tracing`
-   once migrated.
+The initial release publishes the same five 0.1.1 SDKs in existing dependency
+order after a single verified all-five Cargo dry run. Clean registry-only
+`--release` generation/proof runs after all five publications, before accepting
+the same-source `v0.1.1` tag. Human authorization, credentials and controlled-host
+benchmark requirements remain. No publication is authorized by this plan.
 
-The implementation sequence is [b-13 through b-18](../plans/phase-b/phase-b-plan.md#sprint-index).
-The `tracing` bridge question is resolved in favor of direct canonical
-emission. Shared manifest dependency cleanup may follow after the staged
-migration; it is not required to change the event contract.
+[Issue 97](https://github.com/randlee/sc-runtime/issues/97) tracks cleanup outside
+the initial release epic. Actual matching published 1.5.1 capability and direct
+registry `Arc<v2::Logger>` to upstream SharedCanonicalLog proof trigger removal
+of the local contract, inline adapter, exact pins and cron-command edge.
+Registry indeterminacy fails readiness closed; a published but incompatible
+pair blocks release for remediation. Working capability forbids another shim
+release until cleanup restores the original cron boundary. A numeric version
+alone proves nothing. A source-path re-export is allowed only if representative
+consumer/custom-impl and upstream probes plus an explicit semver strategy
+justify it; nominal old/new trait identity is not automatic. Use a coordinated
+breaking SDK minor if necessary, never a permanent second contract.
 
-The repository public crates move to workspace version `0.1.1`; b-13 makes
-`sc-cron` publishable but performs no publication. b-18 owns the existing
-sc-publish consumer update, real installation and complete output sync from
-the exact qualified pinned kit revision, publish-order/preflight source
-contracts, and development generated-process/lifecycle proof. Actual release
-authorization/publication and registry-only generated builds follow Phase B in
-`run-h0h`. The phase-end readiness review after fixes must report the remaining
-release limits explicitly. The publication evidence and registry-only proof bind to one source commit,
-which is tagged `v0.1.1` without an intervening source or manifest change.
 Historically, the former sc-publish pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` was
 rejected because its actual installer/package destinations included upstream
 `docs/sprints/**` history. The current pin, `9677ab083e7dd3feb258235a342e321ca1b45d8d`, is

@@ -49,7 +49,7 @@ typestate, [ADR-RT-0001](architecture.md)).
 | `.stores(closure)` | an async closure taking no arguments that opens the project's stores and returns the project's own `Stores` value or an error | yes |
 | `.routes(closure)` | a closure that receives the `Stores` value and returns a `utoipa_axum::OpenApiRouter` | yes |
 | `.mcp(closure)` | a closure that receives the `Stores` value and returns an rmcp Streamable HTTP service | no |
-| `.logger(handle)` | a `sc_observability_types::SharedCanonicalLog`; optional in every builder state and replaces the fixed `sc-runtime` Noop | no |
+| `.logger(handle)` | a `sc_command::observability::SharedCanonicalLog` (ADR-RUN-0017 initial bridge); optional in every builder state and replaces the fixed `sc-runtime` Noop | no |
 | `.run().await` | none; returns `Result<(), RuntimeError>` | yes |
 
 The optional logger is a `SharedCanonicalLog` retained through `stores`,
@@ -941,8 +941,8 @@ The workspace library set includes `sc-config`, `sc-transport`, `sc-command`,
 `sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`. This item owns only the list of third-party
 dependencies `sc-runtime` is allowed. The workspace-internal edges and the
 forbidden edges of all workspace library crates are owned by
-[REQ-RUN-0005](../requirements.md): `sc-runtime` is the only one of the four
-that may depend on the others, and `sc-config`, `sc-transport` and
+[REQ-RUN-0005](../requirements.md): `sc-runtime` is the assembly crate depending on the others
+(cron temporarily depends only on command under ADR-RUN-0017), and `sc-config`, `sc-transport` and
 `sc-command` MUST NOT depend on `sc-runtime` or on each other.
 
 The normal (non-dev, non-optional) dependencies of `sc-runtime` MUST be exactly
@@ -951,8 +951,8 @@ the following.
 | Dependency | Why it is needed |
 |---|---|
 | `sc-transport` with `features = ["server"]` | listener binding, the endpoint resolver and the instance-root function |
-| `sc-command` with `features = ["server"]` | the axum response and rmcp tool-result conversions of the response envelope, including `GET /health` |
-| `sc-observability-types` | `SharedCanonicalLog` and canonical request lifecycle events; no sink construction or shutdown |
+| `sc-command` with `features = ["server"]` | the axum response and rmcp tool-result conversions of the response envelope, including `GET /health`; temporary canonical port under ADR-RUN-0017 |
+| `sc-observability-types` | canonical request lifecycle values; no sink construction or shutdown |
 | `axum` | the merged `axum::Router` and serving |
 | `tokio` | the async runtime and signal handling |
 | `fd-lock` | the exclusive lock on `daemon.lock` |
