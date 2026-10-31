@@ -105,6 +105,47 @@ def source_violations(source):
                    (tool_package(name.replace("_", "-")) or name == "atm_core")})
 
 
+def production_path_targets(source, production, parent, candidates):
+    """Collect possible #[path] targets; unknown targets cannot be exempted."""
+    targets = set()
+    index = 0
+    while index < len(production):
+        start = production.find('#', index)
+        if start < 0:
+            break
+        end = module_context._skip_attribute(production, start)
+        if end is None:
+            index = start + 1
+            continue
+        masked = production[start:end]
+        path = re.search(r'\bpath\s*=', masked)
+        if path:
+            # cfg_attr(test, ...) cannot introduce a production path.
+            conditional = re.match(r'#\s*\[\s*cfg_attr\s*\(', masked)
+            parsed = module_context._parse_predicate(masked, conditional.end()) if conditional else None
+            if parsed and not cfg_possibilities_without_test(masked[conditional.end():parsed[1]])[0]:
+                index = end
+                continue
+            following = module_context._skip_ws_comments(source, end)
+            if module_context._cfg_requires_test_at(source, following):
+                index = end
+                continue
+            original = source[start + path.end():end]
+            literal = re.match(r'\s*"([^"\\]*)"', original)
+            if literal is None:
+                return set(candidates)
+            relative = Path(literal[1])
+            targets.add((parent.parent / relative).resolve())
+            # Inline modules change the base directory. Match possible candidate
+            # suffixes conservatively when the enclosing module is unknown.
+            prefix = production[:start]
+            if prefix.count('{') > prefix.count('}'):
+                targets.update(candidate for candidate in candidates
+                               if candidate.parts[-len(relative.parts):] == relative.parts)
+        index = end
+    return targets
+
+
 def test_only_module_files(files):
     """Keep only test-context modules with no production-reachable path."""
     exempt = module_context._exempt_module_files(files)
@@ -112,7 +153,12 @@ def test_only_module_files(files):
     seen = set(queue)
     while queue:
         parent = queue.pop()
-        production = rust_production(parent.read_text())
+        source = parent.read_text()
+        production = rust_production(source)
+        for child in production_path_targets(source, production, parent, exempt):
+            if child.is_file() and child not in seen:
+                seen.add(child)
+                queue.append(child)
         for name in module_context._module_includes(production):
             child = module_context._module_file(parent, name)
             if child is not None and child not in seen:
@@ -236,6 +282,21 @@ class ProductionToolBoundaryTests(unittest.TestCase):
             for declarations in ('mod test_support;', '#[cfg(test)] mod test_support;\nmod test_support;'):
                 source.write_text(declarations + '\n')
                 self.assertTrue(any('test_support.rs: production Rust tool reference atm_core' in error for error in scan(root)))
+            test_decl = '#[cfg(test)] mod test_support;\n'
+            (crate / "src/production.rs").write_text('pub fn production() {}\n')
+            for declaration in ('#[path="test_support.rs"] mod production_support;',
+                                '#[cfg_attr(unix, path="test_support.rs")] mod production_support;',
+                                'mod nested { #[path="test_support.rs"] mod production_support; }',
+                                '#[path=concat!("test", "_support.rs")] mod production_support;'):
+                source.write_text(test_decl + declaration + '\n')
+                self.assertTrue(any('test_support.rs: production Rust tool reference atm_core' in error for error in scan(root)), declaration)
+            for declaration in ('#[path="production.rs"] mod production;',
+                                '#[cfg_attr(unix, path="production.rs")] mod production;',
+                                '#[cfg_attr(test, path="test_support.rs")] mod production;',
+                                '#[cfg_attr(all(test, unix), path="test_support.rs")] mod production;',
+                                '#[path="test_support.rs"] #[cfg(test)] mod other_test;'):
+                source.write_text(test_decl + declaration + '\n')
+                self.assertEqual(scan(root), [], declaration)
 
     def test_actual_release_crates(self):
         self.assertEqual(scan(ROOT), [])
