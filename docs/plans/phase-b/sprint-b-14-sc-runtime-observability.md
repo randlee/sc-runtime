@@ -1,7 +1,7 @@
 ---
 id: b-14
 phase: b
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-runtime
 track: observability
@@ -25,6 +25,7 @@ adrs:
   - ADR-RT-0001
   - ADR-RT-0004
 owned_paths:
+  - crates/sc-runtime/src/builder.rs
   - crates/sc-runtime/src/router.rs
   - crates/sc-runtime/src/testing.rs
   - crates/sc-runtime/src/tests.rs
@@ -50,6 +51,9 @@ runtime state and the fixed `DaemonBuilder::logger` contract. Merge b-13 into
 this branch before every development or fix round. It is `parallel_safe` with
 b-15 and b-16 because their owned paths and production boundaries are
 disjoint.
+
+The `builder.rs` change is limited to the serial b-13 consumer seam: carry the
+existing shared logger into request middleware, without changing builder APIs.
 
 ## Event contract
 
@@ -132,3 +136,29 @@ sc-lint lint sc-boundary --root . --config sc-lint.toml
 
 - File/console sinks or generated observability configuration (b-18).
 - Cron events (b-15) or logger construction/shutdown.
+
+
+## Implementation evidence
+
+Consumed b-13 final contract `0a6a9dcfb6258d06a470154e24e0a2aec915430e`.
+The inherited b-13 builder stored the injected logger but dropped it at `drive`.
+The authorized serial consumer change forwards that existing handle through
+`serve` into request middleware. Builder APIs, constructors, and typestate are
+unchanged. The real-daemon regression checks `Arc::ptr_eq` in an HTTP handler
+and records both lifecycle events through that injected receiver. Independent
+requirements and architecture QA must assess this inherited omission and fix;
+this implementation evidence does not assert a QA verdict.
+
+`observability_http` exercises 101/200/302/404/500 responses, unmatched routes,
+validated and generated IDs, concurrent IDs, secret exclusion, both timeout
+codes, full and disconnected queues, response/header/body/counter preservation,
+handler cancellation, and real-daemon handle identity. The crate-private
+shutdown regression uses an isolated temporary instance root, deadline polling,
+and joins both the request and daemon task after the drain timeout.
+
+Development validation passed: focused HTTP tests (5), full runtime tests with
+`test-util`, formatting, workspace all-target Clippy and runtime feature Clippy
+with warnings denied, `cargo check --workspace`, direct-tracing scan,
+`just adr-run-0011`, and boundary lint (zero findings). Only the types test
+receivers are used; no full observability sink dependency was added. The
+upstream publication guard remains enabled for the b-18 release condition.
