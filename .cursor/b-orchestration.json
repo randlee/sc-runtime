@@ -5444,7 +5444,7 @@
     {
       "qa_pass": "qa-phase-b-end-2",
       "commit": "92f384834a78ed15ba68b3df02cd00267ea4d41e",
-      "verdict": "IN-FLIGHT",
+      "verdict": "FAIL",
       "pr_number": 96,
       "bead": "run-03z.30.2",
       "reviewer_manifest": [
@@ -5477,10 +5477,10 @@
           "task_id": "/root/phase_end_qa2_rust",
           "spawn_actor": "parent-orchestrator",
           "fenced_json_received": true,
-          "verdict": "PASS",
+          "verdict": "FAIL",
           "findings": {
             "blocking": 0,
-            "important": 0,
+            "important": 1,
             "minor": 0
           }
         },
@@ -5514,18 +5514,21 @@
         ".triage/b/findings/ARCH-PHASE-B-001.ttl",
         ".triage/b/findings/EXT-PHASE-001.ttl",
         ".triage/b/findings/EXT-PHASE-002.ttl",
-        ".triage/b/findings/FTQ-PHASEB-001.ttl"
+        ".triage/b/findings/FTQ-PHASEB-001.ttl",
+        ".triage/b/findings/RUST-QA-PHASE-001.ttl"
       ],
-      "finding_ids": [],
+      "finding_ids": [
+        "RUST-QA-PHASE-001"
+      ],
       "coordinator_task_id": "/root/phase_end_qa2_enforcer",
-      "note": "ExactfullpublicreportJSONindependentlyGETverified and actual5completedTaskreceipts/fencedoutputs correlated.98/98+73checks,0findings/TODO. Windows+aggregatecurrentCIpending; canonicaldirectfulltestpending, interruptedextraouterwrapper124notPASS.",
+      "note": "Lateactual92canonicalfulltestFAILexposedLiquidguardregression; sameactualRustreviewerconfirmed, screennot_applicable, samepublicQA2commentupdatedFAIL1I. Forward1eonlytestselection/bodyfixnowQA3verified; no waivedtest orsourcegate.",
       "machine_status": {
         "sprint": "phase-b-end",
         "task": "qa-phase-b-end-2",
         "branch": "integrate/phase-b-observability",
         "commit": "92f384834a78ed15ba68b3df02cd00267ea4d41e",
         "pr": 96,
-        "verdict": "IN-FLIGHT",
+        "verdict": "FAIL",
         "deliverables": {
           "complete": 98,
           "total": 98,
@@ -5533,13 +5536,13 @@
         },
         "findings": {
           "blocking": 0,
-          "important": 0,
+          "important": 1,
           "minor": 0
         },
         "blocking_ids": [],
         "merge_readiness": "not ready",
-        "merge_reason": "Source QA is clean (98/98 deliverables and 73/73 requirement checks); exact-head PR CI is incomplete, with just lint and just test plus Windows hook environment execution still pending. Fifteen other required checks pass.",
-        "next_action": "wait_for_exact_head_ci",
+        "merge_reason": "The source/requirements ledger is complete (98/98 deliverables; 73/73 requirement checks), but Rust QA found an Important test-gate failure on reviewed commit 92f3848. Forward commit 1e6931b corrects the cited test files; it has not yet received fresh QA3/full-gate verification.",
+        "next_action": "triage_and_fix",
         "owner": "parent-orchestrator",
         "reviewer_spawn_gate": "pass",
         "reviewer_manifest": [
@@ -5572,10 +5575,10 @@
             "task_id": "/root/phase_end_qa2_rust",
             "spawn_actor": "parent-orchestrator",
             "fenced_json_received": true,
-            "verdict": "PASS",
+            "verdict": "FAIL",
             "findings": {
               "blocking": 0,
-              "important": 0,
+              "important": 1,
               "minor": 0
             }
           },
@@ -5616,7 +5619,8 @@
               ".triage/b/findings/ARCH-PHASE-B-001.ttl",
               ".triage/b/findings/EXT-PHASE-001.ttl",
               ".triage/b/findings/EXT-PHASE-002.ttl",
-              ".triage/b/findings/FTQ-PHASEB-001.ttl"
+              ".triage/b/findings/FTQ-PHASEB-001.ttl",
+              ".triage/b/findings/RUST-QA-PHASE-001.ttl"
             ]
           }
         },
@@ -5624,6 +5628,168 @@
         "unparsed_reviewers": []
       },
       "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541269692"
+    },
+    {
+      "qa_pass": "qa-phase-b-end-3",
+      "commit": "1e6931bed0130d8452a35a9a6ec17b30ace11302",
+      "verdict": "IN-FLIGHT",
+      "pr_number": 96,
+      "bead": "run-03z.30.3",
+      "machine_status": {
+        "sprint": "phase-b-end",
+        "task": "qa-phase-b-end-3",
+        "branch": "integrate/phase-b-observability",
+        "commit": "1e6931bed0130d8452a35a9a6ec17b30ace11302",
+        "pr": 96,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 98,
+          "total": 98,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "All source and reviewer gates pass (98/98 deliverables, 73 requirement checks, four reviewers, zero findings, clean TODO scan). The exact PR head has one required hosted check still pending; phase admission remains gated on all required CI completing successfully.",
+        "next_action": "await_ci",
+        "owner": "cursor-quality-mgr",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/phase_end_qa3_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/phase_end_qa3_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/phase_end_qa3_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/phase_end_qa3_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-phase-b-end-3",
+          "commit": "1e6931bed0130d8452a35a9a6ec17b30ace11302",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541479070",
+          "coordinator_task_id": "/root/phase_end_qa3_enforcer",
+          "triage": {
+            "branch": "codex/phase-b-review-state",
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-PHASE-001.ttl",
+              ".triage/b/findings/ARCH-PHASE-B-001.ttl",
+              ".triage/b/findings/EXT-PHASE-001.ttl",
+              ".triage/b/findings/EXT-PHASE-002.ttl",
+              ".triage/b/findings/FTQ-PHASEB-001.ttl",
+              ".triage/b/findings/RUST-QA-PHASE-001.ttl"
+            ]
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      },
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/phase_end_qa3_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/phase_end_qa3_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/phase_end_qa3_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/phase_end_qa3_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "coordinator_task_id": "/root/phase_end_qa3_enforcer",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/96#issuecomment-6541479070",
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-PHASE-001.ttl",
+        ".triage/b/findings/ARCH-PHASE-B-001.ttl",
+        ".triage/b/findings/EXT-PHASE-001.ttl",
+        ".triage/b/findings/EXT-PHASE-002.ttl",
+        ".triage/b/findings/FTQ-PHASEB-001.ttl",
+        ".triage/b/findings/RUST-QA-PHASE-001.ttl"
+      ],
+      "finding_ids": [],
+      "note": "ParentindependentpublicJSONequality+fouractualcompletedTaskcorrelation. Fullcanonicalexact1eLintEXIT0andTestEXIT0, currenthosted16/17oneaggregatepending; no phaseadmissionyet."
     }
   ],
   "model_authority": "User: yes, use terra/sol/luna where appropriate",
@@ -6588,7 +6754,7 @@
   },
   "phase_end": {
     "bead": "run-03z.30",
-    "status": "qa2_source_approved_awaiting_exact_head_execution",
+    "status": "qa3_all_reviews_and_local_full_gates_pass_hosted_aggregate_pending",
     "review_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa1",
     "review_branch": "integrate/phase-b-observability",
     "coordination_branch": "codex/phase-b-review-state",
@@ -6596,23 +6762,11 @@
     "state_policy": "After this implementation snapshot, phase review manifests and exact public machine statuses persist in coordination branch .cursor/b-orchestration.json. Integration review commit remains frozen during CI. Beads remains task tracking; no new sprint or product gate.",
     "pr_number": 96,
     "pr_url": "https://github.com/randlee/sc-runtime/pull/96",
-    "head": "92f384834a78ed15ba68b3df02cd00267ea4d41e",
+    "head": "1e6931bed0130d8452a35a9a6ec17b30ace11302",
     "reviewer_manifest": [
       {
         "agent": "req-qa",
-        "task_id": "/root/phase_end_qa2_req",
-        "spawn_actor": "parent-orchestrator",
-        "fenced_json_received": true,
-        "verdict": "PASS",
-        "findings": {
-          "blocking": 0,
-          "important": 0,
-          "minor": 0
-        }
-      },
-      {
-        "agent": "arch-qa",
-        "task_id": "/root/phase_end_qa2_arch",
+        "task_id": "/root/phase_end_qa3_req",
         "spawn_actor": "parent-orchestrator",
         "fenced_json_received": true,
         "verdict": "PASS",
@@ -6624,7 +6778,7 @@
       },
       {
         "agent": "rust-qa-agent",
-        "task_id": "/root/phase_end_qa2_rust",
+        "task_id": "/root/phase_end_qa3_rust",
         "spawn_actor": "parent-orchestrator",
         "fenced_json_received": true,
         "verdict": "PASS",
@@ -6635,8 +6789,8 @@
         }
       },
       {
-        "agent": "extensibility-qa",
-        "task_id": "/root/phase_end_qa2_ext",
+        "agent": "arch-qa",
+        "task_id": "/root/phase_end_qa3_arch",
         "spawn_actor": "parent-orchestrator",
         "fenced_json_received": true,
         "verdict": "PASS",
@@ -6648,7 +6802,7 @@
       },
       {
         "agent": "flaky-test-qa",
-        "task_id": "/root/phase_end_qa2_flaky",
+        "task_id": "/root/phase_end_qa3_flaky",
         "spawn_actor": "parent-orchestrator",
         "fenced_json_received": true,
         "verdict": "PASS",
@@ -6677,7 +6831,10 @@
     "fix_child_heads": {
       "contracts": "18bff2c5602ba25494b5108481457d5c3c73d94d",
       "processes": "8f8319dcc4e2edfbde448fb0827493093fccf847"
-    }
+    },
+    "qa3_packet": "/tmp/phaseb-cursor-orchestration/phase-end-qa3",
+    "qa3_bead": "run-03z.30.3",
+    "local_full_gates": "/tmp/phaseb-combined-full-gates-1e6931b.json"
   },
   "production_readiness": {
     "bead": "run-03z.31",
