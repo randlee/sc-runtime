@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:RSH-B17-001>
+  qa:id "RSH-B17-001" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "rust-service-hardening-agent" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location "crates/sc-cron/src/environment/dotenv.rs:159" ;
+  qa:issue "Dotenv resolution performs a blocking open before rejecting non-regular targets. On Unix an authorized FIFO with no writer passes path authorization and blocks File::open indefinitely, so execution never reaches the regular-file check. The row deadline returns TimedOut but leaves the started spawn_blocking closure alive; repeated occurrences can accumulate blocked threads, and normal Tokio runtime shutdown can wait indefinitely." ;
+  qa:recommendation "Reject non-regular authorized canonical targets before any potentially blocking open, retaining required/optional missing-file classification and the existing opened-handle checks before/after bounded reading. Use an appropriate nonblocking open strategy if needed to keep special-file rejection safe under the approved filesystem trust model. Add an isolated Unix FIFO/no-writer regression proving prompt ENV_FILE_INVALID and bounded runtime teardown, with owned-process cleanup on failure." .

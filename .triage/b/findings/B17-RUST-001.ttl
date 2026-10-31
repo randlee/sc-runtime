@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:B17-RUST-001>
+  qa:id "B17-RUST-001" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location "crates/sc-cron/src/scheduler/run_due.rs:533" ;
+  qa:issue "A panicking registered Monty host callback can leak a configured environment value into scheduled diagnostics. When `run_monty_due` panics through its Tokio task, the `DueTask::Monty` join-error branch formats the full JoinError into the `DUE_JOIN_FAILED` RunOutcome; this payload can contain the raw panic message. The same `error.to_string()` is emitted in the `DueJoinFailed` event at line 524. A Monty script can read an allowed snapshot value and pass it to the registered host callback, which panics with that argument; the resulting recorded outcome contains the canary verbatim." ;
+  qa:recommendation "Keep the Monty join-failure event and recorded outcome value-free instead of interpolating the panic payload, or redact using the occurrence snapshot before persistence/logging. Add a regression test where Monty passes an environment canary to a registered callback that panics and assert that neither the stored RunOutcome nor the DueJoinFailed diagnostic contains it." .

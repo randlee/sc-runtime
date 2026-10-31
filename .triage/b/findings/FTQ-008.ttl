@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:FTQ-008>
+  qa:id "FTQ-008" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location "crates/sc-cron/tests/hook_environment/resolution.rs:243" ;
+  qa:issue "The pending-resolver test waits for its readiness notification without a hard deadline. The manual clock is advanced past the row deadline only after this select completes, and the test timeout is installed later. If resolution never reaches or notifies the resolver while run_due remains pending, neither selected branch completes and the test hangs forever before reaching its bounded section." ;
+  qa:recommendation "Put an independent real-time timeout around the readiness select, with a clear resolver-readiness failure, while continuing to poll the run future. Advance the manual clock only after readiness succeeds, then retain the existing bounded completion and TimedOut assertions." .
