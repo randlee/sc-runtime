@@ -266,7 +266,7 @@ The kit install required a later qualified exact revision with no
 kit preparation or runtime composition after approved parent merges. Upstream
 source may retain its own sprint history; source-checkout absence is not the
 package-safety predicate. The installed qualified revision is `9677ab083e7dd3feb258235a342e321ca1b45d8d`. b-18 updated
-`release/sc-publish-pin.toml`, installs only from that exact revision, and
+`release/sc-publish-pin.toml`, installed only from that exact revision, and
 proves the installer destination inventory is complete and package-safe; the
 leaked upstream sprint-history document is never copied or owned here.
 
@@ -587,7 +587,7 @@ claimed to pass during Phase B:
 ```sh
 bash .github/scripts/run-consumer-preflight.sh
 python3 scripts/check_observability_release.py
-python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
+SC_RUNTIME_REGISTRY_PROOF=1 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
 test "$(git rev-list -n 1 v0.1.1)" = "$(git rev-parse HEAD)"
 ```
 
@@ -626,3 +626,16 @@ real-signal test. No recipe enables any marker. Tests use production logger
 ownership and the existing signal-free `DaemonFixture` for local HTTP/cron
 JSONL proof; synthetic typed shutdown error values exercise result selection
 without injecting faults into a running production logger.
+
+
+The qualified kit exposes pre-publication consumer checks but no generic
+post-publication consumer command hook. The actual registry-only proof must
+therefore remain a mandatory explicit release-owner action in `run-h0h`, after
+all five internal publications, using `SC_RUNTIME_REGISTRY_PROOF=1` as shown
+above. Pre-publication consumer checks retain the static source contract and
+strict dependency guard; they neither invoke nor skip a production registry
+proof. Ordinary phase discovery skips the unavailable later proof. No current
+registry success is claimed.
+Cron workers start inside the runtime stores callback only after the runtime
+holds `daemon.lock` and application stores open. A losing concurrent daemon
+therefore cannot run schedules before its instance-lock failure.
