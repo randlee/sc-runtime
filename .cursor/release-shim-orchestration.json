@@ -19,7 +19,8 @@
     "docs_baseline": "054e31a",
     "pr": 98,
     "url": "https://github.com/randlee/sc-runtime/pull/98",
-    "status": "implementation_and_validation_active"
+    "status": "qa1_full_set_running_source_frozen",
+    "head": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27"
   },
   "cleanup_issue": "https://github.com/randlee/sc-runtime/issues/97",
   "coordination": {
@@ -70,10 +71,66 @@
       "rust-service-hardening-agent",
       "flaky-test-qa"
     ],
-    "reviewer_manifest": [],
+    "reviewer_manifest": [
+      {
+        "agent": "req-qa",
+        "task_id": "/root/shim_qa1_req",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6-luna",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FAIL",
+        "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/req-qa-result.md"
+      },
+      {
+        "agent": "arch-qa",
+        "task_id": "/root/shim_qa1_arch",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FAIL",
+        "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/arch-qa-result.md"
+      },
+      {
+        "agent": "ruthless-boundary-qa",
+        "task_id": "/root/shim_qa1_boundary",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "running",
+        "fenced_json_received": false,
+        "verdict": null,
+        "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/ruthless-boundary-qa-result.md"
+      },
+      {
+        "agent": "rust-qa-agent",
+        "task_id": "/root/shim_qa1_rust",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "status": "completed",
+        "fenced_json_received": true,
+        "verdict": "FAIL",
+        "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/rust-qa-agent-result.md"
+      },
+      {
+        "agent": "rust-service-hardening-agent",
+        "task_id": "/root/shim_qa1_service",
+        "spawn_actor": "parent-orchestrator",
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "status": "running",
+        "fenced_json_received": false,
+        "result_path": "/tmp/sc-runtime-shim-orchestration/qa1/rust-service-hardening-agent-result.md"
+      }
+    ],
     "qa_rounds": [],
     "enforcer": "cursor-quality-mgr",
-    "gate": "All actual reviewer JSON + TODO union zero findings at all severities, deliverables100percent, actual current-head required CI SUCCESS; every round public PR report."
+    "gate": "All actual reviewer JSON + TODO union zero findings at all severities, deliverables100percent, actual current-head required CI SUCCESS; every round public PR report.",
+    "qa_pass": "qa-release-shim-1"
   },
   "release": {
     "publication_authorized": false,
