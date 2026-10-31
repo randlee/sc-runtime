@@ -52,10 +52,10 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         manifest = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())
         return app, manifest["package"]["name"]
 
-    def run_generated_test(self, app, package, target, name, *, monty=False):
+    def run_generated_test(self, app, package, target, name, *, monty=False, ignored=False):
         cargo = ["cargo", "+1.96.1"] if monty else ["cargo"]
         result = run_owned(
-            [*cargo, "test", "-p", package, "--features", "monty" if monty else "cron", *target, name, "--", "--exact"],
+            [*cargo, "test", "-p", package, "--features", "monty" if monty else "cron", *target, name, "--", "--exact", *(["--ignored"] if ignored else [])],
             cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL,
             text=True, capture_output=True,
         )
@@ -86,7 +86,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.run_generated_test(app, package, ["--bin", "widget-app-daemon"],
                                 "tests::lock_loser_leaves_fresh_cron_database_absent_and_never_starts_worker")
         self.run_generated_test(app, package, ["--bin", "widget-app-daemon"],
-                                "tests::cron_startup_failure_preserves_exact_code_cause_and_recovery")
+                                "tests::cron_startup_failure_preserves_exact_code_cause_and_recovery", ignored=True)
 
     def test_pr_fixture_matrix_one_entry_per_fixture(self):
         workflow = (ROOT / ".github/workflows/template.yml").read_text()

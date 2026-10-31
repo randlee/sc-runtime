@@ -230,9 +230,9 @@ mod tests {
         holder.shutdown().await.expect("fixture cleanup");
     }
 
-    {% if db == "sqlite" or db == "none" %}
     #[cfg(feature = "cron")]
     #[tokio::test]
+    #[ignore = "requires local application stores; the generated SQLite fixture runs this explicitly"]
     async fn cron_startup_failure_preserves_exact_code_cause_and_recovery() {
         let root = tempfile::tempdir().expect("instance root");
         let mut values: serde_json::Value = serde_json::from_str(include_str!("../../../config/default.json")).expect("default config");
@@ -254,7 +254,6 @@ mod tests {
         assert_no_cron_events(root.path());
     }
 
-    {% endif %}
     #[test]
     fn config_startup_uses_each_library_code_once() {
         let errors = [
