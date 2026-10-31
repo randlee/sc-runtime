@@ -45,7 +45,10 @@ adapter changes only the trait boundary; it does not add another queue, sink,
 or lifecycle policy.
 
 The owner confirmed on 2026-10-30 that Phase B completes before upstream
-1.5.1. The approved real 1.5.0 adapter supports the phase's actual shared-logger,
+1.5.1. This timing is recorded in [REQ-RUN-0702](../../docs/requirements.md),
+including Success Criteria 6–7, and [architecture](../../docs/architecture.md)
+(System shape and ADR-RUN-0004/0007); all production safety predicates remain
+binding. The approved real 1.5.0 adapter supports the phase's actual shared-logger,
 JSONL, shutdown-precedence, and isolated-CI signal-lifecycle evidence. These
 proofs do not claim published 1.5.1 support. Release epic `run-h0h`, including
 external prerequisite `run-03z.7`, owns the following removal/publication work

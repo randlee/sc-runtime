@@ -98,10 +98,13 @@ The owner directed that upstream `1.5.1` will follow Phase B. The phase closes
 on actual development composition, a shared real logger, HTTP+cron JSONL,
 shutdown precedence, real isolated-CI signal lifecycle, qualified kit install,
 and pre-publication source contracts. The approved real registry `1.5.0`
-logger/development adapter supports those proofs. This is a timing amendment;
-requirements, ADRs, locked anchors, public interfaces, all eight b-18 acceptance
-criteria, and release safety remain in force. It does not mark b-18 or the
-phase complete.
+logger/development adapter supports those proofs. This timing amendment
+updates [REQ-RUN-0702](../../requirements.md), including Success Criteria
+6–7, and [architecture](../../architecture.md) (System shape and
+ADR-RUN-0004/0007) to place production release acceptance in `run-h0h` after
+Phase B. Locked anchors, public interfaces, all eight b-18 acceptance criteria
+with criterion 6's phase/release split, and every release safety predicate
+remain in force. It does not mark b-18 or the phase complete.
 
 Release epic `run-h0h`, including external prerequisite `run-03z.7`, owns
 matching published `1.5.1`, direct upstream Arc coercion, facade/adapter/path
@@ -352,8 +355,10 @@ dependency. It forwards actual `service_name`/`try_log`; the application owns
 construction, flush, and shutdown, and adapter tests exercise the real
 queue/sinks, saturation, and shutdown rather than Noop substitutes. Optimized
 development builds and benchmarks are permitted. This does not claim an
-upstream `1.5.1` implementation. Public requirements, trait signatures, and
-release versions remain unchanged. After Phase B, release epic `run-h0h` follows
+upstream `1.5.1` implementation. The governing requirement and architecture
+timing clauses are amended as described above; trait signatures, canonical
+release versions, and production safety predicates remain unchanged. After
+Phase B, release epic `run-h0h` follows
 the [shim removal procedure](../../../dev/observability-types-shim/README.md),
 removes the development workspace path overrides and local adapter, replaces
 newtype construction with direct upstream `Arc<Logger>` coercion, proves real

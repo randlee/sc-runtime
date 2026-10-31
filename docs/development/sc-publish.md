@@ -58,8 +58,10 @@ preparation may proceed independently of runtime parents; final composition
 consumes their approved merges. b-18's [validation recipe](../plans/phase-b/sprint-b-18-template-observability-integration.md#required-validation)
 is authoritative for that install and inventory check.
 
-Actual publication follows Phase B under release epic `run-h0h`: matching
-published observability `1.5.1` and external prerequisite `run-03z.7`, bridge/path
+The governing timing amendment in [REQ-RUN-0702](../requirements.md),
+including Success Criteria 6–7, and [architecture](../architecture.md)
+assigns actual publication and release acceptance after Phase B to `run-h0h`:
+matching published observability `1.5.1` and external prerequisite `run-03z.7`, bridge/path
 removal and direct upstream Arc coercion, then human-authorized publication of
 `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron` in that
 order. `sc-runtime-db-sqlite` remains unpublished. Registry-only generation

@@ -166,10 +166,13 @@ a cargo-generate template plus separately published library crates.
 ## Owner timing amendment — 2026-10-30
 
 The owner directed that Phase B finish before upstream `1.5.1` publication.
-This changes delivery timing, not the requirements, ADRs, public interfaces,
-version inventories, or release safety predicates. b-18 remains planned until
-its implementation and QA are delivered; this documentation amendment is not
-sprint or phase acceptance.
+The governing timing clauses in [REQ-RUN-0702](../../requirements.md),
+including Success Criteria 6–7, and [architecture](../../architecture.md)
+(System shape and ADR-RUN-0004/0007) are amended with this plan to assign
+production release acceptance to `run-h0h` after Phase B. Public interfaces,
+version inventories, and every release safety predicate remain unchanged.
+b-18 remains planned until its implementation and QA are delivered; this
+documentation amendment is not sprint or phase acceptance.
 
 Phase completion requires the real development composition, shared ownership,
 HTTP+cron JSONL, shutdown precedence, isolated-CI signal lifecycle, qualified

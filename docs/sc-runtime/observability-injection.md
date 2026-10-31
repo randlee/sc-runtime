@@ -86,9 +86,12 @@ below remains the final upstream contract.
 
 Optimized development builds and benchmarks are permitted. Both local
 packages remain unpublished with `publish = false`, and the publication
-guard stays active. Per the owner's 2026-10-30 timing decision, Phase B may
-complete its real development JSONL/composition/lifecycle proof with this
-adapter. Release epic `run-h0h`, including external prerequisite `run-03z.7`,
+guard stays active. The 2026-10-30 governing timing amendment in
+[REQ-RUN-0702](../requirements.md), including Success Criteria 6–7, and
+[architecture](../architecture.md) (System shape and ADR-RUN-0004/0007)
+permits Phase B's real development JSONL/composition/lifecycle proof with
+this adapter and assigns production release acceptance after Phase B to
+`run-h0h`. That epic, including external prerequisite `run-03z.7`,
 requires the real matching
 `1.5.1` registry pair and published adapter proof, removal of development
 workspace path overrides and the local adapter, replacement of newtype

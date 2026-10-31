@@ -63,7 +63,10 @@ human-authorized five-crate `0.1.1` publication, registry-only generated proof,
 and the same-source `v0.1.1` tag. Publication evidence and registry-only proof
 bind to one unchanged source commit. The release guard stays active; the
 phase-end readiness review after fixes must report these remaining release
-limits. Canonical release inventories, requirements, and ADRs are unchanged.
+limits. [REQ-RUN-0702](requirements.md), including Success Criteria 6–7,
+and [architecture](architecture.md) (System shape and ADR-RUN-0004/0007)
+carry this governing timing amendment. Canonical release inventories, public
+interfaces, and every production safety predicate remain unchanged.
 
 The existing kit pin is rejected because its installer copies a
 `docs/sprints/**` destination. b-18 must select a qualified exact full SHA and
