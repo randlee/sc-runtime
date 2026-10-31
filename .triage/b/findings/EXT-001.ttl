@@ -5,7 +5,7 @@
   qa:sprint "b-18-kit-preparation" ;
   qa:qaPass "prequalification-inspection" ;
   qa:severity "Important" ;
-  qa:status "open" ;
+  qa:status "fixed" ;
   qa:reviewer "extensibility-qa" ;
   qa:reviewerTask "/root/kit_prequalification_ext" ;
   qa:commit "ac7e13a9e7e006f6646f6dda434588cbe2a98589" ;

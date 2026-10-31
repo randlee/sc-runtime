@@ -215,7 +215,7 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-17-sc-cron-hook-environment",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "final_two_corrections_pushed_qa3_and_full_validation_running",
+      "status": "qa3_zero_open_findings_local_full_validation_and_windows_pass_pending_linux_ci",
       "developer_task_id": "/root/phaseb_b17_developer",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
       "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2",
@@ -383,7 +383,7 @@
       "kit_preparation_worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit",
       "kit_preparation_branch": "codex/b-18-publishing-kit",
       "kit_preparation_pr": 95,
-      "kit_preparation_head": "ef5c0e829df74867566e89c7b6bec68151af26a3",
+      "kit_preparation_head": "8e8d030dcc7e1d2daa7041a04b74561f938c1010",
       "kit_preparation_validation": "/tmp/phaseb-cursor-orchestration/b18-kit-install/summary.txt",
       "kit_preparation_report": "https://github.com/randlee/sc-runtime/pull/95#issuecomment-6538723351",
       "kit_preparation_complete": true,
@@ -392,7 +392,19 @@
         "full consumer preflight fails retained development shim and benchmark host rand-m5 requirement; release source contracts pass",
         "B18 composition/lifecycle implementation and full QA remain required",
         "no workflow dispatch/publication/tag/registry-only proof claimed"
-      ]
+      ],
+      "kit_ci_fix_bead": "run-03z.6.2",
+      "kit_ci_fix_evidence": "/tmp/phaseb-cursor-orchestration/b18-kit-install/ci-fix",
+      "kit_prequalification": {
+        "task_id": "/root/kit_prequalification_ext",
+        "source": "8e8d030dcc7e1d2daa7041a04b74561f938c1010",
+        "verdict": "PASS",
+        "scope": "independent preparation inspection only; full B18 QA remains required",
+        "resolved_ids": [
+          "EXT-001"
+        ],
+        "result": "/tmp/phaseb-cursor-orchestration/b18-kit-install/prequalification-ext-recheck-result.md"
+      }
     }
   },
   "qa_rounds": [
@@ -3944,6 +3956,243 @@
             "observed": 2,
             "expected_by_stale_assertion": 1,
             "finding_id": "B17-VALIDATION-001"
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
+    },
+    {
+      "qa_pass": "qa-b-17-3",
+      "commit": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/93#issuecomment-6539030036",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/cursor_b15_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/cursor_b13_qa2_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/cursor_b17_qa2_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/cursor_b17_qa2_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/b/findings/REQ-QA-B17-001.ttl",
+        ".triage/b/findings/ARCH-B17-001.ttl",
+        ".triage/b/findings/B17-RUST-001.ttl",
+        ".triage/b/findings/EXT-B17-001.ttl",
+        ".triage/b/findings/RSH-B17-001.ttl",
+        ".triage/b/findings/RBQA-B17-001.ttl",
+        ".triage/b/findings/RBQA-B17-002.ttl",
+        ".triage/b/findings/RBP-F001.ttl",
+        ".triage/b/findings/FTQ-007.ttl",
+        ".triage/b/findings/FTQ-008.ttl",
+        ".triage/b/findings/B17-VALIDATION-001.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/cursor_b17_qa1_enforcer",
+      "machine_status": {
+        "sprint": "b-17",
+        "task": "qa-b-17-3",
+        "branch": "sprint/b-17-sc-cron-hook-environment",
+        "commit": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
+        "pr": 93,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 14,
+          "total": 15,
+          "percent": 93.3
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "The four actual QA3 reviewer outputs contain zero open code findings, and the TODO scan is clean. Req-qa remains at its reported 14/15 deliverables (93.3%) only because the hosted Linux aggregate `just lint and just test` job 124439421926 is still pending. The single PR snapshot shows 15 passed and 1 pending; Windows hook environment job 124439421951 passed. Local full validation/lint evidence is recorded, but neither this report nor req-qa treats the pending hosted aggregate gate as complete. No source fix is indicated by this status.",
+        "next_action": "await_hosted_linux_aggregate_ci_terminal_and_req_qa_evidence_update",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/cursor_b15_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/cursor_b13_qa2_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/cursor_b17_qa2_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/cursor_b17_qa2_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-b-17-3",
+          "commit": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
+          "pr_number": 93,
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/93#issuecomment-6539030036",
+          "coordinator_task_id": "/root/cursor_b17_qa1_enforcer",
+          "reviewer_tasks": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/cursor_b15_qa1_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "FAIL"
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/cursor_b13_qa2_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/cursor_b17_qa2_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            },
+            {
+              "agent": "flaky-test-qa",
+              "task_id": "/root/cursor_b17_qa2_flaky",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS"
+            }
+          ],
+          "triage": {
+            "phase_id": "b",
+            "ttl_paths": [
+              ".triage/b/findings/REQ-QA-B17-001.ttl",
+              ".triage/b/findings/ARCH-B17-001.ttl",
+              ".triage/b/findings/B17-RUST-001.ttl",
+              ".triage/b/findings/EXT-B17-001.ttl",
+              ".triage/b/findings/RSH-B17-001.ttl",
+              ".triage/b/findings/RBQA-B17-001.ttl",
+              ".triage/b/findings/RBQA-B17-002.ttl",
+              ".triage/b/findings/RBP-F001.ttl",
+              ".triage/b/findings/FTQ-007.ttl",
+              ".triage/b/findings/FTQ-008.ttl",
+              ".triage/b/findings/B17-VALIDATION-001.ttl"
+            ]
+          },
+          "parent_correlation_required": true,
+          "ci_snapshot": {
+            "observed_at": "2026-10-31 04:30 UTC",
+            "pr_number": 93,
+            "checks_passed": 15,
+            "checks_pending": 1,
+            "pending": [
+              {
+                "name": "just lint and just test",
+                "job_id": 124439421926,
+                "url": "https://github.com/randlee/sc-runtime/actions/runs/41167900078/job/124439421926"
+              }
+            ],
+            "windows": {
+              "name": "Windows hook environment execution",
+              "status": "pass",
+              "job_id": 124439421951,
+              "url": "https://github.com/randlee/sc-runtime/actions/runs/41167900078/job/124439421951"
+            },
+            "polling": "single one-shot `gh pr checks 93`; no watch/wait"
+          },
+          "local_validation": {
+            "source_commit": "fd58bdf973abafea5fe5c94362a2df7b465f738e",
+            "just_test": "PASS; exit_code 0",
+            "just_lint": "PASS; exit_code 0",
+            "evidence_refs": [
+              "/tmp/b17-qa2-fix-evidence.json",
+              "/tmp/b17-qa2-full-test.log",
+              "/tmp/b17-qa2-full-lint.log",
+              "/tmp/b17-qa2-protected-proof.json",
+              "/tmp/phaseb-cursor-orchestration/b17-qa3/final-windows-job.log"
+            ]
+          },
+          "todo_scan": {
+            "command": "python3 .claude/skills/todo-triage/scripts/find_todos.py",
+            "result": "clean"
           }
         },
         "missing_reviewers": [],
