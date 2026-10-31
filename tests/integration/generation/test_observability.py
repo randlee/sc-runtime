@@ -46,7 +46,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.addCleanup(temp.cleanup)
         app = Path(temp.name) / "app"
         run_owned(
-            ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
+            ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json"],
             cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
         )
         manifest = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())
@@ -123,7 +123,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             env = {**os.environ, "PATH": str(wrapper_dir) + os.pathsep + os.environ.get("PATH", ""),
                    "SC_TEST_REAL_JUST": real_just, "SC_TEST_SNAPSHOT_LOG": str(log)}
             run_owned(
-                [real_just, "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
+                [real_just, "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json"],
                 cwd=ROOT, env=env, check=True, timeout=1800, stdin=subprocess.DEVNULL,
             )
             records = [json.loads(line) for line in log.read_text().splitlines()]
@@ -167,7 +167,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             root = Path(temp)
             app = root / "app"
             run_owned(
-                ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
+                ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json"],
                 cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
             )
             def build_executable(command, cwd, name):
@@ -287,7 +287,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             self.assertEqual({p["name"] for p in packages}, expected)
             for item in packages:
                 self.assertTrue((item["source"] or "").startswith("registry+"), item)
-                expected_version = "1.5.1" if item["name"].startswith("sc-observability") else "0.1.1"
+                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.1.1"
                 self.assertEqual(item["version"], expected_version)
             for feature in ("cron", "monty"):
                 run_owned(["cargo", "+1.96.1", "test", "-p", package, "--features", feature],
@@ -334,7 +334,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             self.assertEqual(dependencies[name]["version"], "0.1.1")
             self.assertNotIn("path", dependencies[name])
         for name in ("sc-observability", "sc-observability-types"):
-            self.assertEqual(dependencies[name]["version"], "1.5.1")
+            self.assertEqual(dependencies[name]["version"], "=1.5.0")
             self.assertNotIn("path", dependencies[name])
         self.assertNotIn("patch", manifest)
         consumer = json.loads((ROOT / "release/sc-publish-consumer-input.json").read_text())

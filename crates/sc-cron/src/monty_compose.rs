@@ -15,7 +15,7 @@ use process_wrap::std::JobObject;
 #[cfg(unix)]
 use process_wrap::std::ProcessGroup;
 use process_wrap::std::{ChildWrapper, CommandWrap};
-use sc_observability_types::SharedCanonicalLog;
+use sc_command::observability::SharedCanonicalLog;
 
 use crate::monty_compose_common::ComposeHostError;
 
@@ -260,9 +260,8 @@ fn reap_after_kill(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sc_observability_types::{
-        Level, RecordingCanonicalLog, RejectingCanonicalLog, ServiceName,
-    };
+    use sc_command::observability::{RecordingCanonicalLog, RejectingCanonicalLog};
+    use sc_observability_types::{Level, ServiceName};
     use std::sync::Arc;
 
     #[derive(Debug)]

@@ -27,8 +27,11 @@ allowed_dependents = []
 allowed_dev_dependents = ["sc-cron"]
 allowed_dev_dependencies = ["sc-cron"]
 # The shared scripts/check_observability_dependencies.py CI test checks resolved
-# normal identities for full runtime, OTLP, and development adapter exclusion.
+# normal/build identities for full runtime, OTLP, and development adapter exclusion.
+# ADR-RUN-0017 temporary defaults-off contract edge, never command/server.
+# Restore forbidden edge after https://github.com/randlee/sc-runtime/issues/97.
 allowed_dependencies = [
+  "sc-command",
   "sc-observability-types",
   "async-trait",
   "chrono",
@@ -45,7 +48,6 @@ allowed_dependencies = [
 forbidden_edges = [
   "sc-cron -> sc-config",
   "sc-cron -> sc-transport",
-  "sc-cron -> sc-command",
   "sc-cron -> sc-runtime",
   "sc-cron -> sc-runtime-db-sqlite",
 ]

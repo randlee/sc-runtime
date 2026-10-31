@@ -10,7 +10,7 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use monty_types::{MontyObject, ObjectRef};
-use sc_observability_types::SharedCanonicalLog;
+use sc_command::observability::SharedCanonicalLog;
 use serde_json::{Map, Number, Value};
 
 use crate::monty_compose_common::ComposeHostError;

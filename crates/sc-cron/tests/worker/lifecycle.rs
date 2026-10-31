@@ -1,7 +1,8 @@
 //! Active ownership regressions; an idle worker cannot establish these joins.
 
 use super::*;
-use sc_observability_types::{RecordingCanonicalLog, ServiceName, SharedCanonicalLog};
+use sc_command::observability::{RecordingCanonicalLog, SharedCanonicalLog};
+use sc_observability_types::ServiceName;
 
 fn logger() -> Arc<RecordingCanonicalLog> {
     Arc::new(RecordingCanonicalLog::new(

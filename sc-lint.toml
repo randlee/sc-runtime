@@ -11,6 +11,10 @@ name = "production-tool-boundary"
 command = ["python3", "tests/unit/test_production_tool_boundary.py", "--check", "--tree"]
 
 [[tool.sc-lint.lint]]
+name = "observability-boundary"
+command = ["python3", "scripts/check_observability_dependencies.py"]
+
+[[tool.sc-lint.lint]]
 name = "boundary"
 command = ["sc-lint", "lint", "sc-boundary", "--root", ".", "--config", "sc-lint.toml"]
 
@@ -72,9 +76,15 @@ command = ["cargo", "xwin", "clippy", "--workspace", "--exclude", "sc-runtime-db
 
 [tool.sc-lint.lint_profiles]
 # Fast boundary-only pass while leaf crates land (a-2..a-4).
-gates = ["boundary", "production-tool-boundary", "line-counts"]
+gates = ["boundary", "production-tool-boundary", "observability-boundary", "line-counts"]
 # Full maintainer gate once the workspace exists (a-5+).
-full = ["boundary", "production-tool-boundary", "line-counts", "fmt", "clippy", "clippy-sc-cron", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
+full = ["boundary", "production-tool-boundary", "observability-boundary", "line-counts", "fmt", "clippy", "clippy-sc-cron", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
+
+# Cargo removes the versionless checkout-only cron dev-self edge at packaging.
+# sc-lint 0.8.0 requires a version on that edge. The mandatory observability
+# guard checks every other cron path version and the exact self-test exception.
+[tool.sc-lint.analyzers.boundary.exclude_paths_by_rule]
+"SCB-MANIFEST-002" = ["crates/sc-cron/Cargo.toml"]
 
 [tool.sc-lint.analyzers.portability]
 exclude_rules = []
@@ -143,11 +153,11 @@ command = ["bash", "-lc", "rustup run 1.96.1 cargo test -p sc-cron --features mo
 
 [[tool.sc-lint.test]]
 name = "sc-cron-tree-default"
-command = ["bash", "-lc", "tree=$(cargo tree -p sc-cron -e normal --prefix none); echo \"$tree\" | grep -Eq '^monty' && exit 1; echo \"$tree\" | grep -Eq '^sqlx' && exit 1; echo \"$tree\" | grep -Eq '^(sc-runtime-db-sqlite|sc-config|sc-transport|sc-command|sc-runtime) ' && exit 1; true"]
+command = ["bash", "-lc", "tree=$(cargo tree -p sc-cron -e normal --prefix none); echo \"$tree\" | grep -Eq '^monty' && exit 1; echo \"$tree\" | grep -Eq '^sqlx' && exit 1; echo \"$tree\" | grep -Eq '^(sc-runtime-db-sqlite|sc-config|sc-transport|sc-runtime) ' && exit 1; true"]
 
 [[tool.sc-lint.test]]
 name = "sc-cron-tree-monty"
-command = ["bash", "-lc", "tree=$(rustup run 1.96.1 cargo tree -p sc-cron --features monty -e normal --prefix none); echo \"$tree\" | grep -Eq '^monty ' || exit 1; echo \"$tree\" | grep -Eq '^monty-types ' || exit 1; echo \"$tree\" | grep -Eq 'monty-pool|monty-fs|monty-runtime' && exit 1; echo \"$tree\" | grep -Eq '^(sc-runtime-db-sqlite|sc-config|sc-transport|sc-command|sc-runtime) ' && exit 1; true"]
+command = ["bash", "-lc", "tree=$(rustup run 1.96.1 cargo tree -p sc-cron --features monty -e normal --prefix none); echo \"$tree\" | grep -Eq '^monty ' || exit 1; echo \"$tree\" | grep -Eq '^monty-types ' || exit 1; echo \"$tree\" | grep -Eq 'monty-pool|monty-fs|monty-runtime' && exit 1; echo \"$tree\" | grep -Eq '^(sc-runtime-db-sqlite|sc-config|sc-transport|sc-runtime) ' && exit 1; true"]
 
 [[tool.sc-lint.test]]
 name = "sc-runtime-db-sqlite-tree"

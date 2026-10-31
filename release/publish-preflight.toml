@@ -6,7 +6,7 @@ schema_version = 1
 
 [[checks]]
 id = "observability-registry-only"
-description = "Reject development observability patches and require resolved registry types 1.5.1."
+description = "Require the registry 1.5.0 bridge profile, reject local substitutes, and enforce upstream capability cleanup."
 run = "python3 scripts/check_observability_release.py"
 [[checks]]
 id = "release-contract-sources"

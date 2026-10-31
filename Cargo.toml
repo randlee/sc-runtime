@@ -1,7 +1,6 @@
 [workspace]
 resolver = "2"
 members = ["crates/*"]
-exclude = ["dev/observability-types-shim", "dev/observability-logger-adapter"]
 
 [workspace.package]
 version = "0.1.1"
@@ -12,9 +11,5 @@ license = "MIT"
 repository = "https://github.com/randlee/sc-runtime"
 rust-version = "1.94.1"
 
-# TEMPORARY DEVELOPMENT ONLY: remove these paths when the matching registry
-# 1.5.1 contract and real Logger adapter are published, then update the lockfile.
-# A crates.io patch cannot coexist with this facade's exact registry 1.5.0 edge.
 [workspace.dependencies]
-sc-observability-types = { version = "1.5.1", path = "dev/observability-types-shim" }
-sc-observability-dev-adapter = { version = "0.0.0", path = "dev/observability-logger-adapter" }
+sc-observability-types = "1.5.0"

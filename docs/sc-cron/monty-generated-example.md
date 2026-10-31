@@ -61,22 +61,19 @@ CLI children have row deadlines, process-group/job termination, and
 `MAX_HOOK_OUTPUT_BYTES` per stream. A descendant that leaves its process group
 can escape group cleanup. Both adapters receive the same resolved immutable environment snapshot as Python and Monty, with no implicit full-daemon inheritance.
 
-For an explicitly requested development checkout before upstream 1.5.1 is
-available, generate with:
+The normal generation path uses the initial release shim directly:
 
 ```sh
-python3 scripts/new_project.py generated/monty-dev --var-file wizard/fixtures/sqlite-mcp.json --development-observability
+python3 scripts/new_project.py generated/monty-dev --var-file wizard/fixtures/sqlite-mcp.json
 ```
 
-This generation-time mode selects the real registry logger `=1.5.0`, local
-`1.5.1` types facade, and real logger adapter `0.0.0`, alongside the five local
-internal crate patches. The generated source stays unedited through setup,
-lint, test, build-cli, and build-daemon. The flag conflicts with `--release`
-and release-mode environment selection before output is created. Canonical
-template manifests retain the matching `1.5.1` requirements. Development builds
-and benchmarks are permitted; the publication guard remains active. release epic `run-h0h` owns removal of development paths/adapter and the real
-registry-only release proof after Phase B. The development renderer selects
-the adapter during generation; setup and subsequent recipes never edit Rust.
+Generated application source contains its private adapter over the real
+registry logger/types `=1.5.0`; the five SDK checkout patches are used only for
+prepublication development. `--release` omits those patches and is proven after
+all five publications. No separate observability mode or local facade/adapter
+package is required. Setup and later recipes never edit Rust. The command-owned
+neutral contract and temporary cron-command edge are removed by capability-proven
+upstream cleanup in [issue 97](https://github.com/randlee/sc-runtime/issues/97).
 
 The generated `main` opens `cron.database_path` (default `cron.db`) relative
 to the instance root, starts the worker, then joins it after runtime drain

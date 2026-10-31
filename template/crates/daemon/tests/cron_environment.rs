@@ -142,7 +142,7 @@ async fn generated_policy_resolver_and_custom_registry_preserve_python_monty_sna
             .open_scheduler(
                 &config,
                 root.path(),
-                Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                Arc::new(sc_command::observability::NoopCanonicalLog::new(
                     sc_observability_types::ServiceName::new("generated-environment")
                         .expect("service"),
                 )),

@@ -341,7 +341,7 @@ pub async fn supervise_with_logger<F: Future<Output = ()>>(
     spec: &ChildSpec<'_>,
     cap: usize,
     expiry: F,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
 ) -> Result<Captured, crate::CronError> {
     supervise_with_correlation(spec, cap, expiry, logger, None).await
 }
@@ -350,7 +350,7 @@ pub(crate) async fn supervise_with_correlation<F: Future<Output = ()>>(
     spec: &ChildSpec<'_>,
     cap: usize,
     expiry: F,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     correlation: crate::worker::RunCorrelation,
 ) -> Result<Captured, crate::CronError> {
     supervise_inner(spec, cap, expiry, logger, correlation)
@@ -362,7 +362,7 @@ async fn supervise_inner(
     spec: &ChildSpec<'_>,
     cap: usize,
     expiry: impl Future<Output = ()>,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     correlation: crate::worker::RunCorrelation,
 ) -> io::Result<Captured> {
     let mut command = CommandWrap::with_new(spec.program, |command| {
@@ -442,7 +442,7 @@ async fn supervise_inner(
 /// an error instead of entering an unbounded wait; drop retries the kill.
 async fn reap_killed(
     tree: &mut Tree,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     correlation: crate::worker::RunCorrelation,
 ) -> io::Result<()> {
     reap_killed_with_timer(tree, logger, correlation, start_reap_timer).await
@@ -460,7 +460,7 @@ fn start_reap_timer(bound: tokio::sync::oneshot::Sender<()>) -> io::Result<()> {
 
 async fn reap_killed_with_timer(
     tree: &mut Tree,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     correlation: crate::worker::RunCorrelation,
     start_timer: impl FnOnce(tokio::sync::oneshot::Sender<()>) -> io::Result<()>,
 ) -> io::Result<()> {
@@ -481,7 +481,7 @@ async fn reap_killed_with_timer(
 
 async fn await_reap(
     tree: &mut Tree,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     correlation: crate::worker::RunCorrelation,
     bounded: impl Future<Output = ()>,
 ) {
@@ -501,7 +501,7 @@ async fn await_reap(
 
 fn try_kill(
     tree: &mut Tree,
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     correlation: crate::worker::RunCorrelation,
 ) {
     if let Err(error) = tree.child.start_kill() {
@@ -510,7 +510,7 @@ fn try_kill(
 }
 
 fn kill_failed(
-    logger: &sc_observability_types::SharedCanonicalLog,
+    logger: &sc_command::observability::SharedCanonicalLog,
     correlation: crate::worker::RunCorrelation,
     pid: Option<u32>,
     error: &io::Error,
@@ -567,7 +567,7 @@ pub mod testing {
 
     /// Injects timer creation failure with a child whose wait never completes.
     pub async fn failed_reap_timer(
-        logger: sc_observability_types::SharedCanonicalLog,
+        logger: sc_command::observability::SharedCanonicalLog,
     ) -> Result<(), crate::CronError> {
         let mut tree = Tree {
             child: Box::new(Unreapable),
@@ -581,7 +581,9 @@ pub mod testing {
     }
 
     /// Returns whether an unreapable fake child was reaped after an immediate bound.
-    pub async fn failed_kill_and_reap(logger: sc_observability_types::SharedCanonicalLog) -> bool {
+    pub async fn failed_kill_and_reap(
+        logger: sc_command::observability::SharedCanonicalLog,
+    ) -> bool {
         let mut tree = Tree {
             child: Box::new(Unreapable),
             reaped: false,

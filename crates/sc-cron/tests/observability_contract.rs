@@ -3,13 +3,12 @@ mod common;
 use std::sync::Arc;
 use std::time::Duration;
 
+use sc_command::observability::{RecordingCanonicalLog, RejectingCanonicalLog, SharedCanonicalLog};
 use sc_cron::{
     PythonHook, ScheduleLimits, ScheduleSpec, Scheduler, SeqJitter, SqliteScheduleStore,
     SystemClock, SystemJitter,
 };
-use sc_observability_types::{
-    RecordingCanonicalLog, RejectingCanonicalLog, ServiceName, SharedCanonicalLog,
-};
+use sc_observability_types::ServiceName;
 
 #[test]
 fn generic_providers_and_shared_coord_keep_original_identity() {

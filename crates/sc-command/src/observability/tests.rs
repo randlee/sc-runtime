@@ -1,7 +1,10 @@
-use std::any::TypeId;
 use std::sync::Arc;
 
 use super::*;
+use sc_observability_types::{
+    ActionName, ErrorCode, Level, OBSERVATION_SCHEMA_VERSION, ProcessIdentity, Remediation,
+    TargetCategory, Timestamp, error_codes,
+};
 
 pub(crate) fn event(action: &str) -> LogEvent {
     LogEvent {
@@ -57,46 +60,10 @@ fn noop_keeps_valid_names_and_falls_back_for_invalid_names() {
 }
 
 #[test]
-fn facade_retains_released_value_and_error_type_identity() {
-    assert_eq!(
-        TypeId::of::<ServiceName>(),
-        TypeId::of::<released_types::ServiceName>()
-    );
-    assert_eq!(
-        TypeId::of::<LogEvent>(),
-        TypeId::of::<released_types::LogEvent>()
-    );
-    assert_eq!(
-        TypeId::of::<v2::EventError>(),
-        TypeId::of::<released_types::v2::EventError>()
-    );
-    assert_eq!(
-        TypeId::of::<ErrorContext>(),
-        TypeId::of::<released_types::ErrorContext>()
-    );
-    let original: released_types::LogEvent = event("original");
-    let facade: LogEvent = original;
-    let restored: released_types::LogEvent = facade;
-    assert_eq!(restored.action.as_str(), "original");
-    #[cfg(feature = "v1")]
-    {
-        #[allow(
-            deprecated,
-            reason = "the development facade must preserve the released v1 error API"
-        )]
-        let identity = (
-            TypeId::of::<EventError>(),
-            TypeId::of::<released_types::EventError>(),
-        );
-        assert_eq!(identity.0, identity.1);
-    }
-}
-
-#[test]
-fn command_accepts_facade_codes_and_remediation_without_conversion() {
+fn command_accepts_registry_codes_and_remediation_without_conversion() {
     let code = ErrorCode::new_static("SHIM.IDENTITY");
     let remediation = Remediation::recoverable("Retry the test.", [] as [&str; 0]);
-    let error = sc_command::OpError::new(sc_command::ErrorKind::Internal, code.clone(), "test")
+    let error = crate::OpError::new(crate::ErrorKind::Internal, code.clone(), "test")
         .with_remediation(remediation.clone());
     let returned_code: ErrorCode = error.code;
     let returned_remediation: Option<Remediation> = error.remediation;
@@ -149,5 +116,5 @@ fn rejecting_counts_shared_attempts_and_returns_fresh_routing_contexts() {
     assert_eq!(second.diagnostic().code, error_codes::DIAGNOSTIC_INVALID);
     assert_eq!(receiver.service_name().as_str(), "test");
     // Errors remain the released error type, with its original context API.
-    let _: released_types::v2::EventError = first;
+    let _: sc_observability_types::v2::EventError = first;
 }

@@ -314,7 +314,7 @@ async fn shutdown_drain_is_bounded() {
     let mut control = RunControl::detached(Some(ready_tx), Some(stop_rx));
     control.drain = Duration::from_millis(200);
     let started_for_route = Arc::clone(&started);
-    let logger = Arc::new(sc_observability_types::RecordingCanonicalLog::new(
+    let logger = Arc::new(sc_command::observability::RecordingCanonicalLog::new(
         sc_observability_types::ServiceName::new("drain-regression").expect("service"),
     ));
     let injected = logger.clone();

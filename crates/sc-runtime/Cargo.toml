@@ -34,7 +34,7 @@ tracing = "0.1"
 tempfile = { version = "3", optional = true }
 
 [dev-dependencies]
-sc-observability-types = { workspace = true, features = ["test-util"] }
+sc-command = { version = "0.1.1", path = "../sc-command", default-features = false, features = ["test-util"] }
 axum = { version = "0.8.9", features = ["http1", "json", "macros", "tokio"] }
 reqwest = { version = "0.13", default-features = false, features = ["json"] }
 rmcp = { version = "~3.7", default-features = false, features = [

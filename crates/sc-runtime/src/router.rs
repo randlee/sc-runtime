@@ -17,11 +17,12 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use rmcp::transport::streamable_http_server::StreamableHttpService;
+use sc_command::observability::SharedCanonicalLog;
 use sc_command::{Envelope, ErrorKind, OpError};
 use sc_observability_types::{
     ActionName, CorrelationId, ErrorCode, ErrorContext, Level, LogEvent,
     OBSERVATION_SCHEMA_VERSION, OutcomeLabel, ProcessIdentity, Remediation, ServiceName,
-    SharedCanonicalLog, TargetCategory, Timestamp,
+    TargetCategory, Timestamp,
 };
 use serde::Serialize;
 use utoipa::openapi::OpenApi;
@@ -660,9 +661,7 @@ mod tests {
                 .route(HEALTH, get(health))
                 .route(METRICS, get(metrics)),
             request_metrics,
-            Arc::new(sc_observability_types::NoopCanonicalLog::named_or_default(
-                "sc-runtime",
-            )),
+            Arc::new(sc_command::observability::NoopCanonicalLog::named_or_default("sc-runtime")),
         );
         let (addr, _handle) = serve_test_router(router).await;
         let client = reqwest::Client::builder()

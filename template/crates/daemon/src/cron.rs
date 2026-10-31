@@ -146,7 +146,7 @@ impl CronConfig {
 pub fn open(
     config: &CronConfig,
     instance_root: &std::path::Path,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     hook_environment: sc_cron::HookEnvironmentHost,
     #[cfg(feature = "monty")] monty_hosts: sc_cron::MontyHostRegistry,
 ) -> Result<
@@ -252,7 +252,7 @@ mod tests {
             let result = super::open(
                 &config,
                 &instance,
-                Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                Arc::new(sc_command::observability::NoopCanonicalLog::new(
                     sc_observability_types::ServiceName::new("path-proof").expect("service"),
                 )),
                 config.hook_environment_host().expect("policy"),
@@ -284,7 +284,7 @@ mod tests {
         let result = super::open(
             &config,
             root.path(),
-            std::sync::Arc::new(sc_observability_types::NoopCanonicalLog::new(
+            std::sync::Arc::new(sc_command::observability::NoopCanonicalLog::new(
                 sc_observability_types::ServiceName::new("symlink-proof").expect("service"),
             )),
             config.hook_environment_host().expect("policy"),
@@ -314,7 +314,7 @@ mod tests {
             let scheduler = super::open(
                 &config,
                 root.path(),
-                Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                Arc::new(sc_command::observability::NoopCanonicalLog::new(
                     sc_observability_types::ServiceName::new("limit-proof").expect("service"),
                 )),
                 config.hook_environment_host().expect("policy"),
@@ -436,7 +436,7 @@ mod environment_tests {
             .as_nanos();
         let path =
             std::env::temp_dir().join(format!("cron-policy-{}-{nonce}.db", std::process::id()));
-        let logger = Arc::new(sc_observability_types::NoopCanonicalLog::new(
+        let logger = Arc::new(sc_command::observability::NoopCanonicalLog::new(
             sc_observability_types::ServiceName::new("cron-policy-test").expect("service"),
         ));
         let mut config = config;

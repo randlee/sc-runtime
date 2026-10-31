@@ -17,8 +17,8 @@ and binding; an ADR changes only through a later ADR that names it.
 
 ## Role
 
-The single assembly point. It is the only workspace library crate that may
-depend on the core transport/command crates, and it is a dependency of the
+The single assembly point. It depends on the core transport/command crates;
+ADR-RUN-0017 permits cron to depend temporarily only on the command port, and it is a dependency of the
 daemon only. It
 depends on `sc-transport` and `sc-command`, each with the `server` feature.
 The edge `sc-runtime` → `sc-config` is absent
@@ -32,7 +32,9 @@ generated daemon constructs `sc-observability` and will inject a handle into
 the builder and into `sc-cron` per
 [observability-injection.md](observability-injection.md).
 
-The injection boundary stores only an Arc to the types-level `CanonicalLog`.
+During the planned initial bridge, the injection boundary stores only an Arc
+to `sc_command::observability::CanonicalLog` (ADR-RUN-0017). Direct registry
+types supply canonical events; no full-logger edge is added.
 `DaemonBuilder::logger` is available in every existing phase, preserves that
 phase and replaces the previous handle. The handle lives through assembly and
 serving; ownership of configuration, sinks, flushing and shutdown stays with
@@ -66,6 +68,11 @@ decision.
 ---
 
 ## ADR-RT-0001: `DaemonBuilder` `run()` is assembly only, in a fixed order
+
+**2026-10-31 amendment:** ADR-RUN-0017 changes only canonical port ownership
+to command for initial release; the existing command edge carries it. No
+assembly phase, lifecycle or dependency budget is added. Upstream direct Arc
+cleanup is future work.
 
 **Status:** Active  
 **Amended by:** [ADR-RT-0005](#adr-rt-0005-await-application-cleanup-before-releasing-runtime-ownership) for the additive ready-state cleanup boundary.  

@@ -137,10 +137,6 @@ jobs:
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just test
 
-      - name: Check development observability bridge
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' && hashFiles('dev/observability-types-shim/Cargo.toml') != '' }}
-        shell: bash
-        run: just test development-bridge
 
   cron-environment-windows:
     name: Windows hook environment execution

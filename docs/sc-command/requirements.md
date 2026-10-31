@@ -154,6 +154,10 @@ sides agree on the shape at compile time.
 
 ## REQ-CMD-0002: Typed error `OpError` and its five fields
 
+**2026-10-31 amendment:** ADR-RUN-0017 temporarily replaces the caret-only
+types requirement below with exact registry `=1.5.0`. OpError wire fields and
+serialization remain unchanged; upstream cleanup removes the pin.
+
 **Status:** Active  
 
 ### Requirement Statement
@@ -193,8 +197,8 @@ already implements them. `Display` and `std::error::Error` let a consumer
 use `?` without a local wrapper.)
 
 `code` MUST be the type `ErrorCode` from the published crate
-`sc-observability-types` at caret `1.5.0`, the tested minimum sprint a-1
-recorded. `sc-command` MUST NOT define its own
+`sc-observability-types` at temporary exact `=1.5.0` under ADR-RUN-0017
+(the original tested minimum was caret 1.5.0). `sc-command` MUST NOT define its own
 error-code type. `ErrorCode` is a newtype over a string and serialises as a
 JSON string, so `code` appears on the wire as, for example,
 `"DAEMON.NOT_RUNNING"`.
@@ -236,8 +240,8 @@ Deserialising `null` or `""` builds `None`. Multi-step lists and
 `Remediation` object is not the wire form. `OpError` does not convert to or
 from `sc_observability_types::Diagnostic`. `ErrorKind` is defined in
 `sc-command`. `sc-observability-types` 1.5.0 has no `ErrorKind`, `OpError`,
-or `suggested_action`. The dependency requirement is the caret `1.5.0`
-(tested minimum).
+or `suggested_action`. The bridge dependency requirement is temporary exact `=1.5.0`
+under ADR-RUN-0017.
 
 `OpError::from_transport_strings` maps the plain strings `code`, `endpoint`,
 `cause`, and `suggested_action` into this type without a dependency on
@@ -599,6 +603,11 @@ envelope object or of the error object is rejected by
 
 ## NFR-CMD-0001: `sc-command` links axum and rmcp only behind `server`
 
+**2026-10-31 amendment:** ADR-RUN-0017 adds an unconditional neutral
+`observability` contract module and non-default `test-util = []` doubles using
+only std. Neither activates server/axum/rmcp. The exact types pin is temporary;
+no third-party dependency is added.
+
 **Status:** Active  
 
 ### Requirement Statement
@@ -611,7 +620,7 @@ list.
 With default features the crate MUST compile and MUST provide `Envelope<T>`,
 `OpError`, `ErrorKind` and `From<Result<T, OpError>> for Envelope<T>`. With
 default features the crate's direct non-dev dependencies MUST be `serde`,
-`serde_json`, and `sc-observability-types` at caret `1.5.0` (tested minimum).
+`serde_json`, and `sc-observability-types` at temporary exact `=1.5.0` (ADR-RUN-0017).
 `serde_json` is required because `details` holds arbitrary JSON. With
 `--features server` the direct non-dev dependencies MUST be those plus
 `axum` 0.8.9 and `rmcp` `~3.7`, and nothing else. `axum` MUST be declared
@@ -668,6 +677,11 @@ daemon and the CLI share one crate.
 
 ## NFR-CMD-0002: `sc-command` dependency boundary
 
+**2026-10-31 amendment:** command remains a sibling-free leaf; its sole
+additional dependent is temporarily cron for the observability port with
+defaults off/no features. Full-runtime/OTLP exclusions cover normal/build
+transitive identities for every production feature, not just direct normal edges.
+
 **Status:** Active  
 
 ### Requirement Statement
@@ -676,7 +690,8 @@ daemon and the CLI share one crate.
 `sc-config`, `sc-transport` or `sc-runtime`.
 
 `sc-command` MUST depend on the published crate `sc-observability-types`
-at caret `1.5.0`, the tested minimum.
+at exact `=1.5.0` during the ADR-RUN-0017 bridge; remove this temporary pin
+when the actual upstream capability is consumed.
 
 `sc-command` MUST NOT depend, directly or transitively, on the crate
 `sc-observability` (the logging runtime) or on its OTel export crate
@@ -693,8 +708,8 @@ member, so `forbidden_edges` does not name `sc-observability` or
 `boundaries/sc-command/sc-command.toml` lists those edges under
 `forbidden_edges` ([REQ-RUN-0005](../requirements.md)). `sc-cron` stays off
 that list until it is a workspace member. Cargo.toml inspection and
-`cargo tree` still enforce the sibling edges. `allowed_dependents` is
-`sc-runtime` only. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
+`cargo tree` still enforce the sibling edges. `allowed_dependents` is temporarily
+`sc-runtime` plus `sc-cron` under ADR-RUN-0017; command remains a leaf. Sprint a-5 deleted `crates/sc-command/lint-edge/` when `crates/sc-runtime`
 landed. The third-party crates
 `sc-command` may depend on are listed in [NFR-CMD-0001](requirements.md).
 `sc-lint lint sc-boundary` checks inter-crate edges and the public facade
@@ -736,6 +751,12 @@ error code and remediation types are defined there
 ---
 
 ## NFR-CMD-0003: `sc-command` never panics; `into_mcp` error exception
+
+**2026-10-31 explicit exception:** ADR-RUN-0017 allows only the fixed
+`ServiceName::new("noop")` invariant under exact inspected types 1.5.0,
+never caller/environment data. `CanonicalLog::emit` returns canonical foreign
+EventError. The rest of this panic/error rule remains in force; moving an
+existing expect into command without this amendment would violate it.
 
 **Status:** Active  
 

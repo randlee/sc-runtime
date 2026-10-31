@@ -2071,7 +2071,7 @@ version = "0.1.1"
 dependencies = [
  "axum",
  "rmcp",
- "sc-observability-types 1.5.0",
+ "sc-observability-types",
  "serde",
  "serde_json",
  "tokio",
@@ -2098,8 +2098,9 @@ dependencies = [
  "monty-types",
  "process-wrap",
  "rusqlite",
+ "sc-command",
  "sc-cron",
- "sc-observability-types 1.5.1",
+ "sc-observability-types",
  "serde",
  "serde_json",
  "tempfile",
@@ -2142,13 +2143,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sc-observability-types"
-version = "1.5.1"
-dependencies = [
- "sc-observability-types 1.5.0",
-]
-
-[[package]]
 name = "sc-runtime"
 version = "0.1.1"
 dependencies = [
@@ -2157,7 +2151,7 @@ dependencies = [
  "reqwest",
  "rmcp",
  "sc-command",
- "sc-observability-types 1.5.1",
+ "sc-observability-types",
  "sc-transport",
  "serde",
  "serde_json",

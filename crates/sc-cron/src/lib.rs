@@ -178,10 +178,8 @@ pub use types::{
 pub use worker::DEFAULT_RELOAD_POLL;
 
 /// Fixed library identity for every legacy constructor.
-pub(crate) fn noop_logger() -> sc_observability_types::SharedCanonicalLog {
-    std::sync::Arc::new(sc_observability_types::NoopCanonicalLog::named_or_default(
-        "sc-cron",
-    ))
+pub(crate) fn noop_logger() -> sc_command::observability::SharedCanonicalLog {
+    std::sync::Arc::new(sc_command::observability::NoopCanonicalLog::named_or_default("sc-cron"))
 }
 
 /// Constructs a canonical component event without performing emission.

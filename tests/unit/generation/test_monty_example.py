@@ -115,7 +115,7 @@ signal.pause()
             for name in INTERNAL:
                 self.assertEqual(dependencies[name]["version"], "0.1.1")
             for name in ("sc-observability", "sc-observability-types"):
-                self.assertEqual(dependencies[name]["version"], "1.5.1")
+                self.assertEqual(dependencies[name]["version"], "=1.5.0")
         text = (ROOT / "template/crates/daemon/Cargo.toml").read_text()
         for db in ("none", "sqlite"):
             # The only Liquid block in this manifest chooses the existing defaults.
@@ -167,60 +167,24 @@ signal.pause()
             checkout = tomllib.loads((output / "Cargo.toml").read_text())
             self.assertEqual(set(checkout["patch"]["crates-io"]), INTERNAL)
             self.assertEqual(Path(checkout["patch"]["crates-io"]["sc-cron"]["path"]), ROOT / "crates/sc-cron")
-            snapshot = {str(path.relative_to(output)): hashlib.sha256(path.read_bytes()).hexdigest() for path in output.rglob("*.rs")}
-            generation.apply_development_observability(output, ROOT)
-            development = tomllib.loads((output / "Cargo.toml").read_text())["workspace"]["dependencies"]
-            self.assertEqual(development["sc-observability"]["version"], "=1.5.0")
-            self.assertEqual(development["sc-observability-types"]["version"], "1.5.1")
-            self.assertIn("path", development["sc-observability-types"])
-            self.assertEqual(development["sc-observability-dev-adapter"]["version"], "0.0.0")
-            development_source = (output / "crates/daemon/src/observability.rs").read_text()
-            self.assertIn("sc_observability_dev_adapter::LoggerAdapter::new(Arc::clone(&logger))", development_source)
-            daemon_dependencies = tomllib.loads((output / "crates/daemon/Cargo.toml").read_text())["dependencies"]
-            self.assertTrue(daemon_dependencies["sc-observability-dev-adapter"]["workspace"])
-            after = {str(path.relative_to(output)): hashlib.sha256(path.read_bytes()).hexdigest() for path in output.rglob("*.rs")}
-            self.assertEqual({name for name in snapshot if snapshot[name] != after[name]}, {"crates/daemon/src/observability.rs"})
-            generation.apply_development_observability(output, ROOT)
-            self.assertEqual(development_source, (output / "crates/daemon/src/observability.rs").read_text())
-            tomllib.loads((output / "crates/daemon/Cargo.toml").read_text())
+            source = (output / "crates/daemon/src/observability.rs").read_text()
+            self.assertIn("struct LoggerAdapter", source)
+            self.assertIn("self.logger.try_log(event)", source)
+            dependencies = checkout["workspace"]["dependencies"]
+            self.assertEqual(dependencies["sc-observability"]["version"], "=1.5.0")
+            self.assertEqual(dependencies["sc-observability-types"]["version"], "=1.5.0")
+            self.assertNotIn("sc-observability-dev-adapter", dependencies)
             with patch.dict("os.environ", {"SC_RUNTIME_RELEASE": "0"}):
                 self.assertTrue(generation.release_mode(True))
                 self.assertFalse(generation.release_mode(False))
 
-    def test_development_ci_is_explicit_and_recipe_forwards_flags(self):
+    def test_canonical_shim_needs_no_generation_mode(self):
         workflow = (ROOT / ".github/workflows/template.yml").read_text()
-        self.assertIn("${{ github.ref_type != 'tag' && '--development-observability' || '' }}", workflow)
+        self.assertNotIn("--development-observability", workflow)
         self.assertIn("SC_RUNTIME_RELEASE: ${{ github.ref_type == 'tag' && '1' || '' }}", workflow)
-        self.assertIn('run: python3 scripts/new_project.py --patch-checkout "$RUNNER_TEMP/plain" --development-observability', workflow)
+        self.assertIn('run: python3 scripts/new_project.py --patch-checkout "$RUNNER_TEMP/plain"', workflow)
         self.assertIn('new dest *args:', (ROOT / "Justfile").read_text())
         self.assertIn('scripts/new_project.py {{dest}} {{args}}', (ROOT / "Justfile").read_text())
-
-
-    def test_plain_checkout_cli_applies_explicit_development_selection(self):
-        generation = driver()
-        with tempfile.TemporaryDirectory() as tmp:
-            output = Path(tmp)
-            (output / "Cargo.toml").write_text((ROOT / "template/workspace.template.toml").read_text())
-            (output / "crates/daemon/src").mkdir(parents=True)
-            (output / "crates/daemon/Cargo.toml").write_text((ROOT / "template/crates/daemon/Cargo.toml").read_text())
-            (output / "crates/daemon/src/observability.rs").write_text((ROOT / "template/crates/daemon/src/observability.rs").read_text())
-            with patch.object(generation, "repo_root", return_value=ROOT):
-                generation.main(["--patch-checkout", str(output), "--development-observability"])
-            manifest = tomllib.loads((output / "Cargo.toml").read_text())
-            self.assertEqual(set(manifest["patch"]["crates-io"]), INTERNAL)
-            self.assertEqual(manifest["workspace"]["dependencies"]["sc-observability"]["version"], "=1.5.0")
-            self.assertEqual(manifest["workspace"]["dependencies"]["sc-observability-types"]["version"], "1.5.1")
-
-    def test_development_release_conflict_fails_before_output(self):
-        generation = driver()
-        with tempfile.TemporaryDirectory() as tmp:
-            dest = Path(tmp) / "absent"
-            for explicit, environment in [(True, "0"), (False, "1")]:
-                with self.subTest(explicit=explicit, environment=environment), patch.dict("os.environ", {"SC_RUNTIME_RELEASE": environment}):
-                    with self.assertRaises(SystemExit):
-                        generation.generate(dest, Path(tmp) / "missing-answers.json", explicit, True)
-                    self.assertFalse(dest.exists())
-
 
 
 if __name__ == "__main__":

@@ -98,6 +98,13 @@ recommended_model: luna
 vertical_rationale: One Monty product boundary replaces the pre-release fixed host list with an embedder extension seam, keeps compose as an optional adapter, and proves that seam in the generated example and benchmark; creating another host sprint would duplicate this ownership.
 ---
 
+> **Release prerequisite supersession — 2026-10-31:** This completed Phase B
+> body is historical. Only its initial-publication 1.5.1/direct-Arc prerequisite
+> is superseded by the [initial release shim amendment](initial-release-observability-shim.md)
+> and ADR-RUN-0017. Its approved implementation/evidence is not rewritten;
+> future cleanup is tracked in [issue 97](https://github.com/randlee/sc-runtime/issues/97).
+
+
 # Sprint b-16 — extensible Monty hosts and generated example
 
 ## Goal

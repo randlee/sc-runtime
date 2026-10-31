@@ -46,11 +46,12 @@ in [REQ-RUN-0702](requirements.md), b-18 owns real development composition,
 JSONL/lifecycle proof, qualified exact-kit installation, and pre-publication
 source contracts. Actual publication, registry-only generated proof, and the
 same-source `v0.1.1` tag are gated release work in `run-h0h` after Phase B.
-Matching published observability `1.5.1`, development bridge/path removal,
-direct upstream Arc coercion, exact registry locks, published-adapter
-non-blocking proof, the unchanged release guard, and human authorization all
-remain mandatory release predicates. Phase readiness reports these limits;
-this amendment does not declare sprint, phase, or release acceptance.
+The 2026-10-31 [ADR-RUN-0017](#adr-run-0017-initial-release-observability-shim)
+authorizes a planned initial release with the real registry 1.5.0 pair,
+command-owned contract and private generated adapter. Capability-proven 1.5.1
+cleanup is separate future work. Development package/path removal, exact
+registry identity, verified package/admission proof and human authorization
+remain release predicates; the source change is under verification.
 
 | Layer | What it holds | Owner | Lives in |
 |---|---|---|---|
@@ -120,10 +121,10 @@ workspace-internal edges and the forbidden edges.
 | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | MUST: `sc-observability-types` for injected canonical events | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
-`sc-cron`; the latter two use only the injected canonical logger contract.
+`sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only targets that are workspace members in that crate's lint tree;
 crates.io names and other non-member targets are enforced by criterion 5 of
@@ -131,8 +132,9 @@ crates.io names and other non-member targets are enforced by criterion 5 of
 crates.io edge, so direct-depth cargo-tree checks prove `sc-runtime` and
 `sc-cron` link the types crate but not the full logging runtime.
 `allowed_dependents` is empty for `sc-config`, `sc-runtime`,
-`sc-runtime-db-sqlite`, and `sc-cron`, and is `sc-runtime` only for
-`sc-transport` and `sc-command`. The
+`sc-runtime-db-sqlite`, and `sc-cron`; it is `sc-runtime` for
+`sc-transport`, and temporarily `sc-runtime` plus `sc-cron` for `sc-command`
+under ADR-RUN-0017. The
 edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
 entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
 `sc-runtime` does not depend on `sc-config` and does not load configuration
@@ -146,7 +148,8 @@ NFR and are not restated here:
 [NFR-RT-0003](sc-runtime/requirements.md) for `sc-runtime`.
 
 There is no edge among `sc-config`, `sc-transport` and `sc-command`.
-`sc-runtime` is the only crate that knows the others. The inter-crate edges
+`sc-runtime` assembles transport/command; cron temporarily knows only the
+command contract, under ADR-RUN-0017. The inter-crate edges
 and each crate's public facade list are recorded in
 `boundaries/<crate>/*.toml` and enforced by `sc-lint-boundary`.
 Feature-conditional dependencies (`axum` and `rmcp` only behind `server`) are
@@ -165,6 +168,8 @@ project. Template CI runs the same driver over every fixture in
 `wizard/fixtures/`.
 
 ## Index of ADRs
+
+- [ADR-RUN-0017: Initial release observability shim](#adr-run-0017-initial-release-observability-shim) (2026-10-31 amendment).
 
 `Active` is binding. `Proposed` is not binding. Sprint a-1 made
 ADR-RUN-0203 and ADR-RUN-0402 `Active`.
@@ -200,6 +205,89 @@ ADR-RUN-0203 and ADR-RUN-0402 `Active`.
 | ADR-RUN-0307 | write_rows upserts one row identity | Active |
 | ADR-RUN-0401 | Generation pipeline and the `answers.schema.json` contract | Active |
 | ADR-RUN-0402 | `cargo-generate` mechanics used by the generation pipeline | Active |
+
+---
+
+## ADR-RUN-0017: Initial release observability shim
+
+**Status:** Active release amendment; source under verification
+**Decision Date:** 2026-10-31
+**Source:** Owner request and explicit sc-observability correction quoted in the
+[release amendment](plans/phase-b/initial-release-observability-shim.md#scope-and-owner-direction).
+**Amends:** ADR-RUN-0003/0004/0006/0007; ADR-CMD-0001/0002/0003;
+ADR-RT-0001; REQ-RUN-0005/0309/0503/0701/0702; REQ-CMD-0002;
+REQ-CRON-0001; REQ-RT-0001; NFR-RUN-0002/0009, NFR-CMD-0001/0002/0003,
+NFR-CRON-0001 and NFR-RT-0002/0003, only as specified below.
+
+### Decision
+
+The initial five-package `0.1.1` release may use actual registry observability
+1.5.0 without waiting for unpublished 1.5.1. One temporary
+`sc_command::observability` module owns `CanonicalLog`, `SharedCanonicalLog`,
+`NoopCanonicalLog` and non-default std-only `test-util` doubles. Command remains
+a leaf and gains no external dependency. It temporarily pins its existing
+types dependency to `=1.5.0`; root/runtime/cron caret 1.5.0 requirements unify
+with it. This exact-pin exception bounds the inspected validator and type
+identity but prevents resolution with consumer requirements for newer types.
+
+Permit only cron's normal `sc-command` 0.1.1 edge with defaults disabled and no
+features. Command allowed_dependents becomes exactly runtime+cron. Runtime
+uses its existing server-enabled command edge. Restore the original cron
+forbidden edge and runtime-only command dependent at cleanup. All other
+workspace boundaries, all five SDK normal/build/transitive full-runtime/OTLP
+exclusions, and absolute sc-compose/ATM package/import exclusions remain.
+The neutral event receiver is the sole exception to command's handler-trait
+ban; no REST/MCP handler, extractor, router, macro or framework abstraction is
+added. Canonical values/errors remain the actual published types identity.
+
+Generated application source owns a private inline `LoggerAdapter` around one
+real `Arc<v2::Logger>`; generated logger/types are pinned to `=1.5.0`. This
+small composition-only orphan-rule bridge is justified against ADR-RUN-0002's
+placement rule: it wires a concrete application-owned logger to an SDK port,
+contains no reusable service behavior, and needs no sixth published crate.
+It forwards service identity and `try_log`, preserving native EventErrors,
+shared handle identity, best-effort outcomes and existing lifecycle precedence.
+
+Two explicit panic-policy changes apply. Preserve the existing infallible
+Noop fallback with an invariant exception **only** for the fixed `"noop"`
+ServiceName literal validated against exact types 1.5.0, never caller or
+environment data. Generated adapter code catches unwind around **only** real
+`try_log`, returning fixed value-free `EventError::Routing` code
+`DAEMON.OBSERVABILITY_ADMISSION_PANIC`, cause `Logging admission panicked.`
+and recovery `Restart the daemon to restore logging; the application operation
+is unaffected.` No panic/event/provider payload or recursive log is included.
+This does not repair poison, catch abort, suppress an application panic hook,
+or protect arbitrary callbacks. `try_log` takes internal locks; prompt queue
+admission is not wait-free. `CanonicalLog::emit` retains the foreign canonical
+EventError signature as an explicit exception to command-owned error rules.
+
+Delete the unpublished development facade/adapter and path/rewrite plumbing
+during implementation. Replace release guards with exact bridge-profile,
+all-five normal/build identity and capability checks; do not disable them.
+Single multi-package verified dry run precedes publication. Actual clean
+registry-generated proof follows all five publications and uses the same source
+commit as the `v0.1.1` tag. Authorization, credentials, release preflight,
+qualified kit/inventory and controlled-host benchmarks remain required.
+
+### Removal and compatibility
+
+Track upstream cleanup separately from the initial release epic. Refresh actual
+registry availability at each readiness run, independently of the old lock;
+indeterminate discovery fails release closed. A published matching 1.5.1 pair
+must pass an isolated registry signature/direct `Arc<Logger>` to upstream
+SharedCanonicalLog probe. Published incompatibility blocks release for
+remediation; working capability makes shim mode fail until cleanup removes the
+local trait, inline adapter, exact pins and cron-command edge and restores the
+original boundary. A version number alone never proves capability.
+
+The local and upstream traits are nominally different. Retain a command source
+path re-export only if representative current-consumer/custom-impl and new
+upstream probes prove the supported selection and an explicit version strategy
+requires it. No old/new SDK identity promise follows from a re-export. Choose
+a coordinated breaking SDK minor if compatibility requires it; no permanent
+adapter, second contract or cron edge may remain. The bounded owned paths,
+commands and proof order are in the [implementation plan](plans/phase-b/initial-release-observability-shim.md).
+This documentation amendment claims no implementation, QA or publication pass.
 
 ---
 
@@ -458,24 +546,26 @@ as its own selection.
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-   | `sc-cron` | MUST: `sc-observability-types` for injected canonical events | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+   | `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
-`sc-cron`; the latter two use only the injected canonical logger contract.
+`sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
 The table lists the full forbidden-edge policy. Manifest `forbidden_edges`
 list only workspace-member targets in that lint tree; crates.io names use
 criterion 5 `cargo tree` checks (see sprint a-1 evidence). sc-lint 0.8.0
 cannot fail a crates.io edge, so direct-depth cargo-tree checks prove that
 `sc-runtime` and `sc-cron` contain the types crate but not the full runtime.
 `allowed_dependents` is empty for `sc-config`, `sc-runtime`,
-`sc-runtime-db-sqlite`, and `sc-cron`, and is `sc-runtime` only for
-`sc-transport` and `sc-command`. The
+`sc-runtime-db-sqlite`, and `sc-cron`; it is `sc-runtime` for
+`sc-transport`, and temporarily `sc-runtime` plus `sc-cron` for `sc-command`
+under ADR-RUN-0017. The
 edge `sc-runtime` -> `sc-config` is absent. It is not an `allowed_dependents`
 entry. `boundaries/sc-runtime/sc-runtime.toml` lists it under `forbidden_edges`.
 
 2. `sc-config`, `sc-transport` and `sc-command` MUST NOT depend on one
    another, because each must be usable without the others. `sc-runtime` MUST
-   be the only crate that depends on any of the other three.
+   be the only assembly crate depending on the other three; the sole temporary
+   exception is cron -> command under ADR-RUN-0017.
 3. The allowed third-party dependencies of each crate are owned by that
    crate's NFR and are not restated here:
    [NFR-CFG-0002](sc-config/requirements.md) for `sc-config`,
@@ -598,17 +688,12 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 
 ### Context
 
-The Phase B production release contract advances the generated daemon's
-`sc-observability` requirement and the `sc-runtime`/`sc-cron` types-only
-requirements to normal caret-compatible `1.5.1`; `sc-command` retains its
-tested-minimum caret requirement `1.5.0`, and the release lockfile may unify
-it at exact `1.5.1`. The 2026-10-30 timing amendment assigns matching
-published `1.5.1`, direct upstream Arc coercion, and development bridge/path
-removal to `run-h0h` after Phase B, as required by
-[REQ-RUN-0702](requirements.md). Phase B composition may use the approved
-real registry `1.5.0` logger through the unpublished development adapter;
-application-owned construction/flush/shutdown and the public injection
-interfaces are unchanged.
+The initial 0.1.1 release uses the planned registry 1.5.0 shim profile in
+[ADR-RUN-0017](#adr-run-0017-initial-release-observability-shim). Published 1.5.1
+and direct upstream Arc coercion are future cleanup requirements, not initial
+publication prerequisites. Current local development packages must be removed
+before initial publication. Application construction/flush/shutdown remains
+owned by the generated daemon.
 Every generated daemon uses the full runtime. The tempting design is to have
 `sc-config` or `sc-runtime`
 initialise it. That would make those crates depend on the observability
@@ -621,18 +706,18 @@ loaded.
 1. Library crates MUST NOT depend
    on `sc-observability` or on its OTel export crate `sc-observability-otlp`.
 2. Library crates MUST NOT wrap `sc-observability`, re-export it, or define
-   logging wrapper functions.
+   logging wrapper functions. ADR-RUN-0017 permits only the temporary neutral
+   command contract and private generated-application adapter.
 3. `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
-   `sc-cron`. Runtime and cron use only `CanonicalLog`/`SharedCanonicalLog`
-   and canonical event types; error remediation stays on `sc-command`.
+   `sc-cron`. Runtime and cron use only the command-owned
+   `CanonicalLog`/`SharedCanonicalLog` port and canonical published event types; error remediation stays on `sc-command`.
    It is not allowed on `sc-config` or `sc-transport`. The logging runtime
    and OTel export stay forbidden on all library crates.
 4. The generated `daemon/src/main.rs` MUST, in this order: load config with
    `sc-config`; initialise `sc-observability` directly with plain values
    taken from that config; then call `sc_runtime::Daemon::builder()`.
-   Production release requires matching registry `1.5.1` under `run-h0h`;
-   Phase B development may use the approved real registry `1.5.0` adapter
-   described above without waiving the production version or lifecycle contract.
+   Initial release uses real registry `=1.5.0` logger/types and the private
+   inline adapter under ADR-RUN-0017; future upstream cleanup removes it.
 5. `TransportError::DaemonNotRunning` is owned by
    [ADR-TRN-0003](sc-transport/architecture.md). It carries
    `code: &'static str` (`DAEMON.NOT_RUNNING`) plus the endpoint and the
@@ -678,7 +763,7 @@ for the order in point 4.
 - [REQ-RUN-0005](requirements.md): owner of the forbidden-edge table; `sc-observability`
   and `sc-observability-otlp` are forbidden for all library crates.
 - [REQ-RUN-0309](requirements.md): the generated daemon uses caret-compatible
-  `1.5.1` requirements; its lockfile proves the exact matching resolution.
+  initial `=1.5.0` bridge requirements; its lockfile proves registry identity.
 - [NFR-CFG-0002](sc-config/requirements.md): `sc-config` has minimal dependencies and none on
   observability.
 - [NFR-CMD-0002](sc-command/requirements.md): `sc-command` takes only types from
@@ -768,6 +853,10 @@ a later init. a-6 owns the generated install.
 ---
 
 ## ADR-RUN-0006: Library errors are typed values; no public panics
+
+**2026-10-31 bounded amendment:** [ADR-RUN-0017](#adr-run-0017-initial-release-observability-shim)
+records the fixed-literal Noop invariant, foreign EventError signature and
+application-only try_log unwind dispositions; all other panic/error rules below apply.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
@@ -895,14 +984,14 @@ behind `SharedCanonicalLog`. Legacy library constructors install fixed
 shared scheduler handles, workers and component propagation. Canonical events
 are emitted directly and rejection cannot replace application, HTTP, store,
 process or scheduler outcomes. No library owns logger flush or shutdown.
-During development the explicit local facade path preserves registry `1.5.0`
-value/error identity. Under the 2026-10-30 timing amendment in
-[REQ-RUN-0702](requirements.md), the matching real registry `1.5.1` pair,
-development facade/adapter/path removal, direct upstream Arc coercion, and
-published-adapter immediate queue-full/disconnected rejection remain
-publication requirements of `run-h0h` after Phase B. b-18 retains the real
-development composition/JSONL/lifecycle and qualified install/source-contract
-proof; no async, ownership, rejection, or release-guard predicate is relaxed.
+The planned initial release uses the command-owned contract and private
+application adapter over registry 1.5.0 under ADR-RUN-0017. Queue-full and
+disconnected native errors pass through unchanged; the adapter-local unwind
+boundary maps poison panic to a fixed EventError. Internal locks may contend;
+there is no wait-free or universal no-panic claim. Legacy fixed-literal Noop
+validation has the explicit invariant exception in ADR-RUN-0017. Upstream
+capability/direct Arc proof and removal of the temporary contract/edge follow
+in a separate cleanup task, not an initial unpublished-1.5.1 prerequisite.
 
 1. The generated daemon MUST run on the Tokio runtime
    (`#[tokio::main] async fn main`).

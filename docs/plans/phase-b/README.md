@@ -1,5 +1,9 @@
 # Phase B planning records
 
+Post-phase release prerequisite amendment: [initial release observability shim](initial-release-observability-shim.md)
+(2026-10-31; no new phase or sprint). Completed phase evidence and locked
+anchor snapshots retain their historical meaning.
+
 - [Phase plan and sprint index](phase-b-plan.md)
 - [Approved intent](intent.md)
 - [Anchors and provenance](anchors.md)

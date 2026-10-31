@@ -47,7 +47,7 @@ type Serving = Result<Endpoint, RuntimeError>;
 /// This enables deterministic deadline tests without waiting for production limits.
 pub fn instrument_router(
     router: axum::Router,
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     limit: Duration,
     shutdown: tokio::sync::watch::Receiver<bool>,
     drain: Duration,
@@ -114,7 +114,7 @@ impl DaemonFixture {
         config: DaemonConfig,
         stores: FStores,
         routes: FRoutes,
-        logger: sc_observability_types::SharedCanonicalLog,
+        logger: sc_command::observability::SharedCanonicalLog,
     ) -> Result<Self, RuntimeError>
     where
         S: Clone + Send + Sync + 'static,

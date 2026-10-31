@@ -59,20 +59,43 @@ preparation may proceed independently of runtime parents; final composition
 consumes their approved merges. b-18's [validation recipe](../plans/phase-b/sprint-b-18-template-observability-integration.md#required-validation)
 is authoritative for that install and inventory check.
 
-The governing timing amendment in [REQ-RUN-0702](../requirements.md),
-including Success Criteria 6–7, and [architecture](../architecture.md)
-assigns actual publication and release acceptance after Phase B to `run-h0h`:
-matching published observability `1.5.1` and external prerequisite `run-03z.7`, bridge/path
-removal and direct upstream Arc coercion, then human-authorized publication of
-`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and `sc-cron` in that
-order. `sc-runtime-db-sqlite` remains unpublished. Registry-only generation
-(`scripts/new_project.py --release`), consumer release preflight, and
-`test_release_mode_uses_registry` must pass later with explicit
-`SC_RUNTIME_REGISTRY_PROOF=1`, without patches/paths or a
-weakened `scripts/check_observability_release.py`. Publication/proof and tag
-`v0.1.1` bind to one unchanged source commit. Phase completion does not claim
-these deferred release checks passed; readiness review after phase-ending fixes
-must state the limits explicitly. Canonical `1.5.1` release inventories remain.
+The 2026-10-31 [initial release amendment](../plans/phase-b/initial-release-observability-shim.md)
+and [ADR-RUN-0017](../architecture.md#adr-run-0017-initial-release-observability-shim)
+replace the old unpublished-1.5.1 initial release prerequisite. `run-h0h`
+prepares the same five 0.1.1 packages using actual registry logger/types
+`=1.5.0`, the command-owned neutral contract and private generated adapter.
+Delete local development packages/paths and obsolete generation-mode rewrites
+before publication; the source profile is implemented and under verification.
+Strict guards must enforce this exact profile, all-five normal/build identity
+closures and capability-gated cleanup. Full logger/OTLP and sc-compose/ATM SDK
+exclusions remain. No extra crate is published.
+
+Before any upload, select all five interdependent packages in one verified dry
+run and inspect actual `.crate` normalized manifests/contents for registry
+requirements and absence of local shim/adapter/path/git/patch leakage:
+
+```sh
+cargo +1.96.1 publish --dry-run --locked -p sc-config -p sc-transport -p sc-command -p sc-runtime -p sc-cron
+```
+
+Record source/toolchain identities, archive checksums and verification output.
+Do not use `--no-verify` or list-only output as build proof. Keep the actual kit
+publication order config, transport, command, runtime, cron; db-sqlite remains
+unpublished. Credentials, human publication authorization, qualified kit and
+controlled-host benchmarks remain required. No upload or dispatch is authorized
+by this documentation change. Same-source publication, registry-generated proof
+and tag `v0.1.1` remain binding.
+
+[Issue 97](https://github.com/randlee/sc-runtime/issues/97) tracks upstream cleanup
+outside the initial release epic. Refresh registry availability independently
+of the pinned lock at readiness; indeterminate discovery fails closed. Actual
+published matching upstream trait/Noop/error and direct Arc capability proof
+requires removal of the contract/adapter/pins and restoration of cron's original
+forbidden command edge before another shim release. Published incompatibility
+blocks release for remediation. Do not treat version >=1.5.1 as sufficient or
+promise nominal trait compatibility across old/new SDK selections. The plan
+requires representative current-consumer and upstream probes and an explicit
+migration version strategy.
 
 Pre-publication consumer preflight runs static release source contracts and
 its active dependency guard. It cannot execute the registry-only generated

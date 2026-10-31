@@ -4,7 +4,7 @@ owner_crate_path = "sc_command"
 name = "sc-command"
 
 [public]
-facade = "Envelope"
+facade = "Envelope, observability"
 
 [implementation]
 type = "marker"
@@ -13,14 +13,16 @@ visibility = "public"
 constructor = "none"
 
 [composition]
-roots = ["Envelope"]
+roots = ["Envelope", "observability"]
 
 # Production tool-package/import exclusion (normal + build, all production
 # features) is checked by the production-tool-boundary companion. It resolves
 # aliases/package identity and checks external/transitive cargo trees too;
 # dev-only test/benchmark references remain permitted (REQ-RUN-0005).
 [dependencies]
-allowed_dependents = ["sc-runtime"]
+# Temporary neutral-port dependent; restore runtime-only after upstream proof.
+# https://github.com/randlee/sc-runtime/issues/97
+allowed_dependents = ["sc-runtime", "sc-cron"]
 allowed_dependencies = ["serde", "serde_json", "sc-observability-types"]
 # `sc-observability` and `sc-observability-otlp` are not workspace members.
 # sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree

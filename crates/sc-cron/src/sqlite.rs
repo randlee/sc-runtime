@@ -97,7 +97,7 @@ const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 /// # Ok::<(), sc_cron::CronError>(())
 /// ```
 pub struct SqliteScheduleStore {
-    logger: sc_observability_types::SharedCanonicalLog,
+    logger: sc_command::observability::SharedCanonicalLog,
     // A rusqlite `Connection` is `Send` but not `Sync`, and the port's
     // methods take `&self` from any thread, so the one connection sits
     // behind a mutex. Calls are short single statements or one transaction.
@@ -142,7 +142,7 @@ impl SqliteScheduleStore {
     pub fn open_with_logger(
         path: impl AsRef<Path>,
         limits: ScheduleLimits,
-        logger: sc_observability_types::SharedCanonicalLog,
+        logger: sc_command::observability::SharedCanonicalLog,
     ) -> Result<Self, CronError> {
         let connection = Connection::open(path.as_ref())
             .map_err(|error| store_error("failed to open database", error))?;
@@ -179,7 +179,7 @@ impl SqliteScheduleStore {
     fn with_connection(
         mut connection: Connection,
         limits: ScheduleLimits,
-        logger: sc_observability_types::SharedCanonicalLog,
+        logger: sc_command::observability::SharedCanonicalLog,
     ) -> Result<Self, CronError> {
         init_schema(&mut connection)?;
         Ok(Self {
@@ -357,20 +357,24 @@ impl ScheduleStore for SqliteScheduleStore {
     }
 
     fn list_active(&self) -> Result<Vec<Schedule>, CronError> {
-        let connection = self.lock();
-        let mut statement = connection
-            .prepare(&format!(
-                "SELECT {COLUMNS} FROM sc_cron_schedule WHERE ended_at IS NULL
-                 ORDER BY created_at, id"
-            ))
-            .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?;
-        let rows = statement
-            .query_map([], |row| {
-                // Keep the id even when the rest of the row cannot be read.
-                Ok(RawRow::read(row).map_err(|error| (row.get::<_, i64>(0).ok(), error)))
-            })
-            .and_then(Iterator::collect::<Result<Vec<_>, _>>)
-            .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?;
+        // Own the raw rows, then release both the statement and connection
+        // before decoding can invoke an application-owned logging receiver.
+        let rows = {
+            let connection = self.lock();
+            let mut statement = connection
+                .prepare(&format!(
+                    "SELECT {COLUMNS} FROM sc_cron_schedule WHERE ended_at IS NULL
+                     ORDER BY created_at, id"
+                ))
+                .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?;
+            statement
+                .query_map([], |row| {
+                    // Keep the id even when the rest of the row cannot be read.
+                    Ok(RawRow::read(row).map_err(|error| (row.get::<_, i64>(0).ok(), error)))
+                })
+                .and_then(Iterator::collect::<Result<Vec<_>, _>>)
+                .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?
+        };
         let mut schedules = Vec::with_capacity(rows.len());
         for row in rows {
             let (id, name, error) = match row {
@@ -906,6 +910,102 @@ impl RawRow {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    struct ReentrantReceiver {
+        service: sc_observability_types::ServiceName,
+        store: Mutex<std::sync::Weak<SqliteScheduleStore>>,
+        callbacks: std::sync::atomic::AtomicUsize,
+    }
+
+    impl ReentrantReceiver {
+        fn reenter_without_waiting_on_a_held_lock(&self) {
+            let store = self.store.lock().unwrap().upgrade().unwrap();
+            // A pre-fix regression fails here immediately instead of hanging
+            // while trying to reenter the non-reentrant connection mutex.
+            drop(
+                store
+                    .connection
+                    .try_lock()
+                    .expect("callback must not own the connection"),
+            );
+            let listed = store.list_active().expect("receiver may reenter the store");
+            assert_eq!(listed.len(), 1);
+            assert_eq!(listed[0].spec.name.as_str(), "good");
+            self.callbacks
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+    }
+
+    impl sc_command::observability::CanonicalLog for ReentrantReceiver {
+        fn service_name(&self) -> &sc_observability_types::ServiceName {
+            self.reenter_without_waiting_on_a_held_lock();
+            &self.service
+        }
+
+        fn emit(
+            &self,
+            _event: sc_observability_types::LogEvent,
+        ) -> Result<(), sc_observability_types::v2::EventError> {
+            self.reenter_without_waiting_on_a_held_lock();
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn corrupt_row_callbacks_can_reenter_after_query_guards_drop() {
+        use std::sync::{
+            Arc, Weak,
+            atomic::{AtomicUsize, Ordering},
+        };
+        let root = tempfile::tempdir().unwrap();
+        let receiver = Arc::new(ReentrantReceiver {
+            service: sc_observability_types::ServiceName::new("reentrant-test").unwrap(),
+            store: Mutex::new(Weak::new()),
+            callbacks: AtomicUsize::new(0),
+        });
+        let store = Arc::new(
+            SqliteScheduleStore::open_with_logger(
+                root.path().join("cron.db"),
+                ScheduleLimits::default(),
+                receiver.clone(),
+            )
+            .unwrap(),
+        );
+        let now = Timestamp::from_datetime(chrono::Utc::now());
+        for name in ["bad", "good"] {
+            store
+                .create(
+                    &NewSchedule {
+                        spec: ScheduleSpec::new(
+                            name,
+                            "* * * * *",
+                            Duration::from_secs(1),
+                            serde_json::json!({}),
+                        )
+                        .unwrap(),
+                        jitter: Duration::ZERO,
+                        next_run_at: now,
+                    },
+                    now,
+                )
+                .unwrap();
+        }
+        store
+            .lock()
+            .execute(
+                "UPDATE sc_cron_schedule SET payload='not json' WHERE name='bad'",
+                [],
+            )
+            .unwrap();
+        *receiver.store.lock().unwrap() = Arc::downgrade(&store);
+        for _ in 0..2 {
+            let listed = store.list_active().unwrap();
+            assert_eq!(listed.len(), 1);
+            assert_eq!(listed[0].spec.name.as_str(), "good");
+        }
+        // One warning, with both service_name and emit safely reentering.
+        assert_eq!(receiver.callbacks.load(Ordering::Relaxed), 2);
+    }
 
     #[test]
     fn outcomes_round_trip_through_their_stored_text() {

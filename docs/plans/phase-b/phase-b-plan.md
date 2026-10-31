@@ -1,4 +1,8 @@
 ---
+
+Post-phase release prerequisite amendment: [initial release observability shim](initial-release-observability-shim.md)
+(2026-10-31; no new phase or sprint). Completed phase evidence and locked
+anchor snapshots retain their historical meaning.
 requirements:
   - REQ-RUN-0001
   - REQ-RUN-0002
