@@ -364,7 +364,7 @@
       "branch": "codex/b-18-publishing-kit",
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit",
       "head": "08e2513865e546242e33f388d8d46c3aee1eaec5",
-      "status": "all_scoped_qa3_reviewers_pass_waiting_aggregate_ci",
+      "status": "approved_pending_normal_merge",
       "must_follow_heads": {
         "b-14": "72897f2b58f4d40cd25b80d2c425b592e57b2e90",
         "b-17": "d8d589e7c40ef216e4143d87665722dd61a04e06"
@@ -5007,7 +5007,7 @@
     {
       "qa_pass": "qa-b-18-3",
       "commit": "08e2513865e546242e33f388d8d46c3aee1eaec5",
-      "verdict": "IN-FLIGHT",
+      "verdict": "PASS",
       "pr_number": 95,
       "bead": "run-03z.45",
       "reviewer_manifest": [
@@ -5076,29 +5076,25 @@
       ],
       "finding_ids": [],
       "coordinator_task_id": "/root/b18_qa3_enforcer",
-      "note": "Four roles PASS18/18zero findings. Full localjusttest exit0. Public report verified; only current aggregateCI remains pending. Same enforcer will resume CI-only; no code QA loop.",
+      "note": "PublicQA PASS independently fetched and exact JSON equality verified; actual completed four reviewer Tasks correlated; req18/18/39checks, zero findings/TODO, local fulltest exit0, all17exactheadCI SUCCESS.",
       "machine_status": {
         "sprint": "b-18",
         "task": "qa-b-18-3",
         "branch": "codex/b-18-publishing-kit",
         "commit": "08e2513865e546242e33f388d8d46c3aee1eaec5",
         "pr": 95,
-        "verdict": "IN-FLIGHT",
-        "deliverables": {
-          "complete": 18,
-          "total": 18,
-          "percent": 100
-        },
+        "verdict": "PASS",
         "findings": {
           "blocking": 0,
           "important": 0,
           "minor": 0
         },
         "blocking_ids": [],
-        "merge_readiness": "pending",
-        "merge_reason": "Fresh PR #95 status check at frozen commit 08e2513865e546242e33f388d8d46c3aee1eaec5: 16 checks SUCCESS; aggregate `just lint and just test` remains IN_PROGRESS.",
-        "next_action": "parent_resume_same_enforcer_ci_only",
-        "owner": "parent-orchestrator",
+        "merge_readiness": "ready",
+        "merge_reason": "All hard QA gates pass at exact PR head 08e2513865e546242e33f388d8d46c3aee1eaec5: 18/18 deliverables, four required reviewer PASS results, zero findings, clean TODO scan, and all 17 PR checks SUCCESS.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "QA PASS. Parent may proceed with the normal merge process after confirming this published Machine Status JSON.",
         "reviewer_spawn_gate": "pass",
         "reviewer_manifest": [
           {
@@ -5171,9 +5167,7 @@
               ".triage/b/findings/QA-002.ttl"
             ]
           }
-        },
-        "missing_reviewers": [],
-        "unparsed_reviewers": []
+        }
       },
       "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/95#issuecomment-6540478899"
     }
