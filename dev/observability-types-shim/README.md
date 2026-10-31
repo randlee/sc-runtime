@@ -44,6 +44,16 @@ Libraries never create, flush, or shut down the underlying logger. The local
 adapter changes only the trait boundary; it does not add another queue, sink,
 or lifecycle policy.
 
+The owner confirmed on 2026-10-30 that Phase B completes before upstream
+1.5.1. This timing is recorded in [REQ-RUN-0702](../../docs/requirements.md),
+including Success Criteria 6–7, and [architecture](../../docs/architecture.md)
+(System shape and ADR-RUN-0004/0007); all production safety predicates remain
+binding. The approved real 1.5.0 adapter supports the phase's actual shared-logger,
+JSONL, shutdown-precedence, and isolated-CI signal-lifecycle evidence. These
+proofs do not claim published 1.5.1 support. Release epic `run-h0h`, including
+external prerequisite `run-03z.7`, owns the following removal/publication work
+after the phase; phase-end readiness must report those release limits.
+
 Before publication, remove both development directories and workspace exclusions,
 remove the types dependency's `path` and the development adapter dependency,
 update the lockfile to the actual matching registry 1.5.1 packages, and verify the
@@ -54,6 +64,17 @@ Both development packages have `publish = false`; the repository publication
 preflight rejects active development paths and requires the published contracts.
 Optimized development builds and benchmarks remain permitted: a release build
 profile is not publication authorization.
+
+Development generation uses the explicit mode and the correct checkout recipe:
+
+```sh
+just --justfile Justfile new /tmp/sc-runtime-development-example --var-file wizard/fixtures/sqlite-mcp.json --development-observability
+```
+
+Use a fresh absent destination. Generated-project recipes select that project's
+own `Justfile`. Never combine `--development-observability` with `--release`.
+The release guard is expected to reject this bridge; optimized development
+builds do not waive that publication fence.
 
 Focused validation:
 

@@ -49,13 +49,31 @@ b-14, b-15, and b-16 then run in parallel. b-16 follows b-13's generated
 graph amendment and owns both generated dependency inventories plus the
 trusted in-process Monty example; b-17 adds the shared Python/Monty hook
 environment and release-v1 sc-cron schema baseline; b-18 owns the sc-publish
-consumer update, a real install and complete synchronization from the exact
-pinned kit revision, the human-authorized five-crate publish order, and the
-registry-only generated proof plus isolated-CI SIGINT/SIGTERM lifecycle
-proof. Publication evidence and the registry-only proof are produced from one
-unchanged source commit and that exact commit is tagged `v0.1.1`. b-18 is
-blocked until an exact later kit
-revision excludes `docs/sprints/**`; the current pin is not a valid input.
+consumer update, a real qualified exact-kit install and complete output
+synchronization, publish-order/preflight source contracts, and real development
+HTTP+cron JSONL plus isolated-CI SIGINT/SIGTERM lifecycle proof. The owner
+confirmed on 2026-10-30 that Phase B finishes before upstream `1.5.1`; the
+approved real registry `1.5.0` development adapter may support these proofs.
+All b-18 runtime/lifecycle criteria remain required. This timing amendment
+does not mark b-18 or Phase B complete.
+
+Release epic `run-h0h` owns matching published `1.5.1` and external prerequisite
+`run-03z.7`, direct upstream Arc coercion and bridge/path removal, the
+human-authorized five-crate `0.1.1` publication, registry-only generated proof,
+and the same-source `v0.1.1` tag. Publication evidence and registry-only proof
+bind to one unchanged source commit. The release guard stays active; the
+phase-end readiness review after fixes must report these remaining release
+limits. [REQ-RUN-0702](requirements.md), including Success Criteria 6–7,
+and [architecture](architecture.md) (System shape and ADR-RUN-0004/0007)
+carry this governing timing amendment. Canonical release inventories, public
+interfaces, and every production safety predicate remain unchanged.
+
+The existing kit pin is rejected because its installer copies a
+`docs/sprints/**` destination. b-18 must select a qualified exact full SHA and
+prove the complete actual installer destination inventory is package-safe;
+upstream source may retain its own history. Kit preparation and qualification
+may progress independently, while final runtime composition consumes approved
+parent merges. This docs amendment selects no replacement consumer pin.
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |

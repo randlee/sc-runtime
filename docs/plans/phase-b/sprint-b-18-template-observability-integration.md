@@ -163,14 +163,41 @@ builds one logger, shares the same underlying instance with runtime and cron,
 and proves canonical HTTP and cron events in one JSONL sink. sc-runtime remains
 a cargo-generate template plus separately published library crates.
 
+## Owner timing amendment — 2026-10-30
+
+The owner directed that Phase B finish before upstream `1.5.1` publication.
+The governing timing clauses in [REQ-RUN-0702](../../requirements.md),
+including Success Criteria 6–7, and [architecture](../../architecture.md)
+(System shape and ADR-RUN-0004/0007) are amended with this plan to assign
+production release acceptance to `run-h0h` after Phase B. Public interfaces,
+version inventories, and every release safety predicate remain unchanged.
+b-18 remains planned until its implementation and QA are delivered; this
+documentation amendment is not sprint or phase acceptance.
+
+Phase completion requires the real development composition, shared ownership,
+HTTP+cron JSONL, shutdown precedence, isolated-CI signal lifecycle, qualified
+kit installation, and pre-publication source contracts below. It may use the
+approved real registry `1.5.0` logger through the unpublished development
+adapter. All eight acceptance criteria remain applicable with criterion 6
+split explicitly between phase implementation and later release evidence.
+
+Release epic `run-h0h` owns matching published `1.5.1` contracts and external
+prerequisite `run-03z.7`, development facade/adapter/path removal, direct upstream
+Arc coercion, the five internal `0.1.1` publications, registry-only generated
+proof, and the same-source `v0.1.1` tag. Those are mandatory release conditions,
+not Phase B completion conditions. The phase-end readiness review after fixes
+must report these remaining release limits explicitly. The active release
+guard continues to reject development resolution.
+
 ## Relations
 
 `must_follow` b-14 and b-17 because this sprint consumes the runtime events
 from b-14 and the completed cron environment/generated-daemon surface from
 b-17. b-17 already follows b-15 and b-16, so cron events, injection, Cargo
 features, and hook-environment wiring all arrive through that parent. Each
-parent PR must merge into this branch before development begins and before
-every fix round. There is no same-wave sibling.
+parent PR must merge into this branch before final runtime composition and before
+every composition fix round. Kit preparation and qualification may progress
+independently of those parent merges. There is no same-wave sibling.
 
 ## Consumed artifacts
 
@@ -204,8 +231,10 @@ resolve the real matching `sc-observability-types` /
 adapter contract and generated JSONL behavior. Replace local newtype
 construction with direct coercion of an Arc clone of the real Logger to
 `SharedCanonicalLog` once the upstream trait implementation is available.
-b-18 owns the serial successor teardown paths and root `Cargo.toml` /
-`Cargo.lock` transition. Optimized development/benchmark profiles remain
+Release epic `run-h0h` owns the serial successor teardown paths and root
+`Cargo.toml` / `Cargo.lock` transition after Phase B; b-18 preserves their
+source contracts without performing teardown. Optimized development/benchmark
+profiles remain
 permitted; publication stays fenced by `publish = false` and the active
 release guard. `scripts/check_observability_release.py` must reject a
 development observability workspace path override, local adapter,
@@ -216,9 +245,11 @@ the shim.
 The current pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` is not a valid
 b-18 starting artifact because that kit package includes upstream sprint
 history at `docs/sprints/fix-homebrew-formula-bundled-paths-tojson.md`.
-b-18 is blocked until sc-publish publishes a later qualified exact revision
-whose installer package contains no `docs/sprints/**`. This plan does not
-invent that future SHA. Once available, b-18 updates
+The kit install is blocked until a later qualified exact revision has no
+`docs/sprints/**` installer/package destination. This does not block independent
+kit preparation or runtime composition after approved parent merges. Upstream
+source may retain its own sprint history; source-checkout absence is not the
+package-safety predicate. This plan does not invent that future SHA. Once available, b-18 updates
 `release/sc-publish-pin.toml`, installs only from that exact revision, and
 proves the installer destination inventory is complete and package-safe; the
 leaked upstream sprint-history document is never copied or owned here.
@@ -284,8 +315,12 @@ compose/ATM adapters and its own handlers. `cron::open` forwards it unchanged:
 applications add handlers without editing sc-cron, and both sc_compose_run and
 atm_run support any CLI command/subcommand. Neither CLI is enabled implicitly.
 
-`Observability` creates `Arc<Logger>` once and derives `shared` by Arc
-coercion; it never clones `Logger`. `main` injects clones of the shared handle,
+`Observability` creates `Arc<Logger>` once and never clones `Logger`. During
+development it derives `shared` through
+`Arc::new(LoggerAdapter::new(Arc::clone(&logger)))`, using the approved real
+registry `1.5.0` adapter. The final release replaces that expression with
+direct upstream Arc coercion after the published `1.5.1` implementation exists.
+`main` injects clones of the shared handle,
 keeps scheduler state alive for daemon lifetime, drains and joins scheduler
 workers and runtime work, drops every scheduler/runtime/shared-handle owner,
 then consumes `Observability` with `shutdown(self)`. No shared logger handle
@@ -369,10 +404,14 @@ the three literal codes above and do not duplicate the layout.
    a human release owner with crates.io credentials must authorize and observe
    the generated release workflow. This repository neither publishes nor
    claims authority over the upstream observability `1.5.1` pair.
-   The publication evidence, registry-only proof, and `v0.1.1` tag bind to
-   the same source commit; no manifest or source change is allowed between
-   them.
-8. REQ-RUN-0702: after the five internal `0.1.1` crates are published, render
+   Phase B delivers the qualified install, consumer input, and pre-publication
+   source/preflight contracts. Actual workflow dispatch/publication and its
+   evidence belong to later release epic `run-h0h`. The publication evidence,
+   registry-only proof, and `v0.1.1` tag bind to the same source commit; no
+   manifest or source change is allowed between them.
+8. REQ-RUN-0702: retain the following later-release acceptance in `run-h0h`;
+   it does not gate Phase B implementation completion. After the five internal
+   `0.1.1` crates are published, render
    with `scripts/new_project.py --release`, assert there is no
    `[patch.crates-io]` or path override, and build/test the generated daemon
    against the registry with `cron` and `monty`. The pre-publication source
@@ -438,14 +477,20 @@ the three literal codes above and do not duplicate the layout.
 6. REQ-RUN-0002 / REQ-RUN-0003 / REQ-RUN-0503 / REQ-RUN-0701 /
    REQ-RUN-0702: `test_pinned_publish_kit_inventory`, real install/dry-run/drift,
    consumer preflight, and the registry-only test enforce deliverables 6–8:
-   qualified exact pin with package-safe inventory and no `docs/sprints/**`,
-   authorized publish order 1–5, registry resolution without checkout patches,
-   one CI entry per fixture with the sqlite-mcp no-edits sequence, and
-   `v0.1.1` at the publication/proof commit.
-   The same gate requires development path/adapter removal, direct upstream
-   Arc coercion, real matching registry `1.5.1` root/generated lock resolution,
-   the active release guard, and the published production Logger adapter's
-   non-blocking proof.
+   **Phase implementation:** qualified exact pin with complete package-safe
+   installer inventory and no `docs/sprints/**` destination, real install and
+   repeat dry-run/drift proof, consumer preflight source contracts preserving
+   publish order 1–5, and one CI entry per fixture with the sqlite-mcp no-edits
+   sequence. The source contract test remains
+   `GeneratedObservabilityIntegration.test_release_contract_sources`.
+   **Later release (`run-h0h`):** human-authorized publication in order 1–5,
+   registry resolution without checkout patches, and `v0.1.1` at the
+   publication/proof commit. This release gate also requires development
+   path/adapter removal, direct upstream Arc coercion, real matching registry
+   `1.5.1` root/generated lock resolution, the unchanged active release guard,
+   and the published production Logger adapter's non-blocking proof. The
+   registry-only test is required later; an unmet release prerequisite is
+   recorded as deferred release work, never as a passing registry proof.
 7. REQ-RT-0005 / NFR-RUN-0010 / ADR-RT-0002 / ADR-TRN-0006:
    `test_signal_shutdown_isolated_ci` passes in the dedicated GitHub-hosted
    ephemeral job for both real SIGINT and SIGTERM paths with
@@ -455,6 +500,12 @@ the three literal codes above and do not duplicate the layout.
    for all generated production Rust sources; no behavior claim is attached.
 
 ## Required validation
+
+Phase implementation validation uses the explicit development generation mode.
+Select the repository or generated project's own `Justfile` explicitly so a
+recipe cannot resolve from a parent checkout. The full suite must distinguish
+unavailable later-release proof from executed development evidence. The signal
+block runs only in the dedicated ephemeral CI job, never on a developer host.
 
 ```sh
 python3 -m unittest tests.integration.generation.test_observability
@@ -466,12 +517,8 @@ python3 -m unittest tests.integration.generation.test_observability.GeneratedObs
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_pr_fixture_matrix_one_entry_per_fixture
 python3 -m unittest tests.unit.generation.test_cron_environment
 SC_RUNTIME_FIXTURE_ROOT="$(mktemp -d)"
-just new "$SC_RUNTIME_FIXTURE_ROOT/sqlite-mcp" --var-file wizard/fixtures/sqlite-mcp.json
-(cd "$SC_RUNTIME_FIXTURE_ROOT/sqlite-mcp" && just setup && just lint && just test && just build-cli && just build-daemon)
-test "${GITHUB_ACTIONS:-}" = true
-test "${RUNNER_ENVIRONMENT:-}" = github-hosted
-test "${SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST:-}" = 1
-python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_signal_shutdown_isolated_ci
+just --justfile Justfile new "$SC_RUNTIME_FIXTURE_ROOT/sqlite-mcp" --var-file wizard/fixtures/sqlite-mcp.json --development-observability
+(cd "$SC_RUNTIME_FIXTURE_ROOT/sqlite-mcp" && just --justfile Justfile setup && just --justfile Justfile lint && just --justfile Justfile test && just --justfile Justfile build-cli && just --justfile Justfile build-daemon)
 SC_PUBLISH_REPOSITORY="$(sed -n 's/^repository = "\([^"]*\)"/\1/p' release/sc-publish-pin.toml)"
 SC_PUBLISH_REVISION="$(sed -n 's/^revision = "\([0-9a-f]*\)"/\1/p' release/sc-publish-pin.toml)"
 test -n "$SC_PUBLISH_REPOSITORY"
@@ -483,26 +530,49 @@ git -C .sc-publish-kit remote add origin "$SC_PUBLISH_REPOSITORY"
 git -C .sc-publish-kit fetch --depth 1 origin "$SC_PUBLISH_REVISION"
 git -C .sc-publish-kit checkout --detach FETCH_HEAD
 test "$(git -C .sc-publish-kit rev-parse HEAD)" = "$SC_PUBLISH_REVISION"
-test -z "$(find .sc-publish-kit/plugins/sc-publish/docs/sprints -type f -print -quit 2>/dev/null)"
+# Enumerate the pinned installer's complete actual destination inventory,
+# including all package/copy/render outputs; upstream source history may exist.
+# Reject docs/sprints/**, traversal, absolute/duplicate destinations and unsafe
+# symlinks; prove the inventory covers every output from the real install.
+python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_pinned_publish_kit_inventory
 python3 .sc-publish-kit/plugins/sc-publish/.github/scripts/bootstrap_sc_compose.py --venv .sc-publish-venv
 .sc-publish-venv/bin/python .sc-publish-kit/plugins/sc-publish/install.py --input release/sc-publish-consumer-input.json .
 .sc-publish-venv/bin/python .sc-publish-kit/plugins/sc-publish/install.py --dry-run --input release/sc-publish-consumer-input.json .
 git diff --check
 git diff --exit-code
 test -z "$(git status --porcelain)"
-bash .github/scripts/run-consumer-preflight.sh
-python3 scripts/check_observability_release.py
-just lint
-just test
-just new generated/test-observability --var-file wizard/fixtures/sqlite-mcp.json
+# Verify consumer preflight source wiring now; execution of release preflight
+# is required later, because its active guard rejects this development bridge.
+just --justfile Justfile lint
+just --justfile Justfile test
+just --justfile Justfile new generated/test-observability --var-file wizard/fixtures/sqlite-mcp.json --development-observability
 cargo test --manifest-path generated/test-observability/Cargo.toml --workspace
 cargo check --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features cron
 cargo test --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features cron
 cargo +1.96.1 check --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon --features monty
 cargo tree --manifest-path generated/test-observability/Cargo.toml -p widget-app-daemon -e normal
+just --justfile Justfile lint gates
+```
+
+Dedicated ephemeral CI validation only (the job sets the marker; local recipes
+must not set it):
+
+```sh
+test "${GITHUB_ACTIONS:-}" = true
+test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+test "${SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST:-}" = 1
+python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_signal_shutdown_isolated_ci
+```
+
+Deferred release validation (`run-h0h`), after matching upstream publication,
+bridge removal, and authorized internal publication; these commands are not
+claimed to pass during Phase B:
+
+```sh
+bash .github/scripts/run-consumer-preflight.sh
+python3 scripts/check_observability_release.py
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
 test "$(git rev-list -n 1 v0.1.1)" = "$(git rev-parse HEAD)"
-just lint gates
 ```
 
 The integration test parses every JSONL line as `LogEvent`, asserts both
@@ -510,7 +580,8 @@ targets and one service name, and uses an isolated temporary log root. The
 install/drift block runs first from a clean sprint checkout; its cache and
 virtual environment are ignored. The registry-only test runs only after the
 human-authorized `0.1.1` publication. The release workflow generated from the
-installed sc-publish kit remains the publication authority, so this sprint
+installed sc-publish kit remains the later release publication authority, so
+this sprint
 edits its consumer input and regenerates every listed kit-owned output rather
 than hand-editing installed files.
 

@@ -41,8 +41,16 @@ template that is rendered once into a project and then belongs to that
 project. The `0.1.1` target has five independently versioned public release
 artifacts (`sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, and
 optional `sc-cron`); the workspace also holds the intentionally unpublished
-`sc-runtime-db-sqlite` building block. Actual publication remains the gated
-b-18 release step rather than an assumed current state.
+`sc-runtime-db-sqlite` building block. Under the 2026-10-30 timing amendment
+in [REQ-RUN-0702](requirements.md), b-18 owns real development composition,
+JSONL/lifecycle proof, qualified exact-kit installation, and pre-publication
+source contracts. Actual publication, registry-only generated proof, and the
+same-source `v0.1.1` tag are gated release work in `run-h0h` after Phase B.
+Matching published observability `1.5.1`, development bridge/path removal,
+direct upstream Arc coercion, exact registry locks, published-adapter
+non-blocking proof, the unchanged release guard, and human authorization all
+remain mandatory release predicates. Phase readiness reports these limits;
+this amendment does not declare sprint, phase, or release acceptance.
 
 | Layer | What it holds | Owner | Lives in |
 |---|---|---|---|
@@ -590,10 +598,17 @@ enforced by the `just test` recipe ([REQ-RUN-0004](requirements.md)).
 
 ### Context
 
-The Phase B contract advances the generated daemon's `sc-observability`
-requirement and the `sc-runtime`/`sc-cron` types-only requirements to the
-normal caret-compatible `1.5.1`; `sc-command` retains its tested-minimum
-caret requirement `1.5.0`, and the lockfile may unify it at exact `1.5.1`.
+The Phase B production release contract advances the generated daemon's
+`sc-observability` requirement and the `sc-runtime`/`sc-cron` types-only
+requirements to normal caret-compatible `1.5.1`; `sc-command` retains its
+tested-minimum caret requirement `1.5.0`, and the release lockfile may unify
+it at exact `1.5.1`. The 2026-10-30 timing amendment assigns matching
+published `1.5.1`, direct upstream Arc coercion, and development bridge/path
+removal to `run-h0h` after Phase B, as required by
+[REQ-RUN-0702](requirements.md). Phase B composition may use the approved
+real registry `1.5.0` logger through the unpublished development adapter;
+application-owned construction/flush/shutdown and the public injection
+interfaces are unchanged.
 Every generated daemon uses the full runtime. The tempting design is to have
 `sc-config` or `sc-runtime`
 initialise it. That would make those crates depend on the observability
@@ -613,8 +628,11 @@ loaded.
    It is not allowed on `sc-config` or `sc-transport`. The logging runtime
    and OTel export stay forbidden on all library crates.
 4. The generated `daemon/src/main.rs` MUST, in this order: load config with
-   `sc-config`; initialise `sc-observability` 1.5.1 directly with plain values
+   `sc-config`; initialise `sc-observability` directly with plain values
    taken from that config; then call `sc_runtime::Daemon::builder()`.
+   Production release requires matching registry `1.5.1` under `run-h0h`;
+   Phase B development may use the approved real registry `1.5.0` adapter
+   described above without waiving the production version or lifecycle contract.
 5. `TransportError::DaemonNotRunning` is owned by
    [ADR-TRN-0003](sc-transport/architecture.md). It carries
    `code: &'static str` (`DAEMON.NOT_RUNNING`) plus the endpoint and the
@@ -878,8 +896,13 @@ shared scheduler handles, workers and component propagation. Canonical events
 are emitted directly and rejection cannot replace application, HTTP, store,
 process or scheduler outcomes. No library owns logger flush or shutdown.
 During development the explicit local facade path preserves registry `1.5.0`
-value/error identity; the matching real registry `1.5.1` pair and removal of
-local paths remain publication requirements under b-18.
+value/error identity. Under the 2026-10-30 timing amendment in
+[REQ-RUN-0702](requirements.md), the matching real registry `1.5.1` pair,
+development facade/adapter/path removal, direct upstream Arc coercion, and
+published-adapter immediate queue-full/disconnected rejection remain
+publication requirements of `run-h0h` after Phase B. b-18 retains the real
+development composition/JSONL/lifecycle and qualified install/source-contract
+proof; no async, ownership, rejection, or release-guard predicate is relaxed.
 
 1. The generated daemon MUST run on the Tokio runtime
    (`#[tokio::main] async fn main`).
