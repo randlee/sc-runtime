@@ -63,26 +63,37 @@ pub async fn run(
     let targets = crate::store_targets(config, transport_name)
         .map_err(|error| crate::agent_error::transport_error(&error))?;
     #[cfg(feature = "cron")]
-    let scheduler = {
-        let instance_root = crate::instance_root(config, transport_name)
-            .map_err(|error| crate::agent_error::transport_error(&error))?;
-        std::sync::Arc::new(cron_services.open_scheduler(
-            &config.cron, &instance_root, observability.logger(),
-        ).map_err(cron_error)?)
-    };
+    let instance_root = crate::instance_root(config, transport_name)
+        .map_err(|error| crate::agent_error::transport_error(&error))?;
     #[cfg(feature = "cron")]
-    let scheduler_for_stores = std::sync::Arc::clone(&scheduler);
+    let cron_config = config.cron.clone();
     #[cfg(feature = "cron")]
-    let (worker_tx, worker_rx) = tokio::sync::oneshot::channel();
+    let cron_logger = observability.logger();
+    #[cfg(feature = "cron")]
+    let (worker_tx, worker_rx) = tokio::sync::oneshot::channel::<Result<CronRuntime, sc_cron::CronError>>();
+    #[cfg(feature = "cron")]
+    let mut cron_failure = None;
     let result = sc_runtime::Daemon::builder(transport_name, &config.daemon)
         .logger(observability.logger())
         .stores(move || async move {
             let stores = crate::open_stores(targets).await?;
             #[cfg(feature = "cron")]
             {
-                // The runtime holds daemon.lock before invoking this closure.
-                let worker = scheduler_for_stores.spawn_worker(std::sync::Arc::new(crate::cron::ApplicationJob));
-                let _ = worker_tx.send(worker);
+                // Endpoint validation and daemon.lock precede every database open.
+                let scheduler = match cron_services.open_scheduler(
+                    &cron_config, &instance_root, cron_logger,
+                ) {
+                    Ok(scheduler) => scheduler,
+                    Err(error) => {
+                        // Preserve the typed cron cause across the SDK's stores-error boundary.
+                        let _ = worker_tx.send(Err(error));
+                        return Err(sc_runtime::RuntimeError::stores_failed(
+                            "DAEMON.CRON_OPEN", "cron startup failed", "fix cron configuration or database path and retry", None,
+                        ));
+                    }
+                };
+                let worker = scheduler.spawn_worker(std::sync::Arc::new(crate::cron::ApplicationJob));
+                let _ = worker_tx.send(Ok(CronRuntime { scheduler, worker }));
             }
             Ok(stores)
         })
@@ -90,13 +101,22 @@ pub async fn run(
         {% if mcp %}.mcp(crate::mcp::service){% endif %}
         ;
     #[cfg(feature = "cron")]
-    let result = result.run_with_cleanup(move || async move {
-        let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(5);
-        if let Ok(worker) = worker_rx.await {
-            let _drained = worker.shutdown(deadline).await;
+    let result = result.run_with_cleanup(|| async {
+        match worker_rx.await {
+            Ok(Ok(CronRuntime { scheduler, worker })) => {
+                let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(5);
+                let _drained = worker.shutdown(deadline).await;
+                drop(scheduler);
+            }
+            Ok(Err(error)) => cron_failure = Some(error),
+            // The SDK drops unused startup closures before early-error cleanup.
+            Err(_) => {}
         }
-        drop(scheduler);
     }).await;
+    #[cfg(feature = "cron")]
+    if let Some(error) = cron_failure {
+        return Err(cron_error(error));
+    }
     #[cfg(not(feature = "cron"))]
     let result = result.run().await;
     result.map_err(|error| crate::agent_error::runtime_error(&error))
@@ -105,4 +125,11 @@ pub async fn run(
 #[cfg(feature = "cron")]
 fn cron_error(error: sc_cron::CronError) -> String {
     crate::agent_error::format_agent_error("DAEMON.CRON_OPEN", error, "fix cron configuration or database path and retry")
+}
+
+// Application-only ownership transferred from stores startup to awaited cleanup.
+#[cfg(feature = "cron")]
+struct CronRuntime {
+    scheduler: sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>,
+    worker: sc_cron::WorkerHandle,
 }

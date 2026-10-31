@@ -164,6 +164,7 @@ mod tests {
         let root = tempfile::tempdir().expect("instance root");
         let mut values: serde_json::Value = serde_json::from_str(include_str!("../../../config/default.json")).expect("default config");
         values["instance_root"] = serde_json::json!(root.path());
+        values["cron"]["database_path"] = serde_json::json!("invalid-endpoint-cron.db");
         let mut config: daemon::AppConfig = serde_json::from_value(values).expect("config");
         config.daemon.endpoint_flag = Some("invalid-endpoint".to_owned());
         let observability = daemon::observability::Observability::init(
@@ -175,11 +176,85 @@ mod tests {
             std::time::Duration::from_secs(5), daemon::composition::run(&config, &app, &observability, daemon::composition::CronServices::default()),
         ).await.expect("no worker handle exists before the stores closure runs").expect_err("endpoint rejected");
         assert_eq!(error, "RUNTIME.ENDPOINT_FAILED the endpoint could not be resolved: TRANSPORT.INVALID_ENDPOINT: source=invalid-endpoint: endpoint must start with uds: or tcp: — Use uds:<path> or tcp:<socket-addr>.");
+        assert!(!root.path().join("invalid-endpoint-cron.db").exists(), "endpoint failure must not open cron");
         assert_eq!(weak.strong_count(), 1, "only owner retains logger handle");
         observability.shutdown().expect("consuming shutdown");
         assert!(weak.upgrade().is_none());
+        assert_no_cron_events(root.path());
     }
 
+    #[cfg(feature = "cron")]
+    fn assert_no_cron_events(root: &Path) {
+        let log = root.join("logs").join(format!("{}.log.jsonl", daemon::APP_NAME));
+        let lines = match std::fs::read_to_string(log) {
+            Ok(lines) => lines,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => String::new(),
+            Err(error) => panic!("flushed log: {error}"),
+        };
+        for line in lines.lines() {
+            let event: sc_observability_types::LogEvent = serde_json::from_str(line).expect("event");
+            assert!(!event.target.as_str().starts_with("cron."), "cron must not open or start a worker");
+        }
+    }
+
+    #[cfg(feature = "cron")]
+    #[tokio::test]
+    async fn lock_loser_leaves_fresh_cron_database_absent_and_never_starts_worker() {
+        let app = sc_transport::AppName::new(daemon::APP_NAME).expect("app");
+        let mut runtime_config = sc_runtime::DaemonConfig::default();
+        runtime_config.endpoint_flag = Some("tcp:127.0.0.1:0".to_owned());
+        let holder = sc_runtime::testing::DaemonFixture::start(
+            &app, runtime_config, || async { Ok(()) }, |()| utoipa_axum::router::OpenApiRouter::new(),
+        ).await.expect("fixture holds daemon.lock");
+        let root = holder.instance_root();
+        let mut values: serde_json::Value = serde_json::from_str(include_str!("../../../config/default.json")).expect("default config");
+        values["instance_root"] = serde_json::json!(root);
+        values["cron"]["database_path"] = serde_json::json!("losing-invocation-cron.db");
+        let mut config: daemon::AppConfig = serde_json::from_value(values).expect("config");
+        config.daemon.endpoint_flag = Some("tcp:127.0.0.1:0".to_owned());
+        let observability = daemon::observability::Observability::init(
+            daemon::APP_NAME, &config.logging, root.to_path_buf(),
+        ).unwrap_or_else(|error| panic!("logger: {error}"));
+        let weak = std::sync::Arc::downgrade(&observability.logger());
+        let error = tokio::time::timeout(
+            std::time::Duration::from_secs(5), daemon::composition::run(&config, &app, &observability, daemon::composition::CronServices::default()),
+        ).await.expect("lock contention and unused sender cleanup are bounded").expect_err("lock held");
+        assert!(error.starts_with("RUNTIME.LOCK_HELD a daemon already holds the instance lock: "), "{error}");
+        assert!(error.ends_with(" — stop the other daemon for this instance root, or choose a different instance root"), "{error}");
+        assert!(!root.join("losing-invocation-cron.db").exists(), "losing invocation must not open its distinct cron database");
+        assert_eq!(weak.strong_count(), 1, "unused startup logger was released");
+        observability.shutdown().expect("logger shutdown");
+        assert_no_cron_events(root);
+        let health: serde_json::Value = holder.client().get("/health").await.expect("holder still serves");
+        assert_eq!(health["ok"], true);
+        holder.shutdown().await.expect("fixture cleanup");
+    }
+
+    {% if db == "sqlite" or db == "none" %}
+    #[cfg(feature = "cron")]
+    #[tokio::test]
+    async fn cron_startup_failure_preserves_exact_code_cause_and_recovery() {
+        let root = tempfile::tempdir().expect("instance root");
+        let mut values: serde_json::Value = serde_json::from_str(include_str!("../../../config/default.json")).expect("default config");
+        values["instance_root"] = serde_json::json!(root.path());
+        values["cron"]["database_path"] = serde_json::json!("../outside.db");
+        let mut config: daemon::AppConfig = serde_json::from_value(values).expect("config");
+        config.daemon.endpoint_flag = Some("tcp:127.0.0.1:0".to_owned());
+        let observability = daemon::observability::Observability::init(
+            daemon::APP_NAME, &config.logging, root.path().to_path_buf(),
+        ).unwrap_or_else(|error| panic!("logger: {error}"));
+        let weak = std::sync::Arc::downgrade(&observability.logger());
+        let app = sc_transport::AppName::new(daemon::APP_NAME).expect("app");
+        let error = tokio::time::timeout(
+            std::time::Duration::from_secs(5), daemon::composition::run(&config, &app, &observability, daemon::composition::CronServices::default()),
+        ).await.expect("failed startup cleanup is bounded").expect_err("invalid cron path");
+        assert_eq!(error, "DAEMON.CRON_OPEN invalid schedule: cron.database_path must be a relative path without parent traversal — fix cron configuration or database path and retry");
+        assert_eq!(weak.strong_count(), 1, "failed cron open releases all injected handles");
+        observability.shutdown().expect("logger shutdown");
+        assert_no_cron_events(root.path());
+    }
+
+    {% endif %}
     #[test]
     fn config_startup_uses_each_library_code_once() {
         let errors = [

@@ -9,7 +9,7 @@ use std::num::NonZeroUsize;
 use serde::Deserialize;
 
 /// `cron` object in the application configuration file.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CronConfig {
     /// Relative schedule database path below the instance root; no parent traversal.
     #[serde(default = "default_database_path")]
@@ -71,7 +71,7 @@ impl CronConfig {
 }
 
 /// Administrator-owned environment authorization, independent of schedule data.
-#[derive(Default, Deserialize)]
+#[derive(Clone, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CronEnvironmentConfig {
     /// Names inherited from the daemon only at occurrence execution.

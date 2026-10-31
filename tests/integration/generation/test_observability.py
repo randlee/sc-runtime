@@ -83,6 +83,10 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                                 "tests::config_startup_uses_each_library_code_once")
         self.run_generated_test(app, package, ["--bin", "widget-app-daemon"],
                                 "tests::runtime_failure_before_stores_releases_handles_without_waiting_for_worker")
+        self.run_generated_test(app, package, ["--bin", "widget-app-daemon"],
+                                "tests::lock_loser_leaves_fresh_cron_database_absent_and_never_starts_worker")
+        self.run_generated_test(app, package, ["--bin", "widget-app-daemon"],
+                                "tests::cron_startup_failure_preserves_exact_code_cause_and_recovery")
 
     def test_pr_fixture_matrix_one_entry_per_fixture(self):
         workflow = (ROOT / ".github/workflows/template.yml").read_text()
