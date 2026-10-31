@@ -5,7 +5,9 @@
     "branch": "codex/ci-build-cache",
     "commit": "d0f76157ae4ee20bd0780323e5f500d78f0d9c69",
     "base": "2cb7d2f85484ca1b3c4096de5734f23c2c2b1ee0",
-    "pr": 99
+    "pr": 99,
+    "merged_commit": "2a93925363eab051e3c103202901f38600b87c34",
+    "state": "MERGED"
   },
   "qa": {
     "qa_pass": "qa-ci-efficiency-1",
