@@ -169,7 +169,7 @@ fn run_fixture_child(name: &str, deadline: Duration) -> Result<(), String> {
                     .map_err(|_| "fixture timeout: child reap failed")?;
                 return Err("fixture timed out; child killed and reaped".into());
             }
-            None => std::thread::sleep(Duration::from_millis(10)),
+            None => std::thread::sleep(Duration::from_millis(10)), // allow: test polls its owned child
         }
     }
 }
