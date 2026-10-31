@@ -1,5 +1,6 @@
 """Prepublication contracts for the observability release and publishing kit."""
 
+import hashlib
 import importlib.util
 import json
 import os
@@ -14,6 +15,37 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class GeneratedObservabilityIntegration(unittest.TestCase):
+    def test_pr_fixture_matrix_one_entry_per_fixture(self):
+        workflow = (ROOT / ".github/workflows/template.yml").read_text()
+        fixtures = sorted(p.name for p in (ROOT / "wizard/fixtures").glob("*.json"))
+        self.assertTrue(fixtures)
+        self.assertIn('pathlib.Path("wizard/fixtures").glob("*.json")', workflow)
+        self.assertIn('fixture: ${{ fromJson(needs.fixtures.outputs.names) }}', workflow)
+        self.assertIn('wizard/fixtures/${{ matrix.fixture }}', workflow)
+        self.assertEqual(len(fixtures), len(set(fixtures)))
+        self.assertIn("sqlite-mcp.json", fixtures)
+
+    def test_sqlite_mcp_no_edits_sequence(self):
+        def snapshot(root):
+            return {
+                str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                for p in root.rglob("*")
+                if p.is_file() and not any(part in {"target", ".git"} for part in p.relative_to(root).parts)
+            }
+
+        with tempfile.TemporaryDirectory(prefix="sc-runtime-no-edits-") as temp:
+            app = Path(temp) / "app"
+            subprocess.run(
+                ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
+                cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
+            )
+            before = snapshot(app)
+            self.assertTrue(before)
+            for recipe in ("setup", "lint", "test", "build-cli", "build-daemon"):
+                with self.subTest(recipe=recipe):
+                    subprocess.run(["just", recipe], cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL)
+                    self.assertEqual(before, snapshot(app), f"{recipe} changed generated source")
+
     def test_pinned_publish_kit_inventory(self):
         pin = tomllib.loads((ROOT / "release/sc-publish-pin.toml").read_text())["sc-publish"]
         self.assertEqual(pin["repository"], "https://github.com/randlee/sc-publish")
