@@ -13,6 +13,21 @@ from pathlib import Path
 _MARKER = "SC_RUNTIME_TEST_OWNED_SESSION"
 
 
+def _is_nested():
+    marker = os.environ.get(_MARKER)
+    if not marker:
+        return False
+    if os.name != "nt":
+        return marker == str(os.getpgrp())
+    import ctypes
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.GetCurrentProcess.restype = wintypes.HANDLE
+    kernel.IsProcessInJob.argtypes = [wintypes.HANDLE, wintypes.HANDLE, ctypes.POINTER(wintypes.BOOL)]
+    in_job = wintypes.BOOL()
+    return bool(marker == "job" and kernel.IsProcessInJob(kernel.GetCurrentProcess(), None, ctypes.byref(in_job)) and in_job.value)
+
+
 def _windows_job(process):
     import ctypes
     from ctypes import wintypes
@@ -41,7 +56,7 @@ def _windows_job(process):
         raise ctypes.WinError(ctypes.get_last_error())
     limits = Extended()
     limits.BasicLimitInformation.LimitFlags = 0x2000  # KILL_ON_JOB_CLOSE
-    if not kernel.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits)) or not kernel.AssignProcessToJobObject(job, wintypes.HANDLE(process._handle)):
+    if not kernel.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits)) or not kernel.AssignProcessToJobObject(job, wintypes.HANDLE(int(process._handle))):
         error = ctypes.get_last_error()
         kernel.CloseHandle(job)
         raise ctypes.WinError(error)
@@ -50,7 +65,7 @@ def _windows_job(process):
 
 def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_output=False, check=False):
     """Run a command in an owned tree; timeout and failure clean up descendants."""
-    nested = os.environ.get(_MARKER) == "1"
+    nested = _is_nested()
     with tempfile.TemporaryDirectory(prefix="sc-test-owned-") as temp:
         root = Path(temp)
         config = root / "command.json"
@@ -58,7 +73,7 @@ def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_ou
         status = root / "status"
         config.write_text(json.dumps({"args": list(map(str, args)), "start": str(start), "status": str(status)}))
         child_env = dict(os.environ if env is None else env)
-        child_env[_MARKER] = "1"
+        child_env.pop(_MARKER, None)
         with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
             child = subprocess.Popen(
                 [sys.executable, str(Path(__file__).resolve()), "--launch", str(config)], cwd=cwd,
@@ -83,7 +98,15 @@ def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_ou
             finally:
                 # The launcher stays alive until cleanup, pinning the process-group ID.
                 if job is not None:
-                    job[0].CloseHandle(job[1])
+                    import ctypes
+                    from ctypes import wintypes
+                    kernel, handle = job
+                    kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+                    if not kernel.TerminateJobObject(handle, 1):
+                        error = ctypes.get_last_error()
+                        kernel.CloseHandle(handle)
+                        raise ctypes.WinError(error)
+                    kernel.CloseHandle(handle)
                 elif not nested and os.name != "nt":
                     try:
                         os.killpg(child.pid, signal.SIGKILL)
@@ -124,6 +147,7 @@ def _launch(config_path):
         if time.monotonic() >= deadline:
             return 1
         time.sleep(0.02)
+    os.environ[_MARKER] = "job" if os.name == "nt" else str(os.getpgrp())
     if os.name != "nt":
         def abort(_signum, _frame):
             temporary = status.with_suffix(".tmp")

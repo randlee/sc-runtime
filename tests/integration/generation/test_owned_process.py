@@ -99,6 +99,29 @@ class OwnedProcessTests(unittest.TestCase):
             self.assertTrue(ready.exists(), "nested child never acknowledged readiness")
             self.assert_exited(int(ready.read_text()))
 
+    def test_nested_failure_aborts_ready_descendant(self):
+        with tempfile.TemporaryDirectory(prefix="owned-nested-failure-") as temp:
+            root = Path(temp)
+            ready = root / "ready"
+            witness = root / "witness.py"
+            witness.write_text(
+                "import os, pathlib, subprocess, sys, time\n"
+                "p=subprocess.Popen([sys.executable, '-c', "
+                "'import os,pathlib,sys,time; pathlib.Path(sys.argv[1]).write_text(str(os.getpid())); time.sleep(60)', sys.argv[1]])\n"
+                "r=pathlib.Path(sys.argv[1]); deadline=time.monotonic()+5\n"
+                "while not r.exists():\n"
+                " if time.monotonic()>deadline: raise RuntimeError('ready timeout')\n"
+                " time.sleep(.01)\n"
+                "sys.exit(7)\n"
+            )
+            code = ("import sys; from tests.integration.generation.owned_process import run; "
+                    "run([sys.executable, sys.argv[1], sys.argv[2]], timeout=8, check=True)")
+            with self.assertRaises(subprocess.CalledProcessError):
+                run([sys.executable, "-c", code, str(witness), str(ready)],
+                    cwd=Path(__file__).resolve().parents[3], timeout=10, check=True, capture_output=True)
+            self.assertTrue(ready.exists(), "nested grandchild never acknowledged readiness")
+            self.assert_exited(int(ready.read_text()))
+
     def test_success_preserves_output(self):
         result = run([sys.executable, "-c", "print('ok')"], timeout=5, check=True, capture_output=True, text=True)
         self.assertEqual(result.stdout.strip(), "ok")
