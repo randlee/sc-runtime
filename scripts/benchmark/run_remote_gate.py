@@ -81,7 +81,6 @@ def emit_reports(source: Path, previous: set[Path], sha: str) -> int:
     destination = REMOTE_EVIDENCE_ROOT / sha
     destination.mkdir(parents=True, exist_ok=True)
     retained = Path(tempfile.mkdtemp(prefix="run-", dir=destination))
-    print(f"benchmark-ssh: retained remote evidence at {retained}", flush=True)
     for report in reports:
         for path in (report, report.with_name(report.name.removesuffix(".campaign.json") + ".html")):
             if path.is_symlink():
@@ -89,6 +88,8 @@ def emit_reports(source: Path, previous: set[Path], sha: str) -> int:
             target = retained / path.relative_to(source)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, target)
+    # Complete every pair before touching a potentially disconnected SSH pipe.
+    print(f"benchmark-ssh: retained remote evidence at {retained}", flush=True)
     files = {}
     size = 0
     for report in reports:
@@ -106,8 +107,9 @@ def emit_reports(source: Path, previous: set[Path], sha: str) -> int:
     return len(reports)
 
 
-def save_reports(output: str, sha: str, destination: Path) -> None:
+def save_reports(output: str, sha: str, destination: Path) -> set[str]:
     """Preserve transferred pairs in a new immutable evidence directory."""
+    statuses = set()
     for line in output.splitlines():
         if not line.startswith(ARTIFACT_PREFIX):
             continue
@@ -130,18 +132,27 @@ def save_reports(output: str, sha: str, destination: Path) -> None:
         for path, content in files.items():
             if path.name.endswith(".campaign.json"):
                 campaign = json.loads(content)
-                if campaign["git_sha"] != sha or path.parent / campaign["report_html"] not in files:
+                if (not isinstance(campaign, dict) or campaign.get("git_sha") != sha
+                        or not isinstance(campaign.get("report_html"), str)
+                        or path.parent / campaign["report_html"] not in files):
                     raise ValueError("benchmark campaign source or HTML pair is invalid")
         destination.mkdir(parents=True, exist_ok=True)
         evidence = Path(tempfile.mkdtemp(prefix="run-", dir=destination))
         for path, content in files.items():
             (evidence / path).parent.mkdir(parents=True, exist_ok=True)
             (evidence / path).write_bytes(content)
+        # Keep all bytes before validation/logging can reject a measured result.
+        for path, content in files.items():
             if path.name.endswith(".campaign.json"):
                 campaign = json.loads(content)
-                print(f"benchmark-ssh: retained source={sha} status={campaign['status']} "
+                status = campaign.get("status")
+                if not isinstance(status, str) or status not in {"PASS", "MEASURED", "FAIL", "INCOMPLETE", "SKIPPED"}:
+                    raise ValueError(f"invalid benchmark campaign status in {evidence / path}")
+                statuses.add(status)
+                print(f"benchmark-ssh: retained source={sha} status={status} "
                       f"campaign={evidence / path}", flush=True)
         print(f"benchmark-ssh: retained JSON/HTML evidence at {evidence}", flush=True)
+    return statuses
 
 
 def run_remote(sha: str, source: Path, owned, python: str | None = None) -> int:
@@ -249,9 +260,15 @@ def main() -> int:
                                capture_output=True, text=True)
         print(result.stdout, end="", flush=True)
         print(result.stderr, end="", file=sys.stderr, flush=True)
-        save_reports(result.stdout, sha, ROOT / "target/benchmark-preflight" / sha)
-        if result.returncode == 0 and ARTIFACT_PREFIX not in result.stdout:
-            raise RuntimeError("controlled host returned success without fresh benchmark evidence")
+        try:
+            statuses = save_reports(result.stdout, sha, ROOT / "target/benchmark-preflight" / sha)
+            if result.returncode == 0 and (not statuses or not statuses <= {"PASS", "MEASURED"}):
+                raise ValueError("controlled-host success requires fresh PASS or MEASURED campaign evidence")
+        except ValueError as error:
+            if result.returncode == 0:
+                raise
+            # An invalid measurement cannot replace the actual remote failure.
+            print(f"benchmark-ssh: evidence validation failed: {error}", file=sys.stderr)
         if result.returncode != 0:
             print(
                 f"benchmark-ssh: {SSH_TARGET} returned {result.returncode}; "

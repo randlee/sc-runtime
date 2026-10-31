@@ -7,19 +7,29 @@ import sys
 import tempfile
 import tomllib
 import unittest
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 
 
 class PublishPreflightTests(unittest.TestCase):
+    def test_validator_timeout_fails_clearly(self):
+        with mock.patch.object(subprocess, "run", side_effect=subprocess.TimeoutExpired("validator", 30)) as run:
+            with self.assertRaisesRegex(AssertionError, "validator exceeded its 30s deadline"):
+                self.validate(ROOT)
+        self.assertEqual(run.call_args.kwargs["timeout"], 30)
+
     def validate(self, root):
-        return subprocess.run(
-            [sys.executable, str(ROOT / ".github/scripts/release_artifacts.py"),
-             "validate-manifest", "--manifest", "release/publish-artifacts.toml",
-             "--workspace-toml", "Cargo.toml"],
-            cwd=root, capture_output=True, text=True, check=False,
-        )
+        try:
+            return subprocess.run(
+                [sys.executable, str(ROOT / ".github/scripts/release_artifacts.py"),
+                 "validate-manifest", "--manifest", "release/publish-artifacts.toml",
+                 "--workspace-toml", "Cargo.toml"],
+                cwd=root, capture_output=True, text=True, check=False, timeout=30,
+            )
+        except subprocess.TimeoutExpired:
+            self.fail("publish manifest validator exceeded its 30s deadline")
 
     def test_workspace_and_publish_inventory_match(self):
         result = self.validate(ROOT)

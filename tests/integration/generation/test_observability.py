@@ -354,7 +354,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         checks = {c["id"]: c["run"] for c in consumer["preflight_checks"]}
         self.assertEqual(checks["observability-registry-only"], "python3 scripts/check_observability_release.py")
         self.assertEqual(checks["release-contract-sources"], "bash scripts/check_release_contract_sources.sh")
-        contract_runner = (ROOT / "scripts/check_release_contract_sources.sh").read_text()
+        contract_runner = (ROOT / "scripts/check_release_contract_sources.py").read_text()
         self.assertIn("requirements-generation.txt", contract_runner)
         self.assertIn("GeneratedObservabilityIntegration.test_release_contract_sources", contract_runner)
         self.assertEqual(checks["benchmark-pass"], "python3 scripts/benchmark/run_remote_gate.py")

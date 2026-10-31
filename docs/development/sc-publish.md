@@ -115,8 +115,10 @@ never report a skipped test as registry evidence.
 The consumer source-contract check uses `scripts/check_release_contract_sources.sh`
 to create a temporary virtual environment, install the existing generation pin
 from `requirements-generation.txt` (`jsonschema==4.26.0`), and run the contract
-test with that interpreter. It removes the environment on exit, including
-failure. This supplies nested generation checks on ephemeral hosted runners.
+test with that interpreter. Its Python runner reuses the command-ownership
+helper with 120-second venv, 300-second pip, and 120-second test deadlines.
+Cancellation unwinds owned child trees before removing the environment,
+including on failure. This supplies nested generation checks on ephemeral hosted runners.
 Workspace membership lists all six existing crates explicitly so the qualified
 kit's literal manifest validator retains the five publish crates and the
 unpublished SQLite crate.
@@ -135,7 +137,10 @@ session (bounded to 8 MiB) into unique local run directories under
 `target/benchmark-preflight/<source-sha>/` before remote cleanup. Canonical report
 pairs also remain in unique directories under the service account's
 `~/.local/state/sc-runtime/benchmark-preflight/<source-sha>/`, so a broken
-connection cannot erase a measured campaign. Logs retain the transfer payload
+connection cannot erase a measured campaign. All pairs are copied before any
+transport output; successful SSH results require canonical `PASS` or `MEASURED`
+campaign statuses. Negative and invalid-status evidence is retained while
+the bridge fails closed. Logs retain the transfer payload
 and report source SHA, status and artifact paths; publishing reviewed campaign
 evidence remains the operator procedure. The remote bootstrap prefers the
 operator-prepared `~/.cache/sc-runtime/benchmark-python/bin/python3`, falling

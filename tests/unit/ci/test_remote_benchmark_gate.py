@@ -23,6 +23,65 @@ SHA = "a" * 40
 
 
 class RemoteBenchmarkGateTests(unittest.TestCase):
+    def test_closed_output_retains_all_measured_pairs_after_checkout_cleanup(self):
+        class ClosedOutput:
+            def write(self, _value):
+                raise BrokenPipeError("SSH output closed")
+
+            def flush(self):
+                raise BrokenPipeError("SSH output closed")
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with tempfile.TemporaryDirectory(dir=root) as checkout:
+                source = Path(checkout)
+                reports = source / "site/reports/benchmark-monty"
+                reports.mkdir(parents=True)
+                for status in ("FAIL", "INCOMPLETE"):
+                    (reports / f"{status}.campaign.json").write_text(json.dumps({
+                        "git_sha": SHA, "report_html": f"{status}.html", "status": status,
+                    }))
+                    (reports / f"{status}.html").write_text(f"<html>{status}</html>")
+                with mock.patch.object(BRIDGE, "REMOTE_EVIDENCE_ROOT", root / "retained"), \
+                        contextlib.redirect_stdout(ClosedOutput()):
+                    with self.assertRaises(BrokenPipeError):
+                        BRIDGE.emit_reports(source, set(), SHA)
+            self.assertFalse(source.exists())
+            retained = list((root / "retained").glob("*/run-*/site/reports/benchmark-monty/*"))
+            self.assertEqual(len(retained), 4)
+            for report in retained:
+                self.assertTrue(report.read_text())
+
+    def test_success_requires_canonical_nonnegative_status_and_failures_keep_evidence(self):
+        missing = object()
+        for status in ("PASS", "MEASURED", "FAIL", "INCOMPLETE", "SKIPPED", "UNKNOWN", None, 7, missing):
+            for ssh_status in (0, 19):
+                with self.subTest(status=status, ssh_status=ssh_status), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    campaign = {"git_sha": SHA, "report_html": "fresh.html"}
+                    if status is not missing:
+                        campaign["status"] = status
+                    files = {
+                        "site/reports/benchmark-monty/fresh.campaign.json": json.dumps(campaign).encode(),
+                        "site/reports/benchmark-monty/fresh.html": b"<html>measurement</html>",
+                    }
+                    output = BRIDGE.ARTIFACT_PREFIX + json.dumps({
+                        "source_sha": SHA,
+                        "files": {name: base64.b64encode(content).decode() for name, content in files.items()},
+                    }) + "\n"
+                    owned = mock.Mock()
+                    owned.run.side_effect = lambda command, **_kwargs: (
+                        subprocess.CompletedProcess(command, 0, SHA if command[1] == "rev-parse" else "")
+                        if command[0] == "git" else subprocess.CompletedProcess(command, ssh_status, output, "")
+                    )
+                    with mock.patch.object(BRIDGE, "ROOT", root), \
+                            mock.patch.object(BRIDGE, "load_owned", return_value=owned), \
+                            contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                        expected = ssh_status or (0 if status in ("PASS", "MEASURED") else 1)
+                        self.assertEqual(BRIDGE.main(), expected)
+                    retained = list((root / "target/benchmark-preflight").glob("*/run-*/site/reports/benchmark-monty/*"))
+                    self.assertEqual(len(retained), 2, "negative and malformed status evidence must remain")
+
     def remote_owner(self, sha=SHA, dirty="", status=0, measured=False):
         owned = mock.Mock()
 
