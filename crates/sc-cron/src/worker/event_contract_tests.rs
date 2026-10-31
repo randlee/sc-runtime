@@ -300,7 +300,7 @@ fn python_resolved_target_carries_the_same_arc_through_run_target() {
     let row = scheduler.start(spec).unwrap();
     let job: Arc<dyn crate::Job> = Arc::new(Idle);
     let before = Arc::strong_count(&logger);
-    let target = resolve(&job, &row, &logger).unwrap();
+    let target = resolve(&job, &row, &logger, None).unwrap();
     assert_eq!(Arc::strong_count(&logger), before + 1);
     let future = run_target(target, clock, &row, std::time::Instant::now());
     assert_eq!(Arc::strong_count(&logger), before + 1);
@@ -366,7 +366,7 @@ async fn feed_join_panic_emits_origin_then_one_recorded_terminal_and_drops_guard
     recorder.clear();
     assert!(
         worker
-            .monty_feed_from_join(0, result, Some(guard))
+            .monty_feed_from_join(0, result, Some(guard), None)
             .await
             .is_none()
     );

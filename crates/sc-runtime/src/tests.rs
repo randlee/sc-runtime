@@ -314,8 +314,15 @@ async fn shutdown_drain_is_bounded() {
     let mut control = RunControl::detached(Some(ready_tx), Some(stop_rx));
     control.drain = Duration::from_millis(200);
     let started_for_route = Arc::clone(&started);
+    let logger = Arc::new(sc_observability_types::RecordingCanonicalLog::new(
+        sc_observability_types::ServiceName::new("drain-regression").expect("service"),
+    ));
+    let injected = logger.clone();
+    let cancelled = Arc::new(AtomicBool::new(false));
+    let cancelled_for_route = cancelled.clone();
     let task = tokio::spawn(async move {
         Daemon::builder(&app(), &config)
+            .logger(injected)
             .stores(|| async { Ok(()) })
             .routes(move |()| {
                 let started_for_route = Arc::clone(&started_for_route);
@@ -323,7 +330,9 @@ async fn shutdown_drain_is_bounded() {
                     "/hang",
                     axum::routing::get(move || {
                         let started_for_route = Arc::clone(&started_for_route);
+                        let cancelled = cancelled_for_route.clone();
                         async move {
+                            let _cancelled = CancelOnDrop(cancelled);
                             started_for_route.store(true, Ordering::SeqCst);
                             std::future::pending::<&'static str>().await
                         }
@@ -336,22 +345,56 @@ async fn shutdown_drain_is_bounded() {
     });
     let endpoint = ready_rx.await.expect("daemon ready");
     let client = sc_transport::Client::new(endpoint).expect("client");
-    let request = tokio::spawn(async move {
-        let _ = client.get::<serde_json::Value>("/hang").await;
-    });
-    for _ in 0..100 {
-        if started.load(Ordering::SeqCst) {
-            break;
+    let request = tokio::spawn(async move { client.get::<serde_json::Value>("/hang").await });
+    tokio::time::timeout(Duration::from_secs(2), async {
+        while !started.load(Ordering::SeqCst) {
+            tokio::task::yield_now().await;
         }
-        tokio::time::sleep(Duration::from_millis(10)).await;
-    }
-    assert!(started.load(Ordering::SeqCst), "handler never started");
+    })
+    .await
+    .expect("handler never started");
     let _ = stop_tx.send(());
     let joined = tokio::time::timeout(Duration::from_secs(2), task)
         .await
         .expect("drain was not bounded");
     joined.expect("join").expect("shutdown");
-    request.abort();
+    let body = request
+        .await
+        .expect("request joined")
+        .expect("timeout envelope");
+    assert_eq!(body["error"]["code"], "RUNTIME.DRAIN_TIMEOUT");
+    assert!(
+        cancelled.load(Ordering::SeqCst),
+        "handler future must be dropped"
+    );
+    let events = logger.events();
+    assert_eq!(events.len(), 2);
+    assert_eq!(events[0].action.as_str(), "request.start");
+    assert_eq!(events[1].action.as_str(), "request.error");
+    assert_eq!(events[0].request_id, events[1].request_id);
+    assert_eq!(events[1].fields["status"], 503);
+    assert_eq!(events[1].fields["deadline_remaining_ms"], 0);
+    assert_eq!(
+        events[1].outcome.as_ref().expect("outcome").as_str(),
+        "timeout"
+    );
+    assert_eq!(
+        events[1]
+            .diagnostic
+            .as_ref()
+            .expect("diagnostic")
+            .code
+            .as_str(),
+        "RUNTIME.DRAIN_TIMEOUT"
+    );
+}
+
+struct CancelOnDrop(Arc<AtomicBool>);
+
+impl Drop for CancelOnDrop {
+    fn drop(&mut self) {
+        self.0.store(true, Ordering::SeqCst);
+    }
 }
 
 #[test]

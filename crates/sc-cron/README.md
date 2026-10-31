@@ -43,9 +43,11 @@ other workspace crate.
   database file of its own (`PRAGMA user_version` = `SCHEMA_VERSION`, 1).
   The complete first-release schema includes canonical `hook_environment`.
   Incompatible development tables are rejected with recreate guidance.
-  `list_active` skips a row that does not decode, with a canonical diagnostic,
-  so the other schedules keep running; `get` on that row still returns the
-  `Corrupt` error.
+  `list_active` skips a row that does not decode and emits the canonical
+  `cron.store` / `row.corrupt` event, so other schedules keep running; `get`
+  on that row still returns the `Corrupt` error. Observing the event requires
+  a logger-aware store/open construction; legacy constructors install a fixed
+  Noop logger.
 - **Injected time and randomness**, through `Clock` and `JitterSource`.
 
 ## Example

@@ -495,8 +495,12 @@ The generation portability repair uses the tracked `Justfile` spelling, makes
 test imports unambiguous, and selects the existing development bridge for both
 live comparison paths while retaining every recipe and the unequal-fixture
 control. The complete isolated-import generation suite passes 77 tests locally.
-This is a validated implementation checkpoint. The sprint remains in progress
-pending the parent's exact final B15 correlation artifact and independent QA.
+This is a preserved validated implementation checkpoint. The final B15 artifact
+e9d19647851a0a04a69214b1c4fa1945468c05a4 is now consumed through a forward-only
+merge. Its private occurrence correlation and validated `MontyHostName` are
+retained alongside B17's environment snapshot, redaction and original deadline.
+The combined source is undergoing fresh local and hosted validation; the sprint
+remains in progress pending that proof and independent QA.
 The validated B15/B16 parent artifact e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437
 is consumed with pure event factories and direct emission by worker/due owners.
 The B17 persistence observation helper now constructs a bounded pair of events;

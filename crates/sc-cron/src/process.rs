@@ -343,7 +343,17 @@ pub async fn supervise_with_logger<F: Future<Output = ()>>(
     expiry: F,
     logger: sc_observability_types::SharedCanonicalLog,
 ) -> Result<Captured, crate::CronError> {
-    supervise_inner(spec, cap, expiry, logger)
+    supervise_with_correlation(spec, cap, expiry, logger, None).await
+}
+
+pub(crate) async fn supervise_with_correlation<F: Future<Output = ()>>(
+    spec: &ChildSpec<'_>,
+    cap: usize,
+    expiry: F,
+    logger: sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
+) -> Result<Captured, crate::CronError> {
+    supervise_inner(spec, cap, expiry, logger, correlation)
         .await
         .map_err(|error| crate::CronError::HookFailed(error.to_string()))
 }
@@ -353,6 +363,7 @@ async fn supervise_inner(
     cap: usize,
     expiry: impl Future<Output = ()>,
     logger: sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
 ) -> io::Result<Captured> {
     let mut command = CommandWrap::with_new(spec.program, |command| {
         command
@@ -409,11 +420,11 @@ async fn supervise_inner(
         // group or job may be left, having let go of the pipes: end it, so
         // nothing outlives the run. An empty group is fine (nothing to kill).
         if let Err(error) = tree.child.start_kill() {
-            kill_failed(&logger, tree.child.id(), &error);
+            kill_failed(&logger, correlation.clone(), tree.child.id(), &error);
         }
         Some(status)
     } else {
-        reap_killed(&mut tree, &logger).await?;
+        reap_killed(&mut tree, &logger, correlation).await?;
         None
     };
     Ok(Captured {
@@ -432,8 +443,9 @@ async fn supervise_inner(
 async fn reap_killed(
     tree: &mut Tree,
     logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
 ) -> io::Result<()> {
-    reap_killed_with_timer(tree, logger, start_reap_timer).await
+    reap_killed_with_timer(tree, logger, correlation, start_reap_timer).await
 }
 
 fn start_reap_timer(bound: tokio::sync::oneshot::Sender<()>) -> io::Result<()> {
@@ -449,9 +461,10 @@ fn start_reap_timer(bound: tokio::sync::oneshot::Sender<()>) -> io::Result<()> {
 async fn reap_killed_with_timer(
     tree: &mut Tree,
     logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
     start_timer: impl FnOnce(tokio::sync::oneshot::Sender<()>) -> io::Result<()>,
 ) -> io::Result<()> {
-    try_kill(tree, logger);
+    try_kill(tree, logger, correlation.clone());
     let (bound, bounded) = tokio::sync::oneshot::channel::<()>();
     // Fail closed immediately when no real-time bound can be established.
     // The caller drops Tree on this error, retrying group cleanup. Do not
@@ -459,7 +472,7 @@ async fn reap_killed_with_timer(
     start_timer(bound).map_err(|error| {
         io::Error::new(error.kind(), format!("reap timer could not start: {error}"))
     })?;
-    await_reap(tree, logger, async {
+    await_reap(tree, logger, correlation, async {
         let _ = bounded.await;
     })
     .await;
@@ -469,6 +482,7 @@ async fn reap_killed_with_timer(
 async fn await_reap(
     tree: &mut Tree,
     logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
     bounded: impl Future<Output = ()>,
 ) {
     tokio::select! {
@@ -478,20 +492,26 @@ async fn await_reap(
             let mut fields = serde_json::Map::new();
             fields.insert("deadline_remaining_ms".into(), 0.into());
             if let Some(pid) = tree.child.id() { fields.insert("pid".into(), pid.into()); }
-            if let Some(event) = crate::component_event(logger.service_name().clone(), "cron.process", "child.reap_timeout",
-                sc_observability_types::Level::Warn, "timeout", Some("CHILD_REAP_TIMEOUT"), fields) { let _ = logger.emit(event); }
+            if let Some(mut event) = crate::component_event(logger.service_name().clone(), "cron.process", "child.reap_timeout",
+                sc_observability_types::Level::Warn, "timeout", Some("CHILD_REAP_TIMEOUT"), fields) { event.correlation_id = correlation.clone();
+                let _ = logger.emit(event); }
         }
     }
 }
 
-fn try_kill(tree: &mut Tree, logger: &sc_observability_types::SharedCanonicalLog) {
+fn try_kill(
+    tree: &mut Tree,
+    logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
+) {
     if let Err(error) = tree.child.start_kill() {
-        kill_failed(logger, tree.child.id(), &error);
+        kill_failed(logger, correlation, tree.child.id(), &error);
     }
 }
 
 fn kill_failed(
     logger: &sc_observability_types::SharedCanonicalLog,
+    correlation: crate::worker::RunCorrelation,
     pid: Option<u32>,
     error: &io::Error,
 ) {
@@ -500,7 +520,7 @@ fn kill_failed(
     if let Some(pid) = pid {
         fields.insert("pid".into(), pid.into());
     }
-    if let Some(event) = crate::component_event(
+    if let Some(mut event) = crate::component_event(
         logger.service_name().clone(),
         "cron.process",
         "child.kill_failed",
@@ -509,6 +529,7 @@ fn kill_failed(
         Some("CHILD_KILL_FAILED"),
         fields,
     ) {
+        event.correlation_id = correlation.clone();
         let _ = logger.emit(event);
     }
 }
@@ -552,7 +573,7 @@ pub mod testing {
             child: Box::new(Unreapable),
             reaped: false,
         };
-        reap_killed_with_timer(&mut tree, &logger, |_| {
+        reap_killed_with_timer(&mut tree, &logger, None, |_| {
             Err(io::Error::other("injected timer-start failure"))
         })
         .await
@@ -565,8 +586,8 @@ pub mod testing {
             child: Box::new(Unreapable),
             reaped: false,
         };
-        try_kill(&mut tree, &logger);
-        await_reap(&mut tree, &logger, std::future::ready(())).await;
+        try_kill(&mut tree, &logger, None);
+        await_reap(&mut tree, &logger, None, std::future::ready(())).await;
         tree.reaped
     }
 }

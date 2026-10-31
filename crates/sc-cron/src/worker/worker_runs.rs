@@ -94,16 +94,18 @@ where
                 index += 1;
                 continue;
             };
-            if let Some(event) = detail_event(
+            let correlation = run.correlation.clone();
+            if let Some(mut event) = detail_event(
                 self.coord.logger.service_name().clone(),
                 &self.slots[index].schedule,
                 Event::RunTimedOut,
                 "run deadline passed",
             ) {
+                event.correlation_id = correlation.clone();
                 let _ = self.coord.logger.emit(event);
             };
             let result = await_aborted(run).await;
-            if !self.complete(index, result).await {
+            if !self.complete(index, result, correlation).await {
                 index += 1;
             }
         }
@@ -124,16 +126,18 @@ where
                 index += 1;
                 continue;
             };
-            if let Some(event) = detail_event(
+            let correlation = run.correlation.clone();
+            if let Some(mut event) = detail_event(
                 self.coord.logger.service_name().clone(),
                 &self.slots[index].schedule,
                 Event::RunTimedOut,
                 "shutdown deadline passed while a Monty feed is in flight",
             ) {
+                event.correlation_id = correlation.clone();
                 let _ = self.coord.logger.emit(event);
             };
             let result = await_aborted(run).await;
-            if !self.complete(index, result).await {
+            if !self.complete(index, result, correlation).await {
                 index += 1;
             }
         }
@@ -145,28 +149,39 @@ where
         finished: Finished,
         guard: Option<MontyFeedGuard>,
     ) {
+        let correlation = self
+            .slots
+            .get(index)
+            .and_then(|slot| slot.run.as_ref())
+            .and_then(|run| run.correlation.clone());
         if let Some(slot) = self.slots.get_mut(index) {
             slot.run = None;
         }
         match finished {
             Finished::Report(result) => {
                 drop(guard);
-                self.complete(index, result).await;
+                self.complete(index, result, correlation).await;
             }
             #[cfg(feature = "monty")]
-            Finished::Monty(result) => self.finish_monty(index, result, guard).await,
+            Finished::Monty(result) => self.finish_monty(index, result, guard, correlation).await,
         }
     }
 
     #[cfg(feature = "monty")]
-    pub(super) fn launch_monty(&mut self, index: usize) {
+    pub(super) fn launch_monty(&mut self, index: usize, correlation: RunCorrelation) {
         let name = self
             .slots
             .get(index)
             .map(|slot| slot.schedule.spec.name.clone());
         let session = name.as_ref().and_then(|name| self.coord.take_repl(name));
         let guard = MontyFeedGuard::enter(&self.coord);
-        self.spawn_feed(index, crate::monty_run::MontyPhase::Stop, session, guard);
+        self.spawn_feed(
+            index,
+            crate::monty_run::MontyPhase::Stop,
+            session,
+            guard,
+            correlation,
+        );
     }
 
     #[cfg(feature = "monty")]
@@ -176,17 +191,16 @@ where
         phase: crate::monty_run::MontyPhase,
         session: Option<crate::monty_run::MontySession>,
         guard: MontyFeedGuard,
+        correlation: RunCorrelation,
     ) {
         let Some(slot) = self.slots.get(index) else {
             drop(guard);
             return;
         };
-        let HookTarget::Monty { source } = &slot.schedule.spec.hook else {
+        let HookTarget::Monty { source } = slot.schedule.spec.hook.clone() else {
             drop(guard);
             return;
         };
-        let source = source.clone();
-        let generation = slot.schedule.generation;
         let schedule = slot.schedule.clone();
         let clock = Arc::clone(&self.clock);
         let monotonic = self.clock.monotonic_now();
@@ -204,8 +218,8 @@ where
         };
         let environment_host = Arc::clone(&self.environment);
         let hosts = Arc::clone(&self.hosts);
-        let launching = phase == crate::monty_run::MontyPhase::Stop;
         let logger = Arc::clone(&self.coord.logger);
+        let feed_correlation = correlation.clone();
         let handle = tokio::spawn(async move {
             let environment = match snapshot {
                 Some(environment) => environment,
@@ -226,10 +240,11 @@ where
                 clock.as_ref(),
                 crate::monty_run::FeedLaunch {
                     logger,
+                    correlation: feed_correlation,
                     session,
                     source,
                     phase,
-                    generation,
+                    generation: schedule.generation,
                     name: schedule.spec.name.clone(),
                     payload: schedule.spec.payload.clone(),
                     timeout: schedule.spec.timeout,
@@ -240,7 +255,14 @@ where
             )
             .await
         });
-        self.install_feed(index, RunHandle::Monty(handle), deadline, guard, launching);
+        self.install_feed(
+            index,
+            RunHandle::Monty(handle),
+            deadline,
+            guard,
+            phase == crate::monty_run::MontyPhase::Stop,
+            correlation,
+        );
     }
 
     #[cfg(feature = "monty")]
@@ -251,22 +273,25 @@ where
         deadline: Instant,
         guard: MontyFeedGuard,
         launching: bool,
+        correlation: RunCorrelation,
     ) {
         let Some(slot) = self.slots.get_mut(index) else {
             drop(guard);
             return;
         };
         if launching
-            && let Some(event) = event_record(
+            && let Some(mut event) = event_record(
                 self.coord.logger.service_name().clone(),
                 Event::RunLaunched,
                 Some(&slot.schedule),
                 serde_json::json!({"deadline_remaining_ms": deadline.saturating_duration_since(self.clock.monotonic_now()).as_millis() as u64}),
             )
         {
+            event.correlation_id = correlation.clone();
             let _ = self.coord.logger.emit(event);
         }
         slot.run = Some(InFlight {
+            correlation,
             handle: Some(handle),
             deadline,
             guard: Some(guard),
@@ -279,11 +304,16 @@ where
         index: usize,
         result: Result<crate::monty_run::FeedDone, JoinError>,
         guard: Option<MontyFeedGuard>,
+        correlation: RunCorrelation,
     ) {
-        let Some((done, guard)) = self.monty_feed_from_join(index, result, guard).await else {
+        let Some((done, guard)) = self
+            .monty_feed_from_join(index, result, guard, correlation.clone())
+            .await
+        else {
             return;
         };
-        self.apply_monty_feed_done(index, done, guard).await;
+        self.apply_monty_feed_done(index, done, guard, correlation)
+            .await;
     }
 
     #[cfg(feature = "monty")]
@@ -292,6 +322,7 @@ where
         index: usize,
         result: Result<crate::monty_run::FeedDone, JoinError>,
         guard: Option<MontyFeedGuard>,
+        correlation: RunCorrelation,
     ) -> Option<(crate::monty_run::FeedDone, Option<MontyFeedGuard>)> {
         match result {
             Ok(done) => Some((done, guard)),
@@ -299,12 +330,13 @@ where
                 let message = panic_message(error);
                 if let Some(slot) = self.slots.get(index) {
                     let schedule = slot.schedule.clone();
-                    if let Some(event) = event_record(
+                    if let Some(mut event) = event_record(
                         self.coord.logger.service_name().clone(),
                         Event::FeedJoinFailed,
                         Some(&schedule),
                         serde_json::json!({"error": message}),
                     ) {
+                        event.correlation_id = correlation.clone();
                         let _ = self.coord.logger.emit(event);
                     };
                     self.record(
@@ -312,6 +344,7 @@ where
                         RunOutcome::Failed(format!(
                             "{CODE_FEED_JOIN_FAILED}: monty feed task panicked: {message}; {FEED_JOIN_RECOVERY}"
                         )),
+                        correlation.clone(),
                     )
                     .await;
                 }
@@ -321,13 +354,14 @@ where
             }
             Err(error) => {
                 if let Some(slot) = self.slots.get(index)
-                    && let Some(event) = detail_event(
+                    && let Some(mut event) = detail_event(
                         self.coord.logger.service_name().clone(),
                         &slot.schedule,
                         Event::ScheduleCancelled,
                         &error.to_string(),
                     )
                 {
+                    event.correlation_id = correlation.clone();
                     let _ = self.coord.logger.emit(event);
                 }
                 drop(guard);
@@ -342,6 +376,7 @@ where
         index: usize,
         done: crate::monty_run::FeedDone,
         guard: Option<MontyFeedGuard>,
+        correlation: RunCorrelation,
     ) {
         use crate::monty_run::{FeedResult, MontyPhase};
         let Some(slot) = self.slots.get(index) else {
@@ -355,13 +390,13 @@ where
         match done.result {
             FeedResult::Disable(reason) => {
                 drop(done.session);
-                self.disable(&schedule, &reason).await;
+                self.disable(&schedule, &reason, correlation.clone()).await;
                 drop(guard);
                 self.remove_or_settle_monty_slot(index, &queued).await;
             }
             FeedResult::Delete(reason) => {
                 drop(done.session);
-                if !self.end(&schedule, &reason).await {
+                if !self.end(&schedule, &reason, correlation.clone()).await {
                     self.rebuild_later();
                 }
                 drop(guard);
@@ -375,11 +410,17 @@ where
             FeedResult::Continue => {
                 let tick_guard = MontyFeedGuard::enter(&self.coord);
                 drop(guard);
-                self.spawn_feed(index, MontyPhase::Tick, done.session, tick_guard);
+                self.spawn_feed(
+                    index,
+                    MontyPhase::Tick,
+                    done.session,
+                    tick_guard,
+                    correlation.clone(),
+                );
             }
             FeedResult::Outcome(outcome) => {
                 let keep = matches!(outcome, RunOutcome::Ok) && !interrupt;
-                self.record(&schedule, outcome).await;
+                self.record(&schedule, outcome, correlation.clone()).await;
                 if keep {
                     if let Some(session) = done.session {
                         self.coord.store_repl(schedule.spec.name.clone(), session);

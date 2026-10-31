@@ -120,6 +120,7 @@ impl fmt::Display for StopReplyError {
 pub(crate) struct FeedLaunch {
     /// Repl from the previous feed of this generation, if any.
     pub(crate) logger: sc_observability_types::SharedCanonicalLog,
+    pub(crate) correlation: crate::worker::RunCorrelation,
     pub(crate) session: Option<MontySession>,
     /// Hook source.
     pub(crate) source: String,
@@ -150,6 +151,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
 ) -> FeedDone {
     let FeedLaunch {
         logger,
+        correlation,
         session,
         source,
         phase,
@@ -191,6 +193,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
             run_deadline,
             logger,
             environment,
+            correlation,
         )
     })
     .await
@@ -233,6 +236,7 @@ pub(crate) fn execute_feed(
         run_deadline,
         crate::noop_logger(),
         Arc::new(EnvironmentSnapshot::default()),
+        None,
     )
 }
 
@@ -252,6 +256,7 @@ pub(crate) fn execute_feed_with_logger(
     run_deadline: Instant,
     logger: sc_observability_types::SharedCanonicalLog,
     environment: Arc<EnvironmentSnapshot>,
+    correlation: crate::worker::RunCorrelation,
 ) -> FeedDone {
     let (mut session, call_budget) = match open_session(
         session,
@@ -277,7 +282,7 @@ pub(crate) fn execute_feed_with_logger(
         hosts,
         run_deadline,
         &logger,
-        &environment,
+        (&environment, &correlation),
     )
 }
 
@@ -332,8 +337,9 @@ fn resume_started_feed(
     hosts: &MontyHostRegistry,
     run_deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
-    environment: &EnvironmentSnapshot,
+    context: (&EnvironmentSnapshot, &crate::worker::RunCorrelation),
 ) -> FeedDone {
+    let (environment, correlation) = context;
     let stage = FeedStage::from_phase(phase);
     let MontySession {
         repl,
@@ -358,6 +364,7 @@ fn resume_started_feed(
         run_deadline,
         logger,
         environment,
+        correlation,
     ) {
         Ok((repl, value)) => finish_phase(phase, generation, repl, &value, snapshot, deadline),
         Err(done) => done,
@@ -377,6 +384,7 @@ fn drive_progress(
     deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
     environment: &EnvironmentSnapshot,
+    correlation: &crate::worker::RunCorrelation,
 ) -> Result<(MontyRepl, MontyObject), FeedDone> {
     loop {
         if Instant::now() >= deadline {
@@ -400,6 +408,7 @@ fn drive_progress(
                     deadline,
                     logger,
                     environment,
+                    correlation,
                 )?
             }
             ReplProgress::OsCall(call) => resume_os(call, stage, deadline, environment)?,
@@ -493,6 +502,7 @@ fn compile(
         deadline,
         logger,
         &environment,
+        &None,
     )?;
     if !repl.has_function(STOP_FN) || !repl.has_function(TICK_FN) {
         return Err(failed_hook(format!(
@@ -628,7 +638,8 @@ fn host_call(
     )
     .map_err(|_| "invalid schedule context")?;
     Ok(MontyHostCall {
-        name: call.function_name.clone(),
+        name: crate::MontyHostName::new(call.function_name.clone())
+            .map_err(|_| "invalid host name")?,
         args,
         kwargs,
         schedule,
@@ -653,19 +664,23 @@ fn resume_host(
     deadline: Instant,
     logger: &sc_observability_types::SharedCanonicalLog,
     environment: &EnvironmentSnapshot,
+    correlation: &crate::worker::RunCorrelation,
 ) -> Result<ReplProgress, FeedDone> {
     if Instant::now() >= deadline {
         return Err(timed_out());
     }
     let context = host_call(&call, phase, hook, deadline).map_err(|why| denied(stage, why))?;
-    let result = hosts.invoke(&context, logger, environment);
+    let result = hosts.invoke(&context, logger, environment, correlation);
     if Instant::now() >= deadline {
         return Err(timed_out());
     }
     let value = match result {
         Ok(value) => value,
         Err(HostDispatchError::Undefined) => {
-            return Err(undefined_name(stage, &environment.redact(&context.name)));
+            return Err(undefined_name(
+                stage,
+                &environment.redact(context.name.as_str()),
+            ));
         }
         Err(HostDispatchError::Denied(why)) => return Err(denied(stage, why)),
         Err(HostDispatchError::Handler(error)) => {

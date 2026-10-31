@@ -270,3 +270,12 @@ observability crate.
   test.
 - No `sc-observability-otlp` in the template; OTel remains opt-in on the
   consumer `daemon` crate.
+
+Cron invocation correlation uses the logical selected occurrence: numeric schedule
+ID, generation and due timestamp form `cron-s<ID>-g<GEN>-t<SECONDS>-n<NANOSECONDS>`.
+The private launch/lifetime state captures it before next-run advancement and
+preserves it across Python supervision, Monty stop/tick feeds and CLI cleanup.
+It is canonical top-level `correlation_id` only. It identifies occurrences within
+one scheduler/store domain, not globally unique attempts. Non-run lifecycle,
+reload, store, jitter and skipped pre-launch events have no correlation ID.
+Legacy standalone Python/process entrypoints also retain `None`.

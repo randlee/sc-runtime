@@ -44,20 +44,22 @@ pub(crate) fn run_cli(
     deadline: Instant,
     logger: &SharedCanonicalLog,
     environment: &crate::environment::EnvironmentSnapshot,
+    correlation: &crate::worker::RunCorrelation,
 ) -> Result<ComposeRunResult, ComposeHostError> {
     if Instant::now() >= deadline {
         return Err(ComposeHostError::TimedOut);
     }
+    let mut child = spawn_cli(program, cwd, args, environment)?;
     let spawn_error = |source| ComposeHostError::Spawn {
         program: program.display().to_string(),
         source,
     };
-    let mut child = spawn_cli(program, cwd, args, environment)?;
     let captures = capture_pipes(&mut *child.0).map_err(|source| {
         reap_after_kill(
             &mut *child.0,
             Instant::now() + crate::process::REAP_AFTER_KILL,
             logger,
+            correlation,
         );
         spawn_error(source)
     })?;
@@ -68,6 +70,7 @@ pub(crate) fn run_cli(
                 &mut *child.0,
                 Instant::now() + crate::process::REAP_AFTER_KILL,
                 logger,
+                correlation,
             );
             return Err(spawn_error(source));
         }
@@ -77,19 +80,22 @@ pub(crate) fn run_cli(
             &mut *child.0,
             Instant::now() + crate::process::REAP_AFTER_KILL,
             logger,
+            correlation,
         );
         return Err(ComposeHostError::TimedOut);
     }
-    let output =
-        collect_pipes(captures, deadline, logger).map_err(|source| ComposeHostError::Output {
+    let output = collect_pipes(captures, deadline, logger, correlation).map_err(|source| {
+        ComposeHostError::Output {
             program: program.display().to_string(),
             source,
-        });
+        }
+    });
     // Kill remaining members even when the leader exited successfully.
     reap_after_kill(
         &mut *child.0,
         Instant::now() + crate::process::REAP_AFTER_KILL,
         logger,
+        correlation,
     );
     if Instant::now() >= deadline {
         return Err(ComposeHostError::TimedOut);
@@ -163,17 +169,19 @@ fn collect_pipes(
     pipes: (PipeReceiver, PipeReceiver),
     deadline: Instant,
     logger: &SharedCanonicalLog,
+    correlation: &crate::worker::RunCorrelation,
 ) -> io::Result<(String, String)> {
     // One absolute collection bound covers both streams and still respects the row.
     let bound = deadline.min(Instant::now() + crate::process::REAP_AFTER_KILL);
-    let stdout = read_pipe(pipes.0, bound, logger)?;
-    let stderr = read_pipe(pipes.1, bound, logger)?;
+    let stdout = read_pipe(pipes.0, bound, logger, correlation)?;
+    let stderr = read_pipe(pipes.1, bound, logger, correlation)?;
     Ok((stdout, stderr))
 }
 fn read_pipe(
     receiver: PipeReceiver,
     deadline: Instant,
     logger: &SharedCanonicalLog,
+    correlation: &crate::worker::RunCorrelation,
 ) -> io::Result<String> {
     let captured = match receiver.recv_timeout(deadline.saturating_duration_since(Instant::now())) {
         Ok(result) => result?,
@@ -181,7 +189,7 @@ fn read_pipe(
             return Err(io::Error::other("CLI pipe reader disconnected"));
         }
         Err(mpsc::RecvTimeoutError::Timeout) => {
-            if let Some(event) = crate::component_event(
+            if let Some(mut event) = crate::component_event(
                 logger.service_name().clone(),
                 "cron.monty.compose",
                 "pipe.drain_timeout",
@@ -193,6 +201,7 @@ fn read_pipe(
                     .cloned()
                     .unwrap_or_default(),
             ) {
+                event.correlation_id = correlation.clone();
                 let _ = logger.emit(event);
             }
             return Err(io::Error::other("CLI pipe drain deadline expired"));
@@ -216,10 +225,15 @@ fn wait_until(child: &mut dyn ChildWrapper, deadline: Instant) -> io::Result<Opt
         thread::park_timeout(left.min(POLL));
     }
 }
-fn reap_after_kill(child: &mut dyn ChildWrapper, deadline: Instant, logger: &SharedCanonicalLog) {
+fn reap_after_kill(
+    child: &mut dyn ChildWrapper,
+    deadline: Instant,
+    logger: &SharedCanonicalLog,
+    correlation: &crate::worker::RunCorrelation,
+) {
     let _ = child.start_kill();
     if !matches!(wait_until(child, deadline), Ok(Some(_)))
-        && let Some(event) = crate::component_event(
+        && let Some(mut event) = crate::component_event(
             logger.service_name().clone(),
             "cron.monty.compose",
             "child.kill_timeout",
@@ -232,6 +246,7 @@ fn reap_after_kill(child: &mut dyn ChildWrapper, deadline: Instant, logger: &Sha
                 .unwrap_or_default(),
         )
     {
+        event.correlation_id = correlation.clone();
         let _ = logger.emit(event);
     }
 }
@@ -277,7 +292,7 @@ mod tests {
         ));
         let logger: SharedCanonicalLog = recording.clone();
         let mut child = Unreapable { kills: 0 };
-        reap_after_kill(&mut child, Instant::now(), &logger);
+        reap_after_kill(&mut child, Instant::now(), &logger, &None);
         assert_eq!(child.kills, 1);
         let events = recording.events();
         assert_eq!(events.len(), 1);
@@ -303,7 +318,7 @@ mod tests {
         ));
         let logger: SharedCanonicalLog = rejecting.clone();
         let mut child = Unreapable { kills: 0 };
-        reap_after_kill(&mut child, Instant::now(), &logger);
+        reap_after_kill(&mut child, Instant::now(), &logger, &None);
         assert_eq!(child.kills, 1);
         assert_eq!(rejecting.attempts(), 1);
     }
@@ -353,6 +368,7 @@ mod tests {
             &mut *child.0,
             Instant::now() + crate::process::REAP_AFTER_KILL,
             &logger,
+            &None,
         );
         assert!(child.0.try_wait().expect("reaped child").is_some());
         assert!(!dir.path().join("finished").exists());

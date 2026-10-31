@@ -141,7 +141,7 @@ Feature `monty` exports `MontyHostRegistry`, `MontyHostHandler`, and the owned
 JSON-shaped `MontyHostCall`. `MontyHostHandler` is `Send + Sync` and has one
 synchronous method returning `Result<serde_json::Value, CronError>`; a blanket
 implementation makes a matching closure usable without a wrapper type. A call
-contains its registered name, positional JSON arguments, keyword JSON
+contains its registered `MontyHostName`, positional JSON arguments, keyword JSON
 arguments, schedule name, hook phase, and row deadline. b-17 adds read-only
 access to that run's resolved environment snapshot without changing handler
 registration or allowing process-global reads.
@@ -155,6 +155,10 @@ pub trait MontyHostHandler: Send + Sync {
 }
 // Matching closures implement Fn(&MontyHostCall) -> Result<Value, CronError>.
 ```
+
+`MontyHostName::new` validates a non-reserved identifier and `as_str()` borrows
+it. Registry keys and `MontyHostCall.name` use this type; `register(name, handler)`
+still accepts strings and JSON arguments/results are unchanged.
 
 `MontyHostRegistry::new()` is empty. Its consuming `register(name, handler)`
 builder returns `CronError::InvalidSpec` for a non-identifier, `__hook`,

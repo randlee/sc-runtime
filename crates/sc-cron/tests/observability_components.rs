@@ -502,6 +502,31 @@ print('rendered', flush=True)
                 "COMPOSE_PIPE_DRAIN_TIMEOUT",
             );
             assert_eq!(events[0].fields["deadline_remaining_ms"], 0);
+            let all = recording.events();
+            let launch = all
+                .iter()
+                .find(|event| event.action.as_str() == "due.launched")
+                .unwrap();
+            let finish = all
+                .iter()
+                .find(|event| event.action.as_str() == "due.finished")
+                .unwrap();
+            assert!(launch.correlation_id.is_some());
+            assert_eq!(launch.correlation_id, events[0].correlation_id);
+            assert_eq!(launch.correlation_id, finish.correlation_id);
+            assert!(
+                all.iter()
+                    .find(|event| event.action.as_str() == "logger.attached")
+                    .unwrap()
+                    .correlation_id
+                    .is_none()
+            );
+            for event in all {
+                assert!(
+                    !event.fields.contains_key("run_id")
+                        && !event.fields.contains_key("correlation_id")
+                );
+            }
         }
     }
 }

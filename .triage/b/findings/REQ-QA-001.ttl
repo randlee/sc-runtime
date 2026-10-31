@@ -8,3 +8,12 @@
   qa:remedy "Add REQ-RT-0006 to the sprint requirements list and trace the logger-aware fixture helper to its fixture isolation/error contract." ;
   qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-15:REQ-QA-001> qa:sprint "b-15" ;
+  qa:severity "Blocking" ;
+  qa:reviewer "req-qa" ;
+  qa:location "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md:12" ;
+  qa:issue "The sprint changes/validates the sc-cron boundary and makes boundary:BOUNDARY-sc-cron an acceptance gate, but its requirements list omits REQ-RUN-0005, which governs the boundary manifest and allowed crate/dependency edges." ;
+  qa:remedy "Add REQ-RUN-0005 to the sprint requirements list and explicitly trace the boundary/type-only edge checks to that requirement." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

@@ -786,6 +786,7 @@ where
         row: &Schedule,
         report: Report,
         next: Option<DateTime<Utc>>,
+        correlation: crate::worker::RunCorrelation,
     ) -> DueRun {
         record_due(
             Arc::clone(&self.core),
@@ -793,6 +794,7 @@ where
             row,
             report,
             next,
+            correlation,
         )
         .await
     }

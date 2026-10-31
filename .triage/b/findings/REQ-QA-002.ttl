@@ -8,3 +8,12 @@
   qa:remedy "Synchronize the b-14 status in docs/project-plan.md with the authoritative sprint document, or document the repository's distinct meaning for the two status fields." ;
   qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-15:REQ-QA-002> qa:sprint "b-15" ;
+  qa:severity "Blocking" ;
+  qa:reviewer "req-qa" ;
+  qa:location "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md:12" ;
+  qa:issue "The sprint adds a typed custom event taxonomy and emission mapping, but omits NFR-RUN-0004. That active requirement governs code-adding sprint deliverables and requires the plan to name a standard tool considered and why it does not cover the job; the sprint plan does not provide that rationale, so this obligation is not verifiable." ;
+  qa:remedy "Add NFR-RUN-0004 to the requirements list and document why canonical observability types alone do not supply the cron-specific event/action/outcome mapping, or otherwise revise the deliverable to use an adequate standard tool." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

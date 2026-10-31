@@ -287,9 +287,31 @@ fn assert_envelope(log: &RecordingCanonicalLog) {
         assert!(!event.fields.contains_key("code"));
         assert!(event.trace.is_none() && event.state_transition.is_none());
         assert!(
-            event.correlation_id.is_none(),
-            "baseline has no allocated run ID"
+            !event.fields.contains_key("correlation_id") && !event.fields.contains_key("run_id")
         );
+        match event.action.as_str() {
+            "run.launched"
+            | "due.launched"
+            | "run.finished"
+            | "due.finished"
+            | "target.resolve_failed"
+            | "job.join_failed"
+            | "run.timed_out"
+            | "run.record_failed"
+            | "due.record_failed"
+            | "due.partial_write"
+            | "due.follow_up_failed" => assert!(
+                event.correlation_id.is_some(),
+                "{} has run context",
+                event.action.as_str()
+            ),
+            "logger.attached"
+            | "schedule.reload_failed"
+            | "run.skipped_in_flight"
+            | "run.missed_skipped"
+            | "run.missed_replayed" => assert!(event.correlation_id.is_none()),
+            _ => {}
+        }
         if let Some(diagnostic) = &event.diagnostic {
             assert_eq!(diagnostic.timestamp, event.timestamp);
         }
@@ -743,6 +765,12 @@ async fn rejecting_every_event_preserves_due_results_and_worker_stop_retry_and_d
 #[cfg(feature = "monty")]
 #[tokio::test]
 async fn monty_recording_and_rejection_preserve_success_failure_refusal_and_timeout() {
+    // The infinite witness runs only in the owned subprocess below. Its parent
+    // deadline also covers destruction of Tokio's non-abortable blocking pool.
+    let child_root = std::env::var_os("SC_CRON_TIMEOUT_WITNESS_ROOT").map(std::path::PathBuf::from);
+    if let Some(root) = &child_root {
+        std::fs::write(root.join("ready"), "ready").unwrap();
+    }
     let sources = [
         "def cron_stop(hook):\n return {'action': 'continue', 'reason': 'ok'}\ndef cron_tick(hook):\n return None\n",
         "def cron_stop(hook):\n return {'action': 'continue', 'reason': 'ok'}\ndef cron_tick(hook):\n raise ValueError('consumer failure')\n",
@@ -750,6 +778,9 @@ async fn monty_recording_and_rejection_preserve_success_failure_refusal_and_time
         "def cron_stop(hook):\n return {'action': 'continue', 'reason': 'ok'}\ndef cron_tick(hook):\n while True:\n  pass\n",
     ];
     for (index, source) in sources.into_iter().enumerate() {
+        if (index == 3) != child_root.is_some() {
+            continue;
+        }
         for worker_path in [false, true] {
             let log = recorder();
             let reject = Arc::new(RejectingCanonicalLog::new(
@@ -818,7 +849,7 @@ async fn monty_recording_and_rejection_preserve_success_failure_refusal_and_time
                 only(&log, "schedule.disabled");
             }
             assert_terminal(&only(&log, action), &states[0].0);
-            only(
+            let launched = only(
                 &log,
                 if worker_path {
                     "run.launched"
@@ -826,9 +857,61 @@ async fn monty_recording_and_rejection_preserve_success_failure_refusal_and_time
                     "due.launched"
                 },
             );
+            assert_eq!(launched.correlation_id, only(&log, action).correlation_id);
             assert_envelope(&log);
         }
     }
+    if let Some(root) = child_root {
+        std::fs::write(root.join("result"), "passed").unwrap();
+    }
+}
+
+#[cfg(feature = "monty")]
+#[test]
+fn monty_nonterminating_feeds_have_external_deadline() {
+    struct OwnedChild(std::process::Child);
+    impl Drop for OwnedChild {
+        fn drop(&mut self) {
+            let _ = self.0.kill();
+            let _ = self.0.wait();
+        }
+    }
+    let root = tempfile::tempdir().unwrap();
+    let until = Instant::now() + common::WAIT;
+    let mut child = OwnedChild(
+        std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "monty_recording_and_rejection_preserve_success_failure_refusal_and_timeout",
+                "--nocapture",
+            ])
+            .env("SC_CRON_TIMEOUT_WITNESS_ROOT", root.path())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::inherit())
+            .spawn()
+            .unwrap(),
+    );
+    // Readiness, completed assertions, and process exit must all happen before
+    // this single absolute bound. Drop always kills and reaps on any failure.
+    let status = loop {
+        if let Some(status) = child.0.try_wait().unwrap() {
+            break status;
+        }
+        assert!(
+            Instant::now() < until,
+            "Monty deadline witness exceeded independent process bound"
+        );
+        std::thread::sleep(Duration::from_millis(5)); // allow: test polls its owned child
+    };
+    assert!(
+        root.path().join("ready").is_file(),
+        "child never became ready"
+    );
+    assert_eq!(
+        std::fs::read_to_string(root.path().join("result")).unwrap(),
+        "passed"
+    );
+    assert!(status.success(), "deadline subprocess failed: {status}");
 }
 
 fn assert_fixed_row(event: &LogEvent) {
@@ -1043,6 +1126,106 @@ fn assert_fixed_row(event: &LogEvent) {
                 event.fields[*field].is_string(),
                 "missing {field}: {event:?}"
             );
+        }
+    }
+}
+
+#[tokio::test]
+async fn logical_occurrences_and_restarted_generations_have_distinct_correlations() {
+    let sources: &[Option<&str>] = &[
+        None,
+        #[cfg(feature = "monty")]
+        Some(
+            "def cron_stop(hook):\n return {'action': 'continue', 'reason': 'ok'}\ndef cron_tick(hook):\n return None\n",
+        ),
+    ];
+    for &source in sources {
+        for worker_path in [false, true] {
+            let log = recorder();
+            let fixture = Fixture::new(log.clone());
+            let mut target = spec("occurrences");
+            if let Some(source) = source {
+                target.hook = HookTarget::monty(source).unwrap();
+            }
+            let mut row = fixture.scheduler.start(target.clone()).unwrap();
+            let first_generation = row.generation;
+            let mut correlations = Vec::new();
+            for occurrence in 0..3 {
+                if occurrence == 2 {
+                    fixture
+                        .scheduler
+                        .stop(row.id, row.generation, "restart")
+                        .unwrap();
+                    let restarted = fixture.scheduler.start(target.clone()).unwrap();
+                    assert_eq!(restarted.id, row.id);
+                    assert_ne!(restarted.generation, first_generation);
+                    row = restarted;
+                }
+                let selected = fixture.row(&row).next_run_at.unwrap().as_datetime();
+                let expected = format!(
+                    "cron-s{}-g{}-t{}-n{}",
+                    row.id,
+                    row.generation,
+                    selected.timestamp(),
+                    selected.timestamp_subsec_nanos()
+                );
+                if worker_path {
+                    let worker = fixture.worker(TestJob::returning(RunOutcome::Ok)).await;
+                    fixture.advance(60).await;
+                    tokio::time::timeout(common::WAIT, async {
+                        while log
+                            .events()
+                            .iter()
+                            .filter(|event| event.action.as_str() == "run.finished")
+                            .count()
+                            != occurrence + 1
+                        {
+                            tokio::task::yield_now().await;
+                        }
+                    })
+                    .await
+                    .unwrap();
+                    common::shutdown(worker).await;
+                } else {
+                    fixture.clock.advance(chrono::Duration::seconds(60));
+                    assert_eq!(
+                        fixture
+                            .scheduler
+                            .run_due(TestJob::returning(RunOutcome::Ok))
+                            .await
+                            .unwrap()[0]
+                            .outcome,
+                        RunOutcome::Ok
+                    );
+                }
+                let launch_action = if worker_path {
+                    "run.launched"
+                } else {
+                    "due.launched"
+                };
+                let finish_action = if worker_path {
+                    "run.finished"
+                } else {
+                    "due.finished"
+                };
+                let events = log.events();
+                let launch = events
+                    .iter()
+                    .filter(|event| event.action.as_str() == launch_action)
+                    .nth(occurrence)
+                    .unwrap();
+                let finish = events
+                    .iter()
+                    .filter(|event| event.action.as_str() == finish_action)
+                    .nth(occurrence)
+                    .unwrap();
+                assert_eq!(launch.correlation_id.as_ref().unwrap().as_str(), expected);
+                assert_eq!(launch.correlation_id, finish.correlation_id);
+                correlations.push(launch.correlation_id.clone().unwrap());
+            }
+            assert_ne!(correlations[0], correlations[1]);
+            assert_ne!(correlations[1], correlations[2]);
+            assert_envelope(&log);
         }
     }
 }

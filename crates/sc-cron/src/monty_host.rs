@@ -16,11 +16,51 @@ use serde_json::{Map, Number, Value};
 use crate::monty_compose_common::ComposeHostError;
 use crate::{CronError, HookEvent, ScheduleName};
 
+/// A validated, non-reserved Monty host-function identifier.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct MontyHostName(String);
+
+impl MontyHostName {
+    /// Validates an application host-function name.
+    ///
+    /// # Errors
+    /// Invalid identifiers and reserved hook names return InvalidSpec.
+    pub fn new(name: impl Into<String>) -> Result<Self, CronError> {
+        let name = name.into();
+        if !crate::is_identifier(&name)
+            || matches!(name.as_str(), "__hook" | "cron_stop" | "cron_tick")
+        {
+            return Err(CronError::InvalidSpec(format!(
+                "invalid or reserved Monty host name: {name}"
+            )));
+        }
+        Ok(Self(name))
+    }
+
+    /// Borrows the validated identifier.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::borrow::Borrow<str> for MontyHostName {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl fmt::Display for MontyHostName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 /// An owned JSON-shaped invocation of an application host function.
 #[derive(Clone)]
 pub struct MontyHostCall {
     /// Registered function name.
-    pub name: String,
+    pub name: MontyHostName,
     /// Positional JSON arguments in source order.
     pub args: Vec<Value>,
     /// Keyword JSON arguments.
@@ -77,7 +117,7 @@ enum HostEntry {
 /// Immutable application host registrations; a new registry is empty.
 #[derive(Clone, Default)]
 pub struct MontyHostRegistry {
-    entries: BTreeMap<String, HostEntry>,
+    entries: BTreeMap<MontyHostName, HostEntry>,
 }
 
 impl fmt::Debug for MontyHostRegistry {
@@ -128,16 +168,14 @@ impl MontyHostRegistry {
 
     /// Returns configured names in stable identifier order.
     pub fn names(&self) -> impl Iterator<Item = &str> {
-        self.entries.keys().map(String::as_str)
+        self.entries.keys().map(MontyHostName::as_str)
     }
 
     fn insert(&mut self, name: String, entry: HostEntry) -> Result<(), CronError> {
-        if !crate::is_identifier(&name)
-            || matches!(name.as_str(), "__hook" | "cron_stop" | "cron_tick")
-            || self.entries.contains_key(&name)
-        {
+        let name = MontyHostName::new(name)?;
+        if self.entries.contains_key(&name) {
             return Err(CronError::InvalidSpec(format!(
-                "invalid, reserved or duplicate Monty host name: {name}"
+                "duplicate Monty host name: {name}"
             )));
         }
         self.entries.insert(name, entry);
@@ -149,6 +187,7 @@ impl MontyHostRegistry {
         call: &MontyHostCall,
         logger: &SharedCanonicalLog,
         environment: &crate::environment::EnvironmentSnapshot,
+        correlation: &crate::worker::RunCorrelation,
     ) -> Result<Value, HostDispatchError> {
         match self.entries.get(&call.name) {
             None => Err(HostDispatchError::Undefined),
@@ -164,6 +203,7 @@ impl MontyHostRegistry {
                     call.deadline,
                     logger,
                     environment,
+                    correlation,
                 )
                 .map_err(HostDispatchError::Child)?;
                 Ok(
@@ -383,4 +423,41 @@ pub(crate) fn monty_value_to_json(value: ObjectRef<'_>) -> Result<Value, MontyJs
 #[cfg(feature = "monty-test-handshake")]
 pub(crate) fn host_budget_exhausted(deadline: Option<Instant>) -> bool {
     deadline.is_some_and(|deadline| Instant::now() >= deadline)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn host_names_validate_once_and_keep_string_lookup_and_json_arguments() {
+        for name in ["", "bad-name", "2host", "__hook", "cron_stop", "cron_tick"] {
+            assert!(MontyHostName::new(name).is_err(), "{name}");
+        }
+        let name = MontyHostName::new("my_host_2").unwrap();
+        assert_eq!(name.as_str(), "my_host_2");
+        let registry = MontyHostRegistry::new()
+            .register(name.as_str(), |call: &MontyHostCall| {
+                Ok(call.args[0].clone())
+            })
+            .unwrap();
+        assert!(registry.entries.contains_key(name.as_str()));
+        let call = MontyHostCall {
+            name,
+            args: vec![serde_json::json!({"nested":[1,true,null]})],
+            kwargs: Map::new(),
+            schedule: ScheduleName::new("host").unwrap(),
+            phase: HookEvent::Tick,
+            deadline: Instant::now(),
+        };
+        let value = registry
+            .invoke(
+                &call,
+                &crate::noop_logger(),
+                &crate::environment::EnvironmentSnapshot::default(),
+                &None,
+            )
+            .unwrap_or_else(|_| panic!("registered host"));
+        assert_eq!(value, call.args[0]);
+    }
 }
