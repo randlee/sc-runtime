@@ -209,6 +209,53 @@ pub struct CronScheduleLimitsFields {
 mod tests {
     use super::CronConfig;
 
+    #[cfg(feature = "cron")]
+    #[test]
+    fn configured_database_and_row_limits_reach_store() {
+        use std::sync::Arc;
+        use std::time::Duration;
+
+        for (value, capped) in [
+            (serde_json::json!(null), false),
+            (serde_json::json!(0), false),
+            (serde_json::json!(1), true),
+        ] {
+            let root = tempfile::tempdir().expect("instance root");
+            let config: CronConfig = serde_json::from_value(serde_json::json!({
+                "database_path": "configured.db", "max_schedule_rows": value,
+            }))
+            .expect("config");
+            let scheduler = super::open(
+                &config,
+                root.path(),
+                Arc::new(sc_observability_types::NoopCanonicalLog::new(
+                    sc_observability_types::ServiceName::new("limit-proof").expect("service"),
+                )),
+                config.hook_environment_host().expect("policy"),
+                #[cfg(feature = "monty")]
+                sc_cron::MontyHostRegistry::new(),
+            )
+            .expect("open");
+            assert!(root.path().join("configured.db").is_file());
+            let spec = |name| {
+                sc_cron::ScheduleSpec::new(
+                    name,
+                    "* * * * *",
+                    Duration::from_secs(1),
+                    serde_json::json!({}),
+                )
+                .expect("spec")
+            };
+            scheduler.start(spec("first")).expect("first row");
+            let second = scheduler.start(spec("second"));
+            if capped {
+                assert!(matches!(second, Err(sc_cron::CronError::InvalidSpec(_))));
+            } else {
+                second.expect("unlimited row");
+            }
+        }
+    }
+
     #[test]
     fn zero_is_unlimited_and_the_default_is_ten() {
         let missing: CronConfig = serde_json::from_str("{}").expect("json");
