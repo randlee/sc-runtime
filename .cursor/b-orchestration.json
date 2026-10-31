@@ -3500,7 +3500,7 @@
     {
       "qa_pass": "qa-b-owner-amendment-3",
       "commit": "6821d5dd5602d1d27d574807df6be04926e7a121",
-      "verdict": "IN-FLIGHT",
+      "verdict": "PASS",
       "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/94#issuecomment-6538709330",
       "reviewer_manifest": [
         {
@@ -3539,22 +3539,18 @@
         "branch": "codex/phase-b-release-boundary",
         "commit": "6821d5dd5602d1d27d574807df6be04926e7a121",
         "pr": 94,
-        "verdict": "IN-FLIGHT",
-        "deliverables": {
-          "complete": 8,
-          "total": 8,
-          "percent": 100
-        },
+        "verdict": "PASS",
         "findings": {
           "blocking": 0,
           "important": 0,
           "minor": 0
         },
         "blocking_ids": [],
-        "merge_readiness": "IN_FLIGHT",
-        "merge_reason": "All scoped plan QA checks pass at the exact open PR94 head: req-qa and arch-qa PASS, 8/8 deliverables, zero findings, and REQ-QA-OWNER-001 is resolved on this branch. PR94 is OPEN, but eight required checks remain pending (postgres.json, sqlite-apache.json, sqlite-mcp.json, sqlite-mysql.json, sqlite-no-mcp.json, mysql.json, sqlite-postgres.json, and just lint and just test).",
-        "next_action": "monitor_ci",
-        "owner": "parent-orchestrator",
+        "merge_readiness": "READY",
+        "merge_reason": "The required CI checks are all SUCCESS on exact PR94 head 6821d5dd5602d1d27d574807df6be04926e7a121; the PR is OPEN. Both required reviewers pass, all 8 deliverables are complete, and there are zero open findings.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "PASS \u2014 proceed with PR94 merge for this scoped documentation timing amendment. This verdict covers the documentation amendment only; it does not close B18 or authorize release.",
         "reviewer_spawn_gate": "pass",
         "reviewer_manifest": [
           {
@@ -3590,11 +3586,12 @@
           "triage": {
             "ttl_paths": [
               "/Volumes/Extreme Pro/github/sc-runtime-worktrees/integrate/phase-b-observability/.triage/b/findings/REQ-QA-OWNER-001.ttl"
+            ],
+            "resolved_ids": [
+              "REQ-QA-OWNER-001"
             ]
           }
-        },
-        "missing_reviewers": [],
-        "unparsed_reviewers": []
+        }
       }
     },
     {
@@ -4868,7 +4865,7 @@
     "authority_fix": {
       "bead": "run-03z.37",
       "task_id": "/root/phaseb_owner_authority_fix",
-      "status": "pushed_docs_validation_pass_pending_qa3",
+      "status": "qa3_pass_ci_success_pending_merge",
       "finding": "REQ-QA-OWNER-001",
       "commit": "6821d5dd5602d1d27d574807df6be04926e7a121",
       "evidence": "/tmp/phaseb-cursor-orchestration/owner-amendment-review/fix-evidence/validation.json"
