@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:RBQA-B17-002>
+  qa:id "RBQA-B17-002" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Minor" ;
+  qa:status "open" ;
+  qa:reviewer "ruthless-boundary-qa" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location "docs/sc-cron/requirements.md:137" ;
+  qa:issue "NFR-CRON-0001's authoritative normal-dependency inventory omits B17's new direct serde dependency." ;
+  qa:recommendation "Add serde to NFR-CRON-0001's normal-dependency list so it agrees with Cargo.toml and the boundary manifest. The approved serde wire implementation can remain unchanged." .
