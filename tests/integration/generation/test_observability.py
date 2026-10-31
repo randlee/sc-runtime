@@ -248,6 +248,36 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                     self.assertTrue(any(event["target"] == "cron.scheduler" and event["action"] == "logger.attached" for event in events), events)
                     self.assertTrue(any(event["target"] == "http.server" and event["action"].startswith("request.") for event in events), events)
 
+    @unittest.skipUnless(os.environ.get("SC_RUNTIME_REGISTRY_PROOF") == "1",
+                         "registry proof runs after the authorized publication")
+    def test_release_mode_uses_registry(self):
+        subprocess.run([sys.executable, "scripts/check_observability_release.py"],
+                       cwd=ROOT, check=True, timeout=120, stdin=subprocess.DEVNULL)
+        with tempfile.TemporaryDirectory(prefix="sc-runtime-registry-proof-") as temp:
+            app = Path(temp) / "app"
+            subprocess.run(
+                [sys.executable, "scripts/new_project.py", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--release"],
+                cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
+            )
+            manifest = tomllib.loads((app / "Cargo.toml").read_text())
+            self.assertNotIn("patch", manifest)
+            package = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())["package"]["name"]
+            metadata = json.loads(subprocess.check_output(
+                ["cargo", "+1.96.1", "metadata", "--all-features", "--format-version", "1"],
+                cwd=app, text=True, timeout=900, stdin=subprocess.DEVNULL,
+            ))
+            expected = {"sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron",
+                        "sc-observability", "sc-observability-types"}
+            packages = [p for p in metadata["packages"] if p["name"] in expected]
+            self.assertEqual({p["name"] for p in packages}, expected)
+            for item in packages:
+                self.assertTrue((item["source"] or "").startswith("registry+"), item)
+                expected_version = "1.5.1" if item["name"].startswith("sc-observability") else "0.1.1"
+                self.assertEqual(item["version"], expected_version)
+            for feature in ("cron", "monty"):
+                subprocess.run(["cargo", "+1.96.1", "test", "-p", package, "--features", feature],
+                               cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL)
+
     def test_pinned_publish_kit_inventory(self):
         pin = tomllib.loads((ROOT / "release/sc-publish-pin.toml").read_text())["sc-publish"]
         self.assertEqual(pin["repository"], "https://github.com/randlee/sc-publish")
