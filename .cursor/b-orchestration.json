@@ -48,11 +48,11 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-15-sc-cron-observability",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "development_complete_qa_pending",
+      "status": "contract_fix_propagated_developer_validated_qa_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-15-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b15_developer",
       "pr_number": 91,
-      "head": "9452d80732921dcd9b4c343e1837e4b1fbf3e22a",
+      "head": "f9694481d3ce2b2530cf3bb450cf275b997b7587",
       "state_path": "/tmp/phaseb-cursor-orchestration/b-15-developer-state.json"
     },
     "b-16": {
@@ -61,19 +61,21 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-16-monty-template-examples",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "development_complete_qa_pending",
+      "status": "contract_fix_propagated_developer_validated_qa_pending",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-16-dev-assignment.xml",
       "developer_task_id": "/root/phaseb_b16_developer",
       "pr_number": 92,
-      "head": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2"
+      "head": "f9694481d3ce2b2530cf3bb450cf275b997b7587"
     },
     "b-13": {
       "task_id": "run-03z.1",
       "branch": "sprint/b-13-observability-contract",
       "head": "c00cb59eb921d2a67012c7be094f99f412425f52",
-      "status": "qa_pass_ci_pass_merge_pending",
+      "status": "merged_to_integration",
       "developer_task_id": "/root/phaseb_b13_developer",
-      "pr_number": 89
+      "pr_number": 89,
+      "merge_commit": "7a577df6c16cef08a5cf4a5866d907e341f11106",
+      "merged_at": "2026-10-31T00:35:14Z"
     },
     "b-17": {
       "task_id": "run-03z.5",
@@ -1262,7 +1264,7 @@
         ".triage/b/findings/RSH-001.ttl",
         ".triage/b/findings/FTQ-001.ttl"
       ],
-      "status": "published_pass_all15ci_success_parent_correlated_merge_ready",
+      "status": "pass_and_all15ci_green_merged",
       "coordinator_task_id": "/root/cursor_b13_qa2_enforcer",
       "machine_status": {
         "sprint": "b-13",
@@ -1387,6 +1389,7 @@
       "sprint/b-15-sc-cron-observability",
       "sprint/b-16-monty-template-examples"
     ],
-    "status": "pushed_both_heads_full_validation_running"
+    "status": "all_required_developer_validation_pass_qa_pending",
+    "evidence": "/tmp/phaseb-cursor-orchestration/b15-b16-propagation/completion-report.json"
   }
 }
