@@ -1,7 +1,7 @@
 ---
 id: b-17
 phase: b
-status: in_progress
+status: complete
 closure_type: boundary
 target_boundary: sc-cron-hook-environment
 track: hook-environment
@@ -533,61 +533,57 @@ adapters, and signing/approval mechanisms.
 
 ## Development artifact
 
-The implementation now provides the validated public model, strict canonical
-wire form, immutable deadline-bounded occurrence resolver, normalized dotenv
-authorization/parser, complete first-release schema, Python/Monty/CLI delivery,
-resumable Monty initialization, generated daemon policy, checked example and
-Windows execution job. Production source remains within the 1000-line gate;
-worker assertions are separated into test-only modules.
+Implementation is delivered. `status: complete` records that delivery under the
+phase legend; it does not mean independent QA, hosted CI acceptance or merge.
+The final reviewed B16 remedy bc38490a6b7601a6083d86d4afcc3517151eddd1 is
+consumed through a forward-only merge at source
+0ec84667e0455e45307efff83162ee2e6cd5fa81, with runtime tree
+1215194c78dd5007073eeb27ab82c8ee773f55cf. This final plan-metadata amendment
+preserves that runtime tree. Subsequent hosted outcomes belong in delivery
+records, Beads and parent integration state, without outcome-only branch pushes.
 
-The final local matrix passes all required default/Monty/handshake tests,
-Clippy, formatting, feature-tree, generation, boundary and repository lint gates.
-The final async child fixtures pass 21 default environment tests and 27 Monty
-environment tests. Their child entry points use Tokio test runtimes directly;
-no explicit runtime blocking bridge or lint allowance is added.
+The implementation supplies the validated environment model and canonical wire
+form, deadline-bounded immutable occurrence snapshots, bounded authorized dotenv
+loading, application reference resolution, redaction, first-release schema 1,
+Python/Monty/CLI delivery, resumable source initialization and generated daemon
+policy/example wiring. Private occurrence correlation and validated
+`MontyHostName` remain intact. Pure event factories return observations for
+direct owner emission; no logger wrapper or production blocking bridge is added.
+Production source satisfies the existing source-size and function-length gates.
 
-A fresh project generated with the explicit `--development-observability` flag
-passes setup, lint, test, build-cli and build-daemon with all 26 rendered source
-hashes unchanged. Optional generated daemon cron and Monty tests each pass seven
-cases, including prebuilt resolver preservation through `cron::open`.
+All 15 required final-source local command groups pass: default and Monty
+suites, environment/host roots, 18 handshake cases, both Clippy modes, formatting,
+feature trees, focused generation tests, boundary and full repository lint.
+The updated production-boundary negative fixtures and no-global-environment-
+mutation check also pass. The full Monty suite executes the immediate wait-error
+truthfulness and readiness-failure child-reaping regressions. The generation
+watchdog timeout/reaping witness passes in the focused generation suite.
 
-Validated source 33b81b3280b482c766caa1f5283efc6744c79029 passes Actions run
-41154463873. Linux job 124398355347 executes and passes `just lint`, `just test`
-and the development observability bridge checks. Windows job 124398355367
-executes all named roots: default environment 20/20, Monty environment 28/28,
-and Monty host bridge 7/7. These are actual execution results on this source.
-The generation portability repair uses the tracked `Justfile` spelling, makes
-test imports unambiguous, and selects the existing development bridge for both
-live comparison paths while retaining every recipe and the unequal-fixture
-control. The complete isolated-import generation suite passes 77 tests locally.
-This is a preserved validated implementation checkpoint. The final B15 artifact
-e9d19647851a0a04a69214b1c4fa1945468c05a4 is now consumed through a forward-only
-merge. Its private occurrence correlation and validated `MontyHostName` are
-retained alongside B17's environment snapshot, redaction and original deadline.
-Combined source 944b613313f5da74161fabefdac130c13fed0a05 passes all 15 required
-local command groups and a fresh development generation through setup, lint,
-test and both builds. Optional generated cron/Monty tests pass seven cases
-each, with all 26 source hashes unchanged. Actions run 41158679611 Windows job
-124411408338 executes and passes the named roots 20/28/7; Linux job
-124411408371 remains in progress at this handoff. The subsequent plan trace
-clarification preserves that runtime tree. The sprint remains in progress
-pending final hosted proof, parent-authorized corrective handoffs and independent
-QA; this record does not claim developer completion or QA acceptance.
-The validated B15/B16 parent artifact e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437
-is consumed with pure event factories and direct emission by worker/due owners.
-The B17 persistence observation helper now constructs a bounded pair of events;
-it neither receives nor invokes a logger. Slot retirement remains a separate
-lifecycle operation so launch handling satisfies the unchanged function gate.
-Parent owns independent QA/CI/merge and project-plan status. Canonical matching
-registry 1.5.1 release proof remains a B18 responsibility.
+The adequate fresh-project proof at source
+944b613313f5da74161fabefdac130c13fed0a05 is reused explicitly: all 128 tracked
+generator/template/wizard/manifest/lock/recipe/CI input blobs are identical to
+the final source, and all 26 retained generated-source hashes still match.
+That proof passes explicit development generation, setup, lint, test,
+build-cli and build-daemon, plus seven optional cron and seven optional Monty
+daemon tests. No third whole generated sequence is claimed. New runtime
+telemetry behavior is covered by the current-source Rust suites above.
 
-The additional owned implementation seams support the approved environment
-contract: serde/wire dependency and lock inventory, value-free error recovery,
-child executable/Debug policy, isolated schema checks, resolver/parser modules,
-and test-only worker assertions. Generated daemon test support validates the
-prebuilt policy/resolver handoff. The observability component fixture consumes
-the parent-delivered B13 deterministic pipe witness while retaining B16 registry
-calls and B15 event cardinality. No additional product API or behavior is added.
-The additional generation test caller paths are a necessary validation exception:
-they repair portable execution of the existing B16 development bridge without
-changing canonical release pins, release tests, generated source or product code.
+Earlier source 33b81b3280b482c766caa1f5283efc6744c79029 passed actual Linux and
+Windows execution in Actions run 41154463873. Source 944b613 also passed the
+Windows named roots 20/28/7 in run 41158679611/job 124411408338. Those original
+checkpoints remain preserved; neither substitutes for final-source hosted
+Linux and Windows execution. Both final platform proofs remain required and
+pending at this source freeze. No independent QA or merge approval is claimed.
+
+The additional owned implementation seams support the approved contract:
+serde/wire inventory, value-free errors and Debug, child executable policy,
+isolated schema validation, resolver/parser modules and test-only worker
+assertions. Generated daemon tests prove prebuilt policy/resolver retention.
+The observability fixture retains B13's deterministic pipe witness, B16 registry
+calls and B15 event cardinality/correlation. The shared generation caller fixes
+preserve all recipes, negative controls, canonical release pins and release
+fences. No additional product behavior, signing/approval mechanism, authority
+change, boundary relaxation or new process gate is introduced.
+
+Parent owns independent QA/CI acceptance, project-plan status and merge.
+Matching registry 1.5.1 and real release/lifecycle proof remain B18 work.
