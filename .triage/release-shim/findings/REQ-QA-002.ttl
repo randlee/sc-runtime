@@ -1,5 +1,7 @@
 @prefix qa: <urn:sc-runtime:qa:> .
-<urn:sc-runtime:release-shim:REQ-QA-002> qa:id "REQ-QA-002" ; qa:severity "blocking" ; qa:status "open" ;
+<urn:sc-runtime:release-shim:REQ-QA-002> qa:id "REQ-QA-002" ; qa:severity "blocking" ; qa:status "closed" ;
  qa:sprint "initial-release-observability-shim" ; qa:reviewCommit "ac1c897f8aa636ccef64aa026a471bd0a6b09c27" ;
  qa:file "See reviewer evidence" ; qa:line 0 ; qa:summary "The plan requires the focused validation set and acceptance evidence on the implementation candidate, but the parent status still has final exact-head full local lint/test, formal profiles, and exact-head CI pending. Parent-provided results cover focused subsets and the verified dry-run on 5a; they do not establish the full gate set on ac1c. Earlier working-tree results are not literal exact-head proof." ;
  qa:reviewers "req-qa" .
+
+<urn:sc-runtime:release-shim:REQ-QA-002> qa:verifiedBy "/root/shim_qa3_req" ; qa:admissionCommit "d224c62cdef8174f021a05e5a5c65a9c31a22702" ; qa:evidence "Actual final-head hosted17/17SUCCESS, Req15/15; publicQA3PASS6548469510" .

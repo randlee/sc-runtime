@@ -660,7 +660,7 @@
       {
         "qa_pass": "qa-release-shim-3",
         "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702",
-        "verdict": "IN-FLIGHT",
+        "verdict": "PASS",
         "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/98#issuecomment-6548469510",
         "reviewer_manifest": [
           {
@@ -668,9 +668,9 @@
             "task_id": "/root/shim_qa3_req",
             "spawn_actor": "parent-orchestrator",
             "fenced_json_received": true,
-            "verdict": "FAIL",
+            "verdict": "PASS",
             "findings": {
-              "blocking": 1,
+              "blocking": 0,
               "important": 0,
               "minor": 0
             }
@@ -716,11 +716,144 @@
           ".triage/release-shim/findings/REQ-QA-002.ttl",
           ".triage/release-shim/findings/FTQ-003.ttl"
         ],
-        "finding_ids": [
-          "REQ-QA-002"
-        ],
+        "finding_ids": [],
         "coordinator_task_id": "/root/shim_qa3_enforcer",
         "machine_status": {
+          "sprint": "initial-release-observability-shim",
+          "task": "qa-release-shim-3",
+          "branch": "codex/plan-release-observability-shim",
+          "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702",
+          "pr": 98,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          },
+          "blocking_ids": [],
+          "merge_readiness": "READY",
+          "merge_reason": "All required reviewers pass, req-qa confirms 100% completion, the frozen-head hosted CI snapshot is 17/17 successful, and no open findings remain.",
+          "next_action": "none",
+          "owner": "none",
+          "recommendation": "Proceed with PR #98 merge. Continue the requested CI build-cache improvements separately; they do not block this frozen PR. Keep publication, dispatch, and tagging as separate authorized release steps.",
+          "reviewer_spawn_gate": "pass",
+          "reviewer_manifest": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/shim_qa3_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/shim_qa3_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/shim_qa3_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "flaky-test-qa",
+              "task_id": "/root/shim_qa3_flaky",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            }
+          ],
+          "evidence_chain": {
+            "qa_pass": "qa-release-shim-3",
+            "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702",
+            "pr_number": 98,
+            "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/98#issuecomment-6548469510",
+            "coordinator_task_id": "/root/shim_qa3_enforcer",
+            "reviewer_tasks": [
+              {
+                "agent": "req-qa",
+                "task_id": "/root/shim_qa3_req",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS",
+                "findings": {
+                  "blocking": 0,
+                  "important": 0,
+                  "minor": 0
+                }
+              },
+              {
+                "agent": "arch-qa",
+                "task_id": "/root/shim_qa3_arch",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS",
+                "findings": {
+                  "blocking": 0,
+                  "important": 0,
+                  "minor": 0
+                }
+              },
+              {
+                "agent": "rust-qa-agent",
+                "task_id": "/root/shim_qa3_rust",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS",
+                "findings": {
+                  "blocking": 0,
+                  "important": 0,
+                  "minor": 0
+                }
+              },
+              {
+                "agent": "flaky-test-qa",
+                "task_id": "/root/shim_qa3_flaky",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS",
+                "findings": {
+                  "blocking": 0,
+                  "important": 0,
+                  "minor": 0
+                }
+              }
+            ],
+            "triage": {
+              "phase_id": "release-shim",
+              "ttl_paths": [
+                ".triage/release-shim/findings/REQ-QA-002.ttl",
+                ".triage/release-shim/findings/FTQ-003.ttl"
+              ]
+            },
+            "parent_correlation_required": true
+          }
+        },
+        "execution_pending_status": {
           "sprint": "initial-release-observability-shim",
           "task": "qa-release-shim-3",
           "branch": "codex/plan-release-observability-shim",
@@ -875,24 +1008,18 @@
       "branch": "codex/plan-release-observability-shim",
       "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702",
       "pr": 98,
-      "verdict": "IN-FLIGHT",
-      "deliverables": {
-        "complete": 14,
-        "total": 15,
-        "percent": 93.3
-      },
+      "verdict": "PASS",
       "findings": {
-        "blocking": 1,
+        "blocking": 0,
         "important": 0,
         "minor": 0
       },
-      "blocking_ids": [
-        "REQ-QA-002"
-      ],
-      "merge_readiness": "NOT READY",
-      "merge_reason": "Source findings are closed. REQ-QA-002 remains open solely for exact frozen-head execution admission: the current PR snapshot has 17 checks, with 12 in progress and 5 completed. No source change is requested.",
-      "next_action": "await_exact_head_ci_and_req_qa_proof",
-      "owner": "parent-orchestrator",
+      "blocking_ids": [],
+      "merge_readiness": "READY",
+      "merge_reason": "All required reviewers pass, req-qa confirms 100% completion, the frozen-head hosted CI snapshot is 17/17 successful, and no open findings remain.",
+      "next_action": "none",
+      "owner": "none",
+      "recommendation": "Proceed with PR #98 merge. Continue the requested CI build-cache improvements separately; they do not block this frozen PR. Keep publication, dispatch, and tagging as separate authorized release steps.",
       "reviewer_spawn_gate": "pass",
       "reviewer_manifest": [
         {
@@ -900,9 +1027,9 @@
           "task_id": "/root/shim_qa3_req",
           "spawn_actor": "parent-orchestrator",
           "fenced_json_received": true,
-          "verdict": "FAIL",
+          "verdict": "PASS",
           "findings": {
-            "blocking": 1,
+            "blocking": 0,
             "important": 0,
             "minor": 0
           }
@@ -956,9 +1083,9 @@
             "task_id": "/root/shim_qa3_req",
             "spawn_actor": "parent-orchestrator",
             "fenced_json_received": true,
-            "verdict": "FAIL",
+            "verdict": "PASS",
             "findings": {
-              "blocking": 1,
+              "blocking": 0,
               "important": 0,
               "minor": 0
             }
@@ -1008,66 +1135,66 @@
           ]
         },
         "parent_correlation_required": true
-      },
-      "missing_reviewers": [],
-      "unparsed_reviewers": []
+      }
     },
     "active_round": {
       "qa_pass": "qa-release-shim-3",
       "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702",
-      "status": "in_flight_execution_only",
+      "status": "pass",
       "reviewer_manifest": [
         {
           "agent": "req-qa",
           "task_id": "/root/shim_qa3_req",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6-luna",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
-          "verdict": "FAIL",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa3/req-qa-result.md"
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         },
         {
           "agent": "arch-qa",
           "task_id": "/root/shim_qa3_arch",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6.1-sol",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
           "verdict": "PASS",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa3/arch-qa-result.md"
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         },
         {
           "agent": "rust-qa-agent",
           "task_id": "/root/shim_qa3_rust",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6.1-terra",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
           "verdict": "PASS",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa3/rust-qa-agent-result.md"
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         },
         {
           "agent": "flaky-test-qa",
           "task_id": "/root/shim_qa3_flaky",
           "spawn_actor": "parent-orchestrator",
-          "model": "gpt-6.1-sol",
-          "effort": "high",
-          "status": "completed",
           "fenced_json_received": true,
           "verdict": "PASS",
-          "result_path": "/tmp/sc-runtime-shim-orchestration/qa3/flaky-test-qa-result.md"
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
         }
       ],
       "scope": "Only15deletions onePythonunitfile; preserveQA2sourcecoverage and actualfull0b2lint/test, currentfocused12+18+8; currentCIrequired",
       "coordinator_task_id": "/root/shim_qa3_enforcer",
       "source_findings_open": [],
-      "execution_pending": [
-        "REQ-QA-002"
-      ]
+      "execution_pending": []
     },
     "source_finding_closures": {
       "REQ-QA-001": {
@@ -1105,6 +1232,11 @@
       "FTQ-003": {
         "status": "closed",
         "reviewer_task": "/root/shim_qa3_flaky"
+      },
+      "REQ-QA-002": {
+        "status": "closed",
+        "reviewer_task": "/root/shim_qa3_req",
+        "evidence": "actual17/17SUCCESS frozen d224 + Req15/15"
       }
     }
   },
@@ -1114,5 +1246,17 @@
     "dispatch_authorized": false,
     "actual_postpublication_registry_consumer_proof": "After all five internal publications; no skipped test counted as release proof",
     "future_1_5_1_cleanup": "Separate issue97/run-3wo; not initialrelease blocker"
+  },
+  "parallel_ci_improvement": {
+    "bead": "run-h0h.3",
+    "branch": "codex/ci-build-cache",
+    "worktree_path": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/ci-build-cache",
+    "developer_task_id": "/root/shim_release_plan_author",
+    "audit_task_id": "/root/ci_build_duplication_audit",
+    "scope": "Safe Cargo/generated-target/tool caching and proven duplicate setup elimination; distinct real feature/platform proofs preserved",
+    "holds_pr98_merge": false,
+    "baseline_job_seconds": 3385,
+    "baseline_test_seconds": 2966,
+    "baseline_run": "https://github.com/randlee/sc-runtime/actions/runs/41236706275"
   }
 }
