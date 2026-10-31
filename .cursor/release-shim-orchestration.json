@@ -8,7 +8,7 @@
     "plan": "run-h0h.1",
     "plan_status": "closed",
     "implementation": "run-h0h.2",
-    "implementation_status": "in_progress",
+    "implementation_status": "closed",
     "future_cleanup": "run-3wo",
     "upstream_availability": "run-03z.7"
   },
@@ -21,7 +21,18 @@
     "url": "https://github.com/randlee/sc-runtime/pull/98",
     "status": "qa1_correction_active",
     "head": "ac1c897f8aa636ccef64aa026a471bd0a6b09c27",
-    "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702"
+    "commit": "d224c62cdef8174f021a05e5a5c65a9c31a22702",
+    "merged": {
+      "baseRefName": "develop",
+      "headRefOid": "d224c62cdef8174f021a05e5a5c65a9c31a22702",
+      "mergeCommit": {
+        "oid": "2cb7d2f85484ca1b3c4096de5734f23c2c2b1ee0"
+      },
+      "mergedAt": "2026-10-31T20:59:24Z",
+      "state": "MERGED",
+      "url": "https://github.com/randlee/sc-runtime/pull/98"
+    },
+    "implementation_status": "complete_merged"
   },
   "cleanup_issue": "https://github.com/randlee/sc-runtime/issues/97",
   "coordination": {
@@ -1257,6 +1268,7 @@
     "holds_pr98_merge": false,
     "baseline_job_seconds": 3385,
     "baseline_test_seconds": 2966,
-    "baseline_run": "https://github.com/randlee/sc-runtime/actions/runs/41236706275"
+    "baseline_run": "https://github.com/randlee/sc-runtime/actions/runs/41236706275",
+    "status": "in_progress_independent"
   }
 }

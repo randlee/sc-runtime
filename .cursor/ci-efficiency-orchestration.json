@@ -1,0 +1,641 @@
+{
+  "scope": "IndependentCIefficiencyfollowupnotnewphase",
+  "bead": "run-h0h.3",
+  "source": {
+    "branch": "codex/ci-build-cache",
+    "commit": "d0f76157ae4ee20bd0780323e5f500d78f0d9c69",
+    "base": "2cb7d2f85484ca1b3c4096de5734f23c2c2b1ee0",
+    "pr": 99
+  },
+  "qa": {
+    "qa_pass": "qa-ci-efficiency-1",
+    "required_reviewers": [
+      "req-qa",
+      "arch-qa",
+      "extensibility-qa",
+      "ruthless-boundary-qa",
+      "rust-qa-agent",
+      "rust-best-practices-agent",
+      "rust-service-hardening-agent",
+      "flaky-test-qa"
+    ],
+    "reviewer_manifest": [
+      {
+        "agent": "req-qa",
+        "task_id": "/root/ci_qa1_req",
+        "spawn_actor": "parent-orchestrator",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
+      },
+      {
+        "agent": "arch-qa",
+        "task_id": "/root/ci_qa1_arch",
+        "spawn_actor": "parent-orchestrator",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
+      },
+      {
+        "agent": "extensibility-qa",
+        "task_id": "/root/ci_qa1_ext",
+        "spawn_actor": "parent-orchestrator",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
+      },
+      {
+        "agent": "ruthless-boundary-qa",
+        "task_id": "/root/ci_qa1_boundary",
+        "spawn_actor": "parent-orchestrator",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
+      },
+      {
+        "agent": "rust-qa-agent",
+        "task_id": "/root/ci_qa1_rust",
+        "spawn_actor": "parent-orchestrator",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
+      },
+      {
+        "agent": "rust-best-practices-agent",
+        "task_id": "/root/ci_qa1_rbp",
+        "spawn_actor": "parent-orchestrator",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
+      },
+      {
+        "agent": "rust-service-hardening-agent",
+        "task_id": "/root/ci_qa1_service",
+        "spawn_actor": "parent-orchestrator",
+        "fenced_json_received": true,
+        "verdict": "SKIPPED",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
+      },
+      {
+        "agent": "flaky-test-qa",
+        "task_id": "/root/ci_qa1_flaky",
+        "spawn_actor": "parent-orchestrator",
+        "fenced_json_received": true,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        }
+      }
+    ],
+    "status": "PASS",
+    "machine_status": {
+      "sprint": "ci-efficiency",
+      "task": "qa-ci-efficiency-1",
+      "branch": "codex/ci-build-cache",
+      "commit": "d0f76157ae4ee20bd0780323e5f500d78f0d9c69",
+      "pr": 99,
+      "verdict": "PASS",
+      "findings": {
+        "blocking": 0,
+        "important": 0,
+        "minor": 0
+      },
+      "blocking_ids": [],
+      "merge_readiness": "ready",
+      "merge_reason": "All required QA reviewers passed or returned a contract-valid SKIPPED result; 4/4 deliverables complete; zero open findings; all 17 PR checks passed.",
+      "next_action": "none",
+      "owner": "none",
+      "recommendation": "Merge after the parent confirms QA evidence correlation and the PR remains green.",
+      "reviewer_spawn_gate": "pass",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/ci_qa1_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/ci_qa1_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/ci_qa1_ext",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/ci_qa1_boundary",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/ci_qa1_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/ci_qa1_rbp",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/ci_qa1_service",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "SKIPPED",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/ci_qa1_flaky",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "evidence_chain": {
+        "qa_pass": "qa-ci-efficiency-1",
+        "commit": "d0f76157ae4ee20bd0780323e5f500d78f0d9c69",
+        "pr_number": 99,
+        "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/99#issuecomment-6549371668",
+        "coordinator_task_id": "/root/ci_qa1_enforcer",
+        "reviewer_tasks": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/ci_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/ci_qa1_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          },
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/ci_qa1_ext",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/ci_qa1_boundary",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/ci_qa1_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/ci_qa1_rbp",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/ci_qa1_service",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "SKIPPED"
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/ci_qa1_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS"
+          }
+        ],
+        "triage": {
+          "phase_id": "ci-efficiency",
+          "ttl_paths": []
+        },
+        "parent_correlation_required": true
+      },
+      "missing_reviewers": [],
+      "unparsed_reviewers": [],
+      "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+      "deliverables": {
+        "complete": 4,
+        "total": 4,
+        "percent": 100
+      }
+    },
+    "qa_rounds": [
+      {
+        "qa_pass": "qa-ci-efficiency-1",
+        "commit": "d0f76157ae4ee20bd0780323e5f500d78f0d9c69",
+        "verdict": "PASS",
+        "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/99#issuecomment-6549371668",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/ci_qa1_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/ci_qa1_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/ci_qa1_ext",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/ci_qa1_boundary",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/ci_qa1_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/ci_qa1_rbp",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/ci_qa1_service",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "SKIPPED",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/ci_qa1_flaky",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "triage_ttl_paths": [],
+        "finding_ids": [],
+        "coordinator_task_id": "/root/ci_qa1_enforcer",
+        "machine_status": {
+          "sprint": "ci-efficiency",
+          "task": "qa-ci-efficiency-1",
+          "branch": "codex/ci-build-cache",
+          "commit": "d0f76157ae4ee20bd0780323e5f500d78f0d9c69",
+          "pr": 99,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          },
+          "blocking_ids": [],
+          "merge_readiness": "ready",
+          "merge_reason": "All required QA reviewers passed or returned a contract-valid SKIPPED result; 4/4 deliverables complete; zero open findings; all 17 PR checks passed.",
+          "next_action": "none",
+          "owner": "none",
+          "recommendation": "Merge after the parent confirms QA evidence correlation and the PR remains green.",
+          "reviewer_spawn_gate": "pass",
+          "reviewer_manifest": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/ci_qa1_req",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/ci_qa1_arch",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "extensibility-qa",
+              "task_id": "/root/ci_qa1_ext",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "ruthless-boundary-qa",
+              "task_id": "/root/ci_qa1_boundary",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/ci_qa1_rust",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-best-practices-agent",
+              "task_id": "/root/ci_qa1_rbp",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "rust-service-hardening-agent",
+              "task_id": "/root/ci_qa1_service",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "SKIPPED",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            },
+            {
+              "agent": "flaky-test-qa",
+              "task_id": "/root/ci_qa1_flaky",
+              "spawn_actor": "parent-orchestrator",
+              "fenced_json_received": true,
+              "verdict": "PASS",
+              "findings": {
+                "blocking": 0,
+                "important": 0,
+                "minor": 0
+              }
+            }
+          ],
+          "evidence_chain": {
+            "qa_pass": "qa-ci-efficiency-1",
+            "commit": "d0f76157ae4ee20bd0780323e5f500d78f0d9c69",
+            "pr_number": 99,
+            "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/99#issuecomment-6549371668",
+            "coordinator_task_id": "/root/ci_qa1_enforcer",
+            "reviewer_tasks": [
+              {
+                "agent": "req-qa",
+                "task_id": "/root/ci_qa1_req",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS"
+              },
+              {
+                "agent": "arch-qa",
+                "task_id": "/root/ci_qa1_arch",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS"
+              },
+              {
+                "agent": "extensibility-qa",
+                "task_id": "/root/ci_qa1_ext",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS"
+              },
+              {
+                "agent": "ruthless-boundary-qa",
+                "task_id": "/root/ci_qa1_boundary",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS"
+              },
+              {
+                "agent": "rust-qa-agent",
+                "task_id": "/root/ci_qa1_rust",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS"
+              },
+              {
+                "agent": "rust-best-practices-agent",
+                "task_id": "/root/ci_qa1_rbp",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS"
+              },
+              {
+                "agent": "rust-service-hardening-agent",
+                "task_id": "/root/ci_qa1_service",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "SKIPPED"
+              },
+              {
+                "agent": "flaky-test-qa",
+                "task_id": "/root/ci_qa1_flaky",
+                "spawn_actor": "parent-orchestrator",
+                "fenced_json_received": true,
+                "verdict": "PASS"
+              }
+            ],
+            "triage": {
+              "phase_id": "ci-efficiency",
+              "ttl_paths": []
+            },
+            "parent_correlation_required": true
+          },
+          "missing_reviewers": [],
+          "unparsed_reviewers": [],
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "deliverables": {
+            "complete": 4,
+            "total": 4,
+            "percent": 100
+          }
+        }
+      }
+    ],
+    "execution_gate_closed_by": "/root/ci_qa1_req proof-only4/4+17CI"
+  },
+  "publisher_preflight": {
+    "bead": "run-h0h.4",
+    "workflow_run": 41241961110,
+    "status": "failed_complete_diagnostics",
+    "fix_bead": "run-h0h.5",
+    "independent_from_pr99": true
+  },
+  "timing_comparison": {
+    "head": "d0f76157ae4ee20bd0780323e5f500d78f0d9c69",
+    "ci": "17/17SUCCESS",
+    "baseline_job_seconds": 3385,
+    "new_job_seconds": 1497.0,
+    "baseline_test_seconds": 2966,
+    "new_test_seconds": 1011.0,
+    "job_reduction_percent": 55.8,
+    "test_reduction_percent": 65.9
+  }
+}
