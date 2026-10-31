@@ -72,6 +72,8 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                                 "agent_error::tests::operation_remains_primary_and_shutdown_only_fails_success")
         self.run_generated_test(app, package, ["--bin", "widget-app-daemon"],
                                 "tests::config_startup_uses_each_library_code_once")
+        self.run_generated_test(app, package, ["--bin", "widget-app-daemon"],
+                                "tests::runtime_failure_before_stores_releases_handles_without_waiting_for_worker")
 
     def test_pr_fixture_matrix_one_entry_per_fixture(self):
         workflow = (ROOT / ".github/workflows/template.yml").read_text()
@@ -329,4 +331,9 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         checks = {c["id"]: c["run"] for c in consumer["preflight_checks"]}
         self.assertEqual(checks["observability-registry-only"], "python3 scripts/check_observability_release.py")
         self.assertIn("test_release_contract_sources", checks["release-contract-sources"])
+        preflight = consumer["preflight_checks"]
+        self.assertLess(next(i for i, check in enumerate(preflight) if check["id"] == "observability-registry-only"),
+                        next(i for i, check in enumerate(preflight) if check["id"] == "release-contract-sources"))
+        self.assertFalse(any("test_release_mode_uses_registry" in check["run"] for check in preflight),
+                         "postpublication proof cannot block the publication preflight")
         subprocess.run([sys.executable, "-m", "unittest", "tests.integration.generation.test_driver.DriverTests.test_release_mode_skips_the_patch"], cwd=ROOT, check=True)
