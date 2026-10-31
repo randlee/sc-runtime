@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:QA-005> qa:sprint "b-15" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-cron/src/worker.rs:664" ;
+  qa:issue "The required function-length gate rejects the new 86-code-line `launch_due` function." ;
+  qa:remedy "Separate the launch preparation/recording work into helpers while retaining the established scheduling and deadline behavior." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

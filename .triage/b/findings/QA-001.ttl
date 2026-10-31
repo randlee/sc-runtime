@@ -16,3 +16,12 @@
   qa:remedy "Refresh crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.lock for sc-runtime-db-sqlite 0.1.1, commit it, and rerun the workspace suite." ;
   qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
   qa:status "open" .
+
+<urn:sc-runtime:qa:b-15:QA-001> qa:sprint "b-15" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "tests/integration/wizard/test_output_equivalence.py:149" ;
+  qa:issue "The pinned-tree `just test` run fails two generated-project equivalence tests because the generated project's `lint` step returns `GEN.STEP_FAILED`: `test_stubbed_wizard_matches_var_file_tree` (line 149) and `test_different_var_files_produce_different_trees` (line 180). The run's generation suite reports 2 failures out of 74 tests." ;
+  qa:remedy "Trace and correct the generated project's failing lint step or its generation-test invocation so both equivalence cases complete successfully, while retaining the wizard-versus-var-file tree comparison." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .
