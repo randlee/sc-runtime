@@ -212,7 +212,7 @@ This requirement applies to each of the four workspace crates: `sc-config`,
    `cargo publish -p <crate>` per crate).
 
 The Phase B continuation extends, rather than replaces, those Phase A
-obligations: `sc-cron` is the fifth independently packaged public crate. It
+obligations at workspace version `0.1.1`: `sc-cron` is the fifth independently packaged public crate. It
 MUST satisfy the same package-metadata, standalone test, README/doctest,
 publishability, and separate-publication obligations. The five-crate publish
 order is `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, then

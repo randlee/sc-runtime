@@ -31,9 +31,21 @@ impl ComposeRunResult {
 }
 
 /// Waits on the spawned compose child until it exits.
+#[allow(
+    dead_code,
+    reason = "legacy internal Noop entry point retained for compatibility"
+)]
 pub(crate) fn run_compose_child(
     program: &str,
     root: &std::path::Path,
+) -> Result<String, ComposeHostError> {
+    run_compose_child_with_logger(program, root, &crate::noop_logger())
+}
+
+pub(crate) fn run_compose_child_with_logger(
+    program: &str,
+    root: &std::path::Path,
+    logger: &sc_observability_types::SharedCanonicalLog,
 ) -> Result<String, ComposeHostError> {
     let root_arg = root.to_string_lossy().into_owned();
     let args = vec![
@@ -47,7 +59,7 @@ pub(crate) fn run_compose_child(
         "--var-file".to_owned(),
         "v.json".to_owned(),
     ];
-    let result = run_compose_argv(program, Some(root), &args)?;
+    let result = run_compose_argv_with_logger(program, Some(root), &args, logger)?;
     if result.success() {
         return Ok(result.stdout);
     }
@@ -61,10 +73,23 @@ pub(crate) fn run_compose_child(
 ///
 /// Non-zero exit is returned in [`ComposeRunResult`]; spawn errors are
 /// [`ComposeHostError`]. On success exit, non-UTF-8 stdout or stdout over the cap is an error.
+#[allow(
+    dead_code,
+    reason = "legacy internal Noop entry point retained for compatibility"
+)]
 pub(crate) fn run_compose_argv(
     program: &str,
     cwd: Option<&std::path::Path>,
     args: &[String],
+) -> Result<ComposeRunResult, ComposeHostError> {
+    run_compose_argv_with_logger(program, cwd, args, &crate::noop_logger())
+}
+
+pub(crate) fn run_compose_argv_with_logger(
+    program: &str,
+    cwd: Option<&std::path::Path>,
+    args: &[String],
+    logger: &sc_observability_types::SharedCanonicalLog,
 ) -> Result<ComposeRunResult, ComposeHostError> {
     let mut command = Command::new(program);
     if let Some(cwd) = cwd {
@@ -100,13 +125,13 @@ pub(crate) fn run_compose_argv(
         Err(source) => {
             let _ = child.kill();
             let _ = child.wait();
-            let _ = join_reader(stdout);
+            let _ = join_reader(stdout, logger);
             return Err(not_runnable(program, source));
         }
     };
     let status = child.wait();
-    let drained = join_reader(stdout);
-    let stderr_drained = join_reader(stderr);
+    let drained = join_reader(stdout, logger);
+    let stderr_drained = join_reader(stderr, logger);
     let status = status.map_err(|source| not_runnable(program, source))?;
     let drained = drained.map_err(|source| not_runnable(program, source))?;
     let stderr_drained = stderr_drained.map_err(|source| not_runnable(program, source))?;
@@ -156,15 +181,34 @@ fn spawn_reader(
 /// Collects one pipe after the leader has exited, for at most
 /// [`crate::process::REAP_AFTER_KILL`]. A descendant that keeps the pipe open
 /// past that bound is an error, not an empty success.
-fn join_reader(pipe: PipeRead) -> std::io::Result<crate::process::Capped> {
+fn join_reader(
+    pipe: PipeRead,
+    logger: &sc_observability_types::SharedCanonicalLog,
+) -> std::io::Result<crate::process::Capped> {
     match pipe.receiver.recv_timeout(crate::process::REAP_AFTER_KILL) {
         Ok(drained) => {
             let _ = pipe.handle.join();
             drained
         }
-        Err(mpsc::RecvTimeoutError::Timeout) => Err(std::io::Error::other(
-            "compose pipe stayed open after the child exited",
-        )),
+        Err(mpsc::RecvTimeoutError::Timeout) => {
+            if let Some(event) = crate::component_event(
+                logger.service_name().clone(),
+                "cron.monty.compose",
+                "pipe.drain_timeout",
+                sc_observability_types::Level::Warn,
+                "timeout",
+                Some("COMPOSE_PIPE_DRAIN_TIMEOUT"),
+                serde_json::json!({"deadline_remaining_ms": 0})
+                    .as_object()
+                    .cloned()
+                    .unwrap_or_default(),
+            ) {
+                let _ = logger.emit(event);
+            }
+            Err(std::io::Error::other(
+                "compose pipe stayed open after the child exited",
+            ))
+        }
         Err(mpsc::RecvTimeoutError::Disconnected) => Err(std::io::Error::other(
             "compose pipe reader exited without sending output",
         )),

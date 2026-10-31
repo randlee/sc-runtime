@@ -211,6 +211,18 @@ construction with the same handle. The generic constructor emits
 it. No logging wrapper, new component trait, or post-construction setter is
 required.
 
+The `0.1.1` injection implementation adds `PythonHook::new_with_logger`
+and `process::supervise_with_logger` (returning `CronError`). Legacy hook and
+component constructors install a fixed `sc-cron` Noop; both supervisor entry
+points return `CronError` with their existing argument lists. `RunCoord` owns the shared Arc used by
+`share()`, workers and Monty feeds. `new_with_logger` preserves caller-owned
+store, clock and jitter; the SQLite/SystemJitter open helper shares one Arc
+across all built-ins and emits `cron.scheduler/logger.attached` exactly once.
+No library path flushes or shuts down the full runtime. Component rejection
+preserves zero jitter, corrupt-row skipping, process capture, Monty outcomes
+and shutdown decisions. The five component rows and both shutdown rows are
+verified by `observability_components`; b-16 owns the future child-kill row.
+
 ## Public exports
 
 The crate-root exports, also listed on `boundaries/sc-cron/sc-cron.toml`, are the contract: `Clock`, `CronError`, `CronExpr`, `DEFAULT_RELOAD_POLL`, `DotenvSource`, `DueRun`, `EnvironmentReferenceError`, `EnvironmentReferenceRequest`, `EnvironmentReferenceResolver`, `EnvName`, `EnvOperationRef`, `Generation`, `HOOK_PROTOCOL`, `HookCall`, `HookEnvironment`, `HookEnvironmentHost`, `HookEvent`, `HookOutput`, `HookStatus`, `HookTarget`, `is_identifier`, `JitterSource`, `Job`, `kill_budget`, `ManualClock`, `MAX_ENV_DOCUMENT_BYTES`, `MAX_ENV_DOTENV_SOURCES`, `MAX_ENV_ENTRIES`, `MAX_ENV_FILE_BYTES`, `MAX_ENV_NAME_BYTES`, `MAX_ENV_PATH_BYTES`, `MAX_ENV_REFERENCE_BYTES`, `MAX_ENV_SNAPSHOT_BYTES`, `MAX_ENV_VALUE_BYTES`, `MAX_EXPR_LEN`, `MAX_HOOK_OUTPUT_BYTES`, `MAX_HOOK_SOURCE_BYTES`, `MAX_NAME_LEN`, `MAX_PAYLOAD_BYTES`, `MAX_TIMEOUT`, `MissedTickPolicy`, `MontyHostRegistry`, `MontyHostHandler`, `MontyHostCall`, `ScComposeHostConfig`, `AtmHostConfig`, `NewSchedule`, `process`, `PythonHook`, `RunFailureParts`, `RunOutcome`, `RunTimeout`, `Schedule`, `ScheduleId`, `ScheduleLimits`, `ScheduleName`, `ScheduleSpec`, `ScheduleStore`, `Scheduler`, `SCHEMA_VERSION`, `SeqJitter`, `SqliteScheduleStore`, `StopDecision`, `StoreError`, `StoreErrorKind`, `SystemClock`, `SystemJitter`, `Timestamp`, and `WorkerHandle`. `ManualClock` and `SeqJitter` need feature `test-utils`. `MontyHostRegistry`, `MontyHostHandler`, `MontyHostCall`, `ScComposeHostConfig`, `AtmHostConfig` need feature `monty`.

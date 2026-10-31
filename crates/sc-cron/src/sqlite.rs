@@ -139,8 +139,8 @@ const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 /// assert!(store.list_active()?.is_empty());
 /// # Ok::<(), sc_cron::CronError>(())
 /// ```
-#[derive(Debug)]
 pub struct SqliteScheduleStore {
+    logger: sc_observability_types::SharedCanonicalLog,
     // A rusqlite `Connection` is `Send` but not `Sync`, and the port's
     // methods take `&self` from any thread, so the one connection sits
     // behind a mutex. Calls are short single statements or one transaction.
@@ -150,6 +150,15 @@ pub struct SqliteScheduleStore {
     warned: Mutex<HashSet<i64>>,
     /// Embedder row ceiling. `None` does not enforce a count (ADR-RUN-0014).
     limits: ScheduleLimits,
+}
+
+impl std::fmt::Debug for SqliteScheduleStore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SqliteScheduleStore")
+            .field("limits", &self.limits)
+            .field("service", self.logger.service_name())
+            .finish_non_exhaustive()
+    }
 }
 
 impl SqliteScheduleStore {
@@ -166,6 +175,18 @@ impl SqliteScheduleStore {
     /// cannot be opened, [`StoreErrorKind::SchemaMismatch`] if it holds an
     /// unknown schema version or another store's tables.
     pub fn open(path: impl AsRef<Path>, limits: ScheduleLimits) -> Result<Self, CronError> {
+        Self::open_with_logger(path, limits, crate::noop_logger())
+    }
+
+    /// Opens a schedule database with a best-effort canonical logger.
+    ///
+    /// # Errors
+    /// Returns the same store errors as `open`.
+    pub fn open_with_logger(
+        path: impl AsRef<Path>,
+        limits: ScheduleLimits,
+        logger: sc_observability_types::SharedCanonicalLog,
+    ) -> Result<Self, CronError> {
         let connection = Connection::open(path.as_ref())
             .map_err(|error| store_error("failed to open database", error))?;
         connection
@@ -174,7 +195,7 @@ impl SqliteScheduleStore {
         connection
             .pragma_update(None, "journal_mode", "WAL")
             .map_err(|error| store_error("failed to enable WAL", error))?;
-        Self::with_connection(connection, limits)
+        Self::with_connection(connection, limits, logger)
     }
 
     /// Opens a private in-memory database, for tests and ephemeral use.
@@ -190,7 +211,7 @@ impl SqliteScheduleStore {
         connection
             .busy_timeout(BUSY_TIMEOUT)
             .map_err(|error| store_error("failed to set busy timeout", error))?;
-        Self::with_connection(connection, limits)
+        Self::with_connection(connection, limits, crate::noop_logger())
     }
 
     /// Returns the row ceiling this store was opened with.
@@ -201,10 +222,12 @@ impl SqliteScheduleStore {
     fn with_connection(
         mut connection: Connection,
         limits: ScheduleLimits,
+        logger: sc_observability_types::SharedCanonicalLog,
     ) -> Result<Self, CronError> {
         init_schema(&mut connection)?;
         Ok(Self {
             connection: Mutex::new(connection),
+            logger,
             warned: Mutex::new(HashSet::new()),
             limits,
         })
@@ -218,8 +241,25 @@ impl SqliteScheduleStore {
                 return;
             }
         }
-        tracing::warn!(subsystem = "sc_cron", action = "skip_corrupt_row", id = ?id,
-            name = ?name, %error, "skipping corrupt schedule row; other schedules keep running");
+        let mut fields = serde_json::Map::new();
+        fields.insert("error".into(), error.to_string().into());
+        if let Some(id) = id {
+            fields.insert("schedule_id".into(), id.into());
+        }
+        if let Some(name) = name {
+            fields.insert("schedule_name".into(), name.into());
+        }
+        if let Some(event) = crate::component_event(
+            self.logger.service_name().clone(),
+            "cron.store",
+            "row.corrupt",
+            sc_observability_types::Level::Warn,
+            "failed",
+            Some("CORRUPT_SCHEDULE_ROW"),
+            fields,
+        ) {
+            let _ = self.logger.emit(event);
+        }
     }
 
     fn lock(&self) -> MutexGuard<'_, Connection> {

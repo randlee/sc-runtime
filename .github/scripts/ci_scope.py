@@ -16,6 +16,7 @@ RUNTIME_PREFIXES = (
     ".sc-lint/",
     "boundaries/",
     "crates/",
+    "dev/",
     "release/",
     "scripts/",
     "template/",

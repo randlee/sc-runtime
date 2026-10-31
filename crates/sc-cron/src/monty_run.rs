@@ -187,6 +187,7 @@ impl ComposeInjection<'static> {
 /// Inputs for one blocking-pool feed shared by the worker and `run_due`.
 pub(crate) struct FeedLaunch {
     /// Repl from the previous feed of this generation, if any.
+    pub(crate) logger: sc_observability_types::SharedCanonicalLog,
     pub(crate) session: Option<MontySession>,
     /// Hook source.
     pub(crate) source: String,
@@ -215,6 +216,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
     launch: FeedLaunch,
 ) -> FeedDone {
     let FeedLaunch {
+        logger,
         session,
         source,
         phase,
@@ -242,7 +244,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
     let run_deadline = deadline;
     match tokio::task::spawn_blocking(move || {
         let program = compose_program.to_string_lossy().into_owned();
-        execute_feed_with_compose_program(
+        execute_feed_with_logger(
             session,
             &source,
             phase,
@@ -255,6 +257,7 @@ pub(crate) async fn drive_feed<C: crate::Clock + ?Sized>(
                 extra_host_fns: &[],
             },
             run_deadline,
+            logger,
         )
     })
     .await
@@ -307,6 +310,10 @@ pub(crate) fn execute_feed(
 /// `sc_compose_run`. Names that are not identifiers, or that are those
 /// reserved bindings, are ignored.
 #[allow(clippy::too_many_arguments)]
+#[allow(
+    dead_code,
+    reason = "legacy internal feed entry point retained for compatibility"
+)]
 pub(crate) fn execute_feed_with_compose_program(
     session: Option<MontySession>,
     source: &str,
@@ -317,6 +324,35 @@ pub(crate) fn execute_feed_with_compose_program(
     injection: ComposeInjection<'_>,
     run_deadline: Instant,
 ) -> FeedDone {
+    execute_feed_with_logger(
+        session,
+        source,
+        phase,
+        generation,
+        budget,
+        hook,
+        injection,
+        run_deadline,
+        crate::noop_logger(),
+    )
+}
+
+/// Logger-bearing counterpart retaining the embedder-selected compose program.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "preserves the existing internal feed contract plus logger"
+)]
+pub(crate) fn execute_feed_with_logger(
+    session: Option<MontySession>,
+    source: &str,
+    phase: MontyPhase,
+    generation: Generation,
+    budget: Duration,
+    hook: &Value,
+    injection: ComposeInjection<'_>,
+    run_deadline: Instant,
+    logger: sc_observability_types::SharedCanonicalLog,
+) -> FeedDone {
     let (mut session, call_budget) = match open_session(session, source, generation, budget) {
         Ok(ready) => ready,
         Err(done) => return done,
@@ -325,7 +361,7 @@ pub(crate) fn execute_feed_with_compose_program(
         .repl
         .tracker_mut()
         .set_max_feed_duration(feed_budget(call_budget));
-    resume_started_feed(session, phase, hook, injection, run_deadline)
+    resume_started_feed(session, phase, hook, injection, run_deadline, &logger)
 }
 
 /// Keeps a repl only when its generation matches, otherwise compiles `source`.
@@ -358,6 +394,7 @@ fn resume_started_feed(
     hook: &Value,
     injection: ComposeInjection<'_>,
     run_deadline: Instant,
+    logger: &sc_observability_types::SharedCanonicalLog,
 ) -> FeedDone {
     let stage = FeedStage::from_phase(phase);
     let host_deadline = Some(run_deadline);
@@ -381,13 +418,13 @@ fn resume_started_feed(
     loop {
         progress = match progress {
             ReplProgress::FunctionCall(call) if call.function_name == "render_template" => {
-                match resume_render(call, stage, compose_program, host_deadline) {
+                match resume_render(call, stage, compose_program, host_deadline, logger) {
                     Ok(next) => next,
                     Err(done) => return done,
                 }
             }
             ReplProgress::FunctionCall(call) if call.function_name == "sc_compose_run" => {
-                match resume_compose_run(call, stage, compose_program, host_deadline) {
+                match resume_compose_run(call, stage, compose_program, host_deadline, logger) {
                     Ok(next) => next,
                     Err(done) => return done,
                 }
@@ -564,6 +601,7 @@ fn resume_compose_run(
     stage: FeedStage,
     compose_program: ComposeProgram<'_>,
     host_deadline: Option<Instant>,
+    logger: &sc_observability_types::SharedCanonicalLog,
 ) -> Result<ReplProgress, FeedDone> {
     let (subcommand, args) = match compose_run_arguments(&call) {
         Ok(ready) => ready,
@@ -572,7 +610,12 @@ fn resume_compose_run(
     if crate::monty_host::host_budget_exhausted(host_deadline) {
         return Err(timed_out());
     }
-    let result = match crate::monty_host::sc_compose_run(&subcommand, &args, compose_program) {
+    let result = match crate::monty_host::sc_compose_run_with_logger(
+        &subcommand,
+        &args,
+        compose_program,
+        logger,
+    ) {
         Ok(result) => result,
         Err(error) => return Err(after_compose(&error, stage, host_deadline)),
     };
@@ -624,6 +667,7 @@ fn resume_render(
     stage: FeedStage,
     compose_program: ComposeProgram<'_>,
     host_deadline: Option<Instant>,
+    logger: &sc_observability_types::SharedCanonicalLog,
 ) -> Result<ReplProgress, FeedDone> {
     let (template, context) = match render_arguments(&call) {
         Ok(ready) => ready,
@@ -632,7 +676,12 @@ fn resume_render(
     if crate::monty_host::host_budget_exhausted(host_deadline) {
         return Err(timed_out());
     }
-    let rendered = match crate::monty_host::render_template(&template, &context, compose_program) {
+    let rendered = match crate::monty_host::render_template_with_logger(
+        &template,
+        &context,
+        compose_program,
+        logger,
+    ) {
         Ok(rendered) => rendered,
         Err(error) => return Err(after_compose(&error, stage, host_deadline)),
     };

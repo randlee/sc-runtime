@@ -166,3 +166,61 @@ pub use types::{
 };
 #[doc(inline)]
 pub use worker::DEFAULT_RELOAD_POLL;
+
+/// Fixed library identity for every legacy constructor.
+pub(crate) fn noop_logger() -> sc_observability_types::SharedCanonicalLog {
+    std::sync::Arc::new(sc_observability_types::NoopCanonicalLog::named_or_default(
+        "sc-cron",
+    ))
+}
+
+/// Constructs a canonical component event without performing emission.
+pub(crate) fn component_event(
+    service: sc_observability_types::ServiceName,
+    target: &'static str,
+    action: &'static str,
+    level: sc_observability_types::Level,
+    outcome: &'static str,
+    code: Option<&'static str>,
+    fields: serde_json::Map<String, serde_json::Value>,
+) -> Option<sc_observability_types::LogEvent> {
+    use sc_observability_types::{
+        ActionName, ErrorCode, ErrorContext, LogEvent, OBSERVATION_SCHEMA_VERSION, OutcomeLabel,
+        ProcessIdentity, Remediation, TargetCategory, Timestamp,
+    };
+    let (Ok(target), Ok(action), Ok(outcome)) = (
+        TargetCategory::new(target),
+        ActionName::new(action),
+        OutcomeLabel::new(outcome),
+    ) else {
+        return None;
+    };
+    let timestamp = Timestamp::now_utc();
+    let diagnostic = code.map(|code| {
+        let context = ErrorContext::new(
+            ErrorCode::new_static(code),
+            action.as_str(),
+            Remediation::recoverable("Resolve the component failure and retry.", [] as [&str; 0]),
+        );
+        let mut diagnostic = context.diagnostic().clone();
+        diagnostic.timestamp = timestamp;
+        diagnostic
+    });
+    Some(LogEvent {
+        version: (*OBSERVATION_SCHEMA_VERSION).clone(),
+        timestamp,
+        level,
+        service,
+        target,
+        action,
+        message: None,
+        identity: ProcessIdentity::default(),
+        trace: None,
+        request_id: None,
+        correlation_id: None,
+        outcome: Some(outcome),
+        diagnostic,
+        state_transition: None,
+        fields,
+    })
+}

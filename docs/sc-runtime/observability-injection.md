@@ -1,6 +1,6 @@
 # Injectable observability for generated projects
 
-**Status:** Phase B b-13 contract (implementation planned)
+**Status:** Phase B b-13 contract (library contract implemented; development-only bridge active)
 **Related:** [ADR-RUN-0003](../architecture.md), [ADR-RUN-0004](../architecture.md), [ADR-RUN-0007](../architecture.md), [ADR-RUN-0011](../architecture.md), [ADR-RUN-0014](../architecture.md), [ADR-RUN-0303](../architecture.md), [ADR-RT-0002](architecture.md), [ADR-TRN-0006](../sc-transport/architecture.md), [REQ-RUN-0309](../requirements.md), [NFR-RUN-0002](../requirements.md), [NFR-RUN-0010](../requirements.md), [NFR-RT-0002](requirements.md)
 
 ## Goal
@@ -57,6 +57,42 @@ ordered cloned events through `events()` and `clear()`, while
 locks without panicking. Library crates enable this feature only in
 dev-dependencies.
 
+## Temporary development exception
+
+The owner authorized library development before upstream publication on
+2026-10-30. The unpublished local package in
+[`dev/observability-types-shim`](../../dev/observability-types-shim/README.md)
+is named `sc-observability-types` at `1.5.1`; it reexports exact registry
+`1.5.0` values/errors and adds only the fixed trait, Noop/shared handle, and
+`test-util` doubles above. The root workspace dependency
+`sc-observability-types = { version = "1.5.1", path =
+"dev/observability-types-shim" }` selects this facade for development;
+runtime/cron use that workspace entry and sc-command retains its existing
+registry `1.5.0` requirement. Reexports preserve canonical value/error type
+identity, with no observability registry patch. The development lock
+intentionally contains real registry `1.5.0` and local `1.5.1` without
+changing dependency requirements.
+
+Development applications can inject the real registry `sc-observability`
+`1.5.0` logger through the unpublished `sc-observability-dev-adapter` `0.0.0`
+package in `dev/observability-logger-adapter`. Its `LoggerAdapter` newtype
+holds `Arc<v2::Logger>` and implements the planned interface by forwarding
+actual `service_name` and `try_log` calls. The application constructs,
+flushes, and shuts down the real logger. The adapter adds no queue, sink, or
+lifecycle policy; its tests exercise real `1.5.0` admission/sink, saturation,
+and shutdown behavior independently of Noop/recording doubles. Development
+injection uses an Arc around that newtype; the direct Arc coercion described
+below remains the final upstream contract.
+
+Optimized development builds and benchmarks are permitted. Both local
+packages remain unpublished with `publish = false`, and the publication
+guard stays active. b-18 release acceptance requires the real matching
+`1.5.1` registry pair and published adapter proof, removal of development
+workspace path overrides and the local adapter, replacement of newtype
+construction with direct upstream `Arc<Logger>` coercion, and real registry
+root/generated lock resolution. The local `0.0.0` adapter is no claim of
+published `1.5.1` support. Follow the linked removal procedure before publication.
+
 ## Generated daemon responsibilities
 
 Order is fixed ([REQ-RUN-0309](../requirements.md)):
@@ -100,8 +136,10 @@ The generic constructor emits `logger.attached` once; the helper does not
 duplicate it. There is no public wrapper jitter or post-construction setter.
 Existing `new`, `open`, jitter, and
 `supervise` entry points remain source-compatible by delegating with the
-fixed `sc-cron` Noop identity. Both supervision functions return
-`Result<Captured, CronError>`.
+fixed `sc-cron` Noop identity. Both supervision functions return `Result<Captured, CronError>` and use the
+same supervision implementation. Their legacy argument lists remain unchanged.
+`PythonHook::new_with_logger(module, handle)` installs the handle before
+invocation; legacy `PythonHook::new` installs the fixed `sc-cron` Noop.
 
 Generated stderr errors are stable agent-facing strings in the established
 `CODE cause — recovery` form:
@@ -186,7 +224,9 @@ Before library code can accept injection:
 1. **Amend ADR-RUN-0004 and ADR-RUN-0007** — allow
    **`sc-observability-types`** (not the logging
    runtime) on `sc-runtime` and `sc-cron`; consume the matching published
-   types/runtime **1.5.1** patches. `sc-transport` remains out of this cut.
+   types/runtime **1.5.1** patches for release, using only the explicit
+   temporary types-facade exception above during development.
+   `sc-transport` remains out of this cut.
 2. Update **`REQ-RUN-0005`** forbidden/allowed edges and run `sc-lint-boundary`.
 3. Amend ADR-RUN-0003/0303 and ADR-CMD-0001 so the library and generated
    feature graphs, and the command crate's types dependency, are consistent.

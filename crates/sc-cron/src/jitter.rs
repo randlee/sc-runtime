@@ -30,11 +30,73 @@ pub trait JitterSource: Send + Sync {
 ///
 /// If the operating system cannot supply random bytes the offset is zero:
 /// jitter spreads load, it is not a correctness property.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct SystemJitter;
+#[derive(Clone, Default)]
+pub struct SystemJitter {
+    logger: Option<sc_observability_types::SharedCanonicalLog>,
+}
 
-impl JitterSource for SystemJitter {
-    fn jitter(&self, max: Duration) -> Duration {
+/// Legacy value constructor, retaining the fixed `sc-cron` Noop identity.
+#[allow(
+    non_upper_case_globals,
+    reason = "preserves existing unit-value constructor calls"
+)]
+pub const SystemJitter: SystemJitter = SystemJitter { logger: None };
+
+impl std::fmt::Debug for SystemJitter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SystemJitter")
+            .field(
+                "service",
+                &self
+                    .logger
+                    .as_ref()
+                    .map_or("sc-cron", |log| log.service_name().as_str()),
+            )
+            .finish_non_exhaustive()
+    }
+}
+
+impl SystemJitter {
+    /// Creates system jitter using the supplied best-effort logger.
+    #[must_use]
+    pub fn with_logger(logger: sc_observability_types::SharedCanonicalLog) -> Self {
+        Self {
+            logger: Some(logger),
+        }
+    }
+
+    fn unavailable(&self, error: &getrandom::Error) {
+        let default;
+        let logger = match &self.logger {
+            Some(logger) => logger,
+            None => {
+                default = crate::noop_logger();
+                &default
+            }
+        };
+        if let Some(event) = crate::component_event(
+            logger.service_name().clone(),
+            "cron.jitter",
+            "source.unavailable",
+            sc_observability_types::Level::Warn,
+            "failed",
+            Some("JITTER_SOURCE_UNAVAILABLE"),
+            serde_json::json!({"error": error.to_string()})
+                .as_object()
+                .cloned()
+                .unwrap_or_default(),
+        ) {
+            let _ = logger.emit(event);
+        }
+    }
+}
+
+impl SystemJitter {
+    fn sample(
+        &self,
+        max: Duration,
+        mut random: impl FnMut() -> Result<u64, getrandom::Error>,
+    ) -> Duration {
         let upper = u64::try_from(max.as_millis()).unwrap_or(u64::MAX);
         if upper == 0 {
             return Duration::ZERO;
@@ -42,17 +104,30 @@ impl JitterSource for SystemJitter {
         // Rejection sampling: drop the low values that would bias `% upper`.
         let threshold = upper.wrapping_neg() % upper;
         loop {
-            match getrandom::u64() {
+            match random() {
                 Ok(value) if value >= threshold => {
                     return Duration::from_millis(value % upper);
                 }
                 Ok(_) => {}
                 Err(error) => {
-                    tracing::warn!(subsystem = "sc_cron", %error, "no random source; jitter is zero");
+                    self.unavailable(&error);
                     return Duration::ZERO;
                 }
             }
         }
+    }
+
+    /// Exercises the real entropy-failure fallback without relying on OS failure.
+    #[cfg(feature = "test-utils")]
+    #[doc(hidden)]
+    pub fn jitter_without_entropy(&self, max: Duration) -> Duration {
+        self.sample(max, || Err(getrandom::Error::UNSUPPORTED))
+    }
+}
+
+impl JitterSource for SystemJitter {
+    fn jitter(&self, max: Duration) -> Duration {
+        self.sample(max, getrandom::u64)
     }
 }
 

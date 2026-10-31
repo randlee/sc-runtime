@@ -188,10 +188,12 @@ where
             .checked_add(schedule.spec.timeout.get())
             .unwrap_or(monotonic);
         let compose_program = Arc::clone(&self.compose_program);
+        let logger = Arc::clone(&self.coord.logger);
         let handle = tokio::spawn(async move {
             crate::monty_run::drive_feed(
                 clock.as_ref(),
                 crate::monty_run::FeedLaunch {
+                    logger,
                     session,
                     source,
                     phase,

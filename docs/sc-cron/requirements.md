@@ -13,6 +13,13 @@ generated builds do not link it. Here "name" means a Cargo or other manifest
 dependency. Documented wiring may reference the crate in comments and schema
 descriptions.
 
+The Phase B injection API is packaged at workspace version `0.1.1`, with
+`sc-cron` publishable as the fifth public library. Its normal observability
+edge is only `sc-observability-types` with caret `1.5.1`; `test-util` is enabled
+only in dev-dependencies. During the authorized development exception that
+edge inherits the local facade path; actual publication remains gated on
+removing local paths and the real matching registry pair.
+
 ## REQ-CRON-0002: Normal crontab strings
 
 A schedule uses a normal crontab string of five fields: minute, hour, day of month, month, and day of week. `*/5 * * * *` means every fifth minute.

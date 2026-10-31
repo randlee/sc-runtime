@@ -77,7 +77,8 @@ phase. The baseline is `develop` after Track B Monty merged at `240e445`;
 b-10 through b-12 are closed scope and are not replanned. Both continuation
 tracks integrate on
 `integrate/phase-b-observability`; their wave-8 sprint branches remain
-parallel and disjoint. b-17 then consumes b-15's final cron paths and b-16's
+parallel, with only the declared b-15/b-16 shared-file writer window below.
+b-17 then consumes b-15's final cron paths and b-16's
 feature/example before b-18 performs release integration.
 This amendment is authored on `plan/spinoff-monty-observability`; sprint
 dispatch uses the branches declared in each sprint frontmatter.
@@ -106,7 +107,7 @@ head; it does not relabel or materially expand b-10 through b-12.
 | `sc-cron` (Monty host bridge) | `b-10` | `render_template` resumed inside `monty_run::drive_feed` / `execute_feed_with_compose_program`; default `sc-compose` on `PATH` | `b-9`, for `HookTarget::Monty`. Branch `integrate/phase-b-monty` |
 | benchmark platform and Monty reports | `b-11` | benchmark-run skill, multi-subsystem layout (`scripts/benchmark/<subsystem>/`, `site/reports/benchmark-<subsystem>/`), HTML code examples, publish-preflight `benchmark-pass` gate, first subsystem `monty` with campaign case `production_bridge` | `b-10`, for the ext fn `render_template` |
 | `sc-cron` (schedule row limit) | `b-12` | optional embedder `max_schedule_rows`, template sc-config default 10, ADR-RUN-0014 implementation | `b-9` (on `develop`; parallel with Monty track) |
-| injected observability contract | `b-13` | upstream non-blocking types-only contract adoption, generated-workspace and timeout authority amendments, boundary allowlists, public injection signatures, Noop defaults, whole jitter/store/process/Monty component propagation and events, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches; Track B Monty is already present in the `develop` baseline |
+| injected observability contract | `b-13` | upstream non-blocking types-only contract adoption, generated-workspace and timeout authority amendments, boundary allowlists, public injection signatures, Noop defaults, whole jitter/store/process/Monty component propagation and five existing component event rows, workspace `0.1.1` and publishable `sc-cron` | matching published observability `1.5.1` patches, or the authorized development-only types facade below; Track B Monty is already present in the `develop` baseline |
 | `sc-runtime` canonical events | `b-14` | HTTP request lifecycle events through the injected handle | `b-13` |
 | `sc-cron` canonical events | `b-15` | due-run/worker event taxonomy and residual stable failure tokens | `b-13`, which owns scheduler and component logger seams plus component-owned events |
 | extensible Monty product surface | `b-16` | application-defined host registry, `sc_compose_run` and `atm_run` CLI adapters, production tool-crate exclusion, both template dependency inventories, opt-in Cargo features, checked examples | `b-10` resume-loop artifact and b-13 graph/REQ amendments; parallel with b-14 and b-15 |
@@ -117,7 +118,7 @@ head; it does not relabel or materially expand b-10 through b-12.
 
 | Boundary | New allowed edge / contract | Edge that remains forbidden | Owner |
 |---|---|---|---|
-| upstream observability crates | published `CanonicalLog`, `NoopCanonicalLog`, `SharedCanonicalLog`; `CanonicalLog for v2::Logger` | no upstream source path is owned here | external entry prerequisite |
+| upstream observability crates | published `CanonicalLog`, `NoopCanonicalLog`, `SharedCanonicalLog`; `CanonicalLog for v2::Logger` | no upstream source path is owned here | external release prerequisite; development-only types exception below |
 | `BOUNDARY-sc-runtime` | direct `sc-observability-types`; `DaemonBuilder::logger(SharedCanonicalLog)` with fixed `sc-runtime` Noop | `sc-observability`, OTLP, config, and cron | b-13 contract; b-14 event implementation |
 | `BOUNDARY-sc-cron` | direct `sc-observability-types`; `SqliteScheduleStore::open_with_logger`, generic `Scheduler::new_with_logger` preserving supplied components plus coherent `Scheduler::open_with_logger` constructing logger-aware built-ins, `supervise_with_logger`, logger-aware Python hook API, and internal Monty propagation, all with source-compatible Noop legacy entry points | full observability runtime and every other workspace library | b-13 contract/component/hook API; b-15 worker call site and worker/due-run events |
 | generated daemon | direct full logger/types/transport/command edges in one composition root; Arc coercion and injection to both libraries; optional cron/monty features | libraries do not depend back on daemon | b-13 owns graph authority; b-16 owns both template Cargo inventories; b-17 owns hook-environment config; b-18 owns observability wiring and registry-release proof |
@@ -126,8 +127,9 @@ head; it does not relabel or materially expand b-10 through b-12.
 
 At the planning baseline, both library boundary manifests allow `tracing` and
 neither allows `sc-observability-types`; their test-double lists are empty.
-b-13 therefore consumes the upstream Noop/recording contract instead of
-inventing repository-specific fake paths. Shared tracing dependency cleanup
+b-13 consumes the fixed upstream Noop/recording contract, with the temporary
+development facade described below until matching releases are available.
+Shared tracing dependency cleanup
 is deferred; direct owned production calls are removed across b-13, b-14,
 and b-15.
 
@@ -161,7 +163,7 @@ is authoritative for its exact `owned_paths`, relations, branch, and model.
 
 | Sprint | Track / target boundary | Ownership class | Consumed artifact |
 |---|---|---|---|
-| b-13 | observability / `observability-injection` | shared contracts, version/manifests, signatures, whole jitter/store/process/hook/Monty components | non-blocking published types/runtime `1.5.1` pair |
+| b-13 | observability / `observability-injection` | shared contracts, version/manifests, signatures, whole jitter/store/process/hook/Monty components | fixed `1.5.1` contract; authorized development types facade until published pair is available |
 | b-14 | observability / `sc-runtime` | runtime HTTP event sites and tests | `SharedCanonicalLog`, `DaemonBuilder::logger` |
 | b-15 | observability / `sc-cron` | cron worker and due-run event sites and tests | `SharedCanonicalLog` in `RunCoord` plus b-13 component seams |
 | b-16 | monty-product / `monty-host-extensibility` | generic host registry, both CLI adapters, release-crate tool boundary, template Cargo inventories, checked examples | b-10 production resume loop plus b-13 graph authority; replaces its pre-release fixed two-function policy |
@@ -191,7 +193,8 @@ support all command/subcommands rather than a render-only library policy.
 | generated composition, JSONL, release, and signal-shutdown proof | b-18 `test_observability` and consumer preflight | none; this is the continuation integration close |
 
 Static review must parse the six frontmatter blocks, reject duplicate exact
-owned paths inside a wave, and verify every `.sprints/b/structure.ttl`
+owned paths inside a wave except the three declared b-15/b-16 sole-writer
+paths below, and verify every `.sprints/b/structure.ttl`
 criteria path exists. This checks the authoritative source without creating a
 second path inventory.
 
@@ -218,19 +221,30 @@ Monty extension critical path 2 (`b-10` → `b-11`). Width 1. Row-limit path 1 (
 
 Post-Track-B continuation critical path is 4
 (`b-13` -> `b-15` or `b-16` -> `b-17` -> `b-18`).
-Continuation width is 3 because b-14, b-15, and b-16 are disjoint siblings
-in wave 8; continuation sprint count is 6, and the combined
-Phase B sprint count is 18.
+Continuation width is 3 because b-14, b-15, and b-16 remain parallel siblings
+in wave 8, with only the shared-file writer window below. Continuation sprint
+count is 6, and the combined Phase B sprint count is 18.
 
-Wave-8 sibling ownership is disjoint. b-13 first owns shared ADR/REQ,
-boundary, lockfile, library manifests, public injection signatures, and the
+Wave-8 sibling ownership is disjoint except the explicit window below. b-13
+first owns shared ADR/REQ, boundary, lockfile, library manifests, public injection signatures, and the
 whole jitter/store/process/hook/Monty component files and their events/API.
 b-14 owns runtime event sites; b-15 owns only worker and due-run trace sites
 and the worker call passing the handle into b-13's hook API. b-16 exclusively
 owns the host registry/adapters, all production tool-crate boundary checks,
 both template dependency inventories, daemon Cargo, and the first Monty
 example. Its shared authority and library paths are serial successors of
-b-13 and remain disjoint from its wave-8 siblings. Serial consumer sprints
+b-13. The three declared paths shared with b-15 are
+`crates/sc-cron/src/worker.rs`, `crates/sc-cron/src/worker/worker_runs.rs`, and
+`crates/sc-cron/src/scheduler/run_due.rs`. b-15 is their sole writer through
+a compilable development push. b-16 merges that push forward, then becomes
+sole writer only for mechanical registry transport through the Worker
+field/constructor, `spawn_feed`/`FeedLaunch`, and due-run feed parameters,
+preserving `RunCoord` logger Arc identity and events. All other work remains
+parallel. Development push, not QA, PR merge, or whole-sprint completion,
+triggers the handoff; this adds no global b-15 `must_follow` edge to b-16.
+b-15 also owns its existing `target_resolver.rs` and `worker.rs` legacy test
+expectations under `crates/sc-cron/tests/` for the fixed failure-token update.
+Serial consumer sprints
 intentionally extend predecessor-owned paths:
 b-17 follows b-15 and b-16 and then amends the environment model, storage,
 final cron call sites, generated environment configuration, and the example;
@@ -241,6 +255,15 @@ sc-publish consumer input, and every exact output of a real install from the
 pinned kit revision for the `0.1.1` release. Thus b-18 `must_follow` b-14 and
 b-17; b-17 `must_follow` b-15 and b-16; b-14, b-15, and b-16 all
 `must_follow` b-13; b-16 also names b-10's host artifact.
+
+The baseline compose driver has no child-kill deadline branch. b-13 migrates
+its five existing component event rows and propagates the same logger handle;
+it does not introduce kill policy. The exact
+`cron.monty.compose/child.kill_timeout` row (`COMPOSE_CHILD_KILL_TIMEOUT`,
+warning, `timeout`, pid when available, `deadline_remaining_ms = 0`, once per
+post-kill deadline) and its acceptance belong to b-16's already-planned
+deadline/process-group driver. Both CLI adapters keep the approved deadline
+and per-stream output caps; rejecting emission cannot change their results.
 
 The current sc-publish pin is not a valid b-18 input because its installer
 package includes upstream sprint history under `docs/sprints/**`. b-18 is
@@ -282,8 +305,32 @@ inapplicable to this continuation. ADR-RT-0004 is referenced narrowly by
 b-14's existing real-daemon fixture regression; it is not amended or added as
 phase-wide authority.
 Matching published patches of `sc-observability-types` and
-`sc-observability` at `1.5.1` are an entry prerequisite, not
-repository-owned work. b-13 establishes but does not publish this repository's
+`sc-observability` at `1.5.1` remain an external release prerequisite.
+The owner authorized a temporary development exception on 2026-10-30:
+`dev/observability-types-shim` provides an unpublished local
+`sc-observability-types` `1.5.1` facade reexporting exact registry `1.5.0`
+values/errors plus the fixed trait, Noop/shared handle, and test-util doubles.
+A root workspace dependency `sc-observability-types = { version = "1.5.1",
+path = "dev/observability-types-shim" }` selects it for development only;
+runtime/cron consume that workspace entry, while sc-command retains its
+existing registry `1.5.0` requirement. The facade's reexports preserve type
+identity; no observability registry patch is used. The development lock
+intentionally contains registry `1.5.0` and local `1.5.1`.
+Development applications inject the actual registry `sc-observability`
+`1.5.0` logger through the unpublished `sc-observability-dev-adapter` `0.0.0`
+newtype in `dev/observability-logger-adapter`, selected by a workspace path
+dependency. It forwards actual `service_name`/`try_log`; the application owns
+construction, flush, and shutdown, and adapter tests exercise the real
+queue/sinks, saturation, and shutdown rather than Noop substitutes. Optimized
+development builds and benchmarks are permitted. This does not claim an
+upstream `1.5.1` implementation. Public requirements, trait signatures, and
+release versions remain unchanged. b-18 follows the
+[shim removal procedure](../../../dev/observability-types-shim/README.md),
+removes the development workspace path overrides and local adapter, replaces
+newtype construction with direct upstream `Arc<Logger>` coercion, proves real
+matching registry `1.5.1` root/generated locks and the production Logger
+adapter, and passes the active release guard
+without disabling it. b-13 establishes but does not publish this repository's
 `0.1.1` contract; b-18 closes only after the human-authorized sc-publish order
 and a no-checkout-patch registry render succeed, with the publication/proof
 commit tagged `v0.1.1` before any further source or manifest change.
@@ -297,7 +344,8 @@ commit tagged `v0.1.1` before any further source or manifest change.
 - Reimplementing b-10 through b-12 fixed-wait, process-group deadline, benchmark
   platform, or row-limit work. b-16 deliberately replaces the pre-release
   fixed host list and render-only policy with the approved extensible interface;
-  it consumes the existing process limits rather than redesigning them.
+  it implements the already-specified deadline/process-group behavior in the
+  current blocking driver and preserves the approved output caps.
 - Owning upstream observability source/publication, default OTLP, a tracing
   bridge, Monty OS calls beyond b-17's `Getenv`/`GetEnviron`, or injection into
   every workspace crate.
@@ -326,8 +374,11 @@ bash .github/scripts/run-consumer-preflight.sh
 python3 -m unittest tests.integration.generation.test_observability.GeneratedObservabilityIntegration.test_release_mode_uses_registry
 ```
 
-The tree commands show a direct `sc-observability-types` patch and no full
-runtime/OTLP dependency in either library. The generated integration test
+The tree commands show a direct `sc-observability-types` edge and no full
+runtime/OTLP dependency in either library. Development may use the declared
+local facade; release acceptance requires the real registry pair after
+workspace path-override removal and a passing release guard. The generated
+integration test
 parses one HTTP and one real scheduler event from the same JSONL file.
 
 The old narrative at `docs/plan/phase-B/phase-B-plan.md` is a pointer to this file.

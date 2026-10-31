@@ -22,7 +22,10 @@ allowed_dependents = []
 # crate. That edge is not a runtime dependent.
 allowed_dev_dependents = ["sc-cron"]
 allowed_dev_dependencies = ["sc-cron"]
+# The shared scripts/check_observability_dependencies.py CI test checks resolved
+# normal identities for full runtime, OTLP, and development adapter exclusion.
 allowed_dependencies = [
+  "sc-observability-types",
   "async-trait",
   "chrono",
   "cron",
