@@ -97,7 +97,7 @@ enum StopReplyError {
     NotObject,
     MissingAction,
     MissingReason { action: String },
-    UnknownAction { action: String },
+    UnknownAction,
 }
 
 impl fmt::Display for StopReplyError {
@@ -108,10 +108,9 @@ impl fmt::Display for StopReplyError {
             Self::MissingReason { action } => {
                 write!(formatter, "action {action:?} needs a \"reason\"")
             }
-            Self::UnknownAction { action } => write!(
-                formatter,
-                "unknown action {action:?}; expected continue, disable or delete"
-            ),
+            Self::UnknownAction => {
+                formatter.write_str("unknown action; expected continue, disable or delete")
+            }
         }
     }
 }
@@ -587,7 +586,7 @@ fn parse_stop(value: &MontyObject) -> Result<StopDecision, StopReplyError> {
         "continue" => Ok(StopDecision::Continue),
         "disable" => needs_reason().map(StopDecision::Disable),
         "delete" => needs_reason().map(StopDecision::Delete),
-        _ => Err(StopReplyError::UnknownAction { action }),
+        _ => Err(StopReplyError::UnknownAction),
     }
 }
 
@@ -622,14 +621,14 @@ fn host_call(
         .args()
         .map(crate::monty_host::monty_value_to_json)
         .collect::<Result<Vec<_>, _>>()
-        .map_err(|_| "host positional argument is not JSON")?;
+        .map_err(|_| "host positional argument is not JSON; integers must be between -9223372036854775808 and 18446744073709551615")?;
     let mut kwargs = serde_json::Map::new();
     for (key, value) in call.args.kwargs() {
         let key = key.as_str().ok_or("host keyword name is not a string")?;
         kwargs.insert(
             key.to_owned(),
             crate::monty_host::monty_value_to_json(value)
-                .map_err(|_| "host keyword argument is not JSON")?,
+                .map_err(|_| "host keyword argument is not JSON; integers must be between -9223372036854775808 and 18446744073709551615")?,
         );
     }
     let schedule = crate::ScheduleName::new(

@@ -621,9 +621,7 @@ fn parse_reply(output: &HookOutput) -> Result<StopDecision, String> {
         "continue" => Ok(StopDecision::Continue),
         "disable" => needs_reason().map(StopDecision::Disable),
         "delete" => needs_reason().map(StopDecision::Delete),
-        other => Err(format!(
-            "unknown action {other:?}; expected continue, disable or delete"
-        )),
+        _ => Err("unknown action; expected continue, disable or delete".to_owned()),
     }
 }
 

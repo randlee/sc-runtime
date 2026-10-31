@@ -341,3 +341,138 @@ fn fifo_without_writer_child() {
         "runtime teardown is bounded"
     );
 }
+
+const UNKNOWN_ACTION: &str = "unknown action; expected continue, disable or delete";
+const REPLY_RECOVERY: &str = "Return an object with string \"action\" (continue, disable, or delete) and a non-empty \"reason\" when disabling or deleting.";
+const ACTION_SECRETS: [&str; 4] = [
+    "prod-secret\ncredential",
+    "prod-secret\tcredential",
+    "prod-secret\\credential",
+    "prod-secret\"credential",
+];
+
+struct StopActionResolver(String);
+#[async_trait::async_trait]
+impl EnvironmentReferenceResolver for StopActionResolver {
+    async fn resolve(
+        &self,
+        request: EnvironmentReferenceRequest<'_>,
+    ) -> Result<Option<String>, EnvironmentReferenceError> {
+        assert_eq!(request.reference(), "external-stop-action");
+        Ok(Some(self.0.clone()))
+    }
+}
+
+async fn assert_unknown_action_boundary(hook: HookTarget, secret: &str, worker: bool) {
+    let mut fixture = common::Fixture::new();
+    let recorder = Arc::new(sc_observability_types::RecordingCanonicalLog::new(
+        sc_observability_types::ServiceName::new("stop-reply-canary").expect("service"),
+    ));
+    fixture.scheduler = Scheduler::new_with_logger(
+        fixture.store.clone(),
+        fixture.clock.clone(),
+        Arc::new(SeqJitter::default()),
+        recorder.clone(),
+    )
+    .with_hook_environment(
+        HookEnvironmentHost::new()
+            .with_reference_resolver(Arc::new(StopActionResolver(secret.to_owned()))),
+    );
+    let row = fixture.start(spec(
+        "invalid-action",
+        hook,
+        HookEnvironment::new()
+            .reference("KEY", "external-stop-action")
+            .expect("reference"),
+    ));
+    let expected_detail = format!("stop check: HOST_REPLY: {UNKNOWN_ACTION}; {REPLY_RECOVERY}");
+    let expected = RunOutcome::Failed(expected_detail.clone());
+    let outcome = if worker {
+        let handle = tokio::time::timeout(common::WAIT, fixture.worker(common::idle_job()))
+            .await
+            .expect("worker startup");
+        tokio::time::timeout(common::WAIT, fixture.step(60))
+            .await
+            .expect("worker step");
+        fixture.store.wait_recorded(&row, expected.clone()).await;
+        common::shutdown(handle).await;
+        fixture.row(&row).last_outcome.expect("worker recorded")
+    } else {
+        due(&fixture).await
+    };
+    assert_eq!(outcome, expected);
+    let parts = outcome.failure_parts().expect("typed failure");
+    assert_eq!(parts.code, Some("HOST_REPLY"));
+    assert_eq!(parts.message, UNKNOWN_ACTION);
+    assert_eq!(parts.recovery, Some(REPLY_RECOVERY));
+    let stored = fixture.row(&row).last_outcome.expect("persisted outcome");
+    assert_eq!(stored, expected);
+    let events = recorder.events();
+    let terminal = events
+        .iter()
+        .filter(|event| {
+            event.action.as_str()
+                == if worker {
+                    "run.finished"
+                } else {
+                    "due.finished"
+                }
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(terminal.len(), 1, "{events:?}");
+    assert_eq!(terminal[0].fields["error"], expected_detail);
+    assert_eq!(
+        terminal[0].diagnostic.as_ref().map(|d| d.code.as_str()),
+        Some("JOB_FAILED")
+    );
+    assert!(terminal[0].correlation_id.is_some());
+    let escaped = serde_json::to_string(secret).expect("escaped canary");
+    let escaped = &escaped[1..escaped.len() - 1];
+    for detail in [
+        format!("{stored:?}"),
+        serde_json::to_string(&events).expect("events"),
+    ] {
+        for forbidden in [secret, escaped, "prod-secret"] {
+            assert!(
+                !detail.contains(forbidden),
+                "resolved action leaked: {detail}"
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn python_unknown_stop_actions_are_value_free_in_records_and_terminal_events() {
+    let root = tempfile::tempdir().expect("hook root");
+    let module = python_file(
+        root.path(),
+        "import os,json,sys\njson.load(sys.stdin)\nprint(json.dumps({'action':os.getenv('KEY')}))\n",
+    );
+    for secret in ACTION_SECRETS {
+        for worker in [false, true] {
+            assert_unknown_action_boundary(
+                HookTarget::python(&module).expect("python"),
+                secret,
+                worker,
+            )
+            .await;
+        }
+    }
+}
+
+#[cfg(feature = "monty")]
+#[tokio::test]
+async fn monty_unknown_stop_actions_are_value_free_in_records_and_terminal_events() {
+    let source =
+        "import os\ndef cron_stop(h): return {'action':os.getenv('KEY')}\ndef cron_tick(h): pass";
+    for secret in ACTION_SECRETS {
+        for worker in [false, true] {
+            assert_unknown_action_boundary(
+                HookTarget::monty(source).expect("monty"),
+                secret,
+                worker,
+            )
+            .await;
+        }
+    }
+}

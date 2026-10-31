@@ -60,6 +60,75 @@ async fn custom_host_without_cli() {
     assert_eq!(run(registry, "    a = jev_call({'x': [1, True, None]}, label='ok')\n    b = jev_call({'x': [1, True, None]}, label='ok')\n    if a['answer'] != 42 or b != a:\n        raise RuntimeError('result')", BUDGET).await, RunOutcome::Ok);
 }
 #[tokio::test]
+async fn host_integer_results_and_nested_arguments_round_trip_exactly() {
+    let integers = json!([
+        i64::MIN,
+        i64::MAX,
+        (i64::MAX as u64) + 1,
+        (i64::MAX as u64) + 2,
+        u64::MAX,
+    ]);
+    let expected = json!({"values": integers, "nested": [{"values": integers}]});
+    let produced = expected.clone();
+    let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let observed = calls.clone();
+    let registry = MontyHostRegistry::new()
+        .register("produce", move |_: &MontyHostCall| Ok(produced.clone()))
+        .expect("producer")
+        .register("verify", move |call: &MontyHostCall| {
+            assert_eq!(call.args.as_slice(), std::slice::from_ref(&expected));
+            assert_eq!(call.kwargs.get("nested"), Some(&expected));
+            assert_eq!(call.kwargs.get("largest"), Some(&json!(u64::MAX)));
+            for value in call.args[0]["values"].as_array().expect("integers") {
+                assert!(!value.as_number().expect("number").is_f64());
+            }
+            observed.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Ok(json!(true))
+        })
+        .expect("verifier");
+    let tick = "    data = produce()\n    if data['values'][2] == data['values'][3]:\n        raise RuntimeError('distinct integers collapsed')\n    assert verify(data, nested=data, largest=data['values'][4])";
+    assert_eq!(run(registry, tick, BUDGET).await, RunOutcome::Ok);
+    assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn host_integer_arguments_outside_json_domain_are_actionably_denied() {
+    for expression in [
+        "-9223372036854775809",
+        "18446744073709551616",
+        "{'nested': [-9223372036854775809]}",
+        "[{'nested': 18446744073709551616}]",
+    ] {
+        for keyword in [false, true] {
+            let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+            let observed = calls.clone();
+            let registry = MontyHostRegistry::new()
+                .register("capture", move |_: &MontyHostCall| {
+                    observed.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    Ok(Value::Null)
+                })
+                .expect("capture");
+            let argument = if keyword {
+                format!("value={expression}")
+            } else {
+                expression.to_owned()
+            };
+            let outcome = run(registry, &format!("    capture({argument})"), BUDGET).await;
+            code(&outcome, "HOST_DENIED");
+            let parts = outcome.failure_parts().expect("typed failure");
+            assert!(parts.message.contains(
+                "integers must be between -9223372036854775808 and 18446744073709551615"
+            ));
+            assert_eq!(
+                parts.recovery,
+                Some("Fix hook source or register the required application host function.")
+            );
+            assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 0);
+        }
+    }
+}
+
+#[tokio::test]
 async fn handler_error_is_typed_even_when_invalid_spec() {
     let registry = MontyHostRegistry::new()
         .register("fail", |_: &MontyHostCall| {

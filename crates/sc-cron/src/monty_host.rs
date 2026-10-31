@@ -114,6 +114,10 @@ impl fmt::Debug for MontyHostCall {
 pub trait MontyHostHandler: Send + Sync {
     /// Handles one invocation and returns a JSON-shaped result.
     ///
+    /// Signed `i64` and unsigned `u64` integers retain their exact values and
+    /// integer type in both directions, including nested arrays and objects.
+    /// Monty integer arguments outside that JSON domain fail as `HOST_DENIED`.
+    ///
     /// # Errors
     /// Application errors are recorded as `HOST_CALL_FAILED`, even InvalidSpec.
     fn call(&self, call: &MontyHostCall) -> Result<Value, CronError>;
@@ -383,10 +387,15 @@ pub(crate) fn json_to_monty(value: &Value) -> MontyObject {
     match value {
         Value::Null => MontyObject::none(),
         Value::Bool(item) => MontyObject::bool(*item),
-        Value::Number(number) => number.as_i64().map_or_else(
-            || MontyObject::float(number.as_f64().unwrap_or(0.0)),
-            MontyObject::int,
-        ),
+        Value::Number(number) => {
+            if let Some(signed) = number.as_i64() {
+                MontyObject::int(signed)
+            } else if let Some(unsigned) = number.as_u64() {
+                MontyObject::bigint(unsigned.into())
+            } else {
+                MontyObject::float(number.as_f64().unwrap_or(0.0))
+            }
+        }
         Value::String(text) => MontyObject::string(text.clone()),
         Value::Array(items) => MontyObject::list(items.iter().map(json_to_monty)),
         Value::Object(map) => MontyObject::dict(
@@ -400,7 +409,7 @@ pub(crate) fn json_to_monty(value: &Value) -> MontyObject {
 ///
 /// Null, bool, int, float, string, list, and dict (string keys) are accepted.
 /// Any other Monty type, a non-string dict key, an int that does not fit in
-/// `i64`, or a non-finite float is [`MontyJsonError`].
+/// either `i64` or `u64`, or a non-finite float is [`MontyJsonError`].
 ///
 /// # Errors
 ///
@@ -409,7 +418,7 @@ pub(crate) fn monty_value_to_json(value: ObjectRef<'_>) -> Result<Value, MontyJs
     match value.type_name() {
         "NoneType" => Ok(Value::Null),
         "bool" => Ok(Value::Bool(value.as_bool().ok_or(MontyJsonError)?)),
-        "int" => Ok(Value::Number(value.as_int().ok_or(MontyJsonError)?.into())),
+        "int" => monty_integer_to_json(value),
         "float" => {
             let number = value.as_float().ok_or(MontyJsonError)?;
             Ok(Value::Number(
@@ -438,6 +447,20 @@ pub(crate) fn monty_value_to_json(value: ObjectRef<'_>) -> Result<Value, MontyJs
         }
         _ => Err(MontyJsonError),
     }
+}
+
+// Called only for the actual Monty integer kind, never arbitrary objects.
+fn monty_integer_to_json(value: ObjectRef<'_>) -> Result<Value, MontyJsonError> {
+    if let Some(signed) = value.as_int() {
+        return Ok(Value::Number(signed.into()));
+    }
+    // Monty's public accessor exposes i64 only. Python str(int) is exact
+    // decimal, so this preserves high u64 values without graph internals.
+    let unsigned = value
+        .to_string()
+        .parse::<u64>()
+        .map_err(|_| MontyJsonError)?;
+    Ok(Value::Number(unsigned.into()))
 }
 
 #[cfg(feature = "monty-test-handshake")]

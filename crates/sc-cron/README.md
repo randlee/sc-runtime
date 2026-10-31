@@ -122,6 +122,9 @@ Runtime notes:
 
 Build a `MontyHostRegistry` with `.register("jev_call", handler)?` for custom
 JSON-shaped callbacks. Install it with `Scheduler::with_monty_hosts(registry)`.
+Arguments and results preserve the complete JSON `i64`/`u64` integer domain,
+including nested arrays and objects, as exact Monty integers. Monty integers
+outside that domain are rejected with `HOST_DENIED` and range guidance.
 Register optional `sc_compose_run` or `atm_run` with `.with_sc_compose(config)?`
 or `.with_atm(config)?`; `ScComposeHostConfig` and `AtmHostConfig` choose the
 executable and cwd. Both forward any command and argv without a shell, clear

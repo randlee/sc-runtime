@@ -588,7 +588,10 @@ async fn python_reply_errors_redact_detail_and_preserve_fixed_code_and_recovery(
         let outcome = due(&fixture).await;
         assert_code(&outcome, "HOST_REPLY");
         let parts = outcome.failure_parts().expect("parts");
-        assert!(parts.message.contains("[REDACTED_ENV]"));
+        assert_eq!(
+            parts.message,
+            "unknown action; expected continue, disable or delete"
+        );
         assert!(
             parts
                 .recovery

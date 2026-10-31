@@ -251,7 +251,10 @@ async fn initialization_runtime_return_and_both_cli_streams_redact_without_touch
         assert!(outcome.to_string().contains("[REDACTED_ENV]"));
         let outcome = run("import os\ndef cron_stop(h): return {'action':'bad-'+os.getenv('KEY')}\ndef cron_tick(h): return None", policy.clone(), HookEnvironmentHost::new(), MontyHostRegistry::new()).await;
         assert_code(&outcome, "HOST_REPLY");
-        assert!(outcome.to_string().contains("[REDACTED_ENV]"));
+        assert_eq!(
+            outcome.failure_parts().expect("parts").message,
+            "unknown action; expected continue, disable or delete"
+        );
         let registry = MontyHostRegistry::new()
             .with_sc_compose(ScComposeHostConfig::new(python_program()).expect("compose"))
             .expect("registry")
