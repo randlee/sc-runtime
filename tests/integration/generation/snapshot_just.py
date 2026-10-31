@@ -3,9 +3,10 @@
 import hashlib
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
+
+from owned_process import run as run_owned
 
 
 def snapshot(root):
@@ -26,7 +27,7 @@ def snapshot(root):
 
 def main():
     before = snapshot(Path.cwd())
-    result = subprocess.run([os.environ["SC_TEST_REAL_JUST"], *sys.argv[1:]], timeout=900)
+    result = run_owned([os.environ["SC_TEST_REAL_JUST"], *sys.argv[1:]], timeout=900)
     after = snapshot(Path.cwd())
     with open(os.environ["SC_TEST_SNAPSHOT_LOG"], "a", encoding="utf-8") as log:
         log.write(json.dumps({"recipe": sys.argv[1:], "before": before, "after": after}) + "\n")
