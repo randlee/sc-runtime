@@ -15,6 +15,12 @@ import tomllib
 import unittest
 from pathlib import Path, PureWindowsPath
 
+from tests.integration.generation.owned_process import run as run_owned
+
+def owned_check_output(args, **kwargs):
+    return run_owned(args, capture_output=True, check=True, **kwargs).stdout
+
+
 ROOT = Path(__file__).resolve().parents[3]
 SIGNAL_MARKERS = {
     "SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST": "1",
@@ -36,7 +42,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         temp = tempfile.TemporaryDirectory(prefix="sc-runtime-generated-test-")
         self.addCleanup(temp.cleanup)
         app = Path(temp.name) / "app"
-        subprocess.run(
+        run_owned(
             ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
             cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
         )
@@ -45,7 +51,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
 
     def run_generated_test(self, app, package, target, name, *, monty=False):
         cargo = ["cargo", "+1.96.1"] if monty else ["cargo"]
-        result = subprocess.run(
+        result = run_owned(
             [*cargo, "test", "-p", package, "--features", "monty" if monty else "cron", *target, name, "--", "--exact"],
             cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL,
             text=True, capture_output=True,
@@ -82,7 +88,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.assertIn('pathlib.Path("wizard/fixtures").glob("*.json")', workflow)
         self.assertIn('fixture: ${{ fromJson(needs.fixtures.outputs.names) }}', workflow)
         self.assertIn('wizard/fixtures/${{ matrix.fixture }}', workflow)
-        actual = json.loads(subprocess.check_output(
+        actual = json.loads(owned_check_output(
             [sys.executable, "-c", 'import json, pathlib; print(json.dumps(sorted(path.name for path in pathlib.Path("wizard/fixtures").glob("*.json"))))'],
             cwd=ROOT, text=True, timeout=10,
         ))
@@ -109,7 +115,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             log = root / "snapshots.jsonl"
             env = {**os.environ, "PATH": str(wrapper_dir) + os.pathsep + os.environ.get("PATH", ""),
                    "SC_TEST_REAL_JUST": real_just, "SC_TEST_SNAPSHOT_LOG": str(log)}
-            subprocess.run(
+            run_owned(
                 [real_just, "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
                 cwd=ROOT, env=env, check=True, timeout=1800, stdin=subprocess.DEVNULL,
             )
@@ -153,12 +159,12 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="sc-runtime-lifecycle-") as temp:
             root = Path(temp)
             app = root / "app"
-            subprocess.run(
+            run_owned(
                 ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--development-observability"],
                 cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
             )
             def build_executable(command, cwd, name):
-                result = subprocess.run(
+                result = run_owned(
                     [*command, "--message-format=json"], cwd=cwd, check=True,
                     timeout=900, stdin=subprocess.DEVNULL, text=True, capture_output=True,
                 )
@@ -242,7 +248,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                     logs = list((runtime / "logs").glob("*.jsonl"))
                     self.assertEqual(len(logs), 1, str(logs))
                     with logs[0].open("rb") as log_input:
-                        subprocess.run([str(parser_binary)],
+                        run_owned([str(parser_binary)],
                                        stdin=log_input, check=True, timeout=30)
                     events = [json.loads(line) for line in logs[0].read_text().splitlines()]
                     self.assertTrue(events)
@@ -253,18 +259,18 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
     @unittest.skipUnless(os.environ.get("SC_RUNTIME_REGISTRY_PROOF") == "1",
                          "registry proof runs after the authorized publication")
     def test_release_mode_uses_registry(self):
-        subprocess.run([sys.executable, "scripts/check_observability_release.py"],
+        run_owned([sys.executable, "scripts/check_observability_release.py"],
                        cwd=ROOT, check=True, timeout=120, stdin=subprocess.DEVNULL)
         with tempfile.TemporaryDirectory(prefix="sc-runtime-registry-proof-") as temp:
             app = Path(temp) / "app"
-            subprocess.run(
+            run_owned(
                 [sys.executable, "scripts/new_project.py", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json", "--release"],
                 cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
             )
             manifest = tomllib.loads((app / "Cargo.toml").read_text())
             self.assertNotIn("patch", manifest)
             package = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())["package"]["name"]
-            metadata = json.loads(subprocess.check_output(
+            metadata = json.loads(owned_check_output(
                 ["cargo", "+1.96.1", "metadata", "--all-features", "--format-version", "1"],
                 cwd=app, text=True, timeout=900, stdin=subprocess.DEVNULL,
             ))
@@ -277,7 +283,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
                 expected_version = "1.5.1" if item["name"].startswith("sc-observability") else "0.1.1"
                 self.assertEqual(item["version"], expected_version)
             for feature in ("cron", "monty"):
-                subprocess.run(["cargo", "+1.96.1", "test", "-p", package, "--features", feature],
+                run_owned(["cargo", "+1.96.1", "test", "-p", package, "--features", feature],
                                cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL)
 
     def test_pinned_publish_kit_inventory(self):
@@ -288,10 +294,10 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.addCleanup(temp.cleanup)
         checkout = Path(temp.name)
         git_env = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
-        subprocess.run(["git", "init", "--quiet", str(checkout)], check=True, timeout=30, env=git_env)
-        subprocess.run(["git", "-C", str(checkout), "fetch", "--quiet", "--depth", "1", pin["repository"], pin["revision"]], check=True, timeout=120, env=git_env)
-        subprocess.run(["git", "-C", str(checkout), "checkout", "--quiet", "--detach", "FETCH_HEAD"], check=True, timeout=30, env=git_env)
-        actual = subprocess.check_output(["git", "-C", str(checkout), "rev-parse", "HEAD"], text=True, timeout=30, env=git_env).strip()
+        run_owned(["git", "init", "--quiet", str(checkout)], check=True, timeout=30, env=git_env)
+        run_owned(["git", "-C", str(checkout), "fetch", "--quiet", "--depth", "1", pin["repository"], pin["revision"]], check=True, timeout=120, env=git_env)
+        run_owned(["git", "-C", str(checkout), "checkout", "--quiet", "--detach", "FETCH_HEAD"], check=True, timeout=30, env=git_env)
+        actual = owned_check_output(["git", "-C", str(checkout), "rev-parse", "HEAD"], text=True, timeout=30, env=git_env).strip()
         self.assertEqual(actual, pin["revision"])
         installer = checkout / "plugins/sc-publish/install.py"
         spec = importlib.util.spec_from_file_location("pinned_publish_installer", installer)
@@ -343,4 +349,4 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.assertLess(guide.index("after all five publications"), guide.index(command))
         plan = (ROOT / "docs/plans/phase-b/sprint-b-18-template-observability-integration.md").read_text()
         self.assertLess(plan.index("Deferred release validation (`run-h0h`)"), plan.index(command))
-        subprocess.run([sys.executable, "-m", "unittest", "tests.integration.generation.test_driver.DriverTests.test_release_mode_skips_the_patch"], cwd=ROOT, check=True)
+        run_owned([sys.executable, "-m", "unittest", "tests.integration.generation.test_driver.DriverTests.test_release_mode_skips_the_patch"], cwd=ROOT, check=True, timeout=30)
