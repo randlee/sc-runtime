@@ -264,7 +264,7 @@ async fn drive<S, FStores, Fut, FRoutes, Apply>(
     app: &AppName,
     config: &DaemonConfig,
     mut control: RunControl,
-    _logger: SharedCanonicalLog,
+    logger: SharedCanonicalLog,
     stores_fn: FStores,
     routes_fn: FRoutes,
     check_mcp: bool,
@@ -301,7 +301,7 @@ where
             return Err(err);
         }
     };
-    serve(router, &endpoint, &mut control, lock, signals).await
+    serve(router, &endpoint, &mut control, lock, signals, logger).await
 }
 
 async fn serve(
@@ -310,6 +310,7 @@ async fn serve(
     control: &mut RunControl,
     lock: InstanceLock,
     signals: Option<shutdown::Signals>,
+    logger: SharedCanonicalLog,
 ) -> Result<(), RuntimeError> {
     let listener = match sc_transport::bind(endpoint).await {
         Ok(listener) => listener,
@@ -341,6 +342,7 @@ async fn serve(
             drain,
         )),
         metrics,
+        logger,
     );
     let (gate_tx, gate_rx) = tokio::sync::oneshot::channel::<()>();
     let served =
