@@ -41,16 +41,26 @@ def signal_test_enabled(environment):
 
 
 class GeneratedObservabilityIntegration(unittest.TestCase):
-    def generated_app(self):
+    _generated_fixture = None
+
+    @classmethod
+    def generated_app(cls):
+        # These assertions only run generated tests; they do not edit source.
+        # unittest runs this class sequentially. No-edits and wizard proofs
+        # intentionally generate their own independent projects.
+        if cls._generated_fixture is not None:
+            return cls._generated_fixture
         temp = tempfile.TemporaryDirectory(prefix="sc-runtime-generated-test-")
-        self.addCleanup(temp.cleanup)
+        cls.addClassCleanup(temp.cleanup)
         app = Path(temp.name) / "app"
         run_owned(
             ["just", "new", str(app), "--var-file", "wizard/fixtures/sqlite-mcp.json"],
             cwd=ROOT, check=True, timeout=1800, stdin=subprocess.DEVNULL,
         )
         manifest = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())
-        return app, manifest["package"]["name"]
+        cls._generated_fixture = app, manifest["package"]["name"]
+        cls.addClassCleanup(setattr, cls, "_generated_fixture", None)
+        return cls._generated_fixture
 
     def run_generated_test(self, app, package, target, name, *, monty=False, ignored=False):
         cargo = ["cargo", "+1.96.1"] if monty else ["cargo"]

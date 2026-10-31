@@ -108,9 +108,13 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           cargo generate --version | grep -F '0.25.1'
 
-      - name: Install sc-compose
+      - name: Restore Rust builds and generation tool
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        run: cargo install sc-compose --version 1.7.0 --locked
+        uses: ./.github/actions/rust-build-cache
+        with:
+          namespace: crates-linux-default-server-test-util-monty-xwin-debug-release
+          target: workspace
+          toolchains: 1.94.1-1.96.1
 
       - name: Install cargo-deny
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
@@ -150,6 +154,12 @@ jobs:
           python-version: '3.13'
       - uses: dtolnay/rust-toolchain@1.94.1
       - uses: extractions/setup-just@v2
+      - uses: ./.github/actions/rust-build-cache
+        with:
+          namespace: windows-hook-default-monty-debug
+          target: windows
+          toolchains: 1.94.1-1.96.1
+          compose: 'false'
       - name: Verify owned process cleanup on Windows
         run: just test owned-process-windows
       - name: Execute default shared hook environment root
