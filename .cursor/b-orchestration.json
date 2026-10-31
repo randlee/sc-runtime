@@ -215,7 +215,7 @@
       "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-17-sc-cron-hook-environment",
       "model": "gpt-6.1-sol",
       "effort": "high",
-      "status": "qa3_pass_all16ci_success_pending_merge",
+      "status": "merged_to_integration",
       "developer_task_id": "/root/phaseb_b17_developer",
       "assignment": "/tmp/phaseb-cursor-orchestration/b-17-dev-assignment.xml",
       "base": "2afc3f69bcd33cfd43d4cc17ba43a7e995ee0ea2",
@@ -355,17 +355,19 @@
           "status": "completed",
           "fenced_json_received": true
         }
-      ]
+      ],
+      "merge_commit": "d8d589e7c40ef216e4143d87665722dd61a04e06",
+      "merged_at": "2026-10-31T04:54:29Z"
     },
     "b-18": {
       "task_id": "run-03z.6",
-      "branch": "sprint/b-18-template-observability-integration",
-      "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-18-template-observability-integration",
-      "head": "3b4b686fc6712ee63a50b683cf89750f0f01e445",
-      "status": "kit_preparation_validated_runtime_pending_b17_merge",
+      "branch": "codex/b-18-publishing-kit",
+      "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit",
+      "head": "8e8d030dcc7e1d2daa7041a04b74561f938c1010",
+      "status": "approved_parents_merged_starting_final_runtime_composition",
       "must_follow_heads": {
-        "b-14": "e47ce120dd24035a6bbcb9ec67cc028c47181fdf",
-        "b-17": "ce9cc6088d2da2a3c6b1e5301d8a0975ae742f35"
+        "b-14": "72897f2b58f4d40cd25b80d2c425b592e57b2e90",
+        "b-17": "d8d589e7c40ef216e4143d87665722dd61a04e06"
       },
       "qualification_task_id": "/root/phaseb_b18_kit_qualification",
       "qualification_bead": "run-03z.15",
@@ -404,7 +406,15 @@
           "EXT-001"
         ],
         "result": "/tmp/phaseb-cursor-orchestration/b18-kit-install/prequalification-ext-recheck-result.md"
-      }
+      },
+      "legacy_preparation_worktree": {
+        "branch": "sprint/b-18-template-observability-integration",
+        "worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/sprint/b-18-template-observability-integration",
+        "head": "3b4b686fc6712ee63a50b683cf89750f0f01e445",
+        "disposition": "preserved; stale runtime preparation conflicts avoided through clean kit branch"
+      },
+      "lifecycle_worktree": "/Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-lifecycle-tests",
+      "lifecycle_branch": "codex/b-18-lifecycle-tests"
     }
   },
   "qa_rounds": [
