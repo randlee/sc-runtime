@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:EXT-B17-001>
+  qa:id "EXT-B17-001" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "extensibility-qa" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location ".github/workflows/crates.yml:0" ;
+  qa:issue "Custom Monty hosts cannot access the resolved occurrence environment." ;
+  qa:recommendation "Expose read-only lookup/enumeration of the same resolved occurrence snapshot through MontyHostCall, without changing the handler/registration signatures, adding global-environment reads, or permitting mutation. Keep Debug value-free. Add a registered custom-closure integration case that observes the effective Set/Reference/Clear values from the same stop/tick snapshot, alongside the built-in adapter cases." .

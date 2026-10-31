@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:REQ-QA-B17-001>
+  qa:id "REQ-QA-B17-001" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location ".github/workflows/crates.yml:151" ;
+  qa:issue "B-17 adds a Windows workflow job that runs three cargo test commands directly. Active REQ-RUN-0004 requires every workflow lint/test/generation step to invoke the standard just lint/test/new recipes and records only the REQ-RUN-0306 cargo-generate job as an exception. The new Windows test job is not that exception, so the sprint's own platform-validation mechanism conflicts with the binding repository requirement." ;
+  qa:recommendation "Route the Windows validation through the required just recipe while preserving evidence for the three named roots, or plan and review an explicit REQ-RUN-0004 amendment establishing a narrowly scoped Windows-root exception before relying on direct cargo invocations. Do not treat the successful Windows run as waiving the active requirement." .
