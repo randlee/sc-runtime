@@ -96,16 +96,27 @@ async fn run(
         // Attach an application reference resolver to this prebuilt policy here.
         #[cfg(feature = "monty")]
         let monty_hosts = sc_cron::MontyHostRegistry::new();
-        daemon::cron::open(
+        std::sync::Arc::new(daemon::cron::open(
             &config.cron, &instance_root, observability.logger(), hook_environment,
             #[cfg(feature = "monty")] monty_hosts,
-        ).map_err(cron_error)?
+        ).map_err(cron_error)?)
     };
     #[cfg(feature = "cron")]
-    let worker = scheduler.spawn_worker(std::sync::Arc::new(daemon::cron::ApplicationJob));
+    let scheduler_for_stores = std::sync::Arc::clone(&scheduler);
+    #[cfg(feature = "cron")]
+    let (worker_tx, worker_rx) = tokio::sync::oneshot::channel();
     let result = sc_runtime::Daemon::builder(transport_name, &config.daemon)
         .logger(observability.logger())
-        .stores(move || async move { daemon::open_stores(targets).await })
+        .stores(move || async move {
+            let stores = daemon::open_stores(targets).await?;
+            #[cfg(feature = "cron")]
+            {
+                // The runtime holds daemon.lock before invoking this closure.
+                let worker = scheduler_for_stores.spawn_worker(std::sync::Arc::new(daemon::cron::ApplicationJob));
+                let _ = worker_tx.send(worker);
+            }
+            Ok(stores)
+        })
         .routes(daemon::routes::router)
         {% if mcp %}.mcp(daemon::mcp::service){% endif %}
         .run()
@@ -114,7 +125,9 @@ async fn run(
     {
         // shutdown consumes the handle and always joins, including timeout paths.
         let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(5);
-        let _drained = worker.shutdown(deadline).await;
+        if let Ok(worker) = worker_rx.await {
+            let _drained = worker.shutdown(deadline).await;
+        }
         drop(scheduler);
     }
     result.map_err(|err| {
@@ -205,6 +218,28 @@ mod tests {
         assert!(!head.contains(recovery), "{line}");
         assert!(!line.contains("DAEMON.CONFIG"), "{line}");
         assert!(!config_cause(err).is_empty(), "{line}");
+    }
+
+    #[cfg(feature = "cron")]
+    #[tokio::test]
+    async fn runtime_failure_before_stores_releases_handles_without_waiting_for_worker() {
+        let root = tempfile::tempdir().expect("instance root");
+        let mut values: serde_json::Value = serde_json::from_str(include_str!("../../../config/default.json")).expect("default config");
+        values["instance_root"] = serde_json::json!(root.path());
+        let mut config: daemon::AppConfig = serde_json::from_value(values).expect("config");
+        config.daemon.endpoint_flag = Some("invalid-endpoint".to_owned());
+        let observability = daemon::observability::Observability::init(
+            daemon::APP_NAME, &config.logging, root.path().to_path_buf(),
+        ).unwrap_or_else(|error| panic!("logger: {error}"));
+        let weak = std::sync::Arc::downgrade(&observability.logger());
+        let app = sc_transport::AppName::new(daemon::APP_NAME).expect("app");
+        let error = tokio::time::timeout(
+            std::time::Duration::from_secs(5), super::run(&config, &app, &observability),
+        ).await.expect("no worker handle exists before the stores closure runs").expect_err("endpoint rejected");
+        assert!(error.starts_with("RUNTIME.ENDPOINT_FAILED "), "{error}");
+        assert_eq!(weak.strong_count(), 1, "only owner retains logger handle");
+        observability.shutdown().expect("consuming shutdown");
+        assert!(weak.upgrade().is_none());
     }
 
     #[test]
