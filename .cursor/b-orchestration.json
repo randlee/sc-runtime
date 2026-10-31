@@ -538,15 +538,40 @@
         "task_id": "/root/phaseb_b18_sdk_lifecycle_fix",
         "bead": "run-03z.42.1",
         "branch": "codex/b-18-qa1-sdk-lifecycle",
-        "compiling_commit": "1ff3bbd",
-        "scope": "core generic lock-held cleanup and joined worker/native-store ownership"
+        "compiling_commit": "be6cfc44ffc03c43fa4c74b315053656fc2fd24a",
+        "scope": "core generic lock-held cleanup and joined worker/native-store ownership",
+        "status": "developer_validated_consumed_by_app",
+        "evidence": "/tmp/phaseb-cursor-orchestration/b18-qa1/sdk-fix-validation/sdk-fix-result.json"
       },
       "workflow_fix": {
         "task_id": "/root/phaseb_b18_lifecycle_tests",
         "bead": "run-03z.42.2",
         "branch": "codex/b-18-qa1-workflow-tests",
         "compiling_commit": "a4b3440",
-        "scope": "standard just feature checks and owned test process trees; native Windows witness pending"
+        "scope": "standard just feature checks and owned test process trees; native Windows witness pending",
+        "status": "correcting_peer_findings_before_combined_freeze",
+        "remaining": [
+          "Windows Job ActiveProcesses zero before helper return and native CI witness",
+          "Owned same-SID descendant new process groups cleaned with deterministic ready witness",
+          "Standard generation runner import shape"
+        ]
+      },
+      "app_fix": {
+        "task_id": "/root/phaseb_b18_composition",
+        "head": "6b59cc1f2ac4e2d110eb120ea0ac95bfc24b44ed",
+        "status": "targeted_generated_14_cron_plus_1_environment_pass_waiting_final_workflow_artifact",
+        "sdk_protected_inputs_match": true
+      },
+      "qa2_preparation": {
+        "packet": "/tmp/phaseb-cursor-orchestration/b18-qa2",
+        "required_reviewers": [
+          "req-qa",
+          "arch-qa",
+          "rust-qa-agent",
+          "rust-service-hardening-agent",
+          "flaky-test-qa"
+        ],
+        "status": "draft_not_dispatched_pending_final_combined_head"
       }
     }
   },
