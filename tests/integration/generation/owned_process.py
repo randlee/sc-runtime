@@ -63,14 +63,30 @@ def _windows_job(process):
     return kernel, job
 
 
+def _session_listing():
+    return subprocess.run(["ps", "-axo", "pid=,stat="], capture_output=True,
+                          text=True, check=True, timeout=2)
+
+
+def _check_session_inspection():
+    try:
+        listing = _session_listing()
+        own_pid = os.getpid()
+        if not any(line.split() and line.split()[0] == str(own_pid)
+                   for line in listing.stdout.splitlines()):
+            raise RuntimeError("ps did not list the current process")
+        os.getsid(own_pid)
+    except (OSError, subprocess.SubprocessError, RuntimeError) as error:
+        raise RuntimeError("owned command refused: Unix session inspection unavailable") from error
+
+
 def _stop_owned_session(leader):
     """Stop all ordinary process groups in our pinned Unix session."""
     try:
         os.killpg(leader, signal.SIGSTOP)
         deadline = time.monotonic() + 10
         while True:
-            listing = subprocess.run(["ps", "-axo", "pid=,stat="], capture_output=True,
-                                     text=True, check=True, timeout=2)
+            listing = _session_listing()
             active = []
             for line in listing.stdout.splitlines():
                 fields = line.split()
@@ -134,6 +150,8 @@ def _terminate_windows_job(kernel, handle):
 def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_output=False, check=False):
     """Run a command in an owned tree; timeout and failure clean up descendants."""
     nested = _is_nested()
+    if os.name != "nt" and not nested:
+        _check_session_inspection()
     with tempfile.TemporaryDirectory(prefix="sc-test-owned-") as temp:
         root = Path(temp)
         config = root / "command.json"

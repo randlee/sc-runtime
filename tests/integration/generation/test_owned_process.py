@@ -7,15 +7,28 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 from pathlib import Path
 
 try:
-    from tests.integration.generation.owned_process import run
+    from tests.integration.generation import owned_process
 except ModuleNotFoundError:
-    from owned_process import run
+    import owned_process
+
+run = owned_process.run
 
 
 class OwnedProcessTests(unittest.TestCase):
+    @unittest.skipIf(os.name == "nt", "Unix session inspection only")
+    def test_unavailable_session_inspection_refuses_before_launch(self):
+        # Mock the ps inspection separately from the target launcher Popen.
+        with mock.patch.object(owned_process, "_is_nested", return_value=False), \
+             mock.patch.object(owned_process.subprocess, "run", side_effect=PermissionError("ps denied")), \
+             mock.patch.object(owned_process.subprocess, "Popen") as launch:
+            with self.assertRaisesRegex(RuntimeError, "Unix session inspection unavailable"):
+                run([sys.executable, "-c", "pass"], timeout=5)
+            launch.assert_not_called()
+
     def assert_exited(self, pid):
         deadline = time.monotonic() + 5
         while time.monotonic() < deadline:
