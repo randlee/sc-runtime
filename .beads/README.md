@@ -14,9 +14,10 @@ https://doltremoteapi.dolthub.com/synaptic-canvas/sc-runtime
 
 Use `bd dolt remote list` to inspect the active Dolt replication configuration.
 Use `bd dolt pull` and `bd dolt push` to synchronize issue data with DoltHub.
-The code Git remote and its branches are separate from this Dolt remote;
-pushing a code branch does not synchronize the issue database. This repository
-uses the DoltHub target above rather than Git `refs/dolt/data` replication.
+The code Git remote and its branches are separate from this Dolt remote.
+A code push does not carry the issue database; any hook-driven Beads
+replication still uses the configured Dolt remote. This repository uses the
+DoltHub target above rather than Git `refs/dolt/data` replication.
 Do not use `bd import` for ordinary synchronization.
 
 Version `config.yaml`, `metadata.json`, the `.gitignore` rules, this README,
