@@ -1167,7 +1167,7 @@
   },
   "benchmark_evidence_correction": {
     "bead": "run-h0h.6",
-    "status": "final_benchmark_complete_qa3_ci_in_flight",
+    "status": "complete_merged",
     "branch": "codex/benchmark-release-evidence",
     "developer_task": "/root/benchmark_evidence_flow_design",
     "owner_direction": "Developer runs benchmark by workstation SSH, commits site/reports artifacts; quality manager reviews tested build; publishing preflight verifies evidence and must not reach private host. First release has no prerequisite installed prerelease.",
@@ -1694,7 +1694,7 @@
       {
         "qa_pass": "qa-benchmark-evidence-3",
         "commit": "48335a7b5c6b095b14d64975a64c8314f3b51412",
-        "verdict": "IN-FLIGHT",
+        "verdict": "PASS",
         "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/101#issuecomment-6550682439",
         "reviewer_manifest": [
           {
@@ -1740,9 +1740,7 @@
           ".triage/benchmark-evidence/findings/BENCH-EVIDENCE-003.ttl",
           ".triage/benchmark-evidence/findings/BENCH-EVIDENCE-004.ttl"
         ],
-        "finding_ids": [
-          "BENCH-EVIDENCE-004"
-        ],
+        "finding_ids": [],
         "coordinator_task_id": "/root/evidence_qa3_enforcer",
         "machine_status": {
           "sprint": "benchmark-release-evidence",
@@ -1750,22 +1748,18 @@
           "branch": "codex/benchmark-release-evidence",
           "commit": "48335a7b5c6b095b14d64975a64c8314f3b51412",
           "pr": 101,
-          "verdict": "IN-FLIGHT",
-          "deliverables": {
-            "complete": 4,
-            "total": 5,
-            "percent": 80
-          },
+          "verdict": "PASS",
           "findings": {
             "blocking": 0,
-            "important": 1,
+            "important": 0,
             "minor": 0
           },
           "blocking_ids": [],
-          "merge_readiness": "not ready",
-          "merge_reason": "Source fixes and fresh controlled-host evidence are verified; required final-head CI and final aggregate execution remain pending. Req-qa remains FAIL until its last execution gate is closed.",
-          "next_action": "Complete parent-owned CI and same-round final QA/report proof; update this same comment after req-qa closes deliverable 5. Do not start another source review round.",
-          "owner": "parent-orchestrator",
+          "merge_readiness": "ready",
+          "merge_reason": "All required reviewers PASS, req-qa confirms 5/5 deliverables, no open findings remain, TODO scan is clean, and all 17 required checks succeeded at the exact final evidence HEAD.",
+          "next_action": "none",
+          "owner": "none",
+          "recommendation": "Merge PR #101 into develop. Production publication remains a separate authorized release stage.",
           "reviewer_spawn_gate": "pass",
           "reviewer_manifest": [
             {
@@ -1797,10 +1791,10 @@
               "task_id": "/root/evidence_qa3_req",
               "spawn_actor": "parent-orchestrator",
               "fenced_json_received": true,
-              "verdict": "FAIL",
+              "verdict": "PASS",
               "findings": {
                 "blocking": 0,
-                "important": 1,
+                "important": 0,
                 "minor": 0
               }
             }
@@ -1831,7 +1825,7 @@
                 "task_id": "/root/evidence_qa3_req",
                 "spawn_actor": "parent-orchestrator",
                 "fenced_json_received": true,
-                "verdict": "FAIL"
+                "verdict": "PASS"
               }
             ],
             "triage": {
@@ -1846,7 +1840,7 @@
                 "BENCH-EVIDENCE-001": "fixed-qa3",
                 "BENCH-EVIDENCE-002": "fixed-qa2",
                 "BENCH-EVIDENCE-003": "fixed-qa2",
-                "BENCH-EVIDENCE-004": "in_flight"
+                "BENCH-EVIDENCE-004": "closed-final-execution"
               }
             },
             "parent_correlation_required": true,
@@ -1861,10 +1855,19 @@
             "evidence_head": "48335a7b5c6b095b14d64975a64c8314f3b51412",
             "measurement_status": "MEASURED",
             "ceiling_limitation": "Null ceilings remain unratified; this is complete execution evidence, not a numerical performance PASS.",
-            "quiet_window": "Human-reserved window; start and mid-run observations found only the benchmark account compilers, with no other-account overlap observed. No continuous monitoring claimed."
+            "quiet_window": "Human-reserved window; start and mid-run observations found only the benchmark account compilers, with no other-account overlap observed. No continuous monitoring claimed.",
+            "ci": {
+              "head": "48335a7b5c6b095b14d64975a64c8314f3b51412",
+              "required_checks": 17,
+              "all_success": true,
+              "aggregate_url": "https://github.com/randlee/sc-runtime/actions/runs/41253174974"
+            }
           },
-          "missing_reviewers": [],
-          "unparsed_reviewers": []
+          "deliverables": {
+            "complete": 5,
+            "total": 5,
+            "percent": 100.0
+          }
         }
       }
     ],
@@ -1933,6 +1936,41 @@
       "no_other_owner_compile_overlap_observed": true,
       "continuous_monitoring_claimed": false,
       "teams_released": true
+    },
+    "ci": {
+      "all_required_success": true,
+      "count": 17,
+      "head": "48335a7b5c6b095b14d64975a64c8314f3b51412",
+      "timing": {
+        "head": "48335a7b5c6b095b14d64975a64c8314f3b51412",
+        "linux_job_seconds": 1101.0,
+        "test_step_seconds": 744.0,
+        "conclusion": "success"
+      }
+    },
+    "merged_pr": 101,
+    "merged_develop": "9ce367efe2b0fdcfa8e0c5d3be297cc31976adea",
+    "merged_at": "2026-10-31T23:58:51Z",
+    "post_merge_preflight": {
+      "conclusion": "failure",
+      "headSha": "9ce367efe2b0fdcfa8e0c5d3be297cc31976adea",
+      "status": "completed",
+      "url": "https://github.com/randlee/sc-runtime/actions/runs/41254743670",
+      "fixed_diagnostics": [
+        "preflight\tRun consumer publish preflight checks\t2026-11-01T00:01:13.2438785Z benchmark evidence verified: site/reports/benchmark-monty/20261031T233507Z-rand-m5.campaign.json source=396ad6a86f8edf9598aa07195e4889f68655af56 status=MEASURED",
+        "preflight\tDeny release after complete preflight summary\t2026-11-01T00:02:08.5556279Z Preflight complete: failed=[release-candidate-provenance] blocked=[]"
+      ],
+      "failed_checks": [
+        "release-candidate-provenance"
+      ],
+      "consumer_checks": "passed"
+    },
+    "remaining_release_followup": "run-h0h.7",
+    "local_preview": {
+      "url": "http://127.0.0.1:64645/reports/benchmark-monty/index.html",
+      "session_id": 81295,
+      "bind": "127.0.0.1",
+      "kept_running_for_user": true
     }
   }
 }
