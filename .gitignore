@@ -29,3 +29,11 @@ template/Cargo.lock
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Local Beads/generation/session runtime artifacts; retain versioned configuration.
+/.beads.gate.lock
+/.sc-compose/
+/.sc/sessions/
+
+# Python bytecode caches, including nested tooling directories.
+__pycache__/
