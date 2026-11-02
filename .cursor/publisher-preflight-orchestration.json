@@ -2016,7 +2016,7 @@
     "merge_method": "merge_commit",
     "production_publication_started": true,
     "main_merge_performed": true,
-    "remaining": "Owner disposition of published0.1.1 immutability exception/futureconfiguration; run-yes preflightgap; PR106returnfixes; PR105report permissionpending.",
+    "remaining": "run-yes preflightgap; run-bis Windows testcleanup timeout; PR106/run-h0h.10 return fixes todevelop. Publicationcomplete withacceptedimmutableexception; QA105 remainsFAIL0B1I0M.",
     "qa_publication": "verified",
     "qa_comment_url": "https://github.com/randlee/sc-runtime/pull/103#issuecomment-6567835725",
     "merged_main": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
@@ -2101,10 +2101,15 @@
       "immutable": false,
       "repository_immutability_enabled": false,
       "verification_status": "failed_final_immutability_check",
-      "exception_acceptance": "pending_user_decision",
-      "published_at": "2026-11-02T05:57:34Z"
+      "exception_acceptance": "accepted_by_owner",
+      "published_at": "2026-11-02T05:57:34Z",
+      "future_repository_immutability_enabled": true
     },
-    "return_to_develop_pr": 106
+    "return_to_develop_pr": 106,
+    "publication_disposition": "published_with_owner_accepted_initial_immutability_exception",
+    "future_immutability_enabled": true,
+    "qa105_report": "https://github.com/randlee/sc-runtime/pull/105#issuecomment-6586177283",
+    "ci_followup": "run-bis"
   },
   "qa_rounds": [
     {
@@ -2439,6 +2444,235 @@
       },
       "evidence_gate": "COMPLETE",
       "reason": "Direct human PR104 report permission; publicQA4/4zero17CI/readinessPASS; parentGETcorrelated."
+    },
+    {
+      "qa_pass": "qa-release-checksum-1",
+      "commit": "fd7c6edbde95539b7a41154720af3297bcf66221",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/105#issuecomment-6586177283",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/release_assets_req",
+          "spawn_actor": "parent-orchestrator",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/release_assets_arch",
+          "spawn_actor": "parent-orchestrator",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/release_assets_rust",
+          "spawn_actor": "parent-orchestrator",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/windows_monty_timeout",
+          "spawn_actor": "parent-orchestrator",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/release-checksum/findings/FTQ-WINDOWS-001.ttl"
+      ],
+      "finding_ids": [
+        "FTQ-WINDOWS-001"
+      ],
+      "coordinator_task_id": "/root/release_assets_enforcer",
+      "machine_status": {
+        "sprint": "release-checksum-api-fix",
+        "task": "qa-release-checksum-1",
+        "branch": "codex/release-checksum-manifest",
+        "commit": "fd7c6edbde95539b7a41154720af3297bcf66221",
+        "pr": 105,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 4,
+          "total": 4,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 1,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "already merged; CI gate incomplete",
+        "merge_reason": "Packaging source reviews PASS: 4/4 (100%) and zero packaging findings. Combined QA FAIL: 0B+1I+0M; FTQ-WINDOWS-001 remains open in run-bis. PR #105 was already human-merged. CI remains 16 SUCCESS and 1 CANCELLED after the six-hour Windows limit; main preflight and publication provide no CI waiver.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/release_assets_req",
+            "spawn_actor": "parent-orchestrator",
+            "status": "completed",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/release_assets_arch",
+            "spawn_actor": "parent-orchestrator",
+            "status": "completed",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/release_assets_rust",
+            "spawn_actor": "parent-orchestrator",
+            "status": "completed",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/windows_monty_timeout",
+            "spawn_actor": "parent-orchestrator",
+            "status": "completed",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-release-checksum-1",
+          "commit": "fd7c6edbde95539b7a41154720af3297bcf66221",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/105#issuecomment-6586177283",
+          "coordinator_task_id": "/root/release_assets_enforcer",
+          "parent_correlation_required": true,
+          "triage": {
+            "ttl_paths": []
+          },
+          "source_verdict": "PASS",
+          "execution_verdict": "FAIL",
+          "todo_scan": {
+            "scope": "assigned review targets",
+            "rust_targets": 0,
+            "findings": 0
+          },
+          "ci": {
+            "total": 17,
+            "passed": 16,
+            "pending": 0,
+            "failed": 0,
+            "cancelled": 1,
+            "gate": "incomplete",
+            "windows_job": {
+              "id": 125118904828,
+              "run_id": 41396479029,
+              "conclusion": "cancelled",
+              "reason": "six-hour execution limit reached",
+              "started_at": "2026-11-02T05:52:23Z",
+              "completed_at": "2026-11-02T11:53:03Z",
+              "url": "https://github.com/randlee/sc-runtime/actions/runs/41396479029/job/125118904828",
+              "cancelled_step": "Execute Monty shared hook environment root",
+              "skipped_step": "Execute Monty host bridge root"
+            }
+          },
+          "pr_state": {
+            "state": "MERGED",
+            "merge_commit": "98295aace140729da54f3cde22d348dd0996b181",
+            "merged_at": "2026-11-02T05:52:10Z",
+            "merge_actor_context": "human merge completed before this report"
+          },
+          "main_preflight": {
+            "conclusion": "success",
+            "headSha": "98295aace140729da54f3cde22d348dd0996b181",
+            "status": "completed",
+            "url": "https://github.com/randlee/sc-runtime/actions/runs/41396695600"
+          },
+          "report_publication": {
+            "status": "published",
+            "comment_created": true,
+            "self_url_verified": true,
+            "human_authorization": "Post QA report and updates to PR #105"
+          },
+          "publication_exception_is_ci_waiver": false,
+          "packaging_source_verdict": "PASS",
+          "combined_finding_gate": "FAIL",
+          "conditional_flaky_review": {
+            "task_id": "/root/windows_monty_timeout",
+            "verdict": "FAIL",
+            "finding_ids": [
+              "FTQ-WINDOWS-001"
+            ],
+            "followup_bead": "run-bis",
+            "followup_status": "OPEN",
+            "causal_confidence": "probable cleanup race; no stack capture proves the exact blocked call"
+          },
+          "open_findings": [
+            {
+              "id": "FTQ-WINDOWS-001",
+              "severity": "important",
+              "file": "crates/sc-cron/tests/hook_environment/owned_child.rs",
+              "line": 12,
+              "test": "resolution::invalid_nonunicode_or_oversized_allowlisted_process_values_fail_without_capture",
+              "mechanism": "unbounded_wait",
+              "issue": "OwnedChild destructor always calls an unbounded wrapped wait after start_kill. The Windows JobObject wrapper can consume completion-port notifications in try_wait without recording job completion, then wait infinitely for another notification after the inner process has exited. The 30-second polling assertion cannot bound destructor cleanup. This concrete existing race is a probable explanation for the observed hang, but the exact blocked call was not captured.",
+              "recommendation": "Capture Windows parent/child stacks under an external hard watchdog; replace the unbounded cleanup path with explicit completion-state tracking and bounded job-empty observation while preserving owned process-tree cleanup. Add a deterministic consumed-completion regression; avoid retries or padded timeouts.",
+              "evidence": "Helper lines 9-12 and 28-37. Locked process-wrap 10.0.1 std/job_object.rs lines 171-192: try_wait dequeues a completion notification and delegates inner.try_wait; wait later calls wait_on_job(None). windows.rs maps None to INFINITE. PR105 completed 34/35 tests and reported only the named parent running over 60 seconds until six-hour cancellation."
+            }
+          ]
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      },
+      "evidence_gate": "COMPLETE_PUBLICATION_PROOF",
+      "reason": "HumanapprovedPR105QAupdates; parentGETcorrelationcomplete. ActualQAgateFAILoneImportantWindowscleanup/6htimeout, run-bisOPEN; noCIwaiver."
     }
   ]
 }
