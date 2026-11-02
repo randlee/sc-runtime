@@ -306,7 +306,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
     def test_pinned_publish_kit_inventory(self):
         pin = tomllib.loads((ROOT / "release/sc-publish-pin.toml").read_text())["sc-publish"]
         self.assertEqual(pin["repository"], "https://github.com/randlee/sc-publish")
-        self.assertEqual(pin["revision"], "9677ab083e7dd3feb258235a342e321ca1b45d8d")
+        self.assertEqual(pin["revision"], "77ae845f6b1819bca163a7629ca5598e7d40718f")
         temp = tempfile.TemporaryDirectory(prefix="sc-publish-inventory-")
         self.addCleanup(temp.cleanup)
         checkout = Path(temp.name)
