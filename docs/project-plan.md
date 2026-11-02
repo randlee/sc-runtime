@@ -98,3 +98,14 @@ parent merges. This docs amendment selects no replacement consumer pin.
 | b-16 Monty template examples | [sprint-b-16](plans/phase-b/sprint-b-16-monty-template-examples.md) | complete | `sprint/b-16-monty-template-examples` |
 | b-17 sc-cron hook environment | [sprint-b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md) | complete | `sprint/b-17-sc-cron-hook-environment` |
 | b-18 template observability integration | [sprint-b-18](plans/phase-b/sprint-b-18-template-observability-integration.md) | complete | `codex/b-18-publishing-kit` |
+
+Phase bc is the post-Phase-b consumer-quality and ecosystem-release phase.
+It makes the generated sc-lint consumer complete and moves the public
+runtime/template pair to the approved latest RMCP and Utoipa family while
+retaining the rusqlite 0.39/SQLx compatibility guard. See [Phase bc
+plan](plans/phase-bc/phase-bc-plan.md).
+
+| Sprint | Plan | Status | Branch |
+| --- | --- | --- | --- |
+| bc-1 consumer sc-lint full profile | [sprint-bc-1](plans/phase-bc/sprint-bc-1-consumer-sc-lint-full-profile.md) | planned | `sprint/bc-1-consumer-sc-lint-full-profile` |
+| bc-2 runtime ecosystem upgrade | [sprint-bc-2](plans/phase-bc/sprint-bc-2-runtime-ecosystem-upgrade.md) | planned | `sprint/bc-2-runtime-ecosystem-upgrade` |

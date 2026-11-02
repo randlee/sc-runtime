@@ -1,0 +1,18 @@
+@prefix triage: <urn:atm:triage:> .
+
+# Wave 1 contains two independent integration sprints. Their owned paths do
+# not overlap; neither consumes an artifact from the other.
+
+triage:PhaseBC a triage:Phase .
+
+triage:bc-1 a triage:Sprint ;
+  triage:inPhase triage:PhaseBC ;
+  triage:order 1 ;
+  triage:branch "sprint/bc-1-consumer-sc-lint-full-profile" ;
+  triage:criteria "docs/plans/phase-bc/sprint-bc-1-consumer-sc-lint-full-profile.md" .
+
+triage:bc-2 a triage:Sprint ;
+  triage:inPhase triage:PhaseBC ;
+  triage:order 2 ;
+  triage:branch "sprint/bc-2-runtime-ecosystem-upgrade" ;
+  triage:criteria "docs/plans/phase-bc/sprint-bc-2-runtime-ecosystem-upgrade.md" .
