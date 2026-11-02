@@ -49,14 +49,18 @@ signal lifecycle using the approved real registry `1.5.0` adapter.
 
 The former inventory-unsafe kit pin was rejected because its actual installer destination
 inventory included `docs/sprints/**`. The current pin is the qualified exact
-revision `77ae845f6b1819bca163a7629ca5598e7d40718f`, from unmerged upstream
+revision `b6947ab2e495398a58123c60c0b86b5421f89979`, from unmerged upstream
 [PR 138](https://github.com/randlee/sc-publish/pull/138). It extends the previously
 qualified PR 137 revision `9677ab083e7dd3feb258235a342e321ca1b45d8d` with only
 the shared release workflow and its existing regression test file. The 85
 installer destinations are unchanged. SDK-only releases stage assets outside
-tracked `release/`, tolerate absent downloads, and emit empty checksums; a
+tracked `release/`, tolerate absent downloads, and emit a nonempty comment-only
+checksum manifest with zero hash entries when no archives exist; a
 retry with `already_published_channels=crates_io` preserves completed crates
-publication. These behaviors come from the pinned installer output.
+publication. These behaviors come from the pinned installer output. The update from qualified
+`77ae845f6b1819bca163a7629ca5598e7d40718f` changes only the empty-archive
+checksum branch and its API minimum-size regression assertion: GitHub rejects
+zero-byte release assets.
 Qualification must enumerate every actual
 copy/render/package destination, reject that class plus traversal, absolute or
 duplicate paths and unsafe symlinks, and compare the inventory with real install

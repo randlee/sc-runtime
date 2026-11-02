@@ -651,10 +651,11 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
           files=(*.tar.gz *.zip *.whl *.tgz)
-          # With no files, sha256sum reads stdin instead of emitting an empty manifest.
-          : > checksums.txt
+          # GitHub release assets must contain at least one byte; no files means no hashes.
           if (( ${#files[@]} )); then
             sha256sum "${files[@]}" > checksums.txt
+          else
+            printf '# No packaged release assets.\n' > checksums.txt
           fi
 
       - name: Create GitHub Release
