@@ -1972,5 +1972,219 @@
       "bind": "127.0.0.1",
       "kept_running_for_user": true
     }
-  }
+  },
+  "release_0_1_1": {
+    "pr": 103,
+    "branch": "release/0.1.1",
+    "head": "3c1e5497a9a3bc1dc05010a11507040b2ddbe950",
+    "candidate_tag": "release-candidate-v0.1.1",
+    "candidate_source": "296f5968879fe0384f0a6a4a89cf162dd4891500",
+    "repair_source": "d9e2a76e3818601ba659d8c81139420deb80915f",
+    "beads": [
+      "run-h0h.7",
+      "run-h0h.8"
+    ],
+    "ci": {
+      "checks": 17,
+      "all_success": true,
+      "linux_job_url": "https://github.com/randlee/sc-runtime/actions/runs/41373498433/job/125048826701",
+      "duration_seconds": 1307,
+      "lint_seconds": 199,
+      "test_seconds": 905,
+      "available_disk_before_cleanup": "88G",
+      "available_disk_after_cleanup": "105G",
+      "available_disk_after_checks": "95G",
+      "cargo_target_size": "6.7G"
+    },
+    "readiness": {
+      "url": "https://github.com/randlee/sc-runtime/actions/runs/41373691024",
+      "conclusion": "success",
+      "failed": [],
+      "blocked": []
+    },
+    "benchmark": {
+      "campaign": "20261102T013737Z-rand-m5",
+      "source": "d9e2a76e3818601ba659d8c81139420deb80915f",
+      "cases": 5,
+      "iterations_each": 30,
+      "skips": 0,
+      "status": "MEASURED",
+      "numerical_ceilings": null,
+      "human_reserved_window": false,
+      "other_account_compile_overlap_observed": false
+    },
+    "merge_method": "merge_commit",
+    "production_publication_started": false,
+    "main_merge_performed": false,
+    "remaining": "PR103 merge commit; exact merged-main preflight; publication; registry-only generated proof; return release repair to develop",
+    "qa_publication": "pending_explicit_PR103_permission_after_automatic_rejection"
+  },
+  "qa_rounds": [
+    {
+      "qa_pass": "qa-release-ci-disk-1",
+      "commit": "3c1e5497a9a3bc1dc05010a11507040b2ddbe950",
+      "verdict": "PASS",
+      "pr_comment_url": "",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/release_disk_req",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/release_disk_arch",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/release_disk_rust",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/release_disk_enforcer",
+      "machine_status": {
+        "sprint": "release-ci-disk-fix",
+        "task": "qa-release-ci-disk-1",
+        "branch": "release/0.1.1",
+        "commit": "3c1e5497a9a3bc1dc05010a11507040b2ddbe950",
+        "pr": 103,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "ready",
+        "merge_reason": "Scoped repair QA passes: 5/5 deliverables, all required reviewers PASS, zero findings/TODOs, 17/17 CI checks green, and refreshed readiness successful at the reviewed HEAD. Parent correlation required before any separately authorized merge.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Accept the scoped CI disk repair QA closeout. Parent must correlate the published Machine Status before any separately authorized merge or release.",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/release_disk_req",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/release_disk_arch",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/release_disk_rust",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-release-ci-disk-1",
+          "commit": "3c1e5497a9a3bc1dc05010a11507040b2ddbe950",
+          "pr_number": 103,
+          "pr_comment_url": "",
+          "coordinator_task_id": "/root/release_disk_enforcer",
+          "reviewer_tasks": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/release_disk_req"
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/release_disk_arch"
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/release_disk_rust"
+            }
+          ],
+          "required_reviewer_tasks": [
+            {
+              "agent": "req-qa",
+              "task_id": "/root/release_disk_req"
+            },
+            {
+              "agent": "arch-qa",
+              "task_id": "/root/release_disk_arch"
+            },
+            {
+              "agent": "rust-qa-agent",
+              "task_id": "/root/release_disk_rust"
+            }
+          ],
+          "parent_correlation_required": true,
+          "triage": {
+            "phase": "release-ci-disk",
+            "ttl_paths": []
+          },
+          "ci": {
+            "checks_total": 17,
+            "checks_success": 17,
+            "linux_job_url": "https://github.com/randlee/sc-runtime/actions/runs/41373498433/job/125048826701",
+            "post_check_free_disk": "95G"
+          },
+          "readiness": {
+            "conclusion": "success",
+            "head": "3c1e5497a9a3bc1dc05010a11507040b2ddbe950",
+            "url": "https://github.com/randlee/sc-runtime/actions/runs/41373691024"
+          }
+        },
+        "deliverables": {
+          "complete": 5,
+          "total": 5,
+          "percent": 100
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      },
+      "evidence_gate": "INCOMPLETE",
+      "reason": "Automatic approval review rejected PR103 report posting; explicit permission requested. CI/readiness/source QA complete."
+    }
+  ]
 }
