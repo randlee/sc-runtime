@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sc-runtime Monty benchmark — 20261102T010758Z-rand-m5</title>
+<style>
+:root { color-scheme: dark; }
+body { font: 16px system-ui, sans-serif; max-width: 72rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; background: #0f1419; color: #e7ecf3; }
+section { background: #1a2332; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; overflow-x: auto; }
+th, td { padding: .5rem; text-align: left; vertical-align: top; border-bottom: 1px solid #30363d; }
+table { width: 100%; border-collapse: collapse; }
+pre { background: #0b0f14; padding: .75rem; overflow-x: auto; }
+.strategy, dt { color: #9aa8bc; }
+dd { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<h1>Monty compose hook benchmark</h1>
+<section><h2>Campaign</h2><dl>
+<dt>campaign_id</dt><dd><code>20261102T010758Z-rand-m5</code></dd>
+<dt>utc</dt><dd><code>2026-11-02T01:07:58Z</code></dd>
+<dt>host</dt><dd><code>rand-m5</code></dd>
+<dt>git_sha</dt><dd><code>296f5968879fe0384f0a6a4a89cf162dd4891500</code></dd>
+<dt>rustc</dt><dd><code>rustc 1.96.1 (31fca3adb 2026-06-26)</code></dd>
+<dt>cargo_profile</dt><dd><code>release</code></dd>
+<dt>harness</dt><dd><code>crates/sc-cron/tests/sc_compose_bench.rs</code></dd>
+<dt>sc_compose_cli_version</dt><dd><code>sc-compose 1.7.0</code></dd>
+<dt>python_sc_compose</dt><dd><code>True</code></dd>
+</dl><p>Campaign status: <strong>MEASURED</strong>.</p>
+<p>MEASURED means complete execution with one or more unratified (null) numerical ceilings; it is not a numerical performance PASS.</p></section>
+<section><h2>Methodology</h2>
+<p>Release-profile Rust harness. Each case has one untimed warmup before its recorded timed iterations. Wall-clock measurements use Rust Instant over the timed block only.</p>
+<p>Subprocess RSS uses a separate one-shot macOS /usr/bin/time -l invocation. In-process RSS is getrusage(RUSAGE_SELF) high-water after the timed block and includes the test binary and Monty VM; it is not an isolated daemon measurement. Per-case memory notes identify the measurement method.</p></section>
+<section><h2>Results</h2><table>
+<thead><tr><th>Case and strategy</th><th>Mean / run</th><th>Total</th><th>Iterations</th><th>Status / reason</th><th>Ceiling</th><th>Memory</th></tr></thead>
+<tbody>
+<tr id="cli"><td><strong>sc_compose_cli_only</strong><p class="strategy">Direct `sc-compose render --mode file` against a fixed temp-root template and JSON var-file. No sc-cron, no Monty, no Python—baseline for what a host bridge should call.</p></td><td>2.308381 ms</td><td>69.251459 ms total</td><td>30 + 1 warmup</td><td>MEASURED<br></td><td>none (unratified)</td><td>Subprocess: 6.47 MiB — One-shot subprocess via /usr/bin/time -l (peak memory footprint)</td></tr>
+<tr id="py_render"><td><strong>python_render_only</strong><p class="strategy">Fresh `python3 -c` each tick: import PyO3 `sc_compose`, call `render_template(str, dict)`. Models per-tick cold subprocess + interpreter startup (worst case for compose in Python).</p></td><td>14.729975 ms</td><td>441.899250 ms total</td><td>30 + 1 warmup</td><td>MEASURED<br></td><td>none (unratified)</td><td>Subprocess: 16.36 MiB — One-shot subprocess via /usr/bin/time -l (peak memory footprint)</td></tr>
+<tr id="py_hook"><td><strong>cpython_hook (PythonHook::invoke)</strong><p class="strategy">Full sc-cron path: `PythonHook` spawns `python3 &lt;fixture&gt;` with `cron.tick`, hook JSON on stdin; fixture calls `sc_compose.render_template` from payload. Production `HookTarget::Python` pattern (isolated child + timeout/kill).</p></td><td>18.005615 ms</td><td>540.168459 ms total</td><td>30 + 1 warmup</td><td>MEASURED<br></td><td>none (unratified)</td><td>Subprocess: 16.36 MiB — One-shot subprocess via /usr/bin/time -l (peak memory footprint)</td></tr>
+<tr id="monty"><td><strong>monty_host_bridge + sc-compose CLI</strong><p class="strategy">Lab only (not production sc-cron yet): `MontyRepl::feed_start` runs snippet `render_template(...)`; host registers ext fn `render_template`, resumes with output from Rust `sc-compose` CLI (same temp-root files). Hook logic stays in Monty; compose stays out of CPython.</p></td><td>2.265970 ms</td><td>67.979125 ms total</td><td>30 + 1 warmup</td><td>MEASURED<br></td><td>none (unratified)</td><td>Subprocess: 6.47 MiB — One-shot subprocess via /usr/bin/time -l (peak memory footprint); In-process: 10.84 MiB — getrusage(RUSAGE_SELF) high-water after timed loop (includes cargo test + Monty VM; not an isolated Monty-only process)</td></tr>
+<tr id="production_bridge"><td><strong>production monty_host bridge</strong><p class="strategy">Production path: `HookTarget::Monty` schedule row, `Scheduler::run_due`, `drive_feed` → `execute_feed_with_logger` resumes registered `sc_compose_run` and spawns `sc-compose` (no lab `feed_start` in this harness).</p></td><td>3.532980 ms</td><td>105.989417 ms total</td><td>30 + 1 warmup</td><td>MEASURED<br></td><td>none (unratified)</td><td>Subprocess: 6.47 MiB — One-shot subprocess via /usr/bin/time -l (peak memory footprint); In-process: 13.45 MiB — getrusage(RUSAGE_SELF) high-water after timed loop (includes cargo test + Monty VM; not an isolated Monty-only process)</td></tr>
+</tbody></table></section>
+<section><h2>Code examples</h2>
+<h3>Hook snippet</h3>
+<pre><code>def cron_stop(hook):
+    return {&quot;action&quot;: &quot;continue&quot;, &quot;reason&quot;: &quot;ok&quot;}
+
+def cron_tick(hook):
+    return sc_compose_run(&quot;render&quot;, hook[&quot;payload&quot;][&quot;compose_args&quot;])
+</code></pre>
+<h3>production drive_feed resume loop</h3>
+<pre><code>// production path: drive_feed -&gt; execute_feed_with_logger
+let mut progress = repl.feed_start(phase_snippet(phase), snippet_inputs(hook, hosts), PrintWriter::Disabled)?;
+loop {
+    progress = match progress {
+        ReplProgress::FunctionCall(call) =&gt; resume_host(call, stage, phase, hook, hosts, run_deadline, logger)?,
+        ReplProgress::Complete { repl, value } =&gt; return finish_phase(phase, generation, repl, &amp;value),
+        ReplProgress::NameLookup(lookup) =&gt; return undefined_name(stage, &amp;lookup.name),
+        _ =&gt; return denied(stage, &quot;unsupported operation&quot;),
+    };
+}
+</code></pre>
+<h3>sc-compose CLI argv</h3>
+<pre><code>sc-compose render --root &lt;temp&gt; --mode file --file t.j2 --var-file &lt;temp&gt;/v.json</code></pre>
+<h3>sc_compose_run hook</h3>
+<pre><code>def cron_tick(hook):
+    return sc_compose_run(&quot;render&quot;, hook[&quot;payload&quot;][&quot;compose_args&quot;])
+</code></pre>
+<h3>Lab feed_start / resume loop</h3>
+<pre><code>let mut progress = repl.feed_start(snippet, inputs, PrintWriter::Disabled)?;
+loop {
+    progress = match progress {
+        ReplProgress::FunctionCall(call) if call.function_name == &quot;render_template&quot; =&gt; {
+            let template = call.args.arg(0)?.as_str()?;
+            let rendered = run_sc_compose(template, context); // host spawns the CLI
+            call.resume(ExtFunctionResult::Return(MontyObject::string(rendered)),
+                        PrintWriter::Disabled)?
+        }
+        ReplProgress::Complete { .. } =&gt; break,
+        _ =&gt; return Err(denied()),
+    };
+}</code></pre>
+</section>
+<section><h2>Reproduce</h2><pre>just --justfile scripts/benchmark/justfile benchmark monty</pre>
+<p>Run on the controlled host from the recorded source revision. Raw Rust harness JSON/HTML remain local diagnostics; this complete published HTML is rendered from the campaign JSON.</p></section>
+</body>
+</html>
