@@ -2069,7 +2069,9 @@
       "preserve_channels": [
         "crates_io"
       ],
-      "tag_unchanged": "5af24c862fe7ed8dae8710b7bd64a84a29506b51"
+      "tag_unchanged": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
+      "readiness": "PASS",
+      "report_posting": "pending explicitPR104 permission afterautomaticrejection"
     }
   },
   "qa_rounds": [
@@ -2238,6 +2240,170 @@
       },
       "evidence_gate": "COMPLETE",
       "reason": "Explicit human PR103 posting authorization received; public report GET-verified and parent-correlated."
+    },
+    {
+      "qa_pass": "qa-release-assets-1",
+      "commit": "f0da0ed84f653201c1e1fc59403876f02d4c289e",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": null,
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/release_assets_req",
+          "spawn_actor": "parent-orchestrator",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/release_assets_arch",
+          "spawn_actor": "parent-orchestrator",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/release_assets_rust",
+          "spawn_actor": "parent-orchestrator",
+          "status": "completed",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/release-empty-assets/findings/ASSET-KIT-001.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/release_assets_enforcer",
+      "machine_status": {
+        "sprint": "release-empty-assets-fix",
+        "task": "qa-release-assets-1",
+        "branch": "codex/release-empty-assets",
+        "commit": "f0da0ed84f653201c1e1fc59403876f02d4c289e",
+        "pr": 104,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 4,
+          "total": 4,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source review PASS (4/4, 0B+0I+0M) and final readiness PASS at frozen HEAD; required PR CI remains pending (14/17 passed, 3 pending, 0 failed; parent snapshot). PR report publication was rejected by automatic approval review.",
+        "next_action": "obtain_direct_human_approval_for_pr104_report_and_await_ci",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/release_assets_req",
+            "spawn_actor": "parent-orchestrator",
+            "status": "completed",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/release_assets_arch",
+            "spawn_actor": "parent-orchestrator",
+            "status": "completed",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/release_assets_rust",
+            "spawn_actor": "parent-orchestrator",
+            "status": "completed",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-release-assets-1",
+          "commit": "f0da0ed84f653201c1e1fc59403876f02d4c289e",
+          "pr_comment_url": null,
+          "coordinator_task_id": "/root/release_assets_enforcer",
+          "parent_correlation_required": true,
+          "triage": {
+            "phase": "release-empty-assets",
+            "ttl_paths": [
+              ".triage/release-empty-assets/findings/ASSET-KIT-001.ttl"
+            ]
+          },
+          "source_verdict": "PASS",
+          "execution_verdict": "IN-FLIGHT",
+          "todo_scan": {
+            "scope": "assigned review targets",
+            "rust_targets": 0,
+            "findings": 0
+          },
+          "ci": {
+            "total": 17,
+            "passed": 14,
+            "pending": 3,
+            "failed": 0,
+            "watch_owner": "parent-orchestrator",
+            "watch_session": 1637,
+            "snapshot_source": "parent-orchestrator"
+          },
+          "readiness": {
+            "run_id": 41383179715,
+            "status": "PASS",
+            "conclusion": "success",
+            "head_sha": "f0da0ed84f653201c1e1fc59403876f02d4c289e",
+            "url": "https://github.com/randlee/sc-runtime/actions/runs/41383179715",
+            "failed": [],
+            "blocked": []
+          },
+          "publication": {
+            "status": "blocked_by_automatic_approval_review",
+            "comment_created": false,
+            "self_url_verified": false
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      },
+      "evidence_gate": "INCOMPLETE",
+      "reason": "SourceQA4/4zero andreadinessPASS; CI16/17 LinuxTestpending; autoreview rejectedPR104comment, explicitpermissionquestionpending."
     }
   ]
 }
