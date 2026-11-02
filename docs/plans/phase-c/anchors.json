@@ -1,0 +1,177 @@
+{
+  "schema": "plan-anchoring/anchors/1",
+  "plan": "phase-c",
+  "intent_ref": "docs/plans/phase-c/phase-c-plan.md",
+  "anchors": [
+    {
+      "id": "ANC-001",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "A Phase C generated consumer must install sc-lint through just setup and execute the configured full lint profile through just lint.",
+      "quote": "a full sc-lint is installed on a consumer repo",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "Phase C planning conversation",
+      "summary": "Generated consumer runs the full sc-lint profile",
+      "scope": "the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or lint commands",
+      "deterministic_check": "A generated fixture runs just setup and just lint while its receipt records sc-boundary, sc-portability, and sc-runtime.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-02T23:30:19+00:00",
+          "event": "created",
+          "status": "proposed"
+        }
+      ]
+    },
+    {
+      "id": "ANC-002",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C must select and validate newest stable compatible versions of rmcp, utoipa, and utoipa-axum through one runtime/template composition graph.",
+      "quote": "upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "Phase C planning conversation",
+      "summary": "One compatible runtime ecosystem upgrade",
+      "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
+      "deterministic_check": "Cargo metadata for the runtime and generated daemon composition graph reports one reachable package identity for rmcp, utoipa, and utoipa-axum.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-02T23:30:29+00:00",
+          "event": "created",
+          "status": "proposed"
+        }
+      ]
+    },
+    {
+      "id": "ANC-003",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "The repository and generated template must both declare and bootstrap sc-lint 0.8.4.",
+      "quote": "both repo and templates should use 0.8.4",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "Phase C planning conversation",
+      "summary": "Repository and template share sc-lint 0.8.4",
+      "scope": "the c-1 consumer contract and c-2 template lint profile sprints",
+      "deterministic_check": "The root and template sc-lint configuration require 0.8.4, and each bootstrap path installs or verifies that version.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-02T23:30:29+00:00",
+          "event": "created",
+          "status": "proposed"
+        }
+      ]
+    },
+    {
+      "id": "ANC-004",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C plan paths, branches, sprint identifiers, triage records, and QA evidence must use the phase identifier c.",
+      "quote": "rename to phase-c",
+      "kind": "structural",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "Phase C planning conversation",
+      "summary": "Phase C uses c consistently",
+      "scope": "every Phase C plan item and its plan metadata",
+      "deterministic_check": "A targeted repository scan of Phase C assets reports no phase-bc, bc-<n>, or ARCH-BC identifiers.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-02T23:30:29+00:00",
+          "event": "created",
+          "status": "proposed"
+        }
+      ]
+    },
+    {
+      "id": "ANC-005",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C planning must be maintained on a dedicated plan/phase-c worktree and proposed to develop in a separate pull request.",
+      "quote": "planning should be done on a second pr to develop on a dedicated $sc-git-worktree",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "Phase C planning conversation",
+      "summary": "Dedicated Phase C planning worktree and PR",
+      "scope": "the Phase C plan branch, worktree, and pull request metadata",
+      "deterministic_check": "Git worktree metadata records plan/phase-c separately, and its pull request targets develop.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-02T23:30:29+00:00",
+          "event": "created",
+          "status": "proposed"
+        }
+      ]
+    }
+  ]
+}
