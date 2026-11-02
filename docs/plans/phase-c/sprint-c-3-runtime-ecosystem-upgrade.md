@@ -1,13 +1,13 @@
 ---
-id: bc-3
-phase: bc
+id: c-3
+phase: c
 status: planned
 closure_type: integration
 target_boundary: runtime-template-ecosystem-integration
 track: ecosystem
 wave: 2
-branch: sprint/bc-3-runtime-ecosystem-upgrade
-worktree: sprint/bc-3-runtime-ecosystem-upgrade
+branch: sprint/c-3-runtime-ecosystem-upgrade
+worktree: sprint/c-3-runtime-ecosystem-upgrade
 requirements:
   - REQ-RUN-0002
   - REQ-RUN-0004
@@ -65,28 +65,28 @@ owned_paths:
   - template/scripts/consumer_checks.py
   - .github/workflows/template.yml
   - tests/unit/generation/test_runtime_ecosystem_upgrade.py
-must_follow: [bc-1]
-parallel_safe: [bc-2]
+must_follow: [c-1]
+parallel_safe: [c-2]
 recommended_agent: solar
 recommended_model: sol
-vertical_rationale: DaemonBuilder's public OpenApiRouter type, the generated daemon, the public sc-runtime version, and the checkout-patched type-composition proof are one consumer compatibility contract. A separate runtime or template layer cannot compile against the other at the new Utoipa major without a fake bridge; `bc-4` separately owns the post-publication registry proof.
+vertical_rationale: DaemonBuilder's public OpenApiRouter type, the generated daemon, the public sc-runtime version, and the checkout-patched type-composition proof are one consumer compatibility contract. A separate runtime or template layer cannot compile against the other at the new Utoipa major without a fake bridge; `c-4` separately owns the post-publication registry proof.
 ---
 
-# Sprint bc-3 — runtime ecosystem upgrade
+# Sprint c-3 — runtime ecosystem upgrade
 
 ## Goal
 
 Upgrade the runtime's RMCP and OpenAPI ecosystem without creating two type
 universes in the generated application. The completed consumer must use the
-exact stable compatible versions frozen by `bc-1` (the current planning
+exact stable compatible versions frozen by `c-1` (the current planning
 candidates are RMCP 3.8.0, Utoipa 6.0.0, and Utoipa-Axum 0.3.0) and produces
 the complete checkout-patched prepublication proof for `sc-runtime 0.2.0`. The separately
-authorized `bc-4` owns publication and registry consumption.
+authorized `c-4` owns publication and registry consumption.
 The upgrade explicitly leaves the rusqlite/sqlx compatibility boundary intact.
 
 ## Upgrade contract
 
-Before editing manifests, consume the binding `bc-1` amendment to
+Before editing manifests, consume the binding `c-1` amendment to
 **ADR-RUN-0203**. It replaces the old 0.2/5.5.0/3.7 evidence matrix with the
 exact Utoipa/RMCP matrix, including exact package-identity counts;
 this sprint may not leave the obsolete pin evidence active. The implementation
@@ -107,16 +107,16 @@ must satisfy that amendment:
 
 ## Deliverables
 
-1. Use the exact stable versions selected and frozen by `bc-1` in
+1. Use the exact stable versions selected and frozen by `c-1` in
    ADR-RUN-0203. A later replacement is out of scope unless its owner first
-   amends that ADR and reruns the `bc-1` contract probe; prereleases are
+   amends that ADR and reruns the `c-1` contract probe; prereleases are
    excluded.
 2. Update every direct root and template manifest that shares the runtime
    composition: `rmcp`, `utoipa`, and `utoipa-axum`. Update source for the
    released API deltas while preserving the one Axum router, generated routes,
    OpenAPI document, and stateless MCP service behavior.
 3. Change the public `sc-runtime` package to `0.2.0` and update only its
-   root/template manifest requirements and checkout-patched fixtures. `bc-4`
+   root/template manifest requirements and checkout-patched fixtures. `c-4`
    exclusively owns release metadata, release workflows, the registry fixture,
    and authorization evidence. Do not version-bump unaffected standalone crates.
 4. Add graph assertions for the checkout-patched generated fixture. Run locked
@@ -125,7 +125,7 @@ must satisfy that amendment:
    resolve IDs, follows normal dependency edges, and requires exactly one
    `(name, version, source)` tuple each for `rmcp`, `utoipa`, and
    `utoipa-axum` across their union. Any second reachable identity fails even
-   if both versions share a major number. `bc-4` repeats this exact assertion
+   if both versions share a major number. `c-4` repeats this exact assertion
    solely in its no-patch release fixture.
 5. Exercise the public composition seam, not merely compilation: generate a
    sqlite-MCP project, build the daemon's OpenAPI router, list/call the MCP
@@ -133,7 +133,7 @@ must satisfy that amendment:
 6. Preserve and strengthen the SQLite resolver guard. It must fail if
    `rusqlite` leaves 0.39.x, if `libsqlite3-sys 0.38+` resolves, or if the
    template SQLx store ceases to resolve under its declared 0.9 range.
-7. Hand the verified prepublication release input to `bc-4`: the package
+7. Hand the verified prepublication release input to `c-4`: the package
    version, no-patch fixture recipe, exact graph assertion, and registry
    visibility predicate. This sprint does not publish and does not claim a
    release-mode registry result.
@@ -185,7 +185,7 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
 - Locked Cargo-metadata reachability assertions for the generated daemon,
   runtime, RMCP, Utoipa, and Utoipa-Axum; scoped resolver assertions for
   rusqlite, libsqlite3-sys, and SQLx.
-- Release workflow dry-run/preflight and a handoff artifact for `bc-4`; the
+- Release workflow dry-run/preflight and a handoff artifact for `c-4`; the
   release-mode fixture runs only in that named authorized release sprint.
 - Full template fixture matrix on the integration head.
 
@@ -195,5 +195,5 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
   separately planned compatibility change eliminates the `libsqlite3-sys`
   conflict.
 - New OpenAPI, HTTP, CLI, or MCP product features.
-- Consumer lint-profile work; `bc-2` owns the sc-lint configuration and its
+- Consumer lint-profile work; `c-2` owns the sc-lint configuration and its
   installation proof.

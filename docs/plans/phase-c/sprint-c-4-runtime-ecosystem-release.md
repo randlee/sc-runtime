@@ -1,13 +1,13 @@
 ---
-id: bc-4
-phase: bc
+id: c-4
+phase: c
 status: planned
 closure_type: integration
 target_boundary: published-runtime-template-consumer
 track: release
 wave: 3
-branch: sprint/bc-4-runtime-ecosystem-release
-worktree: sprint/bc-4-runtime-ecosystem-release
+branch: sprint/c-4-runtime-ecosystem-release
+worktree: sprint/c-4-runtime-ecosystem-release
 requirements:
   - REQ-RUN-0002
   - REQ-RUN-0301
@@ -23,18 +23,18 @@ owned_paths:
   - .github/workflows/crates-publish.yml
   - release/
   - tests/integration/release/test_published_runtime_ecosystem.py
-must_follow: [bc-3]
+must_follow: [c-3]
 parallel_safe: []
 recommended_agent: solar
 recommended_model: sol
 vertical_rationale: Registry visibility can only be verified after the exact public package is authorized and published. The release workflow, visibility wait, and no-patch consumer are a single production integration closure and cannot be honestly claimed by a prepublication implementation sprint.
 ---
 
-# Sprint bc-4 — runtime ecosystem authorized release
+# Sprint c-4 — runtime ecosystem authorized release
 
 ## Goal
 
-Close the production release contract left deliberately open by `bc-3`:
+Close the production release contract left deliberately open by `c-3`:
 publish the approved `sc-runtime 0.2.0` only with release authorization, then
 prove a newly generated consumer resolves it from crates.io without a checkout
 patch.
@@ -81,4 +81,4 @@ Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0503`, `req:REQ-RUN-0702`,
 
 ## This sprint does not close
 
-- Dependency/API migration (`bc-3`) or consumer lint configuration (`bc-2`).
+- Dependency/API migration (`c-3`) or consumer lint configuration (`c-2`).

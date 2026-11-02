@@ -1,0 +1,14 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Cursor QA-1 findings at 83cbc5c. Each is corrected in the next plan amendment
+# and rechecked by the same reviewer role in the bounded verification round.
+triage:REQ_QA_001 a triage:Finding ; triage:severity "Blocking" ; triage:owner "c-1-contract" ; triage:status "closed" .
+triage:REQ_QA_002 a triage:Finding ; triage:severity "Blocking" ; triage:owner "c-3-ecosystem" ; triage:status "closed" .
+triage:REQ_QA_003 a triage:Finding ; triage:severity "Blocking" ; triage:owner "c-1-contract,c-4-release" ; triage:status "closed" .
+triage:REQ_QA_004 a triage:Finding ; triage:severity "Blocking" ; triage:owner "phase-c-index" ; triage:status "closed" .
+triage:ARCH_C_001 a triage:Finding ; triage:severity "Blocking" ; triage:owner "c-1-contract" ; triage:status "closed" .
+triage:ARCH_C_002 a triage:Finding ; triage:severity "Blocking" ; triage:owner "c-3-ecosystem" ; triage:status "closed" .
+triage:ARCH_C_003 a triage:Finding ; triage:severity "Blocking" ; triage:owner "c-4-release" ; triage:status "closed" .
+triage:RBQA_F001 a triage:Finding ; triage:severity "Important" ; triage:owner "c-3-ecosystem" ; triage:status "closed" .
+triage:RBQA_F002 a triage:Finding ; triage:severity "Minor" ; triage:owner "c-3-ecosystem" ; triage:status "closed" .
+triage:RSH_001 a triage:Finding ; triage:severity "Important" ; triage:owner "c-3-ecosystem" ; triage:status "closed" .

@@ -1,13 +1,13 @@
 ---
-id: bc-1
-phase: bc
+id: c-1
+phase: c
 status: planned
 closure_type: contract
-target_boundary: phase-bc-consumer-runtime-contract
+target_boundary: phase-c-consumer-runtime-contract
 track: contract
 wave: 1
-branch: sprint/bc-1-consumer-runtime-contract
-worktree: sprint/bc-1-consumer-runtime-contract
+branch: sprint/c-1-consumer-runtime-contract
+worktree: sprint/c-1-consumer-runtime-contract
 requirements:
   - REQ-RUN-0004
   - REQ-RUN-0307
@@ -23,7 +23,7 @@ owned_paths:
   - docs/requirements.md
   - docs/architecture.md
   - .claude/project/quality-policy.md
-  - examples/spike/phase-bc-contract/
+  - examples/spike/phase-c-contract/
 must_follow: []
 parallel_safe: []
 recommended_agent: arch-ctm
@@ -31,14 +31,14 @@ recommended_model: terra
 vertical_rationale: The consumer-profile exception, its executable evidence, the frozen runtime package-identity contract, and the externally authorized release handoff must be decided together before disjoint implementation branches can act. The temporary probe is recorded evidence, not a partial product path; durable regression coverage belongs to the later integration sprints.
 ---
 
-# Sprint bc-1 — consumer/runtime compatibility contract
+# Sprint c-1 — consumer/runtime compatibility contract
 
 ## Goal
 
-Make the Phase BC contracts authoritative before implementation. This sprint
+Make the Phase C contracts authoritative before implementation. This sprint
 is a contract closure: it changes no runtime or template product code and owns
 the only shared authoritative documents plus a temporary executable probe,
-allowing `bc-2` and `bc-3` to proceed in parallel without overlapping paths.
+allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
 
 ## Deliverables
 
@@ -51,7 +51,7 @@ allowing `bc-2` and `bc-3` to proceed in parallel without overlapping paths.
    `sc-lint init --just`, and the rule that the bootstrap receipt—not TOML
    inspection alone—proves all three analyzers ran. Amend the quality policy
    from 0.8.0 to 0.8.4 and reference the same authoritative exception.
-3. Create and execute the temporary `examples/spike/phase-bc-contract/` probe.
+3. Create and execute the temporary `examples/spike/phase-c-contract/` probe.
    In temporary directories it installs/runs the released `sc-lint 0.8.4`
    binary against a minimal generated-consumer-shaped repository with no
    `boundaries/` path, asserts the exact three analyzer command receipts and
@@ -69,10 +69,10 @@ allowing `bc-2` and `bc-3` to proceed in parallel without overlapping paths.
    of `rmcp`, `utoipa`, and `utoipa-axum`. The probe must compile the ordinary
    `OpenApiRouter`/streamable-HTTP composition; otherwise it fails.
 5. Amend ADR-RUN-0203 with the exact probe-selected versions and identity
-   algorithm, replacing its obsolete 0.2/5.5.0/3.7 evidence matrix. `bc-3`
+   algorithm, replacing its obsolete 0.2/5.5.0/3.7 evidence matrix. `c-3`
    consumes this frozen matrix and cannot select newer versions without a new
    ADR amendment and a repeat of this probe.
-6. Define `bc-4` as the named authorized release handoff: only after an
+6. Define `c-4` as the named authorized release handoff: only after an
    authorized `sc-runtime 0.2.0` publication and registry visibility may its
    no-patch fixture report the registry-consumer acceptance result.
 
@@ -106,24 +106,24 @@ Root: `req:REQ-RUN-0004`, `req:REQ-RUN-0307`, `req:REQ-RUN-0702`, `adr:ADR-RUN-0
   metadata algorithm; it no longer leaves its old pins as active evidence.
 - The probe output (release asset, exact commands, receipts, init-preservation
   result, metadata JSON digest, and selected versions) is attached to the
-  `bc-1` PR and summarized in ADR-RUN-0005/0203. Before `bc-1` merges, its
-  owner deletes `examples/spike/phase-bc-contract/`; `bc-2` and `bc-3` retain
+  `c-1` PR and summarized in ADR-RUN-0005/0203. Before `c-1` merges, its
+  owner deletes `examples/spike/phase-c-contract/`; `c-2` and `c-3` retain
   the durable generated-fixture and metadata regressions, respectively.
-- The release handoff has a sole owner (`bc-4`) and its required authorization,
+- The release handoff has a sole owner (`c-4`) and its required authorization,
   registry visibility, no-patch fixture, and exact package-identity proof are
   unambiguous.
 
 ## Required validation
 
-- `python3 examples/spike/phase-bc-contract/probe.py`, `just lint gates`, and
+- `python3 examples/spike/phase-c-contract/probe.py`, `just lint gates`, and
   `just test` pass before the binding documents are merged. The probe may use
   the registry only in this manually recorded pre-merge evidence run; it is
   deleted before merge and is never a network-dependent CI test.
 - Documentation links and identifiers resolve; search confirms no remaining
-  authoritative Phase BC baseline says `0.8.0` or permits generic `0.8.x`.
-- The plan's `bc-1` amendments are reviewed before `bc-2`/`bc-3` begin.
+  authoritative Phase C baseline says `0.8.0` or permits generic `0.8.x`.
+- The plan's `c-1` amendments are reviewed before `c-2`/`c-3` begin.
 
 ## This sprint does not close
 
 - Template configuration, bootstrap, runtime source, dependency manifests, or
-  a publication. Those belong respectively to `bc-2`, `bc-3`, and `bc-4`.
+  a publication. Those belong respectively to `c-2`, `c-3`, and `c-4`.

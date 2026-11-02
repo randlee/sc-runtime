@@ -1,13 +1,13 @@
 ---
-id: bc-2
-phase: bc
+id: c-2
+phase: c
 status: planned
 closure_type: integration
 target_boundary: generated-consumer-lint
 track: lint
 wave: 2
-branch: sprint/bc-2-consumer-sc-lint-full-profile
-worktree: sprint/bc-2-consumer-sc-lint-full-profile
+branch: sprint/c-2-consumer-sc-lint-full-profile
+worktree: sprint/c-2-consumer-sc-lint-full-profile
 requirements:
   - REQ-RUN-0004
   - REQ-RUN-0307
@@ -22,14 +22,14 @@ owned_paths:
   - template/sc-lint.toml
   - .github/workflows/template-consumer-lint.yml
   - tests/unit/generation/test_consumer_sc_lint_profile.py
-must_follow: [bc-1]
-parallel_safe: [bc-3]
+must_follow: [c-1]
+parallel_safe: [c-3]
 recommended_agent: arch-ctm
 recommended_model: terra
 vertical_rationale: The generated consumer has no independent lint boundary; its config, bootstrap, standard recipes, and generated-fixture proof are one consumer contract. Splitting them would leave an unprovable configuration-only sprint.
 ---
 
-# Sprint bc-2 — consumer sc-lint full profile
+# Sprint c-2 — consumer sc-lint full profile
 
 ## Goal
 
@@ -42,7 +42,7 @@ The standard consumer command names remain `setup`, `lint`, `test`, and
 ## This sprint changes
 
 1. Implement the binding REQ-RUN-0307/NFR-RUN-0006/ADR-RUN-0005 amendment
-   produced by `bc-1`; this sprint does not reinterpret it. The exception is
+   produced by `c-1`; this sprint does not reinterpret it. The exception is
    limited to sc-lint's declared consumer profile and never permits a template
    `boundaries/`, clippy, rustfmt, or deny policy.
 2. Extend `template/sc-lint.toml` from its current fmt/clippy-only profiles
@@ -72,7 +72,7 @@ The standard consumer command names remain `setup`, `lint`, `test`, and
    full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
    ```
 
-3. `bc-1` records whether the supported 0.8.4 boundary analyzer succeeds with
+3. `c-1` records whether the supported 0.8.4 boundary analyzer succeeds with
    no consumer manifest or needs a documented consumer-neutral mode. This
    sprint uses that exact mode. It must not substitute a no-op wrapper,
    suppress a failure, or copy this repository's manifest.
@@ -123,4 +123,4 @@ Root: `req:REQ-RUN-0307`, `req:REQ-RUN-0503`.
 - Repository-maintainer-only checks such as line counts, xwin, or the
   repository's boundary manifests. Those remain root policy.
 - New analyzer behavior or rule implementation in sc-lint itself.
-- RMCP, Utoipa, or package-version changes; `bc-3` owns them.
+- RMCP, Utoipa, or package-version changes; `c-3` owns them.

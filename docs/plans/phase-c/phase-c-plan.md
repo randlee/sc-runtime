@@ -35,11 +35,11 @@ adrs:
   - ADR-RUN-0402
 ---
 
-# Phase bc — consumer lint completeness and runtime ecosystem release
+# Phase c — consumer lint completeness and runtime ecosystem release
 
 ## Objective
 
-Phase `bc` closes two independent adoption gaps left after Phase b:
+Phase `c` closes two independent adoption gaps left after Phase b:
 
 1. A newly generated consumer must install the complete `sc-lint` **0.8.4**
    toolchain with `just setup`, then run the pre-populated boundary,
@@ -59,15 +59,15 @@ The phase has no artificial phase-wide integration sprint.
 
 ## Entry state and non-negotiable constraints
 
-- The phase integration branch is `integrate/phase-bc`, cut from `develop`
+- The phase integration branch is `integrate/phase-c`, cut from `develop`
   only after PR #109 has landed. That PR establishes the shared sc-lint 0.8.4
   release floor. This plan does not fold its changes into the phase work.
 - The lockfile audit observed the candidate upgrade set `rmcp 3.8.0`,
-  `utoipa 6.0.0`, and `utoipa-axum 0.3.0`. `bc-1` rechecks crates.io and
+  `utoipa 6.0.0`, and `utoipa-axum 0.3.0`. `c-1` rechecks crates.io and
   executes the compatibility probe, then writes the exact newest stable
-  compatible versions into ADR-RUN-0203. `bc-3` consumes that frozen matrix;
+  compatible versions into ADR-RUN-0203. `c-3` consumes that frozen matrix;
   it may not substitute a later release without a new owned ADR amendment and
-  repeat of `bc-1`'s probe.
+  repeat of `c-1`'s probe.
 - `rusqlite` remains `0.39.x`. Its `libsqlite3-sys 0.37` resolver constraint
   must remain compatible with template `sqlx 0.9` (`libsqlite3-sys <0.38`).
   No sprint upgrades `rusqlite`, SQLx, or the SQLite writer's package graph.
@@ -77,7 +77,7 @@ The phase has no artificial phase-wide integration sprint.
   consumes that exact new minor line. The other standalone library crates
   are not version-bumped unless their manifests actually change.
 - `template/` remains consumer code. It may carry only the narrowly declared,
-  sc-lint-owned 0.8.4 profile entries approved by `bc-1`; it may not gain a
+  sc-lint-owned 0.8.4 profile entries approved by `c-1`; it may not gain a
   hand-written `boundaries/`, clippy, rustfmt, or deny policy. The amendment
   to REQ-RUN-0307, NFR-RUN-0006, ADR-RUN-0005, and the quality policy makes
   that exception explicit before either implementation sprint begins.
@@ -86,17 +86,17 @@ The phase has no artificial phase-wide integration sprint.
 
 | Track | Boundary / composition root | Contract change | Sprint | Owned-path boundary |
 | --- | --- | --- | --- | --- |
-| phase contract | consumer lint plus public runtime composition | the binding 0.8.4 consumer-profile exception, its executable receipt/init-preservation protocol, the frozen Utoipa/RMCP package-identity matrix, and the release handoff | `bc-1` | requirements, ADRs, quality-policy text, and a temporary contract probe recorded before deletion |
-| consumer lint | generated consumer lint contract | `setup` installs working 0.8.4 binaries; ordinary `just lint` plus named default/full lint profiles invoke `sc-boundary`, `sc-portability`, and `sc-runtime` using the `bc-1` contract | `bc-2` | `template/sc-lint.toml`, bootstrap/Just integration, generation fixture tests and template CI |
-| ecosystem integration | `sc-runtime` public builder plus generated daemon | one Utoipa 6 type universe and RMCP 3.8 API adaptation; the checkout-patched consumer proves the public composition before publication | `bc-3` | runtime manifests/source/tests, template manifests/daemon source, lockfile, compatibility tests, fixture CI |
-| ecosystem release | published `sc-runtime` plus registry consumer | authorized publication and the no-patch, registry-resolved consumer proof | `bc-4` | release workflow/metadata and a release-mode fixture |
+| phase contract | consumer lint plus public runtime composition | the binding 0.8.4 consumer-profile exception, its executable receipt/init-preservation protocol, the frozen Utoipa/RMCP package-identity matrix, and the release handoff | `c-1` | requirements, ADRs, quality-policy text, and a temporary contract probe recorded before deletion |
+| consumer lint | generated consumer lint contract | `setup` installs working 0.8.4 binaries; ordinary `just lint` plus named default/full lint profiles invoke `sc-boundary`, `sc-portability`, and `sc-runtime` using the `c-1` contract | `c-2` | `template/sc-lint.toml`, bootstrap/Just integration, generation fixture tests and template CI |
+| ecosystem integration | `sc-runtime` public builder plus generated daemon | one Utoipa 6 type universe and RMCP 3.8 API adaptation; the checkout-patched consumer proves the public composition before publication | `c-3` | runtime manifests/source/tests, template manifests/daemon source, lockfile, compatibility tests, fixture CI |
+| ecosystem release | published `sc-runtime` plus registry consumer | authorized publication and the no-patch, registry-resolved consumer proof | `c-4` | release workflow/metadata and a release-mode fixture |
 
-`bc-3` is intentionally vertical. `DaemonBuilder` accepts ordinary
+`c-3` is intentionally vertical. `DaemonBuilder` accepts ordinary
 `utoipa_axum::OpenApiRouter`, so the runtime implementation, the generated
 daemon, package versions, and checkout-patched consumer proof are one public
 compatibility unit. Splitting them would produce a non-compiling intermediate
 or require a fake public dependency contract; it creates no useful parallel
-work. `bc-4` is separately vertical because only a published package can prove
+work. `c-4` is separately vertical because only a published package can prove
 registry consumption. The rationale is the permitted "thin contract, one
 implementer, one consumer" exception from the sprint-planning guidelines.
 
@@ -104,38 +104,38 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 
 | Wave | Track | Sprint | Closure | Target boundary | Branch | Owned paths |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | contract | `bc-1` | contract | phase-bc-consumer-runtime-contract | `sprint/bc-1-consumer-runtime-contract` | REQ/ADR/quality-policy amendments and a temporary contract probe |
-| 2 | lint | `bc-2` | integration | generated-consumer-lint | `sprint/bc-2-consumer-sc-lint-full-profile` | template lint/bootstrap/recipes, generated-fixture validation, template CI |
-| 2 | ecosystem | `bc-3` | integration | runtime-template-ecosystem-integration | `sprint/bc-3-runtime-ecosystem-upgrade` | runtime and template dependency/API surfaces, lockfile, compatibility tests, checkout fixture CI |
-| 3 | release | `bc-4` | integration | published-runtime-template-consumer | `sprint/bc-4-runtime-ecosystem-release` | release workflow/metadata and release-mode fixture |
+| 1 | contract | `c-1` | contract | phase-c-consumer-runtime-contract | `sprint/c-1-consumer-runtime-contract` | REQ/ADR/quality-policy amendments and a temporary contract probe |
+| 2 | lint | `c-2` | integration | generated-consumer-lint | `sprint/c-2-consumer-sc-lint-full-profile` | template lint/bootstrap/recipes, generated-fixture validation, template CI |
+| 2 | ecosystem | `c-3` | integration | runtime-template-ecosystem-integration | `sprint/c-3-runtime-ecosystem-upgrade` | runtime and template dependency/API surfaces, lockfile, compatibility tests, checkout fixture CI |
+| 3 | release | `c-4` | integration | published-runtime-template-consumer | `sprint/c-4-runtime-ecosystem-release` | release workflow/metadata and release-mode fixture |
 
-- Critical path: **3 sprints** (`bc-1` → `bc-3` → `bc-4`).
+- Critical path: **3 sprints** (`c-1` → `c-3` → `c-4`).
 - Width: **2 sprints**.
 - Sprint count: **4**.
-- `bc-1` establishes the authoritative consumer and dependency contracts and
-  must finish before `bc-2` or `bc-3`. `bc-2` and `bc-3` are `parallel_safe`:
+- `c-1` establishes the authoritative consumer and dependency contracts and
+  must finish before `c-2` or `c-3`. `c-2` and `c-3` are `parallel_safe`:
   they have disjoint owned paths.
-  `bc-2` must not modify runtime/template dependency manifests; `bc-3` must
+  `c-2` must not modify runtime/template dependency manifests; `c-3` must
   not change `template/sc-lint.toml`, bootstrap behavior, or consumer lint
-  profile names. `bc-4` must follow `bc-3` and owns the authorized registry
+  profile names. `c-4` must follow `c-3` and owns the authorized registry
   proof; it does not modify runtime or template source.
-- Both branches are cut from `integrate/phase-bc`; each gets a distinct
+- Both branches are cut from `integrate/phase-c`; each gets a distinct
   worktree and a PR to that integration branch. The final integration PR is
-  `integrate/phase-bc` to `develop`.
+  `integrate/phase-c` to `develop`.
 
 ## Feature-closure table
 
 | Feature-level criterion | Sole owner | Proof |
 | --- | --- | --- |
-| The consumer-profile exception and package-identity/release contracts are unambiguous before implementation starts. | `bc-1` | An executable isolated 0.8.4 no-manifest/init-preservation probe and a temporary metadata probe pass before the amended REQ/ADR/quality-policy text freezes their exact results and the authorized release handoff. |
-| A generated consumer installs and executes the complete configured sc-lint toolchain without source edits. | `bc-2` | Generated fixture runs `just setup`, ordinary `just lint`, and named default/full profiles; the installed `sc-lint` launcher’s analyzer invocation receipt proves all three analyzers actually ran. |
-| A runtime/template consumer compiles with one RMCP/Utoipa/Utoipa-Axum universe at their approved latest releases. | `bc-3` | Checkout-patched fixture and targeted type-composition tests assert exactly one package identity for each contract package on the runtime/daemon composition graph. |
-| Published `sc-runtime 0.2.0` can be consumed by the template without a checkout patch. | `bc-4` | The authorized release workflow publishes only after the release-mode fixture resolves the crates.io package and passes the consumer command sequence. |
-| SQLite compatibility remains stable. | `bc-3` | The existing `sqlx_resolve` test and tree assertion prove `rusqlite 0.39.x` with `libsqlite3-sys 0.37`, and no `libsqlite3-sys 0.38` appears. |
+| The consumer-profile exception and package-identity/release contracts are unambiguous before implementation starts. | `c-1` | An executable isolated 0.8.4 no-manifest/init-preservation probe and a temporary metadata probe pass before the amended REQ/ADR/quality-policy text freezes their exact results and the authorized release handoff. |
+| A generated consumer installs and executes the complete configured sc-lint toolchain without source edits. | `c-2` | Generated fixture runs `just setup`, ordinary `just lint`, and named default/full profiles; the installed `sc-lint` launcher’s analyzer invocation receipt proves all three analyzers actually ran. |
+| A runtime/template consumer compiles with one RMCP/Utoipa/Utoipa-Axum universe at their approved latest releases. | `c-3` | Checkout-patched fixture and targeted type-composition tests assert exactly one package identity for each contract package on the runtime/daemon composition graph. |
+| Published `sc-runtime 0.2.0` can be consumed by the template without a checkout patch. | `c-4` | The authorized release workflow publishes only after the release-mode fixture resolves the crates.io package and passes the consumer command sequence. |
+| SQLite compatibility remains stable. | `c-3` | The existing `sqlx_resolve` test and tree assertion prove `rusqlite 0.39.x` with `libsqlite3-sys 0.37`, and no `libsqlite3-sys 0.38` appears. |
 
 ## Required decisions and exact compatibility contract
 
-Sprint `bc-1` amends the active architecture before either implementation
+Sprint `c-1` amends the active architecture before either implementation
 sprint starts: **ADR-RUN-0203, “Library versions on one router; one struct for
 both schemas.”** The amendment replaces its old 0.2/5.5.0/3.7 evidence matrix
 with the approved Utoipa 6/RMCP 3.8 matrix and retires obsolete pin evidence.
@@ -168,8 +168,8 @@ sc_runtime::Daemon::builder()
 - The SQLite writer remains an independent rusqlite building block. The
   template stores remain SQLx; no dependency edit creates an edge between the
   two layers.
-- `bc-4` is the named, separately authorized release handoff. It owns
-  publication and the post-visibility registry check; `bc-3` stops at a
+- `c-4` is the named, separately authorized release handoff. It owns
+  publication and the post-visibility registry check; `c-3` stops at a
   complete checkout-patched prepublication proof and may not claim the
   registry-consumer criterion.
 
@@ -184,7 +184,7 @@ sc_runtime::Daemon::builder()
 - Replacing `sc-lint`'s installation/bootstrap mechanism or implementing new
   analyzer rules in sc-runtime.
 - Publishing anything without the existing release authorization and CI
-  gates. `bc-4` plans that authorized handoff; this plan does not itself grant
+  gates. `c-4` plans that authorized handoff; this plan does not itself grant
   credentials or publish authority.
 
 ## Phase validation and exit
@@ -201,11 +201,11 @@ the composed head:
    execute the three named sc-lint analyzers after a clean `just setup`.
 4. The checkout-patched ecosystem fixture proves exactly one package identity
    each for Utoipa, Utoipa-Axum, and RMCP by the locked Cargo-metadata
-   reachability algorithm. After `bc-4`'s authorized publication, the
+   reachability algorithm. After `c-4`'s authorized publication, the
    release-mode fixture runs that algorithm solely in the no-patch generated
    fixture and proves `sc-runtime 0.2.0` has a crates.io registry source.
 5. The SQLite resolver guard continues to prove the pinned 0.39/0.37
    rusqlite/libsqlite3-sys pairing.
 
-The phase is complete when its final PR reaches `develop` **after `bc-4`'s
+The phase is complete when its final PR reaches `develop` **after `c-4`'s
 authorized release handoff has recorded a successful registry-consumer proof**.

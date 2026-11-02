@@ -1,6 +1,6 @@
 {
-  "phase": "bc",
-  "branch": "plan/phase-bc",
+  "phase": "c",
+  "branch": "plan/phase-c",
   "qa_rounds": [
     {
       "qa_pass": "qa-1",
@@ -20,7 +20,7 @@
         "RSH-001"
       ],
       "triage_paths": [
-        ".triage/bc/findings/qa-1-plan-review.ttl"
+        ".triage/c/findings/qa-1-plan-review.ttl"
       ]
     },
     {
@@ -32,7 +32,7 @@
         "ARCH-BC-002"
       ],
       "triage_paths": [
-        ".triage/bc/findings/qa-1-plan-review.ttl"
+        ".triage/c/findings/qa-1-plan-review.ttl"
       ]
     },
     {
@@ -42,7 +42,7 @@
       "verdict": "PASS",
       "findings": [],
       "triage_paths": [
-        ".triage/bc/findings/qa-1-plan-review.ttl"
+        ".triage/c/findings/qa-1-plan-review.ttl"
       ]
     }
   ]
