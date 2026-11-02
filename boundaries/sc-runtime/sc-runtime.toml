@@ -16,9 +16,14 @@ constructor = "public"
 [composition]
 roots = ["Daemon", "DaemonBuilder", "DaemonConfig", "RuntimeError", "testing"]
 
+# Production tool-package/import exclusion (normal + build, all production
+# features) is checked by the production-tool-boundary companion. It resolves
+# aliases/package identity and checks external/transitive cargo trees too;
+# dev-only test/benchmark references remain permitted (REQ-RUN-0005).
 [dependencies]
 allowed_dependents = []
 allowed_dependencies = [
+  "sc-observability-types",
   "sc-transport",
   "sc-command",
   "axum",
@@ -28,13 +33,16 @@ allowed_dependencies = [
   "utoipa-axum",
   "serde",
   "rmcp",
+  "tracing",
 ]
-# sqlx, sc-observability, and sc-observability-otlp are not workspace members.
-# sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree
-# enforces those edges. sc-observability-types is direct-only: a transitive
-# line through sc-command is allowed, and a direct dependency is rejected by
-# cargo tree rather than a forbidden edge that would also fail that crate.
-forbidden_edges = ["sc-runtime -> sc-config"]
+# Full runtime, OTLP, and development adapter remain forbidden. Both libraries
+# use scripts/check_observability_dependencies.py in the existing CI test path
+# to inspect resolved normal package identities, including aliases/transitive edges.
+forbidden_edges = [
+  "sc-runtime -> sc-config",
+  "sc-runtime -> sc-runtime-db-sqlite",
+  "sc-runtime -> sc-cron",
+]
 
 [references]
 scope = "outside_owner_crate"

@@ -1,0 +1,39 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:qa:b-13:QA-001> qa:sprint "b-13" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs:21" ;
+  qa:issue "The full workspace test suite fails in rusqlite_0_39_resolves_one_libsqlite3_sys_with_sqlx_0_9_sqlite because the nested sqlx-resolve fixture lockfile cannot satisfy Cargo's --locked metadata run. The same failure is present in GitHub Actions run 41142440997, job 124359719834." ;
+  qa:remedy "Refresh and commit crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.lock for the fixture's current path dependency and supported Cargo version, then rerun the workspace test suite." ;
+  qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
+  qa:status "open" .
+
+<urn:sc-runtime:qa:b-14:QA-001> qa:sprint "b-14" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs:21" ;
+  qa:issue "The inherited SQLx resolve fixture test fails because its committed nested lockfile does not match the current path dependency version. Cargo metadata exits before resolving the dependency graph when run with --locked." ;
+  qa:remedy "Refresh crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.lock for sc-runtime-db-sqlite 0.1.1, commit it, and rerun the workspace suite." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .
+
+<urn:sc-runtime:qa:b-15:QA-001> qa:sprint "b-15" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "tests/integration/wizard/test_output_equivalence.py:149" ;
+  qa:issue "The pinned-tree `just test` run fails two generated-project equivalence tests because the generated project's `lint` step returns `GEN.STEP_FAILED`: `test_stubbed_wizard_matches_var_file_tree` (line 149) and `test_different_var_files_produce_different_trees` (line 180). The run's generation suite reports 2 failures out of 74 tests." ;
+  qa:remedy "Trace and correct the generated project's failing lint step or its generation-test invocation so both equivalence cases complete successfully, while retaining the wizard-versus-var-file tree comparison." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .
+
+<urn:sc-runtime:qa:b-18:qa1:QA-001>
+  qa:id "QA-001" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Important" ;
+  qa:status "fixed" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "template/crates/daemon/src/main.rs:122" ;
+  qa:issue "The runtime releases the instance lock before the generated application stops its cron worker. A new daemon can acquire the lock and start its own worker while the old worker is still running or draining, allowing overlapping execution of schedules." ;
+  qa:recommendation "Ensure the instance lock remains held until the cron worker has stopped and joined, including startup-error paths. Add a regression that holds an old worker in flight during restart and proves the replacement cannot run until it drains." .

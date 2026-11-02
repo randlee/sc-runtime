@@ -26,7 +26,6 @@ or remove the partial destination.
 | Failure | Code | Cause | Recovery |
 |---|---|---|---|
 | schema-invalid answers | `GEN.SCHEMA_INVALID` | answers fail wizard/answers.schema.json | fix the file; cargo is not called; the destination is not created |
-| reserved database | `GEN.DB_RESERVED` | db is postgres or both | set db to sqlite; the destination is not created |
 | invalid project name | `APP.INVALID_NAME` | name fails the project-name pattern in wizard/answers.schema.json | fix the name to that pattern; the destination is not created |
 | missing sc-compose | `GEN.TOOL_MISSING` | SC_COMPOSE unset and sc-compose not on PATH | set SC_COMPOSE or install sc-compose on PATH; cargo generate does not run |
 | bad SC_COMPOSE override | `GEN.TOOL_MISSING` | SC_COMPOSE does not point at an executable file | set SC_COMPOSE to the sc-compose binary; cargo generate does not run |
@@ -46,12 +45,27 @@ The project-name `pattern` on `wizard/answers.schema.json` is the only
 character class. The driver reads it from that schema. `project_name` is not a
 cargo-generate placeholder: `cargo generate` receives it as `--name`.
 
-`postgres` and `both` stay in the schema enum so a later release can accept
-them. v0.1 refuses them with `GEN.DB_RESERVED` before it creates the
-destination. The reserved values are an annotation on the schema, not a list
-in the driver. Plain `cargo generate` uses the same SQLite-only render:
-`template/cargo-generate.toml` lists `sqlite` as the only `db` choice, so a
-values file or prompt cannot select `postgres` or `both`.
+`wizard/answers.schema.json` is schema version 2. The answers object stays four
+keys: `project_name`, `db`, `mcp`, and `licence`. `db` is exactly `none`,
+`sqlite`, `postgres`, `mysql`, `sqlite-postgres`, or `sqlite-mysql`. `both`
+is not a value and is not an alias. A value outside that enum fails
+`GEN.SCHEMA_INVALID` before `cargo generate`. The destination is not created.
+
+`template/cargo-generate.toml` lists those same six strings as `db` choices.
+The default remains `sqlite`. Each choice ignores the crates and layout files
+that layout does not contain. A generated project has one layout: no database,
+SQLite only, Postgres only, MySQL only, SQLite plus Postgres, or SQLite plus
+MySQL. No project contains both `store-postgres` and `store-mysql`.
+
+Package names in the generated project are `<project>-<role>`. The directory
+`api-types` becomes `<project>-types`. A two-store layout's one adaptor
+directory is `crates/store-adaptor`, and its package is `<project>-store-adaptor`.
+Rust crate names stay the role (`api_types`,
+`store_sqlite`, `store_adaptor`, and the rest) so existing `use` paths keep
+working. A cargo-generate post hook runs `python3 hooks/prefix_packages.py`
+after Liquid. `cargo generate` needs `--allow-commands` or that hook is
+refused. `scripts/new_project.py` passes the flag. Plain `cargo generate`
+must pass it too.
 
 ## Entry modes
 
@@ -85,9 +99,8 @@ The pages collect each current schema property and no others. Defaults are
 the schema defaults; `wizard/pages/wizard-answers.js` mirrors only those.
 The pages do not copy the project-name `pattern`. The runner checks the
 finished object against `wizard/answers.schema.json`, and the driver checks
-it again before the pipeline. `postgres` and `both` stay in the schema enum,
-so the wizard offers them. The driver still answers `GEN.DB_RESERVED` and
-does not create the destination.
+it again before the pipeline. The database list on the options page is the
+six-value `db` enum. `sqlite` stays selected.
 
 A finished wizard that makes the same choices as a file in `wizard/fixtures/`
 produces an equal JSON value. Key order and whitespace do not matter. Equal
@@ -136,9 +149,10 @@ duplicated. That flag does not run the rest of the pipeline.
    Validation uses the `jsonschema` package (`requirements-generation.txt`,
    pinned at 4.26.0) against Draft 2020-12.
 5. Require `cargo-generate` 0.25.1 (`cargo generate --version`), then create
-   the absent destination and run `cargo generate --init` into it.
-   Then run `cargo fmt --all` so a removed Liquid line does not leave a
-   blank that `cargo fmt --check` would reject.
+   the absent destination and run `cargo generate --init --allow-commands`
+   into it. The post hook prefixes package names. Then run `cargo fmt --all`
+   so a removed Liquid line does not leave a blank that `cargo fmt --check`
+   would reject.
 6. Write the checkout patch unless release mode is on. The patched crates are
    the `sc-*` keys in `template/Cargo.toml` `[workspace.dependencies]` that
    exist under `crates/`.
@@ -161,18 +175,20 @@ the independent proof. It is not a second owner of the pipeline.
 
 `cargo generate --path template` still builds a workspace without this driver
 and without a wizard. Placeholders supply `db`, `mcp`, and `licence`. The
-project name is `--name`. `db` accepts only `sqlite`.
+project name is `--name`. `db` accepts the six layout strings. Pass
+`--allow-commands` so the package-prefix hook can run `python3`.
 
 Limitations, stated honestly:
 
-- `postgres` and `both` stay in `wizard/answers.schema.json` for a later
-  store. The driver refuses them with `GEN.DB_RESERVED` before
-  `cargo generate`. Plain `cargo generate` rejects them because they are
-  not `db` choices. v0.1 does not render a Postgres store.
+- `both` is not in the schema enum. An answers file that sets it fails
+  `GEN.SCHEMA_INVALID` before `cargo generate`. That file lives outside
+  `wizard/fixtures/`.
 - `AGENTS.md.j2` and `CLAUDE.md.j2` are excluded from Liquid and are copied
   byte-for-byte. They still contain Jinja delimiters and frontmatter until
   `sc-compose` renders them. The driver does that render and deletes the
-  `.j2` files. Plain `cargo generate` does not.
+  `.j2` files. Plain `cargo generate` does not. `exclude` does not omit a
+  file. `template/config/cron.schema.json` is on `[template] ignore`, so a
+  generated project does not contain that schema or `answers.schema.json`.
 - Plain `cargo generate` does not write `[patch.crates-io]`. Before the
   crates are published, a build of that tree needs the checkout patch (the
   CI smoke applies `--patch-checkout` before the first Cargo command). After

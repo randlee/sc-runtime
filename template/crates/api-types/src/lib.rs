@@ -18,6 +18,12 @@ pub const WIDGET_CREATE_PATH: &str = "/ops/widget.create";
 /// REST path for `widget.get`.
 pub const WIDGET_GET_PATH: &str = "/ops/widget.get";
 
+/// REST path for `widget.delete`.
+pub const WIDGET_DELETE_PATH: &str = "/ops/widget.delete";
+
+/// REST path for `delete row`.
+pub const DELETE_ROW_PATH: &str = "/ops/delete.row";
+
 /// Body of `widget.create`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema, ToSchema))]
@@ -35,6 +41,34 @@ pub struct CreateWidget {
 pub struct GetWidget {
     /// Identifier returned by `widget.create`.
     pub id: WidgetId,
+}
+
+/// Body of `widget.delete`. It calls the same delete as [`DeleteRow`] on `widgets`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema, ToSchema))]
+pub struct DeleteWidget {
+    /// Identifier returned by `widget.create`.
+    pub id: WidgetId,
+}
+
+/// Body of `delete row <table> <id>`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema, ToSchema))]
+pub struct DeleteRow {
+    /// Table name. The example store accepts `widgets`.
+    pub table: String,
+    /// Row id.
+    pub id: String,
+}
+
+/// Row a delete command removed, or named when the store cannot remove it yet.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema, ToSchema))]
+pub struct DeletedRow {
+    /// Table the command addressed.
+    pub table: String,
+    /// Id the command addressed.
+    pub id: String,
 }
 
 /// One stored widget.

@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - integrate/phase-a
+      - develop
       - main
 
 permissions:
@@ -15,23 +15,88 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  ci-scope:
+    name: Classify CI scope
+    runs-on: ubuntu-latest
+    outputs:
+      runtime: ${{ steps.scope.outputs.runtime }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: scope
+        shell: bash
+        run: |
+          # Pull requests compare with their base; pushes compare with the
+          # previous head. Unknown ranges exercise runtime.
+          case "${{ github.event_name }}" in
+            pull_request) range_start="${{ github.event.pull_request.base.sha }}" ;;
+            push)         range_start="${{ github.event.before }}" ;;
+            *)            range_start="" ;;
+          esac
+          if [[ -z "$range_start" || "$range_start" =~ ^0+$ ]] || ! git cat-file -e "$range_start^{commit}" 2>/dev/null; then
+            echo "runtime=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python .github/scripts/ci_scope.py "$range_start" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+
   crates:
     name: just lint and just test
+    needs: ci-scope
     runs-on: ubuntu-latest
     env:
       SC_RUNTIME_EPHEMERAL_CI: "1"
+      # Keep debug assertions; omit large DWARF data from this ephemeral job.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     steps:
+      # Documentation-only changes keep this required check name and skip
+      # the crate compile and test. Same gate as atm-core CI.
+      - name: Documentation-only runtime skip
+        if: ${{ needs.ci-scope.outputs.runtime != 'true' }}
+        run: echo "Crate lint and test are intentionally skipped for documentation-only changes."
+
       - name: Checkout
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Prepare ephemeral Linux runner disk
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This Rust/Python job does not use Android or .NET. Never run this
+          # cleanup on a developer machine or self-hosted runner.
+          [[ "$RUNNER_OS" == "Linux" && "$RUNNER_ENVIRONMENT" == "github-hosted" ]]
+          df -h / "$RUNNER_TEMP" || true
+          timeout 20s du -sh /usr/local/lib/android /usr/share/dotnet || true
+          sudo -n rm -rf -- /usr/local/lib/android /usr/share/dotnet
+          df -h / "$RUNNER_TEMP" || true
+
       - name: Install Rust
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        uses: dtolnay/rust-toolchain@1.94.1
+        with:
+          components: rustfmt, clippy
+
+      # sc-cron Monty hooks (`monty` 1.4) require rustc 1.96; workspace MSRV stays 1.94.1.
+      - name: Install Rust 1.96.1 for sc-cron Monty
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        uses: dtolnay/rust-toolchain@1.96.1
+        with:
+          components: clippy
+
+      - name: Restore default Rust 1.94.1
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: dtolnay/rust-toolchain@1.94.1
         with:
           components: rustfmt, clippy
 
       - name: Install just
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"
@@ -39,9 +104,11 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install generation test dependency
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: python3 -m pip install -r requirements-generation.txt
 
       - name: Install cargo-generate
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"
@@ -57,25 +124,72 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           cargo generate --version | grep -F '0.25.1'
 
-      - name: Install sc-compose
-        run: cargo install sc-compose --version 1.7.0 --locked
+      - name: Restore Rust builds and generation tool
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        uses: ./.github/actions/rust-build-cache
+        with:
+          namespace: crates-linux-default-server-test-util-monty-xwin-nodebug-release
+          target: workspace
+          toolchains: 1.94.1-1.96.1
 
       - name: Install cargo-deny
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-deny@0.19.4
 
       - name: Install cargo-audit
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-audit@0.22.2
 
       - name: Setup
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just setup
 
       # `just lint` runs the supply-chain recipe (`cargo deny check`, `cargo audit`).
       - name: Lint
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just lint
 
       - name: Test
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just test
+
+      - name: Report Linux runner disk after checks
+        if: ${{ always() && needs.ci-scope.outputs.runtime == 'true' }}
+        shell: bash
+        run: |
+          # Diagnostics are bounded and never change the lint/test verdict.
+          df -h / "$RUNNER_TEMP" || true
+          timeout 20s du -sh -- "$RUNNER_TEMP/cargo-target" "$HOME/.cargo/registry" "$GITHUB_WORKSPACE/target" || true
+
+
+  cron-environment-windows:
+    name: Windows hook environment execution
+    needs: ci-scope
+    if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: dtolnay/rust-toolchain@1.94.1
+      - uses: extractions/setup-just@v2
+      - uses: ./.github/actions/rust-build-cache
+        with:
+          namespace: windows-hook-default-monty-debug
+          target: windows
+          toolchains: 1.94.1-1.96.1
+          compose: 'false'
+      - name: Verify owned process cleanup on Windows
+        run: just test owned-process-windows
+      - name: Execute default shared hook environment root
+        run: just test windows-hook-default
+      - uses: dtolnay/rust-toolchain@1.96.1
+      - name: Execute Monty shared hook environment root
+        run: just test windows-hook-monty
+      - name: Execute Monty host bridge root
+        run: just test windows-host-monty

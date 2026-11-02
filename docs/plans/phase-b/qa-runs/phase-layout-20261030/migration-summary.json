@@ -1,0 +1,193 @@
+{
+  "migration": "Phase B placeholder path correction",
+  "approved_predecessor": "e5eda22e81f724e3024fdaa1fd2b5ea4c511406c",
+  "source_prefix": "doc/plan/phase-current",
+  "destination": "docs/plans/phase-b",
+  "plan_id": "phase-b",
+  "tracked_files_moved": 143,
+  "physical_files_moved": 8127,
+  "byte_identical_files": 8124,
+  "metadata_only_files": [
+    "anchors.json",
+    "anchors.md",
+    "intent.md"
+  ],
+  "all_70_anchor_records_unchanged": true,
+  "all_statements_quotes_scopes_versions_questions_fixtures_exclusions_unchanged": true,
+  "approved_source_files": [
+    {
+      "old": ".sprints/b/structure.ttl",
+      "current": ".sprints/b/structure.ttl",
+      "before_sha256": "4d2b4fbb1cb8dfa7ba28392e8c0e82a5a4f3ae6c64704942bc2be1a04b0916ce",
+      "after_sha256": "4d2b4fbb1cb8dfa7ba28392e8c0e82a5a4f3ae6c64704942bc2be1a04b0916ce",
+      "status": "byte-identical"
+    },
+    {
+      "old": "doc/plan/phase-current/anchors.json",
+      "current": "docs/plans/phase-b/anchors.json",
+      "before_sha256": "ddd6e771a1c23514e82c705c8313924599d0d3170649cb6fb4944cdfd3fd00bc",
+      "after_sha256": "7615b994cb3c4ac2bb7c97e7bfbe1326940e6231ed521fd47102faa957411110",
+      "status": "phase-label-metadata-only"
+    },
+    {
+      "old": "doc/plan/phase-current/intent.md",
+      "current": "docs/plans/phase-b/intent.md",
+      "before_sha256": "357963619d20fa0043039aa18fa2539526e6a235e7481a41fdf8e58b52ef4df1",
+      "after_sha256": "3811332ef0be9569da05148445a2e2129bc1a79245357898667dfa80440f5edc",
+      "status": "phase-label-metadata-only"
+    },
+    {
+      "old": "docs/architecture.md",
+      "current": "docs/architecture.md",
+      "before_sha256": "3e90552777ec860dd7bf0f94b88091f984c0a03be8c60b6516d2a1fa99ee3180",
+      "after_sha256": "3e90552777ec860dd7bf0f94b88091f984c0a03be8c60b6516d2a1fa99ee3180",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/framework-charter.md",
+      "current": "docs/framework-charter.md",
+      "before_sha256": "c38ae5d08c63647798218ec3bcde2f475f408a956cf5b7e0d2ba3b77a423056a",
+      "after_sha256": "c38ae5d08c63647798218ec3bcde2f475f408a956cf5b7e0d2ba3b77a423056a",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/phase-b/phase-b-plan.md",
+      "current": "docs/plans/phase-b/phase-b-plan.md",
+      "before_sha256": "ad446bb4d09d66959f0c0a068f4e2df6f3e5a3d80c4cf2afaeb17077badb031c",
+      "after_sha256": "ad446bb4d09d66959f0c0a068f4e2df6f3e5a3d80c4cf2afaeb17077badb031c",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/phase-b/sprint-b-13-observability-contract.md",
+      "current": "docs/plans/phase-b/sprint-b-13-observability-contract.md",
+      "before_sha256": "f7d37f45b4790e6d5cdf2c8f3abb4d4a567434ccd207c6c63816a696e2178d31",
+      "after_sha256": "f7d37f45b4790e6d5cdf2c8f3abb4d4a567434ccd207c6c63816a696e2178d31",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/phase-b/sprint-b-14-sc-runtime-observability.md",
+      "current": "docs/plans/phase-b/sprint-b-14-sc-runtime-observability.md",
+      "before_sha256": "758e4512cafeb8057ed3189a65303cfbc7284b69c3df2ffba35658e5bdac59d1",
+      "after_sha256": "758e4512cafeb8057ed3189a65303cfbc7284b69c3df2ffba35658e5bdac59d1",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md",
+      "current": "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md",
+      "before_sha256": "0f9165ad3391505503a99789e729667b04fa142c6edf61ae37ff712a8ddddd52",
+      "after_sha256": "0f9165ad3391505503a99789e729667b04fa142c6edf61ae37ff712a8ddddd52",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/phase-b/sprint-b-16-monty-template-examples.md",
+      "current": "docs/plans/phase-b/sprint-b-16-monty-template-examples.md",
+      "before_sha256": "042b5c1d7f97f476a447f883dbd3cfde77029c2a3cdb9adc0373a664d97d92c7",
+      "after_sha256": "042b5c1d7f97f476a447f883dbd3cfde77029c2a3cdb9adc0373a664d97d92c7",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/phase-b/sprint-b-17-sc-cron-hook-environment.md",
+      "current": "docs/plans/phase-b/sprint-b-17-sc-cron-hook-environment.md",
+      "before_sha256": "8377d2f61d9291ec6bc02b47bf83844430edaa476f4cbc6b8a0f313f9885363e",
+      "after_sha256": "8377d2f61d9291ec6bc02b47bf83844430edaa476f4cbc6b8a0f313f9885363e",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/phase-b/sprint-b-18-template-observability-integration.md",
+      "current": "docs/plans/phase-b/sprint-b-18-template-observability-integration.md",
+      "before_sha256": "71ab4c1ee3778bbb6ef63c862e3f97edaf83145471f02198a66091c6cbbf39f3",
+      "after_sha256": "71ab4c1ee3778bbb6ef63c862e3f97edaf83145471f02198a66091c6cbbf39f3",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/spinoff/README.md",
+      "current": "docs/plans/spinoff/README.md",
+      "before_sha256": "672e381ac6c3857cc1f8940d8fcf3c72bc65abb6467ef8fcfe3a4565c3a1abb1",
+      "after_sha256": "672e381ac6c3857cc1f8940d8fcf3c72bc65abb6467ef8fcfe3a4565c3a1abb1",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/spinoff/monty-hook-completion-outline.md",
+      "current": "docs/plans/spinoff/monty-hook-completion-outline.md",
+      "before_sha256": "9c3ee51c457861042fda37a2bbe6861539d81be017656cec61edc337ac697297",
+      "after_sha256": "9c3ee51c457861042fda37a2bbe6861539d81be017656cec61edc337ac697297",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/plans/spinoff/sc-observability-integration-outline.md",
+      "current": "docs/plans/spinoff/sc-observability-integration-outline.md",
+      "before_sha256": "20077a7bb89678a2c839db7c6cb049d4fd910deb53c142760afd9eab62599008",
+      "after_sha256": "20077a7bb89678a2c839db7c6cb049d4fd910deb53c142760afd9eab62599008",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/requirements.md",
+      "current": "docs/requirements.md",
+      "before_sha256": "39fbd8a28c870da84ee7dddcc57bfe32a3d8da2e95b16368a9e37b6263a8f36c",
+      "after_sha256": "39fbd8a28c870da84ee7dddcc57bfe32a3d8da2e95b16368a9e37b6263a8f36c",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/sc-cron/architecture.md",
+      "current": "docs/sc-cron/architecture.md",
+      "before_sha256": "7cfc57102a2c2ad0bce5b0726a3891ffb8b680d63862101061afd1eecd48a3b4",
+      "after_sha256": "7cfc57102a2c2ad0bce5b0726a3891ffb8b680d63862101061afd1eecd48a3b4",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/sc-cron/hooks-sc-compose.md",
+      "current": "docs/sc-cron/hooks-sc-compose.md",
+      "before_sha256": "5ea337ffce8aa312d3f95203f17b2ab9323e151b96f35448e5db9c810051b7c2",
+      "after_sha256": "5ea337ffce8aa312d3f95203f17b2ab9323e151b96f35448e5db9c810051b7c2",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/sc-cron/requirements.md",
+      "current": "docs/sc-cron/requirements.md",
+      "before_sha256": "6b0d6b3de44dabebbef57146f558b95b51906dd1f38d4db347c83ee02cd3287e",
+      "after_sha256": "6b0d6b3de44dabebbef57146f558b95b51906dd1f38d4db347c83ee02cd3287e",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/sc-runtime-design.md",
+      "current": "docs/sc-runtime-design.md",
+      "before_sha256": "72c27937fcb1155b87e17951b8f1c71a53f4cfac9e78b06d5f242b9848fb257c",
+      "after_sha256": "72c27937fcb1155b87e17951b8f1c71a53f4cfac9e78b06d5f242b9848fb257c",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/sc-runtime/architecture.md",
+      "current": "docs/sc-runtime/architecture.md",
+      "before_sha256": "976e8970b1ad24f8717b5d70bdf44c2b055c634f5dc5a8d897536473d022f14e",
+      "after_sha256": "976e8970b1ad24f8717b5d70bdf44c2b055c634f5dc5a8d897536473d022f14e",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/sc-runtime/observability-injection.md",
+      "current": "docs/sc-runtime/observability-injection.md",
+      "before_sha256": "24ca65fba00ca4416464dc389ffaca3d81ea9f4702427f5b6e77656506eaa73a",
+      "after_sha256": "24ca65fba00ca4416464dc389ffaca3d81ea9f4702427f5b6e77656506eaa73a",
+      "status": "byte-identical"
+    },
+    {
+      "old": "docs/sc-runtime/requirements.md",
+      "current": "docs/sc-runtime/requirements.md",
+      "before_sha256": "cded6b6d18c0641754bfbfc61884f4a3c3fda2c92dce0760a45097d00ff38f68",
+      "after_sha256": "cded6b6d18c0641754bfbfc61884f4a3c3fda2c92dce0760a45097d00ff38f68",
+      "status": "byte-identical"
+    }
+  ],
+  "historical_evidence": "All raw runs, historical manifests, archives and checksums were moved byte-for-byte; resolve original paths with the prefix mapping rather than rewriting old verdict payloads.",
+  "installer": {
+    "version": "0.8.6",
+    "source": "https://github.com/randlee/plan-anchor/pull/59",
+    "commit": "26112a8fd1d5e414e59cf62d8528b939ad132894",
+    "targets": [
+      "claude",
+      "codex",
+      "cursor"
+    ],
+    "plan_dir": "docs/plans/phase-b"
+  },
+  "old_directory_absent": true
+}

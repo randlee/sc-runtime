@@ -20,6 +20,7 @@ yanked = "warn"
 # No patched upgrade is available. cargo audit reports this as a warning.
 ignore = [
     { id = "RUSTSEC-2024-0436", reason = "utoipa-axum 0.2 depends on unmaintained paste; no patched release exists" },
+    { id = "RUSTSEC-2023-0089", reason = "monty 1.4.0 reaches unmaintained atomic-polyfill through heapless and postcard; no patched monty release exists. sc-cron links monty only with feature monty" },
 ]
 
 [licenses]
@@ -30,6 +31,15 @@ allow = [
     "ISC",
     "MIT",
     "Unicode-3.0",
+    # monty/ruff stack pulls ar_archive_writer (Apache-2.0 WITH LLVM-exception).
+    "Apache-2.0 WITH LLVM-exception",
+    # monty depends on minicbor and minicbor-serde (OSI-approved Blue Oak 1.0).
+    "BlueOak-1.0.0",
+    # ruff_python_parser uses unicode_names2, which requires Unicode-DFS-2016.
+    "Unicode-DFS-2016",
+    # rusqlite's wasm target depends on sqlite-wasm-rs, which depends on
+    # foldhash (Zlib). cargo-deny checks that target. Zlib is OSI-approved.
+    "Zlib",
 ]
 confidence-threshold = 0.8
 

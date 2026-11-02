@@ -52,7 +52,7 @@ All sc-lint gates are active from the very first sprint:
 - `sc-lint-boundary`: boundary TOML files written in Sprint A-1 alongside the workspace scaffold, CI gate active immediately
 - `sc-lint-portability`: PORT-001–005, PORT-008, PORT-009, PORT-010 enforced from first code commit
 - `sc-lint-runtime`: SCB-RUNTIME-001 and SCB-RUNTIME-002 enforced on registry and concurrency code from first relevant implementation
-- `sc-lint check xwin`: added in Phase E; the `full` lint profile includes it but the `fast` and `ci` profiles used during Phases A–D do not require it
+- `sc-lint` host analyzers not already on `just lint`, and the Windows cross-check: sprint `b-2` in [docs/plans/phase-b](../plans/phase-b/phase-b-plan.md). Phase E keeps the `windows-latest` job and the semver release gate
 
 The rationale for early gate activation: boundary violations introduced early are architectural debt that compounds. A boundary violation caught in Sprint A-1 is a one-line fix; the same violation caught in Sprint C-3 requires refactoring across multiple crates.
 
@@ -69,7 +69,7 @@ After Phase A, `sc-runtime-example` uses `ScRuntimeBuilder<HasCli>` with a minim
 ## Phase Documents
 
 - [Phase A: Foundation](./phase-A/phase-A-plan.md) — workspace scaffold, sc-runtime-core, sc-runtime-cli, sc-runtime-mcp-stdio, facade NoCli→HasCli
-- [Phase B: Storage](./phase-B/phase-B-plan.md) — StorageBackend sealed trait, rusqlite backend, sqlx backend, facade .db()
+- [Phase b](../plans/phase-b/phase-b-plan.md) — stores, adaptor, writer, cron, and lint. Eight sprints. The file under `docs/plan/phase-B/` is withdrawn
 - [Phase C: Daemon + RPC](./phase-C/phase-C-plan.md) — daemon lifecycle, signals, cross-platform RPC, facade HasCli→HasDaemon
 - [Phase D: Web + HTTP MCP](./phase-D/phase-D-plan.md) — axum server, HttpRouteRegistry, HTTP MCP SSE, facade .web() and .mcp_http()
 - [Phase E: Release](./phase-E/phase-E-plan.md) — sc-lint-version gate, xwin CI, Windows CI (compilation + unit tests via `windows-latest` runner; full Windows daemon integration tests are post-0.1.0), API surface review, crates.io publish sequence

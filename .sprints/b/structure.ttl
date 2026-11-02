@@ -1,0 +1,154 @@
+@prefix triage: <urn:atm:triage:> .
+
+# triage:order is the sprint sequence number.
+# Wave 1: b-1, b-2, b-4 (parallel). b-3 follows b-1.
+# Wave 2: b-5, b-6, b-7 (b-5/b-6 follow b-4; b-7 follows b-4 only).
+# Wave 3: b-8 follows b-5, b-6, b-7; b-9 follows b-3 (parallel with b-8).
+# b-10 follows b-9 on integrate/phase-b-monty (wave 4).
+# b-11 follows b-10 (wave 5) for render_template, not for a shared path.
+# b-12 follows b-9 (wave 6 on develop); parallel with b-10/b-11 on other branches.
+# Continuation: b-13 is wave 7; b-14/b-15/b-16 follow b-13 in wave 8;
+# b-16 also consumes b-10; b-17 follows b-15/b-16 in wave 9; b-18 follows
+# b-14/b-17 in wave 10.
+# This registry is consumed by ATM dispatch/QA for branch, criteria, and DAG
+# lookup. It fixes the observed defect that markdown-only sprints are invisible
+# to those consumers. Retain it as the historical dispatch record; retire it
+# only if .sprints is replaced by another authoritative registry.
+
+triage:PhaseB a triage:Phase .
+
+triage:b-1 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 1 ;
+  triage:branch "sprint/b-1-sqlite-writer" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-1-sqlite-writer.md" .
+
+triage:b-2 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 2 ;
+  triage:branch "sprint/b-2-lint-profile" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-2-lint-profile.md" .
+
+triage:b-3 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 3 ;
+  triage:branch "sprint/b-3-sc-cron" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-3-sc-cron.md" ;
+  triage:follows triage:b-1 .
+
+triage:b-4 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 4 ;
+  triage:branch "sprint/b-4-store-pairing" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-4-store-pairing.md" .
+
+triage:b-5 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 5 ;
+  triage:branch "sprint/b-5-store-postgres" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-5-store-postgres.md" ;
+  triage:follows triage:b-4 .
+
+triage:b-6 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 6 ;
+  triage:branch "sprint/b-6-store-mysql" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-6-store-mysql.md" ;
+  triage:follows triage:b-4 .
+
+triage:b-7 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 7 ;
+  triage:branch "sprint/b-7-store-adaptor" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-7-store-adaptor.md" ;
+  triage:follows triage:b-4 .
+
+triage:b-8 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 8 ;
+  triage:branch "sprint/b-8-generation-layouts" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-8-generation-layouts.md" ;
+  triage:follows triage:b-5 ;
+  triage:follows triage:b-6 ;
+  triage:follows triage:b-7 .
+
+triage:b-9 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 9 ;
+  triage:branch "sprint/b-9-sc-cron-monty-hooks" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-9-sc-cron-monty-hooks.md" ;
+  triage:follows triage:b-3 .
+
+triage:b-10 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 10 ;
+  triage:branch "sprint/b-10-sc-cron-monty-host-bridge" ;
+  triage:integrateBranch "integrate/phase-b-monty" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-10-sc-cron-monty-host-bridge.md" ;
+  triage:follows triage:b-9 .
+
+triage:b-11 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 11 ;
+  triage:branch "sprint/b-11-benchmark-monty-reports" ;
+  triage:integrateBranch "integrate/phase-b-monty" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-11-benchmark-monty-reports.md" ;
+  triage:follows triage:b-10 .
+
+triage:b-12 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 12 ;
+  triage:branch "sprint/b-12-sc-cron-schedule-row-limit" ;
+  triage:integrateBranch "develop" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md" ;
+  triage:follows triage:b-9 .
+
+triage:b-13 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 13 ;
+  triage:branch "sprint/b-13-observability-contract" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-13-observability-contract.md" .
+
+triage:b-14 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 14 ;
+  triage:branch "sprint/b-14-sc-runtime-observability" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-14-sc-runtime-observability.md" ;
+  triage:follows triage:b-13 .
+
+triage:b-15 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 15 ;
+  triage:branch "sprint/b-15-sc-cron-observability" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md" ;
+  triage:follows triage:b-13 .
+
+triage:b-16 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 16 ;
+  triage:branch "sprint/b-16-monty-template-examples" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-16-monty-template-examples.md" ;
+  triage:follows triage:b-10 ;
+  triage:follows triage:b-13 .
+
+triage:b-17 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 17 ;
+  triage:branch "sprint/b-17-sc-cron-hook-environment" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-17-sc-cron-hook-environment.md" ;
+  triage:follows triage:b-15 ;
+  triage:follows triage:b-16 .
+
+triage:b-18 a triage:Sprint ;
+  triage:inPhase triage:PhaseB ;
+  triage:order 18 ;
+  triage:branch "sprint/b-18-template-observability-integration" ;
+  triage:integrateBranch "integrate/phase-b-observability" ;
+  triage:criteria "docs/plans/phase-b/sprint-b-18-template-observability-integration.md" ;
+  triage:follows triage:b-14 ;
+  triage:follows triage:b-17 .

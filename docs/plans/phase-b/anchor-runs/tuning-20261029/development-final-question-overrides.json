@@ -1,0 +1,642 @@
+{
+  "ANC-027": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-028": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-029": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-030": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "No implementation claim is made, or the claim has no checkable support.",
+          "unclear": "Something resembling evidence is named but its support is uncertain.",
+          "yes": "A concrete checkable artifact supports the implementation claim."
+        },
+        "instructions": "If item.text claims the anchor was followed, does it cite a checkable path, diff, command result, test, or comparison supporting that claim? A bare assertion is insufficient.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The required work was omitted, deferred, or replaced with an opposing action.",
+          "unclear": "The text mentions the topic without settling whether the requirement was implemented.",
+          "yes": "The delivered work explicitly did or preserved what the anchor requires."
+        },
+        "instructions": "Does item.text state that delivered work actually performed the specific action or kept the specific boundary required by anchor.statement? A future intention, silence, or topic mention is insufficient.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The delivered work is unrelated.",
+          "unclear": "The work description is too vague to determine overlap.",
+          "yes": "The delivered work touches the governed subject."
+        },
+        "instructions": "Does the delivered work in item.text touch the governed component, behavior, or artifact of anchor.statement, directly or as a dependency? Judge applicability only.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "No conflicting delivered behavior is described.",
+          "unclear": "A potentially conflicting behavior is too unclear to classify.",
+          "yes": "A delivered action or decision conflicts with the anchor."
+        },
+        "instructions": "Does item.text describe delivered behavior that cannot coexist with anchor.statement? Silence is not a violation; allowed exceptions are not violations.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-031": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-032": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-033": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "No signing or separate approval requirement is imposed.",
+          "unclear": "The delivered gate is too vaguely described to classify.",
+          "yes": "The delivered MVP requires a signature or a separate approval before script execution."
+        },
+        "instructions": "Did the delivered MVP Monty runner impose script signing or a separate approval gate even though anchor.statement requires execution without either mechanism? Judge delivered restrictions, not intentions or missing evidence.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-034": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-035": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-036": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-037": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-038": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The described work omits that capability or restricts it to a subset.",
+          "unclear": "The delivery claim does not settle which deliberate values are accepted.",
+          "yes": "The delivered registry accepts deliberate plaintext set values including secret and nonsecret values."
+        },
+        "instructions": "Does item.text state that the delivered schedule registry accepts deliberately supplied plaintext environment values without excluding the secret class? A nonsecret-only implementation does not fulfill the complete permission.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "No such denial is described in the delivered work.",
+          "unclear": "The delivered restriction or its applicability is ambiguous.",
+          "yes": "Delivered behavior denies the anchor-permitted deliberate plaintext value class."
+        },
+        "instructions": "Did the delivered registry reject a class of deliberately supplied plaintext environment values that anchor.statement permits? An explicit rejection of secret set values solely because they are plaintext crosses the permission boundary.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-039": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-040": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-041": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "The compliance claim is asserted without anything checkable, or no compliance claim is made.",
+          "unclear": "Something that might be evidence is mentioned, but it is not clear that it supports the compliance claim.",
+          "yes": "The description points to at least one checkable artifact (path, diff, command, test, comparison) that supports the compliance claim."
+        },
+        "instructions": "Where `item.text` claims the directive in `anchor.statement` was followed, does it cite concrete, checkable evidence for that claim: file paths, commit or diff references, commands that were run, test names or output, or a comparison against the required source? A bare assertion such as 'we followed the anchor' or 'based on X' with nothing checkable does not count. If the description does not claim the directive was followed at all, answer no.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The description is silent about the directive, or says it was deferred, skipped, or left for later.",
+          "unclear": "The description mentions the directive's topic but it is not possible to tell whether the directive was followed.",
+          "yes": "The description states that the work did what the directive requires, with the directive's specific content present."
+        },
+        "instructions": "According to `item.text`, was the directive in `anchor.statement` followed in what was actually built? Look for the directive's specific content in the account of the work: the required starting point was used, the required method was applied, the constraint was kept. A statement of intent or a plan to do it later does not count as followed. Judge whether the account says the directive was followed, not whether the account proves it.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work is in a different part of the system or a different activity, and it could neither follow nor break the anchor.",
+          "unclear": "The description is too vague to tell what the work touched.",
+          "yes": "The work changed, created, removed, or depends on the thing the anchor statement is about."
+        },
+        "instructions": "The state holds a description of delivered work (`item.title`, `item.text`) and one anchor: a directive the user stated verbatim in `anchor.statement`, with the area it governs in `anchor.scope`. Does the delivered work described in `item.text` touch the subject that `anchor.statement` talks about? Judge overlap of subject matter only. Do not judge compliance.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "Nothing in the description conflicts with the directive, whether or not the directive is mentioned.",
+          "unclear": "The description is ambiguous enough that the work might or might not conflict with the directive.",
+          "yes": "The description states an action, approach, or decision in the delivered work that cannot be reconciled with the directive."
+        },
+        "instructions": "Does `item.text` show that the work did something `anchor.statement` rules out, or used a different approach than the one `anchor.statement` requires? Examples: the anchor says to start from an existing implementation and the work was written from scratch; the anchor forbids a dependency and the work added it; the anchor fixes a boundary and the work crossed it. Silence about the directive is not a violation. Judge conflict only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-042": {
+    "questions": {
+      "evidenced": {
+        "criteria": {
+          "no": "No implementation claim is made, or the claim has no checkable support.",
+          "unclear": "Something resembling evidence is named but its support is uncertain.",
+          "yes": "A concrete checkable artifact supports the implementation claim."
+        },
+        "instructions": "If item.text claims the anchor was followed, does it cite a checkable path, diff, command result, test, or comparison supporting that claim? A bare assertion is insufficient.",
+        "type": "choice"
+      },
+      "implemented": {
+        "criteria": {
+          "no": "The required work was omitted, deferred, or replaced with an opposing action.",
+          "unclear": "The text mentions the topic without settling whether the requirement was implemented.",
+          "yes": "The delivered work explicitly did or preserved what the anchor requires."
+        },
+        "instructions": "Does item.text state that delivered work actually performed the specific action or kept the specific boundary required by anchor.statement? A future intention, silence, or topic mention is insufficient.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The delivered work is unrelated.",
+          "unclear": "The work description is too vague to determine overlap.",
+          "yes": "The delivered work touches the governed subject."
+        },
+        "instructions": "Does the delivered work in item.text touch the governed component, behavior, or artifact of anchor.statement, directly or as a dependency? Judge applicability only.",
+        "type": "choice"
+      },
+      "violated": {
+        "criteria": {
+          "no": "No conflicting delivered behavior is described.",
+          "unclear": "A potentially conflicting behavior is too unclear to classify.",
+          "yes": "A delivered action or decision conflicts with the anchor."
+        },
+        "instructions": "Does item.text describe delivered behavior that cannot coexist with anchor.statement? Silence is not a violation; allowed exceptions are not violations.",
+        "type": "choice"
+      }
+    }
+  }
+}

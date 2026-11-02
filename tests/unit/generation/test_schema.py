@@ -24,8 +24,17 @@ class SchemaTests(unittest.TestCase):
     def test_schema_matches_its_meta_schema(self):
         schema = load_json(ROOT / "wizard" / "answers.schema.json")
         self.assertEqual(schema["$schema"], "https://json-schema.org/draft/2020-12/schema")
-        self.assertEqual(schema["x-schema-version"], 1)
+        self.assertEqual(schema["x-schema-version"], 2)
         jsonschema.Draft202012Validator.check_schema(schema)
+        self.assertEqual(
+            schema["properties"]["db"]["enum"],
+            ["none", "sqlite", "postgres", "mysql", "sqlite-postgres", "sqlite-mysql"],
+        )
+        self.assertEqual(
+            sorted(schema["properties"]),
+            ["db", "licence", "mcp", "project_name"],
+        )
+        self.assertNotIn("x-v01-reserved", json.dumps(schema))
 
     def test_driver_has_no_option_list(self):
         source = (ROOT / "scripts" / "new_project.py").read_text(encoding="utf-8")

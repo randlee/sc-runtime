@@ -10,10 +10,10 @@ Related: [Project Plan](../project-plan.md) · [Phase D](../phase-D/phase-D-plan
 
 ## Objectives
 
-Phase E is a hardening and release phase, not a feature phase. No new capability is added to the builder, no new crates are introduced (with the exception of the `sc-runtime-db-fsqlite` placeholder already created in Phase B). The objectives are:
+Phase E is a hardening and release phase, not a feature phase. No new capability is added to the builder. Phase b does not create `sc-runtime-db-fsqlite`. The objectives are:
 
 - The sc-lint-version gate (`cargo-semver-checks`) passes as a mandatory release gate — no publish without it
-- xwin cross-compilation CI validates Windows compilation from a macOS or Linux runner, catching named-pipe and `#[cfg(windows)]` failures before they reach consumers
+- The Windows cross-check installed in sprint `b-2` still passes. Phase E adds the `windows-latest` job, which remains the authority for Windows correctness
 - The public API surface is audited for semver stability; anything not ready for stability is sealed or pub(crate)-restricted before the 0.1.0 tag
 - All workspace crates publish to crates.io in dependency order at v0.1.0
 - Consumer tools (atm-core, Continuity, ci) are updated from `[patch.crates-io]` co-development mode to the published crates.io versions
@@ -25,7 +25,7 @@ Phase E is a hardening and release phase, not a feature phase. No new capability
 | Task | Description |
 |------|-------------|
 | sc-lint-version | Add `sc-lint check full` (which includes `sc-lint-version` + `cargo-semver-checks`) to CI as a blocking check on the release workflow; must pass before the release tag is applied |
-| xwin CI | Add `sc-lint check xwin` as a step in the CI workflow; runs `cargo xwin check` and `cargo xwin clippy` targeting `x86_64-pc-windows-msvc` from the macOS runner; any error blocks the release |
+| xwin CI | Already declared in sprint `b-2`. Phase E confirms that gate is still green and adds the `windows-latest` job below |
 | API surface review | Audit all `pub` items across the workspace for semver stability intent; seal or restrict anything not ready for public stability commitment; document justified exceptions with `#[sc_lint(allow = ...)]` |
 | README.md | Consumer-facing workspace README: what sc-runtime is, the composability matrix, quick start (Phase A pattern), link to docs/ for depth |
 | CHANGELOG.md | Generated from git log covering all alpha and beta iterations; formatted per Keep a Changelog conventions |
@@ -56,7 +56,7 @@ If `sc-lint-version` is not yet available in the installed sc-lint version, the 
 
 ## xwin CI Configuration
 
-xwin validates Windows cross-compilation from macOS/Linux before the release. It runs as a separate CI job named `xwin` on the macOS runner:
+Sprint `b-2` declares this cross-check. It validates Windows compilation from macOS and Linux. The workflow job below is Phase E's:
 
 ```yaml
 xwin:

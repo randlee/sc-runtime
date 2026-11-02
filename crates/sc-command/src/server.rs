@@ -12,6 +12,12 @@ use serde::Serialize;
 
 use crate::{Envelope, ErrorKind, OpError, SERIALIZATION_CODE};
 
+/// Wire `suggested_action` for [`SERIALIZATION_CODE`].
+///
+/// The static fallback body uses this same sentence so a second
+/// serialization failure still tells the caller what to do.
+const SERIALIZATION_RECOVERY: &str = "Return a payload that serializes to JSON. The HTTP edge responds 500 with this code and does not panic. The MCP edge returns rmcp ErrorData internal error carrying this code and does not panic.";
+
 /// rmcp tool error.
 ///
 /// rmcp 3.7 names this type [`ErrorData`]. Tool handlers import that type as
@@ -151,9 +157,34 @@ fn serialization_error(error: &serde_json::Error) -> OpError {
         "response envelope could not be serialized",
     )
     .with_details(serde_json::json!({ "cause": error.to_string() }))
+    .with_suggestion(SERIALIZATION_RECOVERY)
 }
 
 fn static_failure_body() -> Vec<u8> {
-    br#"{"version":"1","ok":false,"data":null,"error":{"kind":"internal","code":"ENVELOPE.SERIALIZATION","message":"response envelope could not be serialized","details":null,"suggested_action":null}}"#
+    br#"{"version":"1","ok":false,"data":null,"error":{"kind":"internal","code":"ENVELOPE.SERIALIZATION","message":"response envelope could not be serialized","details":null,"suggested_action":"Return a payload that serializes to JSON. The HTTP edge responds 500 with this code and does not panic. The MCP edge returns rmcp ErrorData internal error carrying this code and does not panic."}}"#
         .to_vec()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn static_failure_body_matches_the_serialization_suggestion() {
+        let envelope = Envelope::<()>::failure(
+            OpError::new(
+                ErrorKind::Internal,
+                ErrorCode::new_static(SERIALIZATION_CODE),
+                "response envelope could not be serialized",
+            )
+            .with_suggestion(SERIALIZATION_RECOVERY),
+        );
+        let rendered = serde_json::to_vec(&envelope).expect("envelope");
+        assert_eq!(rendered, static_failure_body());
+        let parse_error = serde_json::from_str::<u32>("nope").expect_err("not a number");
+        assert_eq!(
+            serialization_error(&parse_error).suggested_action(),
+            Some(SERIALIZATION_RECOVERY)
+        );
+    }
 }

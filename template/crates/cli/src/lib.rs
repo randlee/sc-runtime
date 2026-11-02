@@ -4,8 +4,11 @@ use std::ffi::OsStr;
 use std::fmt;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use api_types::{CreateWidget, GetWidget, WidgetId, WidgetName};
+#[cfg(feature = "general-db")]
+use api_types::{DeleteRow, DeleteWidget};
 use clap::{Parser, Subcommand};
 use sc_command::{Envelope, OpError};
 use sc_transport::{Client, Endpoint, TransportConfig, TransportError};
@@ -47,6 +50,28 @@ pub enum Command {
     /// `widget get`.
     WidgetGet {
         /// Widget id.
+        id: String,
+        /// `--endpoint` text, when the flag was present.
+        endpoint: Option<String>,
+        /// `--json` was present.
+        json: bool,
+    },
+    /// `widget delete`. Present when general database commands are on.
+    #[cfg(feature = "general-db")]
+    WidgetDelete {
+        /// Widget id.
+        id: String,
+        /// `--endpoint` text, when the flag was present.
+        endpoint: Option<String>,
+        /// `--json` was present.
+        json: bool,
+    },
+    /// `delete row <table> <id>`. Present when general database commands are on.
+    #[cfg(feature = "general-db")]
+    DeleteRow {
+        /// Table name.
+        table: String,
+        /// Row id.
         id: String,
         /// `--endpoint` text, when the flag was present.
         endpoint: Option<String>,
@@ -143,6 +168,12 @@ enum CliCommand {
         #[command(subcommand)]
         action: WidgetAction,
     },
+    /// General database commands. Absent when the feature is off.
+    #[cfg(feature = "general-db")]
+    Delete {
+        #[command(subcommand)]
+        action: DeleteAction,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -163,6 +194,26 @@ enum WidgetAction {
     Get {
         /// Widget id.
         #[arg(long)]
+        id: String,
+    },
+    /// Delete one widget. Same delete as `delete row widgets <id>`.
+    #[cfg(feature = "general-db")]
+    Delete {
+        /// Widget id.
+        #[arg(long)]
+        id: String,
+    },
+}
+
+/// `delete row`.
+#[cfg(feature = "general-db")]
+#[derive(Subcommand, Debug)]
+enum DeleteAction {
+    /// Delete one row by table and id.
+    Row {
+        /// Table name.
+        table: String,
+        /// Row id.
         id: String,
     },
 }
@@ -200,6 +251,19 @@ pub fn parse(args: &[String]) -> Result<Command, ParseError> {
         CliCommand::Widget {
             action: WidgetAction::Get { id },
         } => Command::WidgetGet { id, endpoint, json },
+        #[cfg(feature = "general-db")]
+        CliCommand::Widget {
+            action: WidgetAction::Delete { id },
+        } => Command::WidgetDelete { id, endpoint, json },
+        #[cfg(feature = "general-db")]
+        CliCommand::Delete {
+            action: DeleteAction::Row { table, id },
+        } => Command::DeleteRow {
+            table,
+            id,
+            endpoint,
+            json,
+        },
     };
     Ok(command)
 }
@@ -264,6 +328,32 @@ pub async fn execute(command: Command) -> (ExitCode, String) {
                 WidgetBody::Get(GetWidget { id }),
             )
         }
+        #[cfg(feature = "general-db")]
+        Command::WidgetDelete { id, endpoint, json } => {
+            let Ok(id) = WidgetId::parse(&id) else {
+                return usage_result(
+                    "widget id must be 1-64 ascii letters, digits, hyphens, or underscores",
+                );
+            };
+            (
+                endpoint,
+                json,
+                api_types::WIDGET_DELETE_PATH,
+                WidgetBody::Delete(DeleteWidget { id }),
+            )
+        }
+        #[cfg(feature = "general-db")]
+        Command::DeleteRow {
+            table,
+            id,
+            endpoint,
+            json,
+        } => (
+            endpoint,
+            json,
+            api_types::DELETE_ROW_PATH,
+            WidgetBody::DeleteRow(DeleteRow { table, id }),
+        ),
     };
     match post_widget(endpoint_flag.as_deref(), path, &body).await {
         Ok(value) => {
@@ -456,6 +546,10 @@ fn exec_operation(error: &DaemonExecError) -> OpError {
 enum WidgetBody {
     Create(CreateWidget),
     Get(GetWidget),
+    #[cfg(feature = "general-db")]
+    Delete(DeleteWidget),
+    #[cfg(feature = "general-db")]
+    DeleteRow(DeleteRow),
 }
 
 impl Serialize for WidgetBody {
@@ -466,6 +560,10 @@ impl Serialize for WidgetBody {
         match self {
             Self::Create(body) => body.serialize(serializer),
             Self::Get(body) => body.serialize(serializer),
+            #[cfg(feature = "general-db")]
+            Self::Delete(body) => body.serialize(serializer),
+            #[cfg(feature = "general-db")]
+            Self::DeleteRow(body) => body.serialize(serializer),
         }
     }
 }
@@ -480,8 +578,14 @@ async fn post_widget(
     body: &impl Serialize,
 ) -> Result<Value, TransportError> {
     let endpoint = resolve(endpoint_flag)?;
-    let client = Client::new(endpoint)?;
+    let client = Client::new(endpoint)?.with_header("x-request-id", &correlation_id())?;
     client.post(path, body).await
+}
+
+fn correlation_id() -> String {
+    static NEXT: AtomicU64 = AtomicU64::new(1);
+    let tick = NEXT.fetch_add(1, Ordering::Relaxed);
+    format!("cli-{tick}")
 }
 
 fn resolve(endpoint_flag: Option<&str>) -> Result<Endpoint, TransportError> {
@@ -593,6 +697,28 @@ mod tests {
         let error = prepare_daemon_path().expect_err("sibling daemon");
         assert_eq!(error.code, CODE_DAEMON_EXEC);
         assert!(error.cause.contains("is missing"));
+    }
+
+    #[cfg(not(feature = "general-db"))]
+    #[test]
+    fn general_db_off_omits_delete_commands() {
+        let row = parse(&[
+            "delete".into(),
+            "row".into(),
+            "widgets".into(),
+            "widget-1".into(),
+        ]);
+        assert!(row.is_err(), "delete row is registered with general-db off");
+        let widget = parse(&[
+            "widget".into(),
+            "delete".into(),
+            "--id".into(),
+            "widget-1".into(),
+        ]);
+        assert!(
+            widget.is_err(),
+            "widget delete is registered with general-db off"
+        );
     }
 
     #[test]

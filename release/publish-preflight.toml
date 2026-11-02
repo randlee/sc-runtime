@@ -2,3 +2,17 @@
 # .github/scripts/run-consumer-preflight.sh (fail-closed before release dispatch).
 
 schema_version = 1
+
+
+[[checks]]
+id = "observability-registry-only"
+description = "Require the registry 1.5.0 bridge profile, reject local substitutes, and enforce upstream capability cleanup."
+run = "python3 scripts/check_observability_release.py"
+[[checks]]
+id = "release-contract-sources"
+description = "Verify prepublication release-generation source contracts."
+run = "bash scripts/check_release_contract_sources.sh"
+[[checks]]
+id = "benchmark-pass"
+description = "Verify committed controlled-host benchmark evidence matches the release source and current baselines."
+run = "python3 scripts/benchmark/check_release_evidence.py"

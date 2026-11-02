@@ -56,10 +56,15 @@ their own prompts.
 
 ## Validation Policy
 
-No repository-wide phase-end artifact command is configured yet. An
-implementation phase must add its authoritative command here before phase-end
-QA can pass. Reviewer assignments may provide narrower commands for earlier
-rounds.
+**Phase B implementation (waves 1–3, `integrate/phase-b` → `develop`):**
+phase-end artifact command is `just lint && just test` on the integration PR
+head commit. `quality-mgr` treats GitHub Actions check **`just lint and just
+test`** on that commit as the delegated execution proof; the enforcer must not
+report PASS until that job is `SUCCESS`.
+
+Later phases replace or extend this section when their integration PR opens.
+Sprint-level QA may use narrower commands; phase-end QA requires the block
+above for Phase B close.
 
 ## Repository layout (reviewer expectations)
 
@@ -113,7 +118,9 @@ One convention for every phase. Everything is lower case.
 | Phase plan | `docs/plans/phase-<phase>/phase-<phase>-plan.md` | `phase-bc-plan.md` |
 | Sprint doc | `docs/plans/phase-<phase>/sprint-<phase>-<n>-<slug>.md` | `sprint-bc-4-task-ledger-writer.md` |
 | Plan branch | `plan/phase-<phase>`, PR to `develop` | `plan/phase-bc` |
+| Plan amendment branch | `plan/phase-<phase>-<slug>`, PR to `develop` | `plan/phase-b-monty-extension` |
 | Phase branch | `integrate/phase-<phase>`, cut from `develop` | `integrate/phase-bc` |
+| Phase track branch | `integrate/phase-<phase>-<track>`, cut from the phase branch; sprint PRs target it | `integrate/phase-b-monty` |
 | Sprint branch | `sprint/<phase>-<n>-<slug>` | `sprint/bc-4-task-ledger-writer` |
 | Fix layer | `fix/<phase>-<n>-<slug>`; phase-level: `fix/<phase>-<slug>` | `fix/bc-4-qa1` |
 
@@ -129,4 +136,4 @@ an interface, its compatibility rule, evidence paths, and approval authority,
 
 ## Repository Exceptions
 
-None.
+Phase ids `a` and `b` are single letters. Later phases use the letter-pair form in Plan Naming.

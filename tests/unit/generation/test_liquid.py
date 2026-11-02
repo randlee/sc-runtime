@@ -37,7 +37,7 @@ class LiquidTests(unittest.TestCase):
                 bodies.append(text.strip())
         self.assertEqual(
             bodies,
-            ["pub mod mcp;", ".mcp(daemon::mcp::service)"],
+            [".mcp(crate::mcp::service)", "pub mod mcp;"],
         )
 
     def test_whole_file_differences_are_ignored(self):
@@ -45,7 +45,14 @@ class LiquidTests(unittest.TestCase):
         ignored = cargo["conditional"]["mcp == false"]["ignore"]
         self.assertIn("crates/daemon/src/mcp.rs", ignored)
         self.assertIn("crates/cli/tests/widget_mcp.rs", ignored)
-        self.assertEqual(cargo["template"]["exclude"], ["AGENTS.md.j2", "CLAUDE.md.j2"])
+        self.assertEqual(
+            cargo["template"]["exclude"],
+            ["AGENTS.md.j2", "CLAUDE.md.j2"],
+        )
+        self.assertEqual(
+            cargo["template"]["ignore"],
+            ["config/cron.schema.json"],
+        )
 
 
 if __name__ == "__main__":

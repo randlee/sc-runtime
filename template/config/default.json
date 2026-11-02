@@ -1,7 +1,28 @@
 {
+{% if db == "postgres" %}
+  "database": "postgres://localhost/widgets",
+{% elsif db == "mysql" %}
+  "database": "mysql://localhost/widgets",
+{% elsif db == "sqlite-postgres" %}
   "database": "widgets.db",
+  "remote_database": "postgres://localhost/widgets",
+{% elsif db == "sqlite-mysql" %}
+  "database": "widgets.db",
+  "remote_database": "mysql://localhost/widgets",
+{% elsif db == "sqlite" %}
+  "database": "widgets.db",
+{% endif %}
   "logging": {
     "enableConsoleSink": true,
-    "enableFileSink": false
+    "enableFileSink": true
+  },
+  "cron": {
+    "database_path": "cron.db",
+    "max_schedule_rows": 10,
+    "environment": {
+      "allow_process": [],
+      "allow_dotenv_files": [],
+      "allow_dotenv_roots": []
+    }
   }
 }

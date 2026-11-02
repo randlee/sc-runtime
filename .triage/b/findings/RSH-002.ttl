@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18:qa1:RSH-002>
+  qa:id "RSH-002" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Important" ;
+  qa:status "fixed" ;
+  qa:reviewer "rust-service-hardening-agent" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "template/crates/daemon/src/main.rs:134" ;
+  qa:issue "Reachable runtime failures no longer retain the library's exact code/cause/recovery layout. The generated formatter passes RuntimeError Display as cause even though Display already includes the runtime code and remediation, and replaces the actual remediation with the literal 'read the cause and retry'. For example an instance-lock failure becomes 'RUNTIME.LOCK_HELD RUNTIME.LOCK_HELD: ... stop the other daemon ... \u2014 read the cause and retry'. An agent parsing the recovery field loses the actionable library recovery. The stores and transport error paths use the same wrapping pattern." ;
+  qa:recommendation "Format runtime errors from their structured code(), message(), cause(), and remediation() accessors, preserving the original remediation and including the underlying cause once without embedding Display's code/recovery. Apply the same treatment to existing transport wrappers and extend the reachable startup-failure assertion to verify the entire code/cause/recovery line rather than only starts_with(code)." .

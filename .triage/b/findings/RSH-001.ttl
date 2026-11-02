@@ -1,0 +1,30 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+<urn:sc-runtime:qa:b-13:RSH-001> qa:sprint "b-13" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-service-hardening-agent" ;
+  qa:location "crates/sc-cron/src/process.rs:356" ;
+  qa:issue "Failure to create the reap timer thread disables the documented post-kill bound. If thread::Builder::spawn returns Err while the killed child cannot be reaped, the public supervisor remains pending indefinitely after expiry instead of returning after REAP_AFTER_KILL." ;
+  qa:remedy "Handle timer creation failure by completing supervision through a bounded fail-closed cleanup/error path rather than awaiting pending forever. Preserve the existing monotonic/realtime timing semantics and distinguish timer-start failure from a genuinely elapsed reap deadline. Add deterministic coverage through an injectable timer-start failure seam with an unreapable child." ;
+  qa:sourceCommit "0a6a9dcfb6258d06a470154e24e0a2aec915430e" ;
+  qa:status "open" .
+
+<urn:sc-runtime:qa:b-14:RSH-001> qa:sprint "b-14" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-service-hardening-agent" ;
+  qa:location "crates/sc-cron/src/process.rs:356" ;
+  qa:issue "Failure to create the reap timer thread disables the documented post-kill bound. If thread::Builder::spawn returns Err while the killed child cannot be reaped, the public supervisor remains pending indefinitely after expiry instead of returning after REAP_AFTER_KILL." ;
+  qa:remedy "Consume the independently reviewed B13 fix from c00cb59eb921d2a67012c7be094f99f412425f52, preserving its immediate error propagation, cleanup retry, realtime timer semantics and deterministic failure coverage when merging forward." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .
+
+<urn:sc-runtime:qa:b-18:qa1:RSH-001>
+  qa:id "RSH-001" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Important" ;
+  qa:status "fixed" ;
+  qa:reviewer "rust-service-hardening-agent" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "crates/sc-cron/src/scheduler.rs:921" ;
+  qa:issue "The worker timeout path joins only the aborted worker task, so generated main can shut down logging while work spawned by that worker still holds injected logger handles. In particular, worker::store_call clones Arc<S> into spawn_blocking, and dropping its awaiting future does not stop a running blocking closure. SqliteScheduleStore retains SharedCanonicalLog. If a store call remains active when the five-second application shutdown deadline expires, aborting and awaiting the worker detaches that closure; main ignores false, drops its scheduler and immediately consumes Observability. Rust/Python run handles also abort without a join when InFlight is dropped." ;
+  qa:recommendation "Retain and await ownership of outstanding store operations and child runs through worker shutdown, including the timeout branch, before returning control to the application's consuming logger shutdown. Where a bounded SQLite stop is required, interrupt the operation and await its completion. Add a focused gated-store or active-child regression proving that all shared logger handles are gone when shutdown returns; an idle-worker proof cannot establish this." .

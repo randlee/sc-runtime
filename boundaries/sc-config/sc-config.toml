@@ -16,12 +16,23 @@ constructor = "none"
 [composition]
 roots = ["AppName", "load", "Loader", "ConfigError"]
 
+# Production tool-package/import exclusion (normal + build, all production
+# features) is checked by the production-tool-boundary companion. It resolves
+# aliases/package identity and checks external/transitive cargo trees too;
+# dev-only test/benchmark references remain permitted (REQ-RUN-0005).
 [dependencies]
 allowed_dependents = []
 allowed_dependencies = ["serde", "serde_json"]
-# This lint tree's only workspace member is sc-config, so there is no
-# workspace-member edge to forbid. crates.io names stay on the cargo tree check.
-forbidden_edges = []
+# crates.io names (tokio, sc-observability, sc-observability-otlp,
+# sc-observability-types) stay on the cargo tree check. sc-cron is a
+# workspace member; the forbidden edge below keeps this crate off it.
+forbidden_edges = [
+  "sc-config -> sc-transport",
+  "sc-config -> sc-command",
+  "sc-config -> sc-runtime",
+  "sc-config -> sc-runtime-db-sqlite",
+  "sc-config -> sc-cron",
+]
 
 [references]
 scope = "outside_owner_crate"
