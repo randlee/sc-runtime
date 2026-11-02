@@ -1,0 +1,4 @@
+@prefix triage: <urn:sc-runtime:triage:> .
+<urn:sc-runtime:finding:ASSET-KIT-001> triage:severity "Blocking" ; triage:status "closed" ; triage:reviewer "/root/release_assets_arch" ; triage:rule "ADR-RUN-0002 points7-8" ; triage:target ".github/workflows/release.yml" ; triage:description "Hand-edited generated release workflow must be regenerated from qualified upstream kit revision" ; triage:remediation "Apply focused repair upstream; qualify remote SHA; update consumer pin and regenerate with install.py; verify exact output" .
+
+<urn:sc-runtime:finding:ASSET-KIT-001> triage:resolution "Qualified upstream77ae845 exact2file repair from9677ab; officialinstaller85outputsbyteexact, dryrunclean, ArchPASSf0da" .

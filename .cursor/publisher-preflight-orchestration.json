@@ -2014,7 +2014,7 @@
       "other_account_compile_overlap_observed": false
     },
     "merge_method": "merge_commit",
-    "production_publication_started": false,
+    "production_publication_started": true,
     "main_merge_performed": true,
     "remaining": "Explicit publish assignment; production channels; registry-only generated proof; return CI repair to develop. Website Pages configuration tracked separately in run-kyl.",
     "qa_publication": "verified",
@@ -2035,6 +2035,41 @@
       "bead": "run-kyl",
       "run_id": 41379599913,
       "cause": "Pages setup returns404 site not found; configuration availability needs verification"
+    },
+    "production_authorization": "Human: if preflight passes, continue and publish.",
+    "production_run": {
+      "run_id": 41381332575,
+      "source": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
+      "tag": "v0.1.1",
+      "crates_io": "passed",
+      "github_release": "failed archive collection absent artifacts dir; focused repair run-h0h.9 in progress"
+    },
+    "crates_registry_consumer_proof": {
+      "passed": true,
+      "seconds": 168.812,
+      "source": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
+      "features": [
+        "cron",
+        "monty"
+      ],
+      "all_seven_from_registry": true
+    },
+    "github_release_repair": {
+      "pr": 104,
+      "upstream_pr": "https://github.com/randlee/sc-publish/pull/138",
+      "qualified_kit": "77ae845f6b1819bca163a7629ca5598e7d40718f",
+      "inventory_count": 85,
+      "installed_byte_exact": true,
+      "source": "2984ec326ac4e63e04287e19d64c72a2aa28a1c8",
+      "head": "f0da0ed84f653201c1e1fc59403876f02d4c289e",
+      "campaign": "20261102T032516Z-rand-m5",
+      "source_qa": "Req4/4 Arch Rust PASSzero",
+      "readiness_run": 41383179715,
+      "status": "awaiting_hostedCI/readiness_publicQA_thenmerge_mainpreflight_channelretry",
+      "preserve_channels": [
+        "crates_io"
+      ],
+      "tag_unchanged": "5af24c862fe7ed8dae8710b7bd64a84a29506b51"
     }
   },
   "qa_rounds": [
