@@ -1,18 +1,30 @@
 @prefix triage: <urn:atm:triage:> .
 
-# Wave 1 contains two independent integration sprints. Their owned paths do
-# not overlap; neither consumes an artifact from the other.
+# bc-1 owns the shared contract documents. Wave 2 contains the two independent
+# implementation sprints; bc-4 is the authorized registry-release closure.
 
 triage:PhaseBC a triage:Phase .
 
 triage:bc-1 a triage:Sprint ;
   triage:inPhase triage:PhaseBC ;
   triage:order 1 ;
-  triage:branch "sprint/bc-1-consumer-sc-lint-full-profile" ;
-  triage:criteria "docs/plans/phase-bc/sprint-bc-1-consumer-sc-lint-full-profile.md" .
+  triage:branch "sprint/bc-1-consumer-runtime-contract" ;
+  triage:criteria "docs/plans/phase-bc/sprint-bc-1-consumer-runtime-contract.md" .
 
 triage:bc-2 a triage:Sprint ;
   triage:inPhase triage:PhaseBC ;
   triage:order 2 ;
-  triage:branch "sprint/bc-2-runtime-ecosystem-upgrade" ;
-  triage:criteria "docs/plans/phase-bc/sprint-bc-2-runtime-ecosystem-upgrade.md" .
+  triage:branch "sprint/bc-2-consumer-sc-lint-full-profile" ;
+  triage:criteria "docs/plans/phase-bc/sprint-bc-2-consumer-sc-lint-full-profile.md" .
+
+triage:bc-3 a triage:Sprint ;
+  triage:inPhase triage:PhaseBC ;
+  triage:order 2 ;
+  triage:branch "sprint/bc-3-runtime-ecosystem-upgrade" ;
+  triage:criteria "docs/plans/phase-bc/sprint-bc-3-runtime-ecosystem-upgrade.md" .
+
+triage:bc-4 a triage:Sprint ;
+  triage:inPhase triage:PhaseBC ;
+  triage:order 3 ;
+  triage:branch "sprint/bc-4-runtime-ecosystem-release" ;
+  triage:criteria "docs/plans/phase-bc/sprint-bc-4-runtime-ecosystem-release.md" .

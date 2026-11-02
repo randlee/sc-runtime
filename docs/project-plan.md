@@ -107,5 +107,7 @@ plan](plans/phase-bc/phase-bc-plan.md).
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
-| bc-1 consumer sc-lint full profile | [sprint-bc-1](plans/phase-bc/sprint-bc-1-consumer-sc-lint-full-profile.md) | planned | `sprint/bc-1-consumer-sc-lint-full-profile` |
-| bc-2 runtime ecosystem upgrade | [sprint-bc-2](plans/phase-bc/sprint-bc-2-runtime-ecosystem-upgrade.md) | planned | `sprint/bc-2-runtime-ecosystem-upgrade` |
+| bc-1 consumer/runtime compatibility contract | [sprint-bc-1](plans/phase-bc/sprint-bc-1-consumer-runtime-contract.md) | planned | `sprint/bc-1-consumer-runtime-contract` |
+| bc-2 consumer sc-lint full profile | [sprint-bc-2](plans/phase-bc/sprint-bc-2-consumer-sc-lint-full-profile.md) | planned | `sprint/bc-2-consumer-sc-lint-full-profile` |
+| bc-3 runtime ecosystem upgrade | [sprint-bc-3](plans/phase-bc/sprint-bc-3-runtime-ecosystem-upgrade.md) | planned | `sprint/bc-3-runtime-ecosystem-upgrade` |
+| bc-4 runtime ecosystem authorized release | [sprint-bc-4](plans/phase-bc/sprint-bc-4-runtime-ecosystem-release.md) | planned | `sprint/bc-4-runtime-ecosystem-release` |
