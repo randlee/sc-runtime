@@ -6,25 +6,26 @@ Intent: `docs/plans/phase-c/phase-c-plan.md`
 
 | ID | Status | Summary | Stated |
 | --- | --- | --- | --- |
-| ANC-001 | proposed | Generated consumer runs the full sc-lint profile | 2026-11-02 |
+| ANC-001 | proposed | Generated consumer runs every configured analyzer | 2026-11-02 |
 | ANC-002 | proposed | One compatible runtime ecosystem upgrade | 2026-11-02 |
 | ANC-003 | proposed | Repository and template share sc-lint 0.8.4 | 2026-11-02 |
 | ANC-004 | proposed | Phase C uses c consistently | 2026-11-02 |
 | ANC-005 | proposed | Dedicated Phase C planning worktree and PR | 2026-11-02 |
+| ANC-006 | proposed | Keep rusqlite 0.39.x SQLite compatibility | 2026-11-02 |
 
 ## ANC-001
 
-Anchor: A Phase C generated consumer must install sc-lint through just setup and execute the configured full lint profile through just lint.
+Anchor: A Phase C generated consumer must install sc-lint through just setup and run sc-boundary, sc-portability, and sc-runtime through ordinary just lint and named default and full profiles.
 
 > a full sc-lint is installed on a consumer repo
 
-Said by randlee, Phase C planning conversation, 2026-11-02. Status: proposed. Version 1.
+Said by randlee, Phase C planning conversation, 2026-11-02. Status: proposed. Version 2.
 
-Summary: Generated consumer runs the full sc-lint profile
+Summary: Generated consumer runs every configured analyzer
 
-Scope: the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or lint commands
+Scope: the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or default or full lint commands
 
-Deterministic check to pair with the development gate: A generated fixture runs just setup and just lint while its receipt records sc-boundary, sc-portability, and sc-runtime.
+Deterministic check to pair with the development gate: A generated fixture runs just setup, ordinary just lint, and named default and full profiles while its receipt records sc-boundary, sc-portability, and sc-runtime.
 
 ## ANC-002
 
@@ -81,3 +82,17 @@ Summary: Dedicated Phase C planning worktree and PR
 Scope: the Phase C plan branch, worktree, and pull request metadata
 
 Deterministic check to pair with the development gate: Git worktree metadata records plan/phase-c separately, and its pull request targets develop.
+
+## ANC-006
+
+Anchor: Phase C must retain rusqlite 0.39.x with libsqlite3-sys 0.37 and must not upgrade the SQLite writer dependency graph.
+
+> so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.
+
+Said by randlee, Phase C planning conversation, 2026-11-02. Status: proposed. Version 1.
+
+Summary: Keep rusqlite 0.39.x SQLite compatibility
+
+Scope: the c-3 runtime ecosystem upgrade sprint and any plan item that changes Cargo dependency versions for rusqlite, sqlx, or libsqlite3-sys
+
+Deterministic check to pair with the development gate: Cargo metadata and the SQLite resolver test show rusqlite 0.39.x and libsqlite3-sys 0.37 with no libsqlite3-sys 0.38.

@@ -7,21 +7,21 @@
       "id": "ANC-001",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "A Phase C generated consumer must install sc-lint through just setup and execute the configured full lint profile through just lint.",
+      "statement": "A Phase C generated consumer must install sc-lint through just setup and run sc-boundary, sc-portability, and sc-runtime through ordinary just lint and named default and full profiles.",
       "quote": "a full sc-lint is installed on a consumer repo",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-02",
       "context": "Phase C planning conversation",
-      "summary": "Generated consumer runs the full sc-lint profile",
-      "scope": "the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or lint commands",
-      "deterministic_check": "A generated fixture runs just setup and just lint while its receipt records sc-boundary, sc-portability, and sc-runtime.",
+      "summary": "Generated consumer runs every configured analyzer",
+      "scope": "the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or default or full lint commands",
+      "deterministic_check": "A generated fixture runs just setup, ordinary just lint, and named default and full profiles while its receipt records sc-boundary, sc-portability, and sc-runtime.",
       "fixtures": {
         "pass": [],
         "fail": []
       },
       "question_overrides": {},
-      "version": 1,
+      "version": 2,
       "status": "proposed",
       "promoted_to": null,
       "beads": {
@@ -34,6 +34,17 @@
           "at": "2026-11-02T23:30:19+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-02T23:34:55+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check"
+          ],
+          "previous_statement": "A Phase C generated consumer must install sc-lint through just setup and execute the configured full lint profile through just lint."
         }
       ]
     },
@@ -168,6 +179,40 @@
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
+          "event": "created",
+          "status": "proposed"
+        }
+      ]
+    },
+    {
+      "id": "ANC-006",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C must retain rusqlite 0.39.x with libsqlite3-sys 0.37 and must not upgrade the SQLite writer dependency graph.",
+      "quote": "so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "Phase C planning conversation",
+      "summary": "Keep rusqlite 0.39.x SQLite compatibility",
+      "scope": "the c-3 runtime ecosystem upgrade sprint and any plan item that changes Cargo dependency versions for rusqlite, sqlx, or libsqlite3-sys",
+      "deterministic_check": "Cargo metadata and the SQLite resolver test show rusqlite 0.39.x and libsqlite3-sys 0.37 with no libsqlite3-sys 0.38.",
+      "fixtures": {
+        "pass": [],
+        "fail": []
+      },
+      "question_overrides": {},
+      "version": 1,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-02T23:34:55+00:00",
           "event": "created",
           "status": "proposed"
         }
