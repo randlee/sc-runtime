@@ -42,3 +42,19 @@ not attribute that duration to individual tests. Same-head Template fixture
 generation took 178–371s, while the required second consumer recipe pass took
 4–6s. These are baseline observations, not predicted savings. Compare later
 completed CI runs and cache hit/save sizes before claiming an improvement.
+
+The heavy Linux crate job disables dev/test debug-symbol data through
+`CARGO_PROFILE_DEV_DEBUG=0` and `CARGO_PROFILE_TEST_DEBUG=0`; debug assertions
+and every lint/test command remain enabled. Its `nodebug` cache namespace
+separates those artifacts from older debug-symbol builds. Windows and fixture
+cache partitions retain their existing profiles and keys.
+
+Before restoring/building, this Rust/Python-only job reclaims the unused
+Android and .NET preinstalls at `/usr/local/lib/android` and
+`/usr/share/dotnet`, guarded to GitHub-hosted Linux runners. It does not remove
+workspace or Cargo artifacts. Bounded `df`/`du` observations before cleanup
+and after checks (including failures) expose runner headroom and build-target
+sizes without masking test failures. PR103's earlier runner failure reported
+`No space left on device`; it did not establish that a cache restore caused
+the exhaustion or that an assertion failed. The next hosted run must verify
+the fix under the complete workload.
