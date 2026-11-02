@@ -77,6 +77,8 @@ use tokio::process::ChildStdin;
 use process_wrap::tokio::JobObject;
 #[cfg(unix)]
 use process_wrap::tokio::ProcessGroup;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 
 /// How much of a pipe is read per call.
 const READ_CHUNK: usize = 8 * 1024;
@@ -195,7 +197,6 @@ fn executable(path: &Path) -> bool {
     }
     #[cfg(unix)]
     {
-        use std::os::unix::fs::PermissionsExt;
         metadata.permissions().mode() & 0o111 != 0
     }
     #[cfg(not(unix))]
@@ -222,7 +223,6 @@ impl TempCwd {
         builder.prefix("sc-cron-child-");
         #[cfg(unix)]
         {
-            use std::os::unix::fs::PermissionsExt as _;
             builder.permissions(std::fs::Permissions::from_mode(0o700));
         }
         builder.tempdir().map(Self)
