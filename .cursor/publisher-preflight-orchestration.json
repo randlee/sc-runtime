@@ -2015,16 +2015,34 @@
     },
     "merge_method": "merge_commit",
     "production_publication_started": false,
-    "main_merge_performed": false,
-    "remaining": "PR103 merge commit; exact merged-main preflight; publication; registry-only generated proof; return release repair to develop",
-    "qa_publication": "pending_explicit_PR103_permission_after_automatic_rejection"
+    "main_merge_performed": true,
+    "remaining": "Explicit publish assignment; production channels; registry-only generated proof; return CI repair to develop. Website Pages configuration tracked separately in run-kyl.",
+    "qa_publication": "verified",
+    "qa_comment_url": "https://github.com/randlee/sc-runtime/pull/103#issuecomment-6567835725",
+    "merged_main": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
+    "final_main_preflight": {
+      "conclusion": "success",
+      "headSha": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
+      "status": "completed",
+      "url": "https://github.com/randlee/sc-runtime/actions/runs/41379640237",
+      "sanitized_diagnostics": [
+        "preflight\tRun consumer publish preflight checks\t2026-11-02T02:49:04.1004017Z benchmark evidence verified: site/reports/benchmark-monty/20261102T013737Z-rand-m5.campaign.json source=d9e2a76e3818601ba659d8c81139420deb80915f status=MEASURED",
+        "preflight\tDeny release after complete preflight summary\t2026-11-02T02:50:24.2382159Z ^[[36;1mprintf 'Preflight complete: failed=[%s] blocked=[%s]\\n' \\^[[0m",
+        "preflight\tDeny release after complete preflight summary\t2026-11-02T02:50:24.2493381Z Preflight complete: failed=[] blocked=[]"
+      ]
+    },
+    "website_followup": {
+      "bead": "run-kyl",
+      "run_id": 41379599913,
+      "cause": "Pages setup returns404 site not found; configuration availability needs verification"
+    }
   },
   "qa_rounds": [
     {
       "qa_pass": "qa-release-ci-disk-1",
       "commit": "3c1e5497a9a3bc1dc05010a11507040b2ddbe950",
       "verdict": "PASS",
-      "pr_comment_url": "",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/103#issuecomment-6567835725",
       "reviewer_manifest": [
         {
           "agent": "req-qa",
@@ -2127,7 +2145,7 @@
           "qa_pass": "qa-release-ci-disk-1",
           "commit": "3c1e5497a9a3bc1dc05010a11507040b2ddbe950",
           "pr_number": 103,
-          "pr_comment_url": "",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/103#issuecomment-6567835725",
           "coordinator_task_id": "/root/release_disk_enforcer",
           "reviewer_tasks": [
             {
@@ -2183,8 +2201,8 @@
         "unparsed_reviewers": [],
         "aggregation_source": "reviewer_fenced_json_union_todo_scan"
       },
-      "evidence_gate": "INCOMPLETE",
-      "reason": "Automatic approval review rejected PR103 report posting; explicit permission requested. CI/readiness/source QA complete."
+      "evidence_gate": "COMPLETE",
+      "reason": "Explicit human PR103 posting authorization received; public report GET-verified and parent-correlated."
     }
   ]
 }
