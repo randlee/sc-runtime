@@ -235,12 +235,14 @@ breaking SDK minor if necessary, never a permanent second contract.
 
 Historically, the former sc-publish pin `16457e06ade6c0b003ff75addb7d694e9da41fe2` was
 rejected because its actual installer/package destinations included upstream
-`docs/sprints/**` history. The current pin, `9677ab083e7dd3feb258235a342e321ca1b45d8d`, is
+`docs/sprints/**` history. The current pin, `77ae845f6b1819bca163a7629ca5598e7d40718f`, is
 the qualified and installed immutable revision. Its qualification enumerated all 85 actual
 copy/render/package destinations, compared the complete inventory with real install outputs,
 excluded `docs/sprints/**` destinations, and rejected traversal, absolute or duplicate
-paths, unsafe symlinks, and package-unsafe paths. Upstream PR 137 remains draft and
-unmerged; that status is distinct from qualification of the available immutable revision and
+paths, unsafe symlinks, and package-unsafe paths. The new revision extends previously qualified
+`9677ab083e7dd3feb258235a342e321ca1b45d8d` only in the release workflow and its
+existing regression test file; the 85 destinations are unchanged. Upstream PR 138
+and its PR 137 prerequisite remain unmerged; that status is distinct from qualification of the available immutable revision and
 adds no merge prerequisite. Upstream source may retain its sprint history. Kit preparation
 can proceed independently; final runtime composition still consumes approved parent merges.
 This contract does not authorize or perform publication of either upstream observability
