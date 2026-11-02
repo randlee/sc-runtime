@@ -2016,7 +2016,7 @@
     "merge_method": "merge_commit",
     "production_publication_started": true,
     "main_merge_performed": true,
-    "remaining": "Explicit publish assignment; production channels; registry-only generated proof; return CI repair to develop. Website Pages configuration tracked separately in run-kyl.",
+    "remaining": "Owner disposition of published0.1.1 immutability exception/futureconfiguration; run-yes preflightgap; PR106returnfixes; PR105report permissionpending.",
     "qa_publication": "verified",
     "qa_comment_url": "https://github.com/randlee/sc-runtime/pull/103#issuecomment-6567835725",
     "merged_main": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
@@ -2042,7 +2042,7 @@
       "source": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
       "tag": "v0.1.1",
       "crates_io": "passed",
-      "github_release": "failed archive collection absent artifacts dir; focused repair run-h0h.9 in progress"
+      "github_release": "published_but_final_immutability_verification_failed"
     },
     "crates_registry_consumer_proof": {
       "passed": true,
@@ -2065,14 +2065,46 @@
       "campaign": "20261102T032516Z-rand-m5",
       "source_qa": "Req4/4 Arch Rust PASSzero",
       "readiness_run": 41383179715,
-      "status": "awaiting_hostedCI/readiness_publicQA_thenmerge_mainpreflight_channelretry",
+      "status": "packaging_fixed_and_published",
       "preserve_channels": [
         "crates_io"
       ],
       "tag_unchanged": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
       "readiness": "PASS",
-      "report_posting": "pending explicitPR104 permission afterautomaticrejection"
-    }
+      "report_posting": "verified",
+      "qa_comment_url": "https://github.com/randlee/sc-runtime/pull/104#issuecomment-6569981297",
+      "merge_commit": "4f16d5fd1eeceb8731234ca4143e44551a58fe67",
+      "final_main_preflight": 41395412017,
+      "checksum_correction_pr": 105,
+      "checksum_kit": "b6947ab2e495398a58123c60c0b86b5421f89979",
+      "final_main": "98295aace140729da54f3cde22d348dd0996b181",
+      "final_preflight_run": 41396695600,
+      "final_release_run": 41396937558
+    },
+    "published_release": {
+      "published": true,
+      "url": "https://github.com/randlee/sc-runtime/releases/tag/v0.1.1",
+      "release_id": 431110367,
+      "tag": "v0.1.1",
+      "tag_commit": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
+      "release_workflow_source": "98295aace140729da54f3cde22d348dd0996b181",
+      "workflow_run": 41396937558,
+      "crates_job": "skipped",
+      "assets": [
+        {
+          "name": "checksums.txt",
+          "size": 30,
+          "digest": "sha256:734a494a187d6a40a0f3a0a687e75d4998ada071858e6f7144838903f3a8e90f",
+          "download_verified": true
+        }
+      ],
+      "immutable": false,
+      "repository_immutability_enabled": false,
+      "verification_status": "failed_final_immutability_check",
+      "exception_acceptance": "pending_user_decision",
+      "published_at": "2026-11-02T05:57:34Z"
+    },
+    "return_to_develop_pr": 106
   },
   "qa_rounds": [
     {
@@ -2244,8 +2276,8 @@
     {
       "qa_pass": "qa-release-assets-1",
       "commit": "f0da0ed84f653201c1e1fc59403876f02d4c289e",
-      "verdict": "IN-FLIGHT",
-      "pr_comment_url": null,
+      "verdict": "PASS",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/104#issuecomment-6569981297",
       "reviewer_manifest": [
         {
           "agent": "req-qa",
@@ -2298,22 +2330,18 @@
         "branch": "codex/release-empty-assets",
         "commit": "f0da0ed84f653201c1e1fc59403876f02d4c289e",
         "pr": 104,
-        "verdict": "IN-FLIGHT",
-        "deliverables": {
-          "complete": 4,
-          "total": 4,
-          "percent": 100
-        },
+        "verdict": "PASS",
         "findings": {
           "blocking": 0,
           "important": 0,
           "minor": 0
         },
         "blocking_ids": [],
-        "merge_readiness": "not ready",
-        "merge_reason": "Source review PASS (4/4, 0B+0I+0M) and final readiness PASS at frozen HEAD; required PR CI remains pending (14/17 passed, 3 pending, 0 failed; parent snapshot). PR report publication was rejected by automatic approval review.",
-        "next_action": "obtain_direct_human_approval_for_pr104_report_and_await_ci",
-        "owner": "parent-orchestrator",
+        "merge_readiness": "ready",
+        "merge_reason": "All required reviewers PASS, deliverables 4/4 (100%), 0B+0I+0M including scoped TODO scan, 17/17 PR checks SUCCESS, and final readiness PASS at the frozen commit.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Merge PR #104 under the parent release workflow; preserve immutable tag and completed crates publication.",
         "reviewer_spawn_gate": "pass",
         "reviewer_manifest": [
           {
@@ -2359,7 +2387,7 @@
         "evidence_chain": {
           "qa_pass": "qa-release-assets-1",
           "commit": "f0da0ed84f653201c1e1fc59403876f02d4c289e",
-          "pr_comment_url": null,
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/104#issuecomment-6569981297",
           "coordinator_task_id": "/root/release_assets_enforcer",
           "parent_correlation_required": true,
           "triage": {
@@ -2369,7 +2397,7 @@
             ]
           },
           "source_verdict": "PASS",
-          "execution_verdict": "IN-FLIGHT",
+          "execution_verdict": "PASS",
           "todo_scan": {
             "scope": "assigned review targets",
             "rust_targets": 0,
@@ -2377,12 +2405,12 @@
           },
           "ci": {
             "total": 17,
-            "passed": 14,
-            "pending": 3,
+            "passed": 17,
+            "pending": 0,
             "failed": 0,
             "watch_owner": "parent-orchestrator",
             "watch_session": 1637,
-            "snapshot_source": "parent-orchestrator"
+            "snapshot_source": "gh pr checks 104"
           },
           "readiness": {
             "run_id": 41383179715,
@@ -2394,16 +2422,23 @@
             "blocked": []
           },
           "publication": {
-            "status": "blocked_by_automatic_approval_review",
-            "comment_created": false,
-            "self_url_verified": false
+            "status": "published",
+            "comment_created": true,
+            "self_url_verified": true,
+            "human_authorization": "Post QA report and updates to PR #104"
           }
         },
+        "deliverables": {
+          "complete": 4,
+          "total": 4,
+          "percent": 100
+        },
         "missing_reviewers": [],
-        "unparsed_reviewers": []
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
       },
-      "evidence_gate": "INCOMPLETE",
-      "reason": "SourceQA4/4zero andreadinessPASS; CI16/17 LinuxTestpending; autoreview rejectedPR104comment, explicitpermissionquestionpending."
+      "evidence_gate": "COMPLETE",
+      "reason": "Direct human PR104 report permission; publicQA4/4zero17CI/readinessPASS; parentGETcorrelated."
     }
   ]
 }
