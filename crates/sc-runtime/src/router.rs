@@ -4,17 +4,26 @@
 //! HTTP. Store and dependency readiness stay on a project route such as
 //! `GET /ready`. That path is left unreserved, and `/health` stays liveness.
 
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
+use axum::Extension;
 use axum::Json;
-use axum::extract::Request;
-use axum::http::StatusCode;
+use axum::extract::{MatchedPath, Request};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use rmcp::transport::streamable_http_server::StreamableHttpService;
-use sc_command::Envelope;
+use sc_command::observability::SharedCanonicalLog;
+use sc_command::{Envelope, ErrorKind, OpError};
+use sc_observability_types::{
+    ActionName, CorrelationId, ErrorCode, ErrorContext, Level, LogEvent,
+    OBSERVATION_SCHEMA_VERSION, OutcomeLabel, ProcessIdentity, Remediation, ServiceName,
+    TargetCategory, Timestamp,
+};
 use serde::Serialize;
 use utoipa::openapi::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
@@ -23,13 +32,61 @@ use crate::error::RuntimeError;
 
 const HEALTH: &str = "/health";
 const OPENAPI: &str = "/openapi.json";
+const METRICS: &str = "/metrics";
 const MCP: &str = "/mcp";
+const REQUEST_ID: &str = "x-request-id";
+
+/// Per-router request metrics and request-id sequence (not process-global).
+#[derive(Clone, Default)]
+pub(crate) struct RequestMetrics {
+    inner: Arc<RequestMetricsInner>,
+}
+
+#[derive(Default)]
+struct RequestMetricsInner {
+    requests: AtomicU64,
+    server_errors: AtomicU64,
+    next_request_id: AtomicU64,
+}
+
+impl RequestMetrics {
+    pub(crate) fn new() -> Self {
+        Self {
+            inner: Arc::new(RequestMetricsInner {
+                next_request_id: AtomicU64::new(1),
+                ..RequestMetricsInner::default()
+            }),
+        }
+    }
+}
 
 /// Maximum time one accepted request may spend in a handler.
 pub(crate) const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
+/// Largest request body the daemon's extractors accept.
+///
+/// This is axum's extractor default of 2 MiB, stated on the runtime so the
+/// limit is an application choice. [`with_body_limit`] applies it before the
+/// server starts. A project route that streams a larger body layers
+/// [`axum::extract::DefaultBodyLimit::disable`] or
+/// [`axum::extract::DefaultBodyLimit::max`] on that route.
+pub(crate) const DEFAULT_REQUEST_BODY_LIMIT: usize = 2_097_152;
+
 const REQUEST_TIMEOUT_BODY: &str = "the handler exceeded its time limit";
 const DRAIN_TIMEOUT_BODY: &str = "shutdown finished waiting for this request";
+
+/// Stable code when a handler exceeds [`REQUEST_TIMEOUT`].
+const CODE_REQUEST_TIMEOUT: &str = "RUNTIME.REQUEST_TIMEOUT";
+
+/// Stable code when shutdown stops waiting for an in-flight handler.
+const CODE_DRAIN_TIMEOUT: &str = "RUNTIME.DRAIN_TIMEOUT";
+
+/// Wire `suggested_action` for [`CODE_REQUEST_TIMEOUT`].
+const REQUEST_TIMEOUT_RECOVERY: &str =
+    "retry the request; if it persists, shorten the handler or raise the request time limit";
+
+/// Wire `suggested_action` for [`CODE_DRAIN_TIMEOUT`].
+const DRAIN_TIMEOUT_RECOVERY: &str = "retry after the daemon is serving again";
 
 /// Body of the liveness probe `GET /health`.
 ///
@@ -48,6 +105,181 @@ struct HealthBody {
 /// on the project router. This handler does not call stores.
 async fn health() -> Envelope<HealthBody> {
     Envelope::success(HealthBody { status: "ok" })
+}
+
+#[derive(Debug, Serialize)]
+struct MetricsBody {
+    requests: u64,
+    server_errors: u64,
+}
+
+async fn metrics(Extension(metrics): Extension<RequestMetrics>) -> Json<MetricsBody> {
+    Json(MetricsBody {
+        requests: metrics.inner.requests.load(Ordering::Relaxed),
+        server_errors: metrics.inner.server_errors.load(Ordering::Relaxed),
+    })
+}
+
+fn accepted_request_id(value: &str) -> bool {
+    (1..=128).contains(&value.len())
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_')
+}
+
+fn request_id_from(request: &Request, metrics: &RequestMetrics) -> String {
+    request
+        .headers()
+        .get(REQUEST_ID)
+        .and_then(|value| value.to_str().ok())
+        .filter(|value| accepted_request_id(value))
+        .map(str::to_owned)
+        .unwrap_or_else(|| {
+            let tick = metrics
+                .inner
+                .next_request_id
+                .fetch_add(1, Ordering::Relaxed);
+            format!("req-{tick}")
+        })
+}
+
+#[derive(Clone, Copy)]
+struct DeadlineCode(&'static str);
+
+async fn stamp_request_id(
+    Extension(metrics): Extension<RequestMetrics>,
+    Extension(logger): Extension<SharedCanonicalLog>,
+    mut request: Request,
+    next: Next,
+) -> Response {
+    let id = request_id_from(&request, &metrics);
+    if let Ok(value) = axum::http::HeaderValue::from_str(&id) {
+        request.headers_mut().insert(REQUEST_ID, value);
+    }
+    let method = request.method().as_str().to_owned();
+    let path = request
+        .extensions()
+        .get::<MatchedPath>()
+        .map_or("<unmatched>", MatchedPath::as_str)
+        .to_owned();
+    let started = tokio::time::Instant::now();
+    if let Some(event) = request_event(logger.service_name(), &id, &method, &path, None) {
+        let _ = logger.emit(event);
+    }
+    let mut response = next.run(request).await;
+    let code = response
+        .extensions_mut()
+        .remove::<DeadlineCode>()
+        .map(|code| code.0);
+    let elapsed = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
+    if let Some(event) = request_event(
+        logger.service_name(),
+        &id,
+        &method,
+        &path,
+        Some((response.status(), elapsed, code)),
+    ) {
+        let _ = logger.emit(event);
+    }
+    if let Ok(value) = axum::http::HeaderValue::from_str(&id) {
+        response.headers_mut().insert(REQUEST_ID, value);
+    }
+    response
+}
+
+fn request_event(
+    service: &ServiceName,
+    request_id: &str,
+    method: &str,
+    path: &str,
+    terminal: Option<(axum::http::StatusCode, u64, Option<&'static str>)>,
+) -> Option<LogEvent> {
+    let (action, outcome, code, level) = match terminal {
+        None => ("request.start", None, None, Level::Info),
+        Some((_, _, Some(code))) => ("request.error", Some("timeout"), Some(code), Level::Error),
+        Some((status, _, None)) if status.is_server_error() => {
+            ("request.error", Some("server_error"), None, Level::Error)
+        }
+        Some((status, _, None)) if status.is_client_error() => {
+            ("request.finish", Some("client_error"), None, Level::Info)
+        }
+        Some(_) => ("request.finish", Some("success"), None, Level::Info),
+    };
+    let (Ok(target), Ok(action), Ok(request_id)) = (
+        TargetCategory::new("http.server"),
+        ActionName::new(action),
+        CorrelationId::new(request_id),
+    ) else {
+        return None;
+    };
+    let timestamp = Timestamp::now_utc();
+    let diagnostic = code.map(|code| {
+        let context = ErrorContext::new(
+            ErrorCode::new_static(code),
+            "request deadline elapsed",
+            Remediation::recoverable("Retry the request.", [] as [&str; 0]),
+        );
+        let mut diagnostic = context.diagnostic().clone();
+        diagnostic.timestamp = timestamp;
+        diagnostic
+    });
+    let mut event = LogEvent {
+        version: (*OBSERVATION_SCHEMA_VERSION).clone(),
+        timestamp,
+        level,
+        service: service.clone(),
+        target,
+        action,
+        message: None,
+        identity: ProcessIdentity::default(),
+        trace: None,
+        request_id: Some(request_id),
+        correlation_id: None,
+        outcome: outcome.and_then(|value| OutcomeLabel::new(value).ok()),
+        diagnostic,
+        state_transition: None,
+        fields: Default::default(),
+    };
+    event.fields.insert("method".into(), method.into());
+    event.fields.insert("path".into(), path.into());
+    if let Some((status, elapsed, code)) = terminal {
+        event
+            .fields
+            .insert("status".into(), u64::from(status.as_u16()).into());
+        event.fields.insert("elapsed_ms".into(), elapsed.into());
+        if code.is_some() {
+            event
+                .fields
+                .insert("deadline_remaining_ms".into(), 0_u64.into());
+        }
+    }
+    Some(event)
+}
+
+async fn count_request(
+    Extension(metrics): Extension<RequestMetrics>,
+    request: Request,
+    next: Next,
+) -> Response {
+    let response = next.run(request).await;
+    metrics.inner.requests.fetch_add(1, Ordering::Relaxed);
+    if response.status().is_server_error() {
+        metrics.inner.server_errors.fetch_add(1, Ordering::Relaxed);
+    }
+    response
+}
+
+/// Request-id stamping and metrics counting scoped to one router instance.
+pub(crate) fn with_request_tracking(
+    router: axum::Router,
+    metrics: RequestMetrics,
+    logger: SharedCanonicalLog,
+) -> axum::Router {
+    router
+        .layer(axum::middleware::from_fn(count_request))
+        .layer(axum::middleware::from_fn(stamp_request_id))
+        .layer(Extension(metrics))
+        .layer(Extension(logger))
 }
 
 /// Merges the project router with the document route and the liveness route.
@@ -79,15 +311,27 @@ pub(crate) fn with_runtime_routes(
                 async move { Json(api.as_ref().clone()) }
             }),
         )
-        .route(HEALTH, get(health)))
+        .route(HEALTH, get(health))
+        .route(METRICS, get(metrics)))
 }
 
 /// Applies a handler timeout and a shutdown drain bound to the assembled router.
 ///
-/// `shutdown` becomes true when the daemon starts graceful shutdown. Handlers
-/// still running then have `drain` left before this layer returns
-/// [`StatusCode::SERVICE_UNAVAILABLE`]. A handler that exceeds `limit` from
-/// the start of the request gets [`StatusCode::REQUEST_TIMEOUT`].
+/// `shutdown` becomes true when the daemon starts graceful shutdown. A handler
+/// still running then has `drain` left. A handler that exceeds `limit` from
+/// the start of the request is the request-timeout case. Both failures use
+/// [`ErrorKind::Unavailable`]. [`ErrorKind::http_status_code`] selects the
+/// HTTP status, which is 503 for that kind. The codes are
+/// `RUNTIME.REQUEST_TIMEOUT` and `RUNTIME.DRAIN_TIMEOUT`. Each envelope
+/// sets `suggested_action` to the recovery for that code.
+///
+/// When `limit` elapses, the middleware returns that 503 and drops the handler
+/// future. Drop cancels the future at its next `.await`. Cancellation is
+/// cooperative: work that is not at an `.await`, or that the handler already
+/// spawned onto another task, can keep running after the client has the
+/// timeout response. This middleware does not detach the handler. A store
+/// transaction that is still open at that `.await` rolls back when its future
+/// is dropped.
 pub(crate) fn with_request_timeout(
     router: axum::Router,
     limit: Duration,
@@ -109,41 +353,109 @@ async fn enforce_deadlines(
 ) -> Response {
     let handler = next.run(request);
     tokio::pin!(handler);
-    let sleep_limit = tokio::time::sleep(limit);
-    tokio::pin!(sleep_limit);
-    let shutdown_started = async {
-        if *shutdown.borrow() {
-            return;
-        }
-        loop {
-            if shutdown.changed().await.is_err() || *shutdown.borrow() {
-                return;
-            }
-        }
-    };
-    tokio::pin!(shutdown_started);
-
-    tokio::select! {
-        biased;
-        response = &mut handler => return response,
-        () = &mut sleep_limit => {
-            return deadline_response(StatusCode::REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY);
-        }
-        () = &mut shutdown_started => {}
-    }
-
-    tokio::select! {
-        biased;
-        response = handler => response,
-        () = tokio::time::sleep(drain) => {
-            deadline_response(StatusCode::SERVICE_UNAVAILABLE, DRAIN_TIMEOUT_BODY)
-        }
-        () = sleep_limit => deadline_response(StatusCode::REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY),
+    let deadline = tokio::time::Instant::now() + limit;
+    match tokio::time::timeout_at(
+        deadline,
+        race_handler_or_shutdown(handler.as_mut(), shutdown),
+    )
+    .await
+    {
+        Ok(Some(response)) => response,
+        // Dropping `handler` with this function cancels it. See [`with_request_timeout`].
+        Err(_elapsed) => request_timeout_response(),
+        Ok(None) => drain_handler(handler, deadline, drain).await,
     }
 }
 
-fn deadline_response(status: StatusCode, body: &'static str) -> Response {
-    (status, body).into_response()
+/// Sets the application request-body limit on `router`.
+///
+/// Extractors such as `Json`, `String`, and `Bytes` stop at
+/// [`DEFAULT_REQUEST_BODY_LIMIT`]. A route that must stream past that limit
+/// layers [`axum::extract::DefaultBodyLimit::disable`] or a higher
+/// [`axum::extract::DefaultBodyLimit::max`] on itself.
+pub(crate) fn with_body_limit(router: axum::Router) -> axum::Router {
+    apply_body_limit(router, DEFAULT_REQUEST_BODY_LIMIT)
+}
+
+fn apply_body_limit(router: axum::Router, limit: usize) -> axum::Router {
+    router.layer(axum::extract::DefaultBodyLimit::max(limit))
+}
+
+/// Returns the handler response, or `None` when shutdown has started.
+///
+/// The handler stays in the caller's [`Pin`] when shutdown wins, so the drain
+/// bound can keep polling it. `timeout_at` on this future is the request limit.
+async fn race_handler_or_shutdown(
+    handler: Pin<&mut impl Future<Output = Response>>,
+    shutdown: &mut tokio::sync::watch::Receiver<bool>,
+) -> Option<Response> {
+    tokio::select! {
+        biased;
+        response = handler => Some(response),
+        () = shutdown_signal(shutdown) => None,
+    }
+}
+
+async fn shutdown_signal(shutdown: &mut tokio::sync::watch::Receiver<bool>) {
+    if *shutdown.borrow() {
+        return;
+    }
+    loop {
+        if shutdown.changed().await.is_err() || *shutdown.borrow() {
+            return;
+        }
+    }
+}
+
+async fn drain_handler(
+    handler: Pin<&mut impl Future<Output = Response>>,
+    request_deadline: tokio::time::Instant,
+    drain: Duration,
+) -> Response {
+    let drain_deadline = tokio::time::Instant::now() + drain;
+    let request_first = request_deadline <= drain_deadline;
+    let bound = if request_first {
+        request_deadline
+    } else {
+        drain_deadline
+    };
+    match tokio::time::timeout_at(bound, handler).await {
+        Ok(response) => response,
+        Err(_elapsed) if request_first => request_timeout_response(),
+        Err(_elapsed) => drain_timeout_response(),
+    }
+}
+
+fn request_timeout_response() -> Response {
+    deadline_response(
+        CODE_REQUEST_TIMEOUT,
+        REQUEST_TIMEOUT_BODY,
+        REQUEST_TIMEOUT_RECOVERY,
+    )
+}
+
+fn drain_timeout_response() -> Response {
+    deadline_response(
+        CODE_DRAIN_TIMEOUT,
+        DRAIN_TIMEOUT_BODY,
+        DRAIN_TIMEOUT_RECOVERY,
+    )
+}
+
+/// Failure envelope whose status comes only from [`ErrorKind::http_status_code`].
+///
+/// `recovery` is the wire `suggested_action`.
+fn deadline_response(
+    code: &'static str,
+    message: &'static str,
+    recovery: &'static str,
+) -> Response {
+    let mut response = Envelope::<()>::failure(
+        OpError::from_code(ErrorKind::Unavailable, code, message).with_suggestion(recovery),
+    )
+    .into_response();
+    response.extensions_mut().insert(DeadlineCode(code));
+    response
 }
 
 /// Mounts the rmcp service at `/mcp` as it was given.
@@ -168,7 +480,7 @@ fn reserved_conflict(
 }
 
 fn reserved_paths(check_mcp: bool) -> impl Iterator<Item = &'static str> {
-    [HEALTH, OPENAPI]
+    [HEALTH, OPENAPI, METRICS]
         .into_iter()
         .chain(check_mcp.then_some(MCP))
 }
@@ -198,6 +510,24 @@ fn router_debug_has_path(router: &axum::Router, reserved: &str) -> bool {
 mod tests {
     use super::*;
     use axum::routing::get;
+    use std::net::{Ipv4Addr, SocketAddr};
+
+    async fn serve_test_router(router: axum::Router) -> (SocketAddr, tokio::task::JoinHandle<()>) {
+        let listener = tokio::net::TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+            .await
+            .expect("bind");
+        let addr = listener.local_addr().expect("addr");
+        let (ready_tx, ready_rx) = tokio::sync::oneshot::channel();
+        let handle = tokio::spawn(async move {
+            let _ = ready_tx.send(());
+            let _ = axum::serve(listener, router).await;
+        });
+        tokio::time::timeout(Duration::from_secs(2), ready_rx)
+            .await
+            .expect("server ready timeout")
+            .expect("server ready signal");
+        (addr, handle)
+    }
 
     #[test]
     fn debug_detects_route_overlap() {
@@ -212,49 +542,108 @@ mod tests {
         let router = with_request_timeout(
             axum::Router::new()
                 .route("/fast", get(|| async { "ok" }))
-                .route(
-                    "/slow",
-                    get(|| async {
-                        tokio::time::sleep(Duration::from_secs(5)).await;
-                        "late"
-                    }),
-                ),
+                .route("/slow", get(std::future::pending::<&'static str>)),
             Duration::from_millis(200),
             shutdown_rx,
             Duration::from_secs(30),
         );
-        let listener = tokio::net::TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 0))
-            .await
-            .expect("bind");
-        let addr = listener.local_addr().expect("addr");
-        tokio::spawn(async move {
-            let _ = axum::serve(listener, router).await;
-        });
+        let (addr, _handle) = serve_test_router(router).await;
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(2))
             .build()
             .expect("client");
-        let fast_url = format!("http://{addr}/fast");
-        let mut fast = None;
-        for _ in 0..50 {
-            match client.get(&fast_url).send().await {
-                Ok(response) => {
-                    fast = Some(response);
-                    break;
-                }
-                Err(_) => tokio::time::sleep(Duration::from_millis(10)).await,
-            }
-        }
-        let fast = fast.expect("fast");
+        let fast = client
+            .get(format!("http://{addr}/fast"))
+            .send()
+            .await
+            .expect("fast");
         assert_eq!(fast.status(), reqwest::StatusCode::OK);
         let slow = client
             .get(format!("http://{addr}/slow"))
             .send()
             .await
             .expect("slow");
-        assert_eq!(slow.status(), reqwest::StatusCode::REQUEST_TIMEOUT);
-        assert_eq!(slow.text().await.expect("body"), REQUEST_TIMEOUT_BODY);
+        let status = slow.status();
+        let body: serde_json::Value = slow.json().await.expect("envelope");
+        assert_unavailable_envelope(
+            &status,
+            &body,
+            CODE_REQUEST_TIMEOUT,
+            REQUEST_TIMEOUT_BODY,
+            REQUEST_TIMEOUT_RECOVERY,
+        );
         drop(shutdown_tx);
+    }
+
+    #[tokio::test]
+    async fn shutdown_during_handler_returns_drain_envelope() {
+        let (_shutdown_tx, shutdown_rx) = tokio::sync::watch::channel(true);
+        let router = with_request_timeout(
+            axum::Router::new()
+                .route("/fast", get(|| async { "ok" }))
+                .route("/slow", get(std::future::pending::<&'static str>)),
+            Duration::from_secs(30),
+            shutdown_rx,
+            Duration::from_millis(100),
+        );
+        let (addr, _handle) = serve_test_router(router).await;
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .expect("client");
+        let slow = client
+            .get(format!("http://{addr}/slow"))
+            .send()
+            .await
+            .expect("slow");
+        let status = slow.status();
+        let body: serde_json::Value = slow.json().await.expect("envelope");
+        assert_unavailable_envelope(
+            &status,
+            &body,
+            CODE_DRAIN_TIMEOUT,
+            DRAIN_TIMEOUT_BODY,
+            DRAIN_TIMEOUT_RECOVERY,
+        );
+    }
+
+    fn assert_unavailable_envelope(
+        status: &reqwest::StatusCode,
+        body: &serde_json::Value,
+        code: &str,
+        message: &str,
+        recovery: &str,
+    ) {
+        assert_eq!(status.as_u16(), ErrorKind::Unavailable.http_status_code());
+        assert_eq!(body["ok"], false);
+        assert_eq!(body["error"]["kind"], "unavailable");
+        assert_eq!(body["error"]["code"], code);
+        assert_eq!(body["error"]["message"], message);
+        assert_eq!(body["error"]["suggested_action"], recovery);
+    }
+
+    #[tokio::test]
+    async fn body_over_the_route_limit_is_rejected() {
+        let router = apply_body_limit(
+            axum::Router::new().route(
+                "/echo",
+                axum::routing::post(|body: String| async move { body }),
+            ),
+            32,
+        );
+        let (addr, _handle) = serve_test_router(router).await;
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .expect("client");
+        let url = format!("http://{addr}/echo");
+        let oversized = client
+            .post(&url)
+            .body("x".repeat(33))
+            .send()
+            .await
+            .expect("oversized");
+        assert_eq!(oversized.status(), reqwest::StatusCode::PAYLOAD_TOO_LARGE);
     }
 
     #[test]
@@ -262,5 +651,43 @@ mod tests {
         let openapi = OpenApiRouter::new().route(HEALTH, get(|| async { "nope" }));
         let err = with_runtime_routes(openapi, false).expect_err("overlap");
         assert_eq!(err.code(), "RUNTIME.ROUTE_CONFLICT");
+    }
+
+    #[tokio::test]
+    async fn health_reuses_request_id_and_metrics_count() {
+        let request_metrics = RequestMetrics::new();
+        let router = with_request_tracking(
+            axum::Router::new()
+                .route(HEALTH, get(health))
+                .route(METRICS, get(metrics)),
+            request_metrics,
+            Arc::new(sc_command::observability::NoopCanonicalLog::named_or_default("sc-runtime")),
+        );
+        let (addr, _handle) = serve_test_router(router).await;
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(2))
+            .build()
+            .expect("client");
+        let health_response = client
+            .get(format!("http://{addr}{HEALTH}"))
+            .header(REQUEST_ID, "cli-1")
+            .send()
+            .await
+            .expect("health");
+        assert_eq!(
+            health_response
+                .headers()
+                .get(REQUEST_ID)
+                .and_then(|value| value.to_str().ok()),
+            Some("cli-1")
+        );
+        let metrics = client
+            .get(format!("http://{addr}{METRICS}"))
+            .send()
+            .await
+            .expect("metrics");
+        let body: serde_json::Value = metrics.json().await.expect("metrics json");
+        let requests = body["requests"].as_u64().expect("requests");
+        assert_eq!(requests, 1, "{body}");
     }
 }

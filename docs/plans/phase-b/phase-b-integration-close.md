@@ -1,0 +1,58 @@
+# Phase B integration close and parallel Monty extension
+
+Two tracks. They do not share an integration branch, and the Monty extension
+does not gate phase close.
+
+## Track A — Phase close (complete)
+
+Waves 1–3 (`b-1` through `b-9`). Metrics: [phase-b-plan.md](phase-b-plan.md) wave table.
+
+**Status: complete.** `develop` is at `a448385` ("Phase B: integrate waves 1–3
+on develop"), which contains the landed stack (sc-compose reference **#73**
+and phase-close **#72**). Nothing remains to run on `integrate/phase-b` for
+waves 1–3. The Monty extension below is independent of that merge and is not a
+substitute for it.
+
+For reference, the gate that closed Track A was phase-end QA per
+`.claude/project/quality-policy.md` (the phase-end reviewer set, including
+`flaky-test-qa`), with fix branches cut from `integrate/phase-b` and a merge
+only on `quality-mgr` PASS and green CI.
+
+## Track B — Monty extension on `integrate/phase-b-monty`
+
+**Branch:** `integrate/phase-b-monty`, cut from `develop` (at or after
+`a448385`, which contains `b-9`). Sprint and fix branches for **`b-10`**, **`b-11`**, and **`b-12`** target `integrate/phase-b-monty`. **`develop`** receives one integration PR after phase-end QA on the integration branch (all deliverables verified).
+
+| Sprint | Doc | Wave | Closes |
+|---|---|---|---|
+| `b-10` | [sprint-b-10-sc-cron-monty-host-bridge.md](sprint-b-10-sc-cron-monty-host-bridge.md) | 4 | `render_template` resumed inside `monty_run::drive_feed` / `execute_feed_with_compose_program` |
+| `b-11` | [sprint-b-11-benchmark-monty-reports.md](sprint-b-11-benchmark-monty-reports.md) | 5 | multi-subsystem benchmark platform, HTML code examples, publish-preflight `benchmark-pass` gate, and the `monty` campaign including `production_bridge` |
+| `b-12` | [sprint-b-12-sc-cron-schedule-row-limit.md](sprint-b-12-sc-cron-schedule-row-limit.md) | 6 | embedder `max_schedule_rows`, template default 10, ADR-RUN-0014 |
+
+Extension metrics and the `b-10` → `b-11` edge rationale: [phase-b-plan.md](phase-b-plan.md).
+Track B does not reopen Track A. Its `b-11` benchmark gate does apply to later binary publishes through `release/publish-preflight.toml`.
+
+### Track B close is serial (implementation, then QA)
+
+Planning and feature work can run in parallel across sprints; **integration
+close cannot**. The last mile is one ordered pipeline on
+`integrate/phase-b-monty`:
+
+| Phase | Bead(s) | Exit criterion |
+|-------|---------|----------------|
+| **1. Implementation** | `run-u64`, `run-47q`, WIP on branch | b-10 host bridge + `sc_compose_run`; b-11 harness (`production_bridge` runs); b-12 row limit + template observability init (**ADR-RUN-0004** on [sprint-b-12](sprint-b-12-sc-cron-schedule-row-limit.md)); docs named in sprint plans |
+| **2. Branch hygiene** | (session) | Product commits only; no staged triage/orchestration debris; stashes reconciled |
+| **3. CI** | PR **#84** | `just lint` + `just test` green on integration HEAD |
+| **4. Phase-end QA** | `run-qwq` | Full reviewer set + `cursor-quality-mgr` PASS; req-qa findings closed or filed as post-merge with explicit defer |
+| **5. Merge** | PR **#84** → `develop` | Test plan QA box checked; branch up to date with remote |
+
+Do not start phase 4 until phase 1–3 are honest: req-qa on a partial branch
+only produces another replan cycle. **`run-qwq`** is the phase-4 umbrella for
+b-11 acceptance gaps (benchmark platform, gate, `benchmark-monty.md`).
+
+Follow-on (not Track B merge blockers unless promoted): **`run-1jw`** (0.2.0
+publish), **`run-nwk`** (library logger injection).
+
+## gh stack on Track A (historical)
+
+Stack **#74** on `integrate/phase-b`: **#73** (bottom) → **#72** (top). Merged to `develop` at `a448385`.

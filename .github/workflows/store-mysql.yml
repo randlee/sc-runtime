@@ -1,0 +1,78 @@
+name: Store MySQL
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+
+# Live SQL gate for template/crates/store-mysql.
+#
+# Local `SQLX_OFFLINE=true cargo test -p store-mysql --manifest-path
+# template/Cargo.toml` still skips when MYSQL_DATABASE_URL is unset.
+# This job is the required live run: it sets REQUIRE_MYSQL=1 and
+# MYSQL_DATABASE_URL against the MySQL service. A skip panics the
+# suite, and the log check below fails the job if that skip text appears.
+# `cargo sqlx prepare --check` runs only after the service database is
+# migrated. SQLX_OFFLINE stays unset for that check and is true for the
+# test compile, so macros use the checked-in .sqlx data.
+concurrency:
+  group: store-mysql-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  live:
+    name: store-mysql live SQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: store_mysql
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      # sqlx.toml names this variable. The CLI flags below pass the same URL.
+      MYSQL_DATABASE_URL: mysql://root:root@127.0.0.1:3306/store_mysql
+      REQUIRE_MYSQL: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.1
+
+      - name: Install sqlx-cli
+        run: cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features mysql,mysql-rsa,rustls,sqlx-toml
+
+      # Migrate first so prepare --check sees the widgets table. The live
+      # tests open ephemeral databases and run sqlx::migrate! themselves.
+      - name: Check offline query data
+        working-directory: template/crates/store-mysql
+        run: |
+          set -euo pipefail
+          cargo sqlx database setup --database-url "$MYSQL_DATABASE_URL"
+          cargo sqlx prepare --check --database-url "$MYSQL_DATABASE_URL" -- --all-targets
+
+      - name: Live tests
+        env:
+          SQLX_OFFLINE: "true"
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/store-mysql-test.log"
+          cargo test -p store-mysql --manifest-path template/Cargo.toml 2>&1 | tee "$log"
+          if grep -q 'skipping: MYSQL_DATABASE_URL' "$log"; then
+            echo "live store-mysql tests skipped; REQUIRE_MYSQL=1 must run them" >&2
+            exit 1
+          fi

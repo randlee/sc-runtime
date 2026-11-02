@@ -36,9 +36,20 @@ pub struct WidgetServer {
 
 impl WidgetServer {
     fn new(stores: Stores) -> Self {
+        // `#[tool_router]` records every `#[tool]` fn in that impl. It does not
+        // honor `#[cfg]` on one fn, so delete tools are a second router. Create
+        // and get are written once.
+        #[cfg(feature = "general-db")]
+        let tool_router = {
+            let mut tool_router = Self::tool_router();
+            tool_router.merge(Self::delete_tools());
+            tool_router
+        };
+        #[cfg(not(feature = "general-db"))]
+        let tool_router = Self::tool_router();
         Self {
             stores,
-            tool_router: Self::tool_router(),
+            tool_router,
         }
     }
 }
@@ -61,6 +72,31 @@ impl WidgetServer {
         Parameters(body): Parameters<api_types::GetWidget>,
     ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
         service::get_widget(&self.stores, body).await.into_mcp()
+    }
+}
+
+/// Delete tools. Merged into the shared router only when `general-db` is on.
+#[cfg(feature = "general-db")]
+#[tool_router(router = delete_tools)]
+impl WidgetServer {
+    /// Deletes one widget. Same service call as `delete_row` on `widgets`.
+    #[tool(name = "widget_delete", description = "Delete one widget.")]
+    async fn widget_delete(
+        &self,
+        Parameters(body): Parameters<api_types::DeleteWidget>,
+    ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
+        service::delete_widget(&self.stores, body).await.into_mcp()
+    }
+
+    /// Deletes one row.
+    #[tool(name = "delete_row", description = "Delete one row.")]
+    async fn delete_row(
+        &self,
+        Parameters(body): Parameters<api_types::DeleteRow>,
+    ) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
+        service::delete_row(&self.stores, &body.table, &body.id)
+            .await
+            .into_mcp()
     }
 }
 

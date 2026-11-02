@@ -139,7 +139,8 @@ Pinned by sprint a-3:
 - An override or `TransportConfig.endpoint` that names `uds:<path>` is a
   UDS endpoint on every platform, including Windows. The resolver returns
   it. `Client::new` and `bind` reject a UDS endpoint on non-Unix targets
-  when they are used (`TransportError::Request` and `TransportError::Bind`).
+  when they are used (`TransportError::Request` and
+  `TransportError::UnsupportedEndpoint`).
 
 Whether the project template writes a default TCP port into generated
 configuration stays with [REQ-RUN-0301](../requirements.md). This crate does
@@ -342,7 +343,9 @@ The function and the listener type MUST NOT exist in a build without the
 A bind failure is `TransportError::Bind` (`TRANSPORT.BIND`). The endpoint
 lock already being held is `TransportError::EndpointBusy`
 (`TRANSPORT.ENDPOINT_BUSY`). On a non-Unix target, `bind` of a UDS endpoint
-returns `TransportError::Bind`. The parent directory is not created.
+returns `TransportError::UnsupportedEndpoint`
+(`TRANSPORT.UNSUPPORTED_ENDPOINT`). Recovery tells the caller to use a
+`tcp:` endpoint. The parent directory is not created.
 
 ### Rationale
 
@@ -742,6 +745,8 @@ target-specific dependency table, with any feature set:
 | `sc-config` | library crate of this workspace |
 | `sc-command` | library crate of this workspace |
 | `sc-runtime` | library crate of this workspace |
+| `sc-runtime-db-sqlite` | rusqlite write actor |
+| `sc-cron` | SQLite-backed cron |
 | `sc-observability` | the SC logging and telemetry crate |
 | `sc-observability-otlp` | its OpenTelemetry export crate |
 | `sc-observability-types` | its error-code crate |
@@ -756,16 +761,20 @@ single-crate workspace (`sc-lint lint sc-boundary --root crates/sc-transport`).
 sc-lint 0.8.0 lists a `forbidden_edges` target only when that target is a
 workspace member of the lint tree, and it exits 3 for a name absent from
 the workspace and from the cargo resolve
-([REQ-RUN-0005](../requirements.md)). This tree's only member is
-`sc-transport`, so `forbidden_edges` is empty. The policy above is enforced
-by `cargo tree`: no line begins with `sc-config `, `sc-command `,
-`sc-runtime `, `sc-observability `, `sc-observability-types `, or
-`sc-observability-otlp ` (each name followed by a space).
+([REQ-RUN-0005](../requirements.md)). The root workspace includes
+`sc-runtime-db-sqlite`, so `boundaries/sc-transport/sc-transport.toml` lists
+`sc-transport -> sc-runtime-db-sqlite`. Other workspace-member edges from the
+table above are listed when those targets are members of the lint tree.
+`sc-cron` is not a member during sprint `b-1`, so it is not a
+`forbidden_edges` entry yet. Crates.io names stay on the `cargo tree` check:
+no line begins with `sc-config `, `sc-command `, `sc-runtime `,
+`sc-runtime-db-sqlite `, `sc-cron `, `sc-observability `,
+`sc-observability-types `, or `sc-observability-otlp ` (each name followed
+by a space).
 
-`allowed_dependents` is empty in this tree. The only intended dependent is
-`sc-runtime`, recorded in the manifest notes. Naming `sc-runtime` before it
-is a workspace member makes sc-lint 0.8.0 exit 3. a-5 adds that name when
-the four-crate workspace exists.
+`allowed_dependents` is `sc-runtime`. a-5 added that name once the
+four-crate workspace existed. Naming it before it was a workspace member
+would make sc-lint 0.8.0 exit 3.
 
 `allowed_dependencies` for the default build is `tokio`, `reqwest`, `serde`,
 and `serde_json`. `axum` is absent from that list because the manifest has no
@@ -788,15 +797,20 @@ workspace depends on it ([ADR-RUN-0004](../architecture.md)).
 
 1. `cargo tree -p sc-transport -e normal --prefix none` and the same command
    with `--features server` each print no line beginning with `sc-config `,
-   `sc-command `, `sc-runtime `, `sc-observability `,
-   `sc-observability-types `, or `sc-observability-otlp ` (each name
-   followed by a space).
+   `sc-command `, `sc-runtime `, `sc-runtime-db-sqlite `, `sc-cron `,
+   `sc-observability `, `sc-observability-types `, or
+   `sc-observability-otlp ` (each name followed by a space).
 2. Inspection of `crates/sc-transport/Cargo.toml` finds none of those names
    as a key in `[dependencies]`, `[dev-dependencies]`,
    `[build-dependencies]`, or a `[target.*]` dependency table.
 3. A TOML manifest file exists under `boundaries/sc-transport/`. Its
-   `forbidden_edges` list is empty. Its `allowed_dependents` list is empty.
-   Its `allowed_dependencies` are `tokio`, `reqwest`, `serde`, and `serde_json`.
+   `forbidden_edges` list records the workspace-member edges
+   [REQ-RUN-0005](../requirements.md) requires for `sc-transport` that are
+   members of the lint tree, including `sc-transport -> sc-runtime-db-sqlite`.
+   `sc-cron` is omitted until it is a workspace member, because sc-lint 0.8.0
+   exits 3 for a target absent from the workspace. Its `allowed_dependents`
+   list is `sc-runtime`. Its `allowed_dependencies` are `tokio`, `reqwest`,
+   `serde`, and `serde_json`.
 4. `sc-lint lint sc-boundary --root crates/sc-transport` exits 0. Root
    `just lint` across all four manifests stays with a-5.
 5. `cargo test -p sc-transport` passes from a clean checkout.

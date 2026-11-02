@@ -43,6 +43,7 @@ pub struct Client {
     endpoint: Endpoint,
     http: reqwest::Client,
     base: String,
+    headers: reqwest::header::HeaderMap,
 }
 
 impl Client {
@@ -82,6 +83,21 @@ impl Client {
         }
     }
 
+    /// Sets a default header sent on every later request.
+    ///
+    /// The CLI uses this for `x-request-id`. `name` is a static header name.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`TransportError::Request`] when `value` is not a valid header value.
+    pub fn with_header(mut self, name: &'static str, value: &str) -> Result<Self, TransportError> {
+        let header_value = reqwest::header::HeaderValue::from_str(value)
+            .map_err(|err| TransportError::request(self.endpoint.clone(), err.to_string()))?;
+        self.headers
+            .insert(reqwest::header::HeaderName::from_static(name), header_value);
+        Ok(self)
+    }
+
     /// Sends `GET path` and deserializes the JSON body as `T`.
     ///
     /// # Errors
@@ -96,6 +112,7 @@ impl Client {
         let response = self
             .http
             .get(request_url(&self.base, path))
+            .headers(self.headers.clone())
             .send()
             .await
             .map_err(|err| classify(&self.endpoint, err))?;
@@ -116,6 +133,7 @@ impl Client {
         let response = self
             .http
             .post(request_url(&self.base, path))
+            .headers(self.headers.clone())
             .json(body)
             .send()
             .await
@@ -158,6 +176,7 @@ fn build(
         endpoint,
         http,
         base,
+        headers: reqwest::header::HeaderMap::new(),
     })
 }
 

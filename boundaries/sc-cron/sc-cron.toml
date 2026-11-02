@@ -1,0 +1,68 @@
+boundary_id = "BOUNDARY-sc-cron"
+owner_package = "sc-cron"
+owner_crate_path = "sc_cron"
+name = "sc-cron"
+
+[public]
+facade = "DotenvSource, EnvName, EnvOperationRef, HookEnvironment, HookEnvironmentHost, EnvironmentReferenceRequest, EnvironmentReferenceResolver, EnvironmentReferenceError, MAX_ENV_ENTRIES, MAX_ENV_DOTENV_SOURCES, MAX_ENV_NAME_BYTES, MAX_ENV_VALUE_BYTES, MAX_ENV_REFERENCE_BYTES, MAX_ENV_PATH_BYTES, MAX_ENV_SNAPSHOT_BYTES, MAX_ENV_DOCUMENT_BYTES, MAX_ENV_FILE_BYTES, Clock, CronError, CronExpr, DEFAULT_RELOAD_POLL, DueRun, Generation, HOOK_PROTOCOL, HookCall, HookEvent, HookOutput, HookStatus, HookTarget, is_identifier, JitterSource, Job, kill_budget, ManualClock, MAX_EXPR_LEN, MAX_HOOK_OUTPUT_BYTES, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, MAX_TIMEOUT, MissedTickPolicy, MontyHostRegistry, MontyHostHandler, MontyHostCall, MontyHostName, ScComposeHostConfig, AtmHostConfig, NewSchedule, process, PythonHook, RunFailureParts, RunOutcome, RunTimeout, Schedule, ScheduleId, ScheduleLimits, ScheduleName, ScheduleSpec, ScheduleStore, Scheduler, SCHEMA_VERSION, SeqJitter, SqliteScheduleStore, StopDecision, StoreError, StoreErrorKind, SystemClock, SystemJitter, Timestamp, WorkerHandle"
+notes = "Feature monty exports an empty-default immutable application registry, open Send+Sync closure handlers, owned JSON call context, and opt-in sc_compose_run/atm_run configurations. Both adapters forward every nonempty command plus ordered string argv unchanged, with captured/selected cwd, one resolved immutable occurrence environment, row deadline, group/job termination and per-stream cap. The application owns synchronous handler cooperation. render_template is not a production registration or product requirement. Logger propagation retains B13 SharedCanonicalLog identity. process/PythonHook remain the general exported supervisor port; default tree excludes Monty and tool Rust packages."
+
+[implementation]
+type = "library"
+module = "sc_cron"
+visibility = "public"
+constructor = "public"
+
+[composition]
+roots = ["DotenvSource", "EnvName", "EnvOperationRef", "HookEnvironment", "HookEnvironmentHost", "EnvironmentReferenceRequest", "EnvironmentReferenceResolver", "EnvironmentReferenceError", "MAX_ENV_ENTRIES", "MAX_ENV_DOTENV_SOURCES", "MAX_ENV_NAME_BYTES", "MAX_ENV_VALUE_BYTES", "MAX_ENV_REFERENCE_BYTES", "MAX_ENV_PATH_BYTES", "MAX_ENV_SNAPSHOT_BYTES", "MAX_ENV_DOCUMENT_BYTES", "MAX_ENV_FILE_BYTES", "Clock", "CronError", "CronExpr", "DEFAULT_RELOAD_POLL", "DueRun", "Generation", "HOOK_PROTOCOL", "HookCall", "HookEvent", "HookOutput", "HookStatus", "HookTarget", "is_identifier", "JitterSource", "Job", "kill_budget", "ManualClock", "MAX_EXPR_LEN", "MAX_HOOK_OUTPUT_BYTES", "MAX_HOOK_SOURCE_BYTES", "MAX_NAME_LEN", "MAX_PAYLOAD_BYTES", "MAX_TIMEOUT", "MissedTickPolicy", "MontyHostRegistry", "MontyHostHandler", "MontyHostCall", "MontyHostName", "ScComposeHostConfig", "AtmHostConfig", "NewSchedule", "process", "PythonHook", "RunFailureParts", "RunOutcome", "RunTimeout", "Schedule", "ScheduleId", "ScheduleLimits", "ScheduleName", "ScheduleSpec", "ScheduleStore", "Scheduler", "SCHEMA_VERSION", "SeqJitter", "SqliteScheduleStore", "StopDecision", "StoreError", "StoreErrorKind", "SystemClock", "SystemJitter", "Timestamp", "WorkerHandle"]
+
+# Production tool-package/import exclusion (normal + build, all production
+# features) is checked by the production-tool-boundary companion. It resolves
+# aliases/package identity and checks external/transitive cargo trees too;
+# dev-only test/benchmark references remain permitted (REQ-RUN-0005).
+[dependencies]
+allowed_dependents = []
+# The integration tests enable `test-utils` through a dev-dependency on this
+# crate. That edge is not a runtime dependent.
+allowed_dev_dependents = ["sc-cron"]
+allowed_dev_dependencies = ["sc-cron"]
+# The shared scripts/check_observability_dependencies.py CI test checks resolved
+# normal/build identities for full runtime, OTLP, and development adapter exclusion.
+# ADR-RUN-0017 temporary defaults-off contract edge, never command/server.
+# Restore forbidden edge after https://github.com/randlee/sc-runtime/issues/97.
+allowed_dependencies = [
+  "sc-command",
+  "sc-observability-types",
+  "async-trait",
+  "chrono",
+  "cron",
+  "getrandom",
+  "process-wrap",
+  "rusqlite",
+  "serde_json",
+  "serde",
+  "tempfile",
+  "tokio",
+  "tracing",
+]
+forbidden_edges = [
+  "sc-cron -> sc-config",
+  "sc-cron -> sc-transport",
+  "sc-cron -> sc-runtime",
+  "sc-cron -> sc-runtime-db-sqlite",
+]
+
+[references]
+scope = "outside_owner_crate"
+forbidden = []
+
+[testing]
+allowed_test_double_paths = []
+forbidden_test_bypasses = []
+
+[enforcement]
+lint_rules = []
+review_gates = []
+
+[status]
+state = "concrete_landed"

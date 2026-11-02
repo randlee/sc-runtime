@@ -83,9 +83,9 @@ pub(crate) async fn install(listen: bool) -> Result<Option<Signals>, RuntimeErro
     #[cfg(unix)]
     {
         let interrupt = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())
-            .map_err(|err| RuntimeError::serve_failed(err.to_string()))?;
+            .map_err(RuntimeError::serve_failed_io)?;
         let terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
-            .map_err(|err| RuntimeError::serve_failed(err.to_string()))?;
+            .map_err(RuntimeError::serve_failed_io)?;
         Ok(Some(Signals {
             interrupt,
             terminate,
@@ -93,8 +93,7 @@ pub(crate) async fn install(listen: bool) -> Result<Option<Signals>, RuntimeErro
     }
     #[cfg(windows)]
     {
-        let mut ctrl_c = tokio::signal::windows::ctrl_c()
-            .map_err(|err| RuntimeError::serve_failed(err.to_string()))?;
+        let mut ctrl_c = tokio::signal::windows::ctrl_c().map_err(RuntimeError::serve_failed_io)?;
         let seen = std::future::poll_fn(|cx| match ctrl_c.poll_recv(cx) {
             std::task::Poll::Ready(_) => std::task::Poll::Ready(true),
             std::task::Poll::Pending => std::task::Poll::Ready(false),

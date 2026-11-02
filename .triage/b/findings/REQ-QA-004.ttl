@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:REQ-QA-004> qa:sprint "b-15" ;
+  qa:severity "Blocking" ;
+  qa:reviewer "req-qa" ;
+  qa:location "docs/plans/phase-b/sprint-b-15-sc-cron-observability.md:148" ;
+  qa:issue "Acceptance criterion 4 requires identifiers to correlate scheduler, worker, and process/feed records, but scheduler/worker LogEvent construction hardcodes correlation_id=None and asserts that absence in tests; worker/due records carry schedule IDs while compose pipe/kill component events carry only deadline/PID fields, leaving no shared identifier to link those records." ;
+  qa:remedy "Propagate a stable per-run correlation identifier through launch/terminal, feed, and process/component events and assert it in the production-path tests; preserve the no-body/no-hook-source assertions." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

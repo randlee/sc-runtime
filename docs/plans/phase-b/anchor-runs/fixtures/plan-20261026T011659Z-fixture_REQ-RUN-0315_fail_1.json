@@ -1,0 +1,105 @@
+{
+  "schema": "plan-anchoring/run/1",
+  "run_id": "plan-20261026T011659Z-fixture_REQ-RUN-0315_fail_1",
+  "gate": "plan",
+  "created_at": "2026-10-26T01:16:59+00:00",
+  "anchors_path": "doc/plan/phase-current/anchors.json",
+  "plan": "phase-current",
+  "item": {
+    "id": "fixture:REQ-RUN-0315:fail:1",
+    "title": "fixture",
+    "source": "fixtures",
+    "chars": 106,
+    "truncated": false
+  },
+  "model_requested": "jev-latest",
+  "model_answered": "jev-1.14.0",
+  "threshold": 0.6,
+  "max_request_bytes": 24000,
+  "min_item_chars": 2000,
+  "dry_run": false,
+  "fixture": false,
+  "results": [
+    {
+      "anchor_id": "REQ-RUN-0315",
+      "source_type": "REQ",
+      "source_ref": "REQ-RUN-0315",
+      "statement": "The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.",
+      "quote": "The host-aggregate adaptor is one SQLite database for this host and a Postgres database that aggregates many hosts.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "A generated host-aggregate adaptor documents one SQLite database per host and one Postgres aggregate.",
+      "kind": "directive",
+      "leaning": "contradicted",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "near_threshold": true,
+      "confirmed": true,
+      "verdict": "contradicted",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.64,
+          "probabilities": {
+            "yes": 0.09,
+            "no": 0.76,
+            "unclear": 0.15
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 1.0,
+          "probabilities": {
+            "yes": 1.0,
+            "no": 0.0,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.64,
+      "explanation": "This bead proposes something the anchor rules out.",
+      "usage": {
+        "input_tokens": 1018,
+        "output_tokens": 117
+      },
+      "attempts": 2,
+      "item_chars_sent": 106,
+      "item_shortened": false,
+      "request_bytes": 3057
+    }
+  ],
+  "summary": {
+    "counts": {
+      "contradicted": 1
+    },
+    "failing": [
+      "REQ-RUN-0315"
+    ],
+    "leaning_counts": {
+      "contradicted": 1
+    },
+    "unstable": [],
+    "errors": [],
+    "excluded": [],
+    "shortened": [],
+    "pass": false
+  }
+}

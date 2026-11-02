@@ -12,7 +12,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 DRIVER = ROOT / "scripts" / "new_project.py"
-DASH = "—"
 
 
 def write_script(directory: Path, name: str, body: str) -> None:
@@ -289,19 +288,16 @@ echo '{{"button":"finish","data":{{}},"stack":[]}}'
                 self.assertNotIn("cargo", self.log_text())
                 self.assertFalse(dest.exists())
 
-    def test_reserved_database_from_the_wizard_stays_on_the_driver(self):
+    def test_both_from_the_wizard_fails_schema_validation(self):
         answers = dict(self.fixture)
-        answers["db"] = "postgres"
+        answers["db"] = "both"
         self.stub_tools(self.finish(answers))
         dest = self.root / "reserved"
         completed = self.invoke([str(dest)])
         self.assertNotEqual(completed.returncode, 0)
-        self.assertIn(
-            f"GEN.DB_RESERVED db is postgres or both {DASH} set db to sqlite; the destination is not created",
-            completed.stderr,
-        )
         lines = [line for line in completed.stderr.splitlines() if line.strip()]
-        self.assertTrue(lines[-1].startswith("GEN.DB_RESERVED "), completed.stderr)
+        self.assertTrue(lines[-1].startswith("GEN.SCHEMA_INVALID "), completed.stderr)
+        self.assertNotIn("GEN.DB_RESERVED", completed.stderr)
         self.assertNotIn("ERROR:", completed.stderr)
         self.assertNotIn("cargo", self.log_text())
         self.assertFalse(dest.exists())

@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-16:FTQ-005>
+  qa:id "FTQ-005" ;
+  qa:sprint "b-16" ;
+  qa:qaPass "qa-b-16-1" ;
+  qa:severity "Important" ;
+  qa:status "open" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:commit "326a7a6a10e26ceb071e60cd02b7a1ef30800732" ;
+  qa:location "tests/unit/generation/test_monty_example.py:70" ;
+  qa:issue "The B16 generation unit test synchronously runs cargo generate with captured output and no timeout. A stalled cargo/plugin/hook leaves the unittest waiting forever, so the test has no independent failure deadline and cannot reach its temporary-output cleanup." ;
+  qa:recommendation "Use a bounded subprocess helper for this generation call, with a clear timeout diagnostic and unconditional termination and reap of the owned process tree on failure. Keep the generated-output assertions and unique temporary root; do not rely on the generated tool or an outer CI job to enforce the test deadline." .

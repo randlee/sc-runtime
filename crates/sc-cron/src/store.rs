@@ -1,0 +1,287 @@
+//! The schedule-store port.
+//!
+//! Stores read no clock: every instant is a [`Timestamp`] argument, valid by
+//! construction. Every run-state write names `(id, generation)` and changes
+//! nothing, returning `Ok(false)`, unless that pair is the active schedule,
+//! so a run that outlives its schedule never writes over a restarted one.
+//! Calls are synchronous; the scheduler's worker runs them on tokio's
+//! blocking pool.
+//!
+//! A schedule also has an `enabled` flag (REQ-CRON-0014): [`ScheduleStore::set_enabled`]
+//! flips it by name and touches no other column, and [`ScheduleStore::disable`]
+//! is the same flip made by a stop check, fenced by `(id, generation)`.
+//!
+//! Two methods change several rows in one transaction (REQ-CRON-0017,
+//! ADR-CRON-0009): [`ScheduleStore::set_enabled_many`] flips several rows'
+//! flags, and [`ScheduleStore::replace_and_set_enabled`] writes one row with
+//! its flag together with other rows' flags, so a caller can keep "at most
+//! one of these rows enabled" with no moment where another connection sees
+//! otherwise. Both are required, with no default body: a default made of
+//! separate calls would not be one transaction.
+
+use crate::{
+    CronError, Generation, NewSchedule, RunOutcome, Schedule, ScheduleId, ScheduleLimits,
+    ScheduleName, Timestamp,
+};
+
+/// Durable storage for schedules and their run state.
+///
+/// An open extension point: any crate may implement it (sc-cron's
+/// [`SqliteScheduleStore`](crate::SqliteScheduleStore) is its standalone
+/// default). It is not sealed, so adding a required method is a breaking
+/// change for every implementor and bumps sc-cron's version; a new method
+/// either gets a default body that keeps the contract, or ships in a breaking
+/// release.
+pub trait ScheduleStore: Send + Sync {
+    /// Returns the row ceiling this store enforces.
+    ///
+    /// The store is the authority. [`Scheduler::limits`](crate::Scheduler::limits)
+    /// reads this value and does not keep a second copy. The default body
+    /// returns [`ScheduleLimits::default`], which leaves the table uncapped.
+    /// A store that enforces a ceiling overrides this method. [`None`] on
+    /// [`ScheduleLimits::max_schedule_rows`] means unlimited. v1 does not
+    /// write the ceiling into the database. Every process that writes one
+    /// schedule database must open its store with the same [`ScheduleLimits`].
+    fn limits(&self) -> ScheduleLimits {
+        ScheduleLimits::default()
+    }
+
+    /// Creates a schedule, or restarts an ended one with the same name.
+    ///
+    /// A new name gets a new id at [`Generation::FIRST`]. An ended name is
+    /// restarted in place: same id, generation plus one, every field from
+    /// `schedule`, run state and end state cleared.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::AlreadyActive`] if the name is active,
+    /// [`CronError::InvalidSpec`] if the payload is over
+    /// [`MAX_PAYLOAD_BYTES`](crate::MAX_PAYLOAD_BYTES) or a new name would
+    /// exceed the embedder's schedule row limit, and
+    /// [`CronError::Store`] if storage fails or the generation is exhausted.
+    /// The row-limit detail names the limit and the current count.
+    fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError>;
+
+    /// Returns one schedule, active or ended.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] if storage fails or the row does not decode.
+    fn get(&self, id: ScheduleId) -> Result<Option<Schedule>, CronError>;
+
+    /// Returns every active schedule, oldest `created_at` first.
+    ///
+    /// A corrupt row is skipped and reported by the store; the other
+    /// schedules are still returned. [`ScheduleStore::get`] still fails when
+    /// the one row it reads is corrupt.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] if storage fails for any reason other than a
+    /// corrupt row.
+    fn list_active(&self) -> Result<Vec<Schedule>, CronError>;
+
+    /// Records a finished run's time and outcome.
+    ///
+    /// Returns `Ok(false)` without writing when `(id, generation)` is not
+    /// the active schedule: the run is fenced.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] if storage fails.
+    fn record_run(
+        &self,
+        id: ScheduleId,
+        generation: Generation,
+        at: Timestamp,
+        outcome: &RunOutcome,
+    ) -> Result<bool, CronError>;
+
+    /// Stores the next run time; `Ok(false)` when fenced or when the
+    /// schedule is disabled.
+    ///
+    /// Refusing a disabled schedule is what stops a worker that has not
+    /// reloaded, for instance one in another process, from firing it: the
+    /// refused write makes the worker reload before it launches (REQ-CRON-0014).
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] if storage fails.
+    fn set_next(
+        &self,
+        id: ScheduleId,
+        generation: Generation,
+        next_run_at: Timestamp,
+    ) -> Result<bool, CronError>;
+
+    /// Ends the schedule at `at` with `reason`; `Ok(false)` when fenced.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] if storage fails.
+    fn stop(
+        &self,
+        id: ScheduleId,
+        generation: Generation,
+        at: Timestamp,
+        reason: &str,
+    ) -> Result<bool, CronError>;
+
+    /// Enables or disables the active schedule named `name`, changing only
+    /// its `enabled` flag; `Ok(false)` when no active schedule has that name.
+    ///
+    /// The generation, expression, payload, jitter and run state are left as
+    /// they are, so enabling again resumes the same schedule (REQ-CRON-0014).
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] if storage fails.
+    fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<bool, CronError>;
+
+    /// Disables schedule `(id, generation)` because its stop check said so,
+    /// recording `reason` as the last outcome ([`RunOutcome::Refused`]) at
+    /// `at`; `Ok(false)` when fenced.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] if storage fails.
+    fn disable(
+        &self,
+        id: ScheduleId,
+        generation: Generation,
+        at: Timestamp,
+        reason: &str,
+    ) -> Result<bool, CronError>;
+
+    /// Sets the `enabled` flag of every named active schedule, in one
+    /// transaction, touching no other column (REQ-CRON-0017).
+    ///
+    /// Returns `Ok(false)` and changes nothing when any name has no active
+    /// schedule. An empty list changes nothing and returns `Ok(true)`.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::Store`] if storage fails.
+    fn set_enabled_many(&self, flags: &[(ScheduleName, bool)]) -> Result<bool, CronError>;
+
+    /// Writes `schedule` with the given `enabled` flag and sets each listed
+    /// other schedule's flag, all in one transaction (REQ-CRON-0017).
+    ///
+    /// The written row: a new name gets a new id at [`Generation::FIRST`]; an
+    /// ended name is restarted in place, as [`ScheduleStore::create`] does; an
+    /// active name is replaced in place with the same id and generation plus
+    /// one (so a run of the old generation is fenced, REQ-CRON-0007), every
+    /// field from `schedule` and its run and end state cleared. The row is
+    /// written with `enabled` directly and never passes through another
+    /// flag. Returns the written schedule, or `Ok(None)` and changes nothing
+    /// when a listed name has no active schedule.
+    ///
+    /// # Errors
+    ///
+    /// [`CronError::InvalidSpec`] if `flags` names the written schedule, the
+    /// payload is over [`MAX_PAYLOAD_BYTES`](crate::MAX_PAYLOAD_BYTES), or a
+    /// new name would exceed the embedder's schedule row limit, and
+    /// [`CronError::Store`] if storage fails or the generation is exhausted.
+    /// Replacing a name that is already counted does not change the count.
+    fn replace_and_set_enabled(
+        &self,
+        schedule: &NewSchedule,
+        enabled: bool,
+        created_at: Timestamp,
+        flags: &[(ScheduleName, bool)],
+    ) -> Result<Option<Schedule>, CronError>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ScheduleStore;
+    use crate::{
+        CronError, Generation, NewSchedule, RunOutcome, Schedule, ScheduleId, ScheduleLimits,
+        ScheduleName, Timestamp,
+    };
+
+    /// Store that leaves [`ScheduleStore::limits`] at its default body.
+    struct BareStore;
+
+    impl ScheduleStore for BareStore {
+        fn create(
+            &self,
+            _schedule: &NewSchedule,
+            _created_at: Timestamp,
+        ) -> Result<Schedule, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn get(&self, _id: ScheduleId) -> Result<Option<Schedule>, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn list_active(&self) -> Result<Vec<Schedule>, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn record_run(
+            &self,
+            _id: ScheduleId,
+            _generation: Generation,
+            _at: Timestamp,
+            _outcome: &RunOutcome,
+        ) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn set_next(
+            &self,
+            _id: ScheduleId,
+            _generation: Generation,
+            _next_run_at: Timestamp,
+        ) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn stop(
+            &self,
+            _id: ScheduleId,
+            _generation: Generation,
+            _at: Timestamp,
+            _reason: &str,
+        ) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn set_enabled(&self, _name: &ScheduleName, _enabled: bool) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn disable(
+            &self,
+            _id: ScheduleId,
+            _generation: Generation,
+            _at: Timestamp,
+            _reason: &str,
+        ) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn set_enabled_many(&self, _flags: &[(ScheduleName, bool)]) -> Result<bool, CronError> {
+            unimplemented!("limits default")
+        }
+
+        fn replace_and_set_enabled(
+            &self,
+            _schedule: &NewSchedule,
+            _enabled: bool,
+            _created_at: Timestamp,
+            _flags: &[(ScheduleName, bool)],
+        ) -> Result<Option<Schedule>, CronError> {
+            unimplemented!("limits default")
+        }
+    }
+
+    #[test]
+    fn limits_defaults_to_unlimited() {
+        let store = BareStore;
+        assert_eq!(store.limits(), ScheduleLimits::default());
+        assert!(store.limits().max_schedule_rows.is_none());
+    }
+}

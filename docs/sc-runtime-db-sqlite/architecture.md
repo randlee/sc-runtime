@@ -1,227 +1,116 @@
 # sc-runtime-db-sqlite Architecture
 
-This document defines the architecture of `sc-runtime-db-sqlite`, the rusqlite
-implementation of `StorageBackend` for the sc-runtime workspace.
+**Status:** Active as of 2026-10-25. Binding decision: [ADR-RUN-0012](../architecture.md). Sprint `b-1` implements this file. It replaces the withdrawn `StorageBackend` text.
 
-Related documents:
-- [docs/sc-runtime-db-sqlite/requirements.md](./requirements.md)
-- [docs/sc-runtime-db/architecture.md](../sc-runtime-db/architecture.md)
-- [docs/prd/sc-runtime-prd.md](../prd/sc-runtime-prd.md) — §6.5
+## What this crate is
 
----
+One rusqlite connection on one thread. Callers enqueue and wait for the reply that follows the commit. The crate does not implement a trait shared with sqlx. Template `store-sqlite` does not depend on it.
 
-## Role
-
-`sc-runtime-db-sqlite` implements the `StorageBackend` trait using rusqlite
-with the bundled SQLite feature. It is the recommended backend for all
-single-process SC tools — no external database server, no system SQLite library
-required.
-
----
-
-## SQLite Connection Configuration
-
-Every connection opened by `sc-runtime-db-sqlite` is configured with WAL
-(Write-Ahead Logging) journal mode immediately after open:
-
-```sql
-PRAGMA journal_mode = WAL;
-```
-
-WAL mode enables concurrent reads alongside writes. In WAL mode, readers do not
-block writers and writers do not block readers. This matters for daemon
-configurations where multiple plugins share a single `Arc<dyn StorageBackend>`:
-a plugin executing a long read query does not stall another plugin's write.
-
-WAL mode is set at the connection level inside the r2d2 connection
-customizer, ensuring every connection in the pool carries it regardless of
-which pool slot is dispatched.
-
-Additional connection-level pragmas set on open:
-
-| Pragma | Value | Reason |
-|--------|-------|--------|
-| `journal_mode` | `WAL` | Concurrent read/write |
-| `synchronous` | `NORMAL` | Safe with WAL; faster than FULL |
-| `foreign_keys` | `ON` | Enforce FK constraints |
-| `busy_timeout` | `5000` | 5s retry before SQLITE_BUSY error |
-
----
-
-## Connection Pool
-
-`sc-runtime-db-sqlite` uses `r2d2-sqlite` for connection pooling. The pool
-manages a fixed-size set of rusqlite `Connection` objects and loans them to
-callers for the duration of each operation.
-
-Pool parameters:
-
-| Parameter | Default | Notes |
-|-----------|---------|-------|
-| `max_size` | 4 | Tunable; SQLite WAL supports limited concurrency |
-| `min_idle` | 1 | Keep at least one connection warm |
-| `connection_timeout` | 10s | Error if pool exhausted for this long |
-
-Pool configuration defaults:
-- max_size: 4 connections (SQLite WAL supports multiple readers; a small pool avoids write contention)
-- min_idle: None (connections are created on demand)
-- max_lifetime: None (SQLite connections are cheap; no recycling needed)
-- idle_timeout: 60 seconds (close idle connections after 1 minute)
-- connection_timeout: 5 seconds (fail fast if pool is exhausted)
-
-The pool is held in `SqliteBackend` behind an `Arc`, making `SqliteBackend`
-cheaply cloneable and shareable across threads as `Arc<dyn StorageBackend>`.
-
-```
-SqliteBackend
-  └── Arc<Pool<SqliteConnectionManager>>
-        └── [Connection₀, Connection₁, ..., ConnectionN]
-              each configured with WAL + pragmas on creation
-```
-
----
-
-## Migration Runner
-
-`sc-runtime-db-sqlite` implements `migrate()` as follows:
-
-1. **Version table creation** — on first call, create `_sc_migrations` if it
-   does not exist:
-
-   ```sql
-   CREATE TABLE IF NOT EXISTS _sc_migrations (
-       version     INTEGER PRIMARY KEY,
-       description TEXT    NOT NULL,
-       applied_at  TEXT    NOT NULL   -- ISO 8601
-   );
-   ```
-
-2. **Ordering** — sort the supplied `&[Migration]` by `version` ascending.
-
-3. **Idempotency check** — for each migration, query `_sc_migrations` for its
-   `version`. If a row exists, skip. If not, execute `up` SQL and insert the
-   version record.
-
-4. **Transaction** — each migration's `up` SQL and the version record insert
-   are wrapped in a single transaction. A failure rolls back that migration
-   without affecting already-applied migrations.
-
-5. **No rollback on re-run** — `migrate()` never calls `down` SQL
-   automatically. Rollback is a deliberate operator action, not an automatic
-   behavior.
-
-This makes `migrate()` safe to call at every startup. Calling it multiple times
-on the same database applies only new migrations.
-
----
-
-## SC_RUNTIME_DB Override
-
-At construction time, `SqliteBackend::open()` and `SqliteBackend::in_memory()`
-both check the `SC_RUNTIME_DB` environment variable before using their
-argument:
+## Public types
 
 ```rust
-let effective_path = std::env::var("SC_RUNTIME_DB")
-    .map(PathBuf::from)
-    .unwrap_or_else(|_| path.as_ref().to_owned());
-```
+pub struct SqliteWriter { /* sender; connection stays on the writer thread */ }
 
-For `in_memory()`, if `SC_RUNTIME_DB` is set to `:memory:` or is empty, the
-in-memory path is used. If set to a file path, that file path is used instead.
-
-This ensures test isolation: a test harness sets `SC_RUNTIME_DB` to a
-temporary directory path and all `SqliteBackend` constructions in that process
-use the override automatically.
-
----
-
-## Bundled SQLite
-
-`sc-runtime-db-sqlite` enables the `bundled` feature of `rusqlite`:
-
-```toml
-[dependencies]
-rusqlite = { version = "0.31", features = ["bundled"] }
-```
-
-The `bundled` feature compiles SQLite from source as part of the Cargo build.
-The resulting binary carries its own SQLite; it does not link against any
-system-provided `libsqlite3`. This guarantees:
-
-- identical SQLite version across all developer machines and CI environments
-- no build failure on systems without SQLite development headers installed
-- deterministic behavior regardless of OS-provided SQLite version
-
-Cross-compilation via `cargo xwin` works without separate SQLite configuration
-on the Windows target.
-
----
-
-## Constructors
-
-```rust
-pub struct SqliteBackend { /* private */ }
-
-impl SqliteBackend {
-    /// Open or create a SQLite database at `path`.
-    /// Respects SC_RUNTIME_DB override.
-    pub fn open(path: impl AsRef<Path>) -> Result<Self, StorageError>;
-
-    /// Open an in-memory SQLite database.
-    /// Intended for tests. Respects SC_RUNTIME_DB override.
-    pub fn in_memory() -> Result<Self, StorageError>;
+impl SqliteWriter {
+    pub fn open(path: impl AsRef<std::path::Path>) -> Result<Self, SqliteWriterError>;
+    pub fn execute(&self, sql: &str, params: &[SqlValue]) -> Result<u64, SqliteWriterError>;
+    pub fn transaction<T, F>(&self, body: F) -> Result<T, SqliteWriterError>
+    where
+        F: FnOnce(&mut WriterConn) -> Result<T, SqliteWriterError> + Send + 'static,
+        T: Send + 'static;
 }
+
+impl std::fmt::Debug for SqliteWriter { /* does not print SQL or row bytes */ }
+
+pub struct WriterConn { /* the connection, usable only on the writer thread */ }
+
+impl WriterConn {
+    pub fn execute(&mut self, sql: &str, params: &[SqlValue]) -> Result<u64, SqliteWriterError>;
+}
+
+impl std::fmt::Debug for WriterConn { /* does not print SQL or row bytes */ }
+
+#[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
+pub enum SqlValue {
+    Null,
+    Integer(i64),
+    Real(f64),
+    Text(String),
+    Blob(Vec<u8>),
+}
+
+#[non_exhaustive]
+pub enum SqliteWriterError {
+    Open {
+        message: String,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    },
+    ChannelClosed,
+    QueueFull,
+    DeadlineExceeded,
+    Sqlite { sqlite_code: i32, message: String, source: std::sync::Arc<rusqlite::Error> },
+    Commit { sqlite_code: i32, message: String, source: std::sync::Arc<rusqlite::Error> },
+    ReplyTypeMismatch,
+}
+
+impl SqliteWriterError {
+    pub fn code(&self) -> &'static str;
+    pub fn recovery(&self) -> &'static str;
+}
+
+/// Matches the measured atm-core queue. Callers block in the reply wait, not in a second queue.
+pub const CHANNEL_CAPACITY: usize = 256;
+/// Drain budget. The writer calls `yield_now` inside this window. It does not sleep.
+pub const BATCH_TIME_BUDGET: std::time::Duration = std::time::Duration::from_millis(1);
+/// How long `execute` and `transaction` wait for a reply after the call starts.
+pub const WRITE_DEADLINE: std::time::Duration = std::time::Duration::from_secs(10);
+/// How long dropping the last handle waits for the writer thread.
+pub const SHUTDOWN_JOIN: std::time::Duration = std::time::Duration::from_secs(5);
 ```
 
-`open()` creates the file if it does not exist. Parent directories must exist;
-`open()` does not create them. The caller (typically the application entry
-point) is responsible for ensuring the directory exists.
+`SqlValue` does not implement rusqlite's `ToSql`. The writer thread converts parameters inside `execute`.
 
-`in_memory()` opens `sqlite://:memory:`. Each call returns an independent
-in-memory database; they do not share state. This is the recommended
-constructor for unit tests and integration tests that do not need persistence.
+`SqliteWriterError` implements `Display` and `std::error::Error`. `code()` is the stable code. `recovery()` is the next step. Display text is `{code}: {symptom}; {recovery}`:
 
----
+| Variant | Code | Symptom |
+|---|---|---|
+| `Open` | `DBSQ.OPEN` | `open failed: {message}` |
+| `ChannelClosed` | `DBSQ.CHANNEL_CLOSED` | `writer channel closed` |
+| `QueueFull` | `DBSQ.QUEUE_FULL` | `write queue full` |
+| `DeadlineExceeded` | `DBSQ.DEADLINE_EXCEEDED` | `write deadline exceeded` |
+| `Sqlite` | `DBSQ.SQLITE` | `sqlite error {sqlite_code}: {message}` |
+| `Commit` | `DBSQ.COMMIT` | `commit failed: sqlite error {sqlite_code}: {message}` |
+| `ReplyTypeMismatch` | `DBSQ.REPLY_TYPE_MISMATCH` | `transaction reply type mismatch` |
 
-## StorageBackend Implementation
+`Error::source` on `Sqlite` and `Commit` returns the original `rusqlite::Error`. The crate does not build a synthetic `SqliteFailure`. rusqlite 0.39's error is not `Clone`, so the variant stores `Arc<rusqlite::Error>` and every caller in a failed batch shares that same error. `Open`'s source is that rusqlite error, or the `std::io::Error` from starting the thread, when one exists. The `rusqlite::Error` behind `Sqlite.source` and `Commit.source` is public, so the rusqlite pin below is the semver boundary for this crate.
 
-`SqliteBackend` implements `StorageBackend` from `sc-runtime-db`:
+Retry follows the variant, not a shared flag:
 
-| Method | Implementation |
-|--------|---------------|
-| `execute` | `conn.execute(sql, params)` — returns affected row count |
-| `query` | `conn.query_map(sql, params)` — collects into owned `Rows` |
-| `transaction` | `conn.transaction()` — runs closure, commits or rolls back |
-| `migrate` | Migration runner described above |
-| `health` | Ping via `SELECT 1` — returns `StorageHealth::Healthy` or `StorageHealth::Degraded` with reason string |
+- `QueueFull`: the job was not accepted. Retrying the call is safe.
+- `DeadlineExceeded`: the job was accepted and the outcome is unknown. The write may still commit. Do not retry a non-idempotent write until the database has been checked.
+- `ChannelClosed`: the writer thread is gone. Reopen with `SqliteWriter::open`. Do not reuse the handle.
+- `Open`: no writer started. Create a missing parent directory and open again.
+- `Sqlite`: the statement failed. Read `sqlite_code` and `source`. This crate does not retry it.
+- `Commit`: the commit failed. Read `sqlite_code` and `source`.
+- `ReplyTypeMismatch`: the transaction reply was not the type the body returned. The job was accepted and the write may already be committed. Do not retry a non-idempotent write until the database has been checked. This is not `ChannelClosed`.
 
-All methods acquire a connection from the r2d2 pool for the duration of the
-call and return it on drop.
+`SqliteWriter` is `Clone + Send + Sync`. `WriterConn` is not `Sync`. `execute` on `SqliteWriter` is the batchable job. Contiguous `execute` calls share one savepoint inside one `BEGIN IMMEDIATE` transaction. A `transaction` body runs alone on the writer thread and calls `WriterConn::execute`. It is not folded into another caller's batch. The body must use only that `WriterConn`. Capturing a `SqliteWriter` and calling `execute` or `transaction` on it deadlocks until `WRITE_DEADLINE`, because the body occupies the only writer thread. The reply is sent only after the outer commit. On any member failure the savepoint is dropped and that batch is replayed one statement at a time.
 
----
+`WriterConn::execute` is write-only. rusqlite rejects a statement that returns rows, so `SELECT`, `INSERT ... RETURNING`, and `SELECT last_insert_rowid()` are unsupported. Supply the primary key in the bound parameters. Read committed rows from a separate connection after the reply. The reply is sent only after the outer commit.
 
-## Dependencies
+`open`, `execute`, and `transaction` block the calling thread. From async code, call them inside `tokio::task::spawn_blocking`. Do not drop the last handle on a runtime worker. This crate does not add an async wrapper.
 
-| Crate | Version | Purpose |
-|-------|---------|---------|
-| `sc-runtime-db` | workspace | `StorageBackend` trait, `Migration`, `StorageError` |
-| `rusqlite` | 0.31 (bundled) | SQLite connection and query execution |
-| `r2d2-sqlite` | 0.23 | Connection pool management |
+`execute` and `transaction` wait up to `WRITE_DEADLINE` for the reply. If the channel cannot accept the job, the error is `QueueFull`. If the job was accepted and the reply does not arrive in time, the error is `DeadlineExceeded`.
 
-No other sc-runtime crates appear in `sc-runtime-db-sqlite`'s dependency tree.
-This boundary is enforced by `sc-lint-boundary`.
+If the writer thread exits for any reason, including a panic, every pending caller receives `Err(ChannelClosed)` and does not block. The thread catches the panic with `std::panic::catch_unwind` and drains pending reply senders with `ChannelClosed` before the thread ends. A failed downcast of a transaction reply returns `ReplyTypeMismatch` and does not panic. It is not `ChannelClosed`. A reply whose shape does not match the job is an invariant breach and panics on the writer thread. That panic is not `ReplyTypeMismatch`.
 
----
+Dropping the last `SqliteWriter` joins the writer thread within `SHUTDOWN_JOIN`. The drain uses `yield_now` inside `BATCH_TIME_BUDGET`. The batch path does not emit `tracing`. That lane is not part of this crate. The writer thread is named `sqlite-writer:<file name>`. The job sender is a `SyncSender` and is not behind a mutex. The join handle is `!Sync`, so only that handle sits in a mutex.
 
-## Crate Position
+`open` takes a path only ([ADR-RUN-0012](../architecture.md) point 7). Before the first transaction it sets three fixed connection settings: `PRAGMA foreign_keys = ON`, a 5 second `busy_timeout`, and `journal_mode = WAL` for a filesystem database. An in-memory database stays on SQLite's memory journal, because WAL needs a file. These are not `open` arguments. Tests may use a `#[cfg(test)]` constructor that shortens `WRITE_DEADLINE`. That constructor is not public.
 
-```
-sc-runtime-db           ← StorageBackend trait
-    ↑
-sc-runtime-db-sqlite    ← this crate — rusqlite + WAL + r2d2 pool
-```
+`rusqlite` is pinned to the 0.39 line with default features off and the `bundled` feature on. That line resolves `libsqlite3-sys` 0.37, inside the range `sqlx` 0.9 sqlite accepts (`>=0.30.1, <0.38.0`). The default `cache` feature is rusqlite's statement cache and is unused here. `libsqlite3-sys` uses `links = "sqlite3"`, so a process that also links template `store-sqlite` must resolve one copy. `crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve` is the gate: its lockfile resolves this crate beside `sqlx` 0.9 sqlite, and the crate test checks that metadata contains one `libsqlite3-sys`. The `bundled` feature builds SQLite into this crate; sqlx links that same `libsqlite3-sys`. A later bump past 0.39 fails that gate. cargo-deny also sees `foldhash` (Zlib) through rusqlite's wasm-only `sqlite-wasm-rs` dependency, and `deny.toml` allows that OSI license.
 
-Consumers receive `Arc<dyn StorageBackend>` from the sc-runtime builder; they
-never depend on `sc-runtime-db-sqlite` directly unless constructing the backend
-themselves (in the application entry point).
+## What this crate is not
+
+No read pool. No r2d2. No `query` cursor shared with another backend. No migration macro. No `PluginContext`. No method on `DaemonBuilder`.

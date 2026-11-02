@@ -18,10 +18,6 @@ INVENTORY = {
         "answers fail wizard/answers.schema.json",
         "fix the file; cargo is not called; the destination is not created",
     ),
-    "GEN.DB_RESERVED": (
-        "db is postgres or both",
-        "set db to sqlite; the destination is not created",
-    ),
     "APP.INVALID_NAME": (
         "name fails the project-name pattern in wizard/answers.schema.json",
         "fix the name to that pattern; the destination is not created",
@@ -191,16 +187,12 @@ exit 0
                 self.assert_line(completed, "GEN.SCHEMA_INVALID", *INVENTORY["GEN.SCHEMA_INVALID"])
                 self.assert_absent_cargo(completed)
 
-    def test_reserved_database(self):
+    def test_both_is_schema_invalid_before_cargo(self):
         self.install_success_stubs()
-        for name in ("postgres.json", "both.json"):
-            with self.subTest(name=name):
-                if self.log.exists():
-                    self.log.unlink()
-                answers = json.loads((ROOT / "tests" / "fixtures" / "refused" / name).read_text())
-                completed = self.invoke(answers=answers)
-                self.assert_line(completed, "GEN.DB_RESERVED", *INVENTORY["GEN.DB_RESERVED"])
-                self.assert_absent_cargo(completed)
+        answers = json.loads((ROOT / "tests" / "fixtures" / "refused" / "both.json").read_text())
+        completed = self.invoke(answers=answers)
+        self.assert_line(completed, "GEN.SCHEMA_INVALID", *INVENTORY["GEN.SCHEMA_INVALID"])
+        self.assert_absent_cargo(completed)
 
     def test_invalid_names_come_from_the_vector_file(self):
         self.install_success_stubs()

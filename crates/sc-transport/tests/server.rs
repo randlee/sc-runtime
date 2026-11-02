@@ -110,6 +110,7 @@ async fn occupied_tcp_address_is_a_bind_error() {
 }
 
 #[tokio::test]
+#[cfg(unix)]
 async fn missing_parent_directory_is_a_bind_error() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("missing").join("daemon.sock");
@@ -168,6 +169,20 @@ async fn dropping_a_listener_removes_the_socket_and_keeps_the_lock_file() {
     lock_name.push(".lock");
     assert!(!path.exists());
     assert!(std::path::Path::new(&lock_name).exists());
+}
+
+#[tokio::test]
+#[cfg(windows)]
+async fn windows_uds_bind_reports_unsupported_endpoint() {
+    let err = bind(&Endpoint::Uds(std::path::PathBuf::from("daemon.sock")))
+        .await
+        .expect_err("uds");
+    assert!(
+        matches!(err, TransportError::UnsupportedEndpoint { .. }),
+        "{err:?}"
+    );
+    assert_eq!(err.code(), sc_transport::CODE_UNSUPPORTED_ENDPOINT);
+    assert!(err.recovery().contains("tcp:"), "{}", err.recovery());
 }
 
 #[tokio::test]

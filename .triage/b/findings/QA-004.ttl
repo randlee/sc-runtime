@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:QA-004> qa:sprint "b-15" ;
+  qa:severity "important" ;
+  qa:reviewer "rust-qa-agent" ;
+  qa:location "crates/sc-cron/src/monty_compose.rs:69" ;
+  qa:issue "The required function-length gate rejects the new 81-code-line `run_cli` function." ;
+  qa:remedy "Extract the event mapping or result-handling portions into small helpers without changing the existing compose behavior." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

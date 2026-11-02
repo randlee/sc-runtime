@@ -7,6 +7,9 @@ publish.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+schema = { path = "../schema" }
+futures-util = "0.3.31"
+serde_json.workspace = true
 sqlx = { version = "0.9.0", default-features = false, features = [
     "runtime-tokio",
     "sqlite",

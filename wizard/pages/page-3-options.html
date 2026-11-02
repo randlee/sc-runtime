@@ -22,17 +22,20 @@
   <main id="dialog" class="dialog dialog--frame" data-testid="page-3-options">
     <h1 data-testid="page-3-heading">Generation options</h1>
     <p class="lead">
-      Database and MCP choices. The list is the schema enum. v0.1 still
-      refuses the reserved database values before it creates a destination.
+      Database and MCP choices. The list is the schema enum. sqlite is the
+      default. A project contains one layout.
     </p>
 
     <div class="form">
       <div>
         <label for="db">db</label>
         <select id="db" data-testid="db" data-answer="db">
+          <option value="none">none</option>
           <option value="sqlite" selected>sqlite</option>
           <option value="postgres">postgres</option>
-          <option value="both">both</option>
+          <option value="mysql">mysql</option>
+          <option value="sqlite-postgres">sqlite-postgres</option>
+          <option value="sqlite-mysql">sqlite-mysql</option>
         </select>
         <p class="hint">Schema default is sqlite.</p>
       </div>

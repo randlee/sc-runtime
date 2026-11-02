@@ -1,0 +1,6 @@
+{
+  "project_name": "widget-mysql",
+  "db": "mysql",
+  "mcp": true,
+  "licence": "MIT"
+}

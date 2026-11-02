@@ -119,6 +119,11 @@ Severity: CRITICAL. Applies in every mode that reviews code or fixes.
   it" are never accepted as justification. There is no waiver path inside a
   review; the only path is an ADR amendment that has become Active or Approved.
 
+### RULE-ADR-AWAIT-MUTEX: No `std::sync::Mutex` guard held across `.await`
+Severity: BLOCKING. ADR-RUN-0011, point 2. A grep cannot see this.
+
+On every changed Rust file, and on any sprint that adds a lock or an `.await`, inspect whether a `std::sync::Mutex` guard is still in scope at an `.await`. A `std::sync::Mutex` guard held across `.await` is a Blocking finding. A local allow is accepted only when the allow states why that corner case must break the practice. Test code is the usual place. Production code, including the hot path, follows the rule. `yield_now` is legal and is not a finding.
+
 ### RULE-GATE: Structural gate artifacts must be inspected directly
 Severity: CRITICAL
 

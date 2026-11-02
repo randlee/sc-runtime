@@ -49,7 +49,16 @@ typestate, [ADR-RT-0001](architecture.md)).
 | `.stores(closure)` | an async closure taking no arguments that opens the project's stores and returns the project's own `Stores` value or an error | yes |
 | `.routes(closure)` | a closure that receives the `Stores` value and returns a `utoipa_axum::OpenApiRouter` | yes |
 | `.mcp(closure)` | a closure that receives the `Stores` value and returns an rmcp Streamable HTTP service | no |
+| `.logger(handle)` | a `sc_command::observability::SharedCanonicalLog` (ADR-RUN-0017 initial bridge); optional in every builder state and replaces the fixed `sc-runtime` Noop | no |
 | `.run().await` | none; returns `Result<(), RuntimeError>` | yes |
+
+The optional logger is a `SharedCanonicalLog` retained through `stores`,
+`routes`, and `run` without adding a typestate. Repeated `.logger()` calls
+replace and drop the prior handle; only explicit injection changes the fixed
+`sc-runtime` identity. Library code never flushes or shuts down the logger.
+Emission errors are best effort and cannot replace an HTTP or `RuntimeError`
+result. `observability_contract` proves phase preservation, Arc ownership,
+replacement, identity and unchanged failure behavior.
 
 Intended use, in the `daemon/src/main.rs` of a generated project:
 
@@ -61,20 +70,30 @@ async fn main() -> ExitCode {
         Ok(cfg) => cfg,
         Err(e) => return report(e),
     };
-    // observability is initialised by the project, not by sc-runtime
-    let _obs = sc_observability::init(cfg.logging.clone());
+    // observability is built and retained by the project, not by sc-runtime
+    let observability = match daemon::observability::Observability::build(
+        APP_NAME, log_root, &cfg.logging,
+    ) {
+        Ok(owner) => owner,
+        Err(e) => return report_observability(e),
+    };
+    let logger = observability.logger();
 
     let app = match sc_transport::AppName::new("my-app") {
         Ok(app) => app,
         Err(e) => return report(e),
     };
     let result = sc_runtime::Daemon::builder(&app, &cfg.daemon)
+        .logger(logger.clone())
         .stores(|| async { Stores::open(&cfg.stores).await })   // project-defined struct
         .routes(|stores| routes::router(stores))                // utoipa_axum::OpenApiRouter
         .mcp(|stores| mcp::service(stores))                     // optional; an rmcp service
         .run()
         .await;
-    exit_code(result)
+    drop(logger);
+    let shutdown = observability.shutdown();
+    // project helper preserves a run error when shutdown also fails
+    exit_code(prefer_run_error(result, shutdown))
 }
 ```
 
@@ -121,6 +140,10 @@ The builder MUST NOT offer hooks, callbacks or configuration that insert work
 between steps or reorder them (decided in this document and recorded in
 [ADR-RT-0001](architecture.md); the design lists the five steps and says the
 crate is a bootstrap, not a framework layer).
+`.logger(...)` only replaces the event handle carried by the builder. It is
+available on `NeedStores`, `NeedRoutes`, and `Ready`, adds no typestate, and
+does not add or reorder a `run()` step. The required transition remains
+`NeedStores` -> `NeedRoutes` -> `Ready`.
 
 v0.1 binds exactly one listener. `sc-transport` can bind either a Unix domain
 socket or a TCP address ([REQ-TRN-0003](../sc-transport/requirements.md)).
@@ -175,7 +198,7 @@ last so no request is accepted before it can be served.
    startup fails safely, the first daemon remains reachable through `S`, and
    the failed startup and cleanup do not remove `S`.
 6. Inspection of the public API of `crates/sc-runtime`: `DaemonBuilder` has no
-   public method other than `stores`, `routes`, `mcp` and `run`.
+   public method other than `logger`, `stores`, `routes`, `mcp` and `run`.
 7. A test deserialises a `DaemonConfig` from a JSON document with
    `serde_json` (a dev-dependency) and passes it to `Daemon::builder`; it
    compiles, which shows `DaemonConfig: serde::Deserialize`.
@@ -198,7 +221,10 @@ tempdir as the explicit path.
   crate, on the file `<instance-root>/daemon.lock`.
 - The lock MUST be taken by `run()` before the stores closure is called and
   before any listener is bound.
-- The lock MUST be held until the process exits or `run()` returns.
+- The lock MUST be held until the process exits or `run()` returns. The
+  additive ready-state `run_with_cleanup` MUST retain it until the supplied
+  asynchronous cleanup finishes, on success and on startup errors. Successful
+  stores and the runtime logger also remain owned through that callback.
 - The attempt to lock MUST NOT block waiting for the holder: it is a
   non-blocking try-lock (decided in this document; the design states the
   exclusive lock but not whether the attempt waits). If another process holds
@@ -398,7 +424,10 @@ On shutdown `run()` MUST:
    selected socket file while the listener still holds its endpoint lock,
    then release that endpoint lock (decided in this document and
    ADR-TRN-0006). Do not delete the endpoint-lock file.
-5. Before returning, release the lock on `<instance-root>/daemon.lock`.
+5. When using `run_with_cleanup`, await application cleanup after listener
+   disposal while retaining successful stores and the instance lock, including
+   on startup errors. Drop any unused startup closure before this callback.
+   Before returning, release the lock on `<instance-root>/daemon.lock`.
 6. Return `Ok(())` (decided in this document, following from the
    `Result<(), RuntimeError>` return type in [REQ-RT-0007](requirements.md)).
 
@@ -410,14 +439,24 @@ Steps 1 to 5 happen in that order. Endpoint cleanup must precede release of
 endpoint ownership; the instance-root lock is released afterwards.
 
 `run()` MUST NOT delete `daemon.lock`; releasing the lock is sufficient.
+`run_with_cleanup` preserves this sequence and all existing runtime errors;
+its infallible callback does not replace a primary startup/serve error. `run()`
+uses empty cleanup by default. Callers MUST await the run future to completion:
+dropping it or panicking cannot perform asynchronous cleanup.
 
 The same six-step sequence MUST run when shutdown is started by the
 crate-private trigger that `testing::DaemonFixture` uses to stop its own
 daemon ([REQ-RT-0006](requirements.md)). That trigger MUST NOT be public.
 
-**OPEN:** the drain timeout, that is how long shutdown waits for in-flight
-requests before giving up, and what `run()` returns if it is exceeded, is not
-stated by the design.
+The request-handler timeout and shutdown drain timeout are each 30 seconds.
+When the handler deadline wins, the middleware returns the existing 503
+envelope with code `RUNTIME.REQUEST_TIMEOUT`. When shutdown's drain deadline
+wins first, it returns the existing 503 envelope with code
+`RUNTIME.DRAIN_TIMEOUT`. In both cases the handler future is dropped, the
+shutdown sequence continues, and a signal-initiated `run()` still returns
+`Ok(())` after listener/endpoint/instance-lock cleanup. These constants and
+wire outcomes are existing runtime behavior; Phase B observability reports
+them but does not change them.
 
 **OPEN:** Windows signal handling beyond Ctrl-C (Ctrl-Break, console close,
 service stop) and the API used to receive it are not stated by the design.
@@ -451,6 +490,13 @@ machine, never on a developer's host
    it is decided: a `#[cfg(windows)]` test sends `CTRL_C_EVENT` to a child
    daemon while a request is in flight and asserts the client receives the
    complete successful response and the child exits with the success code.
+7. An in-process coordinated test proves a handler exceeding 30 seconds gets
+   the 503 `RUNTIME.REQUEST_TIMEOUT` envelope and that no later terminal
+   response is emitted for that request.
+8. A separate coordinated shutdown test proves an in-flight handler exceeding
+   the 30-second drain gets the 503 `RUNTIME.DRAIN_TIMEOUT` envelope, after
+   which endpoint and instance-lock cleanup complete and `run()` returns
+   `Ok(())`.
 
 ---
 
@@ -600,8 +646,9 @@ undecided ([REQ-TRN-0002](../sc-transport/requirements.md)).
   `remediation`, and optional `cause` are `String`. The application maps its
   store error into those fields inside the stores closure. `sc-runtime` does
   not name the foreign error type, does not implement `source()` for a
-  downcast, and does not declare a direct dependency on
-  `sc-observability-types`. There is no `AppName` variant and no
+  downcast. Its store-error representation does not use observability types;
+  the direct `sc-observability-types` dependency is permitted for injected
+  logging under REQ-RUN-0309. There is no `AppName` variant and no
   `APP.INVALID_NAME` row. `run` does not construct `sc_transport::AppName`
   and does not use `unreachable!`.
 
@@ -714,8 +761,8 @@ The lock lives in the instance root and, by default, so does the socket. If
 `sc-runtime` computed either on its own, the lock directory and the socket
 directory could diverge, and a daemon could listen where no CLI looks. One
 resolver in one crate, called by both binaries with the same inputs, is what
-makes the CLI find the daemon. The builder is limited to four methods, so the
-inputs need a named carrier, and `DaemonConfig` is the only value the project
+makes the CLI find the daemon. The builder keeps a fixed assembly order, so the
+endpoint inputs use a named carrier, and `DaemonConfig` is the only value the project
 hands to `run()`. The decision that one resolver is shared by daemon and CLI
 is [ADR-TRN-0002](../sc-transport/architecture.md); the template-side
 counterpart, that the generated `cli` and `daemon` each accept a global
@@ -780,7 +827,7 @@ machine, never on a developer's host
 | Kind of public item | How many | Name |
 |---|---|---|
 | Entry type whose only public function is the constructor that returns the builder | one | `Daemon` (`Daemon::builder`) |
-| Builder type with exactly four public methods: three that each take one project closure (stores, routes, optional MCP service) and one that runs the daemon | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `run`) |
+| Builder type with exactly five public methods: three that each take one project closure (stores, routes, optional MCP service), one optional all-phase logger setter, and one that runs the daemon | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`) |
 | Configuration struct implementing `serde::Deserialize` | one | `DaemonConfig` |
 | Error enum | one | `RuntimeError` |
 | Public module for tests, containing one fixture type, behind `test-util` | one | `testing` (`testing::DaemonFixture`) |
@@ -789,12 +836,9 @@ machine, never on a developer's host
   free function, no public macro, and no `pub use` of an item from another
   crate.
 
-**OPEN:** whether a generated project's `daemon` crate takes `sc-command` as
-a direct dependency or through a re-export from `sc-runtime` is not decided
-(owner: [REQ-RUN-0301](../requirements.md)); the `service` crate takes it
-directly, because it may not depend on `sc-runtime`. If the re-export
-is chosen, it MUST be added to the table above as a further kind of item;
-until then no re-export is allowed.
+The generated `daemon` and `service` crates take `sc-command` directly as
+fixed by [REQ-RUN-0301](../requirements.md). `sc-runtime` does not re-export
+it, so the closed public-surface table above remains complete.
 
 ### Rationale
 
@@ -817,7 +861,7 @@ libraries, and would be code every project has to learn.
    build does not expose `testing`.
 3. Inspection of the crate's rustdoc index (`cargo doc -p sc-runtime
    --no-deps`, and again with `--features test-util`): the builder type has
-   exactly four public methods (`stores`, `routes`, `mcp`, `run`), the entry
+   exactly five public methods (`stores`, `routes`, `mcp`, `logger`, `run`), the entry
    type has exactly one public function (`builder`), and the index does not
    list `sc_runtime::AppName`. `testing` appears only when `test-util` is on.
 4. The `arch-qa` architecture review confirms no public type has a field or
@@ -846,17 +890,15 @@ libraries, and would be code every project has to learn.
   read.
 
 The only observability-related crate permitted in its dependency tree is
-`sc-observability-types`, and only transitively through `sc-command`. A direct
-dependency on `sc-observability-types` is forbidden. sc-lint 0.8.0 cannot
-express that direct-only rule: a `forbidden_edges` entry would also fail the
-allowed transitive crate. The check is
-`cargo tree -p sc-runtime -e normal --depth 1 --prefix none` printing no line
-beginning with `sc-observability-types `.
+`sc-observability-types`. It is a direct dependency used only for the
+injected canonical logger contract; the full runtime and OTel exporter remain
+forbidden. The direct-depth cargo tree must contain the types crate and no
+full-runtime line.
 
 `sqlx`, `sc-observability`, and `sc-observability-otlp` are not workspace
 members. sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so
 those names are not `forbidden_edges` entries. `cargo tree` enforces them.
-The repo-level owner of the forbidden edges of all four crates is
+The repo-level owner of the forbidden edges of all workspace library crates is
 [REQ-RUN-0005](../requirements.md).
 
 ### Rationale
@@ -881,7 +923,7 @@ lets the project report a config error before anything else starts.
    `sc-observability-types`, because sc-lint 0.8.0 rejects a forbidden edge
    whose target is not a workspace member. `just lint` (which runs
    `sc-lint lint sc-boundary`) is clean. Criterion 1 is the `cargo tree` check
-   for `sqlx`, the logging crates, and direct-only `sc-observability-types`.
+   for `sqlx` and the forbidden logging-runtime crates.
 3. A search of `crates/sc-runtime/src` (excluding `#[cfg(test)]` code) finds
    no call to `sc_config::load`, no read of a config file, and no read of
    `SC_ENDPOINT`. `run` calls `sc_transport::resolve_endpoint_from_env`, which
@@ -895,12 +937,12 @@ lets the project report a config error before anything else starts.
 
 ### Requirement Statement
 
-The workspace has four library crates: `sc-config`, `sc-transport`,
-`sc-command` and `sc-runtime`. This item owns the list of third-party
+The workspace library set includes `sc-config`, `sc-transport`, `sc-command`,
+`sc-runtime`, `sc-runtime-db-sqlite`, and `sc-cron`. This item owns only the list of third-party
 dependencies `sc-runtime` is allowed. The workspace-internal edges and the
-forbidden edges of all four crates are owned by
-[REQ-RUN-0005](../requirements.md): `sc-runtime` is the only one of the four
-that may depend on the others, and `sc-config`, `sc-transport` and
+forbidden edges of all workspace library crates are owned by
+[REQ-RUN-0005](../requirements.md): `sc-runtime` is the assembly crate depending on the others
+(cron temporarily depends only on command under ADR-RUN-0017), and `sc-config`, `sc-transport` and
 `sc-command` MUST NOT depend on `sc-runtime` or on each other.
 
 The normal (non-dev, non-optional) dependencies of `sc-runtime` MUST be exactly
@@ -909,13 +951,15 @@ the following.
 | Dependency | Why it is needed |
 |---|---|
 | `sc-transport` with `features = ["server"]` | listener binding, the endpoint resolver and the instance-root function |
-| `sc-command` with `features = ["server"]` | the axum response and rmcp tool-result conversions of the response envelope, including `GET /health` |
+| `sc-command` with `features = ["server"]` | the axum response and rmcp tool-result conversions of the response envelope, including `GET /health`; temporary canonical port under ADR-RUN-0017 |
+| `sc-observability-types` | canonical request lifecycle values; no sink construction or shutdown |
 | `axum` | the merged `axum::Router` and serving |
 | `tokio` | the async runtime and signal handling |
 | `fd-lock` | the exclusive lock on `daemon.lock` |
 | `utoipa-axum` and `utoipa` | the routes closure returns `utoipa_axum::OpenApiRouter`, and the OpenAPI document is a `utoipa` type |
 | `serde` | `DaemonConfig` MUST implement `Deserialize`, because the project loads it as `cfg.daemon` through `sc-config` |
 | `rmcp` | `.mcp(...)` accepts the concrete `StreamableHttpService` and mounts it as given. This crate does not wrap that type and does not re-export it |
+| `tracing` | the request-id span on the assembled router, including `/health`, `/openapi.json`, `/metrics`, and optional `/mcp` |
 
 - The edge `sc-runtime -> sc-config` is absent. `sc-runtime` MUST NOT depend
   on `sc-config` and MUST NOT load configuration
@@ -952,8 +996,8 @@ would reject one.
 1. `crates/sc-runtime/Cargo.toml` declares `sc-transport` with
    `features = ["server"]` and `sc-command` with `features = ["server"]`.
 2. Every entry under `[dependencies]` in `crates/sc-runtime/Cargo.toml` is
-   one of: `sc-transport`, `sc-command`, `axum`, `tokio`, `fd-lock`,
-   `utoipa-axum`, `utoipa`, `serde`, `rmcp`, or optional `tempfile` enabled
+   one of: `sc-transport`, `sc-command`, `sc-observability-types`, `axum`, `tokio`, `fd-lock`,
+   `utoipa-axum`, `utoipa`, `serde`, `rmcp`, `tracing`, or optional `tempfile` enabled
    only by `test-util`. A search of `crates/sc-runtime/src` finds at least one
    `sc_command` use. The criterion fails when that use is absent.
    `cargo tree -p sc-runtime -e normal --prefix none` prints no `tempfile` or

@@ -6,12 +6,16 @@
 //! `sc_runtime::AppName`.
 //!
 //! `run` exists only after `stores` and `routes`. `mcp` is optional on that
-//! ready state. Endpoint text is resolved before the lock so an invalid
+//! ready state. An optional all-phase `.logger(handle)` replaces the fixed
+//! `sc-runtime` Noop; the application owns flushing and shutdown. Endpoint text is resolved before the lock so an invalid
 //! endpoint does not open stores. Signal listeners are registered, and on
 //! Windows Ctrl-C is polled, before the lock and before bind. The order after
 //! a valid endpoint is signals, lock, stores, routes and optional MCP, then
 //! bind. The assembled router limits handler time. Shutdown drains in-flight
-//! requests up to a bound.
+//! requests up to a bound. [`DaemonBuilder::run_with_cleanup`] then awaits
+//! application background drain while retaining successful stores, the instance
+//! lock, and the runtime logger, including on startup errors. Await its future
+//! to completion; ordinary future drop cannot perform asynchronous cleanup.
 //!
 //! # Examples
 //!

@@ -6,6 +6,17 @@ license.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
+[features]
+{% if db == "none" %}
+default = []
+{% else %}
+default = ["general-db"]
+{% endif %}
+# The daemon dev-dependency is feature-off unless this flag is on, so
+# `cargo test -p <cli> --no-default-features` drops delete row on all three
+# surfaces of a store layout.
+general-db = ["daemon/general-db"]
+
 [dependencies]
 api-types = { path = "../api-types" }
 clap.workspace = true
@@ -17,7 +28,7 @@ serde_json.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
-daemon = { path = "../daemon" }
+daemon = { path = "../daemon", default-features = false }
 sc-runtime = { workspace = true, features = ["test-util"] }
 sc-transport = { workspace = true, features = ["server"] }
 serde = { workspace = true, features = ["derive"] }

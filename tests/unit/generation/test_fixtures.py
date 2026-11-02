@@ -30,7 +30,15 @@ class FixtureTests(unittest.TestCase):
             answers = json.loads(path.read_text(encoding="utf-8"))
             self.assertIn("licence", answers)
             self.assertTrue(self.driver.schema_accepts(self.schema, answers), path.name)
-            self.assertFalse(self.driver.reserved_database(self.schema, answers), path.name)
+        names = {path.name for path in paths}
+        for required in (
+            "none.json",
+            "postgres.json",
+            "mysql.json",
+            "sqlite-postgres.json",
+            "sqlite-mysql.json",
+        ):
+            self.assertIn(required, names)
 
     def test_sqlite_mcp_and_licence_variants(self):
         mcp = json.loads((ROOT / "wizard" / "fixtures" / "sqlite-mcp.json").read_text())

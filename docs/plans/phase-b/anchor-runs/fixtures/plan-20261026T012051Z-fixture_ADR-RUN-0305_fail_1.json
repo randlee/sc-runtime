@@ -1,0 +1,105 @@
+{
+  "schema": "plan-anchoring/run/1",
+  "run_id": "plan-20261026T012051Z-fixture_ADR-RUN-0305_fail_1",
+  "gate": "plan",
+  "created_at": "2026-10-26T01:20:51+00:00",
+  "anchors_path": "doc/plan/phase-current/anchors.json",
+  "plan": "phase-current",
+  "item": {
+    "id": "fixture:ADR-RUN-0305:fail:1",
+    "title": "fixture",
+    "source": "fixtures",
+    "chars": 119,
+    "truncated": false
+  },
+  "model_requested": "jev-latest",
+  "model_answered": "jev-1.14.0",
+  "threshold": 0.6,
+  "max_request_bytes": 24000,
+  "min_item_chars": 2000,
+  "dry_run": false,
+  "fixture": false,
+  "results": [
+    {
+      "anchor_id": "ADR-RUN-0305",
+      "source_type": "ADR",
+      "source_ref": "ADR-RUN-0305",
+      "statement": "SQLite and Postgres meet in an adaptor crate generated into the consumer repository.",
+      "quote": "SQLite and Postgres meet in an adaptor crate generated into the consumer repository.",
+      "stated_by": "randlee",
+      "stated_at": "2026-10-25",
+      "context": "ADR-RUN-0305",
+      "anchor_version": 2,
+      "deterministic_check": "docs/architecture.md contains ADR-RUN-0305.",
+      "kind": "directive",
+      "leaning": "contradicted",
+      "question_set": {
+        "gate": "plan",
+        "version": 1,
+        "overridden": false
+      },
+      "questions_sha256": "45c142d4b4a63bd5c580d2407d06af54171ebec6302dd62d0ba982450416f8cd",
+      "near_threshold": true,
+      "confirmed": true,
+      "verdict": "contradicted",
+      "answers": {
+        "relevant": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        },
+        "addressed": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.66,
+          "probabilities": {
+            "yes": 0.15,
+            "no": 0.77,
+            "unclear": 0.08
+          }
+        },
+        "contradicted": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "yes": 0.99,
+            "no": 0.01,
+            "unclear": 0.0
+          }
+        }
+      },
+      "min_confidence": 0.66,
+      "explanation": "This bead proposes something the anchor rules out.",
+      "usage": {
+        "input_tokens": 1009,
+        "output_tokens": 117
+      },
+      "attempts": 2,
+      "item_chars_sent": 119,
+      "item_shortened": false,
+      "request_bytes": 3039
+    }
+  ],
+  "summary": {
+    "counts": {
+      "contradicted": 1
+    },
+    "failing": [
+      "ADR-RUN-0305"
+    ],
+    "leaning_counts": {
+      "contradicted": 1
+    },
+    "unstable": [],
+    "errors": [],
+    "excluded": [],
+    "shortened": [],
+    "pass": false
+  }
+}

@@ -228,6 +228,7 @@ otherwise.
 For implementation QA-1 in this Rust repo:
 - always run `req-qa`
 - always run `arch-qa`
+- always run `extensibility-qa`
 - always run `ruthless-boundary-qa`
 - always run `rust-qa-agent`
 - always run `rust-best-practices-agent`
@@ -255,8 +256,8 @@ For QA-2 and later (fix-verification) rechecks of implementation work:
   the report and does not affect the verdict
 
 Subjective-review fix-round rule:
-- `ruthless-boundary-qa`, `rust-best-practices-agent`, and
-  `rust-service-hardening-agent` (plus `ceremony-qa` in plan QA) run
+- `ruthless-boundary-qa`, `extensibility-qa`, `rust-best-practices-agent`,
+  and `rust-service-hardening-agent` (plus `ceremony-qa` in plan QA) run
   open-ended only on the first round — sprint QA-1, plan QA-1, and
   phase-ending review; never rerun them open-ended during fix verification
 - in QA-2 and later, sprint or plan, dispatch one of these reviewers only for
@@ -272,6 +273,7 @@ Subjective-review fix-round rule:
 For phase-ending QA, launch the reviewers selected by repository policy and:
 - always run `req-qa`
 - always run `arch-qa`
+- always run `extensibility-qa`
 - always run `ruthless-boundary-qa`
 - always run `rust-qa-agent`
 - always run `rust-best-practices-agent`
@@ -287,9 +289,13 @@ For phase-ending QA, launch the reviewers selected by repository policy and:
   verify the delegated result and its source revision
 
 For docs-only plan review (`review_mode: plan`):
-- plan QA-1 runs `req-qa`, `arch-qa`, `ruthless-boundary-qa`,
-  `rust-best-practices-agent`, `rust-service-hardening-agent`, and
-  `ceremony-qa`
+- plan QA-1 runs `req-qa`, `arch-qa`, `extensibility-qa`,
+  `ruthless-boundary-qa`, `rust-best-practices-agent`,
+  `rust-service-hardening-agent`, and `ceremony-qa` (prompt:
+  `.claude/agents/ceremony-qa.md`)
+- do not run `rust-qa-agent`
+- after findings, run `ceremony-finding-screen` over the round's findings
+  before publishing the QA report
 - run `schema-reviewer` only when repository policy defines a governed
   interface relevant to the plan
 - plan QA-2 and later are fix-verification rounds: run `req-qa` and
@@ -309,7 +315,6 @@ For docs-only plan review (`review_mode: plan`):
   "Process Artifacts": reviewers must not raise a finding whose only remedy is
   a new manifest/inventory/receipt/CI gate unless it passes that rule, and may
   raise unjustified process artifacts as findings
-- do not run `rust-qa-agent` for docs-only review
 - judge each sprint doc at its declared `closure_type`
   (`.claude/skills/plan-hardening/sprint-planning-guidelines.md`): behaviour a
   `contract` or `boundary` sprint lists under "This Sprint Does Not Close"

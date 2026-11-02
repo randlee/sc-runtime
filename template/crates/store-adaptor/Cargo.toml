@@ -1,0 +1,16 @@
+[package]
+name = "store-adaptor"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+description = "Moves rows between a local SQLite store and one remote SQL engine."
+
+[dependencies]
+schema = { path = "../schema" }
+
+[dev-dependencies]
+serde = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt"] }
+toml = { workspace = true }

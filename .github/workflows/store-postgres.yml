@@ -1,0 +1,79 @@
+name: Store Postgres
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+
+# Live SQL gate for template/crates/store-postgres.
+#
+# Local `SQLX_OFFLINE=true cargo test -p store-postgres --manifest-path
+# template/Cargo.toml` still skips when POSTGRES_DATABASE_URL is unset.
+# This job is the required live run: it sets REQUIRE_POSTGRES=1 and
+# POSTGRES_DATABASE_URL against the Postgres service. A skip panics the
+# suite, and the log check below fails the job if that skip text appears.
+# `cargo sqlx prepare --check` runs only after the service database is
+# migrated. SQLX_OFFLINE stays unset for that check and is true for the
+# test compile, so macros use the checked-in .sqlx data.
+concurrency:
+  group: store-postgres-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  live:
+    name: store-postgres live SQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # sqlx.toml names this variable. The CLI flags below pass the same URL.
+      POSTGRES_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/store_postgres
+      REQUIRE_POSTGRES: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.94.1
+
+      - name: Install sqlx-cli
+        run: cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features postgres,rustls,sqlx-toml
+
+      # Migrate first so prepare --check sees the widgets table. The live
+      # tests open ephemeral databases and run sqlx::migrate! themselves.
+      - name: Check offline query data
+        working-directory: template/crates/store-postgres
+        run: |
+          set -euo pipefail
+          cargo sqlx database setup --database-url "$POSTGRES_DATABASE_URL"
+          cargo sqlx prepare --check --database-url "$POSTGRES_DATABASE_URL" -- --all-targets
+
+      - name: Live tests
+        env:
+          SQLX_OFFLINE: "true"
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/store-postgres-test.log"
+          cargo test -p store-postgres --manifest-path template/Cargo.toml 2>&1 | tee "$log"
+          if grep -q 'skipping: POSTGRES_DATABASE_URL' "$log"; then
+            echo "live store-postgres tests skipped; REQUIRE_POSTGRES=1 must run them" >&2
+            exit 1
+          fi

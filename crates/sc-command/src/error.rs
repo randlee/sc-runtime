@@ -147,6 +147,29 @@ impl OpError {
         }
     }
 
+    /// Builds an error from a stable code string, with no details and no remediation.
+    ///
+    /// `code` is stored as [`ErrorCode`]. A caller that must not depend on
+    /// `sc-observability-types` uses this constructor instead of [`Self::new`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sc_command::{ErrorKind, OpError};
+    ///
+    /// let error = OpError::from_code(
+    ///     ErrorKind::Unavailable,
+    ///     "RUNTIME.REQUEST_TIMEOUT",
+    ///     "timed out",
+    /// );
+    /// assert_eq!(error.code.as_str(), "RUNTIME.REQUEST_TIMEOUT");
+    /// assert_eq!(error.kind, ErrorKind::Unavailable);
+    /// ```
+    #[must_use]
+    pub fn from_code(kind: ErrorKind, code: &'static str, message: impl Into<String>) -> Self {
+        Self::new(kind, ErrorCode::new_static(code), message)
+    }
+
     /// Attaches structured details.
     #[must_use]
     pub fn with_details(mut self, details: Value) -> Self {

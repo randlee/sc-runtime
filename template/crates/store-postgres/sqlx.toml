@@ -1,0 +1,2 @@
+[common]
+database-url-var = "POSTGRES_DATABASE_URL"
