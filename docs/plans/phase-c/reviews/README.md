@@ -327,6 +327,27 @@ fixture approval, manager QA and actual live gates remain pending. Beads
 run-x8d.5/.6 contain durable progress; pending release/version availability is
 a separate inquiry and no publication is claimed here.
 
+The exact [v3 generic preparation](continuation/calibration-v3/README.md) is now
+materialized and committed for independent preflight/root execution: seven
+inputs, three candidates, 36 semantic cases, eight lint cases and eight dedupe
+pairs. This is a separate approved-policy corpus version; no v3 result or
+replacement seal is claimed by preparation.
+
+The [six-candidate approval packet](internal-unapproved/phase-c-six-candidate-approval-packet.md)
+contains provisional 013–016 plus 018–019, omitting 017's existing
+REQ-CRON-0003 duty while preserving its quote. Per-candidate
+[source-only intent files](internal-unapproved/actual-candidate-intent/README.md)
+bind exact human context and the accepted assistant question/answer for013;
+they include no desired verdicts or draft fixture labels. Statement/fixture
+approval can occur independently, but actual rubric/locking remains pending.
+Existing cron/default-path requirements and baseline gates must assess the
+out-of-box source context; no seventh anchor or auto-start policy is invented.
+
+The read-only [Phase B publication investigation](external-consumer-input/phase-b-release-investigation.md)
+is preserved exactly: Phase B's public artifacts are 0.1.1; 0.2.0 remains the
+future Phase C target at that investigation time. This checkpoint changes no
+release version, publication authority or consumer baseline.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |

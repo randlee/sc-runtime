@@ -13,3 +13,11 @@ execution remain prerequisites. The old corpus, evidence and production seal
 remain unchanged. `preparation/` retains exact source metadata, including its
 historical pending-materialization flag; actual byte equality was checked on
 materialization and the root runner must bind the committed inputs.
+
+`pool-extension-preparation/` and the three v3-extension-04/05/06 wrappers
+preserve the separately frozen additional candidates required for a six-bundle
+result. They reuse the exact same 36-case oracle, policy, receipt and dedupe
+inputs. No first input or expectation is modified. The independent bounded
+pre-execution review is preserved separately; its PASS is packet soundness,
+not tournament acceptance or a replacement seal. Root preflight/authorization
+and actual complete-bundle results remain required.

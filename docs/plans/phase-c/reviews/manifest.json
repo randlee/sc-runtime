@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "2b6b25f26dad9605f2bf734ee54656f76414eeb027300401425e1a25de96ad37",
-      "bytes": 23445,
+      "sha256": "44c77521415613d998e5d30ab8f4b4fe7830fb35e75e1fd362d523d9c82f234f",
+      "bytes": 24820,
       "source": "authored index"
     },
     {
@@ -11867,8 +11867,8 @@
     },
     {
       "path": "continuation/calibration-v3/README.md",
-      "sha256": "c2ee69128a8be81d4a7d54a4cafbe914d0e61586a1ebd5153dd2761acd0ac94f",
-      "bytes": 953,
+      "sha256": "aa20cdfea2e3e9bd34becb10df2b7bd808e94cb9be3a469a2bb211d6f5297500",
+      "bytes": 1466,
       "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
     },
     {
@@ -11896,6 +11896,24 @@
       "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
     },
     {
+      "path": "continuation/calibration-v3/inputs/v3-extension-04-rubric.json",
+      "sha256": "ae0782a782a6b0ef453a5fecb4037a580554bcfaaefe9ec319976c69d65175b2",
+      "bytes": 2940,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-extension-05-rubric.json",
+      "sha256": "53221aea51c4fe97da1110968d370d383704b4d9086c4e1743c10e7987f76fc0",
+      "bytes": 2800,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-extension-06-rubric.json",
+      "sha256": "001fe0b60db8602aad939331344748e377ca5fa0762b8bc48a35b828b2ee2dc7",
+      "bytes": 2784,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
       "path": "continuation/calibration-v3/inputs/v3-first-01-rubric.json",
       "sha256": "993530cd349244d61766188caa0135f343534dd8cc957dabb7ca0c303f3f84f2",
       "bytes": 4128,
@@ -11912,6 +11930,78 @@
       "sha256": "b26282be2ff13d67aea4284bb13abccbc3cbb41756fcffba13f9fcb0e28e74e4",
       "bytes": 4120,
       "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/combined-six-candidates.json",
+      "sha256": "15ab5eb315d1f7c4d08da8498981bca715041870b178a52f81dc02e8f488f2f0",
+      "bytes": 21075,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/freeze-manifest.json",
+      "sha256": "9a8c3441e9290571a807047a369fef3e98a530c6cea42897603c3830ba9835d9",
+      "bytes": 704,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/frozen-candidates.json",
+      "sha256": "904b48d086200fbec0ee1fde2f67c95a512667bf5bd9c1d25738811f49cbaafb",
+      "bytes": 8811,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/frozen-request-shapes.json",
+      "sha256": "9bd8973a2cf003522728624d4b1a076a543b73e630c077d7e398593cfc192710",
+      "bytes": 491803,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/invocation-fence.md",
+      "sha256": "204e62e2aa0be1fdd019f5980a6b41ae6281aac7efba661a4547e1af92f182d6",
+      "bytes": 7914,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/invocation.json",
+      "sha256": "8553a505a38fe88bb15c440fb587c997bc4579c064289178298d330eb7ff9ba1",
+      "bytes": 7045,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/materialization-inventory.json",
+      "sha256": "a45188b0777ba164e230c1d87b37fb2fb4c960727a5b7b0fb511a0a7a9e3aa2a",
+      "bytes": 3205,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/materialization-plan.json",
+      "sha256": "7c7af2dc83ce953520bf37b630dea2704eed2ce2bd49fed376deb8761649f0b7",
+      "bytes": 1816,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/pre-answer-provenance.json",
+      "sha256": "e55a9b25af9c5c262301172fbf45aa786ea9d5efef2b1be20e47db219d1420f0",
+      "bytes": 603,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/request.json",
+      "sha256": "c9794dfeeb7488232942b4a9ecef7969e8509a60662b08bc991b96b1be6fbdd7",
+      "bytes": 6721,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/pool-extension-preparation/selection-policy.json",
+      "sha256": "b19e4f43f5be42e228ccbc0b989a49f499e2596c5a953f1675f772a7fab25cdd",
+      "bytes": 552,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "continuation/calibration-v3/preexecution-independent-review.md",
+      "sha256": "0affa66b3ba96b05ec092703ff115170932415caf57a31867f32a42d46479589",
+      "bytes": 3995,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
     },
     {
       "path": "continuation/calibration-v3/preparation/attestation.json",
@@ -12298,6 +12388,12 @@
       "source": "critical-r3.json"
     },
     {
+      "path": "current-structural-anchor-checks.json",
+      "sha256": "fe6a4e8c2bfcc596e2897240709837499d7618f395da03b10cd95b6ca74e0be3",
+      "bytes": 892,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
       "path": "external-consumer-input/README.md",
       "sha256": "c1b7f208a81d381a0a47ac3506a1e5940568af4195824e0d83e3bdde541fbc66",
       "bytes": 341,
@@ -12352,6 +12448,54 @@
       "source": "exact review/preparation/external intake evidence; unapproved or external material is not planning authority"
     },
     {
+      "path": "internal-unapproved/actual-candidate-intent/ANC-013.json",
+      "sha256": "0284d5d7404b27da2613b225d0e24f808051dea3b94fabed48001ce7253edc2a",
+      "bytes": 924,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "internal-unapproved/actual-candidate-intent/ANC-014.json",
+      "sha256": "5a6e23d5e87e9da5bf2e4c02541667d89b580314f6334e570e9357eb6e12dbd0",
+      "bytes": 661,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "internal-unapproved/actual-candidate-intent/ANC-015.json",
+      "sha256": "1629c0ce5df923a0b9b50da0251fa9ba28e6f129af6f574f976408325f8656d3",
+      "bytes": 392,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "internal-unapproved/actual-candidate-intent/ANC-016.json",
+      "sha256": "7429d5352b28147ed9f291e0d43af295691cfdc76617e9120c9277cda5a127e7",
+      "bytes": 525,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "internal-unapproved/actual-candidate-intent/ANC-018.json",
+      "sha256": "99d269023b6c74bfd91a7374cd7db7b206fe1349d67af92f3a006f29a0adfdbd",
+      "bytes": 1335,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "internal-unapproved/actual-candidate-intent/ANC-019.json",
+      "sha256": "0ef9547c06455326c90b85075e5024d36f4f4809c54935c8ca46b5aa718c85b1",
+      "bytes": 1335,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "internal-unapproved/actual-candidate-intent/README.md",
+      "sha256": "7a43efade418950a222729f347b1613f32160c435177738e273a1fb796d1aa02",
+      "bytes": 1343,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "internal-unapproved/actual-candidate-intent/index.json",
+      "sha256": "5f687a1ae58be8d0937b0dea529cbdcb06a464dd59bc4a3e63e13758dd3f7953",
+      "bytes": 2073,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
       "path": "internal-unapproved/commit-deadline-design-note.md",
       "sha256": "9188e21fb92c3b6b41aace305e53fae29a5766c22684f63e9eb9057e7f76866d",
       "bytes": 12812,
@@ -12386,6 +12530,18 @@
       "sha256": "0f4b7d442a40b5563d60c8eea43f8b7e82de026c602862d0ab7ca350104d3cff",
       "bytes": 12097,
       "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
+    },
+    {
+      "path": "internal-unapproved/phase-c-six-candidate-approval-packet.json",
+      "sha256": "e555ee5cc8ce6fc9cba10c23ddafa98998e1ab72c39814bbbfe85390544d1e58",
+      "bytes": 6103,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
+    },
+    {
+      "path": "internal-unapproved/phase-c-six-candidate-approval-packet.md",
+      "sha256": "05e5d66ba041672cab8a091c9d455a40c64d0707416e72e1ca2760d9f2cd1b85",
+      "bytes": 5429,
+      "source": "exact frozen extension/preflight evidence or actual candidate approval/source-only preparation; no locking/PASS adoption"
     },
     {
       "path": "planning-tuning-preparation/ANC-001-invocation-fence.md",
@@ -13340,6 +13496,42 @@
     "accepted": false,
     "old_authority_unchanged": true,
     "independent_preflight": "pending root-commissioned verification",
-    "path": "continuation/calibration-v3/"
+    "path": "continuation/calibration-v3/",
+    "pool_extension": {
+      "additional_wrappers": 3,
+      "combined_candidates": 6,
+      "same_36_case_oracle": true,
+      "source": "continuation/calibration-v3/pool-extension-preparation/materialization-plan.json",
+      "accepted": false
+    }
+  },
+  "actual_candidate_preparation": {
+    "provisional_references": [
+      "ANC-013",
+      "ANC-014",
+      "ANC-015",
+      "ANC-016",
+      "ANC-018",
+      "ANC-019"
+    ],
+    "omitted_017_existing_REQ": "REQ-CRON-0003",
+    "fixture_approval": "pending",
+    "rubric_result": "pending",
+    "allocated_or_locked": false,
+    "source_intent_descriptors": 6,
+    "no_project_facts_in_generic_oracle": true,
+    "packet": "internal-unapproved/phase-c-six-candidate-approval-packet.md",
+    "source_only_inputs": "internal-unapproved/actual-candidate-intent/"
+  },
+  "current_structural_check": {
+    "source": "current-structural-anchor-checks.json",
+    "anchors": [
+      "ANC-004",
+      "ANC-011",
+      "ANC-012"
+    ],
+    "passed": 3,
+    "baseline": "967081f55dba772af38883a9a8f1a6469bc2976e",
+    "semantic_gate_pass_claimed": false
   }
 }
