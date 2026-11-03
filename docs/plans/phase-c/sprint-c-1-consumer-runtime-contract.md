@@ -22,6 +22,25 @@ requirements:
   - REQ-CMD-0005
   - NFR-CMD-0001
   - NFR-CMD-0002
+  - REQ-CRON-0002
+  - REQ-CRON-0003
+  - REQ-CRON-0004
+  - REQ-CRON-0005
+  - REQ-CRON-0019
+  - REQ-CRON-0020
+  - REQ-CRON-0021
+  - NFR-CRON-0002
+  - REQ-CRNC-0001
+  - REQ-CRNC-0002
+  - NFR-CRNC-0001
+  - REQ-RUN-0332
+  - REQ-RUN-0401
+  - REQ-RUN-0402
+  - REQ-RUN-0403
+  - REQ-RUN-0001
+  - REQ-RUN-0005
+  - REQ-RT-0005
+  - REQ-RT-0006
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0005
@@ -29,6 +48,18 @@ adrs:
   - ADR-RUN-0202
   - ADR-RUN-0203
   - ADR-RUN-0303
+  - ADR-RUN-0003
+  - ADR-RUN-0013
+  - ADR-RUN-0014
+  - ADR-RUN-0016
+  - ADR-RUN-0018
+  - ADR-RUN-0019
+  - ADR-RUN-0401
+  - ADR-RUN-0402
+  - ADR-CRNC-0001
+  - ADR-RT-0001
+  - ADR-RT-0004
+  - ADR-RT-0005
 owned_paths:
   - docs/requirements.md
   - docs/architecture.md
@@ -36,6 +67,30 @@ owned_paths:
   - docs/sc-cron/requirements.md
   - docs/sc-cron/architecture.md
   - docs/sc-command/requirements.md
+  - docs/sc-runtime/requirements.md
+  - docs/sc-runtime/architecture.md
+  - docs/sc-cron-commands/
+  - docs/plans/phase-c/compatibility-contract.md
+  - boundaries/sc-cron/
+  - boundaries/sc-command/
+  - boundaries/sc-runtime/
+  - boundaries/sc-cron-commands/
+  - boundaries/README.md
+  - crates/sc-cron/src/
+  - crates/sc-cron-commands/
+  - Cargo.toml
+  - Cargo.lock
+  - template/cargo-generate.toml
+  - template/config/default.json
+  - wizard/answers.schema.json
+  - wizard/pages/wizard-answers.js
+  - wizard/fixtures/
+  - tests/fixtures/refused/
+  - template/Cargo.toml
+  - template/workspace.template.toml
+  - template/crates/daemon/Cargo.toml
+  - template/crates/cli/Cargo.toml
+  - template/crates/service/Cargo.toml
   - examples/spike/phase-c-contract/
 must_follow: []
 parallel_safe: []
@@ -48,10 +103,11 @@ vertical_rationale: The consumer-profile exception, its executable evidence, the
 
 ## Goal
 
-Make the Phase C contracts authoritative before implementation. This sprint
-is a contract closure: it changes no runtime or template product code and owns
-the only shared authoritative documents plus a temporary executable probe,
-allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
+Make the Phase C contracts authoritative and compileable before implementation.
+This contract closure owns shared documents, public signatures/legacy-safe
+defaults, initial adapter skeleton/manifest membership, generator declarations,
+contract double and temporary probe. It does not implement production cron or
+adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
 
 ## Deliverables
 
@@ -95,8 +151,8 @@ allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
    ADR amendment and a repeat of this probe. Freeze `sc-command 0.2.0`
    alongside `sc-runtime 0.2.0`: the command crate exposes the changed RMCP
    types. Include the command-dependent cron manifest and shared logging
-   trait in the composition probe; freeze a cron 0.2.0 release if its command
-   requirement must change to preserve that public trait identity. Leave
+   trait in the composition probe; freeze cron 0.2.0 for the new public
+   compatibility contract and adapter 0.2.0 as part of the closure. Leave
    unrelated config/transport packages at 0.1.1. Record exact per-package
    versions and command-before-cron/runtime publication order. Amend
    ADR-RUN-0017's temporary command dependency version and the cron
@@ -122,6 +178,37 @@ allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
    workflow bypass or blanket version bump is permitted.
 
 ## Acceptance criteria
+
+Additional approved compatibility deliverables (REQ-CRON-0020/0021,
+REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
+
+- Freeze [compatibility-contract.md](compatibility-contract.md) as exact public
+  types/signatures, query limits/error inventory, absolute G/K semantics,
+  real stop clock, restricted cleanup and physical ownership. Merge additive
+  compileable declarations/legacy-safe unsupported defaults and the adapter
+  DTO/handler contract double at `crates/sc-cron-commands/tests/support/`;
+  declare it in the new boundary manifest. No required unimplemented trait
+  method, production stub or duplicate consumer protocol may leak downstream.
+- Establish the new adapter manifest/skeleton, shared workspace membership and
+  initial lock baseline, public facade and allowed-dependent manifests.
+  Default DTO-only graph excludes cron/SQLite/Tokio/Monty/server; scheduler is
+  optional. Existing runtime→cron/adapter and command→cron/adapter stay forbidden.
+  Same nominal logging trait, schema/generation/environment behavior preserved.
+- Freeze prompt/schema/default/answers and optional manifest declarations for
+  `cron_commands=false`; selected requires cron and wires real existing CLI,
+  HTTP and optional MCP through c-3, never enables disabled MCP. C-1 owns these
+  shared registries once; no implementation sibling edits prompts/schema.
+- Prove c-5's required SQLite cancellation facilities build on this baseline.
+  If a rusqlite feature is necessary, c-1 owns that feature-only manifest
+  amendment before wave 2 and explicitly removes the manifest from c-3's
+  ownership. Do not declare parallel-safe with a known missing feature.
+  The existing rusqlite version constraint stays 0.39.x.
+- Freeze sc-cron and new sc-cron-commands at 0.2.0 in the affected package
+  matrix, order command→cron→adapter and command→runtime, qualify selective kit
+  treatment including the new crate, and preserve unrelated 0.1.1 packages.
+  Later ecosystem version/lock migration remains exclusively c-3 because its
+  dependency/API update must compile atomically; initial skeleton membership
+  in c-1 is an earlier baseline handoff, not concurrent manifest ownership.
 
 Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
 `adr:ADR-RUN-0202`, `adr:ADR-RUN-0203`.
@@ -178,11 +265,14 @@ Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
   deleted before merge and is never a network-dependent CI test.
 - Documentation links and identifiers resolve; search confirms no remaining
   authoritative Phase C baseline says `0.8.0` or permits generic `0.8.x`.
-- Push the contract amendments for `c-2`/`c-3` to merge-forward before each
+- Push the contract amendments for `c-2`/`c-3`/`c-5`/`c-6` to merge-forward before each
   development/fix round. Parent QA does not block their start; `c-1`'s PR
-  merges before either child PR completes.
+  merges before any child PR completes. Contract tests, workspace build and
+  configured boundary checks also pass for the additive skeleton and defaults.
 
 ## This sprint does not close
 
-- Template configuration, bootstrap, runtime source, dependency manifests, or
-  a publication. Those belong respectively to `c-2`, `c-3`, and `c-4`.
+- Production cron/adapter implementation (c-5/c-6), lint bootstrap (c-2),
+  runtime/template composition and atomic ecosystem migration (c-3), or actual
+  cross-UI composition and publication (c-4). Contract declarations are not
+  claims of those behaviors.

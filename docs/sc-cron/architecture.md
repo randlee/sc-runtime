@@ -305,3 +305,13 @@ source. The complete first-release SQLite schema is version 1 with canonical
 reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
+
+## Phase C target extension (planned)
+
+ADR-RUN-0018 adds cooperative owned operation/shutdown and bounded query;
+ADR-RUN-0019 permits a separate optional command adapter while preserving this
+core's no-product-API boundary. The exact planned callable and budget contract
+is [compatibility-contract.md](../plans/phase-c/compatibility-contract.md).
+REQ-CRON-0020/0021 preserve the existing schema, three hook targets,
+environment policy and generation fencing. No new port or job registry is
+required. These are target contracts, not claims of current implementation.

@@ -412,8 +412,9 @@ versions change and this shape does not.
 ### Requirement Statement
 
 While serving (step 5 of `run()`), `sc-runtime` MUST begin graceful shutdown
-when the process receives SIGINT or SIGTERM. On Windows the trigger is Ctrl-C
-(decided in this document; the design names only SIGINT and SIGTERM).
+when the process receives SIGINT or SIGTERM. Phase C target amendment: on
+Windows Ctrl-C and Ctrl-Break trigger the same sequence. Register and poll
+both listeners before instance lock/store setup/bind, retaining observed state.
 
 On shutdown `run()` MUST:
 
@@ -458,8 +459,8 @@ shutdown sequence continues, and a signal-initiated `run()` still returns
 wire outcomes are existing runtime behavior; Phase B observability reports
 them but does not change them.
 
-**OPEN:** Windows signal handling beyond Ctrl-C (Ctrl-Break, console close,
-service stop) and the API used to receive it are not stated by the design.
+**OPEN:** Windows console close and service stop remain outside this signal
+contract. Ctrl-Break is selected for Phase C; implementation is planned.
 
 ### Rationale
 
@@ -484,12 +485,10 @@ machine, never on a developer's host
    successfully, proving the lock was released.
 5. A test asserts `run()` returns `Ok(())` after a signal-initiated shutdown
    (the child's exit code is the success code).
-6. Windows. Until the OPEN on the Windows signal API is decided: inspection of
-   the signal-handling code in `crates/sc-runtime/src` confirms that, under
-   `#[cfg(windows)]`, Ctrl-C starts the same shutdown sequence as SIGINT. Once
-   it is decided: a `#[cfg(windows)]` test sends `CTRL_C_EVENT` to a child
-   daemon while a request is in flight and asserts the client receives the
-   complete successful response and the child exits with the success code.
+6. Windows native isolated child tests send CTRL_C_EVENT and CTRL_BREAK_EVENT
+   through real process-group console events, proving early registration,
+   in-flight drain/cancel, cleanup, clean exit and restart. Keep existing
+   private in-process fixture trigger private; do not signal the test host.
 7. An in-process coordinated test proves a handler exceeding 30 seconds gets
    the 503 `RUNTIME.REQUEST_TIMEOUT` envelope and that no later terminal
    response is emitted for that request.
@@ -604,6 +603,19 @@ spawns a test helper, never the generated CLI binary
    passes when two such runs execute at the same time.
 
 ---
+
+### Phase C fixture cleanup target amendment
+
+An additive `DaemonFixture::start_with_cleanup` accepts the existing fixture
+setup/routes plus a once-only asynchronous application cleanup closure and
+runs production `run_with_cleanup` through the same internal runner. Ordinary
+start delegates with empty cleanup. On normal stop and startup errors, preserve
+primary runtime error, drop unused setup closures before cleanup, retain
+successful stores/logger/instance lock until cleanup finishes, release endpoint
+in existing order, and physically join the fixture thread on shutdown/drop.
+Tests coordinate blocked cleanup, lock contention, startup failure, parallel
+fixtures, endpoint closure and startup-timeout no-detachment. No new public
+shutdown trigger or alternate lifecycle is introduced. Implementation is c-3.
 
 ## REQ-RT-0007: `run()` returns the typed error `RuntimeError`
 

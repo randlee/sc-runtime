@@ -32,6 +32,12 @@ requirements:
   - REQ-CMD-0005
   - NFR-CMD-0001
   - NFR-CMD-0002
+  - REQ-RT-0002
+  - REQ-RT-0006
+  - REQ-RUN-0332
+  - REQ-CRNC-0001
+  - REQ-CRNC-0002
+  - NFR-CRNC-0001
 adrs:
   - ADR-CMD-0001
   - ADR-CMD-0002
@@ -57,13 +63,16 @@ adrs:
   - ADR-RUN-0303
   - ADR-RUN-0401
   - ADR-RUN-0402
+  - ADR-RUN-0018
+  - ADR-RUN-0019
+  - ADR-CRNC-0001
 owned_paths:
   - Cargo.toml
   - Cargo.lock
   - crates/sc-command/Cargo.toml
   - crates/sc-command/src/
   - crates/sc-cron/Cargo.toml
-  - crates/sc-cron/tests/
+  - crates/sc-cron-commands/Cargo.toml
   - crates/sc-runtime/Cargo.toml
   - crates/sc-runtime/src/
   - crates/sc-runtime/tests/
@@ -82,7 +91,7 @@ owned_paths:
   - .github/workflows/template.yml
   - tests/unit/generation/test_runtime_ecosystem_upgrade.py
 must_follow: [c-1]
-parallel_safe: [c-2]
+parallel_safe: [c-2, c-5, c-6]
 recommended_agent: solar
 recommended_model: sol
 vertical_rationale: DaemonBuilder's public OpenApiRouter type, the generated daemon, the public sc-runtime version, and the checkout-patched type-composition proof are one consumer compatibility contract. A separate runtime or template layer cannot compile against the other at the new Utoipa major without a fake bridge; `c-4` separately owns the post-publication registry proof.
@@ -173,6 +182,29 @@ must satisfy that amendment:
 
 ## Acceptance criteria
 
+Additional implementation deliverables: REQ-RT-0005/0006 and
+REQ-RUN-0332/REQ-CRNC-0002, consuming c-1's compatibility contract:
+
+- Register and poll both Windows Ctrl-C/Ctrl-Break before lock/store setup/bind,
+  preserving early observed signals and Unix/private triggers. Native isolated
+  child-process tests exercise real console events, in-flight requests, cleanup,
+  clean exit/restart; no host daemon processes under NFR-RUN-0010.
+- Add portable `DaemonFixture::start_with_cleanup` through the existing
+  internal runner and production `run_with_cleanup`. Empty cleanup preserves
+  ordinary constructors. Test once-only cleanup on normal/startup failure,
+  unused closure drop, retained stores/logger/instance lock, primary error,
+  endpoint order, parallel fixtures and physical join after timeout/drop.
+- Wire selected `cron_commands` generation into actual existing CLI, HTTP and
+  optional MCP using c-1's shared DTO/handler contract. Default-off generation
+  adds no commands, scheduler dependency or worker; MCP remains independently
+  selectable. Core runtime gains no cron dependency. Boundary composition tests
+  use c-1's contract double; c-4 owns actual c-5/c-6 composed acceptance.
+- C-3 alone owns shared affected package/version/template manifests and later
+  Cargo.lock migration after c-1's skeleton baseline. Preserve c-1's optional
+  adapter feature declarations and include its exact 0.2.0 release contract.
+  Cron implementation/tests belong solely to c-5; adapter implementation/tests
+  solely to c-6. No serial sibling dependency is introduced by shared version.
+
 Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
   `req:REQ-RT-0001`, `req:REQ-RT-0004`, `req:REQ-CMD-0005`.
 
@@ -235,6 +267,7 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
 - A rusqlite or SQLx upgrade. The lock stays on rusqlite 0.39.x until a
   separately planned compatibility change eliminates the `libsqlite3-sys`
   conflict.
-- New OpenAPI, HTTP, CLI, or MCP product features.
+- Product features beyond the explicitly approved optional standard cron
+  projections. Actual shared-command integration is c-4's criterion.
 - Consumer lint-profile work; `c-2` owns the sc-lint configuration and its
   installation proof.

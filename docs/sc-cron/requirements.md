@@ -217,3 +217,47 @@ source. The complete first-release SQLite schema is version 1 with canonical
 reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
+
+## Phase C approved target contract (planned, not implemented)
+
+The following additive requirements describe the approved next release; they
+do not claim current implementation or alter Phase B provenance. The existing
+core remains free of product HTTP/MCP/CLI APIs. A separate optional standard
+command adapter is permitted by ADR-RUN-0019.
+
+## REQ-CRON-0020: Public receiver and cooperative owned shutdown
+
+The crate exposes the same nominal canonical logging receiver and supporting
+values through `sc_cron::observability`; no parallel trait is introduced.
+Existing constructors and legacy store implementations remain source compatible.
+An opt-in cooperative mode rejects unsupported stores before starting work.
+It installs one shared operation context before initial load, queue submission,
+lock acquisition, reload, decode and all persistence/retry/end paths. Context
+checks, SQLite busy/progress interruption and rollback observe directly mutable
+deadlines while blocked. No guard waits indefinitely before consulting context.
+
+Independent stop control closes admission, records only earlier deadlines and
+wakes/interrupts operations while an owning join runs. Grace and cleanup are
+absolute `std::time::Instant` deadlines in a real stop domain distinct from
+the schedule `Clock`. Equal deadlines are valid: T=0 cancels immediately and
+grants no cleanup-write budget. Physical joins may take time; no literal
+zero-duration or arbitrary native/custom-host preemption guarantee is made.
+All admitted worker and context-aware command tasks remain physically owned
+until completion even if their async waiter is cancelled. Late ordinary writes
+are prohibited, cancellation rolls back, hooks/settings restore before unlock,
+and cleanup expiry is reported honestly after join. Legacy direct calls remain
+caller-owned. Preserve schema, generation fencing, stop-before-tick, existing
+Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
+
+## REQ-CRON-0021: Tracked public operations and bounded schedule query
+
+The scheduler provides async context-aware start, generation-fenced stop and
+query operations using the same tracked admission and cancellation protocol.
+They are required by standard command execution; transport timeout cannot detach
+a blocking mutation. A bounded query supports active/ended/all selection,
+optional name, ascending stable id continuation and a positive capped limit.
+It reads the existing table; `list_active` alone cannot satisfy this contract.
+A legacy store's new capability defaults to a fixed unsupported error. End by
+name resolves a specific id/generation and cannot end a replacement generation.
+No new job kind, job registry, second database or arbitrary hard-delete command
+is implied. Ordinary registration continues through REQ-CRON-0003 APIs.

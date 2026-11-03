@@ -15,7 +15,9 @@ Repo-level architecture and ADRs for `sc-runtime`, extracted from
 [sc-config](sc-config/architecture.md),
 [sc-transport](sc-transport/architecture.md),
 [sc-command](sc-command/architecture.md),
-[sc-runtime](sc-runtime/architecture.md).
+[sc-runtime](sc-runtime/architecture.md),
+[sc-cron](sc-cron/architecture.md),
+[sc-cron-commands](sc-cron-commands/architecture.md) (Phase C target).
 
 ADR entries follow the shared SC requirement and ADR templates.
 
@@ -27,7 +29,7 @@ An ADR whose status field reads Active or Approved is binding on every plan,
 change and fix. An ADR whose status field reads Proposed is not binding, and
 no sprint may depend on it, until it is made Active. ADR ids have the form
 `ADR-<DOMAIN>-nnnn`, where the domain is `RUN` (this file), `CFG`, `TRN`,
-`CMD` or `RT` (the crate files).
+`CMD`, `RT` or `CRNC` (the crate files).
 
 ## System shape
 
@@ -3000,3 +3002,39 @@ source. The complete first-release SQLite schema is version 1 with canonical
 reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
+
+## ADR-RUN-0018: Cooperative cron operation and owned shutdown contract
+
+**Status:** Approved Phase C target; implementation planned. REQ-CRON-0020/0021
+and [the Phase C contract](plans/phase-c/compatibility-contract.md) specify the
+public receiver facade, legacy-safe store admission, directly mutable real
+monotonic budgets, tracked public CRUD/query, restricted generation-fenced
+cleanup, typed expiry and actual physical ownership. This extends ADR-RUN-0013
+without changing schema, existing Rust/Python/Monty targets or environment
+policy in ADR-RUN-0016. It preserves ADR-RUN-0017's temporary nominal command
+logging port rather than claiming upstream observability cleanup.
+
+Caller absolute G/K permits equality. T=0 cancels immediately with no hidden
+cleanup allowance or instantaneous-join promise. The shared real stop clock
+is independent of schedule ManualClock; test-only forced expiry proves
+propagation, while real-clock tests prove elapsed bounds. Unsupported stores
+cannot enter cooperative mode, and provider overruns cannot become successful
+bounded completion by dropping a waiter or emitting early status.
+
+## ADR-RUN-0019: Optional standard cron command adapter and generated wiring
+
+**Status:** Approved Phase C target; implementation planned. The new optional
+`sc-cron-commands` library provides common start/end/list JSON and canonical
+Envelope errors, with Rust/Python/Monty execution options. DTO-only defaults
+use serde/serde_json and defaults-off command; optional scheduler adds cron.
+Core command and runtime gain no cron/adapter reverse edge. This explicitly
+amends ADR-RUN-0003's workspace graph and the product-API restriction of
+ADR-RUN-0013 only for the separate adapter: scheduler core keeps no binary,
+HTTP/MCP routes or configuration-file loading.
+
+REQ-RUN-0332 adds default-off generation selection and real selected CLI/HTTP/
+optional-MCP wiring, governed by ADR-CRNC-0001. C-1 owns new manifests/shared
+declarations/contracts; c-3 template composition, c-5 core behavior, c-6 adapter
+behavior, c-4 their real prepublication and registry integration. The actual
+ATM start/end/list and ADR-069 inform the general verbs only: no ATM package,
+team/phase/mandatory-until, six-field-only grammar or second response envelope.

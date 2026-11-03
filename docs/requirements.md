@@ -21,6 +21,8 @@ Crate-level requirements live beside each crate's architecture:
 | `sc-transport` | [requirements](sc-transport/requirements.md) | [architecture](sc-transport/architecture.md) |
 | `sc-command` | [requirements](sc-command/requirements.md) | [architecture](sc-command/architecture.md) |
 | `sc-runtime` | [requirements](sc-runtime/requirements.md) | [architecture](sc-runtime/architecture.md) |
+| `sc-cron` | [requirements](sc-cron/requirements.md) | [architecture](sc-cron/architecture.md) |
+| `sc-cron-commands` (Phase C planned) | [requirements](sc-cron-commands/requirements.md) | [architecture](sc-cron-commands/architecture.md) |
 
 ## Product purpose
 
@@ -107,6 +109,11 @@ The workspace members MUST be exactly these library crates. Amended 2026-10-25 (
 | `crates/sc-runtime` | `sc-runtime` | daemon assembly: `Daemon::builder()`, `daemon.lock`, `DaemonFixture` |
 | `crates/sc-runtime-db-sqlite` | `sc-runtime-db-sqlite` | rusqlite write actor; one connection, one thread |
 | `crates/sc-cron` | `sc-cron` | SQLite-backed cron; the app registers the job |
+| `crates/sc-cron-commands` (Phase C target) | `sc-cron-commands` | optional standard cron DTOs and scheduler adapter; ADR-RUN-0019 |
+
+Phase C amendment: the new adapter member is planned, not yet implemented.
+Its default DTO graph and optional scheduler edge are defined by
+REQ-RUN-0332 and NFR-CRNC-0001; no reverse core command/runtime edge is allowed.
 
 The repository root MUST also contain these directories and files, none of
 which is a workspace member:
@@ -478,6 +485,12 @@ state it.
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
 | `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron-commands` (Phase C target) | defaults-off `sc-command`; optional `sc-cron` under non-default scheduler feature | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, full observability/OTLP and production tool crates |
+
+Phase C also forbids sc-command→sc-cron-commands and
+sc-runtime→sc-cron-commands. The adapter is an allowed dependent of command
+and, only with scheduler enabled, cron. These planned edges are implemented
+by c-1 boundary manifests and checked by c-6/c-4 isolated graph tests.
 
 `sc-observability-types` is an allowed dependency of `sc-command`,
 `sc-runtime`, and `sc-cron`; the latter two import the temporary command
@@ -2796,6 +2809,19 @@ A layout with no database renders none of these commands.
 1. A generated project with a store registers `delete row <table> <id>` on the CLI, on MCP, and over HTTP.
 2. A flag removes those three commands.
 3. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route.
+
+## REQ-RUN-0332: Optional shared cron command projections
+
+Phase C target, planned: generation defaults `cron_commands` to false. When
+explicitly selected with cron enabled, the generated application wires the
+same standard start/end/list DTO/handler into its CLI and HTTP and, only when
+MCP is selected, MCP. REQ-CRNC-0001/0002 governs JSON, errors and existing
+Rust/Python/Monty options. Feature-off core and generated builds gain no
+scheduler/server dependency from DTO use. This amends REQ-RUN-0301's optional
+cron composition and REQ-RUN-0401/0402/0403's schema/fixture key set; a docs-only
+example or DTO library does not satisfy selected generation. REQ-RUN-0702's
+affected release closure includes the optional new adapter. CLI clients remain
+free of cron/server implementation under NFR-RUN-0001.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 

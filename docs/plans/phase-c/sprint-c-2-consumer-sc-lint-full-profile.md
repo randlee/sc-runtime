@@ -28,7 +28,7 @@ owned_paths:
   - template/justfile
   - tests/unit/generation/test_consumer_sc_lint_profile.py
 must_follow: [c-1]
-parallel_safe: [c-3]
+parallel_safe: [c-3, c-5, c-6]
 recommended_agent: arch-ctm
 recommended_model: terra
 vertical_rationale: The generated consumer has no independent lint boundary; its config, bootstrap, standard recipes, and generated-fixture proof are one consumer contract. Splitting them would leave an unprovable configuration-only sprint.

@@ -232,7 +232,17 @@ baseline, preserving the other four questions and all generic labels. This
 input-only checkpoint excludes concurrent WIP plan/REQ/ADR amendments and
 claims no live calibration or accepted production override.
 
-## Current plan document SHA256
+The human-approved compatibility and optional standard-command scope now
+amends the plan to six sprints, critical path three and width four. New target
+REQ/ADR documents and actual sprint ownership preserve default-off core use,
+existing Rust/Python/Monty registration, selected real UI wiring and physical
+shutdown ownership. The c-5/c-6 implementation Beads are `run-x8d.7` and
+`run-x8d.8`; `run-x8d.6` remains the open planning amendment task. Fresh
+scope/critical delta, manager QA and actual anchor checks are pending. Earlier
+reports and the hash table below describe their historical source, not an
+approval of the amended plan. Captured anchors/quotes remain unchanged.
+
+## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |
 | --- | --- |

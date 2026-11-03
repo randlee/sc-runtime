@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "0022162f476792967012f6b488e4cad276a9552bcec8cab44851a99e9ce02d31",
-      "bytes": 17101,
+      "sha256": "48e1b1246d0abb49dd37bd4156bf57710432d2ec46a8dbe3b494f7fd0680e7e3",
+      "bytes": 17797,
       "source": "authored index"
     },
     {
@@ -5495,5 +5495,53 @@
     "bead": "run-x8d.6",
     "bead_status": "open",
     "scope_changes_applied": false
+  },
+  "plan_content_commit_scope": "historical QA2 baseline; six-sprint amendment source hashes below remain unreviewed",
+  "approved_scope_amendment": {
+    "implementation_readiness": false,
+    "sprints": 6,
+    "critical_path": 3,
+    "width": 4,
+    "scope_critical_qa_anchor_reviews": "pending",
+    "new_sprint_beads": {
+      "c-5": "run-x8d.7",
+      "c-6": "run-x8d.8"
+    },
+    "planning_bead": "run-x8d.6 open",
+    "anchors_unchanged": true,
+    "documents": [
+      {
+        "path": "docs/plans/phase-c/phase-c-plan.md",
+        "sha256": "8699627153d64dace6dfed4908ecfa24484a59e41f39c05cbf4076a4daab626d"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+        "sha256": "c6b6f15c46dbed6633f2c571e51fc2539743d33a12bb3792200df000e96292d8"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+        "sha256": "3a389fa2f5687fe6f85286737a213cec3978de6955d7244b5231516c9d5dc0ad"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+        "sha256": "f6d9810b514342a686dda38ecb80665c1e77fae57794ece27d25bf219f43d822"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+        "sha256": "1f2d9d8cad5838c35cba25142305f90ef4a5d832e23eb2fe2080aadc9efd28d3"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
+        "sha256": "5f015ee8da95980d0391ff6df1391a42084691e62b3382b5412b1b846a6f19c4"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
+        "sha256": "08b16487307919268ebfd240ac5f0e31d71a9b9adaf31741c4f6260f36a8a6f6"
+      },
+      {
+        "path": "docs/plans/phase-c/compatibility-contract.md",
+        "sha256": "c074c1db26ac96f8ea82b37e1358b3aecff0364c1b92d437fe01ede7039f4ebc"
+      }
+    ]
   }
 }

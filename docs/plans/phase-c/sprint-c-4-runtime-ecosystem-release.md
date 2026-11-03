@@ -14,12 +14,28 @@ requirements:
   - REQ-RUN-0301
   - REQ-RUN-0503
   - REQ-RUN-0702
+  - REQ-CRON-0003
+  - REQ-CRON-0019
+  - REQ-CRON-0020
+  - REQ-CRON-0021
+  - REQ-CRNC-0001
+  - REQ-CRNC-0002
+  - NFR-CRNC-0001
+  - REQ-RUN-0332
+  - NFR-RUN-0001
+  - NFR-RUN-0010
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0017
   - ADR-RUN-0203
   - ADR-RUN-0401
   - ADR-RUN-0402
+  - ADR-RUN-0013
+  - ADR-RUN-0016
+  - ADR-RUN-0018
+  - ADR-RUN-0019
+  - ADR-RUN-0202
+  - ADR-CRNC-0001
 owned_paths:
   - install.py
   - README.sc-publish.md
@@ -35,7 +51,8 @@ owned_paths:
   - .cursor/skills/prerelease/
   - release/
   - tests/integration/release/test_published_runtime_ecosystem.py
-must_follow: [c-3]
+  - tests/integration/release/test_standard_cron_commands.py
+must_follow: [c-3, c-5, c-6]
 parallel_safe: []
 recommended_agent: solar
 recommended_model: sol
@@ -44,10 +61,12 @@ vertical_rationale: Registry visibility can only be verified after the exact pub
 
 # Sprint c-4 — runtime ecosystem authorized release
 
-Dependency execution: consume `c-3`'s prepared 0.2.0 package and composition
-proof by merging each parent development push before every development/fix
+Dependency execution: consume c-3's ecosystem/template implementation, c-5's
+real tracked query/lifecycle and c-6's concrete shared command handler by
+merging each parent development push before every development/fix
 round. Parent QA is not a start barrier; the parent PR merges before this
-PR completes. Publication retains the release authorization gate below.
+PR completes, for all three parents. Publication retains the release
+authorization gate below. These real implementations cannot be contract stubs.
 
 ## Goal
 
@@ -88,6 +107,34 @@ patch.
 
 ## Acceptance criteria
 
+Additional sole feature-level integration deliverables and criteria, rooted
+at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
+
+- Before publication, compose the real c-3 generated opt-in UI wiring, c-5
+  scheduler/SQLite operations and c-6 executor in the existing release fixture
+  venue with checkout patches. Exercise start/end/list for Rust, Python and
+  explicit Monty through CLI JSON, HTTP and selected MCP. Same request yields
+  equivalent normalized data/error across all projections; actual schedule
+  mutation/execution and generation conflicts occur, not just DTO serialization.
+- Prove default-off generation has no standard commands/adapter worker,
+  DTO-only CLI graphs remain server/cron/SQLite/Monty free, scheduler/Monty
+  enable only approved edges, disabled MCP stays disabled, and core runtime
+  still excludes cron/adapter. Standard list covers active/ended/all with
+  bounded stable continuation; no mocked list_active-only substitute.
+- Publish the exact frozen affected closure including cron and new adapter:
+  command first, then cron, then cron-commands; runtime after command. Check
+  each version's registry visibility before dependent publication. Extend the
+  qualified selective kit input/pin, not hand-edited vendored outputs.
+- After visibility, repeat the same no-source-edit opt-in UI/target/graph
+  suite and public logging-facade consumer against exact registry artifacts
+  with no path/git/patch sources. Earlier prepublication proof is not this
+  registry result. Actual consumer-product adoption retains its own QA.
+
+The release fixture's lint smoke uses the already existing bootstrap surface;
+c-2's additional analyzer receipts are independently owned and are not a
+registry-release start prerequisite. If a future fixture recipe actually
+consumes a changed c-2 artifact, update the named dependency before execution.
+
 Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0503`, `req:REQ-RUN-0702`,
 `adr:ADR-RUN-0203`.
 
@@ -114,4 +161,6 @@ Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0503`, `req:REQ-RUN-0702`,
 
 ## This sprint does not close
 
-- Dependency/API migration (`c-3`) or consumer lint configuration (`c-2`).
+- Dependency/API migration (`c-3`), consumer lint (`c-2`), cron core (`c-5`)
+  or adapter boundary (`c-6`) implementation. This sprint owns their real
+  command/release composition, not their source paths.

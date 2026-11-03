@@ -426,6 +426,15 @@ serve path.
 
 ## ADR-RT-0005: Await application cleanup before releasing runtime ownership
 
+Phase C target amendment (planned): REQ-RT-0006's additive portable
+`DaemonFixture::start_with_cleanup` reuses this production ownership sequence
+and common internal fixture runner; ordinary start uses empty cleanup. Preserve
+once-only cleanup, primary startup error, stores/logger/instance-lock lifetimes,
+endpoint ordering and physical fixture-thread join. REQ-RT-0005 additionally
+selects Windows Ctrl-Break with early registration/polling alongside Ctrl-C;
+Unix and private fixture triggers remain unchanged. No alternate lifecycle or
+public test shutdown trigger is introduced.
+
 **Status:** Active  
 **Decision Date:** 2026-10-30  
 **Amends:** ADR-RT-0001 and ADR-RT-0002  
