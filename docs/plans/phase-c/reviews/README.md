@@ -225,6 +225,13 @@ all 69 supported CLI dry-runs, exact input hashes, redacted presentation and
 original request digests. Original oracle labels, thresholds and production
 seal are unchanged; this input checkpoint claims no live result or acceptance.
 
+The additive [extension 04 generic preparation](continuation/calibration-088-local/extension-04/README.md)
+passed independent 69-case CLI preflight with exact original digests and
+existing redaction. It is a faithful-only experiment against an unaccepted
+baseline, preserving the other four questions and all generic labels. This
+input-only checkpoint excludes concurrent WIP plan/REQ/ADR amendments and
+claims no live calibration or accepted production override.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |

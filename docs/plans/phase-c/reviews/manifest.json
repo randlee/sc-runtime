@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "4a00836b426388ac806dadb2188d01c2299d392872e25b39e4f9952933bb0e02",
-      "bytes": 16636,
+      "sha256": "0022162f476792967012f6b488e4cad276a9552bcec8cab44851a99e9ce02d31",
+      "bytes": 17101,
       "source": "authored index"
     },
     {
@@ -3892,6 +3892,186 @@
       "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
     },
     {
+      "path": "continuation/calibration-088-local/extension-04/README.md",
+      "sha256": "dcf8f89c8a3d3844ede4441fa9d296e05e12eaa319495d210598cb1ac732f9e0",
+      "bytes": 796,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/inputs/extension-04-01-rubric.json",
+      "sha256": "acee7271f963872fd11eb4efc91a76b5a86a2144ae915164cee19b64e11deb17",
+      "bytes": 4053,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/inputs/extension-04-02-rubric.json",
+      "sha256": "711941408795c4916083b2ec1675e42e366141876d541a764f96180b5ba08eb7",
+      "bytes": 4069,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/inputs/extension-04-03-rubric.json",
+      "sha256": "5173d56dd06121da847daddea1ab9910623e98ee4941d8001c7dbbd1079b5bd6",
+      "bytes": 4082,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/inputs/generic-authorized-algorithm-intent.json",
+      "sha256": "af560520e5b13046e8d3cff480d800ee48b093c244e06b8c6695ec2ee6635319",
+      "bytes": 205,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/inputs/generic-unauthorized-algorithm-intent.json",
+      "sha256": "11c9aaae07ef258dd328a2b7ce48f93e33d75ae470ff297cc4924ab25377e8cb",
+      "bytes": 213,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/attestation.json",
+      "sha256": "2c1fe7676669b55e27e7c1f6cb3f59a2118f71a1a1976ae44781f594cfc773a7",
+      "bytes": 534,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/candidate-rationales.json",
+      "sha256": "38ced71802872da847ca80c20ef115a1140daca5b0cb9cb98274d1456c97e56a",
+      "bytes": 946,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/existing-oracle-bindings.json",
+      "sha256": "1b5dceb4fe31bdbbbf021ae6a1e459b4a0252f1a4784c6a3e63110b293b0f934",
+      "bytes": 1149,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/experiment-baseline.json",
+      "sha256": "65f5aa804b88cf127396b8ee0e46eb6f5d92ef36f7514a35f7088b7454b9528b",
+      "bytes": 4289,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/freeze-manifest.json",
+      "sha256": "27224bc26efa1906fedc8085eb776b28b04c185c7261185094dcc47f2a85aa07",
+      "bytes": 1038,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/frozen-approval-boundary-supplement.json",
+      "sha256": "16870963aaade3f275d0def433ae9d5970438ae4e5ce28fe33330a5b6a7ab69a",
+      "bytes": 1734,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/frozen-candidates.json",
+      "sha256": "1b4c0c3f36b2cbaf1e0d624e8491c410a0772a2da4c8527e2766d7d9bb206c33",
+      "bytes": 12079,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/frozen-request-shapes.json",
+      "sha256": "45d34c6fdf5b02230e4e52afa5881df1806b1b854650f36192a1b067b21c5032",
+      "bytes": 313621,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/history-local-bindings.json",
+      "sha256": "da4fb2ca35d3703387dc5a9ad6c9c2ac0e207a0eca1183f993e4667f18f2051c",
+      "bytes": 677,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/independent-supported-cli-dry-run-validation.json",
+      "sha256": "b6b32997b040dfadffe684df944c3260a5d69c52cddc50ae1cbb9932dc112728",
+      "bytes": 19288,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/invocation-fence.md",
+      "sha256": "133391f79522980c51abc516c14d980c718e03470113fbb7d7a4767fd9944345",
+      "bytes": 8431,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/invocation.md",
+      "sha256": "48f96eb23f2444e803497702cca7c073e51c999f2c07d975c9aff320795f8c61",
+      "bytes": 8911,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/materialization-inventory.json",
+      "sha256": "b494a893062618456cc1d85be410c7f9ae857e9a74d61d4bf9e5104f8cff3035",
+      "bytes": 2750,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/materialization-plan.json",
+      "sha256": "9f97e48eba2a92039b156ebab5779246208917ad73eed6cfd23e23db0ca9c246",
+      "bytes": 3474,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/request.json",
+      "sha256": "556ed6fc1293787416dc8479bbd941db86b3444336824ae40aafb736372ce7f2",
+      "bytes": 8069,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/request.md",
+      "sha256": "aeccf435a8df48fc4a19221b3f32ba7cd64124d363cd8852ec2886a10a6117d5",
+      "bytes": 9037,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/request_contract-validation.json",
+      "sha256": "233204b36dc4c5527377b5c95339c29b04d0fe0493b422f523acf8f54edfc5bb",
+      "bytes": 127,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/request_outer_fence-validation.json",
+      "sha256": "45dfc0825c25b8e899ae297a1922a738d182de3d6d63cc3c6646a9d44334a0ed",
+      "bytes": 8457,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/result.json",
+      "sha256": "e508db3c65dd5293876e661cb552902a1e97d211d35b551c2fa06cd5acb0c39f",
+      "bytes": 1536,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/result.md",
+      "sha256": "78e7a548ec06a7e535d927a82348030e78317eeaaa0fcb06cf39b0113d4bd04b",
+      "bytes": 1577,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/result_contract-validation.json",
+      "sha256": "ee243a18f11d219cb8a69a2d73609e616f2ff9cd7156dfd092735326e7dd7435",
+      "bytes": 127,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/result_outer_fence-validation.json",
+      "sha256": "8cde60b3379f4d96889d3d4175ee0036cffdfec6126eb83b95b0163f541300d5",
+      "bytes": 1596,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/testability-evidence-history.json",
+      "sha256": "a27bb83d55b60c45b4525f1f9ee702510341050a0d2863a9da7159dac588045a",
+      "bytes": 7343,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-04/preparation/validations.json",
+      "sha256": "adcc5c71cc55f861b003d8d9ff8e08be6c36149b379df123e1fb585a5bbb0a48",
+      "bytes": 180,
+      "source": "generic-only extension04 immutable input checkpoint; independent 69 actual CLI dry-runs; no live result"
+    },
+    {
       "path": "continuation/calibration-088-local/inputs/future-intent-01-rubric.json",
       "sha256": "404c98bc81fbfae177e2845aee38082ab7fbbdc54377d5725fd0a54afaf99e9d",
       "bytes": 3623,
@@ -5298,6 +5478,15 @@
       "accepted_override": false,
       "production_seal_unchanged": true,
       "path": "continuation/calibration-088-local/extension-03/"
+    },
+    "extension_04": {
+      "inputs": 5,
+      "independent_supported_cli_dry_runs": 69,
+      "repeat_presentations": 138,
+      "new_live_calls": 0,
+      "accepted_override": false,
+      "source_plan_while_checkpoint": "concurrent dirty WIP excluded from input-only commit",
+      "path": "continuation/calibration-088-local/extension-04/"
     }
   },
   "external_consumer_input": {
