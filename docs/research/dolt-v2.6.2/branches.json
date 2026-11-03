@@ -1,0 +1,399 @@
+{
+  "repository": "dolthub/dolt",
+  "pinnedHead": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+  "version": "v2.6.2",
+  "checkout": "/tmp/raptor-dolt-plan-evidence/dolt-source",
+  "readOnlyInspection": true,
+  "dependencyEvidence": {
+    "goSqlDriverMysql": "go/go.mod: github.com/go-sql-driver/mysql v1.9.3; go/go.sum h1:U/N249h2WzJ3Ukj8SowVFjdtZKfu9vlLZxjPXV1aweo=",
+    "sqlx": "go/go.mod: github.com/jmoiron/sqlx v1.3.4; go/go.sum h1:wv+0IJZfL5z0uZoUjlpKgHkgaFSYD+r9CfrXjEXsO7w=",
+    "note": "Dependency versions are recorded as provenance only. The inspected branch handling is in Dolt source; no external dependency source was needed."
+  },
+  "claims": [
+    {
+      "uniqueID": "branch-session-default-is-per-session",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "318-368",
+        "symbol": "DoltSession.lookupDbState; DoltSession.LookupDbState",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L318-L368"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_queries_revision_specs.go",
+          "lines": "187-245",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_queries_revision_specs.go#L187-L245"
+        }
+      ],
+      "conclusion": "For an unqualified database, the session resolves its own last checked out revision; until that session checks out a branch, it resolves the database default branch. A revision-qualified database name resolves the requested revision. `USE mydb/branch1` is observable through DATABASE() and ACTIVE_BRANCH().",
+      "limitation": "A newly created or reused SQL connection can start at the configured default branch. Raptor must supply/validate the target explicitly and must not infer branch choice from a process-global CLI checkout.",
+      "proposedAcceptanceProbe": "Open two simultaneous MySQL connections to one server; use `USE db/branch_a` on connection A and `USE db/branch_b` on B; alternate unqualified SELECT and CRUD, asserting DATABASE()/ACTIVE_BRANCH() and rows stay scoped to each requested branch. Open a fresh connection with no schema and assert the application rejects missing target instead of silently using default."
+    },
+    {
+      "uniqueID": "checkout-mutates-current-session-branch",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "1514-1553",
+        "symbol": "DoltSession.SwitchWorkingSet",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L1514-L1553"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "3421-3465",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L3421-L3465"
+        },
+        {
+          "path": "go/cmd/dolt/commands/sql.go",
+          "lines": "436-439",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/cmd/dolt/commands/sql.go#L436-L439"
+        }
+      ],
+      "conclusion": "DOLT_CHECKOUT updates the checked-out revision in the DoltSession and then changes that SQL context's current database to the base database. It does not change the CLI's repository checkout. Switching requires a clean working set; uncommitted changes must be committed or rolled back first.",
+      "limitation": "This is session state, not per-statement routing. Returning a connection with a changed checkout to a pool without resetting/re-establishing its schema can route subsequent unqualified statements to the wrong branch.",
+      "proposedAcceptanceProbe": "On a pinned SQL connection, checkout a branch and assert it affects only that connection; assert a second connection retains its prior ACTIVE_BRANCH(). Attempt checkout with pending writes and assert the expected error, then rollback and retry."
+    },
+    {
+      "uniqueID": "branch-qualified-targeting-supports-crud",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "318-368",
+        "symbol": "DoltSession.lookupDbState; DoltSession.LookupDbState",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L318-L368"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "3161-3240",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L3161-L3240"
+        },
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_queries_revision_specs.go",
+          "lines": "444-500",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_queries_revision_specs.go#L444-L500"
+        }
+      ],
+      "conclusion": "Dolt accepts branch-qualified schema/table targets such as `db/branch.table` (and its `@` alias form) for reads and writes. Tests demonstrate INSERT, UPDATE, DELETE and DDL against the qualified schema while the connection's current schema may be different.",
+      "limitation": "A branch-qualified database name is not intrinsically read-only: the upstream tests explicitly write to `mydb@branch1`. Enforce read-only behavior in the application/connection mode for snapshot consumers. SQL operations/procedures that rely on the current database still need an explicitly selected target schema.",
+      "proposedAcceptanceProbe": "For each CRUD helper, require a validated database and branch and generate a qualified schema target. On one connection with another current schema, CRUD `db/branch.table`; assert only that branch changes. Verify no helper emits an unqualified table name. For snapshot readers, attempt INSERT/UPDATE/DELETE and assert rejection by the chosen read-only mechanism."
+    },
+    {
+      "uniqueID": "branch-and-commit-revision-views-are-distinct",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "363-368",
+        "symbol": "DoltSession.LookupDbState documentation",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L363-L368"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/integration_test/database_revision_test.go",
+          "lines": "80-125",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/integration_test/database_revision_test.go#L80-L125"
+        },
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_queries_revision_specs.go",
+          "lines": "43-109",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_queries_revision_specs.go#L43-L109"
+        }
+      ],
+      "conclusion": "Dolt revision-qualified databases support branch names and commit/revision specs, so a consumer can resolve a specific commit revision as a stable historical view. Tests show branch-qualified reads and distinct ancestor revisions.",
+      "limitation": "The cited commit-revision tests are read examples, not a proof of every write-blocking path. The separate `@branch` tests prove revision-qualified aliases can be mutated. A Raptor SQLite snapshot must pin a commit hash and explicitly enforce read-only access; do not assume any branch-qualified name alone is immutable/read-only.",
+      "proposedAcceptanceProbe": "Resolve the requested branch once to a commit hash, open SQLite read-only snapshot metadata with both branch and commit recorded, and assert repeat reads remain on that hash after another client commits to the branch. Assert all writes are rejected."
+    },
+    {
+      "uniqueID": "sql-transaction-commit-is-not-necessarily-dolt-commit",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "587-624",
+        "symbol": "DoltSession.CommitTransaction; DoltSession.doltCommit",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L587-L624"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "3161-3210",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L3161-L3210"
+        },
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "3243-3260",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L3243-L3260"
+        }
+      ],
+      "conclusion": "SQL COMMIT persists dirty working sets. It creates a Dolt commit only when session variable `dolt_transaction_commit` is enabled; otherwise the commit path passes nil pending commits. Explicit Dolt commit procedures remain a separate operation.",
+      "limitation": "Behavior depends on the session setting and branch/database targeting; Raptor should decide explicitly whether its SQL transaction boundary should create version history or only persist its working set.",
+      "proposedAcceptanceProbe": "With default session settings, write then SQL COMMIT; assert rows persist but branch HEAD hash/history is unchanged. Then use explicit `CALL DOLT_COMMIT` and assert the branch hash changes. Repeat with `dolt_transaction_commit=1` and assert the documented alternate behavior."
+    },
+    {
+      "uniqueID": "multi-branch-and-multidatabase-commit-limits",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "620-697;770-802",
+        "symbol": "DoltSession.doltCommit; DoltSession.doltCommitBranchStates; DoltSession.validateDoltCommit",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L620-L697"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "3643-3698",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L3643-L3698"
+        },
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "3788-3860",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L3788-L3860"
+        }
+      ],
+      "conclusion": "The source explicitly limits implicit Dolt commits: without `dolt_multi_branch_commit`, more than one dirty branch fails; multiple dirty branches must be in one database for the multi-branch Dolt commit path. A dirty-branch commit must also match the currently selected database/revision. Ordinary transaction working-set commit has different rules.",
+      "limitation": "Do not generalize the Dolt-commit restriction to all SQL transactions; distinguish working-set persistence from version-commit operations and verify chosen behavior for Raptor's transaction scope.",
+      "proposedAcceptanceProbe": "In one SQL transaction, target two branches by qualified name and mutate both. Check ordinary SQL COMMIT and the opt-in Dolt commit mode separately, with and without `dolt_multi_branch_commit`; include two databases and assert the exact documented error/atomicity."
+    },
+    {
+      "uniqueID": "same-branch-concurrency-is-conflict-checked",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "490-557;587-618",
+        "symbol": "DoltSession.StartTransaction; DoltSession.CommitTransaction",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L490-L557"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "1384-1436",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L1384-L1436"
+        },
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "2562-2624",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L2562-L2624"
+        }
+      ],
+      "conclusion": "Dolt snapshots transaction roots and tests concurrent clients. Conflicting same-branch writes use first-write-wins behavior: one commit succeeds and the conflicting transaction receives a deadlock/retry error. Different branch working sets have separate visibility; a transaction does not automatically observe uncommitted changes from another branch session.",
+      "limitation": "The evidence is for SQL engine transaction tests, not a guarantee for a particular Raptor request retry strategy or every storage backend. Raptor must handle retryable transaction errors and never report a failed commit as success.",
+      "proposedAcceptanceProbe": "Run two concurrent clients against the same branch, deliberately update the same key, and assert one succeeds while the other surfaces retry/conflict. Repeat on disjoint branches and verify no branch leakage and correct explicit commit visibility."
+    },
+    {
+      "uniqueID": "branch-deletion-scans-active-sessions-but-forced-delete-has-stale-session-risk",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dprocedures/dolt_branch.go",
+        "lines": "247-295;309-355",
+        "symbol": "deleteBranches; validateBranchNotActiveInAnySession",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dprocedures/dolt_branch.go#L247-L355"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_queries.go",
+          "lines": "3082-3115;3736-3755",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_queries.go#L3082-L3115"
+        }
+      ],
+      "conclusion": "In server mode, non-forced branch delete/rename checks other active sessions on the same database and rejects a branch currently selected by another session. Forced delete bypasses that guard. Source comments that updating/invalidation of other sessions after forced delete remains TODO; current session state gets reset to the default when applicable.",
+      "limitation": "The scan is a check-then-delete and the inspected tests cover deletion recovery in one session, not a concurrent checkout/delete race. Do not claim race-free lifecycle semantics. Raptor should coordinate branch deletion with its own concurrent request/session lifecycle.",
+      "proposedAcceptanceProbe": "Hold branch B selected on connection 1; delete B from connection 2 and assert rejection without force. Force-delete it and probe connection 1's next statement/error behavior. Add a barrier-controlled checkout/delete race and establish Raptor-level serialization or safe invalidation."
+    },
+    {
+      "uniqueID": "branch-creation-duplicate-is-rejected-but-race-not-tested",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/env/actions/branch.go",
+        "lines": "263-315",
+        "symbol": "CreateBranchWithStartPt; CreateBranchOnDB",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/env/actions/branch.go#L263-L315"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_queries.go",
+          "lines": "3832-3853;4073-4118",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_queries.go#L3832-L3853"
+        }
+      ],
+      "conclusion": "Creating an existing branch without force returns an existing-branch error, and case-insensitive duplicates are rejected. Branch creation resolves its start commit and calls DoltDB.NewBranchAtCommit.",
+      "limitation": "No concurrent two-client same-name branch creation test was found in the inspected upstream tests. The existence check and creation sequence alone do not establish atomic race behavior for application planning.",
+      "proposedAcceptanceProbe": "Start two clients behind a barrier, create the same database/branch concurrently, and assert exactly one succeeds, the other gets a stable duplicate error, and resulting branch points to a valid chosen commit. Also test create/delete/recreate races if Raptor exposes lifecycle operations."
+    },
+    {
+      "uniqueID": "one-server-client-connection-gets-own-dolt-session",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/cmd/dolt/commands/sqlserver/server.go",
+        "lines": "1212-1245",
+        "symbol": "newSessionBuilder",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/cmd/dolt/commands/sqlserver/server.go#L1212-L1245"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "2562-2624;1384-1436",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L2562-L2624"
+        }
+      ],
+      "conclusion": "The server's session builder constructs a fresh DoltSession from each MySQL connection's BaseSession, giving connection-scoped state; upstream multi-client tests exercise simultaneous client contexts. A single server supports distinct concurrent session branch state.",
+      "limitation": "An application connection pool can reuse a stateful SQL connection. Do not share one connection concurrently or assume pool checkout resets current database, checked-out revision, transaction state, or session variables. No general Dolt-specific reset hook was identified in the inspected Raptor-facing path.",
+      "proposedAcceptanceProbe": "With SQLx, acquire pinned `*sqlx.Conn` handles for two logical clients; set each database/branch explicitly and run interleaved CRUD. Return/reacquire a connection after checkout and verify the pool wrapper reasserts the target or discards it. Never rely on a bare `*sqlx.DB` to pin consecutive statements to one server session."
+    },
+    {
+      "uniqueID": "prepared-statement-coverage-is-engine-level-not-sqlx-branch-proof",
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "1514-1553",
+        "symbol": "DoltSession.SwitchWorkingSet",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L1514-L1553"
+      },
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_engine_test.go",
+          "lines": "1414-1439;1550-1557",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_engine_test.go#L1414-L1439"
+        },
+        {
+          "path": "integration-tests/mysql-client-tests/go/sql-driver-mysql-test.go",
+          "lines": "33-79;117-120",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/integration-tests/mysql-client-tests/go/sql-driver-mysql-test.go#L33-L79"
+        }
+      ],
+      "conclusion": "Dolt runs its transaction and revision database engine suites in prepared mode, and its MySQL client integration test uses database/sql Prepare with the Go MySQL driver. This is upstream evidence for prepared SQL support generally.",
+      "limitation": "The prepared engine suite is not an SQLx-specific wire integration assertion that prepares a CRUD statement, switches branch, then reuses the same prepared statement. SQLx is pinned in Dolt's own go.mod, but its use in Dolt tests is limited to binlog replication helpers in the inspected search; this does not prove Raptor's desired branch-routing semantics through SQLx.",
+      "proposedAcceptanceProbe": "Against the pinned Dolt server version and SQLx/mysql driver version in Raptor, prepare each CRUD query with placeholders in the qualified database/table target where supported (schema identifier itself should be validated/quoted separately), execute on two pinned connections, and verify parameters/results never cross branches after branch changes."
+    },
+    {
+      "uniqueID": "transaction-dolt-commit-publishes-working-set-and-head-together",
+      "conclusion": "With `dolt_transaction_commit=1`, SQL COMMIT follows the Dolt commit path. `commitHeads` sends each working-set update and its optional BranchHeadUpdate together through CommitHeadUpdates; optimistic storage conflicts are retried internally. This is the source-level atomic publication boundary for SQL working data plus Dolt HEAD. Existing tests observe HEAD hash changing on SQL COMMIT and inspect generated messages.",
+      "limitation": "The test is engine-level rather than a fault-injected SQL wire test. A client losing its connection after server publication but before receiving the COMMIT response has an ambiguous outcome; no application idempotency key or transparently safe replay is established by this source/test evidence.",
+      "proposedAcceptanceProbe": "On one pinned MySQL connection, disable autocommit, set `dolt_transaction_commit=1` and a unique `dolt_transaction_commit_message`, begin, mutate a row, then COMMIT. Assert the row and matching Dolt log entry appear together. Inject disconnects around COMMIT publication/response and reconcile by a unique operation marker before retrying; never blindly replay.",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/transactions.go",
+        "lines": "329-338;340-344;402-470",
+        "symbol": "workingSetAndHead; DoltTransaction.commitHeads",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/transactions.go#L329"
+      },
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go",
+          "lines": "36-165;220-383",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go#L36"
+        }
+      ]
+    },
+    {
+      "uniqueID": "explicit-dolt-commit-procedure-commits-current-session-transaction-and-has-hash-result",
+      "conclusion": "`CALL DOLT_COMMIT` stages the selected changes, builds commit metadata, and calls `DoltSession.DoltCommit` using `dSess.GetTransaction()`; it returns the created commit hash. A `--branch` argument targets another revision-qualified branch. The shared transaction commit path publishes working-set and HEAD updates together.",
+      "limitation": "An explicit procedure commits the current branch's staged/selected changes, not an arbitrary request-scoped delta object. If another actor's changes are already in the selected staged root, those can be part of the resulting commit. The caller must control staging/transaction scope and check the returned hash; a commit message alone is not an idempotency guarantee.",
+      "proposedAcceptanceProbe": "On one connection with autocommit off, BEGIN, make one Raptor operation's SQL changes, call `DOLT_ADD`/`DOLT_COMMIT` with its operation-specific message and supported `--author`, then verify returned hash, parent, changed rows, author and message. Verify explicit branch targeting while current database is explicit. Compare commit contents to the operation changes.",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dprocedures/dolt_commit.go",
+        "lines": "159-218;221-297",
+        "symbol": "doDoltCommit; prepareCommit",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dprocedures/dolt_commit.go#L159"
+      },
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "1599-1646;1981-2109",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L1599"
+        }
+      ]
+    },
+    {
+      "uniqueID": "concurrent-shared-working-set-edits-are-not-swept-into-another-client-dolt-commit",
+      "conclusion": "Tests establish that same-branch clients share a persisted working set, but branch HEAD history is separate. A client C SQL-COMMITs row 4 without a Dolt commit; clients A and B then Dolt-commit rows 2 and 3. HEAD contains rows 2 and 3 but not row 4, while row 4 remains in WORKING (DOLT_DIFF HEAD-to-WORKING reports it). Separately, two transactions with disjoint changes can merge against an updated working set/HEAD and both commit their own transaction changes. A Dolt commit does not simply sweep every edit from other already-SQL-committed clients into HEAD.",
+      "limitation": "This is not isolation of a branch working set per user: working-set changes can be visible across clients and collide. Tests use disjoint modifications for successful merge; conflicting edits can roll back with retryable deadlock errors. Avoid treating the shared working set as a per-request staging area.",
+      "proposedAcceptanceProbe": "Run three simultaneous clients on one branch. Client C writes and SQL-COMMITs a row without a Dolt commit; A and B independently write disjoint rows and produce Dolt commits. Assert A/B appear in HEAD, C remains only in WORKING, then explicitly commit C. Repeat with overlapping keys and ensure the losing operation is surfaced for reconciliation/retry.",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/transactions.go",
+        "lines": "206-227;329-338;402-470;521-553",
+        "symbol": "prepareDoltCommit; workingSetAndHead; DoltTransaction.commitHeads; DoltTransaction.mergeRoots",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/transactions.go#L206"
+      },
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go",
+          "lines": "220-383",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go#L220"
+        },
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go",
+          "lines": "1649-1710;1981-2109",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_queries.go#L1649"
+        }
+      ]
+    },
+    {
+      "uniqueID": "transaction-commit-metadata-uses-supported-session-vars-and-explicit-procedure-args",
+      "conclusion": "Supported transaction-commit message setting is `dolt_transaction_commit_message`. Author identity uses `dolt_author_name` and `dolt_author_email`; committer identity uses `dolt_committer_name` and `dolt_committer_email`. Identity resolution falls back to SQL client user/address, then configured session identity. Explicit `CALL DOLT_COMMIT` supports CLI-style `-m`/`--message` and `--author` arguments; when no separate committer is configured, `--author` also supplies committer identity for compatibility.",
+      "limitation": "Author/session variables are connection-scoped and must be set on the same SQL session whose transaction creates the commit. No evidence supports an invented `author` or `message` SQL system variable outside the names above. Do not assume transaction commit message accepts `CALL DOLT_COMMIT` arguments; they are different interfaces.",
+      "proposedAcceptanceProbe": "Use clients A and B with distinct supported author and committer session vars and transaction commit messages, then assert each resulting Dolt log commit contains the intended values. Separately test `CALL DOLT_COMMIT('-m',?, '--author',?)` with prepared parameters/driver behavior. Ensure pooled connections reinitialize identity before use.",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/variables.go",
+        "lines": "237-305",
+        "symbol": "NewCommitStagedProps; ResolveNameEmail",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/variables.go#L237"
+      },
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go",
+          "lines": "151-185;296-383",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go#L151"
+        },
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_queries.go",
+          "lines": "5398-5416",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_queries.go#L5398"
+        }
+      ]
+    },
+    {
+      "uniqueID": "autocommit-with-transaction-commit-creates-per-statement-commits",
+      "conclusion": "The upstream test calls autocommit=on permitted but not recommended when `dolt_transaction_commit=1`: each subsequent write statement creates a Dolt commit. For multi-statement atomic data-plus-history semantics, upstream labels `autocommit=0` the recommended usage. In tests, enabling variables with autocommit on itself commits the current transaction, so settings should be applied before beginning the intended transaction.",
+      "limitation": "Per-statement commit mode can expose partial multi-statement operations and yields separate commit records. It does not make a multi-statement Raptor operation atomic as one commit.",
+      "proposedAcceptanceProbe": "Set `autocommit=0` and commit metadata before BEGIN, then confirm multiple CRUD statements result in one Dolt commit on COMMIT. Contrast with autocommit on and assert each write statement advances HEAD. Ensure the API cannot unintentionally toggle mode mid-operation.",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/session.go",
+        "lines": "587-618",
+        "symbol": "DoltSession.CommitTransaction",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/session.go#L587"
+      },
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go",
+          "lines": "36-64;385-430",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go#L36"
+        }
+      ]
+    },
+    {
+      "uniqueID": "transport-retry-ambiguity-not-covered-by-internal-optimistic-retry",
+      "conclusion": "Dolt retries storage-level optimistic lock/merge failures internally and returns a retry-style error for transaction conflicts. These code paths are about server-side commit contention, not client network retries. Inspected tests assert transaction success/error and history metadata but do not disconnect clients during COMMIT or establish safe replay after an unknown response.",
+      "limitation": "A network failure can leave Raptor unsure whether a commit reached HEAD. Blind retry may duplicate a non-idempotent operation or create an extra commit if the first succeeded. No source-grounded guarantee of exactly-once commit delivery was found.",
+      "proposedAcceptanceProbe": "Inject failure after durable CommitHeadUpdates but before the MySQL OK response. Reconnect, query a durable per-operation marker and commit history, and determine whether the original operation succeeded before retry. Reject automatic replay when outcome remains unknown.",
+      "source": {
+        "path": "go/libraries/doltcore/sqle/dsess/transactions.go",
+        "lines": "402-519;581-588",
+        "symbol": "DoltTransaction.commitHeads retry loop; retryTransactionError",
+        "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/dsess/transactions.go#L402"
+      },
+      "commit": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+      "upstreamTests": [
+        {
+          "path": "go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go",
+          "lines": "107-165;296-383",
+          "url": "https://github.com/dolthub/dolt/blob/46d8805d8556599eb0a6472892e67e3bb1e0de03/go/libraries/doltcore/sqle/enginetest/dolt_transaction_commit_test.go#L107"
+        }
+      ]
+    }
+  ]
+}

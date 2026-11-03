@@ -111,3 +111,17 @@ plan](plans/phase-c/phase-c-plan.md).
 | c-2 consumer sc-lint full profile | [sprint-c-2](plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md) | planned | `sprint/c-2-consumer-sc-lint-full-profile` |
 | c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | planned | `sprint/c-3-runtime-ecosystem-upgrade` |
 | c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | planned | `sprint/c-4-runtime-ecosystem-release` |
+
+## Proposed reusable Dolt access
+
+The owner requested a thin multi-consumer `sc-dolt` crate maintained in this
+workspace: explicit branch-scoped SQL, concurrent-client isolation, native branch
+creation and clean merge, and native conflict/diff information. Earlier push/pull
+scope remains. Fork and clone are outside the initial delivery.
+
+[Proposed requirements](sc-dolt/requirements.md) and
+[architecture](sc-dolt/architecture.md) are grounded in
+[pinned Dolt source and executed native probes](research/dolt-v2.6.2/README.md).
+Implementation work is tracked by Beads epic `run-sc-dolt` and its three children.
+The proposal does not replace Phase C, start implementation, or authorize a
+registry/tag release. Raptor is the first intended consumer.
