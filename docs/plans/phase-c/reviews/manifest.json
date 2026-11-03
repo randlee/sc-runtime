@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "d034f1a18557c07c312b54538490f4bf27abacc64624c0cb2b82d6736664750c",
-      "bytes": 11985,
+      "sha256": "fc38e521b1df49f5304c320b9f277bcb450498f073f93baf0f964e584767fcd4",
+      "bytes": 12978,
       "source": "authored index"
     },
     {
@@ -166,6 +166,102 @@
       "source": "tuning/calibration-r1/live-authorized/seal-01/validation.json"
     },
     {
+      "path": "continuation/approved-intent/ANC-001.json",
+      "sha256": "31b84227b2a02cafa69d2bf2155d4012cc94000b366fdde8dafc64b321bb9cde",
+      "bytes": 2089,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-003.json",
+      "sha256": "86e0d5cd6baadc7a5e642abd81a4487b1c10f318cf7313f255aad528f5739003",
+      "bytes": 1879,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-004.json",
+      "sha256": "3569e9b5e4b9a6797fa4fa2d9afdab758ce52d6636cef7f69e4e6c043a52ba50",
+      "bytes": 1874,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-006.json",
+      "sha256": "57f87a97d353de8fe4145294e8855fa415e3ed8a41066a3b032226f34535aa2f",
+      "bytes": 1859,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-007.json",
+      "sha256": "1b298232ef21890674cbba8748d27667774f6a2b44800e7b45ad63bd18a70196",
+      "bytes": 1679,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-008.json",
+      "sha256": "dfaa6dec40af7e6af26654e9f08a4a4bbad64dbdb9a01eea4eff943694f7ccbd",
+      "bytes": 2070,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-009.json",
+      "sha256": "81456c8ceb9eca5ca47dde493dbc6705c9f7d14a5be5742d4278b5f57b133a52",
+      "bytes": 1871,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-010.json",
+      "sha256": "d86c071286a8fa20a889879f131760bcd8d34261e13279a1c905c0ba1c7640e7",
+      "bytes": 1879,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-011.json",
+      "sha256": "1ad7529bd649d2a278013decb8dc1161317eddda014b4b1e96f1930130fa753c",
+      "bytes": 1818,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/ANC-012.json",
+      "sha256": "fca2c4c57edc2a59ea85b817278c9e10062675493a0dde238f4a6ece6a238827",
+      "bytes": 1822,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/descriptor-index.json",
+      "sha256": "7c1176e15640e7e1f20d27ef4b29c41732f56dd256259e92a15ef711ddcbb2d6",
+      "bytes": 2609,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/approved-intent/refresh-checklist.md",
+      "sha256": "5d8abf8d94008fcbd08d84607825d08e8ec2e93c3160e9b352ead402245fcece",
+      "bytes": 3703,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/calibration-preparation/continuation-bindings.json",
+      "sha256": "0f83c2ef232e709f7600b8f975fdc1e86f5c493b128a38e3d60c034214d843d4",
+      "bytes": 490,
+      "source": "current offline continuation preparation"
+    },
+    {
+      "path": "continuation/calibration-preparation/invocation-fence.md",
+      "sha256": "a83a358d385542f6242d999fd5b976a591893e53f73bd0ac76e76c6ad91afe35",
+      "bytes": 7848,
+      "source": "current offline continuation preparation"
+    },
+    {
+      "path": "continuation/calibration-preparation/request.json",
+      "sha256": "d59c6bca398a73094c7c53e87b7ebcff6221d89c459f2412adef9219cf35e0ef",
+      "bytes": 7264,
+      "source": "current offline continuation preparation"
+    },
+    {
+      "path": "continuation/calibration-preparation/request.md",
+      "sha256": "c1dca1ef28e18a7fa3e4f10e233b3345a8f1bc6aeffaf808a9dd75edc2601700",
+      "bytes": 7621,
+      "source": "current offline continuation preparation"
+    },
+    {
       "path": "continuation/calibration/acceptance-table.json",
       "sha256": "ae751e8f144aa8fb18c97cf227bcf104cd0b85022929794d88d6c75c25283890",
       "bytes": 267327,
@@ -230,6 +326,30 @@
       "sha256": "ad5fd9746543e07b71b335f46729b2e5f72745b07801fb85a4fafcf99f4b472a",
       "bytes": 2712,
       "source": "continuation/calibration/attempt-01/frozen-generic-supplement.json"
+    },
+    {
+      "path": "continuation/calibration/future-intent-input-freeze/frozen-candidates.json",
+      "sha256": "4f9ef0a7e784efc1733b23b0dfa2a90f9e9333f98820de16fcdbb84e91e7688d",
+      "bytes": 10006,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/calibration/future-intent-input-freeze/frozen-request-shapes.json",
+      "sha256": "a5e2bf894e1b744daf3c479812745a553f366668426e5f9816787ad1fb79b3c8",
+      "bytes": 242464,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/calibration/future-intent-input-freeze/manifest.json",
+      "sha256": "af2162fccede54812d57edffbdf8e0dcf1c8b250d1386e0c493f3cc803f44393",
+      "bytes": 900,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/calibration/future-intent-input-freeze/single-constraint-disposition.json",
+      "sha256": "6f6e7a649b408473686a1a3e0fe0253389d05627929659b290e6680959295fd4",
+      "bytes": 676,
+      "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
     },
     {
       "path": "continuation/calibration/local-run-correlations.json",
@@ -302,30 +422,6 @@
       "sha256": "90524f4225a0c94984d543aa187f608dc8d35afe4db92f3d2cd98e23677b1994",
       "bytes": 146,
       "source": "continuation/calibration/attempt-01/validations.json"
-    },
-    {
-      "path": "continuation/calibration-preparation/continuation-bindings.json",
-      "sha256": "0f83c2ef232e709f7600b8f975fdc1e86f5c493b128a38e3d60c034214d843d4",
-      "bytes": 490,
-      "source": "current offline continuation preparation"
-    },
-    {
-      "path": "continuation/calibration-preparation/invocation-fence.md",
-      "sha256": "a83a358d385542f6242d999fd5b976a591893e53f73bd0ac76e76c6ad91afe35",
-      "bytes": 7848,
-      "source": "current offline continuation preparation"
-    },
-    {
-      "path": "continuation/calibration-preparation/request.json",
-      "sha256": "d59c6bca398a73094c7c53e87b7ebcff6221d89c459f2412adef9219cf35e0ef",
-      "bytes": 7264,
-      "source": "current offline continuation preparation"
-    },
-    {
-      "path": "continuation/calibration-preparation/request.md",
-      "sha256": "c1dca1ef28e18a7fa3e4f10e233b3345a8f1bc6aeffaf808a9dd75edc2601700",
-      "bytes": 7621,
-      "source": "current offline continuation preparation"
     },
     {
       "path": "continuation/gate-preparation/inventory.json",
@@ -1040,5 +1136,16 @@
     "accepted_new_seal": false,
     "schema_contract_fence_valid": true,
     "source": "continuation/calibration/result.json"
+  },
+  "future_approved_intent_inputs": {
+    "descriptors": 10,
+    "source_hashes_verified": true,
+    "future_calibration_candidates": 3,
+    "future_calibration_cases": 21,
+    "executed": false,
+    "accepted_new_seal": false,
+    "live_gate_pass_claimed": false,
+    "path": "continuation/approved-intent/descriptor-index.json",
+    "freeze": "continuation/calibration/future-intent-input-freeze/manifest.json"
   }
 }

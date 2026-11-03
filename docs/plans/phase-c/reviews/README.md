@@ -156,6 +156,21 @@ input distinguishability limitation, not evidence that current anchors or
 plans passed. Upstream owns the optional context/rubric input implementation;
 independent recalibration and actual fixture/full-sprint gates remain open.
 
+The [per-anchor approved-intent index](continuation/approved-intent/descriptor-index.json)
+now preserves ten narrow offline descriptors, each selecting its own existing
+approved statement, quote, fixtures and approval provenance. Only ANC-001
+includes the relevant original detailed sc-lint utterance. Descriptor content
+digests and referenced source hashes were verified; this selection adds no
+user authority. The [refresh checklist](continuation/approved-intent/refresh-checklist.md)
+requires binding the actual supported canonical runtime before dispatch.
+
+The [future input freeze](continuation/calibration/future-intent-input-freeze/manifest.json)
+preserves three candidates and 21 generic cases for possible context-aware
+calibration, with `accepted:false` and `executed:false`. It adds no oracle
+labels and authorizes no live calls. Prior failed calibration evidence remains
+unchanged. No new seal, fixture gate or whole-sprint planning-gate PASS is
+claimed; ARCH-C-002 remains open.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |
