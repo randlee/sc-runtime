@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "4228b6c3595880bafe415e26a36b0fc60684c32930288da6ab88226bd45c3da5",
-      "bytes": 21286,
+      "sha256": "428b937daf3b7555250968b200480b93826abf73549adcfa599ee756cae6a969",
+      "bytes": 22339,
       "source": "authored index"
     },
     {
@@ -74,6 +74,24 @@
       "sha256": "f0452441080fce53c515f4a4b9f65504515237b1a1681105923c1c2d330fb03f",
       "bytes": 40960,
       "source": "approved-rubric.json"
+    },
+    {
+      "path": "authority-approvals/README.md",
+      "sha256": "3f0f62d09137bd4e26b4552906b369eb4a20870bcc29867af03a76229af86806",
+      "bytes": 1400,
+      "source": "exact direct-human approval receipts; question assistant-authored, answer human; scoped decisions only"
+    },
+    {
+      "path": "authority-approvals/admission-outcome-approved.json",
+      "sha256": "1affab18e3dc66786f134582f9ae8610c8fb287adb5c7588e5384a33181eb85e",
+      "bytes": 880,
+      "source": "exact direct-human approval receipts; question assistant-authored, answer human; scoped decisions only"
+    },
+    {
+      "path": "authority-approvals/fidelity-benchmark-approved.json",
+      "sha256": "1aa2c856fe0d489f793af44837cb41328f684db2e5331ae51b7cd4256e67a22a",
+      "bytes": 900,
+      "source": "exact direct-human approval receipts; question assistant-authored, answer human; scoped decisions only"
     },
     {
       "path": "calibrated-anchor-rubric.json",
@@ -12077,8 +12095,8 @@
     },
     {
       "path": "internal-unapproved/README.md",
-      "sha256": "c5693b9b50d1c48988da4922b068bc0ed86e9dd34d5f67b2c9ae21782b693703",
-      "bytes": 790,
+      "sha256": "76e13411c452af2f609899b6866d148849945a0da73152f9d8cb434f070f7932",
+      "bytes": 1247,
       "source": "exact review/preparation/external intake evidence; unapproved or external material is not planning authority"
     },
     {
@@ -12930,11 +12948,11 @@
     "documents": [
       {
         "path": "docs/plans/phase-c/phase-c-plan.md",
-        "sha256": "d172bfe13e4dae2a7cb13aef4dbb6fff149846957578ff520d2770ff50993dfc"
+        "sha256": "9d303f8f32007b3d3e06c82180e95c295b92e903c8e33780f48de0c17887f437"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
-        "sha256": "e530d817902df1488a727fcdfe3036f111aa334a2e045dae8e81c9c54aeabd4e"
+        "sha256": "91c5b6bc6d818de8624833b26e97d9b192ed249bb0f3df5080da66fd231c0cd0"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
@@ -12946,19 +12964,19 @@
       },
       {
         "path": "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
-        "sha256": "6b90c9ed6f870f6a75fb55f85e49901968f3fb4bd50283363eaf904989971b0c"
+        "sha256": "856e3c93eee4f96f855d3b80a449791a12a4c3c63dd335fa9d911f21738d93e8"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
-        "sha256": "26e8dbbc189ace05e718c4d52e40d939222dbd7b7a395540770b1fcf3c6ef027"
+        "sha256": "c7253c07198a706b9964a6f3a8105a865c0a4bb9f169787ff0680254e258b3b4"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
-        "sha256": "dcb477739e189e32d670be4cbe52e28398816671c8b54a71cb3537dd2249a91b"
+        "sha256": "c3f20389264d6b19c1dafd0618e62ed99460769d46703790c2676182f1ee5a54"
       },
       {
         "path": "docs/plans/phase-c/compatibility-contract.md",
-        "sha256": "5d861940c9cb14c2e2da315465950004228e5b5f66e2b976c54c898be6c1229a"
+        "sha256": "ab5edecba19a439c6568af939e0c1f7aaf750c944aa774fa2f9973e3781b9590"
       }
     ],
     "scope_r1": {
@@ -12987,15 +13005,34 @@
     "internal_packet": "UNAPPROVED NOT CAPTURED",
     "external_intake": "reported external evidence only; not owner QA/baseline/publication/waiver",
     "plan_anchor_pass": false,
-    "replacement_seal": false
+    "replacement_seal": false,
+    "scope": "historical evidence-only checkpoint at71c803a; subsequent approved plan changes use current document hashes above"
   },
   "critical_r1_wip": {
     "status": "FAIL",
     "reviewed_commit": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
     "COMPAT-CRIT-001": "author-corrected pending independent verification",
-    "COMPAT-CRIT-002": "open pending parent/human policy; strict contract unchanged, alternatives unapproved",
+    "COMPAT-CRIT-002": "human-approved admission/outcome correction applied; pending independent critical R2, not waived",
     "developer_step_pass": false,
     "implementation_readiness": false,
     "source": "compatibility-critical-r1/report.json"
+  },
+  "human_decisions_applied": {
+    "admission_outcome": {
+      "receipt": "authority-approvals/admission-outcome-approved.json",
+      "new_admission_cutoff": true,
+      "physical_ownership_retained": true,
+      "typed_late_and_indeterminate_outcomes": true,
+      "universal_physical_2T_guarantee": false,
+      "critical_R2": "pending"
+    },
+    "fidelity_generic_authority": {
+      "receipt": "authority-approvals/fidelity-benchmark-approved.json",
+      "scope": "policy and five revisions for separate generic version",
+      "fictional_premises": "UNAPPROVED",
+      "old_corpus_and_evidence_unchanged": true,
+      "actual_anchor_question_overrides_adopted": false
+    },
+    "implementation_readiness": false
   }
 }

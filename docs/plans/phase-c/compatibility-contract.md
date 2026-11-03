@@ -6,12 +6,12 @@ specification consumed by c-1/c-3/c-5/c-6/c-4; existing anchor records and quote
 remain unchanged. User-approved new facts await the parent's separate capture
 packet. External consumer evidence informs tests, not scope authority.
 
-Critical R1 status: the public-surface metadata correction is author-complete,
-pending independent verification. COMPAT-CRIT-002 remains unresolved: the
-strict commit/deadline guarantee below is not yet qualified. A separate
-UNAPPROVED admission/outcome proposal does not replace or weaken it; no
-cooperative capability freeze or implementation readiness is granted pending
-the parent/human policy decision and review.
+Critical R1 status: both findings are author-corrected pending independent
+verification. The human explicitly approved the admission/outcome contract
+in the preserved decision record: new commit admission stops at the cutoff,
+physical ownership continues until completion, and late/indeterminate outcomes
+remain accurate. No universal physical completion-by-2T guarantee is made.
+Critical R2, QA and actual anchor gates still block implementation readiness.
 
 ## Requirements and decisions
 
@@ -65,9 +65,15 @@ impl WorkerHandle {
     pub fn stop_control(&self) -> WorkerStopControl;
     pub async fn join_owned(self) -> Result<ShutdownReport, CronError>;
 }
+pub enum CommitAdmission { NotAttempted, Vetoed, Admitted }
+pub enum PersistenceOutcome { NoMutationAttempted, Committed, RolledBack, Indeterminate }
+pub struct TransactionOutcome {
+    pub admission: CommitAdmission, pub persistence: PersistenceOutcome,
+    pub completed_after_cutoff: bool,
+}
 pub struct ShutdownReport {
     pub grace_exceeded: bool, pub cleanup_exceeded: bool,
-    pub cleanup_persisted: bool,
+    pub cleanup: TransactionOutcome,
 }
 pub enum ScheduleSelection { Active, Ended, All }
 pub struct ScheduleQuery {
@@ -96,39 +102,83 @@ without changing legacy row outcomes or fabricating successful cleanup.
 
 ## Admission, budget and physical ownership
 
-All tracked worker/command operations register before submission and before
-blocking locks, including initial load, reload, query, decode and every write.
-The same live context reaches SQLite busy/progress/interrupt and row loops.
-Legacy capability rejects cooperative admission before work; forwarding stores
-must forward both capability and scope. No second timeout-only protocol.
+All worker/command operations register before submission and blocking locks,
+including initial load, reload, query, decode and every persistence path.
+The live context reaches SQLite busy/progress/interrupt and row loops. Legacy
+capability rejects cooperative admission before work; forwarding stores forward
+both support and scope. Existing direct legacy calls remain caller-owned.
 
-First stop closes launch/new mutation admission. Admitted ordinary work drains
-to G, then cancels/rolls back; no late ordinary commit. Separate restricted
-cleanup can only write terminal bookkeeping for the stopped id/generation
-under existing transaction fencing until K. It cannot launch jobs, create,
-restart, enable or invoke external calls. At K it cannot start/retry/commit;
-rollback/restoration precede unlock. Failed cleanup reports typed failure and
-cleanup_persisted=false, with no unbounded retries or hidden budget.
+First stop closes new operation/launch admission. Already admitted ordinary
+operations may drain to G. Restricted cleanup is a separate class only for
+terminal bookkeeping of the stopped id/generation under existing fencing,
+until K. It cannot create/restart/enable schedules or launch external work.
+No new ordinary commit admission at/after G or cleanup commit admission at/
+after K is permitted. No new cleanup transaction/retry begins after K.
 
-Stop time uses real std::time::Instant independently of schedule Clock.
-One synchronized monotonic phase/epoch/controller owns earliest G/K.
-Direct stop/shortening wakes waiters and interrupts SQL independently of the
-worker loop; register/shorten/wake cannot lose a race. Timer wakes recheck real
-time; callbacks consult the same latched state. ManualClock does not advance
-stop time and paused Tokio is not a real SQLite timing proof.
+Every explicit or implicit write transaction installs the owned commit_hook.
+Its final admission decision serializes briefly with live stop state, earliest
+G/K, class/generation eligibility, cancellation and the same real Instant.
+Stop-first vetoes; admission-first records its epoch/decision and may physically
+complete later. Release the controller mutex before returning from the hook,
+before COMMIT phases/native I/O. No SQL/reentrant connection use in the hook,
+no controller mutex across COMMIT. Initial checks or earlier statement hooks
+alone do not guard this final race. Second stop independently updates state,
+wakes waiters and interrupts SQL even while an admitted commit is blocked.
 
-Caller absolute budgets accept equal deadlines. Existing consumer reference
-uses T>0: G=s+T, K=s+2T once; second stop cancels immediately without extending
-K. T=0: G=K=s, immediate cancellation/kill and no cleanup-write allowance.
-There is no invented positive C0 or literal instantaneous physical join.
-The consumer's no-time-left lease expiry exception remains its own QA concern.
+Stop time is real std::time::Instant, independent of schedule Clock/ManualClock.
+One monotonic phase/epoch/controller owns earliest G/K. Registration, shortening
+and notification cannot lose races. Timer wakes recheck real time; callbacks
+read the same latched state, not a stale snapshot. Caller budgets permit equal
+G/K. T>0 uses G=s+T,K=s+2T once; second stop cancels immediately without extending
+K. T=0 uses G=K=s: immediate cancellation and no new commit admission or cleanup
+budget. A commit admitted earlier may finish; there is no hidden C0, guaranteed
+instantaneous join or universal physical completion-by-2T promise.
 
-One owner physically joins admitted closures/tasks after waiters disappear.
-Supported cooperative implementations must prove completion by K. A provider
-overrun publishes typed expiry via independent status while join remains
-owned; early notification never counts as bounded completion. Arbitrary Rust
-native/self-spawned descendants or synchronous Monty hosts cannot be forcibly
-preempted. Preserve ordinary three-target functionality without hard claims.
+Commit admission is a logical fence, not a physical fsync cutoff. SQLite may
+complete an already admitted commit after G/K; busy/progress/interrupt/commit_hook
+cannot universally preempt native commit/fsync. The operation remains owned.
+Actual physical completion and persisted state determine TransactionOutcome:
+
+| Observed case | Required outcome |
+| --- | --- |
+| No mutation attempted | NotAttempted + NoMutationAttempted |
+| Commit vetoed, rollback explicitly confirmed | Vetoed + RolledBack |
+| Admitted, confirmed committed before cutoff | Admitted + Committed, completed_after_cutoff=false |
+| Admitted, confirmed committed late | Admitted + Committed, completed_after_cutoff=true; deadline failure remains |
+| Explicit rollback confirmed after error | accurate admission plus RolledBack |
+| Commit/rollback cannot be proved | accurate admission plus Indeterminate; never infer not persisted |
+
+C-1 freezes fixed typed errors/status and report combinations. A bool false
+cannot represent unknown or confirmed late persistence. Drop/expiry or
+get_autocommit alone proves neither rollback nor the identity of a committed
+mutation. Never automatically replay an uncertain create/restart/end/toggle;
+generation fencing is not an exactly-once token. No new schema/idempotency
+ledger is introduced to conceal uncertainty.
+
+StoreErrorKind gains fixed Cancelled, DeadlineExceeded and Indeterminate
+classifications under its existing non-exhaustive policy. A planned
+`StoreError::transaction_outcome(&self) -> Option<&TransactionOutcome>` accessor
+exposes actual admission/persistence/deadline evidence without SQL/provider
+prose. DeadlineExceeded may carry confirmed Committed; it is not permission
+to retry. Indeterminate never becomes not-found/not-persisted. C-6 preserves
+that value-free typed outcome in canonical error details and recommends only
+separately authorized reconciliation, never automatic mutation replay.
+
+Readback is only a bounded authorized reconciliation operation; it cannot
+reopen an expired context. No remaining budget/proof means Indeterminate,
+not extra time, blind replay or invented rollback. A later separately authorized
+read can report observed id/generation/state without claiming causal identity.
+Known hook/TLS/connection baseline is restored on proven safe paths; unsafe or
+uncertain connection state remains owned/quarantined until cleanup completes.
+
+One owner physically joins admitted closures/tasks after waiter cancellation.
+Expiry publishes typed deadline status independently; it does not release
+ownership or certify physical completion. No effects may occur after actual
+owned release. Missed cutoff and confirmed late/indeterminate persistence are
+reported accurately, never as successful bounded cleanup. Arbitrary Rust/native
+self-spawned work or custom synchronous Monty hosts are not forcibly preempted.
+The existing consumer's no-time-left lease-expiry fallback remains its own QA;
+no uncertain release is reported successful.
 
 ## Portable fixture entrypoint
 
@@ -376,9 +426,17 @@ busy/active-SQL and callback/restoration behavior.
 
 c-5 causal real-clock tests cover held mutex and second stop, blocked initial
 load/reload/read/write/error/end, busy/progress/decode, rollback/hooks,
-no post-expiry writes/launches and physical joins. Test-only forced transition
+no new post-cutoff commit admission/launches, accurate physical persistence
+outcomes and no effects after owned physical release. Test-only forced transition
 may prove propagation but not elapsed bounds. Separate real-Instant budget
 tests prove G/K; watchdogs detect failure without adding product allowance.
+At the real commit hook, pause after the last precheck and after admission's
+allow decision, race stop-first/admission-first, shorten G/K and issue second
+stop while COMMIT is paused without holding the controller mutex. Repeat
+ordinary and cleanup, explicit and implicit writes; inspect actual rows and
+generation from a separate connection after physical join. Preserve accurate
+late/rollback/indeterminate outcomes. Injected lost-result tests prove reporting
+only, not a reproduced physical fsync fault or universal completion bound.
 c-3 owns real isolated Windows Ctrl-C/Ctrl-Break and portable cleanup fixture
 proof. c-6 owns boundary schema/handler tests against the contract double.
 c-4 alone closes actual start/end/list across all three targets and selected

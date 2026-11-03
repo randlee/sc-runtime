@@ -46,6 +46,15 @@ The crate creates one schedule table. A test writes a row without constructing `
 
 ## REQ-CRON-0005: One error enum
 
+Phase C planned amendment: cooperative operation failures remain CronError::Store
+with non-exhaustive StoreErrorKind additions Cancelled, DeadlineExceeded and
+Indeterminate, and optional typed TransactionOutcome accessor. No second error
+enum/channel or raw SQL/provider prose is added. DeadlineExceeded may carry
+confirmed committed-late evidence and must not trigger automatic retry;
+Indeterminate never asserts rollback/not-persisted. Existing legacy variants,
+stable top-level codes and row outcomes remain unchanged. REQ-CRON-0020 and
+ADR-RUN-0018 govern the exact admission/persistence report policy.
+
 Fallible library entry points return `CronError`, including both
 `process::supervise` and `process::supervise_with_logger`, which return
 `Result<Captured, CronError>`. The variants are `BadExpression`, `InvalidSpec`, `AlreadyActive`, `NotFound`, `HookFailed`, `Store`, and `Fenced`, with codes `BAD_EXPRESSION`, `INVALID_SPEC`, `ALREADY_ACTIVE`, `NOT_FOUND`, `HOOK_FAILED`, `STORE_FAILED`, and `FENCED`.
@@ -243,9 +252,23 @@ the schedule `Clock`. Equal deadlines are valid: T=0 cancels immediately and
 grants no cleanup-write budget. Physical joins may take time; no literal
 zero-duration or arbitrary native/custom-host preemption guarantee is made.
 All admitted worker and context-aware command tasks remain physically owned
-until completion even if their async waiter is cancelled. Late ordinary writes
-are prohibited, cancellation rolls back, hooks/settings restore before unlock,
-and cleanup expiry is reported honestly after join. Legacy direct calls remain
+until completion even if their async waiter is cancelled. The human-approved
+commit admission/outcome contract forbids new ordinary commit admission at/after
+G and cleanup commit admission at/after K; it does not promise universal physical
+commit/fsync completion by those cutoffs. Final commit_hook admission briefly
+serializes with live stop state/class/generation/real time, releases the
+controller mutex before COMMIT/native I/O, and records stop-first/admission-first.
+Second stop remains independently callable while the commit path is blocked.
+Explicit and implicit writes share the fence. Confirmed committed-late,
+confirmed rollback, no-mutation and indeterminate outcomes are typed distinctly;
+expiry/Drop cannot imply rollback or not-persisted. No replay of uncertain
+mutations or expired-context readback. Bounded separately authorized readback
+may reconcile observed state without claiming exactly-once identity. Uncertain
+connection state remains owned/quarantined; restore known hooks/TLS baseline
+on safe paths. No effects occur after actual physical release. Cleanup expiry
+and actual persisted result are reported honestly after join; no bool false
+stands for unknown, no instantaneous T=0 join or universal 2T guarantee.
+Legacy direct calls remain
 caller-owned. Preserve schema, generation fencing, stop-before-tick, existing
 Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
 

@@ -294,6 +294,22 @@ is also unapproved. No developer Step PASS, implementation readiness, new
 fixture labels, question override, replacement seal or Plan Anchor PASS is
 claimed by this safe WIP checkpoint.
 
+The human has now approved both pending decisions. Exact
+[assistant-question/human-answer receipts](authority-approvals/README.md)
+preserve question identities, recorded-at values and verified proposal digests.
+The approved admission/outcome contract is applied across c-1/core REQ/ADR,
+c-5 proof and c-4 released behavior: no new commit admission after G/K, actual
+physical ownership retained, and typed committed-late/rollback/indeterminate
+outcomes. No controller lock spans COMMIT, uncertain mutation is not replayed,
+and universal physical fsync/2T completion is not promised. Both critical
+findings remain author-corrected pending independent R2, not waived.
+
+The fidelity policy/five revisions are approved only for a separate generic
+benchmark version; optional fictional premises remain unapproved. Old corpus,
+evidence and production seal remain unchanged. Actual anchors/fixtures or
+question overrides have not been locked/adopted. Developer consistency work
+does not certify critical R2, manager QA, live gates or implementation readiness.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |

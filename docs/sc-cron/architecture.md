@@ -323,3 +323,11 @@ rusqlite 0.39 bundled+hooks and lock baseline, then c-3 retains those features
 while migrating ecosystem versions. C-5 has no shared manifest ownership.
 Known-baseline RAII/TLS busy callback, capturing progress callback and independent
 interrupt handle follow the source-supported strategy in the Phase C contract.
+
+The approved admission/outcome decision adds a final commit_hook fence for
+ordinary G and cleanup K. A short controller-state decision precedes COMMIT;
+never hold that lock during SQLite/native I/O. An admitted commit may physically
+finish late and keeps owned joins. Typed persistence outcomes distinguish
+confirmed late commit, rollback and indeterminate; no blind replay or false
+not-persisted report. G/K is not a universal fsync/physical-2T guarantee.
+Actual state after physical join and no-effects-after-release are required.

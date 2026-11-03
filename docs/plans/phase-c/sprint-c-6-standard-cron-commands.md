@@ -9,6 +9,8 @@ wave: 2
 branch: sprint/c-6-standard-cron-commands
 worktree: sprint/c-6-standard-cron-commands
 requirements:
+  - REQ-CRON-0005
+  - REQ-CRON-0020
   - REQ-CRNC-0001
   - REQ-CRNC-0002
   - NFR-CRNC-0001
@@ -77,6 +79,9 @@ versions/lock. No template source or shared registry edits here.
    bad expression/limit/cursor and checked-duration overflow. Bound total
    request, source/path/payload sizes by c-1's frozen core limits. Do not echo
    environment values, source, payload, SQL or provider prose in errors/logs.
+   Preserve typed admission/persistence evidence on DeadlineExceeded or
+   Indeterminate errors: neither means rollback/not-persisted or permits an
+   automatic mutation retry. Reconciliation is separately authorized/bounded.
 4. NFR-CRNC-0001: DTO-only build uses serde/serde_json and defaults-off
    sc-command; scheduler feature alone introduces optional cron/async edges.
    Preserve minimal graph and no core runtime edge. Add standard crate usage

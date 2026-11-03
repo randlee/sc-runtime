@@ -9,6 +9,7 @@ wave: 3
 branch: sprint/c-4-runtime-ecosystem-release
 worktree: sprint/c-4-runtime-ecosystem-release
 requirements:
+  - REQ-CRON-0005
   - REQ-RUN-0002
   - REQ-RUN-0003
   - REQ-RUN-0301
@@ -135,6 +136,12 @@ at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
   enable only approved edges, disabled MCP stays disabled, and core runtime
   still excludes cron/adapter. Standard list covers active/ended/all with
   bounded stable continuation; no mocked list_active-only substitute.
+- Packaged lifecycle/command proof consumes c-1/c-5 typed admission/persistence
+  outcomes. A cutoff prohibits new admission; an already admitted late commit
+  or unknown result is never reported as rollback, not-persisted or bounded
+  success. Preserve independent stop/physical ownership, no replay of uncertain
+  mutations and no effects after actual release. Registry proof repeats this
+  public contract; it does not claim a universal fsync/physical-2T guarantee.
 - Publish the exact frozen affected closure including cron and new adapter:
   command first, then cron, then cron-commands; runtime after command. Check
   each version's registry visibility before dependent publication. Extend the

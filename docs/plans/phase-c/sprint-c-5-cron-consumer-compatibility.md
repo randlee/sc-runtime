@@ -68,9 +68,13 @@ manifest edits or dependency on an uncommitted c-3 feature change.
 2. REQ-CRON-0020: implement c-1's cooperative store scope before every
    potentially blocking lock, initial load, reload, row decode and write,
    including retry/error/end paths. SQLite busy/progress/interrupt checks
-   observe the shared mutable deadline; cancelled transactions roll back and
-   restore connection hooks/settings before release. No ordinary commit is
-   admitted after grace; restricted cleanup follows ADR-RUN-0018.
+   observe shared mutable deadlines. Final owned commit_hook serializes briefly
+   with live stop state/class/generation/real time and releases controller lock
+   before COMMIT. No new ordinary commit admission at/after G or cleanup
+   admission at/after K. Admitted commits may complete later; retain ownership,
+   classify actual persisted result, and restore known hooks/TLS on safe paths.
+   Never infer rollback from expiry/Drop or bool false; restricted cleanup and
+   typed TransactionOutcome follow ADR-RUN-0018.
 3. REQ-CRON-0020/0021: implement independently callable stop control,
    monotonic deadline shortening and one owning physical join. Track admitted
    command CRUD/query and worker store tasks before submission until actual
@@ -103,11 +107,23 @@ Roots: `req:REQ-CRON-0003`, `req:REQ-CRON-0019`,
 - Expiry notification and consumer cancellation run at grace independently of
   join. Second stop shortens the same state without extending cleanup.
   T=0 follows c-1's explicit grace/cleanup budget contract. Negative tests
-  detect late writes after cancellation, detached work, callbacks waiting for
+  detect unauthorized post-cutoff admission, effects after physical release,
+  detached work, callbacks waiting for
   join, unsupported store admission and timer restart after lock acquisition.
 - Physical joins retain every admitted blocking closure/owned task through
   completion; timeout reporting does not claim hard preemption of arbitrary
-  Rust/native/custom Monty hosts. Missed cleanup is reported honestly.
+  Rust/native/custom Monty hosts or universal physical commit/fsync by 2T.
+  Confirmed committed-late and indeterminate remain accurate deadline failures,
+  never rollback/not-persisted or successful bounded cleanup.
+- Causal gates after final precheck and at the real commit-hook decision race
+  ordinary G/cleanup K, shortening and second stop in both serial orderings.
+  Stop-first vetoes; admission-first records admission and actual later state.
+  Pause after allow without holding controller lock; independent stop/expiry
+  must still acknowledge while blocked. Inspect real rows/generation after
+  physical join for accurate committed-late/rollback/indeterminate classification,
+  including implicit writes. No replay of uncertain create/end/toggle, no
+  expired-context readback. An injected lost-result test proves classification
+  only, not a physically reproduced fsync failure.
 - Real query returns ended as well as active rows with deterministic bounded
   continuation; malformed limits/cursors fail; replacement races preserve
   generation fencing. Cancellation of command waiters leaves no untracked work.

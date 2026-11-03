@@ -191,6 +191,16 @@ REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
   run_with_cleanup_and_bound. Amend REQ-RT-0001 and ADR-RT-0001/0005 consistently.
   This includes existing cleanup and the bound-receipt alternative only;
   preserve fixed startup/typestate, no registry/macro/wrapper or extra engine.
+- Freeze the explicitly human-approved commit admission/outcome semantics in
+  compatibility-contract.md, REQ-CRON-0020 and ADR-RUN-0018. Final ordinary G/
+  cleanup K admission uses owned commit_hook and a short live stop-state/class/
+  generation/real-time decision; release controller lock before COMMIT/native
+  I/O. Qualify the hook through supported rusqlite0.39 hooks API without claiming
+  universal physical fsync/2T preemption. Typed TransactionOutcome replaces
+  cleanup_persisted bool: known committed-late, rollback and indeterminate are
+  distinct. Freeze no-replay/bounded-authorized-readback and owned-release rules.
+  Specify causal precheck/hook/stop-first/admission-first tests with actual
+  persisted generation state after physical join; both explicit/implicit writes.
 
 - Freeze [compatibility-contract.md](compatibility-contract.md) as exact public
   types/signatures, query limits/error inventory, absolute G/K semantics,

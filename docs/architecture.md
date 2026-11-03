@@ -3021,6 +3021,18 @@ propagation, while real-clock tests prove elapsed bounds. Unsupported stores
 cannot enter cooperative mode, and provider overruns cannot become successful
 bounded completion by dropping a waiter or emitting early status.
 
+Human-approved commit clarification: G/K cut off new commit admission, not
+universal physical commit/fsync completion. An owned commit_hook decision
+briefly serializes stop/real-time/class/generation eligibility then releases
+the controller lock before COMMIT. Admitted transactions may finish later and
+remain physically owned. Report confirmed committed-late, explicit rollback
+or indeterminate truthfully; expiry/Drop is not rollback evidence. No uncertain
+mutation replay, expired-budget reconciliation or effects after physical
+release. C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves
+the actual admission race and persisted state after join, c-4 proves packaged
+behavior. This changes the prior strict physical-cutoff interpretation by the
+explicit human decision, not a finding waiver or implementation PASS.
+
 ## ADR-RUN-0019: Optional standard cron command adapter and generated wiring
 
 **Status:** Approved Phase C target; implementation planned. The new optional

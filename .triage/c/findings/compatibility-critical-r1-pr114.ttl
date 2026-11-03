@@ -11,6 +11,6 @@ triage:COMPAT_CRIT_001 a triage:Finding ;
 triage:COMPAT_CRIT_002 a triage:Finding ;
  triage:severity "Important" ; triage:reviewer "critical-plan-reviewer" ;
  triage:status "open" ; triage:sprints "c-1,c-5" ;
- triage:author_state "unresolved-policy-decision-no-contract-weakening-adopted" ;
+ triage:author_state "human-approved-admission-outcome-correction-pending-independent-R2" ;
  triage:target "docs/plans/phase-c/compatibility-contract.md:98" ;
  triage:correction "Freeze supported commit-admission versus stop/deadline linearization and accurate persisted outcomes after physical join, with causal final-check/COMMIT/shortening tests. Do not infer rollback from expiry, hold stop control across COMMIT, replay uncertain mutations, or assert unsupported strict physical deadlines." .

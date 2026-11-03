@@ -263,6 +263,17 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 
 ## Required decisions and exact compatibility contract
 
+The human approved the commit admission/outcome decision: stop new ordinary
+commit admission at G and cleanup admission at K, retain physical ownership
+through completion, and report confirmed committed-late or indeterminate
+outcomes accurately. There is no universal physical COMMIT/fsync completion
+within 2T promise, no blind replay/false rollback and no effects after actual
+owned release. C-1 freezes final commit-hook linearization and typed outcomes;
+c-5 tests the race and actual persisted state; c-4 proves the released contract.
+The exact assistant question and human approval are retained in
+reviews/authority-approvals/admission-outcome-approved.json. This is a documented
+approved tradeoff, not a waiver of critical review, QA or actual anchor gates.
+
 Sprint `c-1` supplies the pushed contract consumed by the implementation
 sprints: **ADR-RUN-0203, “Library versions on one router; one struct for
 both schemas.”** The amendment replaces its old 0.2/5.5.0/3.7 evidence matrix
