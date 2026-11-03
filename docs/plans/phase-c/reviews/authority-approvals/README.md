@@ -22,3 +22,11 @@ Phase C commit-policy facts as its oracle.
 The proposal files remain byte-identical in their historical
 `internal-unapproved/` location. Their earlier status statements are historical;
 these exact scoped receipts record the later decisions without rewriting them.
+
+`new-anchor-approval-with-anc016-clarification.json` preserves the later direct
+approval of all six actual ANC-013…018 statements and their original fixtures.
+It binds the immutable original packet SHA and the explicit approved ANC-016
+clarification. Its question is assistant-authored; its answer and preceding
+clarity approval are direct human words. This authorizes that statement
+clarification, not question tuning, fabricated rubric results or locking before
+successful required checks. Records therefore remain proposed.

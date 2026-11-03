@@ -1,7 +1,7 @@
 {
   "schema": "phase-c-review-evidence/1",
   "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
-  "overall_readiness": "NOT_FINALIZED: no accepted rubric after five bounded rounds; fixture approval and actual plan gates pending",
+  "overall_readiness": "NOT_FINALIZED: all six statements/fixtures approved; rubric unaccepted after five rounds, actual testability/live checks and locking pending",
   "qa2": {
     "resolved": 6,
     "remaining_blocking": [
@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "f4dbe56b9e17b1f788dd8f360a72170b2893443437168a7dc87d929e6c92ae12",
-      "bytes": 25860,
+      "sha256": "cc3b23fe6e03620776eabd668c63cfe1ac6dd17f562215e27400e629e5a2bca2",
+      "bytes": 26565,
       "source": "authored index"
     },
     {
@@ -77,8 +77,8 @@
     },
     {
       "path": "authority-approvals/README.md",
-      "sha256": "3f0f62d09137bd4e26b4552906b369eb4a20870bcc29867af03a76229af86806",
-      "bytes": 1400,
+      "sha256": "f39b0000db5ce684759e12c25982baeb6d9bad5fe64a2b0f9107c67d59413591",
+      "bytes": 1930,
       "source": "exact direct-human approval receipts; question assistant-authored, answer human; scoped decisions only"
     },
     {
@@ -92,6 +92,12 @@
       "sha256": "1aa2c856fe0d489f793af44837cb41328f684db2e5331ae51b7cd4256e67a22a",
       "bytes": 900,
       "source": "exact direct-human approval receipts; question assistant-authored, answer human; scoped decisions only"
+    },
+    {
+      "path": "authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+      "sha256": "7cbb1d5d0b845877c0fd91fb21344bdbd2d81b78539e4724e3e1c798328669dd",
+      "bytes": 1621,
+      "source": "exact direct-human six-anchor approval with explicit ANC016 clarification; no live/lock claim"
     },
     {
       "path": "calibrated-anchor-rubric.json",
@@ -12917,8 +12923,8 @@
     },
     {
       "path": "current-plan-anchor-results.md",
-      "sha256": "d0bffd5d64862b3a1eaf4d0f120f39eb0bc7aaff47fcac0986b5573acbe17058",
-      "bytes": 3737,
+      "sha256": "cdb5836e36d7ae3e029c6828632d5b62415bf942cf7a36256ef651673659c247",
+      "bytes": 4566,
       "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
     },
     {
@@ -14006,7 +14012,21 @@
       "old_corpus_and_evidence_unchanged": true,
       "actual_anchor_question_overrides_adopted": false
     },
-    "implementation_readiness": false
+    "implementation_readiness": false,
+    "six_anchor_statement_fixture_approval": {
+      "receipt": "authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+      "actual_ids": [
+        "ANC-013",
+        "ANC-014",
+        "ANC-015",
+        "ANC-016",
+        "ANC-017",
+        "ANC-018"
+      ],
+      "ANC016_approved_exception": "The standard cron command set must use common schedule-management subcommands across Python, Monty, and Rust handlers.",
+      "original_fixture_pairs_unchanged": true,
+      "locking_or_rubric_pass": false
+    }
   },
   "critical_r2": {
     "status": "PASS",
@@ -14068,7 +14088,7 @@
       "ANC-019"
     ],
     "omitted_017_existing_REQ": "REQ-CRON-0003",
-    "fixture_approval": "pending",
+    "fixture_approval": "approved by later exact receipt; immutable original packet retains historical pending wording",
     "rubric_result": "pending",
     "allocated_or_locked": false,
     "source_intent_descriptors": 6,
@@ -14127,8 +14147,8 @@
     "proposed": 6,
     "retired": 2,
     "original12_objects_unchanged": true,
-    "record_sha256": "44685780941acd7997decbd63969cfd3da3e15e4aedd50747ed4582f0a0df9cc",
-    "render_sha256": "45260e85e1d6084ab1a2a61ac259f382e81e8d2828c16de03b8f965ebb356df2",
+    "record_sha256": "7aa11db99c9e7c4c9c7f91432c78feacaeb5745dea8e706cfd78fe400f13d51b",
+    "render_sha256": "6146a742ad0d6f35a532ebf4f57856423e3dd25efaafacad48745f161ad2bc02",
     "actual_new_ids": [
       "ANC-013",
       "ANC-014",
@@ -14137,13 +14157,17 @@
       "ANC-017",
       "ANC-018"
     ],
-    "fixture_approval": "pending",
+    "fixture_approval": "human-approved all six original pairs, unchanged",
     "rubric": "not_run",
     "new_question_beads": 0,
     "locked_new_records": 0,
     "allocation": "proposed-anchor-allocation.json",
     "validation": "proposed-anchor-record-validation.json",
-    "no_actual_current_plan_Jev_results": true
+    "no_actual_current_plan_Jev_results": true,
+    "statement_approval": "human-approved with explicit ANC016 exception",
+    "approval_receipt": "authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+    "ANC016_current_statement": "The standard cron command set must use common schedule-management subcommands across Python, Monty, and Rust handlers.",
+    "ANC016_current_version": 4
   },
   "current_results_report": "current-plan-anchor-results.md",
   "engineering_baseline": {

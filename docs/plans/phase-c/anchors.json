@@ -922,13 +922,13 @@
       "id": "ANC-016",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "The standard cron subcommands must be the same for Python, Monty, and Rust handlers.",
+      "statement": "The standard cron command set must use common schedule-management subcommands across Python, Monty, and Rust handlers.",
       "quote": "yes, we have a few more options i.e. python, monty, rust handler. but the general subcommands should be standard",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-03",
       "context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID.",
-      "summary": "Common cron verbs across handlers",
+      "summary": "Common schedule-management subcommands across handlers",
       "scope": "Standard cron subcommand vocabulary and handler-kind selection",
       "deterministic_check": "",
       "fixtures": {
@@ -940,7 +940,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "proposed",
       "promoted_to": null,
       "beads": {
@@ -967,6 +967,15 @@
           "fields": [
             "summary"
           ]
+        },
+        {
+          "at": "2026-11-03T23:29:40+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary"
+          ],
+          "previous_statement": "The standard cron subcommands must be the same for Python, Monty, and Rust handlers."
         }
       ]
     },

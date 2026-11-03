@@ -1,8 +1,9 @@
 # Current Phase C plan-anchor results
 
-**NOT FINALIZED.** Six new statements are durably recorded as **proposed**,
-with draft fixtures. They have not been approved, rubric-tested, locked or
-given question Beads. The record validates: 18 total, comprising 10 locked,
+**NOT FINALIZED.** The human has approved all six new statements and their
+original pass/fail fixtures, with the explicit ANC-016 wording clarification
+below. The records remain **proposed**, pending actual testability/live checks;
+they are not locked or given question Beads. The record validates: 18 total, comprising 10 locked,
 six proposed and two retired. All 12 original record objects are unchanged.
 
 ## Results against the current plan
@@ -50,13 +51,24 @@ to actual record IDs:
 | ANC-018 | ANC-017 | Supported consumer overrides |
 | ANC-019 | ANC-018 | Documented integration and consumer responsibilities |
 
+The exact [human approval receipt](authority-approvals/new-anchor-approval-with-anc016-clarification.json)
+preserves the assistant question, human answer and preceding clarity approval.
+ANC-016 now states: **The standard cron command set must use common
+schedule-management subcommands across Python, Monty, and Rust handlers.**
+Its quote and fixtures are unchanged; version/history preserve the earlier
+wording. The original packet and allocation file remain immutable historical
+proposals, including their earlier pending-approval fields; this receipt records
+the later approval and its explicit exception.
+
 Packet ANC-017's three-job-target quote is retained under existing
 REQ-CRON-0003 rather than counted as another obligation. Ordinary defensive
 validation remains; consumer control does not mean mandatory removal of
 security/integrity checks. The existing out-of-box cron intent is retained as
 source context for baseline coverage, not an invented seventh anchor.
 
-Fixture approval remains pending. Record validation and proposed persistence
-are not semantic approval. Tracking remains in run-x8d.5/.6. The baseline plan,
+Statement/fixture approval is now recorded. Actual successful checks and locking
+remain pending because no full rubric was accepted. Record validation and
+proposed persistence are not live testability or gate approval. Tracking remains
+in run-x8d.5/.6. The baseline plan,
 requirements and runtime source have not been rewritten from calibration
 failures or the manual diagnostic.

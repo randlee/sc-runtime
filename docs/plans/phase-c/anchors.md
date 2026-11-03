@@ -21,7 +21,7 @@ Intent: `docs/plans/phase-c/phase-c-plan.md`
 | ANC-013 | proposed | Compatibility precedes publication | 2026-11-03 |
 | ANC-014 | proposed | Optional standard cron commands | 2026-11-03 |
 | ANC-015 | proposed | Shared cron JSON contract | 2026-11-03 |
-| ANC-016 | proposed | Common cron verbs across handlers | 2026-11-03 |
+| ANC-016 | proposed | Common schedule-management subcommands across handlers | 2026-11-03 |
 | ANC-017 | proposed | Supported consumer overrides | 2026-11-03 |
 | ANC-018 | proposed | Documented integration and override responsibilities | 2026-11-03 |
 
@@ -316,13 +316,13 @@ Fixtures:
 
 ## ANC-016
 
-Anchor: The standard cron subcommands must be the same for Python, Monty, and Rust handlers.
+Anchor: The standard cron command set must use common schedule-management subcommands across Python, Monty, and Rust handlers.
 
 > yes, we have a few more options i.e. python, monty, rust handler. but the general subcommands should be standard
 
-Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 4.
 
-Summary: Common cron verbs across handlers
+Summary: Common schedule-management subcommands across handlers
 
 Scope: Standard cron subcommand vocabulary and handler-kind selection
 
