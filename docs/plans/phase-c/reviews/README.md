@@ -204,6 +204,20 @@ freeze bindings. The same 17+4 oracle labels, thresholds and three fixed
 questions remain unchanged. These are unaccepted candidate inputs; no new
 live result, accepted override or Phase C readiness is implied.
 
+The [extension 02 execution](continuation/calibration-088-local/extension-02/execution-01/result.json)
+preserves 63 CLI executions and 126 confirmations: `accepted:false`, no seal.
+Its best candidate had 105 exact/stable cells and 103 confident cells. The
+[independent observable regression review](continuation/calibration-088-local/observable-regression-independent-review.md)
+supports a separately prepared observable-only generic experiment without
+changing thresholds or oracle labels; preparation claims no result.
+
+The [external consumer assessment](external-consumer-input/consumer-compatibility-assessment.md)
+is explicitly consumer input, not planning authority. The human scope question
+is pending and `run-x8d.6` remains open; no plan, sprint, anchor or requirement
+has been amended. At this checkpoint upstream PR #62 is ready for review at
+`b113bfa`, with six CI checks green and three macOS checks queued; no merge,
+release or installation is claimed.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |

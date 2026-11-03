@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "23a51a833aec16bb57b960efd0d605d4047629989b72c5ef32872185f4edff1f",
-      "bytes": 15188,
+      "sha256": "a12c9ebd95668abbb3458e1d0c136e6a14f303be03644db44e3c936454720b39",
+      "bytes": 16156,
       "source": "authored index"
     },
     {
@@ -1888,6 +1888,1662 @@
       "source": "independent generic extension02 preparation; no accepted override or new live result"
     },
     {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/acceptance-table.json",
+      "sha256": "fc21b7b64264f147b371f5e0ad1ad91ecb76eda689b9e483dea1b2ede9397a8f",
+      "bytes": 222946,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/all-cli-results.json",
+      "sha256": "c031718d239bd6b1bdc584eb29884e106b31a9fe17444cc80d451c0ed46f1e9c",
+      "bytes": 173468,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/attestation.json",
+      "sha256": "92391b0523e70d2afc65f8781262b4fa5816f2bc21758258eda9e420e5009f63",
+      "bytes": 520,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/candidate-rankings.json",
+      "sha256": "b9572b797ded81b6aabf4ba227fe9a3a61ac34f661443749afa5bee24abc25ba",
+      "bytes": 3598,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/deterministic-lint.json",
+      "sha256": "dff1ab67eaff8d56540ed41cbdb30a687f4cf1309a927ac11b7adad2fc5cbf00",
+      "bytes": 631,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/dry-run-verification.json",
+      "sha256": "e21be75a30fe56ac450331a488151efafd50eeec5921e810edfaa29c1f1a8247",
+      "bytes": 74815,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/execution-summary.json",
+      "sha256": "b0750a2198ec19d6ecd4597e55fd02aacff18a927f031b450465c1ea29065b80",
+      "bytes": 264,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/export-lineage-and-policy-proof.json",
+      "sha256": "a35d4c2cf4781367afd42aa27ef9fff254865f67b0e5c7308f0e8584764a7287",
+      "bytes": 904,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-01-valid-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-01-valid-directive.dry-run.stdout.json",
+      "sha256": "724376355741cd8f689b81388048086e30f8c99c9ad15957f85f3523444dc8e3",
+      "bytes": 10284,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-01-valid-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-01-valid-directive.live.stdout.json",
+      "sha256": "380417ca0b354e3c7f035170af07ddc7a41b91905f63a4857d85a8461676a2ca",
+      "bytes": 4833,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-02-valid-prohibition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-02-valid-prohibition.dry-run.stdout.json",
+      "sha256": "9dcbc30977eba92ed8384da69c09450c1114318d404dcebe2ab38e948d9c66e7",
+      "bytes": 10305,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-02-valid-prohibition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-02-valid-prohibition.live.stdout.json",
+      "sha256": "703af8fbb7d7fef01fcac15640c130979f7d296dc1b3e6062472e2278ba25f02",
+      "bytes": 4845,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-03-structural-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-03-structural-scope.dry-run.stdout.json",
+      "sha256": "e376b5fe5d554c72e51aa29193339234c0a64139b2c1647bdb77ce1ad032db7a",
+      "bytes": 10122,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-03-structural-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-03-structural-scope.live.stdout.json",
+      "sha256": "02b20d59a73e102f4f25f25c76e247838df7e5b0857faac2d9e62d0c6efe0e2c",
+      "bytes": 4774,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-04-global-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-04-global-scope.dry-run.stdout.json",
+      "sha256": "9fc3afffb69d1100988d86c790c3b0c6270871c519692325121608c075e2631e",
+      "bytes": 10155,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-04-global-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-04-global-scope.live.stdout.json",
+      "sha256": "5eb56ebfa78d6561134a6e062b67c5ff708856d3a9ea321dff3225d7865f44a4",
+      "bytes": 4749,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-05-atomic-from-multi-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-05-atomic-from-multi-directive.dry-run.stdout.json",
+      "sha256": "2f8ed0c92c4258f15d26d5f2c4b5ece86c5808ed47120dc09d23740f5e9dfb8a",
+      "bytes": 10194,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-05-atomic-from-multi-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-05-atomic-from-multi-directive.live.stdout.json",
+      "sha256": "1829062ea2f04ce184b03fb84c187cb08bee5b5ce18456aaabd66d56d36dfef6",
+      "bytes": 4671,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-06-genuinely-bundled.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-06-genuinely-bundled.dry-run.stdout.json",
+      "sha256": "4160a484f6dfa8248ff61306a47196dc97c655346cd0db22f7bb4094550360a4",
+      "bytes": 10418,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-06-genuinely-bundled.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-06-genuinely-bundled.live.stdout.json",
+      "sha256": "eb4757c53dc2fbc1a56b847e8c8b3c6303392ad4fc8192042d6da76286c46f53",
+      "bytes": 5012,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-07-unsupported-elaboration.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-07-unsupported-elaboration.dry-run.stdout.json",
+      "sha256": "61db795a29c1d14a56ad778696babb0c6ac353b372def9185f8197b10a3e13af",
+      "bytes": 10056,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-07-unsupported-elaboration.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-07-unsupported-elaboration.live.stdout.json",
+      "sha256": "c7dd28af5a73ed0b73d9eee42f38d78ba6e1c02f14953b1f1e3a89b0e14a049f",
+      "bytes": 4718,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-08-vague-outcome.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-08-vague-outcome.dry-run.stdout.json",
+      "sha256": "72b535809ba7a6ad22fee6e97d4d5e28c5e42a413494b2c91a1be41c5ca6b334",
+      "bytes": 10082,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-08-vague-outcome.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-08-vague-outcome.live.stdout.json",
+      "sha256": "be7992dd5597c747dfcaeb9ff2e883c92a3182684c63de4b8fdba3351e238545",
+      "bytes": 4823,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-09-explicit-testable-condition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-09-explicit-testable-condition.dry-run.stdout.json",
+      "sha256": "44f6d6494f55144cc16786d812311ba6a90387e9130d92a6b8109b02252c0292",
+      "bytes": 10284,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-09-explicit-testable-condition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-09-explicit-testable-condition.live.stdout.json",
+      "sha256": "1f50bd5652586a9d3094f419c6a9b6ae0ce3cf3e6a9e6a1d8a2c8412283299c6",
+      "bytes": 4703,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-10-api-key-redaction.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-10-api-key-redaction.dry-run.stdout.json",
+      "sha256": "d6279addd8656383038551bd6827b87df289adb7ebac1c43a36b4f54601c5091",
+      "bytes": 10884,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-10-api-key-redaction.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-10-api-key-redaction.live.stdout.json",
+      "sha256": "7fce65391cf75401033063e09224f7025f587cc2c8f7bae94efc491f557caaff",
+      "bytes": 5035,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-11-private-shorthand.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-11-private-shorthand.dry-run.stdout.json",
+      "sha256": "6f5cd657958cf5f22c0c57df1cf547eb1bb6a05134dfbd22eb1ef7a5dad02f47",
+      "bytes": 10020,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-11-private-shorthand.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-11-private-shorthand.live.stdout.json",
+      "sha256": "2fd36e00c6752e3974183bc621a7007df7651d49ef28ef107ce235c32430a949",
+      "bytes": 4770,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-12-unrecorded-approval.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-12-unrecorded-approval.dry-run.stdout.json",
+      "sha256": "43efbefefac603139e0ae92fb410be84b30bd25542508e4ed0f3fb44fcf01873",
+      "bytes": 10167,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-12-unrecorded-approval.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-12-unrecorded-approval.live.stdout.json",
+      "sha256": "397cecd433526c3826bc5be4c71c6146e860d8463a9e64005c2dfdeb760d54db",
+      "bytes": 4857,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-13-shared-quote-first-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-13-shared-quote-first-atomic.dry-run.stdout.json",
+      "sha256": "543134ee1cdca6ce820e6c87c51e6524f131c6ecf7108a717b42cd1726cc7458",
+      "bytes": 10188,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-13-shared-quote-first-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-13-shared-quote-first-atomic.live.stdout.json",
+      "sha256": "84e3ba08ed9cb99d4991c50c8f31c31557bf4b5993a010b4841cc659aa19f58b",
+      "bytes": 4661,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-14-shared-quote-second-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-14-shared-quote-second-atomic.dry-run.stdout.json",
+      "sha256": "86a86668333011b61454e0735188dc028c84c6dc0b33afd4e721e78b7d91af46",
+      "bytes": 10215,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-14-shared-quote-second-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-14-shared-quote-second-atomic.live.stdout.json",
+      "sha256": "f385507e5d02e0eb7be6f31057e3841f8cb0bd7be59053176a2ca09575b9478d",
+      "bytes": 4683,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-15-duplicate-first.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-15-duplicate-first.dry-run.stdout.json",
+      "sha256": "8153ca15accac0fddc534c8cadf3f6a0dfe7f253db456d53f30c54d92997f851",
+      "bytes": 10068,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-15-duplicate-first.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-15-duplicate-first.live.stdout.json",
+      "sha256": "bd3a1ff7bdbdead5f26150e22f79046556cc58e27ddc6f80272bf999a699c56f",
+      "bytes": 4629,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-16-duplicate-second.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-16-duplicate-second.dry-run.stdout.json",
+      "sha256": "a751607ae2ffe299700313f9c86c5e9b1d13a2ea85fd8517fab0218cccd926a8",
+      "bytes": 10119,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-16-duplicate-second.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-16-duplicate-second.live.stdout.json",
+      "sha256": "d656278c302de153f1e8944367fbcd905b53fda6de67e9f6b85fe4821d0d10ad",
+      "bytes": 4775,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-17-nondeclarative-form.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-17-nondeclarative-form.dry-run.stdout.json",
+      "sha256": "62020b1cb499ddb389b79861d5c7c07accd8cb7d9e9bb37e7799251c30fd8903",
+      "bytes": 10621,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-17-nondeclarative-form.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--a0-17-nondeclarative-form.live.stdout.json",
+      "sha256": "691dd343baffdc76eb9131a90c9a8376800911741a9dc41f48daa1c6971d2cf3",
+      "bytes": 5337,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-authorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-authorized-algorithm.dry-run.stdout.json",
+      "sha256": "511c4a821153fbca5602615fb232bba8d8d33aeeff8905670eccdeafda571c8c",
+      "bytes": 10914,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-authorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-authorized-algorithm.live.stdout.json",
+      "sha256": "1233be8d885d8c4831526ba856ba3de3f3eb3283fe457b1060e889c8bea0b420",
+      "bytes": 4872,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-independent-duties.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-independent-duties.dry-run.stdout.json",
+      "sha256": "95909757eadfcde6e58b72ae22d7be2c2d7b2a4122308710e00b77eb20110480",
+      "bytes": 10341,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-independent-duties.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-independent-duties.live.stdout.json",
+      "sha256": "92e70dfb9e83f4982e198eb752c58949dd5144f7a6a9b518d0dcb4986eca84b1",
+      "bytes": 4834,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-shared-predicate-surfaces.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-shared-predicate-surfaces.dry-run.stdout.json",
+      "sha256": "336280c65ea69ead0277e690ea1adda9bd2fce93ff3959f329ffb7305d63ddd0",
+      "bytes": 10395,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-shared-predicate-surfaces.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-shared-predicate-surfaces.live.stdout.json",
+      "sha256": "909dabe5c6257b25bacd466f4151b1bfb9bca3000650c22503caee22764f7c6e",
+      "bytes": 4729,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-unauthorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-unauthorized-algorithm.dry-run.stdout.json",
+      "sha256": "2146b378b5fc87198de85b118615da0529f5a44c6263956a332e6fb333e53cef",
+      "bytes": 10932,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-unauthorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-01--generic-unauthorized-algorithm.live.stdout.json",
+      "sha256": "326517f8067797ca38794d6223febbdad2235e26249d0baf8a8ffcaf2fe24250",
+      "bytes": 4956,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-01-valid-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-01-valid-directive.dry-run.stdout.json",
+      "sha256": "db14b459c9c1a3ce5794307e6fc8794e6dc93c1eed1381f2b38ddbf9374dcf70",
+      "bytes": 10242,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-01-valid-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-01-valid-directive.live.stdout.json",
+      "sha256": "6fc3121f5416fe51526d922030e74b918bc561d3db7bdfe4ff74f8d56e8e9a9b",
+      "bytes": 4690,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-02-valid-prohibition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-02-valid-prohibition.dry-run.stdout.json",
+      "sha256": "8b5e1e04143f3559ee60bbad2c3bba4c40c9dd6e45ae9b4fb7fbcd92409c1129",
+      "bytes": 10263,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-02-valid-prohibition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-02-valid-prohibition.live.stdout.json",
+      "sha256": "e919d19ac681df54c799725bc7305c4c19a5a89bc5cd4f61bdc3e164ed98ef86",
+      "bytes": 4711,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-03-structural-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-03-structural-scope.dry-run.stdout.json",
+      "sha256": "5584275f9b61def418a5d3233f15b390fa47690bc92573ac77cef580929b5b30",
+      "bytes": 10080,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-03-structural-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-03-structural-scope.live.stdout.json",
+      "sha256": "440e9d4bcbfa81d4cbc14178fb97ef1e7c0e22f605cb752346a629fecb0f78e1",
+      "bytes": 4635,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-04-global-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-04-global-scope.dry-run.stdout.json",
+      "sha256": "5b0f9f1bb32b634e3adc39bb32bf3a7b74d323d4a0656b99a0b8ac602f27350f",
+      "bytes": 10113,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-04-global-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-04-global-scope.live.stdout.json",
+      "sha256": "7ae8ce249bca4ea881484a48673d5fe13de9cf9ce242a8d54a32911bf727ec25",
+      "bytes": 4653,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-05-atomic-from-multi-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-05-atomic-from-multi-directive.dry-run.stdout.json",
+      "sha256": "a9a854e22c0d5eeeeb99bd1e6263e77e9ab872520c0855b89c5821eeeee9dc0b",
+      "bytes": 10152,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-05-atomic-from-multi-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-05-atomic-from-multi-directive.live.stdout.json",
+      "sha256": "88052ea9b7b080e4f78093516aae3054af58398ff992d17a3b25427da07ab03e",
+      "bytes": 4671,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-06-genuinely-bundled.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-06-genuinely-bundled.dry-run.stdout.json",
+      "sha256": "090e2ab3a39c8116eaed4e9dae909faf9405b332fea24444c06cc6d8eb40fa73",
+      "bytes": 10376,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-06-genuinely-bundled.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-06-genuinely-bundled.live.stdout.json",
+      "sha256": "41195a65d6a57bc8bb4a382743d6df464841e8cd4d49e767042fbd56138ad1f3",
+      "bytes": 4997,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-07-unsupported-elaboration.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-07-unsupported-elaboration.dry-run.stdout.json",
+      "sha256": "dc7e6de99f8ff06760e41c4730966cc845d3ec430b2f7234c4759062d9a8df57",
+      "bytes": 10014,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-07-unsupported-elaboration.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-07-unsupported-elaboration.live.stdout.json",
+      "sha256": "f567334d91d21ad2b9d10e2766b247c7d6bae1867e4ac5ce138291da6f6d90ac",
+      "bytes": 4726,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-08-vague-outcome.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-08-vague-outcome.dry-run.stdout.json",
+      "sha256": "a24033c0c7e5ae7b0f388d02bc34cca7a14df4ef16bc403b71fd1146a58319bd",
+      "bytes": 10040,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-08-vague-outcome.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-08-vague-outcome.live.stdout.json",
+      "sha256": "fb0a61c69d57b27cba8b3b230c7a312c38e21548cb545a24a4caeddd48177935",
+      "bytes": 4821,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-09-explicit-testable-condition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-09-explicit-testable-condition.dry-run.stdout.json",
+      "sha256": "3dcc083c3d7b4c8ded97beab049b9d71061b0c45d8fced62b914f718bb0fa143",
+      "bytes": 10242,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-09-explicit-testable-condition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-09-explicit-testable-condition.live.stdout.json",
+      "sha256": "460abf4c400136aef07cc45eea76621ec3d93f654ec365a85ce9bf105ba93828",
+      "bytes": 4704,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-10-api-key-redaction.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-10-api-key-redaction.dry-run.stdout.json",
+      "sha256": "140b7dd712f648a33588b7ebff6a063519205998afbf4e2f6222f07b8cda14dd",
+      "bytes": 10842,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-10-api-key-redaction.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-10-api-key-redaction.live.stdout.json",
+      "sha256": "a2937b68b9ab44009240d3c7430804dfaee7541cbb80b526b7f7b5749211f062",
+      "bytes": 4899,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-11-private-shorthand.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-11-private-shorthand.dry-run.stdout.json",
+      "sha256": "dc7fffa3fcbcfb5814b7583f9b12e1b942ef21fcb00e21f8db881f3938f65745",
+      "bytes": 9978,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-11-private-shorthand.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-11-private-shorthand.live.stdout.json",
+      "sha256": "215eb1d7d1af5f20a130f2d18297e5b965b9b301c22ae1d3fb2d058837e8d212",
+      "bytes": 4772,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-12-unrecorded-approval.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-12-unrecorded-approval.dry-run.stdout.json",
+      "sha256": "0eaaacf9e555a414a03cb8b060a6462ad5d4ca7d72bb36751f3958060ed38d93",
+      "bytes": 10125,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-12-unrecorded-approval.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-12-unrecorded-approval.live.stdout.json",
+      "sha256": "e51046c5f9bd240d445ba95ff2b028bf47e89d298bfc6befe2f72c98d2bc1c17",
+      "bytes": 4852,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-13-shared-quote-first-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-13-shared-quote-first-atomic.dry-run.stdout.json",
+      "sha256": "0e1d94bc6e8ffbf001440a97fd7064e6a29206f62485dd581790d19579b36abc",
+      "bytes": 10146,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-13-shared-quote-first-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-13-shared-quote-first-atomic.live.stdout.json",
+      "sha256": "94749c0c54a2cd75b43c7283e4fe522a85905186a805b38f0038cddf286e975b",
+      "bytes": 4667,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-14-shared-quote-second-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-14-shared-quote-second-atomic.dry-run.stdout.json",
+      "sha256": "2a3f56f42909e5dd8ae5ce0e19085cb0fa1f6b0977ce372ae79ae7b642849d74",
+      "bytes": 10173,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-14-shared-quote-second-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-14-shared-quote-second-atomic.live.stdout.json",
+      "sha256": "d8ea8cecd89eebc3a337fccb1ce77e981656ba08f309f3ee85cd77859e839300",
+      "bytes": 4679,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-15-duplicate-first.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-15-duplicate-first.dry-run.stdout.json",
+      "sha256": "890c1c98f7cfa9bfd5e02367a18d167a1352cb3d0893d0737654a255cdaf4bb5",
+      "bytes": 10026,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-15-duplicate-first.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-15-duplicate-first.live.stdout.json",
+      "sha256": "35ef0d3d4a5bd0274c210f2b52d932c1ce5569234e1f93b39f96465d57890e2e",
+      "bytes": 4624,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-16-duplicate-second.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-16-duplicate-second.dry-run.stdout.json",
+      "sha256": "92ee299c0fb1e79ede3b8d00864dfdbb935f524378891156bacaa441545d5879",
+      "bytes": 10077,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-16-duplicate-second.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-16-duplicate-second.live.stdout.json",
+      "sha256": "61f97e80aed37b629320b213a04e8648fb6094422ae35bc10d4bb081677ca825",
+      "bytes": 4773,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-17-nondeclarative-form.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-17-nondeclarative-form.dry-run.stdout.json",
+      "sha256": "58f36e34f145b75d162d1eea6835ec5a6e0c43993b821c1a5a49852d741eeb83",
+      "bytes": 10579,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-17-nondeclarative-form.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--a0-17-nondeclarative-form.live.stdout.json",
+      "sha256": "f6cfbd9241046fa230258f2cc4521b5514b16dc4a1e6e192db3cbc8765dd5ba1",
+      "bytes": 5325,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-authorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-authorized-algorithm.dry-run.stdout.json",
+      "sha256": "5e086c64cb1cc7568d09b853646a0a3c0ddd40d6f872e1c4d80e391609bbd5fb",
+      "bytes": 10872,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-authorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-authorized-algorithm.live.stdout.json",
+      "sha256": "505649134c3f748e6d9746891e395d727a2032a6fa20a18b7f9e94054cfaf763",
+      "bytes": 4873,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-independent-duties.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-independent-duties.dry-run.stdout.json",
+      "sha256": "f7e5962524a822d9cb103e1d7f96f13503fdd26bb4ef7a495080eff7741736a0",
+      "bytes": 10299,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-independent-duties.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-independent-duties.live.stdout.json",
+      "sha256": "bc1ea1c8937730eca0ecb709d7f7eb19c48afbe341292b0c807b44e2d63bbda2",
+      "bytes": 4827,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-shared-predicate-surfaces.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-shared-predicate-surfaces.dry-run.stdout.json",
+      "sha256": "40c59f9642c93f93d54d63a2b1e0b1acdd108cd60878868af45fb5cba7b713c9",
+      "bytes": 10353,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-shared-predicate-surfaces.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-shared-predicate-surfaces.live.stdout.json",
+      "sha256": "a1aa199e3e67f52b0387663422cf65430886221fa2765bc6eec2b2b9d077a4dc",
+      "bytes": 4729,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-unauthorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-unauthorized-algorithm.dry-run.stdout.json",
+      "sha256": "25716a3dfffcd140966466ba4e11133efe0978f786d8e417b5a2217891dccf82",
+      "bytes": 10890,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-unauthorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-02--generic-unauthorized-algorithm.live.stdout.json",
+      "sha256": "c10f313661a8d786893a18f75964109229b19575e34bd8b8e4e7674706fc8a10",
+      "bytes": 4960,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-01-valid-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-01-valid-directive.dry-run.stdout.json",
+      "sha256": "dc185fad9625031fc8ebfbffe8bd3d4facae238d8ef633b5065bda20d3a33ecf",
+      "bytes": 10046,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-01-valid-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-01-valid-directive.live.stdout.json",
+      "sha256": "2126217de4c7bef56e72552fd79c4ae76bbdcf266ff21056077369796ad2d4bd",
+      "bytes": 4701,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-02-valid-prohibition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-02-valid-prohibition.dry-run.stdout.json",
+      "sha256": "6f9d7ad97d3205bbc2f6fac1539b75057eefb28466c3c85290ae6b8931ce8be6",
+      "bytes": 10067,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-02-valid-prohibition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-02-valid-prohibition.live.stdout.json",
+      "sha256": "19dfc9d37f592247518e632215ea2c8df59db243e0b83ace07affad588616cd4",
+      "bytes": 4719,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-03-structural-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-03-structural-scope.dry-run.stdout.json",
+      "sha256": "faabdacd23d6d2229fb9038e1742cd0197432a0d8b6032c221e0d1a6f438dd84",
+      "bytes": 9884,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-03-structural-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-03-structural-scope.live.stdout.json",
+      "sha256": "2d40a0b6e2a2f943d457a108581faf909309376d99a2643e71011b119fcedc46",
+      "bytes": 4642,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-04-global-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-04-global-scope.dry-run.stdout.json",
+      "sha256": "10c351120736afa2b4151162efa517facb0b2ff1d4cf6b549d02100998ecaba9",
+      "bytes": 9917,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-04-global-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-04-global-scope.live.stdout.json",
+      "sha256": "fade4d343b4c9083db90971814a7b9663f177aaa83f332c9ad7971be89877ea4",
+      "bytes": 4791,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-05-atomic-from-multi-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-05-atomic-from-multi-directive.dry-run.stdout.json",
+      "sha256": "44dbe26ccbdedda622f3d676ebbe47e8f56d58add0e0c8b0d9d9da80dcee7197",
+      "bytes": 9956,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-05-atomic-from-multi-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-05-atomic-from-multi-directive.live.stdout.json",
+      "sha256": "0f494660d82722671bbb540da743672bab41720ad837922d096a4dc4961bdbae",
+      "bytes": 4832,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-06-genuinely-bundled.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-06-genuinely-bundled.dry-run.stdout.json",
+      "sha256": "80559f4007481f910d381faf6c433820040818d6772d39fc4e6a6df6d5c34945",
+      "bytes": 10180,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-06-genuinely-bundled.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-06-genuinely-bundled.live.stdout.json",
+      "sha256": "32e980958445eb6b38874043b0257eb14d5acb1dad50153d27893c2a36b53e94",
+      "bytes": 5014,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-07-unsupported-elaboration.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-07-unsupported-elaboration.dry-run.stdout.json",
+      "sha256": "f53825b14308f83a9d9b671d0bfaa7eeff5c4bf9d5811915f26fbadf5950a253",
+      "bytes": 9818,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-07-unsupported-elaboration.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-07-unsupported-elaboration.live.stdout.json",
+      "sha256": "e7faaeb99509a169a084c7539db894e454467a03680876ef796af2c2d7da8b7e",
+      "bytes": 4718,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-08-vague-outcome.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-08-vague-outcome.dry-run.stdout.json",
+      "sha256": "88d4b4742997db1a0120e1f7799cec92fa8c353af75de541f55c458470704aa4",
+      "bytes": 9844,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-08-vague-outcome.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-08-vague-outcome.live.stdout.json",
+      "sha256": "8304a5feb0009ed0a26e8a1cbc6a296dd8958359714491f57e55e6f5290c0e9f",
+      "bytes": 4825,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-09-explicit-testable-condition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-09-explicit-testable-condition.dry-run.stdout.json",
+      "sha256": "6dbb8f3d5982ebc66a7851f656c312012986a6cf26e85426669bb5a20884dc86",
+      "bytes": 10046,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-09-explicit-testable-condition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-09-explicit-testable-condition.live.stdout.json",
+      "sha256": "5eb72d8358bf102acd14964a1c24ac05aaaf69545f55cf66b153f53d6334d85d",
+      "bytes": 4702,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-10-api-key-redaction.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-10-api-key-redaction.dry-run.stdout.json",
+      "sha256": "157ed566bd05cc6a0c1a2dc0cd253209ccaa18325831ea97b29f7aae9f0b0b06",
+      "bytes": 10646,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-10-api-key-redaction.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-10-api-key-redaction.live.stdout.json",
+      "sha256": "d865251ad45f59809514caeb3b37a8974e6d5f79705c44e6908b4310c25b5c23",
+      "bytes": 4906,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-11-private-shorthand.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-11-private-shorthand.dry-run.stdout.json",
+      "sha256": "161c5bc878568b1d20dde4d21c11216f0e7aa46ef9c0a215146f138389c30d43",
+      "bytes": 9782,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-11-private-shorthand.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-11-private-shorthand.live.stdout.json",
+      "sha256": "764caad17d620c8bae87cd9c2e9f793e107d578925228ea203698ed9b48f3df1",
+      "bytes": 4769,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-12-unrecorded-approval.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-12-unrecorded-approval.dry-run.stdout.json",
+      "sha256": "13ac64bb99fc0d6016305e32e3fc8e91782ab0493cce1923061fa816734329f8",
+      "bytes": 9929,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-12-unrecorded-approval.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-12-unrecorded-approval.live.stdout.json",
+      "sha256": "fe8407a10de0bc096f1dbebb6a02971d8aa9255a3fcf7145f4a2fc5fc7356e44",
+      "bytes": 4854,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-13-shared-quote-first-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-13-shared-quote-first-atomic.dry-run.stdout.json",
+      "sha256": "0f17d5318714eabef083f69d8515622a09ef52eed2c083156b4d0a4a0985047f",
+      "bytes": 9950,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-13-shared-quote-first-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-13-shared-quote-first-atomic.live.stdout.json",
+      "sha256": "4c1f4e09f965fdc5d409d7da2229b0da2396424d7c37177794cdfc6925b489fd",
+      "bytes": 4826,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-14-shared-quote-second-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-14-shared-quote-second-atomic.dry-run.stdout.json",
+      "sha256": "da3eb0dd0f1156dd4556269696c085fbc1e1f82e78125354d5eec68be525ae3e",
+      "bytes": 9977,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-14-shared-quote-second-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-14-shared-quote-second-atomic.live.stdout.json",
+      "sha256": "2f969a72b212b8cf71ccc50e9400ad7522bf0f09e4baa0b863858e363182c39a",
+      "bytes": 4843,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-15-duplicate-first.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-15-duplicate-first.dry-run.stdout.json",
+      "sha256": "ab1a7b094b0d2a85379ed476702b3bc170578216e52dae7be47ccf31f9164038",
+      "bytes": 9830,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-15-duplicate-first.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-15-duplicate-first.live.stdout.json",
+      "sha256": "0ab41212aa33ecbd68f382ec5cc05bda56087854dc18544a6a0d57060a1ea08b",
+      "bytes": 4632,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-16-duplicate-second.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-16-duplicate-second.dry-run.stdout.json",
+      "sha256": "9695164ddfa68dae0f1b290c306d560053a2ee5279500a09a2458954bd287b59",
+      "bytes": 9881,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-16-duplicate-second.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-16-duplicate-second.live.stdout.json",
+      "sha256": "760460bbe66f46ffa000e80492ed5cfa654673ef0690d9e2eb900cc6c2095e0c",
+      "bytes": 4780,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-17-nondeclarative-form.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-17-nondeclarative-form.dry-run.stdout.json",
+      "sha256": "8f636821423b0a08da3994f3936194e40caca8c93ccbd2359d2c9c3d9d6be83b",
+      "bytes": 10383,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-17-nondeclarative-form.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--a0-17-nondeclarative-form.live.stdout.json",
+      "sha256": "4c2cf8855e39db07449b30495992229d962eb502afdf71c1ad1b9b095c5d90c8",
+      "bytes": 5332,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-authorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-authorized-algorithm.dry-run.stdout.json",
+      "sha256": "319891ee3cd9c13197c99aabe15ab8144563d415af14293c488d779a0fbbbfcd",
+      "bytes": 10676,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-authorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-authorized-algorithm.live.stdout.json",
+      "sha256": "e52182690c54504670161d040a01531b96374960694021670e466f0e1dce76d0",
+      "bytes": 4873,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-independent-duties.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-independent-duties.dry-run.stdout.json",
+      "sha256": "30a0fe9c05a3956b44fd73cbb3cc4d3b9db6131e5c6631c481a6179b74953ab4",
+      "bytes": 10103,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-independent-duties.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-independent-duties.live.stdout.json",
+      "sha256": "4c76637b0685695ab3bebc77c9d29720e83736be068fdcacc47fb9616b7ce509",
+      "bytes": 4835,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-shared-predicate-surfaces.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-shared-predicate-surfaces.dry-run.stdout.json",
+      "sha256": "41cf1baeb04447be2e6a93f5ec33c2b736e8dfd0a211f8a623021b2e4c4c448b",
+      "bytes": 10157,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-shared-predicate-surfaces.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-shared-predicate-surfaces.live.stdout.json",
+      "sha256": "3acb078daf0936fe8cee787650ff5a0dad41d5abfa1b43e56d1acf37fe0c78ed",
+      "bytes": 4736,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-unauthorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-unauthorized-algorithm.dry-run.stdout.json",
+      "sha256": "9946c6e2a34d63501b7f69edcb650eb8dbd7f69f96502f963a8f535b708d76d0",
+      "bytes": 10694,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-unauthorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/extension-02-03--generic-unauthorized-algorithm.live.stdout.json",
+      "sha256": "7481abf8d880f0743f6bd9dfa41e80eb0ae026442c390af7665c16ca8cc30913",
+      "bytes": 4952,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/fixed-role-scope-limitation.json",
+      "sha256": "f5dd9b528b5fd1a88c24424d2b08d57afffbe9a00e4225998f957168aaa33afd",
+      "bytes": 1714,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/history-local-bindings.json",
+      "sha256": "ff80ad04a411ab081e7570381e9aebd69f05781f74b3183d8bbb79c85825b18c",
+      "bytes": 480,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/invocation.json",
+      "sha256": "bef320c131549438a0e8cb22d4758c0ed69dcbbde2de5b5b0a19532a2da17af6",
+      "bytes": 7382,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/live-execution.log",
+      "sha256": "303981a98e97d0cf8a8935e76677147eb2b351e3d8fb0363d7adc58f5cfa1ab2",
+      "bytes": 35,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/local-unreleased-sealed-rubric.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "bytes": 4,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/materialization-verification.json",
+      "sha256": "7aab7e8d6ff3acd2b1b62870c6441d3690378f70a99d77c69951f572ec8f4cdd",
+      "bytes": 1644,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/outer_fence-validation.json",
+      "sha256": "07a3204a731c50ea92b4b5fce272f8359e951419a8e7a8490d53cc5ee000fa3c",
+      "bytes": 10714,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/request.json",
+      "sha256": "4ec3ddd577c6e51b1466ef4e1a212dabdfdb6edbef55dcf6b122b2a927eddc16",
+      "bytes": 7054,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/request_contract-validation.json",
+      "sha256": "880c11ba3546c5d409dc99e8306c67f33cb722c4c57ef3a7012099014d13e852",
+      "bytes": 127,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/result.json",
+      "sha256": "502d9996e1549cb44cb9b744058809dc556a7e91f7c9330d310c973840242c35",
+      "bytes": 10654,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/result.md",
+      "sha256": "0c7e711ef1ea5c232f64a72ba6795128759698675a26ea6ceb1d7c66e7f44dbf",
+      "bytes": 10695,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/result_contract-validation.json",
+      "sha256": "cc215a21fe36dc8126f0e3e942ed5a6d97d5a0cc61d0bd6f0becf8b31fd5e107",
+      "bytes": 127,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/reviewed-live-command.json",
+      "sha256": "f77b1440cb6934b84bf8e6d1c795b01b5b4b5e163ed349edcef86c8184fb2739",
+      "bytes": 1358,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/scope-and-policy-verification.json",
+      "sha256": "33bd215908f88c5c742ccfe164b4d5372166d931d3048517762eb08953e86620",
+      "bytes": 408,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/testability-evidence-history-after.json",
+      "sha256": "85230c029d4296e39a45a650de608da2747ec70b44035566745dda55a21d3c2c",
+      "bytes": 3229,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/execution-01/validations.json",
+      "sha256": "90524f4225a0c94984d543aa187f608dc8d35afe4db92f3d2cd98e23677b1994",
+      "bytes": 146,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
       "path": "continuation/calibration-088-local/extension-02/inputs/extension-02-01-rubric.json",
       "sha256": "7be721d58cb32652075a9d391431fb28fd6044e37db657c0ab857344fda71f8d",
       "bytes": 3725,
@@ -2096,6 +3752,12 @@
       "sha256": "b4d68aae8447a17392c31ae3d5195608a68cf22398f52ccb2de1e13551415332",
       "bytes": 3282,
       "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/observable-regression-independent-review.md",
+      "sha256": "47663fc7344ff8e7b8361cbc246eceb8d45fe695196548ca506bcc8f53eecb7d",
+      "bytes": 7345,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
     },
     {
       "path": "continuation/calibration-088-local/r2/dry-run-validation.json",
@@ -2684,6 +4346,18 @@
       "sha256": "828f93ce67ac9fca146d8107e5c999b591fc11fc33b6fbf08371cca4ca6befca",
       "bytes": 29036,
       "source": "critical-r3.json"
+    },
+    {
+      "path": "external-consumer-input/README.md",
+      "sha256": "c1b7f208a81d381a0a47ac3506a1e5940568af4195824e0d83e3bdde541fbc66",
+      "bytes": 341,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
+    },
+    {
+      "path": "external-consumer-input/consumer-compatibility-assessment.md",
+      "sha256": "4860bafc280c4c6aa1f790a98f333d65a77e98445e88cef9d6a74eb9cfc58282",
+      "bytes": 11858,
+      "source": "exact extension02 execution/independent review or explicitly external consumer input; not scope approval"
     },
     {
       "path": "planning-tuning-preparation/ANC-001-invocation-fence.md",
@@ -3415,7 +5089,33 @@
       "accepted_override": false,
       "oracle_thresholds_fixed_roles_unchanged": true,
       "independent_cli_verification": "63/63 PASS; exact original request hashes and existing redacted display projection; strict freeze PASS",
-      "path": "continuation/calibration-088-local/extension-02/"
+      "path": "continuation/calibration-088-local/extension-02/",
+      "execution_01": {
+        "cli_executions": 63,
+        "raw_confirmations": 126,
+        "accepted": false,
+        "new_seal": false,
+        "best_exact_stable_cells": 105,
+        "best_confident_cells": 103,
+        "source": "continuation/calibration-088-local/extension-02/execution-01/result.json"
+      }
+    },
+    "upstream_checkpoint": {
+      "pr": 62,
+      "head": "b113bfa",
+      "state": "ready-for-review",
+      "ci_green": 6,
+      "macos_queued": 3,
+      "merged": false,
+      "published": false,
+      "installed_into_phase_c": false
     }
+  },
+  "external_consumer_input": {
+    "planning_authority": false,
+    "human_scope_question": "pending",
+    "bead": "run-x8d.6",
+    "bead_status": "open",
+    "scope_changes_applied": false
   }
 }

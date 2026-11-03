@@ -1,0 +1,194 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": false,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "The installer must be robust.",
+        "quote": "make the installer robust",
+        "scope": "installer behavior",
+        "verdict": "needs_work",
+        "failing": [
+          "observable",
+          "self_contained"
+        ],
+        "answers": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.02,
+              "yes": 0.98
+            }
+          }
+        },
+        "lint": {
+          "warnings": [
+            "vague term; name the observable outcome"
+          ],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "d9ea4e61726ff3a02e68ef630b5320f9ce4d6f5f7cb587271c33e7eeb1e03d18",
+          "request_sha256": "a8af93556d60151089c999ba4ecfa0f5738b76e027b3f5c03cf83300f4b28bf8"
+        },
+        "answers_second": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.99,
+              "unclear": 0.01,
+              "yes": 0.0
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 1.0,
+              "unclear": 0.0,
+              "yes": 0.0
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.03,
+              "yes": 0.96
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "needs_work",
+          "failing": [
+            "observable",
+            "self_contained"
+          ],
+          "low_confidence": [],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "no",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "no",
+              "confidence": 1.0,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.94,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false
+  },
+  "error": null
+}
