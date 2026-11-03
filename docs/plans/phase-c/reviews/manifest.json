@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "644e8a8562f4c83e7f6cbd342fe2d10e803f72d26b7193454a60d47e6c2a1a93",
-      "bytes": 14651,
+      "sha256": "23a51a833aec16bb57b960efd0d605d4047629989b72c5ef32872185f4edff1f",
+      "bytes": 15188,
       "source": "authored index"
     },
     {
@@ -1882,6 +1882,180 @@
       "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
     },
     {
+      "path": "continuation/calibration-088-local/extension-02/README.md",
+      "sha256": "d8d58ef349fc414a78339ce3c769255a7b6d2fd518dab1c25d579b648d9a4a97",
+      "bytes": 1324,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/inputs/extension-02-01-rubric.json",
+      "sha256": "7be721d58cb32652075a9d391431fb28fd6044e37db657c0ab857344fda71f8d",
+      "bytes": 3725,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/inputs/extension-02-02-rubric.json",
+      "sha256": "5a17d42f6cc53894b409dfddbd6f6418f4c7d4f866517fba9967694fe429b273",
+      "bytes": 3704,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/inputs/extension-02-03-rubric.json",
+      "sha256": "211cb4f3e5b8973ecebe6d84fd1a4bbcf74403f1ce36848aa1bfadcf6b72667d",
+      "bytes": 3606,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/inputs/generic-authorized-algorithm-intent.json",
+      "sha256": "af560520e5b13046e8d3cff480d800ee48b093c244e06b8c6695ec2ee6635319",
+      "bytes": 205,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/inputs/generic-unauthorized-algorithm-intent.json",
+      "sha256": "11c9aaae07ef258dd328a2b7ce48f93e33d75ae470ff297cc4924ab25377e8cb",
+      "bytes": 213,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/attestation.json",
+      "sha256": "82a599b6b15bbbd651a3527409bf4bba69b49887f99c48db95587eec5d2cd9df",
+      "bytes": 534,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/candidate-rationales.json",
+      "sha256": "6f32015518f258c6e22b20c7434d7e56156f69e8fd5508a87e2c945f10b0b6fd",
+      "bytes": 1179,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/freeze-manifest.json",
+      "sha256": "2dde8bcc2003dd445cba21ca5828374f158fb32ed7db47f4a4c277a75459dab8",
+      "bytes": 902,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/frozen-candidates.json",
+      "sha256": "348f65e079e27a8d9658b922f364aa06c55d86952cbdd865bdc66aece9060206",
+      "bytes": 10910,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/frozen-request-shapes.json",
+      "sha256": "10feba8d5b74e83ab4527d898730549cf9395b63bd9c4da8dfff8a48d871e0bf",
+      "bytes": 261448,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/history-contract-limitation.json",
+      "sha256": "038698cb20376650ca21ae283983fdfca44b49901ff7cfde94f105dcb4f7169b",
+      "bytes": 450,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/history-local-bindings.json",
+      "sha256": "73c7fd2aafc02f22c6f2ed9040bc4996a49f8c9145792f75790239f2b0e01b46",
+      "bytes": 579,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/independent-strict-freeze-audit.json",
+      "sha256": "d4d172d8d74292813c1dff5ad24567072eda860d3e126b3429149b15bf962493",
+      "bytes": 556,
+      "source": "independent generic extension02 verification receipt; no live calls"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/independent-supported-cli-dry-run-validation.json",
+      "sha256": "6943bc86f25c0b5b4c5f8258e6f3e3f60ece4c4f356f6752e37483ae0c630329",
+      "bytes": 28314,
+      "source": "independent generic extension02 verification receipt; no live calls"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/invocation-fence.md",
+      "sha256": "106399ce8987700e6bf1dcbafd2a9f6f16c8a73349f441d357ce1e74a132635d",
+      "bytes": 7416,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/invocation.md",
+      "sha256": "ce43587a0b638d0d3bda8f5d5b2d2904a3016774ad13db702b29f0bf7223aa0d",
+      "bytes": 7896,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/materialization-inventory.json",
+      "sha256": "2f60d385fef9605cfe7b9f587801be3241a4593c38cf59c19da906ddaae358ec",
+      "bytes": 2988,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/materialization-plan.json",
+      "sha256": "d7094d27a272611ba8bbfdd4d5e4d550d5762b7d161d137746d60a195a5e226b",
+      "bytes": 3595,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/request.json",
+      "sha256": "4ec3ddd577c6e51b1466ef4e1a212dabdfdb6edbef55dcf6b122b2a927eddc16",
+      "bytes": 7054,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/request.md",
+      "sha256": "d75f64ecbfa4e33b82442975176a76fa29cc4c2a1ed64f282b926ece94ac9856",
+      "bytes": 8022,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/request_contract-validation.json",
+      "sha256": "880c11ba3546c5d409dc99e8306c67f33cb722c4c57ef3a7012099014d13e852",
+      "bytes": 127,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/request_outer_fence-validation.json",
+      "sha256": "2f12a3ceff93289b734aeb6467ef205261ffb76f27fa94dd852158461e72539d",
+      "bytes": 7442,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/result.json",
+      "sha256": "10b5730a3198d84ce2f3b0fdac524f4c41530d418ed9e42b1f9510c7f7612861",
+      "bytes": 1529,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/result.md",
+      "sha256": "5154a15e12e5be4765052ae945692ee051b66a65717199aa2486add24e4ecd62",
+      "bytes": 1570,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/result_contract-validation.json",
+      "sha256": "4a7fab016f74d4f1c1e194e00c930db7881598dbc986efadd29430429b7a426f",
+      "bytes": 127,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/result_outer_fence-validation.json",
+      "sha256": "dad457ca894603979f8e03d54c161181704fcade73ac700f9b5aca19743dd144",
+      "bytes": 1589,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/testability-evidence-history.json",
+      "sha256": "6c15b3035ee09969a8e8488735a2ace7bb20f77998b78fce4657e6b42d96ab50",
+      "bytes": 2015,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-02/preparation/validations.json",
+      "sha256": "adcc5c71cc55f861b003d8d9ff8e08be6c36149b379df123e1fb585a5bbb0a48",
+      "bytes": 180,
+      "source": "independent generic extension02 preparation; no accepted override or new live result"
+    },
+    {
       "path": "continuation/calibration-088-local/inputs/future-intent-01-rubric.json",
       "sha256": "404c98bc81fbfae177e2845aee38082ab7fbbdc54377d5725fd0a54afaf99e9d",
       "bytes": 3623,
@@ -3231,6 +3405,17 @@
       "source": "continuation/calibration-088-local/attempt-01/result.json",
       "retry_provenance": "parent approved one evidence-backed retry after agent-context auto-review rejection; generic payloads only",
       "extension": "independent append-only candidate preparation; no result claimed"
+    },
+    "extension_02": {
+      "candidate_pool_sha256": "348f65e079e27a8d9658b922f364aa06c55d86952cbdd865bdc66aece9060206",
+      "request_shapes_sha256": "10feba8d5b74e83ab4527d898730549cf9395b63bd9c4da8dfff8a48d871e0bf",
+      "candidates": 3,
+      "materialized_inputs": 5,
+      "new_live_calls": 0,
+      "accepted_override": false,
+      "oracle_thresholds_fixed_roles_unchanged": true,
+      "independent_cli_verification": "63/63 PASS; exact original request hashes and existing redacted display projection; strict freeze PASS",
+      "path": "continuation/calibration-088-local/extension-02/"
     }
   }
 }

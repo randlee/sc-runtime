@@ -196,6 +196,14 @@ redaction separately from original canonical request digests. No new seal was
 accepted; question tuning, fixtures, full-sprint live gates and final QA remain
 open. The independent next candidate extension is preparation only.
 
+The additive [extension 02 preparation](continuation/calibration-088-local/extension-02/README.md)
+materializes five generic candidate inputs while preserving all earlier
+results. Independent verification passed all 63 actual supported CLI dry-runs,
+original request digests, existing redacted display projections and strict
+freeze bindings. The same 17+4 oracle labels, thresholds and three fixed
+questions remain unchanged. These are unaccepted candidate inputs; no new
+live result, accepted override or Phase C readiness is implied.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |
