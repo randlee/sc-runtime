@@ -19,8 +19,18 @@ adrs:
   - ADR-RUN-0401
   - ADR-RUN-0402
 owned_paths:
-  - .github/workflows/release.yml
-  - .github/workflows/crates-publish.yml
+  - install.py
+  - README.sc-publish.md
+  - .github/workflows/*release*.yml
+  - .github/workflows/*publish*.yml
+  - .github/actions/
+  - .github/scripts/
+  - .claude/agents/publisher.md
+  - .claude/skills/prerelease/
+  - .codex/agents/publisher.md
+  - .codex/skills/prerelease/
+  - .cursor/commands/cursor-publish.md
+  - .cursor/skills/prerelease/
   - release/
   - tests/integration/release/test_published_runtime_ecosystem.py
 must_follow: [c-3]
@@ -47,7 +57,17 @@ patch.
 ## Deliverables
 
 1. Use the existing authorization and publication workflow for `sc-runtime
-   0.2.0`; do not infer credentials or publish authority from this plan.
+   0.2.0` and every affected package frozen by c-1. Change only canonical
+   `release/sc-publish-consumer-input.json` and the qualified exact
+   `release/sc-publish-pin.toml`, then rerun its installer. Include its actual
+   destination inventory in this sprint's release-owned paths; any additional
+   generated destination requires an explicit ownership update before writing.
+   Do not hand-edit vendored workflows/scripts. Use the c-1 proven selective
+   contract to publish sc-command 0.2.0 before dependent cron/runtime packages,
+   checking each exact version's registry visibility before its dependent.
+   Unaffected packages stay at 0.1.1 and are not republished. `v0.2.0` names
+   the qualified affected-package release according to c-1's tag contract;
+   do not infer credentials or publish authority from this plan.
 2. Wait for registry visibility, then generate the `sqlite-mcp` release-mode
    fixture with no `[patch.crates-io]` entry and run its standard no-edit
    sequence: `just setup`, `just lint`, `just test`, `just build-cli`, and
@@ -56,8 +76,10 @@ patch.
    no-patch generated fixture**. Starting at the rendered `daemon` resolve ID,
    follow normal dependency edges and enforce exactly one reachable
    `(name, version, source)` tuple each for `rmcp`, `utoipa`, and
-   `utoipa-axum`. Record that `sc-runtime` is exactly 0.2.0 and its source is
-   the crates.io registry, not a path, git, or patch source.
+   `utoipa-axum`. Record sc-command and sc-runtime at exactly 0.2.0 and any
+   affected cron version frozen by c-1, all from crates.io rather than path,
+   git or patch sources. Assert unaffected packages retain their approved
+   0.1.1 versions and no stale command RMCP type reaches the daemon.
 4. Store the authorization reference, publication reference, visibility
    evidence, no-patch assertion, and package-identity receipt in the release
    PR/check output.
@@ -68,13 +90,17 @@ Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0503`, `req:REQ-RUN-0702`,
 `adr:ADR-RUN-0203`.
 
 - An authorized release record identifies `sc-runtime 0.2.0`; the release
-  workflow and registry visibility check succeed.
+  workflow and per-affected-package registry visibility checks succeed in
+  dependency order. Canonical installer repeat dry-run is clean, version
+  checks accept the proven mixed package set, and unchanged packages are
+  excluded from publication without bypassing validation.
 - The generated no-patch fixture resolves that crates.io package and completes
   the full standard command sequence without a generated-source edit.
 - The release fixture’s locked metadata closure has one identity each for
   `rmcp`, `utoipa`, and `utoipa-axum`; any duplicate reaching the rendered
-  daemon fails the test. Its `sc-runtime` package is exactly 0.2.0 from the
-  crates.io registry, not a local checkout.
+  daemon fails the test. Both `sc-command` and `sc-runtime` are exactly 0.2.0
+  from crates.io, plus the affected cron version fixed by c-1 when required;
+  no local checkout supplies an affected package.
 - The fixture uses ADR-RUN-0401/0402's established noninteractive generation
   driver and values-file contract; it introduces no alternate renderer.
 

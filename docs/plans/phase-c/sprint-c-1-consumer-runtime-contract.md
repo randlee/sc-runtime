@@ -14,9 +14,13 @@ requirements:
   - REQ-RUN-0702
   - NFR-RUN-0006
   - NFR-RUN-0007
+  - REQ-CMD-0005
+  - NFR-CMD-0001
+  - NFR-CMD-0002
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0005
+  - ADR-RUN-0017
   - ADR-RUN-0202
   - ADR-RUN-0203
   - ADR-RUN-0303
@@ -24,6 +28,8 @@ owned_paths:
   - docs/requirements.md
   - docs/architecture.md
   - .claude/project/quality-policy.md
+  - docs/sc-cron/requirements.md
+  - docs/sc-cron/architecture.md
   - examples/spike/phase-c-contract/
 must_follow: []
 parallel_safe: []
@@ -78,10 +84,31 @@ allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
 5. Amend ADR-RUN-0203 with the exact probe-selected versions and identity
    algorithm, replacing its obsolete 0.2/5.5.0/3.7 evidence matrix. `c-3`
    consumes this frozen matrix and cannot select newer versions without a new
-   ADR amendment and a repeat of this probe.
+   ADR amendment and a repeat of this probe. Freeze `sc-command 0.2.0`
+   alongside `sc-runtime 0.2.0`: the command crate exposes the changed RMCP
+   types. Include the command-dependent cron manifest and shared logging
+   trait in the composition probe; freeze a cron 0.2.0 release if its command
+   requirement must change to preserve that public trait identity. Leave
+   unrelated config/transport packages at 0.1.1. Record exact per-package
+   versions and command-before-cron/runtime publication order. Amend
+   ADR-RUN-0017's temporary command dependency version and the cron
+   requirements/architecture when that affected edge changes, preserving
+   defaults-off/no-server semantics and deferred upstream logging cleanup.
 6. Define `c-4` as the named authorized release handoff: only after an
    authorized `sc-runtime 0.2.0` publication and registry visibility may its
    no-patch fixture report the registry-consumer acceptance result.
+7. Extend the temporary probe to qualify the canonical sc-publish selective
+   release contract for that affected closure (REQ-RUN-0702). Test actual
+   version verification, literal-base/publish=false handling, ordered publish
+   plan, and per-package registry lookups using the pinned kit's existing
+   dry-run/preflight facilities. Current code checks every declared crate
+   against the workspace/tag version, so disabling publication alone is not
+   proof. Record supported inputs, affected-package versions, unchanged
+   package treatment, and `v0.2.0` tag semantics in the release ADR amendment.
+   If the current pin cannot support it, own an upstream sc-publish change
+   request and qualify a released exact pin before freezing the contract.
+   A demonstrated upstream gap leaves c-1 incomplete; no hand-written
+   workflow bypass or blanket version bump is permitted.
 
 ## Acceptance criteria
 
@@ -119,6 +146,11 @@ Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
 - The release handoff has a sole owner (`c-4`) and its required authorization,
   registry visibility, no-patch fixture, and exact package-identity proof are
   unambiguous.
+- The affected command/runtime/cron dependency closure and selective kit
+  contract are demonstrated by the temporary probe, including a negative
+  stale-command-version case. ADR-RUN-0203 names every affected release,
+  publication order, tag/version lookup semantics, and qualified exact kit
+  pin; unsupported selective publication blocks this contract's closure.
 - ADR-RUN-0005 states the default policy mapping for each selected crate and
   edge, identifies fresh generation as its consumer and the observed missing
   consumer boundary policy as its purpose, and defines the handoff: after

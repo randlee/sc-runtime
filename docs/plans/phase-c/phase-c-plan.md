@@ -75,8 +75,19 @@ The phase has no artificial phase-wide integration sprint.
 - `sc-runtime` exposes `utoipa_axum::OpenApiRouter` in its builder surface.
   Moving that public type from Utoipa 5 to 6 is a pre-1.0 breaking change.
   The release therefore publishes `sc-runtime 0.2.0`, and the template
-  consumes that exact new minor line. The other standalone library crates
-  are not version-bumped unless their manifests actually change.
+  consumes that exact new minor line. `sc-command` also moves to `0.2.0`:
+  its public RMCP `IntoMcp`/`McpError` types change with the same stack.
+  `sc-cron` consumes the command-owned logging trait through a versioned
+  path dependency; `c-1` must prove and freeze the affected package closure,
+  including a matching cron release when updating that public dependency is
+  necessary. Unaffected standalone libraries retain `0.1.1`.
+- Selective publication is a contract to prove, not an assumed kit feature.
+  The current pin's release-tag version checks cover all declared crates and
+  its registry lookups use the tag version. `c-1` probes the canonical kit
+  with affected package versions and unchanged literal-base packages. If it
+  cannot validate and publish only the affected closure, the upstream kit
+  capability gap blocks release work until an enhancement is qualified;
+  do not bypass validation or bump unaffected packages to accommodate it.
 - `template/` remains consumer code. Fresh generation installs an appropriate
   default boundary policy derived from the selected project configuration;
   after setup the consumer owns that policy. It does not copy this
@@ -184,7 +195,10 @@ sc_runtime::Daemon::builder()
   RMCP 3.8 package identity and preserve the existing stateless streamable-HTTP
   composition.
 - The `sc-runtime` public crate version changes from `0.1.1` to `0.2.0`.
-  Template registry requirements and release-mode tests use `0.2.0` exactly;
+  The affected command release is `0.2.0`; c-1 records whether cron also
+  requires `0.2.0` to preserve the shared logging trait identity. Publication
+  follows dependency order: command first, then dependent cron/runtime.
+  Template registry requirements and release-mode tests use the frozen versions exactly;
   local development retains only the driver-owned `[patch.crates-io]` path.
 - The SQLite writer remains an independent rusqlite building block. The
   template stores remain SQLx; no dependency edit creates an edge between the

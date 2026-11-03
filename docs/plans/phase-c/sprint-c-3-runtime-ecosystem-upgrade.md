@@ -49,6 +49,8 @@ owned_paths:
   - Cargo.lock
   - crates/sc-command/Cargo.toml
   - crates/sc-command/src/
+  - crates/sc-cron/Cargo.toml
+  - crates/sc-cron/tests/
   - crates/sc-runtime/Cargo.toml
   - crates/sc-runtime/src/
   - crates/sc-runtime/tests/
@@ -120,8 +122,13 @@ must satisfy that amendment:
    composition: `rmcp`, `utoipa`, and `utoipa-axum`. Update source for the
    released API deltas while preserving the one Axum router, generated routes,
    OpenAPI document, and stateless MCP service behavior.
-3. Change the public `sc-runtime` package to `0.2.0` and update only its
-   root/template manifest requirements and checkout-patched fixtures. `c-4`
+3. Change public `sc-command` and `sc-runtime` packages to `0.2.0` and update
+   their runtime/template requirements, normal/dev edges and checkout-patched
+   fixtures together. Apply c-1's frozen affected closure to cron's command
+   requirement and package version if needed; prove a single shared logging
+   trait identity rather than forcing a stale registry command dependency.
+   Make package versions explicit where required to keep unaffected
+   config/transport at 0.1.1; do not bump them with workspace inheritance. `c-4`
    exclusively owns release metadata, release workflows, the registry fixture,
    and authorization evidence. Do not version-bump unaffected standalone crates.
 4. Add graph assertions for the checkout-patched generated fixture. Run locked
@@ -138,8 +145,9 @@ must satisfy that amendment:
 6. Preserve and strengthen the SQLite resolver guard. It must fail if
    `rusqlite` leaves 0.39.x, if `libsqlite3-sys 0.38+` resolves, or if the
    template SQLx store ceases to resolve under its declared 0.9 range.
-7. Hand the verified prepublication release input to `c-4`: the package
-   version, no-patch fixture recipe, exact graph assertion, and registry
+7. Hand the verified prepublication release input to `c-4`: every affected
+   package version and dependency order, qualified selective-publish kit pin,
+   no-patch fixture recipe, exact graph assertion, and registry
    visibility predicate. This sprint does not publish and does not claim a
    release-mode registry result.
 
@@ -157,8 +165,10 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
   `(name, version, source)` tuple each for `rmcp`, `utoipa`, and
   `utoipa-axum` from the runtime/daemon roots.
 - Both `template/Cargo.toml` and `template/workspace.template.toml` require
-  the frozen `sc-runtime 0.2.0` line; the generation fixture fails if either
-  source leaves `0.1.1` behind.
+  the frozen `sc-command 0.2.0` and `sc-runtime 0.2.0` lines and c-1's
+  affected cron version. Tests reject a stale affected-package requirement
+  while permitting unchanged config/transport 0.1.1. Source composition and
+  packaged manifests preserve the same shared logging trait and RMCP types.
 - The migration preserves NFR-RUN-0007's RMCP minor pin, REQ-RT-0001/0004's
   public builder/router and `IntoMcp` composition, and REQ-CMD-0005 plus
   NFR-CMD-0001/0002's server-feature and dependency boundaries.
