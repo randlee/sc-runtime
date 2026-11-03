@@ -1,0 +1,12 @@
+{
+  "triage_decision_roles": [
+    "faithful",
+    "single_constraint"
+  ],
+  "previous_seal": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+  "previous_decision_paths": [
+    "docs/plans/phase-c/reviews/triage-087/r2/ANC-001-result/result.json",
+    "docs/plans/phase-c/reviews/triage-087/r2/ANC-003-result/result.json"
+  ],
+  "note": "Evidence paths document parent's authority for reopening. Actual-anchor cases are deliberately absent from calibration payload."
+}

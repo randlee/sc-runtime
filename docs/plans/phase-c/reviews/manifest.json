@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "c7683b8d371f3f12549aa66651eaf4eec806f382718536d18593c1ddab2a65e3",
-      "bytes": 9760,
+      "sha256": "a8b2542ea4aa06e3efd3f87368493c2221abc8cf73eaf04784823bc4f44ff42a",
+      "bytes": 11082,
       "source": "authored index"
     },
     {
@@ -164,6 +164,42 @@
       "sha256": "211f9ddbc825e2ba07f07f8b2f488f7a6a814adae28a83d0fb80edc6cce392c3",
       "bytes": 23639,
       "source": "tuning/calibration-r1/live-authorized/seal-01/validation.json"
+    },
+    {
+      "path": "continuation/calibration-preparation/continuation-bindings.json",
+      "sha256": "0f83c2ef232e709f7600b8f975fdc1e86f5c493b128a38e3d60c034214d843d4",
+      "bytes": 490,
+      "source": "current offline continuation preparation"
+    },
+    {
+      "path": "continuation/calibration-preparation/invocation-fence.md",
+      "sha256": "a83a358d385542f6242d999fd5b976a591893e53f73bd0ac76e76c6ad91afe35",
+      "bytes": 7848,
+      "source": "current offline continuation preparation"
+    },
+    {
+      "path": "continuation/calibration-preparation/request.json",
+      "sha256": "d59c6bca398a73094c7c53e87b7ebcff6221d89c459f2412adef9219cf35e0ef",
+      "bytes": 7264,
+      "source": "current offline continuation preparation"
+    },
+    {
+      "path": "continuation/calibration-preparation/request.md",
+      "sha256": "c1dca1ef28e18a7fa3e4f10e233b3345a8f1bc6aeffaf808a9dd75edc2601700",
+      "bytes": 7621,
+      "source": "current offline continuation preparation"
+    },
+    {
+      "path": "continuation/gate-preparation/inventory.json",
+      "sha256": "6de6c4e16088c120177e523f5acb7906416091a2458ab46ccbc4d6cacfa1a3aa",
+      "bytes": 29305,
+      "source": "current offline continuation preparation"
+    },
+    {
+      "path": "continuation/input-feasibility.md",
+      "sha256": "e498f0844cf2a8b0540f9184183dfc0436f1095d282ba3275e57a26817775e39",
+      "bytes": 11925,
+      "source": "current offline continuation preparation"
     },
     {
       "path": "critical-r1-screen.json",
@@ -844,5 +880,17 @@
       "live_gate_pass_claimed": false,
       "source": "triage-087/r2/"
     }
+  },
+  "offline_continuation": {
+    "gate_items": 4,
+    "active_locked_anchors": 10,
+    "beads_read": 34,
+    "immutable_packet_checks": 7,
+    "request_schema_valid": 7,
+    "request_relational_valid": 7,
+    "stale_runtime_bindings": 7,
+    "exclusions_applied": false,
+    "live_gates_run": false,
+    "path": "continuation/gate-preparation/inventory.json"
   }
 }

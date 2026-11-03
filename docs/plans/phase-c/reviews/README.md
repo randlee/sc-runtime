@@ -123,6 +123,26 @@ the real triage/install pilot; question retuning, independent resealing,
 testability/fixture rechecks, full-sprint live gates, coverage and final QA
 remain open. No actual gate outcome has been changed to PASS.
 
+Offline continuation preparation now records all four whole-sprint files,
+their exact hashes, all ten active locked anchor versions, and 34 actual
+anchor/question/sprint Beads records in the
+[gate inventory](continuation/gate-preparation/inventory.json). All current
+question links resolve. The seven historical semantic tuning requests still
+pass installed 0.8.7 request schema and relational validation and match current
+anchor authority, but retain stale 0.8.6 runtime bindings: refresh script,
+contract and immutable agent/runner hashes before dispatch. Proposed relevance
+exclusions in the inventory are candidates only; no exclusion was applied and
+every whole-sprint gate still selects all active locked anchors.
+
+Seven immutable approved packet/seal/oracle hashes match the evidence manifest.
+The [current input-feasibility assessment](continuation/input-feasibility.md)
+identifies missing supported rubric context and independently sealed-question
+inputs in 0.8.7. The separately prepared
+[calibration request](continuation/calibration-preparation/request.json) preserves
+existing decision/seal bindings and is evidence of preparation, not a completed
+tournament. Upstream work owns the optional input feature; no consumer source,
+installed tooling, anchor, question or live gate was changed in this checkpoint.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |
