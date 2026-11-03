@@ -76,9 +76,11 @@ The phase has no artificial phase-wide integration sprint.
   The release therefore publishes `sc-runtime 0.2.0`, and the template
   consumes that exact new minor line. The other standalone library crates
   are not version-bumped unless their manifests actually change.
-- `template/` remains consumer code. It may carry only the narrowly declared,
-  sc-lint-owned 0.8.4 profile entries approved by `c-1`; it may not gain a
-  hand-written `boundaries/`, clippy, rustfmt, or deny policy. The amendment
+- `template/` remains consumer code. Fresh generation installs an appropriate
+  default boundary policy derived from the selected project configuration;
+  after setup the consumer owns that policy. It does not copy this
+  repository's maintainer policy. It may carry the sc-lint-owned 0.8.4
+  profile entries approved by `c-1`, but no clippy, rustfmt, or deny policy. The amendment
   to REQ-RUN-0307, NFR-RUN-0006, ADR-RUN-0005, and the quality policy makes
   that exception explicit before either implementation sprint begins.
 
@@ -86,10 +88,22 @@ The phase has no artificial phase-wide integration sprint.
 
 | Track | Boundary / composition root | Contract change | Sprint | Owned-path boundary |
 | --- | --- | --- | --- | --- |
-| phase contract | consumer lint plus public runtime composition | the binding 0.8.4 consumer-profile exception, its executable receipt/init-preservation protocol, the frozen Utoipa/RMCP package-identity matrix, and the release handoff | `c-1` | requirements, ADRs, quality-policy text, and a temporary contract probe recorded before deletion |
+| phase contract | consumer lint plus public runtime composition | the binding 0.8.4 consumer-profile and configuration-derived default boundary policy contract, its executable receipt/init-preservation protocol, the frozen Utoipa/RMCP package-identity matrix, and the release handoff | `c-1` | requirements, ADRs, quality-policy text, and a temporary contract probe recorded before deletion |
 | consumer lint | generated consumer lint contract | `setup` installs working 0.8.4 binaries; ordinary `just lint` plus named default/full lint profiles invoke `sc-boundary`, `sc-portability`, and `sc-runtime` using the `c-1` contract | `c-2` | `template/sc-lint.toml`, bootstrap/Just integration, generation fixture tests and template CI |
 | ecosystem integration | `sc-runtime` public builder plus generated daemon | one Utoipa 6 type universe and RMCP 3.8 API adaptation; the checkout-patched consumer proves the public composition before publication | `c-3` | runtime manifests/source/tests, template manifests/daemon source, lockfile, compatibility tests, fixture CI |
 | ecosystem release | published `sc-runtime` plus registry consumer | authorized publication and the no-patch, registry-resolved consumer proof | `c-4` | release workflow/metadata and a release-mode fixture |
+
+The existing `BOUNDARY-sc-runtime` manifest allows transport and command
+server dependencies plus its third-party runtime stack, permits no workspace
+dependents, and forbids config, cron, SQLite-writer, SQLx, and full logging
+runtime edges. `BOUNDARY-sc-command` permits `sc-runtime`/`sc-cron` dependents
+and serde/serde_json/sc-observability-types dependencies; its server-feature
+exceptions remain governed by NFR-CMD-0001/0002. The c-3 upgrade changes
+versions inside those contracts, not dependency direction. The authoritative
+lists remain `boundaries/sc-runtime/sc-runtime.toml` and
+`boundaries/sc-command/sc-command.toml`. c-2 generates a separate consumer
+policy from ADR-RUN-0303's selected application crate graph; it never vendors
+these maintainer manifests.
 
 `c-3` is intentionally vertical. `DaemonBuilder` accepts ordinary
 `utoipa_axum::OpenApiRouter`, so the runtime implementation, the generated
@@ -127,10 +141,10 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 
 | Feature-level criterion | Sole owner | Proof |
 | --- | --- | --- |
-| The consumer-profile exception and package-identity/release contracts are unambiguous before implementation starts. | `c-1` | An executable isolated 0.8.4 no-manifest/init-preservation probe and a temporary metadata probe pass before the amended REQ/ADR/quality-policy text freezes their exact results and the authorized release handoff. |
+| The consumer-profile exception and package-identity/release contracts are unambiguous before implementation starts. | `c-1` | An executable isolated 0.8.4 fresh-policy/init-preservation probe and a temporary metadata probe pass before the amended REQ/ADR/quality-policy text freezes their exact results and the authorized release handoff. |
 | A generated consumer installs and executes the complete configured sc-lint toolchain without source edits. | `c-2` | Generated fixture runs `just setup`, ordinary `just lint`, and named default/full profiles; the installed `sc-lint` launcher’s analyzer invocation receipt proves all three analyzers actually ran. |
 | A runtime/template consumer compiles with one RMCP/Utoipa/Utoipa-Axum universe at their approved latest releases. | `c-3` | Checkout-patched fixture and targeted type-composition tests assert exactly one package identity for each contract package on the runtime/daemon composition graph. |
-| Published `sc-runtime 0.2.0` can be consumed by the template without a checkout patch. | `c-4` | The authorized release workflow publishes only after the release-mode fixture resolves the crates.io package and passes the consumer command sequence. |
+| Published `sc-runtime 0.2.0` can be consumed by the template without a checkout patch. | `c-4` | The authorized release workflow publishes after prepublication checks; once the package is visible, the release-mode fixture resolves it from crates.io and passes the consumer command sequence before release closure. |
 | SQLite compatibility remains stable. | `c-3` | The existing `sqlx_resolve` test and tree assertion prove `rusqlite 0.39.x` with `libsqlite3-sys 0.37`, and no `libsqlite3-sys 0.38` appears. |
 
 ## Required decisions and exact compatibility contract
@@ -177,8 +191,8 @@ sc_runtime::Daemon::builder()
 
 - Updating `rusqlite` above `0.39.x`, updating SQLx, or resolving the
   `libsqlite3-sys 0.38` incompatibility.
-- Adding consumer boundary manifests or copying this repository's boundary
-  policy into generated projects.
+- Copying this repository's maintainer boundary policy into generated
+  projects, or overwriting an existing consumer-owned boundary policy.
 - New runtime features, new MCP tools, OpenAPI routes, or changes to the
   builder's intended composition responsibility.
 - Replacing `sc-lint`'s installation/bootstrap mechanism or implementing new

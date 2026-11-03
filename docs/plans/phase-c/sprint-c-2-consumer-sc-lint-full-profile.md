@@ -20,6 +20,10 @@ adrs:
   - ADR-RUN-0402
 owned_paths:
   - template/sc-lint.toml
+  - template/boundaries/
+  - template/.sc-lint/bootstrap.py
+  - template/Justfile
+  - template/justfile
   - .github/workflows/template-consumer-lint.yml
   - tests/unit/generation/test_consumer_sc_lint_profile.py
 must_follow: [c-1]
@@ -43,8 +47,10 @@ The standard consumer command names remain `setup`, `lint`, `test`, and
 
 1. Implement the binding REQ-RUN-0307/NFR-RUN-0006/ADR-RUN-0005 amendment
    produced by `c-1`; this sprint does not reinterpret it. The exception is
-   limited to sc-lint's declared consumer profile and never permits a template
-   `boundaries/`, clippy, rustfmt, or deny policy.
+   limited to sc-lint's declared consumer profile and the fresh-install
+   boundary policy derived from selected project configuration. It never
+   permits copying the maintainer boundary policy or adding clippy, rustfmt,
+   or deny policy.
 2. Extend `template/sc-lint.toml` from its current fmt/clippy-only profiles
    using the exact 0.8.4 contract below. Both `default` and `full` contain all
    three analyzer entries; `full` is a superset of `default`. The bootstrap's
@@ -72,10 +78,13 @@ The standard consumer command names remain `setup`, `lint`, `test`, and
    full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
    ```
 
-3. `c-1` records whether the supported 0.8.4 boundary analyzer succeeds with
-   no consumer manifest or needs a documented consumer-neutral mode. This
-   sprint uses that exact mode. It must not substitute a no-op wrapper,
-   suppress a failure, or copy this repository's manifest.
+3. Render `template/boundaries/` from the c-1 configuration-to-policy mapping
+   for the generated application crate graph. Only selected crates and
+   allowed edges appear; disabled stores and MCP components do not. Run the
+   supported 0.8.4 analyzer against that policy. On completion of setup the
+   policy belongs to the consumer; subsequent setup/init/upgrade preserves
+   consumer edits. It must not substitute a no-op wrapper, suppress a failure,
+   or copy this repository's maintainer manifests.
 4. Preserve bootstrap idempotence. `just setup` installs the pinned release,
    verifies `sc-lint version --json`, and leaves the template's checked-in
    sources unchanged. A second `sc-lint init --just` still preserves
@@ -103,9 +112,12 @@ Root: `req:REQ-RUN-0307`, `req:REQ-RUN-0503`.
 - `just --list` still exposes `setup`, `lint`, `test`, `upgrade`, and
   `db-prepare`; after `sc-lint init --just`, `db-prepare` and the complete
   configured profile remain present.
-- The rendered consumer still contains no `boundaries/`, `clippy.toml`,
-  `rustfmt.toml`, or `deny.toml` policy file. Its only lint policy input is
-  `sc-lint.toml` plus sc-lint-managed bootstrap content.
+- The rendered consumer contains the configuration-derived fresh boundary
+  policy and no `clippy.toml`, `rustfmt.toml`, or `deny.toml`. Tests cover
+  SQLite-only and combined store selections, with MCP on/off, asserting the
+  generated policy follows actual selected crates/edges. A consumer policy
+  edit survives repeated setup/init/upgrade. Removing an allowed-edge rule or
+  adding a forbidden dependency is detected by the actual boundary analyzer.
 - The dedicated consumer-lint CI workflow runs this proof on an actual generated consumer,
   not only against the unrendered `template/` tree.
 

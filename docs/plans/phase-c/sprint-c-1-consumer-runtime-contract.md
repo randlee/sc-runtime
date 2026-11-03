@@ -44,24 +44,30 @@ allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
 
 1. Amend REQ-RUN-0307 and NFR-RUN-0006 to pin the repository and generated
    consumer to **sc-lint 0.8.4**. Permit only the three declarative entries
-   below in `template/sc-lint.toml`; they are sc-lint invocation wiring, not
-   a copied policy. Continue to forbid `boundaries/`, clippy, rustfmt, deny,
-   custom rules, and `just` modules.
+   below in `template/sc-lint.toml`; they are sc-lint invocation wiring.
+   Define a fresh-install default boundary policy from the configured
+   application crate graph (ADR-RUN-0303): include only selected crates and
+   allowed edges; omit disabled store/MCP components. After setup this policy
+   belongs to the consumer and subsequent setup/upgrade preserves it.
+   Forbid copying maintainer manifests, clippy, rustfmt, deny, custom rules,
+   and `just` modules. This is the user-approved fresh-install policy
+   exception to the existing no-lint-knowledge requirements.
 2. Amend ADR-RUN-0005 to name that narrow exception, its preservation after
    `sc-lint init --just`, and the rule that the bootstrap receipt—not TOML
    inspection alone—proves all three analyzers ran. Amend the quality policy
    from 0.8.0 to 0.8.4 and reference the same authoritative exception.
 3. Create and execute the temporary `examples/spike/phase-c-contract/` probe.
    In temporary directories it installs/runs the released `sc-lint 0.8.4`
-   binary against a minimal generated-consumer-shaped repository with no
-   `boundaries/` path, asserts the exact three analyzer command receipts and
-   zero exit status, and fails if a copied manifest, suppressed analyzer
+   binary against a minimal generated-consumer-shaped repository with the
+   configuration-derived fresh boundary policy, asserts the exact three analyzer command receipts and
+   zero exit status, and fails if a copied maintainer manifest, suppressed analyzer
    failure, or wrapper is required. It then runs `sc-lint init --just` twice
    and asserts that `db-prepare`, every declared analyzer entry, and ordinary,
-   `default`, and `full` profile execution all remain intact. If 0.8.4 has a
-   documented consumer-neutral mode, the probe uses and records its exact
-   flags/configuration; otherwise this phase stops for a new sc-lint release
-   rather than inventing a mode.
+   `default`, and `full` profile execution all remain intact, including a
+   consumer edit to the generated policy. Record the supported 0.8.4 policy
+   schema, selected-crate/edge mapping and initialization behavior in
+   ADR-RUN-0005. If supported configuration cannot express it, report the
+   upstream capability gap rather than suppressing the analyzer.
 4. In the same test, recheck crates.io, create a temporary composition
    manifest for the newest stable candidates, and run locked `cargo metadata
    --format-version 1 --all-features`. Starting at the probe’s runtime/daemon
@@ -78,7 +84,7 @@ allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
 
 ## Acceptance criteria
 
-Root: `req:REQ-RUN-0004`, `req:REQ-RUN-0307`, `req:REQ-RUN-0702`, `adr:ADR-RUN-0005`,
+Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
 `adr:ADR-RUN-0202`, `adr:ADR-RUN-0203`.
 
 - The three documents have one consistent 0.8.4 baseline and explicitly
@@ -100,7 +106,7 @@ Root: `req:REQ-RUN-0004`, `req:REQ-RUN-0307`, `req:REQ-RUN-0702`, `adr:ADR-RUN-0
   full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
   ```
 
-- The executable probe passes the no-manifest receipt and metadata reachability
+- The executable probe passes the fresh-policy receipt and metadata reachability
   assertions plus the two-init preservation assertion before its selected
   versions are recorded. ADR-RUN-0203 names those exact versions and the
   metadata algorithm; it no longer leaves its old pins as active evidence.
@@ -112,6 +118,10 @@ Root: `req:REQ-RUN-0004`, `req:REQ-RUN-0307`, `req:REQ-RUN-0702`, `adr:ADR-RUN-0
 - The release handoff has a sole owner (`c-4`) and its required authorization,
   registry visibility, no-patch fixture, and exact package-identity proof are
   unambiguous.
+- ADR-RUN-0005 states the default policy mapping for each selected crate and
+  edge, identifies fresh generation as its consumer and the observed missing
+  consumer boundary policy as its purpose, and defines the handoff: after
+  setup the generated policy is consumer-owned and later setup preserves it.
 
 ## Required validation
 
