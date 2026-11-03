@@ -259,6 +259,23 @@ cells; supplemental results remain as recorded. No actual question overrides
 or anchor gates were adopted. Subsequent generic input preparation remains
 separate from these historical live results.
 
+The completed [extension05 execution](continuation/calibration-088-local/extension-05/execution-01/result.json)
+now preserves 138 CLI results, 278 recorded transport attempts, exact raw
+outputs/provenance/validations and the updated generic evidence history.
+It returned `accepted:false`; no candidate met all confidence checks and no
+replacement seal was issued. The exact
+[independent faithful review](continuation/calibration-088-local/faithful-regression-independent-review.md)
+is retained without adopting an actual project question override.
+
+The [internal candidate packet](internal-unapproved/README.md) remains
+UNAPPROVED/NOT CAPTURED. [External endpoint/logging intake](external-consumer-input/intake-checkpoint.md)
+is reference evidence, not owner QA or baseline/publication authority. The
+[full author Step3 handoff](compatibility-scope-r1/step3-r1-developer.json)
+retains source baseline `0b32ae2`, its unchanged R1 report and eight document
+hashes. This checkpoint leaves all eight authoritative files unchanged for
+the pending R2 retry. No valid R2 result is claimed; critical review, QA,
+new fixture approval/capture and actual Plan Anchor gates remain pending.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |
