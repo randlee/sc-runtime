@@ -11866,6 +11866,240 @@
       "source": "current offline continuation preparation"
     },
     {
+      "path": "continuation/calibration-v3/README.md",
+      "sha256": "c2ee69128a8be81d4a7d54a4cafbe914d0e61586a1ebd5153dd2761acd0ac94f",
+      "bytes": 953,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/approved-fidelity-policy.intent.json",
+      "sha256": "14382fe17d4192109a2d06edd217006beb606e89518a0cb305406f547e33b33b",
+      "bytes": 1218,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/frozen-dedupe-request-shapes.json",
+      "sha256": "a0ba6476b8635f9bebcda81539ce4d7f63454de48e90edcf7100c1a0db2ad56b",
+      "bytes": 5993,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/human-approval-receipt.json",
+      "sha256": "1aa2c856fe0d489f793af44837cb41328f684db2e5331ae51b7cd4256e67a22a",
+      "bytes": 900,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/testability-calibration.v3.json",
+      "sha256": "cd4e9a96f8f018e394c897fc4cd82423a77771ddc7c20503b032db59451c96fb",
+      "bytes": 84708,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-first-01-rubric.json",
+      "sha256": "993530cd349244d61766188caa0135f343534dd8cc957dabb7ca0c303f3f84f2",
+      "bytes": 4128,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-first-02-rubric.json",
+      "sha256": "80e9e13c1179b143e005ea3fd2c8883f084be95f94a7e0191afb4a1ba2a8b11c",
+      "bytes": 4103,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-first-03-rubric.json",
+      "sha256": "b26282be2ff13d67aea4284bb13abccbc3cbb41756fcffba13f9fcb0e28e74e4",
+      "bytes": 4120,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/attestation.json",
+      "sha256": "18b74f514644b58e6be4ddbaf73aae9f0290aba587a835c3864c68a67185f2b1",
+      "bytes": 530,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/clarity-and-coverage-review.md",
+      "sha256": "75eb211d47df04288b43d55070c4ab55e5405ef7201a46a5b4210add2df92771",
+      "bytes": 6286,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/dedupe-preselection-evidence.json",
+      "sha256": "33d4749b0f337476c580f38206b3ad8714f8e940c0568301a7f8cbde6f653805",
+      "bytes": 1706,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/freeze-manifest.json",
+      "sha256": "d57525319ad309c910e27c2ccb0fb43a1b3a5b90613b30dac95afb1d27ef8cce",
+      "bytes": 1173,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/frozen-candidates.json",
+      "sha256": "ac6f83f0e082c4d43e989b713996ef3597227cad207de06ead23431a0463ff6c",
+      "bytes": 12265,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/frozen-dedupe-request-shapes.json",
+      "sha256": "a0ba6476b8635f9bebcda81539ce4d7f63454de48e90edcf7100c1a0db2ad56b",
+      "bytes": 5993,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/frozen-request-shapes.json",
+      "sha256": "933d53044eefa00e7c32f0839b1cb460da28d27a0a1b41e634f49386e30b4990",
+      "bytes": 629143,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/human-approval-receipt.json",
+      "sha256": "1aa2c856fe0d489f793af44837cb41328f684db2e5331ae51b7cd4256e67a22a",
+      "bytes": 900,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/immutable-v2-predecessor-23.json",
+      "sha256": "551a0b8b69fb9cd66ecd11655ef18f6edefd3d786fe2f0444b9ee09d28c106b9",
+      "bytes": 9068,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/invocation-fence.md",
+      "sha256": "25c5d58118ed09c1db74c742b62b36a53fdd59aa6ea722262a14bd1e2b86f10a",
+      "bytes": 7079,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/invocation-vars.json",
+      "sha256": "178bee3af814cc62a148c40ee1f73cf3afdb38ea665244a8b78551b5b70c638a",
+      "bytes": 7020,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/invocation.md",
+      "sha256": "1503cd0e0848a18e81c6106aa85f755851765611ae156e8c012ed2efe29e492c",
+      "bytes": 7559,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/local-bindings.json",
+      "sha256": "8c956b5effe8e112b9d0614bf6bcb1ae355dc3b1fd3af16e915952af4e21cd27",
+      "bytes": 1202,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/materialization-inventory.json",
+      "sha256": "419508100c538319b98bb4f3c103e65f304ed058d4086bdd093db11fec981e53",
+      "bytes": 3141,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/materialization-plan.json",
+      "sha256": "59cc79a8bbe4c880042efea70c9ace10fa8fe2692a6fc7511a1c1a02eb3ea907",
+      "bytes": 4064,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/pre-answer-clarity-coverage-review.json",
+      "sha256": "25b629607193e90b3febb159466dba23c6d23b9e6212bd08c73b7b2bdd8a3058",
+      "bytes": 1671,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/request-vars.json",
+      "sha256": "f5b5de41c0493f1f76eed8028433b8b444dbfb607346f05d1ce626af73092e27",
+      "bytes": 6649,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/request.json",
+      "sha256": "55b8cee4786fbf5228e390be46cf9da8ced15f56fc4118aab57648772558aab3",
+      "bytes": 6721,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/request.md",
+      "sha256": "1638935dce7b7d95a33dbb1d870d1b867cb0d32443f4f81498b0e040803ae28c",
+      "bytes": 7689,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/request_contract-validation.json",
+      "sha256": "11484484ccea7e74033097bdfcb6972541ef9af1cd2d9548857b0f85a9b9cccc",
+      "bytes": 127,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/request_outer_fence-validation.json",
+      "sha256": "ba370a2914f4a1c4d19e52b078eb9bf61e5d1641af4bc168b4f4e8e9ce3f065d",
+      "bytes": 7105,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/result-vars.json",
+      "sha256": "cbd7bf3b4418cc97da7e11465368451958f22c6460dd74667ac4ff10704c5b55",
+      "bytes": 1550,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/result.json",
+      "sha256": "674cfc08ad5a3b7dc5ddb1e6483b8b50901775006a686b0878650f4c9d9ebbc5",
+      "bytes": 1575,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/result.md",
+      "sha256": "a62e47ac3971e073e68a0ff9bebfeb493fdac93dc2786f24c3d9bb602648f635",
+      "bytes": 1616,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/result_contract-validation.json",
+      "sha256": "28dcff19d894d4082bb3f28d6b058ccd6531e79000052265969d170fef987eb3",
+      "bytes": 127,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/result_outer_fence-validation.json",
+      "sha256": "edb2da5957e1d2dc2098b46f54665fcb206779ce411f0487fdc8a21e9f8f111a",
+      "bytes": 1635,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/selection-policy.json",
+      "sha256": "b19e4f43f5be42e228ccbc0b989a49f499e2596c5a953f1675f772a7fab25cdd",
+      "bytes": 552,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/testability-calibration.v3.json",
+      "sha256": "cd4e9a96f8f018e394c897fc4cd82423a77771ddc7c20503b032db59451c96fb",
+      "bytes": 84708,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/testability-calibration.v3.schema.json",
+      "sha256": "1946d7054aa0dee5cb59049d0438326c5f492f154523457d7e3fa59d63ed91d2",
+      "bytes": 1193,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/testability-evidence-history.json",
+      "sha256": "7dd6ada71ba630b33dccd5bff8a61a8d4dceb6c01c5ee51bce70f6d161b8c07f",
+      "bytes": 12768,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/preparation/validations.json",
+      "sha256": "19fd9ceb468e2dedea574a7dd328b3b245a448c3d0863ba66aed4cd7de16e0b6",
+      "bytes": 268,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
       "path": "continuation/calibration/acceptance-table.json",
       "sha256": "ae751e8f144aa8fb18c97cf227bcf104cd0b85022929794d88d6c75c25283890",
       "bytes": 267327,
@@ -12098,6 +12332,12 @@
       "sha256": "4e9c85a41c0d2ecf9a005215984692ea76a6bbf7cc7c6a93fbe73f2e6ef9f53b",
       "bytes": 1666,
       "source": "exact review/preparation/external intake evidence; unapproved or external material is not planning authority"
+    },
+    {
+      "path": "external-consumer-input/phase-b-release-investigation.md",
+      "sha256": "bed9ac78de037149c800724dd5e8719d922db0aa45bd9721782ab965563b158d",
+      "bytes": 3628,
+      "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
     },
     {
       "path": "external-consumer-input/portable-endpoint/flaky-test-qa-result.md",
@@ -13090,5 +13330,16 @@
     "follow_up_plan_review": "pending for new human clarification",
     "source": "internal-unapproved/consumer-extension-anchor-candidates.json",
     "implementation_readiness": false
+  },
+  "generic_v3_preparation": {
+    "inputs": 7,
+    "semantic_cases": 36,
+    "lint_cases": 8,
+    "dedupe_pairs": 8,
+    "new_live_calls": 0,
+    "accepted": false,
+    "old_authority_unchanged": true,
+    "independent_preflight": "pending root-commissioned verification",
+    "path": "continuation/calibration-v3/"
   }
 }

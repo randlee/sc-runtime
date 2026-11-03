@@ -1,0 +1,9 @@
+{
+  "question": "Approve the recommended policy and five generic fixture revisions in /tmp/sc-runtime-phase-c-review/faithfulness-authority-proposal.md? Fidelity would follow the quote plus explicitly approved context, without assuming JSON means an object or logs mean stdout/stderr. The revisions get a separate version; all old evidence and confidence rules remain intact. Optional fictional context examples remain unapproved.",
+  "answer": "Approve policy and five revisions (Recommended)",
+  "proposal": "/tmp/sc-runtime-phase-c-review/faithfulness-authority-proposal.md",
+  "question_item_id": "[\"request_user_input_async\",\"call_7adec3865e764671a09e34c491d64e1f\",0]",
+  "source": "Direct human send_user_message_question_reply in this chat",
+  "recorded_at_utc": "2026-11-03T18:50:20.595734+00:00",
+  "proposal_sha256": "0f4b7d442a40b5563d60c8eea43f8b7e82de026c602862d0ab7ca350104d3cff"
+}
