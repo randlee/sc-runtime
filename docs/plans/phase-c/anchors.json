@@ -7,7 +7,7 @@
       "id": "ANC-001",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "A Phase C generated consumer must install sc-lint through just setup and run sc-boundary, sc-portability, and sc-runtime through ordinary just lint and named default and full profiles.",
+      "statement": "A generated consumer repository must have the full sc-lint toolchain installed.",
       "quote": "a full sc-lint is installed on a consumer repo",
       "kind": "directive",
       "stated_by": "randlee",
@@ -17,17 +17,21 @@
       "scope": "the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or default or full lint commands",
       "deterministic_check": "A generated fixture runs just setup, ordinary just lint, and named default and full profiles while its receipt records sc-boundary, sc-portability, and sc-runtime.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Consumer setup installs the full sc-lint toolchain, including its boundary, portability, and runtime analyzers."
+        ],
+        "fail": [
+          "Consumer setup installs only rustfmt and clippy and does not install the sc-lint toolchain."
+        ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "proposed",
+      "version": 3,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-32b",
+        "plan_questions": "run-32b.1",
+        "dev_questions": "run-32b.2"
       },
       "history": [
         {
@@ -45,6 +49,31 @@
             "deterministic_check"
           ],
           "previous_statement": "A Phase C generated consumer must install sc-lint through just setup and execute the configured full lint profile through just lint."
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "A Phase C generated consumer must install sc-lint through just setup and run sc-boundary, sc-portability, and sc-runtime through ordinary just lint and named default and full profiles."
+        },
+        {
+          "at": "2026-11-03T02:59:45+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-32b",
+            "plan_questions": "run-32b.1",
+            "dev_questions": "run-32b.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
         }
       ]
     },
@@ -52,7 +81,7 @@
       "id": "ANC-002",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C must select and validate newest stable compatible versions of rmcp, utoipa, and utoipa-axum through one runtime/template composition graph.",
+      "statement": "Phase C must upgrade rmcp and utoipa to their latest released versions.",
       "quote": "upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>",
       "kind": "directive",
       "stated_by": "randlee",
@@ -62,23 +91,52 @@
       "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
       "deterministic_check": "Cargo metadata for the runtime and generated daemon composition graph reports one reachable package identity for rmcp, utoipa, and utoipa-axum.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Phase C checks the released rmcp and utoipa versions and upgrades both dependencies to the latest releases."
+        ],
+        "fail": [
+          "Phase C keeps the older rmcp and utoipa dependencies despite newer released versions being available."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 2,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-dle",
+        "plan_questions": "run-dle.1",
+        "dev_questions": "run-dle.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C must select and validate newest stable compatible versions of rmcp, utoipa, and utoipa-axum through one runtime/template composition graph."
+        },
+        {
+          "at": "2026-11-03T02:59:47+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-dle",
+            "plan_questions": "run-dle.1",
+            "dev_questions": "run-dle.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
         }
       ]
     },
@@ -86,7 +144,7 @@
       "id": "ANC-003",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "The repository and generated template must both declare and bootstrap sc-lint 0.8.4.",
+      "statement": "The repository and generated template must both use sc-lint 0.8.4.",
       "quote": "both repo and templates should use 0.8.4",
       "kind": "directive",
       "stated_by": "randlee",
@@ -96,23 +154,52 @@
       "scope": "the c-1 consumer contract and c-2 template lint profile sprints",
       "deterministic_check": "The root and template sc-lint configuration require 0.8.4, and each bootstrap path installs or verifies that version.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Both the repository and generated template declare sc-lint 0.8.4 and their bootstrap commands install or verify 0.8.4."
+        ],
+        "fail": [
+          "The repository bootstraps sc-lint 0.8.4 while the generated template declares and installs 0.8.0."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 2,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-83r",
+        "plan_questions": "run-83r.1",
+        "dev_questions": "run-83r.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "The repository and generated template must both declare and bootstrap sc-lint 0.8.4."
+        },
+        {
+          "at": "2026-11-03T02:59:48+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-83r",
+            "plan_questions": "run-83r.1",
+            "dev_questions": "run-83r.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
         }
       ]
     },
@@ -120,7 +207,7 @@
       "id": "ANC-004",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C plan paths, branches, sprint identifiers, triage records, and QA evidence must use the phase identifier c.",
+      "statement": "The current phase must be named phase-c.",
       "quote": "rename to phase-c",
       "kind": "structural",
       "stated_by": "randlee",
@@ -130,23 +217,52 @@
       "scope": "every Phase C plan item and its plan metadata",
       "deterministic_check": "A targeted repository scan of Phase C assets reports no phase-bc, bc-<n>, or ARCH-BC identifiers.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Plan documents live under docs/plans/phase-c, sprint IDs are c-1 through c-4, and current branch, triage, and QA metadata use phase-c."
+        ],
+        "fail": [
+          "The current plan, sprint IDs, branch metadata, triage, and QA evidence still use phase-bc and bc-1 through bc-4."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 2,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-xiw",
+        "plan_questions": "run-xiw.1",
+        "dev_questions": "run-xiw.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C plan paths, branches, sprint identifiers, triage records, and QA evidence must use the phase identifier c."
+        },
+        {
+          "at": "2026-11-03T02:59:49+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-xiw",
+            "plan_questions": "run-xiw.1",
+            "dev_questions": "run-xiw.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
         }
       ]
     },
@@ -154,9 +270,9 @@
       "id": "ANC-005",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C planning must be maintained on a dedicated plan/phase-c worktree and proposed to develop in a separate pull request.",
+      "statement": "Phase C planning must use a dedicated worktree and a separate pull request to develop.",
       "quote": "planning should be done on a second pr to develop on a dedicated $sc-git-worktree",
-      "kind": "directive",
+      "kind": "structural",
       "stated_by": "randlee",
       "stated_at": "2026-11-02",
       "context": "Phase C planning conversation",
@@ -164,23 +280,53 @@
       "scope": "the Phase C plan branch, worktree, and pull request metadata",
       "deterministic_check": "Git worktree metadata records plan/phase-c separately, and its pull request targets develop.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Git worktree metadata shows a separate plan/phase-c checkout, and its dedicated planning pull request targets develop."
+        ],
+        "fail": [
+          "Phase C planning is committed directly on the primary develop checkout and has no separate planning pull request."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 2,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-aov",
+        "plan_questions": "run-aov.1",
+        "dev_questions": "run-aov.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:30:29+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "kind",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C planning must be maintained on a dedicated plan/phase-c worktree and proposed to develop in a separate pull request."
+        },
+        {
+          "at": "2026-11-03T02:59:51+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-aov",
+            "plan_questions": "run-aov.1",
+            "dev_questions": "run-aov.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
         }
       ]
     },
@@ -188,7 +334,7 @@
       "id": "ANC-006",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C must retain rusqlite 0.39.x with libsqlite3-sys 0.37 and must not upgrade the SQLite writer dependency graph.",
+      "statement": "Phase C must keep rusqlite on the 0.39 release line.",
       "quote": "so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.",
       "kind": "directive",
       "stated_by": "randlee",
@@ -198,23 +344,160 @@
       "scope": "the c-3 runtime ecosystem upgrade sprint and any plan item that changes Cargo dependency versions for rusqlite, sqlx, or libsqlite3-sys",
       "deterministic_check": "Cargo metadata and the SQLite resolver test show rusqlite 0.39.x and libsqlite3-sys 0.37 with no libsqlite3-sys 0.38.",
       "fixtures": {
-        "pass": [],
-        "fail": []
+        "pass": [
+          "Phase C retains rusqlite 0.39.x while upgrading the other approved dependencies."
+        ],
+        "fail": [
+          "Phase C upgrades rusqlite from 0.39 to a newer minor release line."
+        ]
       },
       "question_overrides": {},
-      "version": 1,
-      "status": "proposed",
+      "version": 2,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-ioz",
+        "plan_questions": "run-ioz.1",
+        "dev_questions": "run-ioz.2"
       },
       "history": [
         {
           "at": "2026-11-02T23:34:55+00:00",
           "event": "created",
           "status": "proposed"
+        },
+        {
+          "at": "2026-11-03T02:58:08+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "Phase C must retain rusqlite 0.39.x with libsqlite3-sys 0.37 and must not upgrade the SQLite writer dependency graph."
+        },
+        {
+          "at": "2026-11-03T02:59:52+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ioz",
+            "plan_questions": "run-ioz.1",
+            "dev_questions": "run-ioz.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:00:54+00:00",
+          "event": "locked",
+          "status": "locked",
+          "approved_by": "randlee",
+          "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        }
+      ]
+    },
+    {
+      "id": "ANC-007",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Fresh consumer installation must generate a default boundaries policy selected from the consumer's configuration settings.",
+      "quote": "and you will need to determine the 'appropriate' default policy to install on consumer repos\nbased on configuration settings",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat.",
+      "summary": "Configuration-selected default boundaries",
+      "scope": "c-1 consumer policy contract and c-2 fresh-install implementation",
+      "deterministic_check": "Generate supported consumer configurations and verify their emitted policy matches selected crates and edges.",
+      "fixtures": {
+        "pass": [
+          "Fresh consumer installation reads the selected configuration and generates the matching default boundaries policy before running sc-boundary."
+        ],
+        "fail": [
+          "Fresh consumer installation emits no boundaries policy and runs sc-boundary only in no-manifest mode, regardless of configuration."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-a7e",
+        "plan_questions": "run-a7e.1",
+        "dev_questions": "run-a7e.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T02:58:59+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T02:58:59+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T02:59:53+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-a7e",
+            "plan_questions": "run-a7e.1",
+            "dev_questions": "run-a7e.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-008",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "After fresh setup, the generated boundaries policy must be owned by the consumer repository.",
+      "quote": "you will need to generate a boundaries policy for a 'fresh install' once a consumer is set up, they will have their own boundaries policy",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat.",
+      "summary": "Consumer-owned boundaries policy",
+      "scope": "c-1 consumer policy ownership contract and c-2 generated policy handoff",
+      "deterministic_check": "Generated policy lives in the consumer repository and documented setup identifies the consumer as owner.",
+      "fixtures": {
+        "pass": [
+          "Fresh setup writes the initial boundaries policy into the consumer repository and documents that the consumer owns subsequent policy decisions."
+        ],
+        "fail": [
+          "The generated consumer's boundaries policy remains centrally owned by sc-runtime, which decides all subsequent consumer boundary changes."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-81q",
+        "plan_questions": "run-81q.1",
+        "dev_questions": "run-81q.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T02:58:59+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T02:58:59+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T02:59:54+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-81q",
+            "plan_questions": "run-81q.1",
+            "dev_questions": "run-81q.2"
+          }
         }
       ]
     }
