@@ -67,6 +67,23 @@ a 0.8.6 schema/relational contract mismatch under independent upstream
 investigation. No installed tooling correction or defect resolution is
 claimed here. The earlier failure and proposal files remain unchanged.
 
+The three structural anchors now have deterministic
+[naming/worktree/PR evidence](structural-clarity-checks.json), pinned to their
+current anchor versions and the observed `c4aed15` checkout. The
+[seven semantic tuning requests](planning-tuning-preparation/README.md) and
+their authority digest index are preserved as preparation only; none is a
+completed tuning tournament or full-sprint gate.
+
+The minimal upstream testability-triage contract proposal is available at
+[plan-anchor d0755b6](https://github.com/randlee/plan-anchor/commit/d0755b6)
+on `codex/testability-triage-contract`. Its upstream validation reports
+506 tests passing for each br/bd rendering and a clear independent binding
+audit recheck. This is a pushed proposal, not a merged or published installer;
+no PR number is assigned here. The workflow extension requires owner approval
+before a canonical 0.8.7 installation. The current sc-runtime tooling remains
+unchanged, and ARCH-C-002 stays open until the supported testability triage,
+fixture/tuning checks, full-sprint live gates and coverage are complete.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |

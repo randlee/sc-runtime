@@ -1,7 +1,7 @@
 {
   "schema": "phase-c-review-evidence/1",
   "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
-  "overall_readiness": "pending-independent-triage-fixtures-live-gates-final-manager",
+  "overall_readiness": "blocked-pending-owner-approved-upstream-workflow-extension-and-live-gates",
   "qa2": {
     "resolved": 6,
     "remaining_blocking": [
@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "305397d95f5a3c8d0e272fdd3e4170d5d498672ac0690fe6faee72d27894005a",
-      "bytes": 6042,
+      "sha256": "1f083db0d6aa0e9cbcb31c0239954712cddcc654b626b26b3aecca026f77b484",
+      "bytes": 7122,
       "source": "authored index"
     },
     {
@@ -188,6 +188,102 @@
       "sha256": "828f93ce67ac9fca146d8107e5c999b591fc11fc33b6fbf08371cca4ca6befca",
       "bytes": 29036,
       "source": "critical-r3.json"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-001-invocation-fence.md",
+      "sha256": "83d10a88bfdfa4567c1d5756a1b5e5eec6099b4722a0f82f4e737574bc5819d3",
+      "bytes": 6137,
+      "source": "tuning/plan-clarity/ANC-001-invocation-fence.md"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-001-request.json",
+      "sha256": "69a998c59de759e7d78f2f8f18794fedec4b137e859f68f1dfd32a088e6bb4aa",
+      "bytes": 5557,
+      "source": "tuning/plan-clarity/ANC-001-request.json"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-003-invocation-fence.md",
+      "sha256": "a0966e8221697e2bb36924faee1675b3ec891eba29b079bd04b31d8a1c6326a2",
+      "bytes": 6029,
+      "source": "tuning/plan-clarity/ANC-003-invocation-fence.md"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-003-request.json",
+      "sha256": "de0e09ef3eb3229ac66dcebf043a4069b08087704a6e41e3a4f8ffae2f1768e8",
+      "bytes": 5449,
+      "source": "tuning/plan-clarity/ANC-003-request.json"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-006-invocation-fence.md",
+      "sha256": "fd95d8d71f7367973db04f3815ba919734c13e46d2af1998afa1417dc8119fcc",
+      "bytes": 6081,
+      "source": "tuning/plan-clarity/ANC-006-invocation-fence.md"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-006-request.json",
+      "sha256": "34d7cd1e1256806ee16d6e54ce237f90a9dbea960242b7baa466cd5a29b812cf",
+      "bytes": 5501,
+      "source": "tuning/plan-clarity/ANC-006-request.json"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-007-invocation-fence.md",
+      "sha256": "e4c9b63a45efa233f3bbece82ac8e4eea455730298e0de66f1b3f9a64fce4da4",
+      "bytes": 6220,
+      "source": "tuning/plan-clarity/ANC-007-invocation-fence.md"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-007-request.json",
+      "sha256": "295716bd95a45f3f7c2026573b6c324f9f4e3c2375d733eb08b333c58f2d0927",
+      "bytes": 5640,
+      "source": "tuning/plan-clarity/ANC-007-request.json"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-008-invocation-fence.md",
+      "sha256": "bf13003ce19bf4b8bb7723f557d6777afdda2f81f57771226f27d33386fcf65f",
+      "bytes": 6215,
+      "source": "tuning/plan-clarity/ANC-008-invocation-fence.md"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-008-request.json",
+      "sha256": "426f81a2b710e64ffab753f083ed89e71ac5c9b6304fd10ed1dedafb81b74e2e",
+      "bytes": 5635,
+      "source": "tuning/plan-clarity/ANC-008-request.json"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-009-invocation-fence.md",
+      "sha256": "3a3937388c8ab53979495b160074777e45cbff6a69b4015daf267cb360577dbd",
+      "bytes": 6008,
+      "source": "tuning/plan-clarity/ANC-009-invocation-fence.md"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-009-request.json",
+      "sha256": "0a48a1644886e2468ed82b42038626d228da1b14a9b0789f9999dd94bd4c591e",
+      "bytes": 5428,
+      "source": "tuning/plan-clarity/ANC-009-request.json"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-010-invocation-fence.md",
+      "sha256": "ddcfe9c267ac41744209878e4586d93f8cd96f280faa8361dd051f595e55b3a9",
+      "bytes": 6018,
+      "source": "tuning/plan-clarity/ANC-010-invocation-fence.md"
+    },
+    {
+      "path": "planning-tuning-preparation/ANC-010-request.json",
+      "sha256": "55a50eff62400c1d9a77f936d963f3c7425148a03fc5605433a9659be9d627fe",
+      "bytes": 5438,
+      "source": "tuning/plan-clarity/ANC-010-request.json"
+    },
+    {
+      "path": "planning-tuning-preparation/README.md",
+      "sha256": "2a35b674123f4f391cb50c468b07d9cbf33321574b84f3cb42c8cf998fe8a946",
+      "bytes": 2574,
+      "source": "tuning/plan-clarity/README.md"
+    },
+    {
+      "path": "planning-tuning-preparation/authority-index.json",
+      "sha256": "de89c886c1c0efa06d0b3fa805df2d6809c79a6d2b97a04b70754967ce7a6d24",
+      "bytes": 2493,
+      "source": "tuning/plan-clarity/authority-index.json"
     },
     {
       "path": "qa1/aggregate.json",
@@ -374,6 +470,12 @@
       "sha256": "6205f65df38712eadb7477bb07969bfec74bf8b9f26282b3809cfe91cd605c15",
       "bytes": 26449,
       "source": "step5-developer.json"
+    },
+    {
+      "path": "structural-clarity-checks.json",
+      "sha256": "a0f97eddc4ca86e4c8c89510a36a8655af5a10250be3d818a24cca39dc2fdd3f",
+      "bytes": 4353,
+      "source": "deterministic naming/worktree/GitHub checks at c4aed15"
     }
   ],
   "anchor_clarity": {
@@ -383,5 +485,23 @@
     "rubric_pass": false,
     "rubric_outcomes": "all10inconclusive",
     "tooling_mismatch": "pending-independent-upstream-investigation"
+  },
+  "structural_results": {
+    "ANC-004": "satisfied",
+    "ANC-011": "satisfied",
+    "ANC-012": "satisfied",
+    "source": "structural-clarity-checks.json",
+    "semantic_gate_pass_claimed": false
+  },
+  "upstream_proposal": {
+    "repository": "https://github.com/randlee/plan-anchor",
+    "branch": "codex/testability-triage-contract",
+    "commit": "d0755b6",
+    "pr": null,
+    "state": "pushed-proposal-owner-approval-required-before-canonical-0.8.7-install",
+    "reported_tests_per_tracker": 506,
+    "merged": false,
+    "published": false,
+    "installed": false
   }
 }
