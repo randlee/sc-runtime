@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "a12c9ebd95668abbb3458e1d0c136e6a14f303be03644db44e3c936454720b39",
-      "bytes": 16156,
+      "sha256": "4a00836b426388ac806dadb2188d01c2299d392872e25b39e4f9952933bb0e02",
+      "bytes": 16636,
       "source": "authored index"
     },
     {
@@ -3712,6 +3712,186 @@
       "source": "independent generic extension02 preparation; no accepted override or new live result"
     },
     {
+      "path": "continuation/calibration-088-local/extension-03/README.md",
+      "sha256": "1f05717a0715fb4285e7e21159258ed5ef966c538f16f3dcb85f44b51dd230f4",
+      "bytes": 1346,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/inputs/extension-03-01-rubric.json",
+      "sha256": "153282c41c41ae9aee9983e506f9c9e59a3cb35171488f427825964b89948552",
+      "bytes": 4082,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/inputs/extension-03-02-rubric.json",
+      "sha256": "def4628156087eb5b58ac25b7d01d4e427ca4e389eb5bf39c1d820c17e766945",
+      "bytes": 4074,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/inputs/extension-03-03-rubric.json",
+      "sha256": "7e06dccd23265b2678a404571d34610595941966f9f5c61b65f9603a1baf2c24",
+      "bytes": 4083,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/inputs/generic-authorized-algorithm-intent.json",
+      "sha256": "af560520e5b13046e8d3cff480d800ee48b093c244e06b8c6695ec2ee6635319",
+      "bytes": 205,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/inputs/generic-unauthorized-algorithm-intent.json",
+      "sha256": "11c9aaae07ef258dd328a2b7ce48f93e33d75ae470ff297cc4924ab25377e8cb",
+      "bytes": 213,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/attestation.json",
+      "sha256": "def763c854a7f1ca6dbf5c100ea251a1d138f307f6f8030989d4edc2ba26fcd2",
+      "bytes": 534,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/candidate-rationales.json",
+      "sha256": "b0253d369e901065a865252e669648656fa5647eef7e5e006e721b756096d981",
+      "bytes": 875,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/experiment-baseline.json",
+      "sha256": "a0683877aeffca35cd99713cb9bd2c4f09a52abfbaf1050f87ef20f9af462850",
+      "bytes": 3911,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/freeze-manifest.json",
+      "sha256": "b56d4f2f705bbed6eda8d4d2f8b4be6738d17be5e09a974fd0deb5601b36fd0a",
+      "bytes": 1175,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/frozen-approval-boundary-supplement.json",
+      "sha256": "16870963aaade3f275d0def433ae9d5970438ae4e5ce28fe33330a5b6a7ab69a",
+      "bytes": 1734,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/frozen-candidates.json",
+      "sha256": "4907bfdfad8f1e0395d54e9ca6db3e7a285b843323ec688c3218dbbf91435314",
+      "bytes": 12114,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/frozen-request-shapes.json",
+      "sha256": "32d35ec768b3ba136f6af8b8298cdd54c2b64b2405dc729d9986dcf7ca5b09fe",
+      "bytes": 314426,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/history-local-bindings.json",
+      "sha256": "b5aef9b2e02c0d1345e6b7cf5114f5055e4273b239025c2ac920df81dcba3d14",
+      "bytes": 472,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/independent-strict-freeze-audit.json",
+      "sha256": "3d9b6ddf80651282cdf05353b63b629c16fb2e300e087158f7435dc8c0d1402e",
+      "bytes": 651,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/independent-supported-cli-dry-run-validation.json",
+      "sha256": "a0c1f531497bbaca797896749b94e16b9689c2ef013cc95db97337e01daa318e",
+      "bytes": 30930,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/invocation-fence.md",
+      "sha256": "503e597b50365b3295939700d51844cd9d0e87e1b2d3f608bbd6e20b60fbdbe3",
+      "bytes": 8204,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/invocation.md",
+      "sha256": "222bdaca8a1548befb577b824ae5e047e3aabd0aa750539f85a5aae3ce0397a9",
+      "bytes": 8684,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/materialization-inventory.json",
+      "sha256": "25e710091e9eee13fc645f99e1090dba7e16ff5bdc76f97c7e69fcdbfc09a195",
+      "bytes": 2750,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/materialization-plan.json",
+      "sha256": "2d27eb5055cde35f1d287e6ae9f6034c37a95367e0e61678957cc8be22c3efbf",
+      "bytes": 3502,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/request.json",
+      "sha256": "26eea1464203ddff82be64fa68a3957af9a81496cfd585bfaca612d2163ff993",
+      "bytes": 7842,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/request.md",
+      "sha256": "b91ba29ca1855322fd702c8efd972defa8e2138fdb9ff2d5e7245c93a330a978",
+      "bytes": 8810,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/request_contract-validation.json",
+      "sha256": "adb8f5e04e14c63257cfdc22e52b162dd5fe54501d63ffd05eb9bfe4561a4930",
+      "bytes": 127,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/request_outer_fence-validation.json",
+      "sha256": "c3a68096ed0a73a561cd63e9843a3025ac21c20935b91bdec7c6a3c7489d6224",
+      "bytes": 8230,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/result.json",
+      "sha256": "36ada9a8f8d3a9b5278d525e7013417dbf72843224738abf9bc3ebcf378275c1",
+      "bytes": 1540,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/result.md",
+      "sha256": "7c9597d4042214eeda091ab48d02e43b8774437baaa45d13abcf72fa34f93127",
+      "bytes": 1581,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/result_contract-validation.json",
+      "sha256": "a2d5916425b112bc48fc70bbd033be51f084ccad42753b34361a9f01c11c1b53",
+      "bytes": 127,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/result_outer_fence-validation.json",
+      "sha256": "781f92ccd728a64908ba19bb4a64d7fc19cb7e5f79cd070ff5f73be186553832",
+      "bytes": 1600,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/testability-evidence-history.json",
+      "sha256": "824c0219460594b15a37ec84921b6f09add60cd7774c35f388e2c409fa299e51",
+      "bytes": 4548,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
+      "path": "continuation/calibration-088-local/extension-03/preparation/validations.json",
+      "sha256": "adcc5c71cc55f861b003d8d9ff8e08be6c36149b379df123e1fb585a5bbb0a48",
+      "bytes": 180,
+      "source": "exact generic extension03 preparation and independent 69-case CLI verification; no live result"
+    },
+    {
       "path": "continuation/calibration-088-local/inputs/future-intent-01-rubric.json",
       "sha256": "404c98bc81fbfae177e2845aee38082ab7fbbdc54377d5725fd0a54afaf99e9d",
       "bytes": 3623,
@@ -5109,6 +5289,15 @@
       "merged": false,
       "published": false,
       "installed_into_phase_c": false
+    },
+    "extension_03": {
+      "inputs": 5,
+      "independent_supported_cli_dry_runs": 69,
+      "projection_and_original_digest_checks": "PASS",
+      "live_calls": 0,
+      "accepted_override": false,
+      "production_seal_unchanged": true,
+      "path": "continuation/calibration-088-local/extension-03/"
     }
   },
   "external_consumer_input": {

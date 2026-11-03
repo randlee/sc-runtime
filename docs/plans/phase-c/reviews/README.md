@@ -218,6 +218,13 @@ has been amended. At this checkpoint upstream PR #62 is ready for review at
 `b113bfa`, with six CI checks green and three macOS checks queued; no merge,
 release or installation is claimed.
 
+The additive [extension 03 preparation](continuation/calibration-088-local/extension-03/README.md)
+preserves five generic inputs and strict bindings for an observable-only
+experiment against an unaccepted baseline. Independent verification passed
+all 69 supported CLI dry-runs, exact input hashes, redacted presentation and
+original request digests. Original oracle labels, thresholds and production
+seal are unchanged; this input checkpoint claims no live result or acceptance.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |
