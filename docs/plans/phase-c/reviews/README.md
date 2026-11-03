@@ -179,6 +179,14 @@ PR #62 at `b410ceab3b737785e85d2084151168962af5f1f8`, not a Phase C consumer
 upgrade. The independent invocation requires these inputs committed before
 live execution. Calibration is pending; no new seal or gate PASS is claimed.
 
+The first optional-file dry-run correctly refused the missing question digest
+wrapper with `RUBRIC.QUESTIONS`; its exact refusal is retained. The additive
+[R2 correction](continuation/calibration-088-local/r2/dry-run-validation.json)
+preserves the questions, oracle and intent bytes while supplying the required
+wrapper digest. All six supported CLI dry-runs now succeed and emit the exact
+frozen questions and intent descriptors. No live calls or accepted seal are
+part of this serialization checkpoint.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |

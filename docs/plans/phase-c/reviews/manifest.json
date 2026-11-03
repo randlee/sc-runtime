@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "1dc1e9e82b2a267229656f40f5a092bfe4589ca0abf422d791e5964bcd27510f",
-      "bytes": 13515,
+      "sha256": "5b961fcb86e4673e119d5bc46ba15b0f58c523646923819a0dae88c823ce098a",
+      "bytes": 14021,
       "source": "authored index"
     },
     {
@@ -239,8 +239,8 @@
     },
     {
       "path": "continuation/calibration-088-local/README.md",
-      "sha256": "22977454f00a109696df6cd42ad414471c72f4a67d0ee1ab157aeec779b55896",
-      "bytes": 810,
+      "sha256": "ac7c0e7749e569852a10ae0fe015473540f32f1e77f22c215f01651aaaab1469",
+      "bytes": 1761,
       "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
     },
     {
@@ -284,6 +284,180 @@
       "sha256": "b4d68aae8447a17392c31ae3d5195608a68cf22398f52ccb2de1e13551415332",
       "bytes": 3282,
       "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-run-validation.json",
+      "sha256": "1d2989228c72b6bb34bb7bbf161e1d8ae2e000eaadff465d08f3062b9f3d5237",
+      "bytes": 2761,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-01-authorized.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-01-authorized.stdout.json",
+      "sha256": "f5c26cec7ddbbf1443931403d3d88031454ade4bd64bfdd1aa85366173073c7d",
+      "bytes": 10124,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-01-unauthorized.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-01-unauthorized.stdout.json",
+      "sha256": "e66ae409e26e749d32e9ab85c630aa2b3df8d761e8fa746b22be79fc02b05627",
+      "bytes": 10142,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-02-authorized.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-02-authorized.stdout.json",
+      "sha256": "d259e8977d8d1a92cca035a9b961657a1cc6f2fc8eb25ea2e45a81490a76134b",
+      "bytes": 10272,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-02-unauthorized.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-02-unauthorized.stdout.json",
+      "sha256": "5dbdee583bbae57afec169321865cc5a4586dbf6f4ac17f3bc3297360e89921c",
+      "bytes": 10290,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-03-authorized.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-03-authorized.stdout.json",
+      "sha256": "cead8c61e47061e8d38fbccd36270b4c5d6ab9150d2b0fdb760be94b94c4d20e",
+      "bytes": 10252,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-03-unauthorized.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/dry-runs/future-intent-03-unauthorized.stdout.json",
+      "sha256": "03cdcb01e9beb822d1244ed09df025cbd98ee57e20e74f4080529c95fab73344",
+      "bytes": 10270,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/independent-cli-dry-run-validation.json",
+      "sha256": "7c8b54d3357c888981af9ad5e0d82c97c7dd49c29733c543397dd9201060f856",
+      "bytes": 2325,
+      "source": "independent supported CLI exact frozen-wire comparison all six dry runs"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/inputs/future-intent-01-rubric.json",
+      "sha256": "b0893f3f5729f42af80334ef9f0df302b1fd8eaeac666143dc20961ef11a8f8c",
+      "bytes": 3703,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/inputs/future-intent-02-rubric.json",
+      "sha256": "97473529c2ee93eb822cced499ad0bdbfca8231d1e0dfe45e9507c577c51002c",
+      "bytes": 3777,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/inputs/future-intent-03-rubric.json",
+      "sha256": "b0ec2490755c15a862ecbf45a1114b1693b6c2478c746f7da138719d38f95adc",
+      "bytes": 3767,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/inputs/generic-authorized-algorithm-intent.json",
+      "sha256": "6da1c2b95600f7dbff0704553104eb31390d4fcedcc5355975b48a51c7fc947f",
+      "bytes": 223,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/inputs/generic-unauthorized-algorithm-intent.json",
+      "sha256": "ef64a5e338bd5c9a588f72a0a7e7ba020e9215a26fa4b3be538678b1918d9232",
+      "bytes": 231,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/invocation-fence.md",
+      "sha256": "a0bfff8ab160726d1a7c6a0b2e0e6b3c4c4c973cdaf60680934e09d4f683eac0",
+      "bytes": 10595,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/invocation.md",
+      "sha256": "16586e101e25d825e2c2cf1f69eea7d7bce65c02e5737603e89d00ce665ea54e",
+      "bytes": 10240,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/materialization-inventory.json",
+      "sha256": "360970de6132a20214920a0f6f6fd25b891a6a6c61afb865ca19754b18135878",
+      "bytes": 3152,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/request.json",
+      "sha256": "bad82e5a4bf297d4d4b0e647fbb83511003f2779cda05f0aa1321104fe54175d",
+      "bytes": 10005,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r2/request.md",
+      "sha256": "e96506f3a6f7615594906e94dae7c1242a4af924588f5b2ef4b85d7f2cbece70",
+      "bytes": 10362,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/rejected-wrapper-materialization/diagnosis.json",
+      "sha256": "99f24035abe7d5c966221dd685cef2edfd54e95f8804f9e8edf13f8321f34ff8",
+      "bytes": 969,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/rejected-wrapper-materialization/future-intent-01--a0-01-valid-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/rejected-wrapper-materialization/future-intent-01--a0-01-valid-directive.dry-run.stdout.json",
+      "sha256": "3e50f7fc2344d3d0adcf5418171f52b0c70202ef6d8097859c95ac835def1b16",
+      "bytes": 212,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/rejected-wrapper-materialization/inventory.json",
+      "sha256": "28e65f406c1610b750403d3915e69dfdb18454e8e874004d8184572462bedec1",
+      "bytes": 3197,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/rejected-wrapper-materialization/materialization-verification.json",
+      "sha256": "4798feb5db70b5f2c60b81bce323962c2f74e2202bcd81543725d7dab85621c2",
+      "bytes": 1587,
+      "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
     },
     {
       "path": "continuation/calibration-088-local/upstream-rubric-input-audit.md",
@@ -1210,6 +1384,15 @@
     "independent_live_result": "pending",
     "new_seal_accepted": false,
     "gate_pass_claimed": false,
-    "path": "continuation/calibration-088-local/"
+    "path": "continuation/calibration-088-local/",
+    "r2": {
+      "correction": "sealed questions wrapper digest only; original evidence preserved",
+      "supported_cli_dry_runs": 6,
+      "exact_emitted_questions_and_intent_verified": true,
+      "live_calls": 0,
+      "new_seal_accepted": false,
+      "path": "continuation/calibration-088-local/r2/dry-run-validation.json",
+      "independent_frozen_wire_equivalence": true
+    }
   }
 }
