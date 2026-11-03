@@ -9,6 +9,8 @@ wave: 1
 branch: sprint/c-1-consumer-runtime-contract
 worktree: sprint/c-1-consumer-runtime-contract
 requirements:
+  - REQ-CRON-0001
+  - NFR-CRON-0001
   - REQ-RUN-0004
   - REQ-RUN-0307
   - REQ-RUN-0702

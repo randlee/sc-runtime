@@ -9,6 +9,8 @@ wave: 2
 branch: sprint/c-3-runtime-ecosystem-upgrade
 worktree: sprint/c-3-runtime-ecosystem-upgrade
 requirements:
+  - REQ-CRON-0001
+  - NFR-CRON-0001
   - REQ-RUN-0002
   - REQ-RUN-0004
   - REQ-RUN-0005
