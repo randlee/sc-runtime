@@ -310,6 +310,23 @@ evidence and production seal remain unchanged. Actual anchors/fixtures or
 question overrides have not been locked/adopted. Developer consistency work
 does not certify critical R2, manager QA, live gates or implementation readiness.
 
+Genuine [critical R2](compatibility-critical-r2/report.json) now passed all six
+sprints at `a265f65`; both original critical findings are fixed-verified only
+for that source. The user's subsequent explicit architecture/anchor request
+is preserved verbatim in the
+[consumer extension candidate packet](internal-unapproved/consumer-extension-anchor-candidates.md).
+Provisional ANC-018/019 separately propose supported consumer override control
+and documented correct integration responsibilities. No defensive safeguard
+removal, absolute misuse-prevention claim or new engine is inferred.
+
+Those statements/fixtures remain candidate-only: not captured, locked or
+rubric-tested. Existing anchors and all eight authoritative plan files are
+unchanged. The new clarification needs follow-up plan revision and fresh review;
+critical R2 does not approve future edits. Generic calibration/candidate checks,
+fixture approval, manager QA and actual live gates remain pending. Beads
+run-x8d.5/.6 contain durable progress; pending release/version availability is
+a separate inquiry and no publication is claimed here.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |

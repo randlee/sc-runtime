@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "428b937daf3b7555250968b200480b93826abf73549adcfa599ee756cae6a969",
-      "bytes": 22339,
+      "sha256": "2b6b25f26dad9605f2bf734ee54656f76414eeb027300401425e1a25de96ad37",
+      "bytes": 23445,
       "source": "authored index"
     },
     {
@@ -194,6 +194,18 @@
       "sha256": "5a11f7b1fdfc444340457f08ebc93aa7b288f090dbf778e86b58e08d18d90d6b",
       "bytes": 8879,
       "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
+    },
+    {
+      "path": "compatibility-critical-r2/report.json",
+      "sha256": "bf7c106a9d051abfb796b69ebec0cf9c20b2d5bcdba342e899832e5e29d2033e",
+      "bytes": 43534,
+      "source": "genuine critical R2 baseline evidence or explicit direct-human candidate-only capture; no new plan approval"
+    },
+    {
+      "path": "compatibility-critical-r2/report.md",
+      "sha256": "6a559176eaf26caeb68beb31e44101d38d80ccac18a67f3dcf1955cb3333ee8f",
+      "bytes": 7301,
+      "source": "genuine critical R2 baseline evidence or explicit direct-human candidate-only capture; no new plan approval"
     },
     {
       "path": "compatibility-scope-r1/design-fix-proposal.md",
@@ -12095,8 +12107,8 @@
     },
     {
       "path": "internal-unapproved/README.md",
-      "sha256": "76e13411c452af2f609899b6866d148849945a0da73152f9d8cb434f070f7932",
-      "bytes": 1247,
+      "sha256": "94a8a6ec227e28159cfe3acda8fde857ce61a4a9bb644564f33f105a0ff8fe88",
+      "bytes": 1846,
       "source": "exact review/preparation/external intake evidence; unapproved or external material is not planning authority"
     },
     {
@@ -12116,6 +12128,18 @@
       "sha256": "43d0b62856442f9706ac9e95eb04fb5e2523e205ae89ca7e4d51915e2ed3bc52",
       "bytes": 8903,
       "source": "exact review/preparation/external intake evidence; unapproved or external material is not planning authority"
+    },
+    {
+      "path": "internal-unapproved/consumer-extension-anchor-candidates.json",
+      "sha256": "98f60d6fec2ce059d4fc166764c1ac2b19c86a7491e5abada54c6aa7224fce23",
+      "bytes": 5610,
+      "source": "genuine critical R2 baseline evidence or explicit direct-human candidate-only capture; no new plan approval"
+    },
+    {
+      "path": "internal-unapproved/consumer-extension-anchor-candidates.md",
+      "sha256": "46d004bd09ed2c54fed19fd77ed25b94e573b4ae293edab6553db9c5e2fffe55",
+      "bytes": 3594,
+      "source": "genuine critical R2 baseline evidence or explicit direct-human candidate-only capture; no new plan approval"
     },
     {
       "path": "internal-unapproved/faithfulness-authority-proposal.md",
@@ -13015,7 +13039,8 @@
     "COMPAT-CRIT-002": "human-approved admission/outcome correction applied; pending independent critical R2, not waived",
     "developer_step_pass": false,
     "implementation_readiness": false,
-    "source": "compatibility-critical-r1/report.json"
+    "source": "compatibility-critical-r1/report.json",
+    "scope": "historical R1/fix checkpoint; later R2 verified original findings only at a265f65"
   },
   "human_decisions_applied": {
     "admission_outcome": {
@@ -13033,6 +13058,37 @@
       "old_corpus_and_evidence_unchanged": true,
       "actual_anchor_question_overrides_adopted": false
     },
+    "implementation_readiness": false
+  },
+  "critical_r2": {
+    "status": "PASS",
+    "reviewed_commit": "a265f65ad7b047c0c7641ebdd0fbae42cb5aff4c",
+    "findings": 0,
+    "scope": "all six sprints before subsequent human clarification",
+    "source": "compatibility-critical-r2/report.json"
+  },
+  "consumer_extension_candidate_capture": {
+    "provisional_ids": [
+      "ANC-018",
+      "ANC-019"
+    ],
+    "previous_candidate_ids": [
+      "ANC-013",
+      "ANC-014",
+      "ANC-015",
+      "ANC-016",
+      "ANC-017"
+    ],
+    "record_ids_unchanged": true,
+    "actual_plan_files_changed": false,
+    "captured_or_locked": false,
+    "rubric_or_fixture_pass": false,
+    "tracking": [
+      "run-x8d.5",
+      "run-x8d.6"
+    ],
+    "follow_up_plan_review": "pending for new human clarification",
+    "source": "internal-unapproved/consumer-extension-anchor-candidates.json",
     "implementation_readiness": false
   }
 }
