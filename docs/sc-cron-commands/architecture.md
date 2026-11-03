@@ -9,7 +9,14 @@ The default library contains sole CronRequest DTO/schema, canonical Envelope
 results and object-safe CronExecutor interface (std boxed Future, no cron type).
 Feature `scheduler` adds StandardCronExecutor over core-native CronOperations
 and explicit ApplicationTargetBindings. It derives a child real-deadline context
-from the same stop/admission state. Application bindings authorize Rust/Python/Monty
+from the same stop/admission state in the standard implementation. Consumers
+may implement the existing CronOperations or CronExecutor ports for custom
+behavior/lifecycle policies, owning their cancellation, joins, authorization
+and accurate errors/outcomes. Such replacement does not inherit the standard
+cooperative guarantee or remove its safeguards. Existing usage docs contain
+a selected-default recipe plus replacement responsibilities; c-4 follows the
+recipe using public APIs in generated and registry consumers.
+Application bindings authorize Rust/Python/Monty
 targets; the library neither starts a mandatory worker nor loads application
 config. Generated opt-in composition belongs to daemon/service code; core
 runtime remains assembly without cron dependencies. CLI sends the same DTO

@@ -3010,7 +3010,7 @@ and [the Phase C contract](plans/phase-c/compatibility-contract.md) specify the
 public receiver facade, legacy-safe store admission, directly mutable real
 monotonic budgets, tracked public CRUD/query, restricted generation-fenced
 cleanup, typed expiry and actual physical ownership. This extends ADR-RUN-0013
-without changing schema, existing Rust/Python/Monty targets or environment
+without changing the bundled schema, existing Rust/Python/Monty targets or environment
 policy in ADR-RUN-0016. It preserves ADR-RUN-0017's temporary nominal command
 logging port rather than claiming upstream observability cleanup.
 
@@ -3020,6 +3020,14 @@ is independent of schedule ManualClock; test-only forced expiry proves
 propagation, while real-clock tests prove elapsed bounds. Unsupported stores
 cannot enter cooperative mode, and provider overruns cannot become successful
 bounded completion by dropping a waiter or emitting early status.
+
+The framework charter retains custom ScheduleStore/schema and caller-owned
+legacy integrations. The cooperative guarantees here apply to the standard
+path and any custom provider explicitly implementing that capability. SQLite
+hooks/TLS/interrupt are bundled-provider mechanisms, not requirements to use
+SQLite in every application. Custom providers forward the live scope and
+truthfully declare support or remain on the documented legacy path. C-5 proves
+one application-field store example without changing shared Schedule/DTOs.
 
 Human-approved commit clarification: G/K cut off new commit admission, not
 universal physical commit/fsync completion. An owned commit_hook decision
@@ -3053,3 +3061,10 @@ registry integration. Canonical dev-only doubles and real context probe support
 parallel work without production stubs. The actual
 ATM start/end/list and ADR-069 inform the general verbs only: no ATM package,
 team/phase/mandatory-until, six-field-only grammar or second response envelope.
+Public CronOperations/CronExecutor ports also permit application behavior and
+lifecycle policy replacement. The standard executor retains shared-context
+safety; custom implementations document their own authorization, cancellation,
+physical ownership and truthful error/outcome duties. C-6 extends existing
+usage documentation with one selected-default recipe and the c-5 store-example
+link; c-4 consumes it through real generated and registry-only composition.
+No new plugin framework, automatic job start or private wiring is required.

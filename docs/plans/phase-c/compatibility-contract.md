@@ -95,14 +95,59 @@ pub struct SchedulePage {
 
 c-1 freezes concrete query/status/error enums and contract double. Query uses
 active/ended/all, optional name, ascending id, after-id cursor, positive limit
-at most 1000; default 100. No new table or advertised history via list_active.
+at most 1000; default 100. No new bundled table or advertised history via list_active.
 Cancelled store operations use typed fixed cancellation/store errors with
 stage/id/generation only; no SQL/provider prose. c-1 records new code inventory
 without changing legacy row outcomes or fabricating successful cleanup.
 
+## Supported defaults and consumer replacement
+
+The framework charter leaves application stores, schemas and wiring to the
+consumer. The built-in cooperative path below governs SqliteScheduleStore and
+the standard Scheduler/StandardCronExecutor composition. SQLite commit_hook,
+busy/progress callbacks and TLS are that provider's implementation, not a
+requirement that every custom store use SQLite. A custom cooperative provider
+must truthfully declare support, propagate the same live scope through every
+operation, preserve fencing/query semantics and satisfy the documented
+admission, outcome and physical-ownership contract using its own mechanisms.
+Unsupported providers are rejected before work in this mode; wrapping a store
+must forward support and scope rather than inherit an unsupported promise.
+
+Consumers may instead use the existing legacy ScheduleStore/Scheduler path,
+implement CronOperations for their application, or supply CronExecutor to the
+public projection seam. These are supported replacement points for their own
+schema and shutdown policy, not a claim that the built-in cooperative guarantee
+holds for arbitrary code. Custom integrations own task admission/cancellation,
+physical joins, generation/conflict handling, persistence outcome accuracy,
+target authorization and deadline/error mapping. Document any different policy
+explicitly; budget values alone are not arbitrary policy replacement. Standard
+executor child contexts always retain the standard shared registry and earliest
+deadline. Ordinary defensive validation and default safe behavior remain.
+
+C-1 freezes this default/override guide without adding a plugin framework or
+new API unless it identifies a precise missing public seam. C-5 extends the
+existing cron README with a runnable custom ScheduleStore/schema example and
+proves it in its existing isolated consumer venue: persist an application-owned
+field, then schedule/query/end with the required generation semantics. The
+example states whether it forwards cooperative support/scope/query or uses the
+legacy caller-owned lifecycle; never certify every custom provider. Preserving
+the bundled schema does not prohibit consumer-owned columns/tables, and does
+not add arbitrary application fields to core Schedule or command DTOs.
+
+C-6 extends its existing README with one selected-default recipe: explicit
+generation options (cron plus cron_commands, optional Monty/MCP), working bundled
+SQLite/store and target registration, explicit application worker startup,
+start/end/list across selected UIs, and stop/join/outcome ownership. It links
+the c-5 store example and explains how to replace CronOperations or CronExecutor
+and which responsibilities transfer. No automatic job start, consumer-product
+migration or private framework patching. C-4 consumes this exact documented
+recipe in its existing generated-consumer proof before publication and again
+against registry packages. C-5/c-6 prove their local examples independently;
+the final real composition remains c-4's later-wave responsibility.
+
 ## Admission, budget and physical ownership
 
-All worker/command operations register before submission and blocking locks,
+In the built-in cooperative path, all worker/standard-command operations register before submission and blocking locks,
 including initial load, reload, query, decode and every persistence path.
 The live context reaches SQLite busy/progress/interrupt and row loops. Legacy
 capability rejects cooperative admission before work; forwarding stores forward
@@ -115,7 +160,7 @@ until K. It cannot create/restart/enable schedules or launch external work.
 No new ordinary commit admission at/after G or cleanup commit admission at/
 after K is permitted. No new cleanup transaction/retry begins after K.
 
-Every explicit or implicit write transaction installs the owned commit_hook.
+Every explicit or implicit bundled SQLite write transaction in this mode installs the owned commit_hook.
 Its final admission decision serializes briefly with live stop state, earliest
 G/K, class/generation eligibility, cancellation and the same real Instant.
 Stop-first vetoes; admission-first records its epoch/decision and may physically
@@ -153,7 +198,8 @@ cannot represent unknown or confirmed late persistence. Drop/expiry or
 get_autocommit alone proves neither rollback nor the identity of a committed
 mutation. Never automatically replay an uncertain create/restart/end/toggle;
 generation fencing is not an exactly-once token. No new schema/idempotency
-ledger is introduced to conceal uncertainty.
+ledger is introduced in the bundled store to conceal uncertainty; application-owned
+schema extensions remain permitted through a custom store.
 
 StoreErrorKind gains fixed Cancelled, DeadlineExceeded and Indeterminate
 classifications under its existing non-exhaustive policy. A planned

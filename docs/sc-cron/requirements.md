@@ -42,7 +42,7 @@ The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoin
 
 ## REQ-CRON-0004: One configuration table
 
-The crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
+The bundled store creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
 
 ## REQ-CRON-0005: One error enum
 
@@ -239,10 +239,20 @@ command adapter is permitted by ADR-RUN-0019.
 The crate exposes the same nominal canonical logging receiver and supporting
 values through `sc_cron::observability`; no parallel trait is introduced.
 Existing constructors and legacy store implementations remain source compatible.
+The open ScheduleStore and generic Scheduler seam permits application-owned
+columns/tables through custom stores; bundled-schema preservation does not
+forbid consumer schemas or add product fields to Schedule/command DTOs.
+Cooperative custom providers must truthfully declare support and forward the
+live operation scope, fencing/query semantics and outcome/ownership contract
+using their own mechanisms. SQLite-specific callbacks apply to the bundled
+SqliteScheduleStore, not to every provider. Legacy/custom integrations may use
+the existing caller-owned path with explicitly documented guarantees. The cron
+README and isolated external consumer prove one custom field and the chosen
+cooperative-or-legacy lifecycle through public scheduling/query/end APIs.
 An opt-in cooperative mode rejects unsupported stores before starting work.
 It installs one shared operation context before initial load, queue submission,
 lock acquisition, reload, decode and all persistence/retry/end paths. Context
-checks, SQLite busy/progress interruption and rollback observe directly mutable
+checks and provider interruption observe directly mutable
 deadlines while blocked. No guard waits indefinitely before consulting context.
 
 Independent stop control closes admission, records only earlier deadlines and
@@ -255,7 +265,7 @@ All admitted worker and context-aware command tasks remain physically owned
 until completion even if their async waiter is cancelled. The human-approved
 commit admission/outcome contract forbids new ordinary commit admission at/after
 G and cleanup commit admission at/after K; it does not promise universal physical
-commit/fsync completion by those cutoffs. Final commit_hook admission briefly
+commit/fsync completion by those cutoffs. For bundled SQLite, final commit_hook admission briefly
 serializes with live stop state/class/generation/real time, releases the
 controller mutex before COMMIT/native I/O, and records stop-first/admission-first.
 Second stop remains independently callable while the commit path is blocked.
@@ -269,7 +279,7 @@ on safe paths. No effects occur after actual physical release. Cleanup expiry
 and actual persisted result are reported honestly after join; no bool false
 stands for unknown, no instantaneous T=0 join or universal 2T guarantee.
 Legacy direct calls remain
-caller-owned. Preserve schema, generation fencing, stop-before-tick, existing
+caller-owned. Preserve bundled schema, generation fencing, stop-before-tick, existing
 Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
 
 ## REQ-CRON-0021: Tracked public operations and bounded schedule query

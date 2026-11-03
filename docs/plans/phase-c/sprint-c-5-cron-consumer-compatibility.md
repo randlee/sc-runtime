@@ -66,7 +66,8 @@ manifest edits or dependency on an uncommitted c-3 feature change.
    values. Keep `Scheduler::new_with_logger` and defaults-off command edge;
    no new logging trait or full observability dependency.
 2. REQ-CRON-0020: implement c-1's cooperative store scope before every
-   potentially blocking lock, initial load, reload, row decode and write,
+   potentially blocking lock, initial load, reload, row decode and write in the
+   built-in cooperative path,
    including retry/error/end paths. SQLite busy/progress/interrupt checks
    observe shared mutable deadlines. Final owned commit_hook serializes briefly
    with live stop state/class/generation/real time and releases controller lock
@@ -92,7 +93,17 @@ manifest edits or dependency on an uncommitted c-3 feature change.
    via its facade, registers and causally executes Rust, Python and Monty
    schedules through existing APIs. Monty includes a custom application host.
    Preserve empty-default environment, resolver/redaction, stop-before-tick,
-   generation fencing, row schema and transaction semantics.
+   generation fencing, bundled row schema and transaction semantics.
+6. REQ-CRON-0020/0021 and the framework charter: extend crates/sc-cron/README.md
+   with a runnable custom ScheduleStore example persisting an application field
+   in a consumer-owned schema. Exercise it in tests/integration/cron-consumer/
+   through public scheduling/query/end and replacement-generation fencing.
+   State whether the example forwards cooperative support/scope/query or uses
+   the legacy caller-owned path; prove the advertised choice. Custom cooperative
+   implementations meet the contract through provider-specific mechanisms,
+   not mandatory SQLite hooks. Document legacy lifecycle ownership and custom
+   CronOperations integration, with no default guarantee inferred for arbitrary
+   custom code. Do not extend core Schedule/DTOs with application fields.
 
 ## Acceptance criteria
 
@@ -131,6 +142,14 @@ Roots: `req:REQ-CRON-0003`, `req:REQ-CRON-0019`,
   Monty/custom host. Both receive actual attached/launched/finished events
   without direct sc-command dependency. Default excludes Monty; neither
   activates clap/Axum/RMCP/command-server/full observability or tool Rust crates.
+
+- The small custom-store consumer persists and reads its extra field across
+  schedule/query/end, preserving generation conflicts and the example's declared
+  lifecycle policy. Unsupported cooperative capability still fails before work;
+  a forwarding provider preserves live cancellation scope where advertised.
+  The README demonstrates only public APIs and distinguishes bundled-schema
+  invariants from application schema freedom. No portable query framework or
+  consumer-product migration is needed.
 
 ## Required validation
 

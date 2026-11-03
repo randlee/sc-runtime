@@ -85,7 +85,14 @@ versions/lock. No template source or shared registry edits here.
 4. NFR-CRNC-0001: DTO-only build uses serde/serde_json and defaults-off
    sc-command; scheduler feature alone introduces optional cron/async edges.
    Preserve minimal graph and no core runtime edge. Add standard crate usage
-   docs naming the shared contract and opt-in composition.
+   docs naming the shared contract and opt-in composition. Extend the existing
+   crate README with the selected-default recipe frozen by c-1: exact generation
+   selection, bundled SQLite/store and Rust/Python/optional Monty registration,
+   explicit worker startup, standard commands and stop/join/outcome handling.
+   Link c-5's custom-store example; document replacing CronOperations or
+   CronExecutor, consumer-owned lifecycle/authorization/error responsibilities,
+   and where the standard cooperative guarantee ends. Keep defaults off and
+   disabled MCP disabled; no automatic job start or application migration.
 
 ## Acceptance criteria
 
@@ -110,6 +117,14 @@ Root: `boundary:BOUNDARY-sc-cron-commands`, `adr:ADR-CRNC-0001`.
 - No placeholder/stub path remains within adapter serialization/handler
   implementation; real SQLite worker and generated UI composition remain
   explicitly owned by c-4, using c-5's implementation.
+
+- A focused public-boundary test supplies an application CronExecutor and uses
+  the same CronRequest/Envelope protocol without concrete Scheduler, private
+  APIs or a new timeout registry in StandardCronExecutor. Document that custom
+  executor policy and physical ownership are the application's responsibility;
+  this does not relax standard executor scope forwarding or validation tests.
+  Local recipe snippets compile against public APIs; c-4 alone proves the real
+  selected generated root wiring after consuming c-5/c-6 artifacts.
 
 ## Required validation
 

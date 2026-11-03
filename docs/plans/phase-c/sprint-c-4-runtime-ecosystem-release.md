@@ -131,6 +131,14 @@ at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
   explicit Monty through CLI JSON, HTTP and selected MCP. Same request yields
   equivalent normalized data/error across all projections; actual schedule
   mutation/execution and generation conflicts occur, not just DTO serialization.
+- Consume c-6's existing README selected-default recipe and its c-5 custom-store
+  link in the existing generated-consumer fixture. Use only documented options
+  and public APIs: selected cron/commands, bundled store, target registration,
+  explicit worker startup, real commands, and stop/physical join/outcome handling.
+  No private APIs or manual framework-source edits may be needed to make the
+  default recipe work. Record the exact recipe revision; repeat its packaged
+  public path in the existing registry-only proof. Application overrides and
+  schema extensions remain optional, with the documented responsibilities.
 - Prove default-off generation has no standard commands/adapter worker,
   DTO-only CLI graphs remain server/cron/SQLite/Monty free, scheduler/Monty
   enable only approved edges, disabled MCP stays disabled, and core runtime

@@ -315,6 +315,27 @@ sc_runtime::Daemon::builder()
   complete checkout-patched prepublication proof and may not claim the
   registry-consumer criterion.
 
+## Consumer extension and onboarding closure
+
+The direct human approval of ANC-017/018 statements/fixtures is planning intent;
+the records remain proposed pending actual testability and live checks. This
+revision addresses the four manual pre-gate baseline findings, not a failed Jev
+sprint gate. The framework charter and REQ-CRON-0020/0021 govern supported store
+replacement and opt-in cooperation; REQ-CRNC-0002 governs actual selected wiring.
+C-1 freezes default-versus-custom responsibilities; c-5 proves a custom store
+with an application-owned schema field in its existing isolated consumer and
+documents legacy/cooperative choices; c-6 documents public operation/executor
+replacement and one working selected-default recipe; c-4 follows that recipe
+through real generated and registry-only integration. The bundled SQLite
+admission/outcome promises do not become universal consumer policy enforcement.
+Default defensive checks, truthful outcomes and physical ownership remain.
+
+Existing README/test venues and owned paths suffice: no new plugin framework,
+consumer-product migration, automatic job start, sprint or dependency edge.
+The six-sprint DAG remains critical path 3, width 4. Fresh scope/critical/QA and
+actual Plan Anchor checks are required for this revision; historical PASS
+reports cover their recorded baselines only.
+
 ## Out of scope
 
 - Updating `rusqlite` above `0.39.x`, updating SQLx, or resolving the

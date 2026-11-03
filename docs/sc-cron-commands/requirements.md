@@ -28,7 +28,13 @@ application projection explicitly exposes them.
 Default-surface object-safe CronExecutor accepts sole CronRequest and real
 deadline. Scheduler-feature StandardCronExecutor consumes native CronOperations
 and explicit ApplicationTargetBindings ports defined in the Phase C contract;
-it derives a child operation context, never a separate timeout/ownership policy.
+it derives a child operation context, never a separate timeout/ownership policy
+inside the standard executor. Applications may implement CronOperations or
+CronExecutor through these public seams for different behavior or shutdown
+policy; their task/physical-join ownership, persistence truth, authorization
+and error mapping responsibilities must be documented rather than inheriting
+the bundled cooperative guarantee. Standard validation and scope propagation
+remain mandatory for the standard implementation.
 C-5 implements operations for real Scheduler; c-6 implements the executor with
 dev-only operation doubles. Unsupported Monty fails before persistence.
 Selected generator configuration installs actual CLI start/end/list, HTTP and
@@ -38,7 +44,13 @@ the generation default; `true` requires cron selected and does not enable MCP
 when MCP is disabled. C-3 prepares injectable projections with test-only executor
 doubles; c-4 supplies real selected root binding after real c-5/c-6 artifacts.
 No production success/unsupported stub satisfies this requirement. Existing
-applications can use the core with no commands.
+applications can use the core with no commands. The existing adapter README
+provides one working selected-default recipe with bundled store, explicit
+worker/target registration and startup, commands, and stop/join/outcome handling;
+it links the core custom-store example and describes supported replacement.
+The generated-consumer and registry-only proofs consume that recipe using
+public APIs and documented selection, without manual framework-source edits.
+No consumer-product migration or automatic job start is implied.
 
 ## NFR-CRNC-0001: Minimal independent dependency graphs
 

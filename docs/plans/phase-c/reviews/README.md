@@ -376,6 +376,18 @@ The original packet and earlier pending notes remain point-in-time evidence.
 All six records remain proposed, pending actual checks/locking; the bounded
 calibration is still unaccepted and there is no new live plan gate or seal.
 
+## Approved consumer-extension plan revision
+
+The [focused revision](consumer-extension-plan-revision.md) addresses all four
+manual pre-gate baseline findings under the direct approved human intent and
+existing charter/REQ/ADR authority. Existing README/consumer proofs now own custom
+store/schema, qualified cooperative guarantees, public override responsibilities
+and a working selected-default recipe consumed by c-4. No runtime implementation,
+new framework/API, anchor/fixture/question/seal change or live evaluation occurred.
+The six-sprint DAG remains path 3/width 4. Author checks passed; fresh independent
+scope/critical/QA and actual Plan Anchor checks remain pending, not overall PASS.
+Historical scope/critical approvals retain only their actual reviewed baselines.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |

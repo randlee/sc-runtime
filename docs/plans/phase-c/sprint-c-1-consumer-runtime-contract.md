@@ -181,7 +181,24 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
    A demonstrated upstream gap leaves c-1 incomplete; no hand-written
    workflow bypass or blanket version bump is permitted.
 
+Additional contract deliverable under the framework charter, REQ-CRON-0020/0021
+and REQ-CRNC-0002: freeze the default/override guide in compatibility-contract.md.
+Distinguish bundled SQLite cooperative guarantees from custom cooperative
+providers and the caller-owned legacy path. Name the existing ScheduleStore,
+CronOperations and CronExecutor replacement seams, capability/scope forwarding,
+schema ownership and lifecycle/error responsibilities. Preserve default safety;
+do not require every consumer to adopt the default shutdown policy. Assign the
+custom-store README/example proof to c-5, adapter/selected-default recipe to c-6,
+and real recipe composition to c-4 using their existing owned paths. No new
+plugin framework or API is authorized without a specific demonstrated hook gap.
+
 ## Acceptance criteria
+
+- The contract identifies default guarantees and transferred responsibilities
+  for each supported replacement seam. The c-5 custom-field consumer proof and
+  c-6 public executor composition test have concrete expected outcomes, and
+  c-4 consumes their existing README recipe. Custom schema extension is allowed
+  without changing bundled schema or adding product fields to shared DTOs.
 
 Additional approved compatibility deliverables (REQ-CRON-0020/0021,
 REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
@@ -193,7 +210,7 @@ REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
   preserve fixed startup/typestate, no registry/macro/wrapper or extra engine.
 - Freeze the explicitly human-approved commit admission/outcome semantics in
   compatibility-contract.md, REQ-CRON-0020 and ADR-RUN-0018. Final ordinary G/
-  cleanup K admission uses owned commit_hook and a short live stop-state/class/
+  cleanup K admission in bundled SQLite uses owned commit_hook and a short live stop-state/class/
   generation/real-time decision; release controller lock before COMMIT/native
   I/O. Qualify the hook through supported rusqlite0.39 hooks API without claiming
   universal physical fsync/2T preemption. Typed TransactionOutcome replaces
@@ -221,7 +238,7 @@ REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
   initial lock baseline, public facade and allowed-dependent manifests.
   Default DTO-only graph excludes cron/SQLite/Tokio/Monty/server; scheduler is
   optional. Existing runtime→cron/adapter and command→cron/adapter stay forbidden.
-  Same nominal logging trait, schema/generation/environment behavior preserved.
+  Same nominal logging trait, bundled schema/generation/environment behavior preserved.
 - Freeze prompt/schema/default/answers and optional manifest declarations for
   `cron_commands=false`; selected requires cron and wires real existing CLI,
   HTTP and optional MCP through c-3 generic projections and c-4 actual root

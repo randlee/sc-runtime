@@ -12,7 +12,7 @@ six proposed and two retired. All 12 original record objects are unchanged.
 | --- | --- |
 | [Current structural checks](current-structural-anchor-checks.json) | Three PASS: Phase C naming, dedicated worktree and separate PR to develop. |
 | New-anchor live testability and live sprint-plan gates | Not run; no current-plan Jev verdict or Plan Anchor PASS is claimed. |
-| [Engineering baseline diagnostic](internal-unapproved/consumer-extension-baseline-diagnostic.md) | Four manual findings; **not Jev**: explicit custom store/schema proof, scope of default SQLite machinery, consumer shutdown-policy composition, and one complete onboarding/extension guide. |
+| [Engineering baseline diagnostic](internal-unapproved/consumer-extension-baseline-diagnostic.md) | Four manual pre-gate findings; **not Jev**. The [focused plan revision](consumer-extension-plan-revision.md) now addresses their acceptance/ownership gaps; fresh independent reviews and actual live checks remain pending. |
 | [Critical R2](compatibility-critical-r2/report.json) | PASS at a265f65 for its reviewed six-sprint contract; subsequent consumer-control clarification still needs follow-up plan review. |
 
 ## Bounded instrument result
@@ -69,6 +69,7 @@ source context for baseline coverage, not an invented seventh anchor.
 Statement/fixture approval is now recorded. Actual successful checks and locking
 remain pending because no full rubric was accepted. Record validation and
 proposed persistence are not live testability or gate approval. Tracking remains
-in run-x8d.5/.6. The baseline plan,
-requirements and runtime source have not been rewritten from calibration
-failures or the manual diagnostic.
+in run-x8d.5/.6. The focused plan/REQ/ADR revision follows the direct approved
+consumer-extension intent, not calibration failures. Runtime source, evaluator,
+anchor quotes/fixtures and seals remain unchanged. The four manual findings
+remain to_fix pending independent verification; no new Plan Anchor PASS is claimed.

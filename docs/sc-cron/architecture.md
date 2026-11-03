@@ -200,6 +200,14 @@ pub enum StopDecision {
 
 `ScheduleStore` stays an open seam. The landed scheduler is generic:
 
+The framework charter leaves consumer schemas and stores application-owned.
+Phase C preserves the bundled schema while proving a custom-store example with
+an extra application field. REQ-CRON-0020 separates supported cooperative
+providers from the existing caller-owned legacy path; SQLite hooks are specific
+to the bundled provider. The cron README documents the advertised mode and its
+scope forwarding, generation/query and lifecycle responsibilities. No arbitrary
+application fields or portable query framework enter the shared core DTOs.
+
 ```rust
 pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource>;
 ```
