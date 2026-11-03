@@ -171,6 +171,14 @@ labels and authorizes no live calls. Prior failed calibration evidence remains
 unchanged. No new seal, fixture gate or whole-sprint planning-gate PASS is
 claimed; ARCH-C-002 remains open.
 
+The [local 0.8.8 preparation](continuation/calibration-088-local/README.md)
+preserves five repository-local optional inputs, their exact materialization
+plan, the independent bounded source audit and the br/bd three-target smoke
+report. This is an unreleased canonical installer local test from Plan Anchor
+PR #62 at `b410ceab3b737785e85d2084151168962af5f1f8`, not a Phase C consumer
+upgrade. The independent invocation requires these inputs committed before
+live execution. Calibration is pending; no new seal or gate PASS is claimed.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |

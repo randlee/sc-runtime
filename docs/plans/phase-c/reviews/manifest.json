@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "fc38e521b1df49f5304c320b9f277bcb450498f073f93baf0f964e584767fcd4",
-      "bytes": 12978,
+      "sha256": "1dc1e9e82b2a267229656f40f5a092bfe4589ca0abf422d791e5964bcd27510f",
+      "bytes": 13515,
       "source": "authored index"
     },
     {
@@ -236,6 +236,60 @@
       "sha256": "5d8abf8d94008fcbd08d84607825d08e8ec2e93c3160e9b352ead402245fcece",
       "bytes": 3703,
       "source": "immutable offline approved intent selection and unexecuted future calibration freeze"
+    },
+    {
+      "path": "continuation/calibration-088-local/README.md",
+      "sha256": "22977454f00a109696df6cd42ad414471c72f4a67d0ee1ab157aeec779b55896",
+      "bytes": 810,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/inputs/future-intent-01-rubric.json",
+      "sha256": "404c98bc81fbfae177e2845aee38082ab7fbbdc54377d5725fd0a54afaf99e9d",
+      "bytes": 3623,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/inputs/future-intent-02-rubric.json",
+      "sha256": "ee8f5b824425a7764434be899e36a5da023b26da25893d8107603dbf9c4d5140",
+      "bytes": 3697,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/inputs/future-intent-03-rubric.json",
+      "sha256": "4d61ad46a76ec92ba6f377fe5fa2d4ec3a26e92cf1ce8c84342cad91063a50a2",
+      "bytes": 3687,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/inputs/generic-authorized-algorithm-intent.json",
+      "sha256": "6da1c2b95600f7dbff0704553104eb31390d4fcedcc5355975b48a51c7fc947f",
+      "bytes": 223,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/inputs/generic-unauthorized-algorithm-intent.json",
+      "sha256": "ef64a5e338bd5c9a588f72a0a7e7ba020e9215a26fa4b3be538678b1918d9232",
+      "bytes": 231,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/installer-088-smoke-report.json",
+      "sha256": "d2c21cc59d448380ab508fcabb0ddf39b860c4aaa9855cdc4b32deb2a00b4115",
+      "bytes": 3489,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/materialization-plan.json",
+      "sha256": "b4d68aae8447a17392c31ae3d5195608a68cf22398f52ccb2de1e13551415332",
+      "bytes": 3282,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/upstream-rubric-input-audit.md",
+      "sha256": "3eb272430b501515011952706f5c5c15ffc65bcfd69fc1d0b6081c70d3701400",
+      "bytes": 4308,
+      "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
     },
     {
       "path": "continuation/calibration-preparation/continuation-bindings.json",
@@ -1147,5 +1201,15 @@
     "live_gate_pass_claimed": false,
     "path": "continuation/approved-intent/descriptor-index.json",
     "freeze": "continuation/calibration/future-intent-input-freeze/manifest.json"
+  },
+  "calibration_088_local": {
+    "classification": "unreleased canonical installer LOCAL TEST; not Phase C install or published release",
+    "source_commit": "b410ceab3b737785e85d2084151168962af5f1f8",
+    "input_files": 5,
+    "source_and_destination_hashes_verified": true,
+    "independent_live_result": "pending",
+    "new_seal_accepted": false,
+    "gate_pass_claimed": false,
+    "path": "continuation/calibration-088-local/"
   }
 }
