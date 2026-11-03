@@ -12,6 +12,9 @@ requirements:
   - REQ-CRON-0001
   - NFR-CRON-0001
   - REQ-RUN-0004
+  - REQ-RUN-0002
+  - REQ-RUN-0301
+  - REQ-RUN-0503
   - REQ-RUN-0307
   - REQ-RUN-0702
   - NFR-RUN-0006
@@ -32,6 +35,7 @@ owned_paths:
   - .claude/project/quality-policy.md
   - docs/sc-cron/requirements.md
   - docs/sc-cron/architecture.md
+  - docs/sc-command/requirements.md
   - examples/spike/phase-c-contract/
 must_follow: []
 parallel_safe: []
@@ -51,8 +55,10 @@ allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
 
 ## Deliverables
 
-1. Amend REQ-RUN-0307 and NFR-RUN-0006 to pin the repository and generated
-   consumer to **sc-lint 0.8.4**. Permit only the three declarative entries
+1. Amend REQ-RUN-0307 and NFR-RUN-0006 plus the current operational lint
+   clauses of REQ-RUN-0004 and REQ-RUN-0503 to pin the repository and generated
+   consumer to **sc-lint 0.8.4**; preserve historical version observations.
+   Permit only the three declarative entries
    below in `template/sc-lint.toml`; they are sc-lint invocation wiring.
    Define a fresh-install default boundary policy from the configured
    application crate graph (ADR-RUN-0303): include only selected crates and
@@ -96,6 +102,9 @@ allowing `c-2` and `c-3` to proceed in parallel without overlapping paths.
    ADR-RUN-0017's temporary command dependency version and the cron
    requirements/architecture when that affected edge changes, preserving
    defaults-off/no-server semantics and deferred upstream logging cleanup.
+   Amend REQ-CMD-0005's explicit RMCP 3.7 type identity to the frozen matrix
+   in `docs/sc-command/requirements.md`, retaining its conversion, error,
+   serialization and server-feature semantics. c-3 consumes this amendment.
 6. Define `c-4` as the named authorized release handoff: only after an
    authorized `sc-runtime 0.2.0` publication and registry visibility may its
    no-patch fixture report the registry-consumer acceptance result.
@@ -119,6 +128,9 @@ Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
 
 - The three documents have one consistent 0.8.4 baseline and explicitly
   delimit the consumer-profile exception.
+- Current operational clauses of REQ-RUN-0004/0307/0503 and NFR-RUN-0006
+  agree on 0.8.4; historical evidence remains intact. REQ-CMD-0005 names
+  the frozen RMCP identity while preserving its conversion/error semantics.
 - The amended REQ-RUN-0702 identifies `sc-runtime 0.2.0`, its tag/version
   semantics, the no-patch registry fixture, and its relationship to the prior
   0.1.x release contract. The probe preserves ADR-RUN-0002's versioned-crate

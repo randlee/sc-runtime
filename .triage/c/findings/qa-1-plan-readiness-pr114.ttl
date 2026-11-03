@@ -1,0 +1,11 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# PR114 plan QA-1 at 1217978; distinct from the historical PR110 QA records.
+# Author fixes require owner-reviewer verification; they are not gate closure.
+triage:PR114_REQ_QA_001 a triage:Finding ; triage:severity "Blocking" ; triage:reviewer "req-qa" ; triage:status "fixed-pending-verification" ; triage:correction "c-1 owns command requirements and amends the frozen RMCP identity without changing conversion/error semantics" .
+triage:PR114_REQ_QA_002 a triage:Finding ; triage:severity "Blocking" ; triage:reviewer "req-qa" ; triage:status "fixed-pending-verification" ; triage:correction "c-1 amends current operational 0004/0503 lint clauses; historical evidence is retained" .
+triage:PR114_REQ_QA_003 a triage:Finding ; triage:severity "Blocking" ; triage:reviewer "req-qa" ; triage:status "fixed-pending-verification" ; triage:correction "Sprint governing requirement lists and phase union cover crate graph, registry sources, CLI, lifecycle and SQLite guards" .
+triage:PR114_ARCH_C_001 a triage:Finding ; triage:severity "Blocking" ; triage:reviewer "arch-qa" ; triage:status "fixed-pending-verification" ; triage:correction "c-3/c-4 ADR lists and phase union include existing error, async, host-safety and logging decisions" .
+triage:PR114_ARCH_C_002 a triage:Finding ; triage:severity "Blocking" ; triage:reviewer "arch-qa" ; triage:status "open" ; triage:correction "Parent completes live Plan Anchor fixture checks, full-sprint gates and locked-anchor coverage; no live verdict claimed here" .
+triage:PR114_RBQA_C_001 a triage:Finding ; triage:severity "Important" ; triage:reviewer "ruthless-boundary-qa" ; triage:status "fixed-pending-verification" ; triage:correction "c-3 owns observability guard version migration and accepted/stale regressions while retaining exact feature and graph restrictions" .
+triage:PR114_CQA_C_001 a triage:Finding ; triage:severity "Important" ; triage:reviewer "ceremony-qa" ; triage:status "fixed-pending-verification" ; triage:correction "Removed extra consumer-lint workflow; existing focused regression and template CI logs prove real analyzer execution" .

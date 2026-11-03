@@ -10,11 +10,13 @@ branch: sprint/c-4-runtime-ecosystem-release
 worktree: sprint/c-4-runtime-ecosystem-release
 requirements:
   - REQ-RUN-0002
+  - REQ-RUN-0003
   - REQ-RUN-0301
   - REQ-RUN-0503
   - REQ-RUN-0702
 adrs:
   - ADR-RUN-0002
+  - ADR-RUN-0017
   - ADR-RUN-0203
   - ADR-RUN-0401
   - ADR-RUN-0402

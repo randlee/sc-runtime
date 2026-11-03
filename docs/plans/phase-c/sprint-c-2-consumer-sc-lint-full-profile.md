@@ -10,6 +10,7 @@ branch: sprint/c-2-consumer-sc-lint-full-profile
 worktree: sprint/c-2-consumer-sc-lint-full-profile
 requirements:
   - REQ-RUN-0004
+  - REQ-RUN-0301
   - REQ-RUN-0307
   - REQ-RUN-0503
   - REQ-RUN-0701
@@ -25,7 +26,6 @@ owned_paths:
   - template/.sc-lint/bootstrap.py
   - template/Justfile
   - template/justfile
-  - .github/workflows/template-consumer-lint.yml
   - tests/unit/generation/test_consumer_sc_lint_profile.py
 must_follow: [c-1]
 parallel_safe: [c-3]
@@ -95,11 +95,12 @@ The standard consumer command names remain `setup`, `lint`, `test`, and
    verifies `sc-lint version --json`, and leaves the template's checked-in
    sources unchanged. A second `sc-lint init --just` still preserves
    `db-prepare` and the configured analyzer entries.
-5. Add a focused generation test and a dedicated consumer-lint CI receipt. They
-   generate `sqlite-mcp`, run `just setup`, verify the single installed
+5. Add a focused generation regression executed through the existing test and
+   template-fixture CI venues. Generate `sqlite-mcp`, run `just setup`, verify the single installed
    `sc-lint` launcher reports 0.8.4, and run ordinary/default/full lint
-   profiles. The receipt must demonstrate the three analyzer subcommand
-   invocations rather than merely discovering TOML entries.
+   profiles. Existing CI logs must demonstrate actual analyzer subcommand
+   execution rather than merely discovering TOML entries; no extra workflow
+   or separate receipt artifact is required.
 
 ## Acceptance criteria
 
@@ -124,8 +125,9 @@ Root: `req:REQ-RUN-0307`, `req:REQ-RUN-0503`.
   generated policy follows actual selected crates/edges. A consumer policy
   edit survives repeated setup/init/upgrade. Removing an allowed-edge rule or
   adding a forbidden dependency is detected by the actual boundary analyzer.
-- The dedicated consumer-lint CI workflow runs this proof on an actual generated consumer,
-  not only against the unrendered `template/` tree.
+- The focused regression and existing template fixture CI execute this proof
+  on an actual generated consumer, using their ordinary logs for invocation
+  evidence rather than adding a dedicated consumer-lint workflow.
 
 ## Required validation
 

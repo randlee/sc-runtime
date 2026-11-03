@@ -12,6 +12,11 @@ requirements:
   - REQ-CRON-0001
   - NFR-CRON-0001
   - REQ-RUN-0002
+  - REQ-RUN-0003
+  - NFR-RUN-0001
+  - REQ-RT-0005
+  - REQ-DBSQ-0001
+  - REQ-DBSQ-0005
   - REQ-RUN-0004
   - REQ-RUN-0005
   - REQ-RUN-0301
@@ -37,6 +42,11 @@ adrs:
   - ADR-RT-0004
   - ADR-RT-0005
   - ADR-RUN-0002
+  - ADR-RUN-0001
+  - ADR-RUN-0006
+  - ADR-RUN-0007
+  - ADR-RUN-0009
+  - ADR-RUN-0011
   - ADR-RUN-0003
   - ADR-RUN-0012
   - ADR-RUN-0017
@@ -67,6 +77,7 @@ owned_paths:
   - template/crates/cli/
   - template/crates/service/
   - scripts/new_project.py
+  - scripts/check_observability_dependencies.py
   - template/scripts/consumer_checks.py
   - .github/workflows/template.yml
   - tests/unit/generation/test_runtime_ecosystem_upgrade.py
@@ -134,6 +145,12 @@ must satisfy that amendment:
    config/transport at 0.1.1; do not bump them with workspace inheritance. `c-4`
    exclusively owns release metadata, release workflows, the registry fixture,
    and authorization evidence. Do not version-bump unaffected standalone crates.
+   Update the existing mandatory `scripts/check_observability_dependencies.py`
+   command-version/path alignment checks to c-1's frozen affected-package
+   contract. Retain the exact defaults-off normal edge, no server/test-util
+   activation, no alias/target/build bypass, and isolated default/Monty graph
+   checks. Cover accepted new and rejected stale versions in this sprint's
+   existing regression venue; do not disable or weaken the guard.
 4. Add graph assertions for the checkout-patched generated fixture. Run locked
    `cargo metadata --format-version 1 --all-features` for the runtime workspace
    and rendered fixture. A verifier starts from the `sc-runtime` and `daemon`
@@ -175,6 +192,12 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
 - The migration preserves NFR-RUN-0007's RMCP minor pin, REQ-RT-0001/0004's
   public builder/router and `IntoMcp` composition, and REQ-CMD-0005 plus
   NFR-CMD-0001/0002's server-feature and dependency boundaries.
+  REQ-CMD-0005 is consumed with c-1's updated version identity and unchanged
+  conversion/error semantics. NFR-RUN-0001 still isolates CLI dependencies;
+  REQ-RT-0005 governs shutdown proof below; REQ-DBSQ-0001/0005 govern the
+  independent SQLite writer and resolver guard. The observability guard
+  accepts only c-1's aligned versions and rejects stale versions and forbidden
+  feature/alias/target/build edges in isolated default and Monty consumers.
 - In the isolated fixture venue required by host-safety rules, a generated
   daemon with an in-flight HTTP/MCP request receives the established
   SIGINT/SIGTERM shutdown trigger and proves the documented drain-or-cancel
