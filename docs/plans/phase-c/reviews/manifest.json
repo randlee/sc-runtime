@@ -1,0 +1,301 @@
+{
+  "schema": "phase-c-review-evidence/1",
+  "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+  "overall_readiness": "pending-live-plan-anchor-and-final-manager",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "3a571e0106de2113489f6625798ea3311b4122824b8a3dc1e6cf9c55a3f6529f",
+      "bytes": 5205,
+      "source": "authored index"
+    },
+    {
+      "path": "anchor-clarity-diagnosis.md",
+      "sha256": "34af9d6945fdd2b913cdae7ce4df1cc0d3b23c84206980330369d2c522f1eafd",
+      "bytes": 12183,
+      "source": "anchor-clarity-diagnosis.md"
+    },
+    {
+      "path": "anchor-proposal.md",
+      "sha256": "e8eb9409529dda5655275a32d5137a4b33dc7741454668a64e57e04b07406a06",
+      "bytes": 10240,
+      "source": "anchor-proposal.md"
+    },
+    {
+      "path": "approved-rubric.json",
+      "sha256": "f0452441080fce53c515f4a4b9f65504515237b1a1681105923c1c2d330fb03f",
+      "bytes": 40960,
+      "source": "approved-rubric.json"
+    },
+    {
+      "path": "calibrated-anchor-rubric.json",
+      "sha256": "7c2332f78806c8d846807501c9e28d6e53dc21e14778c9e0c5edfb4e78e0a0c6",
+      "bytes": 73949,
+      "source": "calibrated-anchor-rubric.json"
+    },
+    {
+      "path": "calibration/acceptance-table-complete.json",
+      "sha256": "cc1fdfce35c95db556b82d6d4292c6cbfb365c5243d02d5f1522580cd7352393",
+      "bytes": 241526,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/acceptance-table-complete.json"
+    },
+    {
+      "path": "calibration/approved-anchor-authority-snapshot.json",
+      "sha256": "6a8ab08790a066209c6b4f4946d07d1cdf23c14731fb47359149b033f4e7cbe3",
+      "bytes": 7105,
+      "source": "tuning/approved-anchor-authority-snapshot.json"
+    },
+    {
+      "path": "calibration/attestation.json",
+      "sha256": "a269a15ff51614f46c87a9bdd097c51a4b99c1f43ba9ea80edbc8481bce1305a",
+      "bytes": 509,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/attestation.json"
+    },
+    {
+      "path": "calibration/candidate-rankings.json",
+      "sha256": "58095f740d5ec5e066299467de5feab88741aa1ff5b501419ac060ed4096da2c",
+      "bytes": 9776,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/candidate-rankings.json"
+    },
+    {
+      "path": "calibration/candidates.json",
+      "sha256": "e643a3c75952db1270a2dc5682d3cd821db4e607253d03eece404d6cf6d89498",
+      "bytes": 14162,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/candidates.json"
+    },
+    {
+      "path": "calibration/execution-summary.json",
+      "sha256": "9d280a4b429f5b9ed94ee0dc7eaae94572ab3a983ae34218f81ce9b3c18bcba2",
+      "bytes": 63,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/execution-summary.json"
+    },
+    {
+      "path": "calibration/frozen-oracle.json",
+      "sha256": "9e23c1f7b7af915438dfe72e3f4def34de19208766505f6b8415bd6709466b40",
+      "bytes": 14633,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/frozen-oracle.json"
+    },
+    {
+      "path": "calibration/local-run-correlations.json",
+      "sha256": "8b67ec7532eeab24840757aef06be49cf1863b397b4a6aed5eaef2f21b0284bb",
+      "bytes": 18886,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/local-run-correlations.json"
+    },
+    {
+      "path": "calibration/provenance.json",
+      "sha256": "974d9e69be218a4fcf0b3b5afedf46e18e4262767efb9a310dd2a164b7410c77",
+      "bytes": 740,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/provenance.json"
+    },
+    {
+      "path": "calibration/raw-responses.json",
+      "sha256": "e502b9099fccd0740d48d056def0065a49b34f830d76caba1f8fd1945d7f8bc1",
+      "bytes": 109975,
+      "source": "212 authorized raw JSON responses, compact archive"
+    },
+    {
+      "path": "calibration/result.json",
+      "sha256": "5e0b9268eedaa777a781322de6306713c7071f40e3683de7a61ec74d3d425389",
+      "bytes": 20161,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/result.json"
+    },
+    {
+      "path": "calibration/result.md",
+      "sha256": "c91f51d4ad93c5b3ee3c193d7f7937e0b4f77bb989db5c7d7f60018c0c315721",
+      "bytes": 14999,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/result.md"
+    },
+    {
+      "path": "calibration/sealed-rubric.json",
+      "sha256": "6b5ceb41bb766acf1a808fbd5fbd18d13622b94cd319358aea6cc233ceb63600",
+      "bytes": 3631,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/sealed-rubric.json"
+    },
+    {
+      "path": "calibration/validation.json",
+      "sha256": "211f9ddbc825e2ba07f07f8b2f488f7a6a814adae28a83d0fb80edc6cce392c3",
+      "bytes": 23639,
+      "source": "tuning/calibration-r1/live-authorized/seal-01/validation.json"
+    },
+    {
+      "path": "critical-r1-screen.json",
+      "sha256": "5cd5cdd2226c99e8581e7840664d3ed0ac2c9f015ff794a4ee5efd03caa71e50",
+      "bytes": 1025,
+      "source": "critical-r1-screen.json"
+    },
+    {
+      "path": "critical-r1.json",
+      "sha256": "132f84d1ae0cf8e23fec82b721cba6c4bf585d6bc8e222f18e944b9afd34a724",
+      "bytes": 13803,
+      "source": "critical-r1.json"
+    },
+    {
+      "path": "critical-r2.json",
+      "sha256": "573799f281da6e42ec9113d854dad51b9506030f6a532d84b79156e3f5e961fc",
+      "bytes": 21706,
+      "source": "critical-r2.json"
+    },
+    {
+      "path": "critical-r3.json",
+      "sha256": "828f93ce67ac9fca146d8107e5c999b591fc11fc33b6fbf08371cca4ca6befca",
+      "bytes": 29036,
+      "source": "critical-r3.json"
+    },
+    {
+      "path": "qa1/aggregate.json",
+      "sha256": "715d32b9e8c55f3486f7dc19764a2c79982250337634f0d37f0b1c1916896edd",
+      "bytes": 56560,
+      "source": "qa1/aggregate.json"
+    },
+    {
+      "path": "qa1/arch-qa-result.md",
+      "sha256": "5664b036bba851744bb4d12a2433954e48107560cad04e87aad45854e5427ae9",
+      "bytes": 9433,
+      "source": "qa1/arch-qa-result.md"
+    },
+    {
+      "path": "qa1/ceremony-qa-result.md",
+      "sha256": "8f0d1ca87a84e4f42ada901e4bb1258ac855d3374f4f151ef5488e55f2c07566",
+      "bytes": 3076,
+      "source": "qa1/ceremony-qa-result.md"
+    },
+    {
+      "path": "qa1/developer-fixes.json",
+      "sha256": "f679e3cdc10683294349d1da7edf3e2672924dd2c45f14fa30d06a711cd992af",
+      "bytes": 2906,
+      "source": "qa1/developer-fixes.json"
+    },
+    {
+      "path": "qa1/extensibility-qa-result.md",
+      "sha256": "754ff055a48a6fb5794f032dfe9a3b2be40bc1c4079c01df0b4538617825e652",
+      "bytes": 2646,
+      "source": "qa1/extensibility-qa-result.md"
+    },
+    {
+      "path": "qa1/manager-machine-status.json",
+      "sha256": "b03d68e1ad921755e010359480f6042ac8ccc63fa638117fe7a84f950bb8ee33",
+      "bytes": 3456,
+      "source": "qa1/manager-machine-status.json"
+    },
+    {
+      "path": "qa1/manager-result.md",
+      "sha256": "7af3fd08525f74fa1d92e92d65988016021b6fc817e98583bfb871f1188ae2b9",
+      "bytes": 11823,
+      "source": "qa1/manager-result.md"
+    },
+    {
+      "path": "qa1/req-qa-result.md",
+      "sha256": "790ece01a1d960d69320c14b0bdffe4c2c40403841a035bb5beb97d59a72380c",
+      "bytes": 10614,
+      "source": "qa1/req-qa-result.md"
+    },
+    {
+      "path": "qa1/rust-best-practices-agent-result.md",
+      "sha256": "db7fafe3f20f3ebf08eca43504028c51eb2cd96929357651e9e7655314aa80b4",
+      "bytes": 3431,
+      "source": "qa1/rust-best-practices-agent-result.md"
+    },
+    {
+      "path": "qa1/rust-service-hardening-agent-result.md",
+      "sha256": "9f55426a060123085e0efd8cda50d6b798561cb20e318f768bba6c99c005dcf6",
+      "bytes": 3237,
+      "source": "qa1/rust-service-hardening-agent-result.md"
+    },
+    {
+      "path": "qa1/ruthless-boundary-qa-result.md",
+      "sha256": "1db5e8cefff7b583ea715777a7b11d1b2e406a1d6aa9c34fd893b9516f9789b2",
+      "bytes": 3218,
+      "source": "qa1/ruthless-boundary-qa-result.md"
+    },
+    {
+      "path": "qa1/screen.json",
+      "sha256": "55e4628566d32bcba24e8abbde277e26ea54895f79ab2c3b592ec8c4b0512cd5",
+      "bytes": 3505,
+      "source": "qa1/screen.json"
+    },
+    {
+      "path": "qa2/ceremony-qa-result.md",
+      "sha256": "6cbc852a16bdfa614c207f48ef741fa26f161bf83c41e5f1495b5556ad8bef76",
+      "bytes": 1434,
+      "source": "qa2/ceremony-qa-result.md"
+    },
+    {
+      "path": "qa2/req-qa-result.md",
+      "sha256": "9916b2723e635299b0832cd11bea965470d5fc6038f455e16c2b69bb7da9ab81",
+      "bytes": 9629,
+      "source": "qa2/req-qa-result.md"
+    },
+    {
+      "path": "qa2/ruthless-boundary-qa-result.md",
+      "sha256": "4f2c15870d58e8a682ac531f730cdc23e9cc890d3ffaf3c38652edb81ec9396b",
+      "bytes": 2414,
+      "source": "qa2/ruthless-boundary-qa-result.md"
+    },
+    {
+      "path": "scope-r1-screen.json",
+      "sha256": "4a8b5dbbbb30a499bd057b374ba6b125c921d0318031858c5f6f29e1d2738322",
+      "bytes": 836,
+      "source": "scope-r1-screen.json"
+    },
+    {
+      "path": "scope-r1.json",
+      "sha256": "2cd134104de96807a5ebe3a63248f7e6c3df672eb3f80f7dc0eb88ee21a21baa",
+      "bytes": 6321,
+      "source": "scope-r1.json"
+    },
+    {
+      "path": "scope-r2.json",
+      "sha256": "b33a01753b61afe179190ca1c130486a9ed99562c4f6ea07271232bfbcfac90c",
+      "bytes": 4549,
+      "source": "scope-r2.json"
+    },
+    {
+      "path": "scope-r3.json",
+      "sha256": "696c0716ee683ad97931a42e17b3d018314096e3013eb68f5bc6312a1cf9d7ab",
+      "bytes": 5693,
+      "source": "scope-r3.json"
+    },
+    {
+      "path": "step1-developer.json",
+      "sha256": "5472f867c1ef535d515ce4881728a7aaa50aa61ce53c2005759556ea84f3817c",
+      "bytes": 3584,
+      "source": "step1-developer.json"
+    },
+    {
+      "path": "step1-r2-developer.json",
+      "sha256": "e91e673c5aca88bc11ba2034376d3112e629aac3c00dbc3238ddbfb6dbf345b6",
+      "bytes": 8681,
+      "source": "step1-r2-developer.json"
+    },
+    {
+      "path": "step1-r3-developer.json",
+      "sha256": "2c69b52ee540c4efb8c4dfd039c88ccf3406660213bd15be692f6328d5dcf59b",
+      "bytes": 20523,
+      "source": "step1-r3-developer.json"
+    },
+    {
+      "path": "step3-developer.json",
+      "sha256": "f2f8c86777266ce5bf33e5ffef24e02d3d47e1db291050ea1c5bb6eeeeb90276",
+      "bytes": 7295,
+      "source": "step3-developer.json"
+    },
+    {
+      "path": "step3-r2-developer.json",
+      "sha256": "9cc88fbfb4934562c1cdd25f578b6e5e2ac51d6d2088514f870797c5744a32ad",
+      "bytes": 16651,
+      "source": "step3-r2-developer.json"
+    },
+    {
+      "path": "step3-r3-developer.json",
+      "sha256": "1cfd5a24571ab1fbaec5607133755790ad599a1e649b922d637f0c8e2f569a4a",
+      "bytes": 25174,
+      "source": "step3-r3-developer.json"
+    },
+    {
+      "path": "step5-developer.json",
+      "sha256": "6205f65df38712eadb7477bb07969bfec74bf8b9f26282b3809cfe91cd605c15",
+      "bytes": 26449,
+      "source": "step5-developer.json"
+    }
+  ]
+}

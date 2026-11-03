@@ -1,0 +1,29 @@
+{
+  "status": "FIXED_PENDING_REVIEW",
+  "mode": "plan-qa-fix",
+  "qa_pass": "qa-1",
+  "reviewed_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+  "previous_reviewed_commit": "1217978e257ed8db9508a5422d4de889286e913e",
+  "branch": "plan/phase-c",
+  "pr": 114,
+  "fixes": [
+    {"id":"REQ-QA-001","owner":"req-qa","correction":"c-1 owns docs/sc-command/requirements.md and explicitly amends REQ-CMD-0005 RMCP identity while retaining conversion/error semantics; c-3 consumes it."},
+    {"id":"REQ-QA-002","owner":"req-qa","correction":"c-1 requirement list and deliverable/acceptance include REQ-RUN-0503 and current operational 0004/0503 version clauses, preserving historical observations."},
+    {"id":"REQ-QA-003","owner":"req-qa","correction":"Added governing crate graph, source identity, CLI, shutdown and SQLite requirement IDs to affected sprint lists and complete phase union; c-3 acceptance traces existing behavior to those requirements."},
+    {"id":"ARCH-C-001","owner":"arch-qa","correction":"Added ADR-RUN-0001/0006/0007/0009/0011 to c-3, ADR-RUN-0017 to c-4 and full phase union."},
+    {"id":"RBQA-C-001","owner":"ruthless-boundary-qa","correction":"c-3 owns existing observability dependency guard, migrates frozen version alignment, preserves strict default-feature and normal/build/alias/target restrictions, and tests valid/new versus stale versions in its existing regression venue."},
+    {"id":"CQA-C-001","owner":"ceremony-qa","correction":"Removed dedicated consumer-lint workflow ownership and requirement; reuse focused generated regression and existing template CI logs for actual analyzer invocation proof."}
+  ],
+  "open_findings": ["ARCH-C-002"],
+  "open_reason": "Parent owns live Plan Anchor calibration, fixture checks, four complete sprint gate runs, structural checks and coverage. No completed live gate is asserted.",
+  "triage": ".triage/c/findings/qa-1-plan-readiness-pr114.ttl",
+  "validation": ["git diff --check PASS", "Phase requirements and ADR sets contain the complete sprint union", "c2/c3 same-wave owned path prefix sets remain disjoint", "Successful commit and push; only plan docs and QA triage changed"],
+  "parallelism": {"critical_path":3,"width":2,"sprint_count":4},
+  "document_sha256": {
+    "docs/plans/phase-c/phase-c-plan.md": "5b44e96476d96c87cc950e5a953906949a1eebfea92f914a82af612ce8633367",
+    "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md": "da0aa6436388fd9cfef6c273de60b5da7dd3ff068451f89b6947800ace23262f",
+    "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md": "1c8a258ababc6e68b5b81e8c4cf7262bcb98090f957b6472d428c7767d45ff51",
+    "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md": "838334c0d06f18a24e0de5105102f738004c06a462ca932778a627cad32f1877",
+    "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md": "1410047a17fa2ace2e31eedd5fe016146ec1666862507df18a5f5a90595f6c6a"
+  }
+}
