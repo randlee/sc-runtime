@@ -52,11 +52,21 @@ owned_paths:
   - release/
   - tests/integration/release/test_published_runtime_ecosystem.py
   - tests/integration/release/test_standard_cron_commands.py
+  - template/crates/daemon/src/cron_commands.rs
+  - template/crates/daemon/src/composition.rs
+  - template/crates/daemon/src/lib.rs
+  - template/crates/daemon/src/main.rs
+  - template/crates/daemon/src/routes.rs
+  - template/crates/daemon/src/mcp.rs
+  - template/crates/cli/src/lib.rs
+  - template/crates/cli/src/main.rs
+  - template/crates/service/src/cron_commands.rs
+  - template/crates/service/src/lib.rs
 must_follow: [c-3, c-5, c-6]
 parallel_safe: []
 recommended_agent: solar
 recommended_model: sol
-vertical_rationale: Registry visibility can only be verified after the exact public package is authorized and published. The release workflow, visibility wait, and no-patch consumer are a single production integration closure and cannot be honestly claimed by a prepublication implementation sprint.
+vertical_rationale: Final selected template binding consumes c-3 generic UI projections, c-5 real Scheduler/CronOperations and c-6 StandardCronExecutor. The small composition roots, prepublication behavior, authorized release and registry-only rerun close that one feature/release track; no contract stub can supply those real artifacts.
 ---
 
 # Sprint c-4 — runtime ecosystem authorized release
@@ -110,8 +120,12 @@ patch.
 Additional sole feature-level integration deliverables and criteria, rooted
 at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
 
-- Before publication, compose the real c-3 generated opt-in UI wiring, c-5
-  scheduler/SQLite operations and c-6 executor in the existing release fixture
+- Before publication, implement actual selected template root binding in the
+  listed module/call sites: Arc<Scheduler<...>> implementing CronOperations,
+  real ApplicationTargetBindings and StandardCronExecutor feed c-3's generic
+  projections. This takes the explicit later-wave source handoff from c-3;
+  no same-wave sibling writes those paths or supplies a fake production factory.
+  Compose c-5 scheduler/SQLite operations and c-6 executor in the release fixture
   venue with checkout patches. Exercise start/end/list for Rust, Python and
   explicit Monty through CLI JSON, HTTP and selected MCP. Same request yields
   equivalent normalized data/error across all projections; actual schedule
@@ -163,4 +177,5 @@ Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0503`, `req:REQ-RUN-0702`,
 
 - Dependency/API migration (`c-3`), consumer lint (`c-2`), cron core (`c-5`)
   or adapter boundary (`c-6`) implementation. This sprint owns their real
-  command/release composition, not their source paths.
+  command/release composition and the explicitly listed final template binding
+  paths, not the cron/adapter implementation source.

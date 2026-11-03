@@ -25,13 +25,20 @@ application projection explicitly exposes them.
 
 ## REQ-CRNC-0002: Optional executor and actual opt-in UI wiring
 
-One scheduler-feature executor calls REQ-CRON-0021 tracked operations and an
-application target-binding policy. Unsupported Monty fails before persistence.
+Default-surface object-safe CronExecutor accepts sole CronRequest and real
+deadline. Scheduler-feature StandardCronExecutor consumes native CronOperations
+and explicit ApplicationTargetBindings ports defined in the Phase C contract;
+it derives a child operation context, never a separate timeout/ownership policy.
+C-5 implements operations for real Scheduler; c-6 implements the executor with
+dev-only operation doubles. Unsupported Monty fails before persistence.
 Selected generator configuration installs actual CLI start/end/list, HTTP and
 optional MCP projections calling this same executor; a recommended example or
 DTO-only library does not satisfy selected wiring. `cron_commands=false` is
 the generation default; `true` requires cron selected and does not enable MCP
-when MCP is disabled. Existing applications can use the core with no commands.
+when MCP is disabled. C-3 prepares injectable projections with test-only executor
+doubles; c-4 supplies real selected root binding after real c-5/c-6 artifacts.
+No production success/unsupported stub satisfies this requirement. Existing
+applications can use the core with no commands.
 
 ## NFR-CRNC-0001: Minimal independent dependency graphs
 

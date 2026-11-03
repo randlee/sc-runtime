@@ -435,6 +435,12 @@ selects Windows Ctrl-Break with early registration/polling alongside Ctrl-C;
 Unix and private fixture triggers remain unchanged. No alternate lifecycle or
 public test shutdown trigger is introduced.
 
+The Phase C production bound-endpoint callback delegates through this same
+runner and preserves the existing transport port-zero ownership handshake.
+One actual Endpoint callback while the listener is retained supports isolated
+real-signal test IPC; it is not a health signal. No reserve/drop/rebind helper,
+retry/sleep workaround, new transport API or alternate lifecycle is introduced.
+
 **Status:** Active  
 **Decision Date:** 2026-10-30  
 **Amends:** ADR-RT-0001 and ADR-RT-0002  

@@ -62,8 +62,13 @@ versions/lock. No template source or shared registry edits here.
    and allowed environment; end requires name and generation; list provides
    active/ended/all bounded id-ordered continuation. Shared generation types
    remain DTO primitives at the default boundary, not imports of core cron.
-2. REQ-CRNC-0001/0002: one optional `scheduler` executor delegates to c-1's
-   tracked context-aware start/stop/query seam. Application binding resolves
+2. REQ-CRNC-0001/0002: StandardCronExecutor implements default-surface
+   CronExecutor over object-safe native CronOperations and scheduler-feature
+   ApplicationTargetBindings, exactly as compatibility-contract.md specifies.
+   Its sole CronRequest DTO derives a child context with the earliest deadline;
+   no concrete Scheduler or undefined second DTO type enters the executor seam.
+   The optional `scheduler` executor delegates to c-1's tracked operations.
+   Application binding resolves
    the configured Rust Job/payload and authorizes Python/Monty sources; no
    dynamic function pointers, second registry or independent scheduling store.
    Unsupported Monty builds fail capability validation before any write.
@@ -84,7 +89,12 @@ Root: `boundary:BOUNDARY-sc-cron-commands`, `adr:ADR-CRNC-0001`.
 - Serialization/schema tests demonstrate one canonical versioned start/end/list
   and Envelope result/error across projection-neutral fixtures. All invalid
   forms above fail before scheduler/store work; no absent name means end-all.
-- Contract-double tests prove exact request conversion, context forwarding,
+- Integration tests #[path]-import c-1's canonical
+  crates/sc-cron-commands/tests/support/operation_double.rs and construct a real context
+  via sc-cron/test-utils operation_context_probe enabled only on the dev edge.
+  No c-5 Scheduler implementation or default/production test helper is needed.
+  The explicit non-default dev-only context probe is the sole setup seam. Tests prove
+  exact request conversion, context forwarding,
   generation conflict, bounded query continuation, app target binding and
   stable error mapping. Dropped waiter behavior follows c-1's owned-operation
   contract; c-6 does not implement a second timeout wrapper.

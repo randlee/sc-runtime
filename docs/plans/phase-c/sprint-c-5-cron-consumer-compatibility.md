@@ -53,10 +53,11 @@ handler catalog or job type.
 Merge every c-1 development push before each development/fix round. Parent
 QA does not delay development; c-1 merges before this PR completes. Consume
 the signatures, error policy, clock/budget policy and query contract frozen
-by c-1. c-3 alone changes shared ecosystem manifests and Cargo.lock. Prove
-this implementation compiles against c-1's baseline; a required SQLite
-feature must be hoisted into c-1 before declaring parallel-safe, never patched
-concurrently in c-3/c-5.
+by c-1. c-3 alone changes later shared ecosystem manifests and Cargo.lock.
+C-1 first enables rusqlite 0.39 `bundled,hooks` and qualifies interrupt/busy/
+progress facilities with its lock baseline; c-3 retains these features during
+migration. C-5 compiles against that committed prerequisite and owns no shared
+manifest edits or dependency on an uncommitted c-3 feature change.
 
 ## Deliverables
 

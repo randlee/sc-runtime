@@ -259,5 +259,9 @@ optional name, ascending stable id continuation and a positive capped limit.
 It reads the existing table; `list_active` alone cannot satisfy this contract.
 A legacy store's new capability defaults to a fixed unsupported error. End by
 name resolves a specific id/generation and cannot end a replacement generation.
+The public object-safe native CronOperations port returns boxed Result futures
+for start/end/query with StoreOperationContext; it carries no adapter DTOs.
+Scheduler's real implementation belongs to c-5. with_deadline derives a child
+sharing stop/admission state and the earliest deadline; no independent registry.
 No new job kind, job registry, second database or arbitrary hard-delete command
 is implied. Ordinary registration continues through REQ-CRON-0003 APIs.

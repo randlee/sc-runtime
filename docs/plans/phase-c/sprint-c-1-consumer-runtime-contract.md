@@ -40,6 +40,7 @@ requirements:
   - REQ-RUN-0001
   - REQ-RUN-0005
   - REQ-RT-0005
+  - REQ-RT-0001
   - REQ-RT-0006
 adrs:
   - ADR-RUN-0002
@@ -77,7 +78,9 @@ owned_paths:
   - boundaries/sc-cron-commands/
   - boundaries/README.md
   - crates/sc-cron/src/
+  - crates/sc-cron/Cargo.toml
   - crates/sc-cron-commands/
+  - tests/contracts/phase-c/
   - Cargo.toml
   - Cargo.lock
   - template/cargo-generate.toml
@@ -186,8 +189,16 @@ REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
   types/signatures, query limits/error inventory, absolute G/K semantics,
   real stop clock, restricted cleanup and physical ownership. Merge additive
   compileable declarations/legacy-safe unsupported defaults and the adapter
-  DTO/handler contract double at `crates/sc-cron-commands/tests/support/`;
-  declare it in the new boundary manifest. No required unimplemented trait
+  CronExecutor/CronOperations/ApplicationTargetBindings signatures and sole
+  CronRequest struct/operation DTO. Canonical dev-only doubles live at
+  `crates/sc-cron-commands/tests/support/operation_double.rs` and
+  `tests/contracts/phase-c/executor_double.rs`;
+  declare both in corresponding core/adapter boundary manifests. C-6 imports
+  the operation module via package-local #[path], including packaged tests;
+  c-3's driver
+  copies executor source only into isolated generated tests/support, never src.
+  Provide the real context probe under existing non-default cron test-utils,
+  enabled only by the adapter dev edge. No required unimplemented trait
   method, production stub or duplicate consumer protocol may leak downstream.
 - Establish the new adapter manifest/skeleton, shared workspace membership and
   initial lock baseline, public facade and allowed-dependent manifests.
@@ -196,13 +207,18 @@ REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
   Same nominal logging trait, schema/generation/environment behavior preserved.
 - Freeze prompt/schema/default/answers and optional manifest declarations for
   `cron_commands=false`; selected requires cron and wires real existing CLI,
-  HTTP and optional MCP through c-3, never enables disabled MCP. C-1 owns these
+  HTTP and optional MCP through c-3 generic projections and c-4 actual root
+  binding, never enables disabled MCP. C-1 owns these
   shared registries once; no implementation sibling edits prompts/schema.
-- Prove c-5's required SQLite cancellation facilities build on this baseline.
-  If a rusqlite feature is necessary, c-1 owns that feature-only manifest
-  amendment before wave 2 and explicitly removes the manifest from c-3's
-  ownership. Do not declare parallel-safe with a known missing feature.
-  The existing rusqlite version constraint stays 0.39.x.
+- Enable rusqlite 0.39's `hooks` feature alongside existing `bundled` in
+  `crates/sc-cron/Cargo.toml`, and establish its Cargo.lock baseline before
+  wave 2. `progress_handler` is hooks-gated; this is a known c-5 prerequisite,
+  not a conditional discovery. Qualify interrupt, busy/progress callbacks and
+  cancellation facility availability on that baseline. Preserve rusqlite
+  0.39.x. C-1 owns this feature/lock change first; c-3 subsequently owns
+  ecosystem version/path edits in the same manifest and must retain those
+  features. Do not remove the manifest from c-3 wholesale. C-5 writes only
+  source/tests and compiles against the committed c-1 feature baseline.
 - Freeze sc-cron and new sc-cron-commands at 0.2.0 in the affected package
   matrix, order command→cron→adapter and command→runtime, qualify selective kit
   treatment including the new crate, and preserve unrelated 0.1.1 packages.

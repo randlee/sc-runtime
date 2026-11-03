@@ -315,3 +315,11 @@ is [compatibility-contract.md](../plans/phase-c/compatibility-contract.md).
 REQ-CRON-0020/0021 preserve the existing schema, three hook targets,
 environment policy and generation fencing. No new port or job registry is
 required. These are target contracts, not claims of current implementation.
+
+C-1 establishes native CronOperations boxed-future signatures, real child
+operation context and non-default test-utils context probe. C-5 implements
+the port for Scheduler; no adapter DTO/Envelope enters core. C-1 also enables
+rusqlite 0.39 bundled+hooks and lock baseline, then c-3 retains those features
+while migrating ecosystem versions. C-5 has no shared manifest ownership.
+Known-baseline RAII/TLS busy callback, capturing progress callback and independent
+interrupt handle follow the source-supported strategy in the Phase C contract.

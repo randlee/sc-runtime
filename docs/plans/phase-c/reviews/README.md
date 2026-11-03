@@ -242,6 +242,23 @@ scope/critical delta, manager QA and actual anchor checks are pending. Earlier
 reports and the hash table below describe their historical source, not an
 approval of the amended plan. Captured anchors/quotes remain unchanged.
 
+Fresh six-sprint [scope R1](compatibility-scope-r1/report.json) failed two
+Important findings at `e67ad9a`: missing injectable callable/double seam and
+conditional SQLite hooks prerequisite ownership. The author correction freezes
+sole CronRequest, CronExecutor/CronOperations/target-binding ports and explicit
+dev-only double/probe setup, moves actual selected root binding to c-4, and
+declares c-1 bundled+hooks baseline then c-3 later manifest migration. Both
+triage findings remain open, author-corrected pending independent R2. No
+historical report is rewritten or readiness granted by the correction.
+
+Full [extension03](continuation/calibration-088-local/extension-03/execution-01/result.json)
+and [extension04](continuation/calibration-088-local/extension-04/execution-01/result.json)
+execution evidence is now preserved: each succeeded but accepted no seal.
+Each best candidate repeated 85/85 exact original cells with 84/85 confident
+cells; supplemental results remain as recorded. No actual question overrides
+or anchor gates were adopted. Subsequent generic input preparation remains
+separate from these historical live results.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |

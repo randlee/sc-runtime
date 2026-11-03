@@ -3034,7 +3034,10 @@ HTTP/MCP routes or configuration-file loading.
 
 REQ-RUN-0332 adds default-off generation selection and real selected CLI/HTTP/
 optional-MCP wiring, governed by ADR-CRNC-0001. C-1 owns new manifests/shared
-declarations/contracts; c-3 template composition, c-5 core behavior, c-6 adapter
-behavior, c-4 their real prepublication and registry integration. The actual
+declarations/contracts and injectable native-operation/executor/target-binding
+ports; c-3 generic template projections, c-5 real core operations, c-6 concrete
+adapter behavior, c-4 final selected-template binding and real prepublication/
+registry integration. Canonical dev-only doubles and real context probe support
+parallel work without production stubs. The actual
 ATM start/end/list and ADR-069 inform the general verbs only: no ATM package,
 team/phase/mandatory-until, six-field-only grammar or second response envelope.

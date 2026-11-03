@@ -171,17 +171,23 @@ input; actual consumer migration/QA remains external.
 | ecosystem integration | `sc-runtime` public builder plus generated daemon | one Utoipa 6 type universe and RMCP 3.8 API adaptation; the checkout-patched consumer proves the public composition before publication | `c-3` | runtime manifests/source/tests, template manifests/daemon source, lockfile, compatibility tests, fixture CI |
 | ecosystem release | published `sc-runtime` plus registry consumer | authorized publication and the no-patch, registry-resolved consumer proof | `c-4` | release workflow/metadata and a release-mode fixture |
 | cron core compatibility | existing `BOUNDARY-sc-cron` | same logging trait facade; shared real-Instant stop/admission context, physical owned join, bounded active/ended/all query and context-aware operations | `c-5` | cron source/tests and isolated external consumer; no shared Cargo writer |
-| standard cron adapter | new `BOUNDARY-sc-cron-commands` | common versioned start/end/list DTO/Envelope plus optional scheduler executor; selected UI wiring belongs to c-3 | `c-6` | adapter source/tests/schema/docs; no template or shared manifest edits |
+| standard cron adapter | new `BOUNDARY-sc-cron-commands` | sole CronRequest DTO, injectable CronExecutor and optional scheduler executor over native CronOperations; generic projections c-3, real root binding c-4 | `c-6` | adapter source/tests/schema/docs; no template or shared manifest edits |
 
 C-1 updates existing command/cron allowed-dependent lists and creates the new
 adapter boundary: adapter→defaults-off command, optional adapter→cron. Runtime
 and command have no reverse cron/adapter edge. DTO defaults exclude cron,
 SQLite, Tokio, Monty and server libraries. Generator shared prompt/schema/
-answers/member/feature declarations are c-1's baseline; c-3 owns template
-composition and atomic ecosystem manifests/lock after that baseline. C-5 and
+answers/member/feature declarations and exact executor/operation/binding ports
+are c-1's baseline; c-3 owns generic UI projections and atomic ecosystem
+manifests/lock after that baseline. C-4 owns final selected template binding.
+C-1 provides canonical dev-only operation/executor doubles and a real context
+probe on existing non-default test-utils; no production stub or sibling
+implementation is needed for c-3/c-6 tests. C-5 and
 c-6 consume c-1's compileable public contracts/double and have disjoint source
-paths. A SQLite feature prerequisite must be hoisted before declaring c-5
-parallel-safe; it cannot be an uncommitted c-3 manifest dependency.
+paths. C-1 explicitly enables rusqlite 0.39 `bundled,hooks` and commits the
+lock prerequisite; c-3 subsequently retains those features while migrating
+versions/path edges. C-5 depends on that committed baseline, never an
+uncommitted c-3 manifest edit. No manifest is removed from c-3 wholesale.
 
 The existing `BOUNDARY-sc-runtime` manifest allows transport and command
 server dependencies plus its third-party runtime stack, permits no workspace
@@ -213,7 +219,7 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 | 2 | ecosystem | `c-3` | integration | runtime-template-ecosystem-integration | `sprint/c-3-runtime-ecosystem-upgrade` | runtime and template dependency/API surfaces, lockfile, compatibility tests, checkout fixture CI |
 | 2 | cron | `c-5` | integration | sc-cron-consumer-compatibility | `sprint/c-5-cron-consumer-compatibility` | cron source/tests and isolated external consumer |
 | 2 | cron-commands | `c-6` | boundary | sc-cron-commands | `sprint/c-6-standard-cron-commands` | adapter implementation/schema/tests/docs |
-| 3 | release | `c-4` | integration | published-runtime-template-consumer | `sprint/c-4-runtime-ecosystem-release` | release workflow/metadata and release-mode fixture |
+| 3 | release | `c-4` | integration | published-runtime-template-consumer | `sprint/c-4-runtime-ecosystem-release` | final selected template root binding, release workflow/metadata and composed release fixture |
 
 - Critical path: **3 sprints** (`c-1` → `c-3` → `c-4`).
 - Width: **4 sprints**.
@@ -232,7 +238,10 @@ implementer, one consumer" exception from the sprint-planning guidelines.
   every parent development push triggers merge-forward before each
   child development/fix round, parent QA is not a start barrier, and the
   parent PR must merge before the `c-4` PR completes. `c-4` owns the authorized
-  registry proof; it does not modify runtime or template source.
+  registry proof and small final selected-template root binding. C-3 hands
+  those listed template call sites to c-4 in the later wave; c-4 does not edit
+  core runtime/cron/adapter implementation. Real callable ports, rather than
+  concrete sibling types or fake factory bodies, preserve the parallel cut.
 - Each sibling branch is cut from `integrate/phase-c`; each gets a distinct
   worktree and a PR to that integration branch. The final integration PR is
   `integrate/phase-c` to `develop`.
@@ -249,7 +258,7 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 | Existing cron hooks, facade and cooperative owned store/query/lifecycle work through the public library. | `c-5` | Real causal blocked-operation/SQLite/physical-join tests and isolated Rust/Python/Monty consumer; fixed budget/cleanup/error contract, no detached success. |
 | Standard command adapter closes its boundary against admitted-operation contract. | `c-6` | Strict JSON/Envelope/error/feature graph and contract-double tests; no real-worker claim. |
 | Windows Ctrl-Break and fixture cleanup preserve production lifecycle ownership. | `c-3` | Native isolated signal/restart proof plus coordinated portable cleanup/lock/thread tests. |
-| Selected generated CLI/HTTP/MCP actually share start/end/list for all three existing targets. | `c-4` | Real composed checkout fixture before publication and exact registry fixture after visibility, normalized data/error parity and minimal default-off graph. |
+| Selected generated CLI/HTTP/MCP actually share start/end/list for all three existing targets. | `c-4` | Final real template factory/root binding composes c-3 projections with c-5 Scheduler/CronOperations and c-6 StandardCronExecutor; checkout and registry fixture prove normalized data/error parity and minimal default-off graph. |
 
 ## Required decisions and exact compatibility contract
 

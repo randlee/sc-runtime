@@ -617,6 +617,18 @@ Tests coordinate blocked cleanup, lock contention, startup failure, parallel
 fixtures, endpoint closure and startup-timeout no-detachment. No new public
 shutdown trigger or alternate lifecycle is introduced. Implementation is c-3.
 
+The existing transport/runtime binds port zero once and reports the actual
+bound endpoint while retaining its listener. Cleanup fixtures preserve that
+continuous ownership and public endpoint accessor; reserve/drop/rebind is
+forbidden, as are retry/sleep/timeout workarounds for the port race. Add
+ready-state `run_with_cleanup_and_bound(on_bound,cleanup)` for production
+real-signal child tests: one callback after successful bind reports the actual
+Endpoint while the listener remains owned; no callback on pre-bind failure.
+The recipient confirms health before signaling. Ordinary run/run_with_cleanup
+delegate with a no-op callback; existing error/cleanup/ownership order remains.
+This extends REQ-RT-0001's public ready-state surface without a transport API
+change or exposing the private fixture shutdown trigger.
+
 ## REQ-RT-0007: `run()` returns the typed error `RuntimeError`
 
 **Status:** Active  
