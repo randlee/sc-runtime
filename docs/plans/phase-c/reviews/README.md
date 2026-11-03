@@ -24,7 +24,7 @@ open. This evidence checkpoint does not change sprint or anchor content.
 | STEP5-R1 | developer consistency | `1217978` | PASS | 0 | Exact prior critical baseline plus narrow metadata audit preserved in handoff. |
 | QA-1 | seven reviewers and manager | `1217978` | FAIL | 5 Blocking + 2 Important | Full genuine reports in [qa1](qa1/aggregate.json). |
 | QA-1 fixes | developer | `45ffd3f` | fixed, pending verification | 6 plan defects corrected | [Correction mapping](qa1/developer-fixes.json); ARCH-C-002 live anchor evidence remains open. |
-| QA-2 bounded rechecks | req, boundary, ceremony | `45ffd3f` | PASS for assigned fixes | 0 retained assigned findings | [Requirement](qa2/req-qa-result.md), [boundary](qa2/ruthless-boundary-qa-result.md), [ceremony](qa2/ceremony-qa-result.md). Final architecture/manager closeout remains pending. |
+| QA-2 bounded rechecks | req, arch, boundary, ceremony and manager | `45ffd3f` | FAIL overall | 6 resolved; 1 Blocking open | [Aggregate](qa2/aggregate.json), [architecture](qa2/arch-qa-result.md), [manager](qa2/manager-result.md). Only ARCH-C-002 live Plan Anchor evidence remains open. |
 
 Every reviewed plan retains four sprints, critical path 3, width 2.
 Full original JSON reports and embedded predecessor handoffs are retained

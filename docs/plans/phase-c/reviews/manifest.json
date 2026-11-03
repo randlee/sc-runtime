@@ -1,12 +1,18 @@
 {
   "schema": "phase-c-review-evidence/1",
   "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
-  "overall_readiness": "pending-live-plan-anchor-and-final-manager",
+  "overall_readiness": "pending-anchor-clarity-approval-live-gates-final-manager",
+  "qa2": {
+    "resolved": 6,
+    "remaining_blocking": [
+      "ARCH-C-002"
+    ]
+  },
   "files": [
     {
       "path": "README.md",
-      "sha256": "3a571e0106de2113489f6625798ea3311b4122824b8a3dc1e6cf9c55a3f6529f",
-      "bytes": 5205,
+      "sha256": "6492636b90caee7ac8281f0ac7bcc274d744e40a3ac0713b9d15f25ae05f78d5",
+      "bytes": 5196,
       "source": "authored index"
     },
     {
@@ -214,10 +220,34 @@
       "source": "qa1/screen.json"
     },
     {
+      "path": "qa2/aggregate.json",
+      "sha256": "77246a518eb1ac0e03d56c3c12f7563fcccbcc8d707d2097689c0e6251622990",
+      "bytes": 29333,
+      "source": "qa2/aggregate.json"
+    },
+    {
+      "path": "qa2/arch-qa-result.md",
+      "sha256": "b7cd09e8f125a032f076c788e193b30809628602d9d66ff95b121dacdfa112da",
+      "bytes": 4968,
+      "source": "qa2/arch-qa-result.md"
+    },
+    {
       "path": "qa2/ceremony-qa-result.md",
       "sha256": "6cbc852a16bdfa614c207f48ef741fa26f161bf83c41e5f1495b5556ad8bef76",
       "bytes": 1434,
       "source": "qa2/ceremony-qa-result.md"
+    },
+    {
+      "path": "qa2/manager-machine-status.json",
+      "sha256": "d02d093f900711c34337b30218a57e5a230f88c4021d5a5912bc5facac7eb08f",
+      "bytes": 2593,
+      "source": "qa2/manager-machine-status.json"
+    },
+    {
+      "path": "qa2/manager-result.md",
+      "sha256": "2f3e3299c9ef34b6740db6271ce239568ecffef1be8991e70491492b4c1650cd",
+      "bytes": 4424,
+      "source": "qa2/manager-result.md"
     },
     {
       "path": "qa2/req-qa-result.md",
@@ -230,6 +260,12 @@
       "sha256": "4f2c15870d58e8a682ac531f730cdc23e9cc890d3ffaf3c38652edb81ec9396b",
       "bytes": 2414,
       "source": "qa2/ruthless-boundary-qa-result.md"
+    },
+    {
+      "path": "qa2/screen.json",
+      "sha256": "675c42cde153650916dd185a065c700c151d6cf933c34b01e5d75cb3d30d2de8",
+      "bytes": 992,
+      "source": "qa2/screen.json"
     },
     {
       "path": "scope-r1-screen.json",
