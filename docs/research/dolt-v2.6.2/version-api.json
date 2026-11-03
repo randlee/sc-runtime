@@ -1,0 +1,483 @@
+{
+  "source": {
+    "tag": "v2.6.2",
+    "sha": "46d8805d8556599eb0a6472892e67e3bb1e0de03",
+    "read_only": true,
+    "tests_run": false
+  },
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "SQL procedure registration contains dolt_clone and no dolt_fork",
+      "source": "go/libraries/doltcore/sqle/dprocedures/init.go:22-65",
+      "test": "registration source inventory; no runtime test run"
+    },
+    {
+      "id": "C2",
+      "claim": "dolt_clone takes remote URL and optional DB directory, with branch/remote/depth/git ref options, and delegates to provider clone",
+      "source": "go/libraries/doltcore/sqle/dprocedures/dolt_clone.go:33-123",
+      "test": "dolt clone procedure coverage exists in sqle enginetest help/procedure suite"
+    },
+    {
+      "id": "C3",
+      "claim": "Dolt fork references describe commit graph fork point, not SQL fork API",
+      "source": "dprocedures/init.go:22-65; dfunctions/init.go:19-30; dtablefunctions/init.go:19-34",
+      "test": "complete registration inventory"
+    },
+    {
+      "id": "C4",
+      "claim": "branch supports copy/rename/delete/upstream/create and commits then restarts transaction",
+      "source": "go/libraries/doltcore/sqle/dprocedures/dolt_branch.go:42-112",
+      "test": "sqle/enginetest/dolt_branch_queries.go"
+    },
+    {
+      "id": "C5",
+      "claim": "dolt_branches is read-only; writes directed through dolt_branch",
+      "source": "go/libraries/doltcore/sqle/dtables/branches_table.go:434-446",
+      "test": "sqle/enginetest/branch_control_test.go:1760+"
+    },
+    {
+      "id": "C6",
+      "claim": "dolt_add supports --branch revision DB target, selected tables or all, requires Write",
+      "source": "go/libraries/doltcore/sqle/dprocedures/dolt_add.go:33-81",
+      "test": "sqle/enginetest staged/status query scripts"
+    },
+    {
+      "id": "C7",
+      "claim": "commit results: hash; commit_all branch/hash rows",
+      "source": "go/libraries/doltcore/sqle/dprocedures/init.go:30-32; dolt_commit.go:38-64",
+      "test": "sqle/enginetest/dolt_queries_commit_all.go"
+    },
+    {
+      "id": "C8",
+      "claim": "SQL context and branch permission checks scope writes; branch procedure transaction boundary explicit",
+      "source": "dolt_branch.go:51-112; dolt_commit.go doDoltCommitAll",
+      "test": "sqle/enginetest/branch_control_test.go"
+    },
+    {
+      "id": "C9",
+      "claim": "push status/message; pull fast_forward/conflicts/message and write check",
+      "source": "dolt_push.go:36-98; dolt_pull.go:41-129",
+      "test": "remote/pull/push SQL enginetests in sqle/enginetest"
+    },
+    {
+      "id": "C10",
+      "claim": "ff-only supported; divergence aborts without changes",
+      "source": "dolt_merge.go:124-128,564; dolt_pull.go:98-117",
+      "test": "sqle/enginetest/dolt_queries_merge.go:4094-4137"
+    },
+    {
+      "id": "C11",
+      "claim": "clone/fetch/push/pull/remote/backup admin metadata",
+      "source": "go/libraries/doltcore/sqle/dprocedures/init.go:22-54",
+      "test": "registry metadata"
+    },
+    {
+      "id": "C12",
+      "claim": "merge result includes hash, fast_forward, conflicts, message",
+      "source": "go/libraries/doltcore/sqle/dprocedures/dolt_merge.go:58-90",
+      "test": "dolt_queries_merge.go"
+    },
+    {
+      "id": "C13",
+      "claim": "conflict tables and conflict procedure exposed",
+      "source": "init.go:33,45; doltdb/system_table.go:147-180",
+      "test": "dolt_queries_merge.go, dolt_queries_revert.go"
+    },
+    {
+      "id": "C14",
+      "claim": "reset/revert/cherry-pick/rebase/stash/tag/squash supported registrations",
+      "source": "go/libraries/doltcore/sqle/dprocedures/init.go:27-53",
+      "test": "revert/cherry-pick/reset/rebase enginetest suites"
+    },
+    {
+      "id": "C15",
+      "claim": "backup add/remove/sync/sync-url/restore; admin/write gated",
+      "source": "go/libraries/doltcore/sqle/dprocedures/dolt_backup.go:35-83,137-233",
+      "test": "backup procedure test coverage in sqle"
+    },
+    {
+      "id": "C16",
+      "claim": "row conflict table holds base/ours/theirs values and side diff types",
+      "source": "go/libraries/doltcore/sqle/dtables/conflicts_tables_prolly.go:158-179,300-340",
+      "test": "go/libraries/doltcore/sqle/enginetest/dolt_queries_merge.go:853-912"
+    },
+    {
+      "id": "C17",
+      "claim": "schema conflicts expose base/our/their DDL and description",
+      "source": "go/libraries/doltcore/sqle/dtables/schema_conflicts_table.go:56-64",
+      "test": "go/libraries/doltcore/sqle/enginetest/dolt_queries_merge.go:6343-6378"
+    },
+    {
+      "id": "C18",
+      "claim": "constraint violations distinguish failure type and details",
+      "source": "go/libraries/doltcore/sqle/dtables/constraint_violations_prolly.go:41-91",
+      "test": "go/libraries/doltcore/sqle/enginetest/dolt_queries_merge.go:387-438"
+    },
+    {
+      "id": "C19",
+      "claim": "upstream test proves base/ours/theirs conflict values",
+      "source": "go/libraries/doltcore/sqle/enginetest/dolt_queries_merge.go:853-912",
+      "test": "base=0 ours=1001 theirs=1000"
+    },
+    {
+      "id": "C20",
+      "claim": "schema conflict SQL resolver test is skipped; CLI cat inspects and resolve ours/theirs auto-mutates",
+      "source": "dolt_queries_merge.go:1060-1084; go/cmd/dolt/commands/cnfcmds/cat.go:53-87; resolve.go:31-40,84-89",
+      "test": "schema resolver test explicitly Skip=true"
+    },
+    {
+      "id": "C21",
+      "claim": "merge status provides source/source_commit/target; merge bases function returns best common ancestors",
+      "source": "go/libraries/doltcore/sqle/dtables/merge_status_table.go:44-50; go/libraries/doltcore/sqle/dtablefunctions/dolt_merge_bases.go:35-46,123-127,139-180",
+      "test": "merge query tests assert source/target"
+    },
+    {
+      "id": "C22",
+      "claim": "clean divergent 3-way merge creates merge commit; no-commit leaves merge staged/uncommitted",
+      "source": "dolt_merge.go:301-354",
+      "test": "dolt_queries_merge.go:1386-1420; no-commit :805-841"
+    },
+    {
+      "id": "C23",
+      "claim": "conflict merge stores a working set and reports conflicts without creating a merge commit, but can include partially merged clean rows",
+      "source": "dolt_merge.go:312-354",
+      "test": "dolt_queries_merge.go:2698-2720"
+    },
+    {
+      "id": "C24",
+      "claim": "autocommit conflict state rolls back unless dolt_allow_commit_conflicts is on",
+      "source": "dsess/transactions.go:630-702",
+      "test": "dolt_queries_merge.go:1551-1623"
+    },
+    {
+      "id": "C25",
+      "claim": "SQL rollback clears uncommitted session roots; DOLT_MERGE abort explicitly restores and commits working set",
+      "source": "dsess/session.go:1050-1055; dolt_merge.go:140-174",
+      "test": "dolt_queries_merge.go:1551-1607 tests abort; direct rollback-after-conflict test absent"
+    },
+    {
+      "id": "C26",
+      "claim": "preview summary covers row and schema conflict counts but not constraints",
+      "source": "dolt_preview_merge_conflicts_summary.go:46-50; dolt_preview_merge_conflicts.go:116-124",
+      "test": "dolt_queries_merge.go:853-875"
+    },
+    {
+      "id": "C27",
+      "claim": "preview and merge resolve refs in distinct calls, so no shared preview plan/token; concurrency race is not proven safe",
+      "source": "dolt_merge.go:177-199,247-312; dolt_preview_merge_conflicts.go:233-279",
+      "test": "dolt_queries_merge.go:2725-2742 covers overlapping index merge correctness only"
+    },
+    {
+      "id": "C28",
+      "claim": "Dolt branch publication uses locks, expected-head checks, optimistic retry and commit-head update",
+      "source": "go/libraries/doltcore/sqle/dsess/session.go:699-767; go/libraries/doltcore/sqle/dsess/transactions.go:389-485",
+      "test": "transaction commit tests; existing concurrent merge test is limited to overlapping index correctness"
+    },
+    {
+      "id": "C29",
+      "claim": "merge preview summary includes only data/schema conflict count columns, not constraints",
+      "source": "go/libraries/doltcore/sqle/dtablefunctions/dolt_preview_merge_conflicts_summary.go:46-50",
+      "test": "preview conflict enginetests"
+    },
+    {
+      "id": "C30",
+      "claim": "ordinary clean divergent merge commits using native doDoltCommit and clears status",
+      "source": "go/libraries/doltcore/sqle/dprocedures/dolt_merge.go:332-354",
+      "test": "go/libraries/doltcore/sqle/enginetest/dolt_queries_merge.go:1386-1420"
+    }
+  ],
+  "inventory": {
+    "procedures": [
+      "dolt_add",
+      "dolt_backup",
+      "dolt_branch",
+      "dolt_checkout",
+      "dolt_cherry_pick",
+      "dolt_clean",
+      "dolt_clone",
+      "dolt_commit",
+      "dolt_commit_all",
+      "dolt_commit_hash_out",
+      "dolt_conflicts_resolve",
+      "dolt_count_commits",
+      "dolt_fetch",
+      "dolt_undrop",
+      "dolt_update_column_tag",
+      "dolt_purge_dropped_databases",
+      "dolt_rebase",
+      "dolt_rm",
+      "dolt_gc",
+      "dolt_thread_dump",
+      "dolt_merge",
+      "dolt_pull",
+      "dolt_push",
+      "dolt_remote",
+      "dolt_reset",
+      "dolt_revert",
+      "dolt_squash_history",
+      "dolt_stash",
+      "dolt_tag",
+      "dolt_verify_constraints",
+      "dolt_stats_restart",
+      "dolt_stats_stop",
+      "dolt_stats_info",
+      "dolt_stats_purge",
+      "dolt_stats_wait",
+      "dolt_stats_flush",
+      "dolt_stats_once",
+      "dolt_stats_gc",
+      "dolt_stats_timers"
+    ],
+    "scalar_functions": [
+      "dolt_hashof",
+      "hashof (deprecated alias)",
+      "dolt_version",
+      "dolt_storage_format",
+      "active_branch",
+      "dolt_merge_base",
+      "has_ancestor",
+      "dolt_hashof_table",
+      "dolt_hashof_db",
+      "dolt_join_cost"
+    ],
+    "table_functions": [
+      "DOLT_DIFF",
+      "DOLT_DIFF_STAT",
+      "DOLT_DIFF_SUMMARY",
+      "DOLT_BRANCH_STATUS",
+      "DOLT_LOG",
+      "DOLT_PATCH",
+      "DOLT_PREVIEW_MERGE_CONFLICTS_SUMMARY",
+      "DOLT_PREVIEW_MERGE_CONFLICTS",
+      "DOLT_SCHEMA_DIFF",
+      "DOLT_REFLOG",
+      "DOLT_QUERY_DIFF",
+      "DOLT_TEST_RUN",
+      "DOLT_JSON_DIFF",
+      "DOLT_MERGE_BASES"
+    ],
+    "generated_system_tables": [
+      "dolt_branches",
+      "dolt_remote_branches",
+      "dolt_log",
+      "dolt_conflicts",
+      "dolt_constraint_violations",
+      "dolt_commits",
+      "dolt_commit_ancestors",
+      "dolt_remotes",
+      "dolt_help",
+      "dolt_backups",
+      "dolt_stashes",
+      "dolt_branch_activity",
+      "dolt_status",
+      "dolt_status_ignored",
+      "dolt_diff_<table>",
+      "dolt_commit_diff_<table>",
+      "dolt_history_<table>",
+      "dolt_conflicts_<table>",
+      "dolt_constraint_violations_<table>",
+      "dolt_workspace_<table>"
+    ],
+    "writable_user_space_system_tables": [
+      "dolt_docs",
+      "dolt_query_catalog",
+      "dolt_schemas",
+      "dolt_procedures",
+      "dolt_ignore",
+      "dolt_rebase",
+      "dolt_tests",
+      "dolt_ci_workflows",
+      "dolt_ci_workflow_events",
+      "dolt_ci_workflow_event_triggers",
+      "dolt_ci_workflow_event_trigger_branches",
+      "dolt_ci_workflow_dolt_test_steps",
+      "dolt_ci_workflow_dolt_test_step_groups",
+      "dolt_ci_workflow_dolt_test_step_tests",
+      "dolt_ci_workflow_jobs",
+      "dolt_ci_workflow_steps",
+      "dolt_ci_workflow_saved_query_steps",
+      "dolt_ci_workflow_saved_query_step_expected_row_column_results",
+      "dolt_nonlocal_tables (implementation system table)",
+      "full-text backing tables are per-table internal family"
+    ],
+    "fork_api": "absent from procedure/function/table-function registration; no native DOLT_FORK",
+    "procedure_count": 39,
+    "scalar_function_count": 10,
+    "table_function_count": 14,
+    "additional_resolved_system_tables": [
+      "dolt_schema_conflicts",
+      "dolt_merge_status",
+      "dolt_tags",
+      "dolt_statistics",
+      "dolt_nonlocal_tables",
+      "dolt_docs",
+      "dolt_query_catalog",
+      "dolt_schemas",
+      "dolt_procedures",
+      "dolt_ignore",
+      "dolt_rebase",
+      "dolt_tests",
+      "dolt_ci_workflows and subordinate CI tables",
+      "dolt_branch_control (server privilege table)",
+      "dolt_branch_namespace_control (server privilege table)",
+      "dolt_diff",
+      "dolt_column_diff"
+    ]
+  },
+  "disposition": {
+    "required_initial": [
+      "branch create/list/delete/rename/checkout",
+      "branch-aware SQL CRUD",
+      "clean merge including divergent no-conflict three-way merge and fast-forward",
+      "remote config/fetch/push/pull including ff-only",
+      "native conflict preview and diagnostics (row/schema); constraint diagnostics on actual merge outcome"
+    ],
+    "supported_defer": [
+      "clone API",
+      "reset",
+      "revert",
+      "cherry-pick",
+      "rebase",
+      "stash",
+      "tag",
+      "squash history",
+      "count commits",
+      "backup lifecycle",
+      "stats/admin maintenance",
+      "conflict mutation/resolution APIs until explicit user decision"
+    ],
+    "outside_initial": [
+      "clone",
+      "fork (no native SQL API; no product mapping to clone implied)",
+      "automatic conflict resolution",
+      "custom diff engine"
+    ],
+    "not_applicable": [
+      "native DOLT_FORK (absent)",
+      "admin GC/stats/thread dump for user version workflow"
+    ]
+  },
+  "audit": {
+    "corrected_names": [
+      "active_branch is scalar; dolt_branch is procedure",
+      "hashof and dolt_hashof distinct registrations"
+    ],
+    "registered_counts": {
+      "procedures": 39,
+      "scalar_functions": 10,
+      "table_functions": 14
+    },
+    "validation": "Run line-range/path validation below against pinned source; registration lists counted from source. No compilation/tests run.",
+    "known_surface_note": "Ordinary SQL builtins, MySQL information_schema/mysql tables, privileges and DDL are outside Dolt-specific version-control inventory."
+  },
+  "operation_contracts": [
+    {
+      "name": "clone",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "branch",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "checkout",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "add",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "status",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "commit",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "log",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "diff",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "remote",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "fetch",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "push",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "pull",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "merge",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "conflicts_resolve",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "reset",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "revert",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "cherry_pick",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    },
+    {
+      "name": "backup",
+      "evidence": "version-api.md#selected-operation-contract-matrix"
+    }
+  ],
+  "merge_conflict_diagnostics": {
+    "strategy": "Use native Dolt diagnostics; no custom diff engine or automatic conflict resolution. Return evidence for explicit user/operator choice.",
+    "row_conflicts": {
+      "sql": "dolt_conflicts_<table>; pre-merge DOLT_PREVIEW_MERGE_CONFLICTS(ours,theirs,table)",
+      "fields": "from_root_ish; base_*, our_*, their_*; our_diff_type/their_diff_type; keyless cardinalities; conflict ID",
+      "test": "sqle/enginetest/dolt_queries_merge.go:853-912 asserts base=0, ours=1001, theirs=1000"
+    },
+    "schema_conflicts": {
+      "sql": "dolt_schema_conflicts: table_name,base_schema,our_schema,their_schema,description",
+      "test": "sqle/enginetest/dolt_queries_merge.go:6343-6378 asserts base varchar(20), ours datetime(6), theirs int"
+    },
+    "constraint_violations": {
+      "sql": "dolt_constraint_violations and dolt_constraint_violations_<table>; violation type/details plus row values",
+      "types": [
+        "foreign key",
+        "unique index",
+        "check constraint",
+        "not null"
+      ],
+      "test": "sqle/enginetest/dolt_queries_merge.go:387-438"
+    },
+    "heads_and_bases": {
+      "heads": "dolt_merge_status source/source_commit/target/unmerged_tables",
+      "base": "dolt_merge_base(ours,theirs), or DOLT_MERGE_BASES(ours,theirs) for multiple best ancestors"
+    },
+    "cli_inspection": "dolt conflicts cat <table> prints conflict details; CLI resolve --ours/--theirs is a mutation and deferred. SQL dolt_conflicts_resolve also deferred; schema resolver test skipped at dolt_queries_merge.go:1060-1084."
+  },
+  "merge_safety": {
+    "clean_merge": "Required initial; ordinary DOLT_MERGE fast-forwards if possible, otherwise clean 3-way merge publishes merge commit unless --no-commit. Upstream assertions in dolt_queries_merge.go:1386-1420; no-commit behavior :805-841.",
+    "conflict_target_head": "Conflict path does not invoke doDoltCommit; sets conflict working set and returns conflict result. Target HEAD remains pre-merge, but working root may contain non-conflicting merges / partial merge changes. Do not promise unchanged target working data.",
+    "autocommit": "Default autocommit + dolt_allow_commit_conflicts=0 rolls back unmerged conflict state with ErrUnresolvedConflictsAutoCommit; disable autocommit for manual inspect/commit or explicitly allow commit conflicts to persist diagnostics. See test :1551-1623.",
+    "rollback": "DoltSession.Rollback clears uncommitted session roots. It cannot undo a clean merge commit already published. Native DOLT_MERGE(--abort) restores an active persisted merge state. No direct rollback-after-conflict test found; implementation requires compatibility probe.",
+    "preview_limits": "Preview summary reports only data and schema conflict counts, not constraint-violation count. Preview is read-only, but separate from merge and not a transaction-bound plan.",
+    "toctou": "Preview and merge independently resolve refs; no preview token couples them. Commit publication uses branch locks, expected-head checks and optimistic retry (session.go:699-767; transactions.go:389-485), so the Dolt commit path guards concurrent target updates. Still, preview output can become stale before merge. Re-read/pin source and target hashes and add a compatibility probe for preview-to-merge source/target advancement; verify target does not regress and report diagnostics for the actual resolved pair."
+  }
+}
