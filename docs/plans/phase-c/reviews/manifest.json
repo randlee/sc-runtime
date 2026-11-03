@@ -1,7 +1,7 @@
 {
   "schema": "phase-c-review-evidence/1",
   "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
-  "overall_readiness": "pending-anchor-clarity-approval-live-gates-final-manager",
+  "overall_readiness": "pending-independent-triage-fixtures-live-gates-final-manager",
   "qa2": {
     "resolved": 6,
     "remaining_blocking": [
@@ -11,9 +11,51 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "6492636b90caee7ac8281f0ac7bcc274d744e40a3ac0713b9d15f25ae05f78d5",
-      "bytes": 5196,
+      "sha256": "305397d95f5a3c8d0e272fdd3e4170d5d498672ac0690fe6faee72d27894005a",
+      "bytes": 6042,
       "source": "authored index"
+    },
+    {
+      "path": "anchor-calibration/clarity-ANC-001-repeat-evidence.json",
+      "sha256": "266ded36b9487facb248d9b9da2b6f593397db31c4df15ab188639620fbdfbe3",
+      "bytes": 7854,
+      "source": "tuning/triage-clarity/ANC-001-repeat-evidence.json"
+    },
+    {
+      "path": "anchor-calibration/clarity-ANC-001-request.json",
+      "sha256": "8a147d4e242ce7cd3c08c05739db7f4582b102a27b017455e5c29b4bb985b1fc",
+      "bytes": 12162,
+      "source": "tuning/triage-clarity/ANC-001-request.json"
+    },
+    {
+      "path": "anchor-calibration/clarity-ANC-003-repeat-evidence.json",
+      "sha256": "eb94d46180dfc74b57aa66427706379cb9448671e82dba1e7147d7147082d0c9",
+      "bytes": 7777,
+      "source": "tuning/triage-clarity/ANC-003-repeat-evidence.json"
+    },
+    {
+      "path": "anchor-calibration/clarity-ANC-003-request.json",
+      "sha256": "876afd49fe723ff4cda44e295bae2b1400f7b32707d9179405d48ac4a1892805",
+      "bytes": 11987,
+      "source": "tuning/triage-clarity/ANC-003-request.json"
+    },
+    {
+      "path": "anchor-calibration/clarity-actual-anchor-rubric.json",
+      "sha256": "b3bc8c0d93a31e2cba38f0c9f9ffea5f5ebca9c5a99535170652a4bce19a9e39",
+      "bytes": 91490,
+      "source": "calibrated-anchor-rubric-clarity.json"
+    },
+    {
+      "path": "anchor-calibration/clarity-provenance-audit.json",
+      "sha256": "97930588a6167a38984c9901758fb195bdb74eb70abd759a8104e31c0ac5527c",
+      "bytes": 13352,
+      "source": "user-approved clarity record provenance audit"
+    },
+    {
+      "path": "anchor-calibration/clarity-triage-diagnosis.md",
+      "sha256": "2745b39437a5a8d33b187ce3e9141c919b4d18567d564f8cf772f70727ac7b62",
+      "bytes": 3211,
+      "source": "tuning/triage-clarity/README.md"
     },
     {
       "path": "anchor-clarity-diagnosis.md",
@@ -333,5 +375,13 @@
       "bytes": 26449,
       "source": "step5-developer.json"
     }
-  ]
+  ],
+  "anchor_clarity": {
+    "approval": "user-approved",
+    "active": 10,
+    "retired": 2,
+    "rubric_pass": false,
+    "rubric_outcomes": "all10inconclusive",
+    "tooling_mismatch": "pending-independent-upstream-investigation"
+  }
 }

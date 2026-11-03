@@ -7,25 +7,29 @@ Intent: `docs/plans/phase-c/phase-c-plan.md`
 | ID | Status | Summary | Stated |
 | --- | --- | --- | --- |
 | ANC-001 | locked | Generated consumer runs every configured analyzer | 2026-11-02 |
-| ANC-002 | locked | One compatible runtime ecosystem upgrade | 2026-11-02 |
+| ANC-002 | retired | One compatible runtime ecosystem upgrade | 2026-11-02 |
 | ANC-003 | locked | Repository and template share sc-lint 0.8.4 | 2026-11-02 |
 | ANC-004 | locked | Phase C uses c consistently | 2026-11-02 |
-| ANC-005 | locked | Dedicated Phase C planning worktree and PR | 2026-11-02 |
+| ANC-005 | retired | Dedicated Phase C planning worktree and PR | 2026-11-02 |
 | ANC-006 | locked | Keep rusqlite 0.39.x SQLite compatibility | 2026-11-02 |
 | ANC-007 | locked | Configuration-selected default boundaries | 2026-11-02 |
 | ANC-008 | locked | Consumer-owned boundaries policy | 2026-11-02 |
+| ANC-009 | locked | upgrade rmcp to its latest released version. | 2026-11-02 |
+| ANC-010 | locked | upgrade utoipa to its latest released version. | 2026-11-02 |
+| ANC-011 | locked | use a dedicated Git worktree. | 2026-11-02 |
+| ANC-012 | locked | have a separate pull request targeting develop. | 2026-11-02 |
 
 ## ANC-001
 
-Anchor: A generated consumer repository must have the full sc-lint toolchain installed.
+Anchor: Generated consumer setup must install sc-lint with its sc-boundary, sc-portability, and sc-runtime analyzers.
 
 > a full sc-lint is installed on a consumer repo
 
-Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 3.
+Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 4.
 
 Summary: Generated consumer runs every configured analyzer
 
-Scope: the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or default or full lint commands
+Scope: c-2 generated consumer setup and any plan item that installs the consumer lint toolchain.
 
 Deterministic check to pair with the development gate: A generated fixture runs just setup, ordinary just lint, and named default and full profiles while its receipt records sc-boundary, sc-portability, and sc-runtime.
 
@@ -41,7 +45,7 @@ Anchor: Phase C must upgrade rmcp and utoipa to their latest released versions.
 
 > upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>
 
-Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 2.
+Said by randlee, Phase C planning conversation, 2026-11-02. Status: retired. Version 3.
 
 Summary: One compatible runtime ecosystem upgrade
 
@@ -77,11 +81,11 @@ Fixtures:
 
 ## ANC-004
 
-Anchor: The current phase must be named phase-c.
+Anchor: sc-runtime's Phase C must use the identifier phase-c.
 
 > rename to phase-c
 
-Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 2.
+Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 3.
 
 Summary: Phase C uses c consistently
 
@@ -101,7 +105,7 @@ Anchor: Phase C planning must use a dedicated worktree and a separate pull reque
 
 > planning should be done on a second pr to develop on a dedicated $sc-git-worktree
 
-Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 2.
+Said by randlee, Phase C planning conversation, 2026-11-02. Status: retired. Version 3.
 
 Summary: Dedicated Phase C planning worktree and PR
 
@@ -117,11 +121,11 @@ Fixtures:
 
 ## ANC-006
 
-Anchor: Phase C must keep rusqlite on the 0.39 release line.
+Anchor: Phase C's rusqlite dependency must remain at version 0.39.x.
 
 > so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.
 
-Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 2.
+Said by randlee, Phase C planning conversation, 2026-11-02. Status: locked. Version 3.
 
 Summary: Keep rusqlite 0.39.x SQLite compatibility
 
@@ -158,11 +162,11 @@ Fixtures:
 
 ## ANC-008
 
-Anchor: After fresh setup, the generated boundaries policy must be owned by the consumer repository.
+Anchor: After fresh setup, the consumer repository must control subsequent boundaries-policy decisions.
 
 > you will need to generate a boundaries policy for a 'fresh install' once a consumer is set up, they will have their own boundaries policy
 
-Said by randlee, User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat., 2026-11-02. Status: locked. Version 2.
+Said by randlee, User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat., 2026-11-02. Status: locked. Version 3.
 
 Summary: Consumer-owned boundaries policy
 
@@ -175,3 +179,83 @@ Beads: anchor `run-81q`, plan questions `run-81q.1`, dev questions `run-81q.2`
 Fixtures:
 - pass: Fresh setup writes the initial boundaries policy into the consumer repository and documents that the consumer owns subsequent policy decisions.
 - fail: The generated consumer's boundaries policy remains centrally owned by sc-runtime, which decides all subsequent consumer boundary changes.
+
+## ANC-009
+
+Anchor: Phase C must upgrade rmcp to its latest released version.
+
+> upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>
+
+Said by randlee, User approved clarity corrections and split fixtures; split from ANC-002, original quote unchanged., 2026-11-02. Status: locked. Version 2.
+
+Summary: upgrade rmcp to its latest released version.
+
+Scope: the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints
+
+Deterministic check to pair with the development gate: Verify the c-1 dated registry query and frozen rmcp version used by the runtime/template graph.
+
+Beads: anchor `run-qt3`, plan questions `run-qt3.1`, dev questions `run-qt3.2`
+
+Fixtures:
+- pass: Phase C checks the released rmcp versions and upgrades rmcp to its latest release.
+- fail: Phase C keeps the older rmcp dependency despite a newer released version being available.
+
+## ANC-010
+
+Anchor: Phase C must upgrade utoipa to its latest released version.
+
+> upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>
+
+Said by randlee, User approved clarity corrections and split fixtures; split from ANC-002, original quote unchanged., 2026-11-02. Status: locked. Version 2.
+
+Summary: upgrade utoipa to its latest released version.
+
+Scope: the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints
+
+Deterministic check to pair with the development gate: Verify the c-1 dated registry query and frozen utoipa version used by the runtime/template graph.
+
+Beads: anchor `run-evb`, plan questions `run-evb.1`, dev questions `run-evb.2`
+
+Fixtures:
+- pass: Phase C checks the released utoipa versions and upgrades utoipa to its latest release.
+- fail: Phase C keeps the older utoipa dependency despite a newer released version being available.
+
+## ANC-011
+
+Anchor: Phase C planning must use a dedicated Git worktree.
+
+> planning should be done on a second pr to develop on a dedicated $sc-git-worktree
+
+Said by randlee, User approved clarity corrections and split fixtures; split from ANC-005, original quote unchanged., 2026-11-02. Status: locked. Version 2.
+
+Summary: use a dedicated Git worktree.
+
+Scope: the Phase C planning branch and Git worktree metadata
+
+Deterministic check to pair with the development gate: Git worktree metadata identifies the separate plan/phase-c checkout.
+
+Beads: anchor `run-alr`, plan questions `run-alr.1`, dev questions `run-alr.2`
+
+Fixtures:
+- pass: Git worktree metadata shows a dedicated Phase C planning checkout.
+- fail: Phase C planning is performed in the primary develop checkout.
+
+## ANC-012
+
+Anchor: Phase C planning must have a separate pull request targeting develop.
+
+> planning should be done on a second pr to develop on a dedicated $sc-git-worktree
+
+Said by randlee, User approved clarity corrections and split fixtures; split from ANC-005, original quote unchanged., 2026-11-02. Status: locked. Version 2.
+
+Summary: have a separate pull request targeting develop.
+
+Scope: the Phase C planning pull request metadata
+
+Deterministic check to pair with the development gate: GitHub PR114 head plan/phase-c targets develop and is separate from dependency PR109.
+
+Beads: anchor `run-mwv`, plan questions `run-mwv.1`, dev questions `run-mwv.2`
+
+Fixtures:
+- pass: A separate Phase C planning pull request targets develop.
+- fail: Phase C planning has no separate pull request to develop.

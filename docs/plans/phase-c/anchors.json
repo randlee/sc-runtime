@@ -7,14 +7,14 @@
       "id": "ANC-001",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "A generated consumer repository must have the full sc-lint toolchain installed.",
+      "statement": "Generated consumer setup must install sc-lint with its sc-boundary, sc-portability, and sc-runtime analyzers.",
       "quote": "a full sc-lint is installed on a consumer repo",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-02",
       "context": "Phase C planning conversation",
       "summary": "Generated consumer runs every configured analyzer",
-      "scope": "the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or default or full lint commands",
+      "scope": "c-2 generated consumer setup and any plan item that installs the consumer lint toolchain.",
       "deterministic_check": "A generated fixture runs just setup, ordinary just lint, and named default and full profiles while its receipt records sc-boundary, sc-portability, and sc-runtime.",
       "fixtures": {
         "pass": [
@@ -25,7 +25,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -74,6 +74,15 @@
           "status": "locked",
           "approved_by": "randlee",
           "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope"
+          ],
+          "previous_statement": "A generated consumer repository must have the full sc-lint toolchain installed."
         }
       ]
     },
@@ -99,8 +108,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "locked",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-dle",
@@ -137,6 +146,12 @@
           "status": "locked",
           "approved_by": "randlee",
           "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-009",
+          "reason": "User-approved split into ANC-009, ANC-010; both preserve the original quote and projected approved fixtures."
         }
       ]
     },
@@ -207,7 +222,7 @@
       "id": "ANC-004",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "The current phase must be named phase-c.",
+      "statement": "sc-runtime's Phase C must use the identifier phase-c.",
       "quote": "rename to phase-c",
       "kind": "structural",
       "stated_by": "randlee",
@@ -225,7 +240,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -263,6 +278,14 @@
           "status": "locked",
           "approved_by": "randlee",
           "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "The current phase must be named phase-c."
         }
       ]
     },
@@ -288,8 +311,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "locked",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-aov",
@@ -327,6 +350,12 @@
           "status": "locked",
           "approved_by": "randlee",
           "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-011",
+          "reason": "User-approved split into ANC-011, ANC-012; both preserve the original quote and projected approved fixtures."
         }
       ]
     },
@@ -334,7 +363,7 @@
       "id": "ANC-006",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase C must keep rusqlite on the 0.39 release line.",
+      "statement": "Phase C's rusqlite dependency must remain at version 0.39.x.",
       "quote": "so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.",
       "kind": "directive",
       "stated_by": "randlee",
@@ -352,7 +381,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -390,6 +419,14 @@
           "status": "locked",
           "approved_by": "randlee",
           "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "Phase C must keep rusqlite on the 0.39 release line."
         }
       ]
     },
@@ -451,7 +488,7 @@
       "id": "ANC-008",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "After fresh setup, the generated boundaries policy must be owned by the consumer repository.",
+      "statement": "After fresh setup, the consumer repository must control subsequent boundaries-policy decisions.",
       "quote": "you will need to generate a boundaries policy for a 'fresh install' once a consumer is set up, they will have their own boundaries policy",
       "kind": "directive",
       "stated_by": "randlee",
@@ -469,7 +506,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -497,6 +534,230 @@
             "anchor": "run-81q",
             "plan_questions": "run-81q.1",
             "dev_questions": "run-81q.2"
+          }
+        },
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "updated",
+          "fields": [
+            "statement"
+          ],
+          "previous_statement": "After fresh setup, the generated boundaries policy must be owned by the consumer repository."
+        }
+      ]
+    },
+    {
+      "id": "ANC-009",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C must upgrade rmcp to its latest released version.",
+      "quote": "upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User approved clarity corrections and split fixtures; split from ANC-002, original quote unchanged.",
+      "summary": "upgrade rmcp to its latest released version.",
+      "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
+      "deterministic_check": "Verify the c-1 dated registry query and frozen rmcp version used by the runtime/template graph.",
+      "fixtures": {
+        "pass": [
+          "Phase C checks the released rmcp versions and upgrades rmcp to its latest release."
+        ],
+        "fail": [
+          "Phase C keeps the older rmcp dependency despite a newer released version being available."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-qt3",
+        "plan_questions": "run-qt3.1",
+        "dev_questions": "run-qt3.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T03:31:19+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T03:32:14+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-qt3",
+            "plan_questions": "run-qt3.1",
+            "dev_questions": "run-qt3.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-010",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C must upgrade utoipa to its latest released version.",
+      "quote": "upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User approved clarity corrections and split fixtures; split from ANC-002, original quote unchanged.",
+      "summary": "upgrade utoipa to its latest released version.",
+      "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
+      "deterministic_check": "Verify the c-1 dated registry query and frozen utoipa version used by the runtime/template graph.",
+      "fixtures": {
+        "pass": [
+          "Phase C checks the released utoipa versions and upgrades utoipa to its latest release."
+        ],
+        "fail": [
+          "Phase C keeps the older utoipa dependency despite a newer released version being available."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-evb",
+        "plan_questions": "run-evb.1",
+        "dev_questions": "run-evb.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T03:32:15+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-evb",
+            "plan_questions": "run-evb.1",
+            "dev_questions": "run-evb.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-011",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C planning must use a dedicated Git worktree.",
+      "quote": "planning should be done on a second pr to develop on a dedicated $sc-git-worktree",
+      "kind": "structural",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User approved clarity corrections and split fixtures; split from ANC-005, original quote unchanged.",
+      "summary": "use a dedicated Git worktree.",
+      "scope": "the Phase C planning branch and Git worktree metadata",
+      "deterministic_check": "Git worktree metadata identifies the separate plan/phase-c checkout.",
+      "fixtures": {
+        "pass": [
+          "Git worktree metadata shows a dedicated Phase C planning checkout."
+        ],
+        "fail": [
+          "Phase C planning is performed in the primary develop checkout."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-alr",
+        "plan_questions": "run-alr.1",
+        "dev_questions": "run-alr.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T03:32:17+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-alr",
+            "plan_questions": "run-alr.1",
+            "dev_questions": "run-alr.2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ANC-012",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase C planning must have a separate pull request targeting develop.",
+      "quote": "planning should be done on a second pr to develop on a dedicated $sc-git-worktree",
+      "kind": "structural",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-02",
+      "context": "User approved clarity corrections and split fixtures; split from ANC-005, original quote unchanged.",
+      "summary": "have a separate pull request targeting develop.",
+      "scope": "the Phase C planning pull request metadata",
+      "deterministic_check": "GitHub PR114 head plan/phase-c targets develop and is separate from dependency PR109.",
+      "fixtures": {
+        "pass": [
+          "A separate Phase C planning pull request targets develop."
+        ],
+        "fail": [
+          "Phase C planning has no separate pull request to develop."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "locked",
+      "promoted_to": null,
+      "beads": {
+        "anchor": "run-mwv",
+        "plan_questions": "run-mwv.1",
+        "dev_questions": "run-mwv.2"
+      },
+      "history": [
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "created",
+          "status": "locked"
+        },
+        {
+          "at": "2026-11-03T03:31:20+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-03T03:32:19+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-mwv",
+            "plan_questions": "run-mwv.1",
+            "dev_questions": "run-mwv.2"
           }
         }
       ]

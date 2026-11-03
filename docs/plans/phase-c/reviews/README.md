@@ -4,7 +4,7 @@ Review PR: [#114](https://github.com/randlee/sc-runtime/pull/114).
 The current plan document baseline is `45ffd3fee9ca83eb27d48cf861551baa61b4a204`.
 The plan is **not yet approved for implementation**: live Plan Anchor fixture
 and full-sprint gates, locked-anchor coverage, and final manager closeout remain
-open. This evidence checkpoint does not change sprint or anchor content.
+open. Evidence checkpoints preserve each source report's original result.
 
 ## Review rounds
 
@@ -50,10 +50,22 @@ network attempts, configuration, credentials and headers are excluded.
 Calibration success is not actual-anchor or plan-gate success. The calibrated
 [actual-anchor rubric result](calibrated-anchor-rubric.json) failed; the
 [clarity diagnosis](anchor-clarity-diagnosis.md) records evidence and proposed
-changes awaiting user approval. Existing locked anchor statements have not
-been silently rewritten to pass. Approved fixture checks, live judgments of
+changes that awaited user approval at that checkpoint. Anchor statements are
+changed only with that approval. Approved fixture checks, live judgments of
 all four complete sprint documents, structural checks and coverage must finish
 before ARCH-C-002 and overall plan readiness can close.
+
+The user subsequently approved the clarity packet. Its changes now preserve
+the original quotes and retirement history while splitting ANC-002 into
+ANC-009/010 and ANC-005 into ANC-011/012: ten active locked anchors and two
+retired records. The [provenance audit](anchor-calibration/clarity-provenance-audit.json)
+checks the original quotes, approved fixture pairs and linked tracker trees.
+The [new actual-anchor rubric](anchor-calibration/clarity-actual-anchor-rubric.json)
+still reports all ten anchors inconclusive; this is not a live gate PASS.
+The [triage diagnosis](anchor-calibration/clarity-triage-diagnosis.md) reports
+a 0.8.6 schema/relational contract mismatch under independent upstream
+investigation. No installed tooling correction or defect resolution is
+claimed here. The earlier failure and proposal files remain unchanged.
 
 ## Current plan document SHA256
 
