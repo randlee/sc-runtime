@@ -16,6 +16,7 @@ requirements:
   - NFR-RUN-0006
 adrs:
   - ADR-RUN-0005
+  - ADR-RUN-0303
   - ADR-RUN-0401
   - ADR-RUN-0402
 owned_paths:
@@ -34,6 +35,11 @@ vertical_rationale: The generated consumer has no independent lint boundary; its
 ---
 
 # Sprint c-2 — consumer sc-lint full profile
+
+Dependency execution: consume `c-1`'s REQ-RUN-0307/NFR-RUN-0006 and
+ADR-RUN-0005 contract amendments by merging each parent development push
+before every development/fix round. Parent QA is not a start barrier;
+the parent PR merges before this PR completes.
 
 ## Goal
 

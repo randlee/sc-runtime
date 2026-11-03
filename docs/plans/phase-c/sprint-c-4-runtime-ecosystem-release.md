@@ -32,6 +32,11 @@ vertical_rationale: Registry visibility can only be verified after the exact pub
 
 # Sprint c-4 — runtime ecosystem authorized release
 
+Dependency execution: consume `c-3`'s prepared 0.2.0 package and composition
+proof by merging each parent development push before every development/fix
+round. Parent QA is not a start barrier; the parent PR merges before this
+PR completes. Publication retains the release authorization gate below.
+
 ## Goal
 
 Close the production release contract left deliberately open by `c-3`:

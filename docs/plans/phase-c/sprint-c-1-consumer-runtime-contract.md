@@ -19,6 +19,7 @@ adrs:
   - ADR-RUN-0005
   - ADR-RUN-0202
   - ADR-RUN-0203
+  - ADR-RUN-0303
 owned_paths:
   - docs/requirements.md
   - docs/architecture.md
@@ -131,7 +132,9 @@ Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
   deleted before merge and is never a network-dependent CI test.
 - Documentation links and identifiers resolve; search confirms no remaining
   authoritative Phase C baseline says `0.8.0` or permits generic `0.8.x`.
-- The plan's `c-1` amendments are reviewed before `c-2`/`c-3` begin.
+- Push the contract amendments for `c-2`/`c-3` to merge-forward before each
+  development/fix round. Parent QA does not block their start; `c-1`'s PR
+  merges before either child PR completes.
 
 ## This sprint does not close
 

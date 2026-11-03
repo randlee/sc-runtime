@@ -74,6 +74,11 @@ vertical_rationale: DaemonBuilder's public OpenApiRouter type, the generated dae
 
 # Sprint c-3 — runtime ecosystem upgrade
 
+Dependency execution: consume `c-1`'s frozen ADR-RUN-0203 package-identity
+matrix by merging each parent development push before every development/fix
+round. Parent QA is not a start barrier; the parent PR merges before this
+PR completes.
+
 ## Goal
 
 Upgrade the runtime's RMCP and OpenAPI ecosystem without creating two type

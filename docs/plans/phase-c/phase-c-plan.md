@@ -31,6 +31,7 @@ adrs:
   - ADR-RUN-0012
   - ADR-RUN-0202
   - ADR-RUN-0203
+  - ADR-RUN-0303
   - ADR-RUN-0401
   - ADR-RUN-0402
 ---
@@ -82,7 +83,7 @@ The phase has no artificial phase-wide integration sprint.
   repository's maintainer policy. It may carry the sc-lint-owned 0.8.4
   profile entries approved by `c-1`, but no clippy, rustfmt, or deny policy. The amendment
   to REQ-RUN-0307, NFR-RUN-0006, ADR-RUN-0005, and the quality policy makes
-  that exception explicit before either implementation sprint begins.
+  that exception explicit in the pushed contract consumed by the implementation sprints.
 
 ## Boundary map
 
@@ -126,13 +127,19 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 - Critical path: **3 sprints** (`c-1` → `c-3` → `c-4`).
 - Width: **2 sprints**.
 - Sprint count: **4**.
-- `c-1` establishes the authoritative consumer and dependency contracts and
-  must finish before `c-2` or `c-3`. `c-2` and `c-3` are `parallel_safe`:
+- `c-1` establishes the authoritative consumer and dependency contracts.
+  Its development push triggers merge-forward into `c-2` and `c-3` before
+  every child development/fix round; parent QA is not a start barrier, and
+  the `c-1` PR must merge before either child PR completes.
+  `c-2` and `c-3` are `parallel_safe`:
   they have disjoint owned paths.
   `c-2` must not modify runtime/template dependency manifests; `c-3` must
   not change `template/sc-lint.toml`, bootstrap behavior, or consumer lint
-  profile names. `c-4` must follow `c-3` and owns the authorized registry
-  proof; it does not modify runtime or template source.
+  profile names. `c-4` consumes `c-3`'s prepared 0.2.0 package and composition
+  proof: every parent development push triggers merge-forward before each
+  child development/fix round, parent QA is not a start barrier, and the
+  `c-3` PR must merge before the `c-4` PR completes. `c-4` owns the authorized
+  registry proof; it does not modify runtime or template source.
 - Both branches are cut from `integrate/phase-c`; each gets a distinct
   worktree and a PR to that integration branch. The final integration PR is
   `integrate/phase-c` to `develop`.
@@ -149,8 +156,8 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 
 ## Required decisions and exact compatibility contract
 
-Sprint `c-1` amends the active architecture before either implementation
-sprint starts: **ADR-RUN-0203, “Library versions on one router; one struct for
+Sprint `c-1` supplies the pushed contract consumed by the implementation
+sprints: **ADR-RUN-0203, “Library versions on one router; one struct for
 both schemas.”** The amendment replaces its old 0.2/5.5.0/3.7 evidence matrix
 with the approved Utoipa 6/RMCP 3.8 matrix and retires obsolete pin evidence.
 It must state all of the following, so a future dependency update cannot
