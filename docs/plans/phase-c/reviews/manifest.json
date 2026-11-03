@@ -1,7 +1,7 @@
 {
   "schema": "phase-c-review-evidence/1",
   "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
-  "overall_readiness": "pending-question-retuning-reseal-fixtures-live-gates-and-final-manager",
+  "overall_readiness": "NOT_FINALIZED: no accepted rubric after five bounded rounds; fixture approval and actual plan gates pending",
   "qa2": {
     "resolved": 6,
     "remaining_blocking": [
@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "44c77521415613d998e5d30ab8f4b4fe7830fb35e75e1fd362d523d9c82f234f",
-      "bytes": 24820,
+      "sha256": "f4dbe56b9e17b1f788dd8f360a72170b2893443437168a7dc87d929e6c92ae12",
+      "bytes": 25860,
       "source": "authored index"
     },
     {
@@ -11872,6 +11872,444 @@
       "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
     },
     {
+      "path": "continuation/calibration-v3/archive-snapshots/completed-before-round05.index.json",
+      "sha256": "835f8421fddb829b93a44703672be8c3935e101c19980e532236774a79e626cb",
+      "bytes": 618297,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/archive-snapshots/completed-before-round05.tar.gz",
+      "sha256": "72fb6f5a3fde43d3222527361bd90e718e60b2ca2e31ca430e90dfb926dd232f",
+      "bytes": 1075661,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/archive-snapshots/final-snapshot.index.json",
+      "sha256": "922ccd65b252754cfa06c648c3c82e8dda910418a3931cee53494aec58470d14",
+      "bytes": 1009934,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/archive-snapshots/round05-and-final.tar.gz",
+      "sha256": "9516eaf8f496a26d63d1936ba2bcd4d1c6f5ab4b438a71c2a926c940af365596",
+      "bytes": 562140,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/acceptance-table.json",
+      "sha256": "28883fd5ded8f04fb2b3e7e5b5249c4d2c1c5d124421ffe8c39d00a2457accc4",
+      "bytes": 765654,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/attestation.json",
+      "sha256": "f8a642d87aa12216d60903b81648a12c47da6d2aa758ab25e6a6bd8a0327a193",
+      "bytes": 517,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/candidate-rankings.json",
+      "sha256": "8eff18beb383b950b4765859ae1d5789715b4e8d736b9c1b312f6d6c89bf8688",
+      "bytes": 78526,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/outer_fence-validation.json",
+      "sha256": "b590c67e84a1514da6554b0d56ffd263d2ce5995ecabf30405892b4763a643e0",
+      "bytes": 84206,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/request_contract-validation.json",
+      "sha256": "11484484ccea7e74033097bdfcb6972541ef9af1cd2d9548857b0f85a9b9cccc",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/result.json",
+      "sha256": "be923cde1a7848cd320b4ec9d69c657d07a9e1cfa8c6c632e45d412c0b7655c2",
+      "bytes": 84146,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/result.md",
+      "sha256": "1f178c6b5ac2a5a1de0049a68806a76bc6d6a6f8ac147d9904ecad0b95e4e257",
+      "bytes": 84192,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/result_contract-validation.json",
+      "sha256": "30d77789cd413cdf0005e3c63b19935c4947742e1c4ae7c0e0afc6a201b73871",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-combined-final/validations.json",
+      "sha256": "90524f4225a0c94984d543aa187f608dc8d35afe4db92f3d2cd98e23677b1994",
+      "bytes": 146,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-dedupe-correction-execution-01/execution-summary.json",
+      "sha256": "7a3b37a80cd58d8704b750bea4dc57f0154bbccd4113340357f2e54229539198",
+      "bytes": 95,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-dedupe-round03-execution-01/execution-summary.json",
+      "sha256": "0f2915d022133ad9f86dc9eed01ee4a3fa9f1881e371056d78e671f908028793",
+      "bytes": 95,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-dedupe-round04-execution-01/execution-summary.json",
+      "sha256": "ba4224145b324277e4bd1b262a139e64e6357964e287b58f0669a178305d2971",
+      "bytes": 95,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-dedupe-round05-execution-01/execution-summary.json",
+      "sha256": "22217de31b51c0d76c7d8633e0f2f2585918dda8aa929d93ade94fbb8973edc4",
+      "bytes": 95,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-execution-01/acceptance-table.json",
+      "sha256": "d5927d32939761784b8cb57d3be66c3028dd6c7bc503791e46bfd9ceeaacc02a",
+      "bytes": 377291,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-execution-01/candidate-rankings.json",
+      "sha256": "ea7bb254866eafc7e86de5b1941560825162e7ebb8e1b5e96c5210baf9794ce1",
+      "bytes": 19919,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-execution-01/execution-summary.json",
+      "sha256": "c9eccb924f585f1849740e07a3500723fba4d565932ecc6869741d4f39ce4c45",
+      "bytes": 209,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-prepared/attestation.json",
+      "sha256": "18b74f514644b58e6be4ddbaf73aae9f0290aba587a835c3864c68a67185f2b1",
+      "bytes": 530,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-prepared/request_contract-validation.json",
+      "sha256": "11484484ccea7e74033097bdfcb6972541ef9af1cd2d9548857b0f85a9b9cccc",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-prepared/request_outer_fence-validation.json",
+      "sha256": "ba370a2914f4a1c4d19e52b078eb9bf61e5d1641af4bc168b4f4e8e9ce3f065d",
+      "bytes": 7105,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-prepared/result.json",
+      "sha256": "674cfc08ad5a3b7dc5ddb1e6483b8b50901775006a686b0878650f4c9d9ebbc5",
+      "bytes": 1575,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-prepared/result.md",
+      "sha256": "a62e47ac3971e073e68a0ff9bebfeb493fdac93dc2786f24c3d9bb602648f635",
+      "bytes": 1616,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-prepared/result_contract-validation.json",
+      "sha256": "28dcff19d894d4082bb3f28d6b058ccd6531e79000052265969d170fef987eb3",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-prepared/result_outer_fence-validation.json",
+      "sha256": "edb2da5957e1d2dc2098b46f54665fcb206779ce411f0487fdc8a21e9f8f111a",
+      "bytes": 1635,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-first-prepared/validations.json",
+      "sha256": "19fd9ceb468e2dedea574a7dd328b3b245a448c3d0863ba66aed4cd7de16e0b6",
+      "bytes": 268,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-pool-extension-execution-01/execution-summary.json",
+      "sha256": "cf5b6e960d762a311eb82236a5d27151f8012be6739a38299af4cca326e776dc",
+      "bytes": 229,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-pool-extension-prepared/request_contract-validation.json",
+      "sha256": "5fca07803b07df461d01496af0d0400d607f2a4ed80bf764f95e6dd633d6f783",
+      "bytes": 128,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-pool-extension-prepared/request_outer_fence-validation.json",
+      "sha256": "44e82714b214c73911a9d643a86051ba27b263265a589b5384a74f3f34fb7c64",
+      "bytes": 7106,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-execution-01/execution-summary.json",
+      "sha256": "90f04e1447dfb8a951f59a8835c1c4bbd9af811e51441a72854b60f5f6009e98",
+      "bytes": 229,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/acceptance-table.json",
+      "sha256": "ee9b293fbdcad1ff604f2895b993af2da0ef454453e154418139197abf9b4186",
+      "bytes": 1147356,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/attestation.json",
+      "sha256": "ef3ab4d3c679868d2c015f88f96451b9923a9a5bf50676f833ed5c3bd4ed23d8",
+      "bytes": 517,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/candidate-rankings.json",
+      "sha256": "46487b88795bf02305e305fda540711353224ae4db6ea2a7e3bafd0c5172443c",
+      "bytes": 120904,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/outer_fence-validation.json",
+      "sha256": "1be6d0806aee30579769a4085311c27f1d6ac5476cfe2db49eccbeffbb1cae86",
+      "bytes": 133471,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/request_contract-validation.json",
+      "sha256": "11484484ccea7e74033097bdfcb6972541ef9af1cd2d9548857b0f85a9b9cccc",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/result.json",
+      "sha256": "ba75ddd1a656ac5c355693b528162c9588a3d8916a060ae5b40b578dd3543ec6",
+      "bytes": 133411,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/result.md",
+      "sha256": "6fd03d9ec581213b00430d7963c139c457754a4015a2a5ea75abf56db323bcde",
+      "bytes": 133457,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/result_contract-validation.json",
+      "sha256": "61128d0059276b9b96726ee0f895552870b9c913422fdb5ec46cd5c0e6dc2b11",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-final/validations.json",
+      "sha256": "90524f4225a0c94984d543aa187f608dc8d35afe4db92f3d2cd98e23677b1994",
+      "bytes": 146,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-prepared/request_contract-validation.json",
+      "sha256": "0fde3ee5672dbae85cd2da97b060e2467550bd837b5009d095d9e9d909d64eaf",
+      "bytes": 128,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round03-prepared/request_outer_fence-validation.json",
+      "sha256": "4d3b8d66f34e980f0fbe1847ae7c926956913b824fcbcbc8e06a6340a30bde4a",
+      "bytes": 7092,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-execution-01/execution-summary.json",
+      "sha256": "d8b815bd9bbeb298f1ee1f8a34fa02b90427c6372f22883328792881fe79f2a7",
+      "bytes": 230,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/acceptance-table.json",
+      "sha256": "fe6517dec1f90f87d22af342b5a87d419dbe9570c2d6d5c5b7dd0b0b932fdeee",
+      "bytes": 1913049,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/attestation.json",
+      "sha256": "a49547ed35efa3509b6e59994ade3b5aa4aa983080d23bce82027282d50843a1",
+      "bytes": 515,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/candidate-rankings.json",
+      "sha256": "0889359bc405ec6249ac17e359bf7262a93a513affa335fef054e85935014c08",
+      "bytes": 170860,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/outer_fence-validation.json",
+      "sha256": "039a4ed10673933c6b59d7154543d00ad1f75691066f14fcbd967e382eb15dcd",
+      "bytes": 20219,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/request_contract-validation.json",
+      "sha256": "11484484ccea7e74033097bdfcb6972541ef9af1cd2d9548857b0f85a9b9cccc",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/result.json",
+      "sha256": "4bd91e44f32cbe72f81aeca8a61ca8beb5b2d4deed3d76740f4933a4e00f5ec2",
+      "bytes": 20159,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/result.md",
+      "sha256": "f23e93d0b1a7b7c3d1bd72457069d5bc4781b6f6dd7ad6d3c5c84c649dbab3a1",
+      "bytes": 20205,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/result_contract-validation.json",
+      "sha256": "d7bbe0092d139cfeaee01428d8ffdcb48712294a288840759a038a23d50f34b3",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round04-final/validations.json",
+      "sha256": "90524f4225a0c94984d543aa187f608dc8d35afe4db92f3d2cd98e23677b1994",
+      "bytes": 146,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-execution-01/execution-summary.json",
+      "sha256": "fc640674b7bb866cb2ac59885392c7e600658bdc796925118b73a7655d321401",
+      "bytes": 230,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/acceptance-table.json",
+      "sha256": "50e0883024f53bd9e423d30f894ca136404f92b7aade58c9b68140d74de846b6",
+      "bytes": 2678053,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/all-dedupe-correction-acceptance.json",
+      "sha256": "f3c16e491916d284717b7f1b87bcdb3fc869e749903277c76f5d8ba09673221e",
+      "bytes": 58663,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/artifact-hash-bindings.json",
+      "sha256": "6caea7875991e0d61cf40b95261328a953d5842e35beed0047b4a7cd19f5ab8e",
+      "bytes": 1786,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/attestation.json",
+      "sha256": "c1498c7993c4ef7db4632de7e4452ac690dac0f57a9a2d8278578db7281225a0",
+      "bytes": 508,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/candidate-rankings.json",
+      "sha256": "6929b9acb61a2be9c80603cb93ce81d08f96fb7601f9d2b92b55c4d1566415cb",
+      "bytes": 273298,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/correlation-correction-provenance.json",
+      "sha256": "7af7191e5100b3eefe506e428b5114ca70f12fe5968b3c4a39b4a39b888813f3",
+      "bytes": 372,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/dedupe-acceptance-table.json",
+      "sha256": "3d83e6572fa06da3b3707af65e7107dc9444c0bab4ee5fe465a2a8a8243deb55",
+      "bytes": 3597,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/dedupe-candidate-rankings.json",
+      "sha256": "d4a5c6f32db09d574dc345190f8d9f612c67ed776cecb3b04bd94791e3c64dc4",
+      "bytes": 12147,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/execution-errors.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/final-diagnosis.md",
+      "sha256": "f45a7ad7f1c1de6db943900f2facee93e867a93c6d47a7bfedf0cc21af7c9158",
+      "bytes": 2626,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/independent-analysis.json",
+      "sha256": "160c611c13cd757981049b381409846c83671b5adb9221f339980fa8fe358310",
+      "bytes": 273697,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/outer_fence-validation.json",
+      "sha256": "10e0aeace2fc6f39ed91ef10778c1f1e3753423d6418b5f7053232a7a3ea5ba9",
+      "bytes": 31259,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/request_contract-validation.json",
+      "sha256": "d6325843690a06055e103e69e960e8cc110e29da6c20a929312b461fcf33d79e",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/result.json",
+      "sha256": "a6914fce0795ae836508f00063c5a0ed9423b958627b3555d55de7a1e779bb17",
+      "bytes": 31199,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/result.md",
+      "sha256": "42538e86a3fc5051e3b339cef5813c077f4c052c76893ff7ab45f56130334f68",
+      "bytes": 31245,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/result_contract-validation.json",
+      "sha256": "d28d0e099b367842c322bbd3687814421cd9ac4c1a732d188451108ac88cee28",
+      "bytes": 127,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-final/validations.json",
+      "sha256": "90524f4225a0c94984d543aa187f608dc8d35afe4db92f3d2cd98e23677b1994",
+      "bytes": 146,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-prepared/request_contract-validation.json",
+      "sha256": "f30f2696accd157729ed50809d08a4333820d67913fbea46de598f5c50ff02e2",
+      "bytes": 128,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/evidence/v3-round05-prepared/request_outer_fence-validation.json",
+      "sha256": "31e74ec8de5b54bc84edec1b93a62b2f237eb9ce3179f98ebbfadd8b5635debc",
+      "bytes": 7092,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
       "path": "continuation/calibration-v3/inputs/approved-fidelity-policy.intent.json",
       "sha256": "14382fe17d4192109a2d06edd217006beb606e89518a0cb305406f547e33b33b",
       "bytes": 1218,
@@ -11930,6 +12368,96 @@
       "sha256": "b26282be2ff13d67aea4284bb13abccbc3cbb41756fcffba13f9fcb0e28e74e4",
       "bytes": 4120,
       "source": "exact frozen v3 generic preparation or read-only release investigation; no accepted rubric/new publication"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round03-01-rubric.json",
+      "sha256": "d46d5b5d6f5fb0fcd6a142b49f116c05daaa8f27bcba10a78cc887677be05169",
+      "bytes": 3747,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round03-02-rubric.json",
+      "sha256": "bd5378f90f8408285abb1a57db3e36424c10602ed40c4cbaecf195fc124d503f",
+      "bytes": 3761,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round03-03-rubric.json",
+      "sha256": "5c41d8d9d319baf1862169933e53c107c34bee028b3c77978732c454debbeea8",
+      "bytes": 3598,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round04-01-rubric.json",
+      "sha256": "1753f8a057aaebfbd91ef60b8f1f96a580d8357c000e6c83b168434cd6ff21df",
+      "bytes": 3546,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round04-02-rubric.json",
+      "sha256": "1ef6ef3a471c306b2cdbf9306cca725fe7fa7f087b08058cb77f83527670a9e4",
+      "bytes": 3449,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round04-03-rubric.json",
+      "sha256": "ce9bc67b3be5f85cea6aa06912bc0c85907cc777eaa9334374943c48f7e6bd38",
+      "bytes": 3481,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round04-04-rubric.json",
+      "sha256": "6a39f6f19afdf521ea61e37c8c086433e914c2c77ae918d2bcbb0610a16a6cf4",
+      "bytes": 3490,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round04-05-rubric.json",
+      "sha256": "12be97b13880486185b3c8365437df246ea5899c59325d4ae40ed54d7c963719",
+      "bytes": 3470,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round04-06-rubric.json",
+      "sha256": "a619195d4b6514f300d8f470e4168202b0bf36ef92b9950e95e5093f74775db2",
+      "bytes": 3500,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round05-01-rubric.json",
+      "sha256": "566748841590256ecd05899249a1ee8f17e8de5ce5d0390ef1cf04ca606d9a2a",
+      "bytes": 3656,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round05-02-rubric.json",
+      "sha256": "93faba7de11a332394e4e281fae82aa4dfa4c39eba2181ac312af6c82bf03c7f",
+      "bytes": 3609,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round05-03-rubric.json",
+      "sha256": "ef3d445a9c7e521337c65cdb44e03cb66150b1554f22699130c725f7ea22b39d",
+      "bytes": 3568,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round05-04-rubric.json",
+      "sha256": "641e7db7b8db0a1caa39757386d4a2bd221947e02da77e779bf5e3d7c164df11",
+      "bytes": 3573,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round05-05-rubric.json",
+      "sha256": "155674867eb643bab1d870ef406a78c402c71ad5514c924eac1a2073bfc9fd0f",
+      "bytes": 3597,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "continuation/calibration-v3/inputs/v3-round05-06-rubric.json",
+      "sha256": "0161f6c0129936bc02f76d6e35b6db951c99dd63e1662bbc90b24a87da3d455f",
+      "bytes": 3550,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
     },
     {
       "path": "continuation/calibration-v3/pool-extension-preparation/combined-six-candidates.json",
@@ -12388,6 +12916,12 @@
       "source": "critical-r3.json"
     },
     {
+      "path": "current-plan-anchor-results.md",
+      "sha256": "d0bffd5d64862b3a1eaf4d0f120f39eb0bc7aaff47fcac0986b5573acbe17058",
+      "bytes": 3737,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
       "path": "current-structural-anchor-checks.json",
       "sha256": "fe6a4e8c2bfcc596e2897240709837499d7618f395da03b10cd95b6ca74e0be3",
       "bytes": 892,
@@ -12526,6 +13060,12 @@
       "source": "genuine critical R2 baseline evidence or explicit direct-human candidate-only capture; no new plan approval"
     },
     {
+      "path": "internal-unapproved/consumer-extension-baseline-diagnostic.md",
+      "sha256": "c9abcca21d6888050a24f22a56fe5839ad9fd0fc198f4a312e5704bcca259a81",
+      "bytes": 6350,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
       "path": "internal-unapproved/faithfulness-authority-proposal.md",
       "sha256": "0f4b7d442a40b5563d60c8eea43f8b7e82de026c602862d0ab7ca350104d3cff",
       "bytes": 12097,
@@ -12638,6 +13178,18 @@
       "sha256": "de89c886c1c0efa06d0b3fa805df2d6809c79a6d2b97a04b70754967ce7a6d24",
       "bytes": 2493,
       "source": "tuning/plan-clarity/authority-index.json"
+    },
+    {
+      "path": "proposed-anchor-allocation.json",
+      "sha256": "7cc1c34fdf8d3abb8ed6354826bed33527e784bb8438e1bddda3870db2c2fdcd",
+      "bytes": 2075,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
+    },
+    {
+      "path": "proposed-anchor-record-validation.json",
+      "sha256": "aede9b0ca5fea539b435deda67c693e154d93ce6cc197e24697c46f168b5e116",
+      "bytes": 180,
+      "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
     },
     {
       "path": "qa1/aggregate.json",
@@ -13485,7 +14037,8 @@
     ],
     "follow_up_plan_review": "pending for new human clarification",
     "source": "internal-unapproved/consumer-extension-anchor-candidates.json",
-    "implementation_readiness": false
+    "implementation_readiness": false,
+    "scope": "historical candidate-only checkpoint; later proposed-record maintenance preserves original statements/quotes and allocation mapping"
   },
   "generic_v3_preparation": {
     "inputs": 7,
@@ -13495,7 +14048,7 @@
     "new_live_calls": 0,
     "accepted": false,
     "old_authority_unchanged": true,
-    "independent_preflight": "pending root-commissioned verification",
+    "independent_preflight": "completed source evidence preserved in full snapshot; packet review PASS does not imply rubric acceptance",
     "path": "continuation/calibration-v3/",
     "pool_extension": {
       "additional_wrappers": 3,
@@ -13521,7 +14074,8 @@
     "source_intent_descriptors": 6,
     "no_project_facts_in_generic_oracle": true,
     "packet": "internal-unapproved/phase-c-six-candidate-approval-packet.md",
-    "source_only_inputs": "internal-unapproved/actual-candidate-intent/"
+    "source_only_inputs": "internal-unapproved/actual-candidate-intent/",
+    "scope": "historical immutable six-candidate packet references; current proposed allocation is recorded separately"
   },
   "current_structural_check": {
     "source": "current-structural-anchor-checks.json",
@@ -13533,5 +14087,68 @@
     "passed": 3,
     "baseline": "967081f55dba772af38883a9a8f1a6469bc2976e",
     "semantic_gate_pass_claimed": false
+  },
+  "generic_v3_final": {
+    "bounded_rounds": 5,
+    "complete_candidates": 21,
+    "semantic_cases": 36,
+    "role_cells_per_bundle": 180,
+    "semantic_cli_executions": 756,
+    "confirmations": 1548,
+    "third_calls_on_initial_disagreement": 36,
+    "retries": 0,
+    "accepted": false,
+    "replacement_seal": false,
+    "diagnostic_leader": {
+      "candidate": "v3-round03-01",
+      "exact": 179,
+      "stable": 180,
+      "confident": 170,
+      "total": 180
+    },
+    "dedupe_only": {
+      "exact": 8,
+      "stable": 8,
+      "confident": 8,
+      "accepted": true,
+      "partial_rubric_adoption": false
+    },
+    "raw_source_files": 3724,
+    "raw_source_bytes": 34842632,
+    "compressed_raw_bytes": 1637801,
+    "strict_result": "continuation/calibration-v3/evidence/v3-round05-final/result.json",
+    "strict_result_sha256": "a6914fce0795ae836508f00063c5a0ed9423b958627b3555d55de7a1e779bb17",
+    "archive_index": "continuation/calibration-v3/archive-snapshots/final-snapshot.index.json",
+    "no_more_iterations": true
+  },
+  "proposed_anchor_records": {
+    "total": 18,
+    "locked": 10,
+    "proposed": 6,
+    "retired": 2,
+    "original12_objects_unchanged": true,
+    "record_sha256": "44685780941acd7997decbd63969cfd3da3e15e4aedd50747ed4582f0a0df9cc",
+    "render_sha256": "45260e85e1d6084ab1a2a61ac259f382e81e8d2828c16de03b8f965ebb356df2",
+    "actual_new_ids": [
+      "ANC-013",
+      "ANC-014",
+      "ANC-015",
+      "ANC-016",
+      "ANC-017",
+      "ANC-018"
+    ],
+    "fixture_approval": "pending",
+    "rubric": "not_run",
+    "new_question_beads": 0,
+    "locked_new_records": 0,
+    "allocation": "proposed-anchor-allocation.json",
+    "validation": "proposed-anchor-record-validation.json",
+    "no_actual_current_plan_Jev_results": true
+  },
+  "current_results_report": "current-plan-anchor-results.md",
+  "engineering_baseline": {
+    "findings": 4,
+    "source": "internal-unapproved/consumer-extension-baseline-diagnostic.md",
+    "Jev": false
   }
 }

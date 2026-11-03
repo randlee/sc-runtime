@@ -348,6 +348,22 @@ is preserved exactly: Phase B's public artifacts are 0.1.1; 0.2.0 remains the
 future Phase C target at that investigation time. This checkpoint changes no
 release version, publication authority or consumer baseline.
 
+The [current plan-anchor status](current-plan-anchor-results.md) is explicitly
+**NOT FINALIZED**. Six new records are now proposed, with draft fixtures and
+no question Beads; the original 12 objects remain unchanged. Exact
+[allocation mapping](proposed-anchor-allocation.json) translates original
+packet013–016/018–019 into actual proposed013–018. The approval packet is
+byte-identical to its original committed proposal; proposed persistence grants
+no fixture approval, testability result or locking.
+
+The final bounded v3 result is unaccepted after five rounds: 21 candidates,
+756 semantic CLI executions and 1,548 confirmations. Dedupe passed8/8 in its
+separate correction only; no full rubric or replacement seal was accepted.
+Complete raw/preparation/final evidence is preserved with per-file hashes and
+readable strict reports. Current official plan-anchor evidence remains three
+structural PASS checks; four manual baseline findings are engineering
+diagnostics, not live Jev sprint verdicts. No new current-plan Jev gate ran.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |

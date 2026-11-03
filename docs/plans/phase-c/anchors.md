@@ -18,6 +18,12 @@ Intent: `docs/plans/phase-c/phase-c-plan.md`
 | ANC-010 | locked | upgrade utoipa to its latest released version. | 2026-11-02 |
 | ANC-011 | locked | use a dedicated Git worktree. | 2026-11-02 |
 | ANC-012 | locked | have a separate pull request targeting develop. | 2026-11-02 |
+| ANC-013 | proposed | Compatibility precedes publication | 2026-11-03 |
+| ANC-014 | proposed | Optional standard cron commands | 2026-11-03 |
+| ANC-015 | proposed | Shared cron JSON contract | 2026-11-03 |
+| ANC-016 | proposed | Common cron verbs across handlers | 2026-11-03 |
+| ANC-017 | proposed | Supported consumer overrides | 2026-11-03 |
+| ANC-018 | proposed | Documented integration and override responsibilities | 2026-11-03 |
 
 ## ANC-001
 
@@ -259,3 +265,99 @@ Beads: anchor `run-mwv`, plan questions `run-mwv.1`, dev questions `run-mwv.2`
 Fixtures:
 - pass: A separate Phase C planning pull request targets develop.
 - fail: Phase C planning has no separate pull request to develop.
+
+## ANC-013
+
+Anchor: Phase C must complete its dedicated compatibility sprint before publishing sc-runtime 0.2.0.
+
+> Add a dedicated Phase C compatibility sprint (Recommended)
+
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+
+Summary: Compatibility precedes publication
+
+Scope: Phase C compatibility completion and the 0.2.0 publication handoff
+
+Fixtures:
+- pass: The dedicated Phase C compatibility sprint completes before the release handoff publishes sc-runtime 0.2.0.
+- fail: The release handoff publishes sc-runtime 0.2.0 before the dedicated Phase C compatibility sprint is complete.
+
+## ANC-014
+
+Anchor: A consumer application must be able to omit the standard cron command set.
+
+> it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface.
+
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+
+Summary: Optional standard cron commands
+
+Scope: Standard cron command-set adoption and composition
+
+Fixtures:
+- pass: The consumer can choose whether to expose the standard cron command set and can omit it entirely.
+- fail: Every consumer is required to expose the standard cron command set.
+
+## ANC-015
+
+Anchor: Supported cron user interfaces must share the standard JSON command contract.
+
+> it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface.
+
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+
+Summary: Shared cron JSON contract
+
+Scope: Supported cron UI JSON command contracts
+
+Fixtures:
+- pass: Supported cron user interfaces use the same standard JSON command contract to configure schedules.
+- fail: Each supported cron user interface defines a different, incompatible JSON command contract for configuring schedules.
+
+## ANC-016
+
+Anchor: The standard cron subcommands must be the same for Python, Monty, and Rust handlers.
+
+> yes, we have a few more options i.e. python, monty, rust handler. but the general subcommands should be standard
+
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+
+Summary: Common cron verbs across handlers
+
+Scope: Standard cron subcommand vocabulary and handler-kind selection
+
+Fixtures:
+- pass: Python, Monty, and Rust cron handlers use the same general subcommands, with handler-specific choices represented by their options.
+- fail: Python, Monty, and Rust cron handlers each require a different set of general cron subcommands.
+
+## ANC-017
+
+Anchor: sc-runtime must expose supported extension points that let consumers replace default core-library behavior with application-specific behavior.
+
+> it is not sc-runtime job to guarantee a customer can not misuse the core libraries.
+
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+
+Summary: Supported consumer overrides
+
+Scope: Core-library integration hooks for consumer store/schema and shutdown policy
+
+Fixtures:
+- pass: The cron integration accepts an application-provided store with an extended row schema and a consumer shutdown policy through supported extension points instead of requiring its bundled defaults.
+- fail: Every consumer must use the bundled cron store and default shutdown policy; custom row schemas and application-specific lifecycle behavior have no supported integration seam.
+
+## ANC-018
+
+Anchor: sc-runtime must document a supported integration path that explains correct use of the core libraries and the responsibilities of consumer overrides.
+
+> it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries.
+
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+
+Summary: Documented integration and override responsibilities
+
+Scope: Default and extension integration guides and consumer responsibilities
+
+Fixtures:
+- pass: The integration guide shows the default cron setup and a supported custom store or shutdown policy example, including the consumer's validation, lifecycle and ownership responsibilities.
+- fail: Consumers must inspect private scheduler internals to discover override wiring; the documentation explains neither supported hooks nor consumer responsibilities.
