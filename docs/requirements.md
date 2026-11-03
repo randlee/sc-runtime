@@ -394,7 +394,7 @@ that plain `cargo generate` works without the driver, and therefore runs
 A workflow file under `.github/workflows/` (the crate CI workflow) MUST run
 `just lint` and `just test` at the repository root on every pull request.
 
-`just lint` with no profile runs the sc-lint 0.8.0 full profile through
+`just lint` with no profile runs the sc-lint 0.8.4 full profile through
 `.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the
 `boundary` lint), line-counts, `cargo fmt --all -- --check`,
 `cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and
@@ -1971,18 +1971,18 @@ use and the path CI tests cannot drift apart.
 
 ---
 
-## REQ-RUN-0307: sc-lint 0.8.0 consumer install
+## REQ-RUN-0307: sc-lint 0.8.4 consumer install
 
 **Status:** Active  
 
 ### Requirement Statement
 
-Every SC repository exposes the same base `just` commands. sc-lint 0.8.0
+Every SC repository exposes the same base `just` commands. sc-lint 0.8.4
 installs them. The placeholder `Justfile` and the prototype-handoff order are
 retired.
 
 1. The install command is `sc-lint init --just`.
-2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.0
+2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.4
    and `template/.sc-lint/bootstrap.py`. `sc-lint.toml` is the consumer pin.
    It is not a hand-written clippy, rustfmt, deny, or `boundaries/` policy.
 3. The public recipes are `setup`, `lint`, `test`, and `upgrade`.
@@ -2012,7 +2012,7 @@ remain after a later init.
 
 ### Success Criteria
 
-1. `template/sc-lint.toml` sets `minimum_version` to `0.8.0`, and
+1. `template/sc-lint.toml` sets `minimum_version` to `0.8.4`, and
    `template/.sc-lint/bootstrap.py` exists. `template/` contains no
    placeholder `Justfile` that stands in for this install.
 2. In a project generated from `wizard/fixtures/sqlite-mcp.json`,
@@ -3237,7 +3237,7 @@ with `db = sqlite` and `mcp = true`.
 In that project, with no file added, changed or deleted after generation,
 the next commands MUST exit 0 in this order: `just setup`, then `just lint`,
 then `just test`, then `just build-cli`, then `just build-daemon`. `just setup`
-installs the sc-lint 0.8.0 consumer and is not a source edit. This sequence
+installs the sc-lint 0.8.4 consumer and is not a source edit. This sequence
 (`just new` with `--var-file`, then `just setup`, then `just lint`, then
 `just test`, then `just build-cli`, then `just build-daemon`, with nothing
 written to the project in between) is what "green with no edits" means.
@@ -3515,7 +3515,7 @@ this order and MUST fail when any of them exits non-zero:
 1. `just new <dest> --var-file <fixture>` from the repository root, which
    runs the generation driver `scripts/new_project.py` without the wizard.
 2. `just setup` inside the generated project at `<dest>`. It installs the
-   sc-lint 0.8.0 consumer and is not a source edit.
+   sc-lint 0.8.4 consumer and is not a source edit.
 3. `just lint` inside the generated project at `<dest>`.
 4. `just test` inside the generated project at `<dest>`. It includes the
    observability grep: rendered `crates/daemon` requires `sc-observability`
@@ -3792,7 +3792,7 @@ crates is rejected for v0.1. a-5 does not run that command. The measurement
 is the sprint a-1 evidence record in `docs/architecture.md`.  
 **OPEN:** the recipe or command by which a generated project builds and
 releases its `cli` binary (so that it is built with `-p`) is not decided. The
-public recipes of the sc-lint 0.8.0 install do not include a build recipe.
+public recipes of the sc-lint 0.8.4 install do not include a build recipe.
 
 ### Rationale
 
@@ -4093,8 +4093,8 @@ The `cargo-generate` template under `template/` MUST NOT contain:
   as snapshots of `openapi.json`, of the MCP `tools/list` result or of the
   clap command model.
 
-The template commits the sc-lint 0.8.0 consumer install:
-`template/sc-lint.toml` (`minimum_version` 0.8.0) and
+The template commits the sc-lint 0.8.4 consumer install:
+`template/sc-lint.toml` (`minimum_version` 0.8.4) and
 `template/.sc-lint/bootstrap.py`, installed with `sc-lint init --just`.
 Public recipes are `setup`, `lint`, `test`, and `upgrade`. The
 consumer-owned recipe `db-prepare` survives a later init. Those files and
@@ -4126,7 +4126,7 @@ rule changes from sc-lint and nothing in this repository changes.
    `rustfmt.toml`, `.rustfmt.toml`, `deny.toml`, a `boundaries` directory,
    any `*.just` file.
 2. `grep -rn "^\[lints\|^\[workspace.lints" template` prints nothing.
-3. `template/sc-lint.toml` sets `minimum_version` to `0.8.0`, and
+3. `template/sc-lint.toml` sets `minimum_version` to `0.8.4`, and
    `template/.sc-lint/bootstrap.py` exists. `template/` contains no
    placeholder `Justfile`. Recipe names are checked by REQ-RUN-0307.
 4. `template/` contains no snapshot file of `openapi.json`, of MCP
@@ -4205,7 +4205,7 @@ exceeds the limit. This repository MUST NOT carry a line-counting script or
 program of its own for this rule
 ([NFR-RUN-0004](requirements.md), [ADR-RUN-0008](architecture.md)).
 
-The sc-lint 0.8.0 key is `[line_counts] max_production_lines = 1000` in
+The sc-lint 0.8.4 key is `[line_counts] max_production_lines = 1000` in
 `sc-lint.toml`. `just lint` runs `sc-lint lint line-counts --config sc-lint.toml`.
 The `template/**/*.rs` half of this limit stays with a later sprint.  
 **OPEN:** whether the limit also applies to non-Rust source (for example

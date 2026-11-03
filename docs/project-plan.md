@@ -14,7 +14,7 @@ attribute-generated CLI tests (`REQ-RUN-0312`, `ADR-RUN-0304`, `REQ-RUN-0311`),
 and framework-generated responses for unknown routes, Axum body rejection, and
 rmcp protocol errors (`REQ-RUN-0203` OPEN) stay deferred. Postgres/both,
 prototype-repository handoff, and other post-core layers stay outside Phase A.
-sc-lint 0.8.0 is in Phase A: a-5 installs it for this repository, and a-6
+sc-lint 0.8.4 is in Phase A: a-5 installs it for this repository, and a-6
 installs the consumer contract into generated projects.
 
 `REQ-RUN-0702` stays open. Git tag `v0.1.0`, crates.io publication of the four

@@ -1,5 +1,5 @@
 [tool.sc-lint]
-minimum_version = "0.8.0"
+minimum_version = "0.8.4"
 
 [[tool.sc-lint.lint]]
 name = "fmt"
