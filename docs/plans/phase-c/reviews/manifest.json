@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "5b961fcb86e4673e119d5bc46ba15b0f58c523646923819a0dae88c823ce098a",
-      "bytes": 14021,
+      "sha256": "644e8a8562f4c83e7f6cbd342fe2d10e803f72d26b7193454a60d47e6c2a1a93",
+      "bytes": 14651,
       "source": "authored index"
     },
     {
@@ -239,9 +239,1647 @@
     },
     {
       "path": "continuation/calibration-088-local/README.md",
-      "sha256": "ac7c0e7749e569852a10ae0fe015473540f32f1e77f22c215f01651aaaab1469",
-      "bytes": 1761,
+      "sha256": "2df5925241bae7ff8e1c3d7db9de891b9d3c269d3f3f7f61a56c1843da1478b2",
+      "bytes": 3199,
       "source": "unreleased canonical 0.8.8 local-test preparation; frozen inputs and exact source audit/smoke report"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/acceptance-table.json",
+      "sha256": "830f2d12240358502d505ed0c97cb8a5a9162ffad243eb0e54ff7db7f0801195",
+      "bytes": 218799,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/all-cli-results.json",
+      "sha256": "9fec37cf7801796a298ac7d5e1b6c51bcb02383c710af81e73935a88bf35de1d",
+      "bytes": 173332,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/attestation.json",
+      "sha256": "5b9351a3880f4699f3dc61c08a3b445fe6d1d43a02753f5320ae9a155bd177d1",
+      "bytes": 524,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/candidate-rankings.json",
+      "sha256": "f5fd47dea2d1fb1703192b90289612c3507c6bc98061d6688f01e8ba5ee7482d",
+      "bytes": 2767,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/deterministic-lint.json",
+      "sha256": "dff1ab67eaff8d56540ed41cbdb30a687f4cf1309a927ac11b7adad2fc5cbf00",
+      "bytes": 631,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/dry-run-verification.json",
+      "sha256": "57d2c6600ce3e44865f46b7356426ae6d8c9ae9b7baa29f497fccc5b25468c88",
+      "bytes": 74251,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/execution-summary.json",
+      "sha256": "c93d765bd6b8f758c5f6cc6471c7b5d1450001b902f6eb8ded7ba83ba9e51b1c",
+      "bytes": 264,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/export-lineage-and-policy-proof.json",
+      "sha256": "59fe73396abee09854c46621506aaf23e3cf5770b9bc4b67e09573cc0b556a39",
+      "bytes": 910,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-01-valid-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-01-valid-directive.dry-run.stdout.json",
+      "sha256": "f893a18d0e65b5750f596b79ea9eb43efeeabed264cc4f3fa7c632c721d37492",
+      "bytes": 9494,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-01-valid-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-01-valid-directive.live.stdout.json",
+      "sha256": "f1b841e4e696fd62e9d2311a33a58515a93cbc89e65a8f30e1f734e692fc7f12",
+      "bytes": 4702,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-02-valid-prohibition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-02-valid-prohibition.dry-run.stdout.json",
+      "sha256": "5520d05ba365b3844a467ede519f93e9eee1048b5fa76a6fed38ca5f80b38e8a",
+      "bytes": 9515,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-02-valid-prohibition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-02-valid-prohibition.live.stdout.json",
+      "sha256": "1a53558bc5000b834f31d637b1bb9e655d5c96123f0daabe5554b8cbe555788e",
+      "bytes": 4712,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-03-structural-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-03-structural-scope.dry-run.stdout.json",
+      "sha256": "00c96c31cb09860a8b46f49b00576ed59f8630cf93bd6dbbe2eec644be04a8c1",
+      "bytes": 9332,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-03-structural-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-03-structural-scope.live.stdout.json",
+      "sha256": "dcec7a5778d950da8c305854a96e56f83284aec2368cd586a52d59632d52f187",
+      "bytes": 4641,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-04-global-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-04-global-scope.dry-run.stdout.json",
+      "sha256": "171728f15465e7baa47ef3c44203ea85e28bc67f5d328b516d84150fae00fcdf",
+      "bytes": 9365,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-04-global-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-04-global-scope.live.stdout.json",
+      "sha256": "740d12b51d423c937dda855609f3a890209166fcbd4aad074f2602a5224fbc8e",
+      "bytes": 4792,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-05-atomic-from-multi-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-05-atomic-from-multi-directive.dry-run.stdout.json",
+      "sha256": "05e15a9609ce890bba4fe2f91bc26300cd8dbadd7c7934a5d0e71e0a97f5fba5",
+      "bytes": 9404,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-05-atomic-from-multi-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-05-atomic-from-multi-directive.live.stdout.json",
+      "sha256": "816bb509e8614a48b64be447768b44d8aa31e0049280b103d1d1789cec101fe7",
+      "bytes": 4675,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-06-genuinely-bundled.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-06-genuinely-bundled.dry-run.stdout.json",
+      "sha256": "6c3d2b7912414a1034b13f0cae08bb1db2491bd7ba67b73470e4c4fb930e9971",
+      "bytes": 9628,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-06-genuinely-bundled.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-06-genuinely-bundled.live.stdout.json",
+      "sha256": "ff37d090cc911061b8de28712ca49e204edd488fccbd8ec75983e347da2d2b13",
+      "bytes": 5001,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-07-unsupported-elaboration.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-07-unsupported-elaboration.dry-run.stdout.json",
+      "sha256": "929dd14201120af9ab1db7036706f7d990c68237fed0e1910ea1094208d4bf6b",
+      "bytes": 9266,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-07-unsupported-elaboration.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-07-unsupported-elaboration.live.stdout.json",
+      "sha256": "0dc52b62aa1cfaf5de295f08337e863a451fda34531c0ed3ff6a3b31c47e7934",
+      "bytes": 4725,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-08-vague-outcome.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-08-vague-outcome.dry-run.stdout.json",
+      "sha256": "d63cec54580988aba36fc7cddd2347d20d146a74fb79605d391a991d0a7b8999",
+      "bytes": 9292,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-08-vague-outcome.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-08-vague-outcome.live.stdout.json",
+      "sha256": "37b2884b840cb2b59f667ecc1d030ef49cfc8163bf9930c1c4620a071de915df",
+      "bytes": 4816,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-09-explicit-testable-condition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-09-explicit-testable-condition.dry-run.stdout.json",
+      "sha256": "1158edf9eb3ba681efaabfb1a24631f62736755b46c060f1c80a946bcbb6ced2",
+      "bytes": 9494,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-09-explicit-testable-condition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-09-explicit-testable-condition.live.stdout.json",
+      "sha256": "8792f1f999ae1a1dfaf6aea7c4fed5a505b397e4318bad5aed806a2e4f1734f4",
+      "bytes": 4703,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-10-api-key-redaction.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-10-api-key-redaction.dry-run.stdout.json",
+      "sha256": "4f3f95be48ad3a1d27b5c8e4c86fed40f2f8a7c101b6975b1f6efeeed73ffd94",
+      "bytes": 10094,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-10-api-key-redaction.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-10-api-key-redaction.live.stdout.json",
+      "sha256": "795b095a2138f616e5e8685a52133f2f6334bc0172004d3f404691fe3fdbfaab",
+      "bytes": 4906,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-11-private-shorthand.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-11-private-shorthand.dry-run.stdout.json",
+      "sha256": "a8e5dd4acfb61c41af3d1b6439a9df3eb724262b798b01acf72ec8fc0c113ef6",
+      "bytes": 9230,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-11-private-shorthand.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-11-private-shorthand.live.stdout.json",
+      "sha256": "283f00d07a06c1e40e9824f10a7e1455bbdb41a28aa618b8f94258056bf63a75",
+      "bytes": 4765,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-12-unrecorded-approval.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-12-unrecorded-approval.dry-run.stdout.json",
+      "sha256": "28e183695b04786432b8854cc94074ff45625fa2460f6b376c7e3b79610808b2",
+      "bytes": 9377,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-12-unrecorded-approval.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-12-unrecorded-approval.live.stdout.json",
+      "sha256": "356c008beab73ec1ff8912f37def6542d8c09d9634d1ff9ac98a0ad168602d3a",
+      "bytes": 4853,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-13-shared-quote-first-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-13-shared-quote-first-atomic.dry-run.stdout.json",
+      "sha256": "9e8073bc5674985b29c0b51bd79ce33b5fe926a941149c043138a5d7aa40887c",
+      "bytes": 9398,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-13-shared-quote-first-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-13-shared-quote-first-atomic.live.stdout.json",
+      "sha256": "a288e6b781fc757263b65e4c1f9b00961a30f03358b283bdc0619f189a68be81",
+      "bytes": 4667,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-14-shared-quote-second-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-14-shared-quote-second-atomic.dry-run.stdout.json",
+      "sha256": "51e88a051370888f5bf15cb0f56d49785712b703b7f4ca93feeeb0c065aca5bb",
+      "bytes": 9425,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-14-shared-quote-second-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-14-shared-quote-second-atomic.live.stdout.json",
+      "sha256": "1974b90c553fdde8c24f31d00bd99c842f1f7ee39515e69531aa0c49d0751289",
+      "bytes": 4686,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-15-duplicate-first.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-15-duplicate-first.dry-run.stdout.json",
+      "sha256": "14dada95c95bd6220ef57b0e0d4300369bcd96e78809b3e33f6b4bc2b58ab136",
+      "bytes": 9278,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-15-duplicate-first.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-15-duplicate-first.live.stdout.json",
+      "sha256": "81f16f7712ce07fbe27a02803d3fb92f216e3f325c1c6fc99c904b06db4d9207",
+      "bytes": 4633,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-16-duplicate-second.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-16-duplicate-second.dry-run.stdout.json",
+      "sha256": "cffe32f771994dd6d497a682380d2f314c4b876e9860a9fd93bedefd5740b04d",
+      "bytes": 9329,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-16-duplicate-second.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-16-duplicate-second.live.stdout.json",
+      "sha256": "a0eb7e0a595c6ce9326012ca347cca7bf5d0417a6e62b6a73cc3597250b94d61",
+      "bytes": 4777,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-17-nondeclarative-form.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-17-nondeclarative-form.dry-run.stdout.json",
+      "sha256": "fde76e8acb53e436166ac548c8eff33a112126eddba355acbc2398e56eb40c00",
+      "bytes": 9831,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-17-nondeclarative-form.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--a0-17-nondeclarative-form.live.stdout.json",
+      "sha256": "43a6eb9073e9100d0dcb1a3b1db78558ce43f68e5ac45e9625ae401126e784f8",
+      "bytes": 5337,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-authorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-authorized-algorithm.dry-run.stdout.json",
+      "sha256": "f5c26cec7ddbbf1443931403d3d88031454ade4bd64bfdd1aa85366173073c7d",
+      "bytes": 10124,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-authorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-authorized-algorithm.live.stdout.json",
+      "sha256": "763802e39d75e11fbc4edf99fe125ffb34fa1243c7296edcace63fa3716d26f5",
+      "bytes": 4873,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-independent-duties.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-independent-duties.dry-run.stdout.json",
+      "sha256": "248ba19d4fa96b1b7cd03c0d1550a84d95adfc0de5f2175a4ac4b705c8f123cb",
+      "bytes": 9551,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-independent-duties.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-independent-duties.live.stdout.json",
+      "sha256": "80873ca1d9d582aaf14b6fe3977f18ebf7b9509ac14df02116716a4a96093385",
+      "bytes": 4827,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-shared-predicate-surfaces.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-shared-predicate-surfaces.dry-run.stdout.json",
+      "sha256": "9b11346f487f7a6a9e9467530bb1d7e6401d2292ac89fc3d61d7c2689a2279a4",
+      "bytes": 9605,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-shared-predicate-surfaces.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-shared-predicate-surfaces.live.stdout.json",
+      "sha256": "625dc84d1957303eb459bed9653b5b0b81c2c1b6b747e1ce14927b141f8835dd",
+      "bytes": 4736,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-unauthorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-unauthorized-algorithm.dry-run.stdout.json",
+      "sha256": "e66ae409e26e749d32e9ab85c630aa2b3df8d761e8fa746b22be79fc02b05627",
+      "bytes": 10142,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-unauthorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-01--generic-unauthorized-algorithm.live.stdout.json",
+      "sha256": "db32e71d93261cf633865ae3ae3fc44376ea4ef93b8369e756aadbac907566f8",
+      "bytes": 4953,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-01-valid-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-01-valid-directive.dry-run.stdout.json",
+      "sha256": "1dbd4fd7e057e6450fe8b1c224848bc2f03ebf186fd8c0a1773e69aad70a692e",
+      "bytes": 9642,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-01-valid-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-01-valid-directive.live.stdout.json",
+      "sha256": "ee392ba01ed65814a17ea3692f2c9defffc4504ac6f1daa096847e9dc8a0182d",
+      "bytes": 4703,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-02-valid-prohibition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-02-valid-prohibition.dry-run.stdout.json",
+      "sha256": "adcb36a5c30fdf6c9b5969607008844e8cc7514419a8280ced7efde9094eb9f8",
+      "bytes": 9663,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-02-valid-prohibition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-02-valid-prohibition.live.stdout.json",
+      "sha256": "01397147391de922d6930f03f159572f4744b40c5b00e20abc664a0401dc4796",
+      "bytes": 4718,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-03-structural-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-03-structural-scope.dry-run.stdout.json",
+      "sha256": "7dc4dd60ef58a0b5370ea1c1ec0d8301e9dc96d9bee4f0a2b51022a403ce9027",
+      "bytes": 9480,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-03-structural-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-03-structural-scope.live.stdout.json",
+      "sha256": "2c924a9fbe9bfbda1ee91d98b4d6fe1d195447af6411768a254ec0dde76dc35f",
+      "bytes": 4644,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-04-global-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-04-global-scope.dry-run.stdout.json",
+      "sha256": "5b81443fe0ef10895a2899e2f14afffd7bab1aeee78b20b6b046e3041ac5588f",
+      "bytes": 9513,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-04-global-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-04-global-scope.live.stdout.json",
+      "sha256": "302db38d9d7b1cb89656851a9c88d5f805a7b74e831dbda325120bb110652d64",
+      "bytes": 4788,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-05-atomic-from-multi-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-05-atomic-from-multi-directive.dry-run.stdout.json",
+      "sha256": "74faa5b4531489c4dd61b35f8f14b8e066239769bdb4c4e6bfb0bed387508804",
+      "bytes": 9552,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-05-atomic-from-multi-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-05-atomic-from-multi-directive.live.stdout.json",
+      "sha256": "708a7b7da45675eccb16137d3a02fc9a6e09f41235d7adedf9448959f9e29ca8",
+      "bytes": 4678,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-06-genuinely-bundled.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-06-genuinely-bundled.dry-run.stdout.json",
+      "sha256": "08c14c0fc764ecb632d78348c4f539ced94eb5e1f2c047c91e09da564a4137a5",
+      "bytes": 9776,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-06-genuinely-bundled.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-06-genuinely-bundled.live.stdout.json",
+      "sha256": "9986c0bf4f7c7764a8e2ad4570fd887fdac673a25b3ba21d23c878d19b8dc4b2",
+      "bytes": 5013,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-07-unsupported-elaboration.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-07-unsupported-elaboration.dry-run.stdout.json",
+      "sha256": "a12ba058ead4f669cc7b784d2e0462c7417467eac9d714b2b6c2b0d0348dc32d",
+      "bytes": 9414,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-07-unsupported-elaboration.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-07-unsupported-elaboration.live.stdout.json",
+      "sha256": "8aaac0acc6fe2a61a43012b2b7ff41d2f38c98cbe99b9453bd183bd480719a0c",
+      "bytes": 4727,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-08-vague-outcome.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-08-vague-outcome.dry-run.stdout.json",
+      "sha256": "45eed53adce8489694dca982574a7c048be707f1a19192ed7d1205ea7e97f40e",
+      "bytes": 9440,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-08-vague-outcome.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-08-vague-outcome.live.stdout.json",
+      "sha256": "1ffa5f4eef25903db8abde310619a78049e9c19391b767156a8dd4ddff2fa663",
+      "bytes": 4816,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-09-explicit-testable-condition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-09-explicit-testable-condition.dry-run.stdout.json",
+      "sha256": "6812133a376cf2f9b12798447b1536888fc4a9d5acab3c33a5668f2e31851013",
+      "bytes": 9642,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-09-explicit-testable-condition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-09-explicit-testable-condition.live.stdout.json",
+      "sha256": "571b76621a84df3218398f45c50424559696a573b79d9995dd2b9e4ff08cd007",
+      "bytes": 4702,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-10-api-key-redaction.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-10-api-key-redaction.dry-run.stdout.json",
+      "sha256": "117c406a078d3101c40f6a7fddacebaec19872c2b806d3ddc9360f4e3fc4b6b7",
+      "bytes": 10242,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-10-api-key-redaction.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-10-api-key-redaction.live.stdout.json",
+      "sha256": "022e21cf4aa418b3181e09ddc47c7283815efdb6643481f56fcbdaaf1166c616",
+      "bytes": 5038,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-11-private-shorthand.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-11-private-shorthand.dry-run.stdout.json",
+      "sha256": "1cc4b834be71f87f1ee6556a7dfe87db5ea214e61f877086dd991a16ee54c573",
+      "bytes": 9378,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-11-private-shorthand.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-11-private-shorthand.live.stdout.json",
+      "sha256": "6db2ed6bf8939745742b1c5da6018f8687779cb7efb04243d6fd7d49efea2b19",
+      "bytes": 4772,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-12-unrecorded-approval.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-12-unrecorded-approval.dry-run.stdout.json",
+      "sha256": "90c106a74627dd7fc36e6cba53f547dacad33858278b4975272fb4d70ef2e58a",
+      "bytes": 9525,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-12-unrecorded-approval.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-12-unrecorded-approval.live.stdout.json",
+      "sha256": "d56f0a1d3e0ed275c6d25b49130867c4f9f7b8550e39eb42dd28ea6113a4e5c8",
+      "bytes": 4858,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-13-shared-quote-first-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-13-shared-quote-first-atomic.dry-run.stdout.json",
+      "sha256": "04a10dd6a746902bb3779981cad8d1ccdfc181cd376adeebd9aa3d75c3d2aec2",
+      "bytes": 9546,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-13-shared-quote-first-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-13-shared-quote-first-atomic.live.stdout.json",
+      "sha256": "fc6692613d04ae3e8c0ba175c395a7bb3876896cdb50c503c608f275f88c0e8e",
+      "bytes": 4667,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-14-shared-quote-second-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-14-shared-quote-second-atomic.dry-run.stdout.json",
+      "sha256": "72f5424064aad326becd3d48b8262d8f2dd741d12cb2790044108275be4bb319",
+      "bytes": 9573,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-14-shared-quote-second-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-14-shared-quote-second-atomic.live.stdout.json",
+      "sha256": "6c7324d8bc06c60488c55351b90cc0a30231a842b52bba1bca2bd1fd866176a2",
+      "bytes": 4684,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-15-duplicate-first.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-15-duplicate-first.dry-run.stdout.json",
+      "sha256": "097dd49380ff65884261aac38fd0e3df88ad81de1353d6b83cb336a1d2b5e659",
+      "bytes": 9426,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-15-duplicate-first.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-15-duplicate-first.live.stdout.json",
+      "sha256": "f1fc2a5f8f9c66bc384b168a1644688b294b57d8d69b67c02587a4e0d9ef1a9a",
+      "bytes": 4630,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-16-duplicate-second.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-16-duplicate-second.dry-run.stdout.json",
+      "sha256": "76604f2abff9dfd792b229c952a0da8c8aba5cbef97243fb7e9324d80b06897b",
+      "bytes": 9477,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-16-duplicate-second.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-16-duplicate-second.live.stdout.json",
+      "sha256": "398644ff6f6c7b70279cd59a807eac290277df1b106957075175a7c0d96038d7",
+      "bytes": 4773,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-17-nondeclarative-form.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-17-nondeclarative-form.dry-run.stdout.json",
+      "sha256": "a5b107b2099f03bfae0acc318543d275813f85fd7d19ca4d84a17c56f59f193d",
+      "bytes": 9979,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-17-nondeclarative-form.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--a0-17-nondeclarative-form.live.stdout.json",
+      "sha256": "cd86b640f71e9c617ac3c3227802948bb1d579b0d831f8bec0857c8895626e2f",
+      "bytes": 5325,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-authorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-authorized-algorithm.dry-run.stdout.json",
+      "sha256": "d259e8977d8d1a92cca035a9b961657a1cc6f2fc8eb25ea2e45a81490a76134b",
+      "bytes": 10272,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-authorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-authorized-algorithm.live.stdout.json",
+      "sha256": "527dd169a4fb30210b2d5b88defd67e1ce16c7eee18e8ec986877528f9d43f19",
+      "bytes": 4874,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-independent-duties.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-independent-duties.dry-run.stdout.json",
+      "sha256": "f753fdb7868c5acf4f38fc9cc9f3501645a8d65416c189dd743f951041797bd7",
+      "bytes": 9699,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-independent-duties.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-independent-duties.live.stdout.json",
+      "sha256": "f6428aed0d66299cf9cff03b669fa526d5925d70dbc8e96461dc4191f6f3b8e7",
+      "bytes": 4836,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-shared-predicate-surfaces.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-shared-predicate-surfaces.dry-run.stdout.json",
+      "sha256": "67f7398e7929c1e62d1d5d573b1a9a755ee044b1e5b9ff49c8b727d6e60af150",
+      "bytes": 9753,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-shared-predicate-surfaces.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-shared-predicate-surfaces.live.stdout.json",
+      "sha256": "ab3c6de2fa5c354f4ef68b6504c070d3dd9b83f609ed96f02b15c8aff29a1a09",
+      "bytes": 4731,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-unauthorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-unauthorized-algorithm.dry-run.stdout.json",
+      "sha256": "5dbdee583bbae57afec169321865cc5a4586dbf6f4ac17f3bc3297360e89921c",
+      "bytes": 10290,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-unauthorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-02--generic-unauthorized-algorithm.live.stdout.json",
+      "sha256": "3287d02af4a0bef2f4175f976b47251f1dac9e4f42c473fe22426050b4e14fda",
+      "bytes": 4952,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-01-valid-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-01-valid-directive.dry-run.stdout.json",
+      "sha256": "44d8229dbe482656ee14664bcc89da171b7a989e63a2d000206ddb4dc52f71c1",
+      "bytes": 9622,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-01-valid-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-01-valid-directive.live.stdout.json",
+      "sha256": "53610d35d58cc13376ab00d425862f9e280864532b5a5116fe8a121650b8d61f",
+      "bytes": 4701,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-02-valid-prohibition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-02-valid-prohibition.dry-run.stdout.json",
+      "sha256": "336bd50a071f954c9961600ad0ff605dbca27e096318657b4f5093345cd202f9",
+      "bytes": 9643,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-02-valid-prohibition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-02-valid-prohibition.live.stdout.json",
+      "sha256": "3b7ca4d91d1b338bc572a9879eac76b7b2ac7f19623ddcb8ead6494291b14b12",
+      "bytes": 4722,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-03-structural-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-03-structural-scope.dry-run.stdout.json",
+      "sha256": "1136f49a5be59119a7695f376fdcde0f959d9cf54126e350e4763db9f735c4cf",
+      "bytes": 9460,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-03-structural-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-03-structural-scope.live.stdout.json",
+      "sha256": "ae705e8df9c3fba8115f9ea8567855fc272a4ba7c256347b69b3e16c10e8cc15",
+      "bytes": 4644,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-04-global-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-04-global-scope.dry-run.stdout.json",
+      "sha256": "a7406337cd2e3e1870d16c4928e1593b27bdaf417fa3c7c4eae1bec90f09e4dc",
+      "bytes": 9493,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-04-global-scope.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-04-global-scope.live.stdout.json",
+      "sha256": "859b2b7ab9054b79200ff3e381a63cc229e83e21d33b8163b445ab6092aa8a91",
+      "bytes": 4783,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-05-atomic-from-multi-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-05-atomic-from-multi-directive.dry-run.stdout.json",
+      "sha256": "c4f7ba1c95a1df5c3f742f5480e4923763a52b1930e234652e478cae45f18c7b",
+      "bytes": 9532,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-05-atomic-from-multi-directive.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-05-atomic-from-multi-directive.live.stdout.json",
+      "sha256": "cb933a8101cd31c0815ac5908232703c4421a49123e0be866dd5c10a738c1c26",
+      "bytes": 4676,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-06-genuinely-bundled.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-06-genuinely-bundled.dry-run.stdout.json",
+      "sha256": "921707621b414aabd3c83f05f80b37890026b72c69303f47090e065753e6abe5",
+      "bytes": 9756,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-06-genuinely-bundled.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-06-genuinely-bundled.live.stdout.json",
+      "sha256": "ac07d4f471c58b533e699f245ee6ee72620e53b2b014e1e95de7fa085f1535f8",
+      "bytes": 5006,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-07-unsupported-elaboration.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-07-unsupported-elaboration.dry-run.stdout.json",
+      "sha256": "78a14713370b8f908b6118f3a537db3fa11e7f6bbd18d9a4a96bb46ff1442be2",
+      "bytes": 9394,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-07-unsupported-elaboration.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-07-unsupported-elaboration.live.stdout.json",
+      "sha256": "36a55daa100f262a149c44ca3454ebf40b0f862be54116f02aebdf0d5c3c98c6",
+      "bytes": 4726,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-08-vague-outcome.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-08-vague-outcome.dry-run.stdout.json",
+      "sha256": "90751381cf422f4980fd10a0d46bf3e31c494adb333fc9eb741f4bde8cc8c253",
+      "bytes": 9420,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-08-vague-outcome.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-08-vague-outcome.live.stdout.json",
+      "sha256": "b4098f13ed64113b8d29ee6efc6827c1720df82d129b85c0570cefbe8c572a99",
+      "bytes": 4827,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-09-explicit-testable-condition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-09-explicit-testable-condition.dry-run.stdout.json",
+      "sha256": "44e8abdca2a9f47e3c73f36904c7350a3bec619c58c255d90c63803de948d8d6",
+      "bytes": 9622,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-09-explicit-testable-condition.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-09-explicit-testable-condition.live.stdout.json",
+      "sha256": "6bc5bf69240b76f5ca62311bb1f0fffeccc8f1697d060ba67a6dd92b81067767",
+      "bytes": 4710,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-10-api-key-redaction.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-10-api-key-redaction.dry-run.stdout.json",
+      "sha256": "964f4213eb813a4257e45dcbae95c9a4322e61373450bb64493f7c975686a2f4",
+      "bytes": 10222,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-10-api-key-redaction.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-10-api-key-redaction.live.stdout.json",
+      "sha256": "b93a2181b01f0c7daf464121c1d4e1aaa3fbe364379349688773dd8d92e26a55",
+      "bytes": 4909,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-11-private-shorthand.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-11-private-shorthand.dry-run.stdout.json",
+      "sha256": "ba7ecdcff36172b3b6928383ca8874b33f77512109b10d063b07ec8d53a93214",
+      "bytes": 9358,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-11-private-shorthand.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-11-private-shorthand.live.stdout.json",
+      "sha256": "d15062bd6cebfab28c583bb67f2a802870224e1f15e55e96d70eea900725d756",
+      "bytes": 4765,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-12-unrecorded-approval.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-12-unrecorded-approval.dry-run.stdout.json",
+      "sha256": "2565481b055f6dfd666c11754f1f8f691ce0c3cb017d779f0384e492c263a0b7",
+      "bytes": 9505,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-12-unrecorded-approval.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-12-unrecorded-approval.live.stdout.json",
+      "sha256": "7a3e460cc568d63e730acdac7e185ac3ba4fb3910a8e56ae2601e84c96331d09",
+      "bytes": 4852,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-13-shared-quote-first-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-13-shared-quote-first-atomic.dry-run.stdout.json",
+      "sha256": "326bbf808b1e821a2aa3c2a0ec370f736fe993366ab1c606f9fc7cc25519dcbc",
+      "bytes": 9526,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-13-shared-quote-first-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-13-shared-quote-first-atomic.live.stdout.json",
+      "sha256": "876bb58ce87df5e31592cc77e8b8a0873176dffe9f469f3c2167e841981e9f8f",
+      "bytes": 4660,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-14-shared-quote-second-atomic.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-14-shared-quote-second-atomic.dry-run.stdout.json",
+      "sha256": "0a7451804b54eb800de3013fbb697684673df3049b11072ba7de4aece27ca7f1",
+      "bytes": 9553,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-14-shared-quote-second-atomic.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-14-shared-quote-second-atomic.live.stdout.json",
+      "sha256": "711559c1bb189a15131d22977a0b8040281973b3b7b69f8b3d4e010d4e9b63ed",
+      "bytes": 4686,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-15-duplicate-first.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-15-duplicate-first.dry-run.stdout.json",
+      "sha256": "0c5d317393c00b793f7be8b5bf61abc07a8046786f443453d13d195b13edcfa8",
+      "bytes": 9406,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-15-duplicate-first.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-15-duplicate-first.live.stdout.json",
+      "sha256": "cf64a6af18f80a9afdc745116e99dbb3d3b27cb3b297cbc00f191b2c37aefeb0",
+      "bytes": 4626,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-16-duplicate-second.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-16-duplicate-second.dry-run.stdout.json",
+      "sha256": "d9dd9f765501abad4b0e87a39bea337b1f606a3c36297c247a92633d30fcffbb",
+      "bytes": 9457,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-16-duplicate-second.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-16-duplicate-second.live.stdout.json",
+      "sha256": "d0567dc40de692e09e831b765cbbd64ac2f44ab58b601613ed2584236e1258dd",
+      "bytes": 4773,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-17-nondeclarative-form.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-17-nondeclarative-form.dry-run.stdout.json",
+      "sha256": "cd79a60624755726dca69edcb8e527ab86a5f779c95ef938def00ccc254f1097",
+      "bytes": 9959,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-17-nondeclarative-form.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--a0-17-nondeclarative-form.live.stdout.json",
+      "sha256": "b8c9d75db5ca510e0635eb5e2512e7ac1dce33f645e78409d25e00016537afc3",
+      "bytes": 5335,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-authorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-authorized-algorithm.dry-run.stdout.json",
+      "sha256": "cead8c61e47061e8d38fbccd36270b4c5d6ab9150d2b0fdb760be94b94c4d20e",
+      "bytes": 10252,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-authorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-authorized-algorithm.live.stdout.json",
+      "sha256": "cb16c80b605f2f8a5c73152a1e0e68d8c507516ecab1ae2654a9cc42e0bf030e",
+      "bytes": 4872,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-independent-duties.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-independent-duties.dry-run.stdout.json",
+      "sha256": "034d9c0bde78f056fafe886c3c1ce1c18247637386d7339157f0fcddaac7486a",
+      "bytes": 9679,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-independent-duties.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-independent-duties.live.stdout.json",
+      "sha256": "dffb9006eba482b061643e2e0827330c050c6129ca55343327d1f15bd7129303",
+      "bytes": 4827,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-shared-predicate-surfaces.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-shared-predicate-surfaces.dry-run.stdout.json",
+      "sha256": "ac931867d17d6a99a2930c17ba372962eb101feffbc2efad9f95906e05b4742b",
+      "bytes": 9733,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-shared-predicate-surfaces.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-shared-predicate-surfaces.live.stdout.json",
+      "sha256": "9490e966b5456fcbb4cfc15f2e47ff0c23a22a33894f34ea9aaafafe7621bfc9",
+      "bytes": 4736,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-unauthorized-algorithm.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-unauthorized-algorithm.dry-run.stdout.json",
+      "sha256": "03cdcb01e9beb822d1244ed09df025cbd98ee57e20e74f4080529c95fab73344",
+      "bytes": 10270,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-unauthorized-algorithm.live.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/future-intent-03--generic-unauthorized-algorithm.live.stdout.json",
+      "sha256": "8728b39e3927086353954a3e6d46da1077d9ad4799669a9e06a752e820a9ac28",
+      "bytes": 4953,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/invocation.json",
+      "sha256": "90fb0cd46579e67be526021fc278dd430a0ca755f59b6f23f6df512bac5c45a8",
+      "bytes": 11237,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/live-execution.log",
+      "sha256": "303981a98e97d0cf8a8935e76677147eb2b351e3d8fb0363d7adc58f5cfa1ab2",
+      "bytes": 35,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/local-unreleased-sealed-rubric.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "bytes": 4,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/materialization-verification.json",
+      "sha256": "9d968fd97f17c2db0491913dd4e92a7cfb8d645ef564fc6b260ac683ef24c767",
+      "bytes": 1597,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/outer_fence-validation.json",
+      "sha256": "04e8755dcf7c1040b6e7dd98de56c1b6a408d5b9e00020273f04e03b2b1ccefd",
+      "bytes": 9229,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/request.json",
+      "sha256": "503ee8d476b8bfe78dc57ffca5d93537dcf63be2244990203545d0a0a86164cd",
+      "bytes": 10905,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/request_contract-validation.json",
+      "sha256": "8d2fb3d0264e567fd4ccefef94efc35ae2becf4328c2eaca73e87ab2e923bc76",
+      "bytes": 127,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/result.json",
+      "sha256": "84d2ef9f079c9b564d789faf92ac53296c5526cf1d9a983e7e8310d8212e62d5",
+      "bytes": 9169,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/result.md",
+      "sha256": "88ab066cad1efc90755ce7e3ce1062278984740b46cf929e013d45c24258f752",
+      "bytes": 9210,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/result_contract-validation.json",
+      "sha256": "801bf2436e6121aceea978d73013490745c2b1e4aa8c456886677d0cfb708090",
+      "bytes": 127,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/reviewed-live-command.json",
+      "sha256": "341ee0ec48d3d5363478f943af2f7b30735275d65c626e3e5b6f40abb14e3041",
+      "bytes": 1419,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/scope-and-policy-verification.json",
+      "sha256": "33bd215908f88c5c742ccfe164b4d5372166d931d3048517762eb08953e86620",
+      "bytes": 408,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/attempt-01/validations.json",
+      "sha256": "90524f4225a0c94984d543aa187f608dc8d35afe4db92f3d2cd98e23677b1994",
+      "bytes": 146,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
     },
     {
       "path": "continuation/calibration-088-local/inputs/future-intent-01-rubric.json",
@@ -428,6 +2066,192 @@
       "sha256": "e96506f3a6f7615594906e94dae7c1242a4af924588f5b2ef4b85d7f2cbece70",
       "bytes": 10362,
       "source": "exact R2 optional input serialization correction, supported CLI dry runs and preserved original refusal"
+    },
+    {
+      "path": "continuation/calibration-088-local/r3/invocation-fence.md",
+      "sha256": "8514944f98aa64e623d3ca70ad68f56d0fef0c12adf1d98625b55b4039c81839",
+      "bytes": 12106,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/r3/invocation.md",
+      "sha256": "c1ae27be5f5388b05ad31bdfe3716221a11c09357516740e6e2f36ca57b4571f",
+      "bytes": 11751,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/r3/materialization-inventory.json",
+      "sha256": "360970de6132a20214920a0f6f6fd25b891a6a6c61afb865ca19754b18135878",
+      "bytes": 3152,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/r3/offline-projection-validation.json",
+      "sha256": "ca40194f5517de6e51e58614e503f964b00ebbcfd5757696099d01165fa739da",
+      "bytes": 26260,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/r3/request.json",
+      "sha256": "a7726f6bcc31d9bea35dfe205ac5096bd2e367db695afb174d3854ce771928d4",
+      "bytes": 11516,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/r3/request.md",
+      "sha256": "871cbd161b1eb276556abc3ecfbeff4b3a3e228d2b88793af99333b50282ec7c",
+      "bytes": 11873,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/diagnosis.json",
+      "sha256": "5390e79e5e8770cb69d4ae96ed4286740bd34a810e0dfc0aafbeb7f2c19a461e",
+      "bytes": 404,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-01-valid-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-01-valid-directive.dry-run.stdout.json",
+      "sha256": "f893a18d0e65b5750f596b79ea9eb43efeeabed264cc4f3fa7c632c721d37492",
+      "bytes": 9494,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-02-valid-prohibition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-02-valid-prohibition.dry-run.stdout.json",
+      "sha256": "5520d05ba365b3844a467ede519f93e9eee1048b5fa76a6fed38ca5f80b38e8a",
+      "bytes": 9515,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-03-structural-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-03-structural-scope.dry-run.stdout.json",
+      "sha256": "00c96c31cb09860a8b46f49b00576ed59f8630cf93bd6dbbe2eec644be04a8c1",
+      "bytes": 9332,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-04-global-scope.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-04-global-scope.dry-run.stdout.json",
+      "sha256": "171728f15465e7baa47ef3c44203ea85e28bc67f5d328b516d84150fae00fcdf",
+      "bytes": 9365,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-05-atomic-from-multi-directive.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-05-atomic-from-multi-directive.dry-run.stdout.json",
+      "sha256": "05e15a9609ce890bba4fe2f91bc26300cd8dbadd7c7934a5d0e71e0a97f5fba5",
+      "bytes": 9404,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-06-genuinely-bundled.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-06-genuinely-bundled.dry-run.stdout.json",
+      "sha256": "6c3d2b7912414a1034b13f0cae08bb1db2491bd7ba67b73470e4c4fb930e9971",
+      "bytes": 9628,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-07-unsupported-elaboration.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-07-unsupported-elaboration.dry-run.stdout.json",
+      "sha256": "929dd14201120af9ab1db7036706f7d990c68237fed0e1910ea1094208d4bf6b",
+      "bytes": 9266,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-08-vague-outcome.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-08-vague-outcome.dry-run.stdout.json",
+      "sha256": "d63cec54580988aba36fc7cddd2347d20d146a74fb79605d391a991d0a7b8999",
+      "bytes": 9292,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-09-explicit-testable-condition.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-09-explicit-testable-condition.dry-run.stdout.json",
+      "sha256": "1158edf9eb3ba681efaabfb1a24631f62736755b46c060f1c80a946bcbb6ced2",
+      "bytes": 9494,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-10-api-key-redaction.dry-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/future-intent-01--a0-10-api-key-redaction.dry-run.stdout.json",
+      "sha256": "4f3f95be48ad3a1d27b5c8e4c86fed40f2f8a7c101b6975b1f6efeeed73ffd94",
+      "bytes": 10094,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/invocation.json",
+      "sha256": "a5d3ddedace5e345dba4b0dc8a0d24584b94a65408dcf55883aea3997fa83ffd",
+      "bytes": 9726,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/materialization-verification.json",
+      "sha256": "9d968fd97f17c2db0491913dd4e92a7cfb8d645ef564fc6b260ac683ef24c767",
+      "bytes": 1597,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/request.json",
+      "sha256": "3c46f939331a771f63e58c8c509e1a70473b65ee8a8ac353e5a18af954445a25",
+      "bytes": 9394,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
+    },
+    {
+      "path": "continuation/calibration-088-local/redacted-dry-run-observation/scope-and-policy-verification.json",
+      "sha256": "33bd215908f88c5c742ccfe164b4d5372166d931d3048517762eb08953e86620",
+      "bytes": 408,
+      "source": "exact independent local 0.8.8 calibration result, raw confirmations, CLI evidence and R3 bindings"
     },
     {
       "path": "continuation/calibration-088-local/rejected-wrapper-materialization/diagnosis.json",
@@ -1381,7 +3205,7 @@
     "source_commit": "b410ceab3b737785e85d2084151168962af5f1f8",
     "input_files": 5,
     "source_and_destination_hashes_verified": true,
-    "independent_live_result": "pending",
+    "independent_live_result": "success:true accepted:false; no accepted seal",
     "new_seal_accepted": false,
     "gate_pass_claimed": false,
     "path": "continuation/calibration-088-local/",
@@ -1393,6 +3217,20 @@
       "new_seal_accepted": false,
       "path": "continuation/calibration-088-local/r2/dry-run-validation.json",
       "independent_frozen_wire_equivalence": true
+    },
+    "attempt_01": {
+      "source_pr62_head": "b113bfa",
+      "reported_full_tests_per_tracker": 518,
+      "runtime_sha256": "a99b50920aa3516df2df09673f6e924166ab0390d98bd0c8a02bfb8cba6d84e3",
+      "raw_answer_confirmations": 126,
+      "best_original_exact_stable_cells": "85/85",
+      "best_original_confident_cells": "82/85",
+      "each_candidate_supplement_cells": "20/20",
+      "accepted": false,
+      "new_seal": false,
+      "source": "continuation/calibration-088-local/attempt-01/result.json",
+      "retry_provenance": "parent approved one evidence-backed retry after agent-context auto-review rejection; generic payloads only",
+      "extension": "independent append-only candidate preparation; no result claimed"
     }
   }
 }

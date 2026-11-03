@@ -1,0 +1,16 @@
+{
+  "payload_lineage": "Only shipped17 generic calibration fixtures and4 independently frozen hypothetical generic supplement cases. No actual Phase C anchor or plan content.",
+  "original_request_count": 51,
+  "generic_supplement_request_count": 12,
+  "actual_anchor_authority_records": 0,
+  "active_plan_or_anchor_file_used": false,
+  "actual_resolved_credential_in_body": false,
+  "credential_header_only": true,
+  "committed_actual_repository_consent": true,
+  "destination": "https://api.typesafe.ai/v1/systemone",
+  "scope": "LOCAL UNRELEASED candidate testing",
+  "live_calls_so_far": 0,
+  "frozen_requests_canonical_sha256": "a5e2bf894e1b744daf3c479812745a553f366668426e5f9816787ad1fb79b3c8",
+  "automatic_review_rejected_action": "First escalated supported CLI live execution",
+  "review_reason": "Trusted authorization for specific data export/destination not established; no workaround attempted."
+}

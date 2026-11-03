@@ -187,6 +187,15 @@ wrapper digest. All six supported CLI dry-runs now succeed and emit the exact
 frozen questions and intent descriptors. No live calls or accepted seal are
 part of this serialization checkpoint.
 
+The [completed local calibration](continuation/calibration-088-local/attempt-01/result.json)
+returned `success:true`, `accepted:false`: all three candidates passed 20/20
+supplement cells; the best repeated 85/85 exact original answers but three
+cells lacked confident pairs. Its 126 confirmations, CLI dry-runs, provenance,
+validations and earlier refusals are retained. R3 records the existing display
+redaction separately from original canonical request digests. No new seal was
+accepted; question tuning, fixtures, full-sprint live gates and final QA remain
+open. The independent next candidate extension is preparation only.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |
