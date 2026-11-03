@@ -1,0 +1,18 @@
+{
+  "checks": {
+    "exactly_one_json_fence": true,
+    "correlation_matches": true,
+    "anchor-tuning-result": true,
+    "agent-runner-result": true,
+    "snapshots_unchanged": true
+  },
+  "contract": {
+    "data": {
+      "sha256": "59c188ca9bfb441b4a3b96f6d85f71c2af44c5054e271a0c237aeba4422d8e9d",
+      "valid": true
+    },
+    "error": null,
+    "success": true
+  },
+  "attestation_schema": true
+}

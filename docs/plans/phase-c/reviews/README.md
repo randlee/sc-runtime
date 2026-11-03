@@ -84,6 +84,29 @@ before a canonical 0.8.7 installation. The current sc-runtime tooling remains
 unchanged, and ARCH-C-002 stays open until the supported testability triage,
 fixture/tuning checks, full-sprint live gates and coverage are complete.
 
+The upstream correction subsequently merged through
+[plan-anchor PR61](https://github.com/randlee/plan-anchor/pull/61), whose checks
+all succeeded. The canonical source is
+[`273780863780a86c79be7f59c2f37c06039ee3a6`](https://github.com/randlee/plan-anchor/commit/273780863780a86c79be7f59c2f37c06039ee3a6);
+its [main CI run](https://github.com/randlee/plan-anchor/actions/runs/41576212659)
+succeeded and the five-minute monitor completed and was deleted. Canonical
+0.8.7 was installed for Claude, Codex and Cursor in sc-runtime commit
+`3c1d5d7f71ad75954e3fed422792205530104049`, preserving tracker, consent and
+Phase C plan settings. The unchanged
+[br/bd smoke report](triage-087/installer-smoke-report.json) verifies 162
+locked output files per tracker and repeat-install idempotence.
+
+Independent 0.8.7 triage then examined the actual recorded ANC-001 faithful
+and ANC-003 single-constraint responses. Both returned typed
+`EVIDENCE.INCOMPLETE`, with valid result fences, schema/contract checks and
+attestations. The [triage checkpoint](triage-087/README.md) preserves requests,
+raw repeats, results and validations. ANC-001 lacks decisive approved
+quote-to-analyzer provenance; ANC-003 lacks a frozen atomicity oracle resolving
+the common-version versus separate-artifact distinction. Successful execution
+of this supported workflow does not decide those missing facts. No disposition,
+question override, confidence change or live gate PASS follows from these
+results; ARCH-C-002 and overall readiness remain open.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |

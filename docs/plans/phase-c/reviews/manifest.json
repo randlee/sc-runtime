@@ -1,7 +1,7 @@
 {
   "schema": "phase-c-review-evidence/1",
   "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
-  "overall_readiness": "blocked-pending-owner-approved-upstream-workflow-extension-and-live-gates",
+  "overall_readiness": "pending-provenance-atomicity-oracle-fixtures-live-gates-final-manager",
   "qa2": {
     "resolved": 6,
     "remaining_blocking": [
@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "1f083db0d6aa0e9cbcb31c0239954712cddcc654b626b26b3aecca026f77b484",
-      "bytes": 7122,
+      "sha256": "640beecdfad4fcefac7ed8b6cda7858a256c0fab1dab73530e8b0b5889e8e534",
+      "bytes": 8639,
       "source": "authored index"
     },
     {
@@ -476,6 +476,174 @@
       "sha256": "a0f97eddc4ca86e4c8c89510a36a8655af5a10250be3d818a24cca39dc2fdd3f",
       "bytes": 4353,
       "source": "deterministic naming/worktree/GitHub checks at c4aed15"
+    },
+    {
+      "path": "triage-087/ANC-001-invocation-fence.md",
+      "sha256": "c66f216172d102e30aa3685600da9f92fe8d4b2988d6c1de3ba8510c19281c9c",
+      "bytes": 13034,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-repeat-evidence.json",
+      "sha256": "266ded36b9487facb248d9b9da2b6f593397db31c4df15ab188639620fbdfbe3",
+      "bytes": 7854,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-request.json",
+      "sha256": "3f01b7c987bd94b2863523afc0317e546c0725862386d2cbd3f49f0921a61861",
+      "bytes": 12179,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-result/attestation.json",
+      "sha256": "6f41fd4baf4520f48982ac5a3342c78b1bf51a7ebe6495284a745e7f1ac9a164",
+      "bytes": 538,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-result/evidence-comparison.json",
+      "sha256": "1488d2630fd1e993488b99a5fd77e171a6715bf2ccd2feae56095f3c21ac9dfb",
+      "bytes": 12958,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-result/input-validation.json",
+      "sha256": "0ddb1a93e27948aab87cf6417d23ab5c644ea2588445f20e2278119e8cc1c62c",
+      "bytes": 291,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-result/request.json",
+      "sha256": "3f01b7c987bd94b2863523afc0317e546c0725862386d2cbd3f49f0921a61861",
+      "bytes": 12179,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-result/result.json",
+      "sha256": "23377312eae50b591e6df566cbe07782b4501e8a60df67355917f17d87652519",
+      "bytes": 1961,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-result/result.md",
+      "sha256": "b4fdb74179e0d7e85917897b8415556636a98b2a979bfca4df616ecb77b9dfbf",
+      "bytes": 1920,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-001-result/validation.json",
+      "sha256": "a51055ab596c0975091e5e61417bd752d3529de7318208883a007dee8b066c7a",
+      "bytes": 482,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-invocation-fence.md",
+      "sha256": "f4f0cf30ba5c68ce531f7974aaa381f4eebc7a486d1b298f14bdf7df2a784fdd",
+      "bytes": 12859,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-repeat-evidence.json",
+      "sha256": "eb94d46180dfc74b57aa66427706379cb9448671e82dba1e7147d7147082d0c9",
+      "bytes": 7777,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-request.json",
+      "sha256": "810797b910dc51ac9b2f35db8625a778e48289c8916b9e2ea78309bf25d25cd1",
+      "bytes": 12004,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/actual-invocation.json",
+      "sha256": "03d4b00a702ee41615c62446d39e9e3b0d4ec3c94a161e15ebe1ae2be5d10f86",
+      "bytes": 12847,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/actual-request.json",
+      "sha256": "810797b910dc51ac9b2f35db8625a778e48289c8916b9e2ea78309bf25d25cd1",
+      "bytes": 12004,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/adjudication-evidence.json",
+      "sha256": "9b67dc4a62f0f7df8357af0fb7a5560b2cd2338b2daaf40f4576cd1ba5c389b9",
+      "bytes": 2153,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/attestation-scope.json",
+      "sha256": "cd2963739bb5e101fdad3cb6ee086a1548b4e83d8673a6ac9623905efeb6ba62",
+      "bytes": 427,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/attestation.json",
+      "sha256": "cfc2bb0348a06acf8afdc259fd78ab504638fddf85d61cd5cb78b54f1c703780",
+      "bytes": 621,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/input-snapshot-sha256.json",
+      "sha256": "5530f4bc1f74c01ec789d2378d85fdfd8a2615135524b36fc653ebbf4ca3b046",
+      "bytes": 1025,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/input-validations.json",
+      "sha256": "16b54a2cd64bee74cff4022afbf65c514488b5cf6426ac21eebab971bca7d7f9",
+      "bytes": 543,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/render-validation.txt",
+      "sha256": "274394c44b966b651acf55a553af17c52c2b2dd03139a8ca9267749803c61361",
+      "bytes": 548,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/result-validations.json",
+      "sha256": "0de890e4c33ac0d2998c2358623d6ec948bf00779737b311a6791ab8b473eda4",
+      "bytes": 405,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/result.json",
+      "sha256": "f9c89f201a0de87b1d347b0618f3376ab1b15bb3b2f4d9a708ff220164a66eea",
+      "bytes": 2353,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/ANC-003-result/result.md",
+      "sha256": "5b1b4bac1501f22c495e7fb50058ae4cd2351b58947c05ef56705255200986c1",
+      "bytes": 2364,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/README.md",
+      "sha256": "63d6099aae4acc2383a280d81aea177016a3cc31cc242e95eb7ed16bc676dfbc",
+      "bytes": 1442,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/canonical-install-checkpoint.json",
+      "sha256": "ce0db46d63b7994b0bb73ca164fd0fcb13f027c26808ad65c07fd3a728f14071",
+      "bytes": 1449,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/installer-smoke-report.json",
+      "sha256": "04c91bea6da2af4660b7e40a6679c30a7e8d057c91531f9c2b9968c8107f8c42",
+      "bytes": 57530,
+      "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/runtime-descriptor.json",
+      "sha256": "3b84165ef4dd6c9f394019ee30b66aecb8c00f486323643c10fe2436d33395d9",
+      "bytes": 217,
+      "source": "independent 0.8.7 triage/installer execution evidence"
     }
   ],
   "anchor_clarity": {
@@ -496,12 +664,23 @@
   "upstream_proposal": {
     "repository": "https://github.com/randlee/plan-anchor",
     "branch": "codex/testability-triage-contract",
-    "commit": "d0755b6",
-    "pr": null,
-    "state": "pushed-proposal-owner-approval-required-before-canonical-0.8.7-install",
+    "commit": "273780863780a86c79be7f59c2f37c06039ee3a6",
+    "pr": 61,
+    "state": "merged-canonical-0.8.7-installed-three-targets",
     "reported_tests_per_tracker": 506,
-    "merged": false,
-    "published": false,
-    "installed": false
+    "merged": true,
+    "published": "canonical installer version 0.8.7",
+    "installed": true
+  },
+  "triage_087": {
+    "canonical_source": "273780863780a86c79be7f59c2f37c06039ee3a6",
+    "sc_runtime_install_commit": "3c1d5d7f71ad75954e3fed422792205530104049",
+    "actual_outcomes": {
+      "ANC-001 faithful": "EVIDENCE.INCOMPLETE",
+      "ANC-003 single_constraint": "EVIDENCE.INCOMPLETE"
+    },
+    "forced_disposition": false,
+    "gate_pass_claimed": false,
+    "source": "triage-087/canonical-install-checkpoint.json"
   }
 }
