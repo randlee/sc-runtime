@@ -107,6 +107,22 @@ of this supported workflow does not decide those missing facts. No disposition,
 question override, confidence change or live gate PASS follows from these
 results; ARCH-C-002 and overall readiness remain open.
 
+A second actual 0.8.7 triage pilot supplied the previously recorded human
+provenance and existing frozen corpus pointers. Both independent Sol
+adjudicators returned `success: true`, `disposition: question_defect`:
+[ANC-001 faithful](triage-087/r2/ANC-001-result/result.json) found that the
+quote-only question/input boundary dropped approved clarification context;
+[ANC-003 single_constraint](triage-087/r2/ANC-003-result/result.json) found
+that the question failed the existing distinction between one predicate on
+multiple artifacts and independently enforceable duties, citing corpus cases
+06 and 10. The [added authority context](triage-087/r2/existing-approved-intent-v2.md)
+preserves exact original words and approval boundaries. Validation confirms
+unchanged judged sources, anchor records, sealed questions and raw repeats.
+The R1 `EVIDENCE.INCOMPLETE` results remain intact. These diagnoses complete
+the real triage/install pilot; question retuning, independent resealing,
+testability/fixture rechecks, full-sprint live gates, coverage and final QA
+remain open. No actual gate outcome has been changed to PASS.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |

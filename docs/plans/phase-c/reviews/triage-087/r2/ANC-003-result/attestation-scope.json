@@ -1,0 +1,12 @@
+{
+  "timing_scope": "Measured from extraction of supplied invocation to final render; preceding instruction reads are excluded.",
+  "credential_access": false,
+  "new_jev_calls": 0,
+  "active_plan_reads": 0,
+  "repository_writes": 0,
+  "beads_writes": 0,
+  "authority_changes": 0,
+  "question_changes": 0,
+  "live_gate_pass_claim": false,
+  "result_path": "/tmp/sc-runtime-phase-c-review/triage-087/r2/ANC-003-result/result.md"
+}

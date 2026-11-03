@@ -1,7 +1,7 @@
 {
   "schema": "phase-c-review-evidence/1",
   "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
-  "overall_readiness": "pending-provenance-atomicity-oracle-fixtures-live-gates-final-manager",
+  "overall_readiness": "pending-question-retuning-reseal-fixtures-live-gates-and-final-manager",
   "qa2": {
     "resolved": 6,
     "remaining_blocking": [
@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "640beecdfad4fcefac7ed8b6cda7858a256c0fab1dab73530e8b0b5889e8e534",
-      "bytes": 8639,
+      "sha256": "c7683b8d371f3f12549aa66651eaf4eec806f382718536d18593c1ddab2a65e3",
+      "bytes": 9760,
       "source": "authored index"
     },
     {
@@ -623,8 +623,8 @@
     },
     {
       "path": "triage-087/README.md",
-      "sha256": "63d6099aae4acc2383a280d81aea177016a3cc31cc242e95eb7ed16bc676dfbc",
-      "bytes": 1442,
+      "sha256": "0cbcd91c345dcfb5b61fd4cfb5ccb6cf8e5d22746fb1bd66dc6cea5592041d3a",
+      "bytes": 2759,
       "source": "independent 0.8.7 triage/installer execution evidence"
     },
     {
@@ -638,6 +638,150 @@
       "sha256": "04c91bea6da2af4660b7e40a6679c30a7e8d057c91531f9c2b9968c8107f8c42",
       "bytes": 57530,
       "source": "independent 0.8.7 triage/installer execution evidence"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-invocation-fence.md",
+      "sha256": "a729f430ba5b30838ba4cb9a2c33320da1d60e1076fbdcb1fa39d631ab62cd41",
+      "bytes": 39107,
+      "source": "triage-087/r2/ANC-001-invocation-fence.md"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-request.json",
+      "sha256": "58b395477aa8cfc475d9c28796d33929240114a2cd6b031769a9627129ffabd2",
+      "bytes": 38252,
+      "source": "triage-087/r2/ANC-001-request.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-result/attestation.json",
+      "sha256": "4f99d40639131aab964987661641d1e012d1c71452c5c9758c11f220da34d761",
+      "bytes": 521,
+      "source": "triage-087/r2/ANC-001-result/attestation.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-result/evidence-comparison.json",
+      "sha256": "45c80b36b7e9b4ae19a02dfb4d12c0817c6d6cdf3d1d71ffdcdb2e6cac933571",
+      "bytes": 2443,
+      "source": "triage-087/r2/ANC-001-result/evidence-comparison.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-result/input-validation.json",
+      "sha256": "78dcdcf9f6e374bdc815c45878d9392cab8251e590b1f3dc8341cf14185bd208",
+      "bytes": 342,
+      "source": "triage-087/r2/ANC-001-result/input-validation.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-result/render-validation.json",
+      "sha256": "5cbf6a3229511137dc081242defae53e7f4e23c8c12bd275e4df8c24cb1c3b4e",
+      "bytes": 152,
+      "source": "triage-087/r2/ANC-001-result/render-validation.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-result/request.json",
+      "sha256": "b8ba8d5df81f254e125b7fd19db690ef225899ffe0389ae31cbeccc60ef4e68f",
+      "bytes": 38633,
+      "source": "triage-087/r2/ANC-001-result/request.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-result/result.json",
+      "sha256": "932516174ab6d8fc20da2800135f6333996ac5405ffda9592ab7b705883d0e79",
+      "bytes": 10386,
+      "source": "triage-087/r2/ANC-001-result/result.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-result/result.md",
+      "sha256": "39ae816ac08a0288ba00b392f2a0777175ea19f2f86694f30fe09abecd115755",
+      "bytes": 8655,
+      "source": "triage-087/r2/ANC-001-result/result.md"
+    },
+    {
+      "path": "triage-087/r2/ANC-001-result/validation.json",
+      "sha256": "f1ceda9c4796437a24012fbf00955028d912c53158d31c61edca5f29817fcff3",
+      "bytes": 452,
+      "source": "triage-087/r2/ANC-001-result/validation.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-invocation-fence.md",
+      "sha256": "302587710417929954406cd7064924f4f88e0fecdd72f2c405f814b05cdf3bd9",
+      "bytes": 38932,
+      "source": "triage-087/r2/ANC-003-invocation-fence.md"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-request.json",
+      "sha256": "a1217173fe8d53ce5a23a5ca0be8bbf627ddd793e46ccb287681aae0d4a67856",
+      "bytes": 38077,
+      "source": "triage-087/r2/ANC-003-request.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/actual-invocation.json",
+      "sha256": "649dca822758ca595bbfbaf7a593e2c428efc4d134d61784f8ce382731155a1d",
+      "bytes": 38920,
+      "source": "triage-087/r2/ANC-003-result/actual-invocation.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/actual-request.json",
+      "sha256": "c6e870d66c6b160aa82422725d0a58cea3c444bdce16e301a863ff7c497e4dd0",
+      "bytes": 38458,
+      "source": "triage-087/r2/ANC-003-result/actual-request.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/attestation-scope.json",
+      "sha256": "22de6ec7af68702bdf1fde5281a03fe76c65fd5222fd2aadd823ad11787e0098",
+      "bytes": 430,
+      "source": "triage-087/r2/ANC-003-result/attestation-scope.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/attestation.json",
+      "sha256": "6db54dbbbe5a0620235382b467dcbc9900dcc90c9539679476b611475a5ab7a6",
+      "bytes": 604,
+      "source": "triage-087/r2/ANC-003-result/attestation.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/corpus-verification.json",
+      "sha256": "c77d4936ba36ddd621b7a64684d7d03a40c56b15ce51e594b41074a4d4d0af0a",
+      "bytes": 359,
+      "source": "triage-087/r2/ANC-003-result/corpus-verification.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/input-snapshot-sha256.json",
+      "sha256": "dd1a034a2aab4d7f577f0edb6ae91f349e2124844fae837ea690da5429e4728c",
+      "bytes": 1028,
+      "source": "triage-087/r2/ANC-003-result/input-snapshot-sha256.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/input-validations.json",
+      "sha256": "d41c3989d429575acc91a45287c3e607d3f9f8e6fa3b370ba6e9f2c4d8fe901d",
+      "bytes": 543,
+      "source": "triage-087/r2/ANC-003-result/input-validations.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/render-validation.txt",
+      "sha256": "3c8b96d9c5d9c5d0c849179fce14767a8b5982d8005374466fc7ae8aeb25628c",
+      "bytes": 547,
+      "source": "triage-087/r2/ANC-003-result/render-validation.txt"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/result-validations.json",
+      "sha256": "8153035ba99b5d1945b572487aa8dcf49a8b9ad55694bf1eb5c9b6ec0e147c01",
+      "bytes": 405,
+      "source": "triage-087/r2/ANC-003-result/result-validations.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/result.json",
+      "sha256": "f1389af78b36b42fbe4c270b85fd497ac29e3627f01cfc781d09d851b5c43f13",
+      "bytes": 8420,
+      "source": "triage-087/r2/ANC-003-result/result.json"
+    },
+    {
+      "path": "triage-087/r2/ANC-003-result/result.md",
+      "sha256": "26ad0d5b6f5b318c6a325337b4f4fbb4b3704f9319d70b78a06dd433effe7a78",
+      "bytes": 8431,
+      "source": "triage-087/r2/ANC-003-result/result.md"
+    },
+    {
+      "path": "triage-087/r2/existing-approved-intent-v2.md",
+      "sha256": "e9f3cc7ae32002d5592d393ba24c82732f0e00d4633a37ad06928e1294777a0f",
+      "bytes": 23919,
+      "source": "triage-087/r2/existing-approved-intent-v2.md"
     },
     {
       "path": "triage-087/runtime-descriptor.json",
@@ -681,6 +825,24 @@
     },
     "forced_disposition": false,
     "gate_pass_claimed": false,
-    "source": "triage-087/canonical-install-checkpoint.json"
+    "source": "triage-087/canonical-install-checkpoint.json",
+    "r2": {
+      "changes": "existing approved human intent/provenance and frozen corpus pointers only",
+      "results": {
+        "ANC-001 faithful": {
+          "success": true,
+          "disposition": "question_defect"
+        },
+        "ANC-003 single_constraint": {
+          "success": true,
+          "disposition": "question_defect"
+        }
+      },
+      "r1_results_preserved": true,
+      "judged_source_anchors_seal_raw_repeats_unchanged": true,
+      "question_changes": false,
+      "live_gate_pass_claimed": false,
+      "source": "triage-087/r2/"
+    }
   }
 }
