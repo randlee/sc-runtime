@@ -14,6 +14,15 @@
 {% endif %}
   "logging": {
     "enableConsoleSink": true,
-    "enableFileSink": false
+    "enableFileSink": true
+  },
+  "cron": {
+    "database_path": "cron.db",
+    "max_schedule_rows": 10,
+    "environment": {
+      "allow_process": [],
+      "allow_dotenv_files": [],
+      "allow_dotenv_roots": []
+    }
   }
 }

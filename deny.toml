@@ -31,6 +31,12 @@ allow = [
     "ISC",
     "MIT",
     "Unicode-3.0",
+    # monty/ruff stack pulls ar_archive_writer (Apache-2.0 WITH LLVM-exception).
+    "Apache-2.0 WITH LLVM-exception",
+    # monty depends on minicbor and minicbor-serde (OSI-approved Blue Oak 1.0).
+    "BlueOak-1.0.0",
+    # ruff_python_parser uses unicode_names2, which requires Unicode-DFS-2016.
+    "Unicode-DFS-2016",
     # rusqlite's wasm target depends on sqlite-wasm-rs, which depends on
     # foldhash (Zlib). cargo-deny checks that target. Zlib is OSI-approved.
     "Zlib",

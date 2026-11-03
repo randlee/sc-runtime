@@ -25,7 +25,7 @@ class CiScopeTests(unittest.TestCase):
             ci_scope.requires_runtime(
                 [
                     "docs/requirements.md",
-                    "doc/plan/phase-current/anchors.md",
+                    "docs/plans/phase-b/anchors.md",
                     "README.md",
                 ]
             )
@@ -33,6 +33,7 @@ class CiScopeTests(unittest.TestCase):
 
     def test_crate_template_and_workflow_changes_require_runtime(self):
         self.assertTrue(ci_scope.requires_runtime(["crates/sc-runtime/src/lib.rs"]))
+        self.assertTrue(ci_scope.requires_runtime(["crates/sc-command/src/observability.rs"]))
         self.assertTrue(ci_scope.requires_runtime(["template/Justfile"]))
         self.assertTrue(ci_scope.requires_runtime([".github/workflows/crates.yml"]))
         self.assertTrue(ci_scope.requires_runtime(["Cargo.lock"]))

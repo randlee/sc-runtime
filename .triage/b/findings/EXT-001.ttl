@@ -1,0 +1,14 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18-kit:EXT-001>
+  qa:id "EXT-001" ;
+  qa:sprint "b-18-kit-preparation" ;
+  qa:qaPass "prequalification-inspection" ;
+  qa:severity "Important" ;
+  qa:status "fixed" ;
+  qa:reviewer "extensibility-qa" ;
+  qa:reviewerTask "/root/kit_prequalification_ext" ;
+  qa:commit "ac7e13a9e7e006f6646f6dda434588cbe2a98589" ;
+  qa:location "tests/integration/generation/test_observability.py:23-26" ;
+  qa:issue "Bound the fresh-checkout Git commands so the kit inventory gate cannot hang indefinitely Consumer ac7e13a9e7e006f6646f6dda434588cbe2a98589, /Volumes/Extreme Pro/github/sc-runtime-worktrees/codex/b-18-publishing-kit/tests/integration/generation/test_observability.py:23-26: git init, network git fetch, checkout and rev-parse are called through subprocess.run/check_output without timeout. In particular line 24 adds a live remote fetch to this routine unittest with no local completion bound. AST inspection confirms the only keywords are check (run) and text (check_output). A stalled HTTPS transfer or Git credential helper therefore prevents the test from reaching its fail-closed assertions and cleanup until an external job limit or manual interruption. This violates the assignment's bounded-subprocess reliability criterion." ;
+  qa:recommendation "Give every Git subprocess in test_pinned_publish_kit_inventory an explicit finite timeout (allow an appropriate larger bound for the remote fetch), disable interactive Git credential prompts in the subprocess environment, and let timeout/fetch failures fail the test. Preserve the fresh temporary checkout, exact full-SHA fetch and HEAD equality check; do not fall back to an ignored local checkout or skip on fetch failure." .

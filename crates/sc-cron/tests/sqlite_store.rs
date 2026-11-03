@@ -1,6 +1,6 @@
 //! `SqliteScheduleStore`: the store contract with fixed timestamps,
 //! generation fencing, the table CHECKs, the schema version and reopen
-//! durability, and the `enabled` column with the version 1 upgrade
+//! durability, and the first-release table contract
 //! (REQ-CRON-0009, REQ-CRON-0014).
 
 #![expect(
@@ -16,8 +16,8 @@ use std::time::Duration;
 use rusqlite::Connection;
 use sc_cron::{
     CronError, Generation, HookTarget, MAX_HOOK_SOURCE_BYTES, MAX_PAYLOAD_BYTES, NewSchedule,
-    RunOutcome, SCHEMA_VERSION, ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore,
-    SqliteScheduleStore, StoreErrorKind, Timestamp,
+    RunOutcome, SCHEMA_VERSION, ScheduleId, ScheduleLimits, ScheduleName, ScheduleSpec,
+    ScheduleStore, SqliteScheduleStore, StoreErrorKind, Timestamp,
 };
 use tempfile::TempDir;
 
@@ -51,7 +51,9 @@ fn generation(value: u32) -> Generation {
 #[test]
 fn writes_a_schedule_without_constructing_sqlite_writer() {
     let root = tempfile::tempdir().expect("tempdir");
-    let store = SqliteScheduleStore::open(root.path().join("schedules.db")).expect("open");
+    let store =
+        SqliteScheduleStore::open(root.path().join("schedules.db"), ScheduleLimits::default())
+            .expect("open");
     let spec = ScheduleSpec::with_hook(
         "nightly",
         "*/5 * * * *",
@@ -138,7 +140,7 @@ impl Harness {
     fn new() -> Self {
         let root = tempfile::tempdir().expect("tempdir");
         let path = root.path().join("cron.db");
-        let store = SqliteScheduleStore::open(&path).expect("store");
+        let store = SqliteScheduleStore::open(&path, ScheduleLimits::default()).expect("store");
         Self {
             _root: root,
             path,
@@ -219,7 +221,7 @@ fn list_active_survives_reopen_and_orders_by_created_at() {
     let names: Vec<_> = before.iter().map(|row| row.spec.name.as_str()).collect();
     assert_eq!(names, ["earlier", "later"]);
 
-    let reopened = SqliteScheduleStore::open(&h.path).expect("reopen");
+    let reopened = SqliteScheduleStore::open(&h.path, ScheduleLimits::default()).expect("reopen");
     assert_eq!(reopened.list_active().expect("list"), before);
 }
 
@@ -603,171 +605,6 @@ fn the_enabled_column_accepts_only_zero_or_one() {
     );
 }
 
-/// The version 1 table, before the `enabled` column.
-const SCHEMA_V1: &str = "CREATE TABLE sc_cron_schedule (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    generation   INTEGER NOT NULL CHECK (generation BETWEEN 1 AND 4294967295),
-    name         TEXT    NOT NULL UNIQUE CHECK (length(CAST(name AS BLOB)) BETWEEN 1 AND 128),
-    expr         TEXT    NOT NULL CHECK (length(CAST(expr AS BLOB)) <= 256),
-    timeout_ms   INTEGER NOT NULL CHECK (timeout_ms > 0),
-    jitter_ms    INTEGER NOT NULL CHECK (jitter_ms >= 0),
-    payload      TEXT    NOT NULL CHECK (length(CAST(payload AS BLOB)) <= 65536),
-    created_at   TEXT    NOT NULL,
-    next_run_at  TEXT,
-    last_run_at  TEXT,
-    last_outcome TEXT,
-    ended_at     TEXT,
-    stop_reason  TEXT,
-    CHECK ((ended_at IS NULL) = (next_run_at IS NOT NULL)),
-    CHECK ((ended_at IS NULL) = (stop_reason IS NULL))
-);";
-
-#[test]
-fn a_version_1_file_gains_the_enabled_column_with_every_schedule_enabled() {
-    let root = tempfile::tempdir().expect("tempdir");
-    let path = root.path().join("cron.db");
-    {
-        let old = Connection::open(&path).expect("connection");
-        old.execute_batch(SCHEMA_V1).expect("v1 schema");
-        old.execute_batch(
-            "INSERT INTO sc_cron_schedule
-                (generation, name, expr, timeout_ms, jitter_ms, payload, created_at, next_run_at)
-             VALUES (3, 'kept', '*/5 * * * * *', 30000, 1799, '{\"a\":1}',
-                     '2026-10-03T12:00:00.000000Z', '2026-10-20T12:00:00.000000Z');
-             INSERT INTO sc_cron_schedule
-                (generation, name, expr, timeout_ms, jitter_ms, payload, created_at, ended_at,
-                 stop_reason)
-             VALUES (1, 'ended', '@hourly', 1000, 0, '{}', '2026-10-01T12:00:00.000000Z',
-                     '2026-10-02T12:00:00.000000Z', 'done');",
-        )
-        .expect("v1 rows");
-        old.pragma_update(None, "user_version", 1).expect("v1");
-    }
-
-    let store = SqliteScheduleStore::open(&path).expect("upgrade");
-    let kept = store.list_active().expect("list");
-    assert_eq!(kept.len(), 1);
-    assert_eq!(kept[0].spec.name.as_str(), "kept");
-    assert_eq!(kept[0].generation, generation(3));
-    assert_eq!(kept[0].spec.payload, serde_json::json!({"a": 1}));
-    assert!(kept[0].enabled, "an existing schedule stays enabled");
-    let ended = store.get(ScheduleId::new(2)).expect("get").expect("ended");
-    assert!(!ended.is_active() && ended.enabled);
-    drop(store);
-
-    let version: i64 = Connection::open(&path)
-        .expect("connection")
-        .query_row("PRAGMA user_version", [], |row| row.get(0))
-        .expect("version");
-    assert_eq!(version, SCHEMA_VERSION);
-    let source_column: i64 = Connection::open(&path)
-        .expect("connection")
-        .query_row(
-            "SELECT COUNT(*) FROM pragma_table_info('sc_cron_schedule') WHERE name = 'hook_source'",
-            [],
-            |row| row.get(0),
-        )
-        .expect("hook_source column");
-    assert_eq!(
-        source_column, 1,
-        "a version 1 file rebuilds through schema 4"
-    );
-    // Opening again is a plain open, and the column now works.
-    let store = SqliteScheduleStore::open(&path).expect("reopen");
-    assert!(
-        store
-            .set_enabled(&schedule_name("kept"), false)
-            .expect("disable")
-    );
-}
-
-/// The version 3 table: hook kind is rust or python, and there is no `hook_source`.
-const SCHEMA_V3: &str = "CREATE TABLE sc_cron_schedule (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    generation   INTEGER NOT NULL CHECK (generation BETWEEN 1 AND 4294967295),
-    name         TEXT    NOT NULL UNIQUE CHECK (length(CAST(name AS BLOB)) BETWEEN 1 AND 128),
-    expr         TEXT    NOT NULL CHECK (length(CAST(expr AS BLOB)) <= 256),
-    timeout_ms   INTEGER NOT NULL CHECK (timeout_ms > 0),
-    jitter_ms    INTEGER NOT NULL CHECK (jitter_ms >= 0),
-    payload      TEXT    NOT NULL CHECK (length(CAST(payload AS BLOB)) <= 65536),
-    created_at   TEXT    NOT NULL,
-    next_run_at  TEXT,
-    last_run_at  TEXT,
-    last_outcome TEXT,
-    ended_at     TEXT,
-    stop_reason  TEXT,
-    enabled      INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
-    hook_kind    TEXT    NOT NULL DEFAULT 'rust' CHECK (hook_kind IN ('rust', 'python')),
-    hook_module  TEXT    NOT NULL DEFAULT '',
-    CHECK ((ended_at IS NULL) = (next_run_at IS NOT NULL)),
-    CHECK ((ended_at IS NULL) = (stop_reason IS NULL))
-);
-CREATE TABLE consumer_notes (id INTEGER PRIMARY KEY, body TEXT NOT NULL);";
-
-#[test]
-fn a_version_3_file_gains_hook_source_and_leaves_other_tables_alone() {
-    let root = tempfile::tempdir().expect("tempdir");
-    let path = root.path().join("cron.db");
-    let hook = root.path().join("hook.py");
-    let hook_text = hook.to_string_lossy().into_owned();
-    {
-        let old = Connection::open(&path).expect("connection");
-        old.execute_batch(SCHEMA_V3).expect("v3 schema");
-        old.execute(
-            "INSERT INTO sc_cron_schedule
-                (generation, name, expr, timeout_ms, jitter_ms, payload, created_at, next_run_at,
-                 enabled, hook_kind, hook_module)
-             VALUES (2, 'py', '0 * * * * *', 20000, 0, '{}',
-                     '2026-10-19T00:00:00.000000Z', '2026-10-19T00:01:00.000000Z',
-                     1, 'python', ?1)",
-            [&hook_text],
-        )
-        .expect("python row");
-        old.execute("INSERT INTO consumer_notes (body) VALUES ('leave me')", [])
-            .expect("other table");
-        old.pragma_update(None, "user_version", 3).expect("v3");
-    }
-
-    let store = SqliteScheduleStore::open(&path).expect("upgrade");
-    let row = store.list_active().expect("list");
-    assert_eq!(row.len(), 1);
-    assert!(matches!(
-        &row[0].spec.hook,
-        HookTarget::Python { module } if module.as_os_str() == hook.as_os_str()
-    ));
-    let created = store
-        .create(&new_schedule("after"), stamp(4))
-        .expect("insert after upgrade");
-    assert_eq!(
-        created.id.get(),
-        2,
-        "explicit ids in the rebuild keep the sequence"
-    );
-    drop(store);
-
-    let conn = Connection::open(&path).expect("connection");
-    let version: i64 = conn
-        .query_row("PRAGMA user_version", [], |row| row.get(0))
-        .expect("version");
-    assert_eq!(version, SCHEMA_VERSION);
-    let source_column: i64 = conn
-        .query_row(
-            "SELECT COUNT(*) FROM pragma_table_info('sc_cron_schedule') WHERE name = 'hook_source'",
-            [],
-            |row| row.get(0),
-        )
-        .expect("column");
-    assert_eq!(source_column, 1);
-    let note: String = conn
-        .query_row("SELECT body FROM consumer_notes", [], |row| row.get(0))
-        .expect("other table survived");
-    assert_eq!(note, "leave me");
-    assert_check_violation(
-        conn.execute("UPDATE sc_cron_schedule SET hook_kind = 'other'", []),
-        "hook kind outside rust|python|monty",
-    );
-}
-
 #[test]
 fn a_corrupt_row_is_a_corrupt_store_error_naming_the_row() {
     for (column, value) in [
@@ -838,7 +675,7 @@ fn a_file_with_other_tables_is_refused() {
         .execute_batch("CREATE TABLE other_table (id TEXT);")
         .expect("foreign table");
     assert_eq!(
-        store_kind(SqliteScheduleStore::open(&path)),
+        store_kind(SqliteScheduleStore::open(&path, ScheduleLimits::default())),
         StoreErrorKind::SchemaMismatch
     );
 }
@@ -854,7 +691,8 @@ fn an_unknown_schema_version_is_refused_and_the_current_one_is_written() {
     h.sql()
         .pragma_update(None, "user_version", SCHEMA_VERSION + 1)
         .expect("bump version");
-    let error = SqliteScheduleStore::open(&h.path).expect_err("unknown version");
+    let error =
+        SqliteScheduleStore::open(&h.path, ScheduleLimits::default()).expect_err("unknown version");
     assert_eq!(error.code(), "STORE_FAILED");
     assert!(
         matches!(&error, CronError::Store(store) if store.kind() == StoreErrorKind::SchemaMismatch),
@@ -866,7 +704,8 @@ fn an_unknown_schema_version_is_refused_and_the_current_one_is_written() {
 fn store_errors_expose_their_rusqlite_source() {
     let root = tempfile::tempdir().expect("tempdir");
     let missing = root.path().join("no-such-dir").join("cron.db");
-    let error = SqliteScheduleStore::open(&missing).expect_err("cannot open");
+    let error =
+        SqliteScheduleStore::open(&missing, ScheduleLimits::default()).expect_err("cannot open");
     assert!(
         matches!(&error, CronError::Store(store) if store.kind() == StoreErrorKind::Unavailable),
         "{error}"

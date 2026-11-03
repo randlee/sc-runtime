@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:RBQA-B17-001>
+  qa:id "RBQA-B17-001" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Important" ;
+  qa:status "fixed" ;
+  qa:reviewer "ruthless-boundary-qa" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location "crates/sc-cron/src/environment/wire.rs:126" ;
+  qa:issue "The public HookEnvironment Deserialize boundary propagates rejected values and reference-shaped input through raw serde errors." ;
+  qa:recommendation "Map Wire::deserialize failures to a fixed value-free D::Error before returning with ?, just as the subsequent policy-building failures are mapped. Preserve the required serde signature and strict rejection behavior. Add public serde_json::from_str canary cases asserting that Display/Debug errors omit rejected field values and unknown-field text; no new error type or wrapper API is needed." .

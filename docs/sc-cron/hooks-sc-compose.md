@@ -1,104 +1,116 @@
-# sc-compose from cron hooks
+# External CLI calls from cron hooks
 
-This note is the reference for rendering templates inside a schedule hook.
-It matches what the **`sc_compose_hook`** and **`sc_compose_bench`** integration
-tests exercise.
+This note defines the Phase B application-extension examples. sc-cron is a
+general-purpose scheduler; neither CLI is a required dependency or privileged
+class of job. Binding authority is [ADR-RUN-0013](../architecture.md),
+[REQ-CRON-0003](requirements.md), and approved ANC-027 through ANC-042.
 
-## Recommendation
+## Host registration
 
-**For compose-heavy hooks (render most ticks), prefer Monty + a host `sc-compose`
-bridge** once sc-cron implements it. Benchmarks on this repo show that pattern
-matches calling the Rust **`sc-compose` CLI** directly (~3 ms/run, ~6 MiB
-compose subprocess peak) and is roughly **7× faster** with **~2× lower RSS**
-than a **`HookTarget::Python`** hook that imports PyO3 `sc_compose` (~23 ms/run,
-~14 MiB). See
-[sc-compose-hook-comparison.report.html](sc-compose-hook-comparison.report.html).
+The embedding application builds a `MontyHostRegistry` and passes it to
+`Scheduler::with_monty_hosts`. The default registry is empty. Applications
+can register their own `Send + Sync` handler closures without editing sc-cron,
+using JSON arguments/results and the existing `CronError` contract.
 
-**What ships today:** production Monty feeds use `MontyRepl::call_function` for
-`cron_stop` / `cron_tick` only—they do **not** resume a host `render_template`
-yet. Until the bridge lands, use **`HookTarget::Python`** (reference fixture
-below) or pre-render in the embedding **`Job`**.
+Phase B provides `ScComposeHostConfig` and `AtmHostConfig` to register
+`sc_compose_run(subcommand, args)` and `atm_run(subcommand, args)` through
+that same interface. Enabling feature `monty` does not register them.
+Executable paths default to `sc-compose` and `atm`; the embedder may select
+other non-empty paths. The working directory is embedder configuration,
+defaulting to the daemon directory captured when the adapter is built.
+Basenames resolve through daemon launch PATH/PATHEXT before environment
+clearing. Neither script source nor a schedule row replaces the registered
+executable or handler.
 
-**Target bridge (lab in `sc_compose_bench`):** Monty hook code calls a host
-ext fn; the host runs **`sc-compose render`** (or an in-process compose
-engine)—**no CPython per tick**. Do not import PyO3 `sc_compose` inside the
-Monty VM; sc-cron does not use `monty-pool` / `ExternalModule` workers.
+Both functions accept one non-empty CLI command/subcommand string and an
+optional list of string arguments, with no keyword arguments. The host executes argv directly, never a shell. It
+preserves argument order and contents, including flags and paths. There is no
+render-only subcommand filter, forced render argv, discarded `--root`, or
+mandatory template staging. Any restrictions imposed by a consumer belong to
+its own registered handler and are not the library's default CLI contract.
 
-Do not confuse this with **`pydantic_monty` + `ExternalModule` + PyO3
-`sc_compose`**: that loads the extension inside a pool worker (full CPython in
-the worker). sc-cron uses in-process **`monty` 1.4** without `monty-pool`.
+MVP executes application-supplied source without signatures, separate script
+approval, or a consumer option enabling approval. Host-function registration
+and environment policy are enforced independently. In-process Monty and
+custom synchronous Rust handlers retain the same resource/panic/abort risks
+as other application code; arbitrary Rust handlers cannot be forcibly
+cancelled by the interpreter's execution budget.
 
-## Hook JSON
+## Hook example
 
-Python and Monty both receive **`sc-cron.hook.v1`** on the argument object
-(`protocol`, `event`, `schedule`, `payload`, `deadline`). Put template inputs
-in **`payload`**, for example:
+Python and Monty receive `sc-cron.hook.v1` with `protocol`, `event`,
+`schedule`, `payload`, and `deadline`. Application-specific data is payload.
 
-```json
-{
-  "template": "Hello {{ name }}",
-  "context": { "name": "cron" }
-}
+```python
+def cron_stop(hook):
+    return {"action": "continue", "reason": "scheduled"}
+
+def cron_tick(hook):
+    payload = hook["payload"]
+    composed = sc_compose_run(payload["compose_command"], payload["compose_args"])
+    if composed["exit_code"] != 0:
+        raise ValueError("compose command failed")
+    called = atm_run(payload["atm_command"], payload["atm_args"])
+    if called["exit_code"] != 0:
+        raise ValueError("ATM command failed")
 ```
 
-For real `.j2` files, put paths and var files in `payload` and use
-**`sc_compose.compose_file`** or **`sc-compose render --mode file`** in the
-Python hook (same as `scripts/new_project.py`).
+The application chooses which registrations this example receives. Unknown
+host names fail with `HOST_UNDEFINED`; source cannot register or replace
+handlers. Registration rejects invalid identifiers, duplicate names, and
+reserved runtime bindings.
 
-## Python hook (reference)
+## Process result and environment
 
-Fixture: `crates/sc-cron/tests/fixtures/sc_compose_tick.py`.
+Completed children return `{stdout, stderr, exit_code}`, including nonzero
+exit codes. The script decides whether a nonzero result fails its hook.
+Spawn/capture failures fail the hook with the stable codes in
+[REQ-CRON-0005](requirements.md#req-cron-0005-one-error-enum).
+Row deadlines, process-group termination, and per-stream output caps apply to
+both adapters through the same supervisor.
 
-- **`cron.stop`**: return `{"action": "continue", "reason": "ok"}`.
-- **`cron.tick`**: read hook JSON from stdin, call
-  `sc_compose.render_template(payload["template"], payload["context"])`, exit 0.
+Python, Monty environment reads, and both adapter children receive the same
+resolved occurrence snapshot under [ADR-RUN-0016](../architecture.md).
+Children never inherit the full daemon environment implicitly.
+Configured values echoed into hook failures, stderr, stop reasons, or
+scheduled events are redacted before persistence/logging.
+Top-level Monty getenv works before hooks run; registered host calls execute
+only in cron_stop/cron_tick, not during source initialization.
 
-Register the schedule with `HookTarget::python(module_path)` pointing at that
-file. Requires **`sc_compose`** on the host (`pip install sc-compose`).
+## Production boundary and benchmark proof
 
-## Monty hook (with compose via host bridge)
+No production release crate links or imports sc-compose or ATM crates.
+Boundary lint and production dependency-tree checks enforce that rule;
+test/benchmark-only references are permitted. Executable names and subprocess
+calls are configuration/integration references, not Rust crate linkage.
 
-In **`cron_tick`**, call host-provided **`render_template(template, context)`**
-(ext fn). The host implementation should invoke Rust **`sc-compose`**, not
-`python3 -c import sc_compose`. Pure in-VM logic (no compose) stays in Monty
-without a bridge; state can persist in the per-schedule REPL across ticks.
+`render_template` is not a product requirement. The current Monty benchmark
+and generated examples use `sc_compose_run` through the same production
+registry/dispatcher exercised by application-defined hosts.
+Closed b-10/b-11 records and previously published reports retain their
+historical benchmark descriptions; they do not freeze today's product API.
 
-Until the bridge is productized, pass pre-rendered text in **`payload`** or use
-the Python reference hook.
-
-## Benchmarks
-
-Latest numbers (regenerated each bench run):
-[sc-compose-hook-comparison.report.html](sc-compose-hook-comparison.report.html).
-
-Optional tests (not run in default CI):
+Operator procedure: [benchmark-run](../../.claude/skills/benchmark-run/SKILL.md).
+Campaign documentation: [benchmark-monty.md](benchmark-monty.md).
+Reports: [benchmark-monty](../../site/reports/benchmark-monty/).
 
 ```bash
-# Requires sc_compose importable and feature monty for the Monty lab case.
+just --justfile scripts/benchmark/justfile benchmark-monty
+just --justfile scripts/benchmark/justfile benchmark-monty-show
+just --justfile scripts/benchmark/justfile benchmark-monty-publish
 SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench -- --ignored --nocapture
 ```
 
-They print wall time per run and, on macOS, approximate **subprocess peak RSS**
-for the Python paths (one-shot `python3 -c` via `/usr/bin/time -l`; the hook
-path uses the same render script—add interpreter + sc-cron child overhead on top):
+The `production_bridge` case drives a real schedule through
+`Scheduler::run_due` and `drive_feed`; a lab feed_start microbenchmark is
+separate. Test executable fixtures verify non-render compose argv, ATM argv,
+nonzero results, missing programs, deadlines, and capture caps without relying
+on live external services. Historical PyO3 renderer comparisons are test-only
+measurements and do not authorize production tool-crate dependencies.
 
-| Case | Meaning |
-|------|---------|
-| `cpython_hook` | Full `PythonHook::invoke` path (subprocess + module import) |
-| `python_render_only` | Same render work, no sc-cron wrapper |
-| `sc_compose_cli_only` | Rust `sc-compose render` only (what the host bridge should call) |
-| `monty_host_bridge + sc-compose CLI` | Monty VM + host resume → CLI (target pattern; not wired in sc-cron yet) |
-
-Read the generated report for your machine. Typical outcome (release, string
-template): **Monty + host CLI ≈ bare CLI** (Monty overhead is small); **Python
-hook ≈ 7× slower** and **~2× higher** subprocess RSS than compose-via-CLI paths.
-Python remains appropriate when you need an **untrusted/isolated** child process
-today, or until the Monty host bridge ships.
-
-## API notes (Gemini / pydantic_monty)
-
-- **`sc_compose.render_template(template, context)`** is valid for **string**
-  templates (low-level renderer).
-- **`sc_compose.compose(ComposeRequest)`** is the structured file/profile API.
-- **`pydantic_monty` + `ExternalModule`** is a **different** runtime
-  (`monty-pool` workers). sc-cron uses in-process **`monty` 1.4**, not that pool.
+The implemented registry builder uses `register(name, handler)`,
+`with_sc_compose(ScComposeHostConfig)`, and `with_atm(AtmHostConfig)`, each
+returning `Result<MontyHostRegistry, CronError>`. The generated development
+example and custom closure setup are in [monty-generated-example.md](monty-generated-example.md).
+The b-16 child environment is explicitly empty; the resolved-snapshot text
+above is the b-17 successor contract.

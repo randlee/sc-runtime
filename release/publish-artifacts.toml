@@ -43,4 +43,11 @@ package = "sc-runtime"
 cargo_toml = "crates/sc-runtime/Cargo.toml"
 publish = true
 publish_order = 4
+wait_after_publish_seconds = 60
+[[crates]]
+artifact = "sc-cron"
+package = "sc-cron"
+cargo_toml = "crates/sc-cron/Cargo.toml"
+publish = true
+publish_order = 5
 wait_after_publish_seconds = 0

@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-16:FTQ-006>
+  qa:id "FTQ-006" ;
+  qa:sprint "b-16" ;
+  qa:qaPass "qa-b-16-1" ;
+  qa:severity "Minor" ;
+  qa:status "open" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:commit "326a7a6a10e26ceb071e60cd02b7a1ef30800732" ;
+  qa:location "crates/sc-cron/src/monty_compose.rs:369" ;
+  qa:issue "The driver test starts its real process group under a guard that only sends SIGKILL on Drop. A startup timeout, read error, or readiness assertion failure unwinds before the explicit reap helper, leaving the killed or already-exited Unix leader unreaped until the test binary exits." ;
+  qa:recommendation "Give this real-child test a cleanup guard that always terminates its group and performs a bounded reap during unwinding. Keep the explicit production-helper invocation for the successful deadline assertions; failure cleanup must not depend on reaching that invocation." .

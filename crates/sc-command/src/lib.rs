@@ -38,3 +38,6 @@ pub const DISCRIMINANT_CODE: &str = "ENVELOPE.DISCRIMINANT";
 
 /// Stable code for a payload whose `Serialize` implementation fails.
 pub const SERIALIZATION_CODE: &str = "ENVELOPE.SERIALIZATION";
+
+/// Application-owned canonical logging injection without a logging runtime.
+pub mod observability;

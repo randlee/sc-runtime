@@ -15,7 +15,7 @@ use std::time::Duration;
 
 use sc_cron::{
     CronError, CronExpr, MAX_EXPR_LEN, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, MAX_TIMEOUT, ManualClock,
-    ScheduleSpec, ScheduleStore, Scheduler, SeqJitter, SqliteScheduleStore,
+    ScheduleLimits, ScheduleSpec, ScheduleStore, Scheduler, SeqJitter, SqliteScheduleStore,
 };
 
 struct Fixture {
@@ -24,7 +24,8 @@ struct Fixture {
 }
 
 fn fixture() -> Fixture {
-    let store = Arc::new(SqliteScheduleStore::open_in_memory().expect("store"));
+    let store =
+        Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"));
     let clock = Arc::new(ManualClock::new(
         "2026-10-19T00:00:00Z".parse().expect("timestamp"),
     ));
@@ -110,7 +111,8 @@ fn still_refuses_four_fields_and_a_bad_five_field_expression() {
 
 /// The first run `start` stores for `expr` when the clock reads `now`.
 fn first_run(expr: &str, now: &str) -> String {
-    let store = Arc::new(SqliteScheduleStore::open_in_memory().expect("store"));
+    let store =
+        Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"));
     let clock = Arc::new(ManualClock::new(now.parse().expect("timestamp")));
     let scheduler = Scheduler::new(store, clock, Arc::new(SeqJitter::default()));
     let schedule = scheduler.start(spec(expr).expect("spec")).expect("start");

@@ -146,14 +146,14 @@ class OutputEquivalenceTests(unittest.TestCase):
             wizard = self.generate(
                 [str(wizard_dest)], stub, root, pipeline_stub=pipeline_stub
             )
-            self.assertEqual(wizard.returncode, 0, wizard.stderr)
+            self.assertEqual(wizard.returncode, 0, wizard.stdout + wizard.stderr)
             direct = self.generate(
                 [str(file_dest), "--var-file", str(FIXTURE)],
                 stub,
                 root,
                 pipeline_stub=pipeline_stub,
             )
-            self.assertEqual(direct.returncode, 0, direct.stderr)
+            self.assertEqual(direct.returncode, 0, direct.stdout + direct.stderr)
             self.assertNotIn("wyvern", direct.stderr)
             from_wizard = snapshot(wizard_dest)
             from_file = snapshot(file_dest)
@@ -177,8 +177,8 @@ class OutputEquivalenceTests(unittest.TestCase):
             run_b = self.generate(
                 [str(dest_b), "--var-file", str(OTHER_FIXTURE)], stub, root, pipeline_stub=None
             )
-            self.assertEqual(run_a.returncode, 0, run_a.stderr)
-            self.assertEqual(run_b.returncode, 0, run_b.stderr)
+            self.assertEqual(run_a.returncode, 0, run_a.stdout + run_a.stderr)
+            self.assertEqual(run_b.returncode, 0, run_b.stdout + run_b.stderr)
             snap_a = snapshot(dest_a)
             snap_b = snapshot(dest_b)
             self.assertNotEqual(snap_a, snap_b)
@@ -202,6 +202,7 @@ class OutputEquivalenceTests(unittest.TestCase):
             env = os.environ.copy()
             env["WYVERN_BIN"] = str(wyvern)
             env.pop("SC_RUNTIME_RELEASE", None)
+            # Exercise the canonical shim template with the normal SDK checkout patches.
         try:
             return subprocess.run(
                 [sys.executable, str(DRIVER), *args],

@@ -1,12 +1,15 @@
 /// Application configuration for the no-database layout.
 #[derive(Debug, Deserialize)]
 pub struct AppConfig {
-    /// Plain logging values. Example choice: console on, file off.
+    /// Plain logging values. Defaults: console and file on; logs under `<instance>/logs/`.
     #[serde(default)]
     pub logging: sc_observability::LogSettings,
     /// Endpoint fields passed through to the daemon builder.
     #[serde(flatten)]
     pub daemon: DaemonConfig,
+    /// Schedule row ceiling from sc-config. See [`cron::CronConfig`].
+    #[serde(default)]
+    pub cron: cron::CronConfig,
 }
 
 /// No database target. Opening the in-memory store takes no path and no URL.

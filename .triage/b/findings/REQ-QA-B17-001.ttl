@@ -1,0 +1,25 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-17:REQ-QA-B17-001>
+  qa:id "REQ-QA-B17-001" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Blocking" ;
+  qa:status "fixed" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location ".github/workflows/crates.yml:151" ;
+  qa:issue "B-17 adds a Windows workflow job that runs three cargo test commands directly. Active REQ-RUN-0004 requires every workflow lint/test/generation step to invoke the standard just lint/test/new recipes and records only the REQ-RUN-0306 cargo-generate job as an exception. The new Windows test job is not that exception, so the sprint's own platform-validation mechanism conflicts with the binding repository requirement." ;
+  qa:recommendation "Route the Windows validation through the required just recipe while preserving evidence for the three named roots, or plan and review an explicit REQ-RUN-0004 amendment establishing a narrowly scoped Windows-root exception before relying on direct cargo invocations. Do not treat the successful Windows run as waiving the active requirement." .
+
+<urn:sc-runtime:qa:b-17:qa2:REQ-QA-B17-001>
+  qa:id "REQ-QA-B17-001" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-2" ;
+  qa:severity "Blocking" ;
+  qa:status "fixed" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "216e2e38f52a5418ce0951ce6873d6335cabd497" ;
+  qa:location ".github/workflows/crates.yml:145-149" ;
+  qa:issue "The original Windows direct-cargo calls have been routed through `just test windows-hook-default`, `just test windows-hook-monty`, and `just test windows-host-monty`. However, the same workflow still has the development-bridge validation step directly invoking `cargo fmt`, `cargo test`, and `cargo clippy` for each bridge manifest at lines 145-148. Active REQ-RUN-0004 requires workflow lint/test/generation steps to call a standard `just lint`, `just test`, or `just new` recipe and names only the REQ-RUN-0306 plain-cargo-generate job as an exception. The remaining bridge step therefore leaves the carried requirement finding open." ;
+  qa:recommendation "Route the development-bridge fmt/test/clippy checks through the required root Justfile recipe(s), preserving all-features adapter coverage and failure propagation. Do not add a direct-cargo workflow exception unless REQ-RUN-0004 is separately planned and reviewed. The Windows job dispatch correction is valid but does not clear the remaining occurrence." .

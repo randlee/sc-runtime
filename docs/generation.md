@@ -186,7 +186,9 @@ Limitations, stated honestly:
 - `AGENTS.md.j2` and `CLAUDE.md.j2` are excluded from Liquid and are copied
   byte-for-byte. They still contain Jinja delimiters and frontmatter until
   `sc-compose` renders them. The driver does that render and deletes the
-  `.j2` files. Plain `cargo generate` does not.
+  `.j2` files. Plain `cargo generate` does not. `exclude` does not omit a
+  file. `template/config/cron.schema.json` is on `[template] ignore`, so a
+  generated project does not contain that schema or `answers.schema.json`.
 - Plain `cargo generate` does not write `[patch.crates-io]`. Before the
   crates are published, a build of that tree needs the checkout patch (the
   CI smoke applies `--patch-checkout` before the first Cargo command). After

@@ -1,7 +1,7 @@
 ---
 id: b-11
 phase: b
-status: planned
+status: complete
 closure_type: integration
 target_boundary: benchmark
 track: cron-monty
@@ -16,6 +16,7 @@ requirements:
   - REQ-RUN-0005
   - NFR-RUN-0005
 adrs:
+  - ADR-RUN-0002
   - ADR-RUN-0013
   - ADR-RUN-0011
   - ADR-RUN-0015
@@ -45,10 +46,18 @@ directory pair; they do not add a second runner or a second publish path.
 ## Relations
 
 `must_follow` `b-10`. The artifact is `monty_host::render_template`, resumed
-inside `monty_run::execute_feed`. The campaign case `production_bridge` is a
+inside `monty_run::drive_feed` / `execute_feed_with_compose_program`. The campaign case `production_bridge` is a
 Monty `cron_tick` that calls that function and records the CLI render. The
 lab case `monty_host_bridge` is a standalone `MontyRepl::feed_start` in the
 bench and is not that artifact.
+
+Host resume spawns the embedder-configured program from `MontyHostConfig`;
+the default is the basename `sc-compose` on `PATH`. `sc-compose` is this
+repository's reference CLI for this benchmark, integration tests, and
+examples. Consumer applications may select another non-empty program path
+implementing the same host contract. Thus `production_bridge` demonstrates
+the scheduler -> `drive_feed` path with the default program; it does not
+require every embedder to ship `sc-compose`.
 
 `owned_paths` do not intersect `b-10`. The serial edge is the ext fn, not a
 shared file. Publishing only the lab cases could share a wave with `b-10`.
@@ -134,7 +143,7 @@ stays with sprint `b-2`. Invoke with `just --justfile scripts/benchmark/justfile
 | `benchmark <subsystem>` | runs `scripts/benchmark/<subsystem>/campaign.py`; for `monty` that runs `SC_CRON_BENCH=1 cargo test -p sc-cron --features monty --test sc_compose_bench --release -- --ignored --nocapture` and writes `{timestamp}-{host}.campaign.json` plus its HTML |
 | `benchmark-show <subsystem>` | prints the latest campaign HTML path and the index path |
 | `benchmark-publish <subsystem>` | refreshes `site/reports/benchmark-<subsystem>/index.html` from `*.campaign.json` and leaves that directory as the only publish staging area |
-| `benchmark-gate` | runs every registered subsystem's `campaign.py --gate` (publish preflight entry point, below) |
+| `benchmark-gate` | runs every registered subsystem's `campaign.py --gate` (controlled-host production command; hosted preflight verifies committed evidence) |
 
 `SC_BENCH_HOST_LABEL` overrides the host label. Default is the machine
 hostname. The runner records git SHA, `rustc` version, case id, ms/run, and
@@ -142,41 +151,34 @@ RSS notes into `{timestamp}-{host}.campaign.json`.
 
 ## Publish preflight gate
 
-**Replaces** the earlier "campaign is manual only / no regression gate" rule.
-Publishing a reviewed campaign to `site/reports/` (`benchmark-publish`) stays
-an operator or agent step after review. The **pass/fail gate** is automated on
-the controlled host: a binary publish cannot proceed unless it passes.
+**Amended 2026-10-31 after owner clarification:** benchmark production and release
+verification are separate. A developer executes a fresh campaign on
+`atmbench@rand-m5` from clean, pushed workspace source, submits immutable
+JSON/HTML and the regenerated index under `site/reports/benchmark-monty/`,
+and quality manager reviews those results and identifies the measured build.
+The optional workstation SSH producer is `scripts/benchmark/run_remote_gate.py`.
+GitHub-hosted preflight never connects to the controlled host.
 
-- `release/publish-preflight.toml` declares a check `benchmark-pass` with
-  `run = "just --justfile scripts/benchmark/justfile benchmark-gate"`.
-  `.github/scripts/run-consumer-preflight.sh` runs every `[[checks]]` entry
-  from `release-preflight.yml` and fails closed before release dispatch, so a
-  non-zero `benchmark-gate` blocks binary publish.
-- **Where the gate runs:** publish preflight invokes the skill or an SSH step
-  that executes `benchmark-gate` **on `atmbench@rand-m5`**, not on a GitHub
-  hosted runner. The release workflow may SSH to rand-m5 or fail with a clear
-  message when the controlled host is unreachable. Timing regressions are never
-  inferred from Actions job duration.
-- `release/publish-preflight.toml` is rendered from
-  `release/publish-preflight.toml.j2`. The check is added through the
-  `preflight_checks` list in `release/sc-publish-consumer-input.json` and the
-  toml is re-rendered, not hand-edited.
-- `benchmark-gate` does a **fresh** run per registered subsystem (a stale
-  committed campaign never passes) with `--gate` on the controlled host. A
-  subsystem passes only when:
-  1. every required case ran (none skipped; `monty` requires
-     `production_bridge`);
-  2. each case's rendered output equals the expected string (a wrong render is
-     a failure, not a fast sample);
-  3. each case is within its `baselines.json` ceiling
-     (`floor_ms * max_regression_ratio`, recorded from the first accepted
-     campaign on the controlled host);
-  4. the subsystem wrote its campaign JSON and HTML with an allowed host
-     label.
-- The gate host must provide what the gate needs (`sc-compose` on `PATH`,
-  Rust 1.96.1 for `--features monty`). A missing prerequisite **fails** the
-  gate; it is never a skip.
-- Default PR CI and root `just test` do not run `benchmark-gate`.
+- `benchmark-pass` runs `python3 scripts/benchmark/check_release_evidence.py`.
+  Change `release/sc-publish-consumer-input.json` and regenerate the installed
+  TOML with the qualified kit; do not hand-edit generated files.
+- The verifier requires committed report pairs and a canonical index, actual
+  controlled-host metadata, release profile, five complete cases with no skips,
+  sane numeric measurements, and statuses matching current baselines.
+- The measured source commit must resolve locally or by exact-SHA origin fetch.
+  Only added campaign JSON/HTML and updated benchmark indexes may differ from
+  that source. Any other tracked change requires another campaign. Equivalent
+  source across a squash merge is supported; ancestry alone is not evidence.
+- Existing quality review and release-candidate tag policy remain authoritative;
+  no new signing gate, approval record schema, or tag namespace is introduced.
+- First-release benchmarks build from the pinned workspace. Installed prerelease
+  archives and already-published SDKs are not prerequisites. Registry-only
+  generated-consumer proof occurs separately after publication.
+- `benchmark-gate` remains the controlled-host fresh execution command. Every
+  required case must render correctly; configured numeric ceilings must pass.
+  Null ceilings produce `MEASURED`, which is complete execution evidence but
+  not a numerical performance PASS. Every measured FAIL/INCOMPLETE campaign is
+  retained and published; it cannot satisfy release preflight.
 
 ## Campaign cases (`monty`)
 
@@ -186,7 +188,7 @@ the controlled host: a binary publish cannot proceed unless it passes.
 | `python_render_only` | same render, no sc-cron wrapper |
 | `sc_compose_cli_only` | `sc-compose render` with no Monty |
 | `monty_host_bridge` | lab `MontyRepl::feed_start` plus host resume to the CLI |
-| `production_bridge` | `cron_tick` through `execute_feed` calling `render_template` (the bench must not call `feed_start` itself; `execute_feed` may use `feed_start` internally) |
+| `production_bridge` | `cron_tick` through `Scheduler::run_due` → `drive_feed` → `execute_feed_with_compose_program` calling `render_template` (the bench must not call `feed_start` itself; production may use `feed_start` internally) |
 
 `production_bridge` is skipped, and the campaign JSON records the skip, when
 the `b-10` path is absent, **in a local run**. Under `--gate` that skip is a
@@ -206,7 +208,7 @@ not satisfy this sprint. Required example blocks, per campaign, rendered as
 2. **`feed_start` / resume loop:** the host loop that takes `ReplProgress`,
    matches the `render_template` `FunctionCall`, runs the CLI, and calls
    `resume` until `Complete`. For `monty_host_bridge` it is the lab's loop; for
-   `production_bridge` it is the `execute_feed` excerpt, labelled as the
+   `production_bridge` it is the `execute_feed_with_compose_program` excerpt, labelled as the
    production path.
 3. **`sc-compose` CLI argv:** the exact argv the host spawns
    (`sc-compose render --root <temp> --mode file --file t.j2 --var-file v.json`),
@@ -241,8 +243,9 @@ visible without re-reading old HTML. Observed defect: an earlier lab resumed
 that as the Monty result. The floor is the CLI-backed sample, not that run.
 
 The bench writes campaign HTML beside the JSON under
-`site/reports/benchmark-monty/`. It stops writing
-`docs/sc-cron/sc-compose-hook-comparison.report.html`. The bench's temp root
+`site/reports/benchmark-monty/`. Harness HTML and JSON sidecars live under
+`target/sc-compose-bench/` (`sc-compose-hook-comparison.report.html` and
+`.report.json`), not under `docs/sc-cron/`. The bench's temp root
 is a `tempfile::TempDir`, not `std::env::temp_dir().join("sc_cron_sc_compose_bench")`
 (`NFR-RUN-0005`).
 
@@ -260,20 +263,20 @@ the preflight gate. It does not edit `hooks-sc-compose.md`.
 
 ## Acceptance criteria
 
-- Root `adr:ADR-RUN-0013`: after `b-10`, `just --justfile scripts/benchmark/justfile benchmark monty` writes a campaign JSON whose `production_bridge` case calls **`execute_feed` only** (the bench source must not call `feed_start`; `feed_start` inside `execute_feed` is allowed) and whose render path is `sc-compose` with no `python3` child. The JSON records git SHA and rustc version.
+- Root `adr:ADR-RUN-0013`: after `b-10`, `just --justfile scripts/benchmark/justfile benchmark monty` writes a campaign JSON whose `production_bridge` case exercises **`Scheduler::run_due` → `drive_feed` → `execute_feed_with_compose_program` only** (the bench source must not call `feed_start`; `feed_start` inside production is allowed) and whose render path is `sc-compose` with no `python3` child. The JSON records git SHA and rustc version.
 - Root `req:NFR-RUN-0005`: the harness uses `tempfile::TempDir`; `cargo test -p sc-cron` exits 0 without `SC_CRON_BENCH`; the ignored test is not part of default CI.
 - Root `req:NFR-RUN-0005`: `just --justfile scripts/benchmark/justfile benchmark-publish monty` rewrites only `site/reports/benchmark-monty/index.html` from the campaign files, and the index links each campaign and shows the `baselines.json` floor.
 - Root `adr:ADR-RUN-0013`: the skill's four steps name `scripts/benchmark/justfile` recipes and `site/reports/benchmark-<subsystem>/`. `docs/sc-cron/benchmark-monty.md` links the skill, the index, and the gate.
 - Layout: no benchmark script or report path outside `scripts/benchmark/<subsystem>/`, `scripts/benchmark/` shared files, and `site/reports/benchmark-<subsystem>/`; a second subsystem directory pair is picked up by `benchmark-gate` and `benchmark-publish` with no edit to the justfile.
 - Code examples: the generated `monty` campaign HTML and `index.html` each contain a `<pre><code>` block with the hook source (`cron_tick`), one with the resume loop (`feed_start` and `resume`), and one with the CLI argv (`sc-compose render --root`). A campaign JSON missing any `examples.*` key makes `render_report.py` exit non-zero.
-- Gate: `just --justfile scripts/benchmark/justfile benchmark-gate` exits 0 on a host with prerequisites and a passing campaign, and non-zero when `production_bridge` is skipped, a render mismatches, or a case exceeds its ceiling. `release/publish-preflight.toml` contains the `benchmark-pass` check, and `.github/scripts/run-consumer-preflight.sh` fails when the gate exits non-zero.
+- Gate: `just --justfile scripts/benchmark/justfile benchmark-gate` exits 0 on a host with prerequisites and a passing campaign, and non-zero when `production_bridge` is skipped, a render mismatches, or a case exceeds its ceiling. `release/publish-preflight.toml` contains the `benchmark-pass` check, and `.github/scripts/run-consumer-preflight.sh` fails when committed release evidence is absent, invalid, or does not match the release source.
 
 ## Required validation
 
 - `cargo test -p sc-cron` exits 0 (bench stays ignored; default features do not link `monty`).
-- `python3 scripts/benchmark/monty/campaign.py --index-only` exits 0 against a fixture `*.campaign.json` (with all three `examples` keys) and refreshes the index and HTML without running cargo; it exits non-zero against a fixture missing `examples.hook_source`. The script grows that flag in this sprint.
+- `python3 scripts/benchmark/monty/campaign.py --index-only` exits 0 against a fixture `*.campaign.json` (with all three `examples` keys) and refreshes the index without running cargo and preserves historical HTML bytes; new HTML is rendered completely from JSON at packaging; it exits non-zero against a fixture missing `examples.hook_source`. The script grows that flag in this sprint.
 - `python3 scripts/benchmark/monty/campaign.py --gate` exits non-zero when run against a fixture campaign that skipped `production_bridge`.
-- Root `just test` and default PR CI do not invoke `benchmark` or `benchmark-gate`. `release-preflight.yml` does, through `release/publish-preflight.toml`.
+- Root `just test` and default PR CI do not invoke `benchmark` or `benchmark-gate`. `release-preflight.yml` verifies committed evidence through `release/publish-preflight.toml`.
 - `sc-lint lint sc-boundary --root . --config sc-lint.toml` exits 0. This sprint does not edit `boundaries/`.
 
 ## Non-goals

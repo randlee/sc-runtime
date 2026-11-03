@@ -22,6 +22,8 @@ crates, and the registry-backed fixture matrix at that tag still need release
 authorization and registry credentials. Merging the release kit onto
 `integrate/phase-a` is the integration record for that later publish.
 
+`complete` in sprint frontmatter records implementation delivery. This index separately records QA and merge progress; `implemented; QA pending` means those gates remain open.
+
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | a-1 compatibility spike | [sprint-a-1](plans/phase-a/sprint-a-1-compatibility-spike.md) | complete | `sprint/a-1-compatibility-spike` |
@@ -35,6 +37,47 @@ authorization and registry credentials. Merging the release kit onto
 
 Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL, the adaptor, and the six generation layouts. See [Phase b plan](plans/phase-b/phase-b-plan.md).
 
+Continuation execution lead: `codexis`. The b-13 through b-18 integration
+branch is `integrate/phase-b-observability`; its dependency and execution
+ledger is Beads epic `run-03z`. Sprint scope and ownership remain defined by
+the approved sprint documents.
+
+The b-13 through b-18 continuation establishes the repository `0.1.1`
+contract. b-13 owns the non-blocking version/public API boundary and whole
+cron component propagation but performs no release;
+b-14, b-15, and b-16 then run in parallel. b-16 follows b-13's generated
+graph amendment and owns both generated dependency inventories plus the
+trusted in-process Monty example; b-17 adds the shared Python/Monty hook
+environment and release-v1 sc-cron schema baseline; b-18 owns the sc-publish
+consumer update, a real qualified exact-kit install and complete output
+synchronization, publish-order/preflight source contracts, and real development
+HTTP+cron JSONL plus isolated-CI SIGINT/SIGTERM lifecycle proof. The owner
+confirmed on 2026-10-30 that Phase B finishes before upstream `1.5.1`; the
+approved real registry `1.5.0` development adapter may support these proofs.
+All b-18 runtime/lifecycle criteria remain required. This timing amendment
+does not mark b-18 or Phase B complete.
+
+Release epic `run-h0h` now owns the initial five-crate 0.1.1 registry release
+using the 2026-10-31 [observability shim amendment](plans/phase-b/initial-release-observability-shim.md)
+and ADR-RUN-0017: one command-owned port and private generated adapter over
+actual registry 1.5.0, with local development packages/paths removed. Upstream
+1.5.1 capability/direct Arc migration is separate cleanup in
+[issue 97](https://github.com/randlee/sc-runtime/issues/97), not an unpublished
+initial-release prerequisite. Human authorization, strict updated guards,
+qualified preflight, controlled-host benchmarks, registry-only generation after
+all five publications and the same-source `v0.1.1` tag remain required.
+[REQ-RUN-0702](requirements.md), including Success Criteria 6–7,
+and [architecture](architecture.md) (ADR-RUN-0017)
+carry this governing release amendment and name its bounded dependency, pin
+and panic-policy exceptions. Other production safety predicates remain.
+
+The existing kit pin is rejected because its installer copies a
+`docs/sprints/**` destination. b-18 must select a qualified exact full SHA and
+prove the complete actual installer destination inventory is package-safe;
+upstream source may retain its own history. Kit preparation and qualification
+may progress independently, while final runtime composition consumes approved
+parent merges. This docs amendment selects no replacement consumer pin.
+
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | b-1 rusqlite writer | [sprint-b-1](plans/phase-b/sprint-b-1-sqlite-writer.md) | complete | `sprint/b-1-sqlite-writer` |
@@ -46,3 +89,25 @@ Phase b is the storage phase: writer, lint, cron, store pairing, Postgres, MySQL
 | b-7 store adaptor | [sprint-b-7](plans/phase-b/sprint-b-7-store-adaptor.md) | complete | `sprint/b-7-store-adaptor` |
 | b-8 generation layouts | [sprint-b-8](plans/phase-b/sprint-b-8-generation-layouts.md) | complete | `sprint/b-8-generation-layouts` |
 | b-9 sc-cron Monty hooks | [sprint-b-9](plans/phase-b/sprint-b-9-sc-cron-monty-hooks.md) | complete | `sprint/b-9-sc-cron-monty-hooks` |
+| b-10 sc-cron Monty host bridge | [sprint-b-10](plans/phase-b/sprint-b-10-sc-cron-monty-host-bridge.md) | complete | `sprint/b-10-sc-cron-monty-host-bridge` |
+| b-11 benchmark Monty reports | [sprint-b-11](plans/phase-b/sprint-b-11-benchmark-monty-reports.md) | complete | `sprint/b-11-benchmark-monty-reports` |
+| b-12 sc-cron schedule row limit | [sprint-b-12](plans/phase-b/sprint-b-12-sc-cron-schedule-row-limit.md) | complete | `sprint/b-12-sc-cron-schedule-row-limit` |
+| b-13 observability contract | [sprint-b-13](plans/phase-b/sprint-b-13-observability-contract.md) | complete | `sprint/b-13-observability-contract` |
+| b-14 runtime observability | [sprint-b-14](plans/phase-b/sprint-b-14-sc-runtime-observability.md) | complete | `sprint/b-14-sc-runtime-observability` |
+| b-15 cron observability | [sprint-b-15](plans/phase-b/sprint-b-15-sc-cron-observability.md) | complete | `sprint/b-15-sc-cron-observability` |
+| b-16 Monty template examples | [sprint-b-16](plans/phase-b/sprint-b-16-monty-template-examples.md) | complete | `sprint/b-16-monty-template-examples` |
+| b-17 sc-cron hook environment | [sprint-b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md) | complete | `sprint/b-17-sc-cron-hook-environment` |
+| b-18 template observability integration | [sprint-b-18](plans/phase-b/sprint-b-18-template-observability-integration.md) | complete | `codex/b-18-publishing-kit` |
+
+Phase c is the post-Phase-b consumer-quality and ecosystem-release phase.
+It makes the generated sc-lint consumer complete and moves the public
+runtime/template pair to the approved latest RMCP and Utoipa family while
+retaining the rusqlite 0.39/SQLx compatibility guard. See [Phase c
+plan](plans/phase-c/phase-c-plan.md).
+
+| Sprint | Plan | Status | Branch |
+| --- | --- | --- | --- |
+| c-1 consumer/runtime compatibility contract | [sprint-c-1](plans/phase-c/sprint-c-1-consumer-runtime-contract.md) | planned | `sprint/c-1-consumer-runtime-contract` |
+| c-2 consumer sc-lint full profile | [sprint-c-2](plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md) | planned | `sprint/c-2-consumer-sc-lint-full-profile` |
+| c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | planned | `sprint/c-3-runtime-ecosystem-upgrade` |
+| c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | planned | `sprint/c-4-runtime-ecosystem-release` |

@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:FTQ-003> qa:sprint "b-15" ;
+  qa:severity "important" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:location "crates/sc-cron/tests/observability.rs:799" ;
+  qa:issue "The new B15 timeout case executes an actual infinite Monty loop and awaits run_due without an independent test deadline. If interpreter budget enforcement stops returning, the test blocks forever. The worker variant has a bounded observation loop, but its runtime teardown can still wait forever for the same non-abortable blocking feed." ;
+  qa:remedy "Run the deliberately nonterminating deadline witness inside an owned test subprocess with a hard external deadline, readiness/result handshake, and unconditional kill and reap on failure. Keep recording/rejecting outcome assertions, and ensure both due and worker paths can fail within the independent bound. A timeout around only the async await is insufficient while the owned Tokio runtime still waits for a stuck spawn_blocking task." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

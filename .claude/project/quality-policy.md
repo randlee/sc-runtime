@@ -112,17 +112,17 @@ One convention for every phase. Everything is lower case.
 
 | Thing | Form | Example |
 |---|---|---|
-| Phase id | next unused letter pair, lower case | `bc` |
-| Sprint id | `<phase>-<n>`, `n` from 1 | `bc-4` |
-| Plan directory | `docs/plans/phase-<phase>/` | `docs/plans/phase-bc/` |
-| Phase plan | `docs/plans/phase-<phase>/phase-<phase>-plan.md` | `phase-bc-plan.md` |
-| Sprint doc | `docs/plans/phase-<phase>/sprint-<phase>-<n>-<slug>.md` | `sprint-bc-4-task-ledger-writer.md` |
-| Plan branch | `plan/phase-<phase>`, PR to `develop` | `plan/phase-bc` |
+| Phase id | next unused single letter, lower case | `c` |
+| Sprint id | `<phase>-<n>`, `n` from 1 | `c-4` |
+| Plan directory | `docs/plans/phase-<phase>/` | `docs/plans/phase-c/` |
+| Phase plan | `docs/plans/phase-<phase>/phase-<phase>-plan.md` | `phase-c-plan.md` |
+| Sprint doc | `docs/plans/phase-<phase>/sprint-<phase>-<n>-<slug>.md` | `sprint-c-4-runtime-ecosystem-release.md` |
+| Plan branch | `plan/phase-<phase>`, PR to `develop` | `plan/phase-c` |
 | Plan amendment branch | `plan/phase-<phase>-<slug>`, PR to `develop` | `plan/phase-b-monty-extension` |
-| Phase branch | `integrate/phase-<phase>`, cut from `develop` | `integrate/phase-bc` |
+| Phase branch | `integrate/phase-<phase>`, cut from `develop` | `integrate/phase-c` |
 | Phase track branch | `integrate/phase-<phase>-<track>`, cut from the phase branch; sprint PRs target it | `integrate/phase-b-monty` |
-| Sprint branch | `sprint/<phase>-<n>-<slug>` | `sprint/bc-4-task-ledger-writer` |
-| Fix layer | `fix/<phase>-<n>-<slug>`; phase-level: `fix/<phase>-<slug>` | `fix/bc-4-qa1` |
+| Sprint branch | `sprint/<phase>-<n>-<slug>` | `sprint/c-4-runtime-ecosystem-release` |
+| Fix layer | `fix/<phase>-<n>-<slug>`; phase-level: `fix/<phase>-<slug>` | `fix/c-4-qa1` |
 
 - Phase plans never live outside `docs/plans/phase-<phase>/`.
 - Every sprint declares its branch in `.sprints/` (`triage:branch`). Tools
@@ -136,4 +136,6 @@ an interface, its compatibility rule, evidence paths, and approval authority,
 
 ## Repository Exceptions
 
-Phase ids `a` and `b` are single letters. Later phases use the letter-pair form in Plan Naming.
+Phase ids progress as sequential single letters: `a`, `b`, `c`, then the next
+unused letter. A phase uses its declared identifier consistently across its
+plan paths, branch names, sprint identifiers, triage records, and QA evidence.

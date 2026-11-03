@@ -205,6 +205,7 @@ class WizardContractTests(unittest.TestCase):
             "wizard-page.css",
             "run_wizard.py",
             "new_project.py",
+            "answers.schema.json",
         }
         hits = [path for path in (ROOT / "template").rglob("*") if path.name in banned]
         self.assertEqual(hits, [])

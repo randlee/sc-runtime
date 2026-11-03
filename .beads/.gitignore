@@ -27,3 +27,6 @@ backup/
 *.db-shm
 db.sqlite
 bd.db
+
+# Passive local issue export; live records synchronize through Dolt.
+/issues.jsonl

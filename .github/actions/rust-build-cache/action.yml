@@ -1,0 +1,58 @@
+name: Rust build cache
+description: Partition dependency and build artifacts by job coverage and toolchains.
+inputs:
+  namespace:
+    description: Job, fixture, target and feature coverage partition
+    required: true
+  toolchains:
+    description: Exact Rust versions used by this job
+    required: true
+  target:
+    description: Cargo target directory within this job's private cache
+    default: generated
+  compose:
+    description: Install the pinned generation tool
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - name: Select private build directories
+      shell: bash
+      env:
+        TARGET_PARTITION: ${{ inputs.target }}
+      run: |
+        set -euo pipefail
+        echo "CARGO_TARGET_DIR=$RUNNER_TEMP/cargo-target/$TARGET_PARTITION" >> "$GITHUB_ENV"
+        echo "SC_RUNTIME_GENERATED_TARGET_DIR=$RUNNER_TEMP/cargo-target/generated" >> "$GITHUB_ENV"
+        echo "CARGO_INCREMENTAL=0" >> "$GITHUB_ENV"
+    # Never cache Cargo credentials, generated source, databases or tool venvs.
+    # A commit suffix lets successful runs refresh immutable caches; the prefix
+    # reuses dependencies on source-only changes. Cargo validates fingerprints.
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry/index
+          ~/.cargo/registry/cache
+          ~/.cargo/registry/src
+          ~/.cargo/git/db
+          ${{ runner.temp }}/cargo-target
+        key: rust-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.namespace }}-${{ inputs.toolchains }}-${{ hashFiles('Cargo.lock', '**/Cargo.toml', 'sc-lint.toml') }}-${{ github.sha }}
+        restore-keys: |
+          rust-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.namespace }}-${{ inputs.toolchains }}-${{ hashFiles('Cargo.lock', '**/Cargo.toml', 'sc-lint.toml') }}-
+    - uses: actions/cache@v4
+      if: inputs.compose == 'true'
+      id: compose-cache
+      with:
+        path: ${{ runner.temp }}/sc-compose
+        key: sc-compose-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.toolchains }}-1.7.0-locked
+    - name: Install sc-compose
+      if: inputs.compose == 'true' && steps.compose-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: cargo install sc-compose --version '=1.7.0' --locked --root "$RUNNER_TEMP/sc-compose"
+    - name: Verify sc-compose and expose binary
+      if: inputs.compose == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        "$RUNNER_TEMP/sc-compose/bin/sc-compose" --version | grep -Fx 'sc-compose 1.7.0'
+        echo "$RUNNER_TEMP/sc-compose/bin" >> "$GITHUB_PATH"

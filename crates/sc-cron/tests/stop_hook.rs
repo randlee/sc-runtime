@@ -152,6 +152,20 @@ mod python {
             .collect()
     }
 
+    async fn failed_stop_reply(fixture: &Fixture, schedule: &sc_cron::Schedule, needle: &str) {
+        let id = schedule.id;
+        fixture
+            .store
+            .wait_write("a malformed stop reply", |write| {
+                matches!(write, common::Write::Run { id: run, outcome: RunOutcome::Failed(why), changed: true }
+                    if *run == id
+                        && why.starts_with("stop check: HOST_REPLY:")
+                        && why.contains(needle)
+                        && why.contains("Return an object with string \"action\""))
+            })
+            .await;
+    }
+
     async fn failed_stop_check(fixture: &Fixture, schedule: &sc_cron::Schedule, needle: &str) {
         let id = schedule.id;
         fixture
@@ -246,7 +260,7 @@ mod python {
             let schedule = fixture.start(fixture.python_spec("garbled", stub.module()));
             let worker = fixture.worker(common::idle_job()).await;
             fixture.step(60).await;
-            failed_stop_check(&fixture, &schedule, needle).await;
+            failed_stop_reply(&fixture, &schedule, needle).await;
             shutdown(worker).await;
             let row = fixture.row(&schedule);
             assert!(row.is_active() && row.enabled, "{reply:?}");

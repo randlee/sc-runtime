@@ -16,6 +16,10 @@ constructor = "none"
 [composition]
 roots = ["AppName", "load", "Loader", "ConfigError"]
 
+# Production tool-package/import exclusion (normal + build, all production
+# features) is checked by the production-tool-boundary companion. It resolves
+# aliases/package identity and checks external/transitive cargo trees too;
+# dev-only test/benchmark references remain permitted (REQ-RUN-0005).
 [dependencies]
 allowed_dependents = []
 allowed_dependencies = ["serde", "serde_json"]

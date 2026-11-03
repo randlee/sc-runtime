@@ -29,8 +29,8 @@ use std::sync::mpsc::{Receiver, RecvTimeoutError};
 use std::time::{Duration, Instant};
 
 use sc_cron::{
-    Generation, ManualClock, RunOutcome, ScheduleId, ScheduleSpec, ScheduleStore, Scheduler,
-    SeqJitter, SqliteScheduleStore, Timestamp,
+    Generation, ManualClock, RunOutcome, ScheduleId, ScheduleLimits, ScheduleSpec, ScheduleStore,
+    Scheduler, SeqJitter, SqliteScheduleStore, Timestamp,
 };
 
 const PEER_FLAG: &str = "--two-process-peer";
@@ -46,7 +46,7 @@ fn scheduler(path: &Path) -> Shared {
         "2026-10-25T00:00:00Z".parse().expect("timestamp"),
     ));
     Scheduler::new(
-        Arc::new(SqliteScheduleStore::open(path).expect("open")),
+        Arc::new(SqliteScheduleStore::open(path, ScheduleLimits::default()).expect("open")),
         clock,
         Arc::new(SeqJitter::default()),
     )

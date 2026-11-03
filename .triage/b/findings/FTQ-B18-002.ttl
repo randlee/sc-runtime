@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-18:qa1:FTQ-B18-002>
+  qa:id "FTQ-B18-002" ;
+  qa:sprint "b-18" ;
+  qa:qaPass "qa-b-18-1" ;
+  qa:severity "Important" ;
+  qa:status "fixed" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:commit "e353c18c7441ab66e1061fae1c33cde3cc500225" ;
+  qa:location "template/crates/daemon/tests/cron_environment.rs:215" ;
+  qa:issue "The test leaves the initial Python and Monty recurring schedules active, then expects exactly one run for the denied-policy case and again for redaction. All rows use SystemClock and the once-per-minute expression. If execution crosses the next minute between run_due calls, prior schedules are due again and the later runs.len()==1 assertion fails; prior callbacks may also run again. No production defect is needed to trigger this intermittent failure." ;
+  qa:recommendation "Retire/disable each already-verified schedule before adding the next case, or isolate denied and redaction cases in separate scheduler/store roots. A fixed injected clock is another deterministic option if the generated composition API supports it. Do not widen timeouts, retry the test, or filter unexpected runs away." .

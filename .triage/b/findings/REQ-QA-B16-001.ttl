@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-16:REQ-QA-B16-001>
+  qa:id "REQ-QA-B16-001" ;
+  qa:sprint "b-16" ;
+  qa:qaPass "qa-b-16-1" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "326a7a6a10e26ceb071e60cd02b7a1ef30800732" ;
+  qa:location "scripts/new_project.py:498:0" ;
+  qa:issue "B-16 modifies the generation driver and template CI workflow to add and exercise --development-observability, but its requirements list omits REQ-RUN-0501 (generation-driver pipeline) and REQ-RUN-0701 (template CI matrix workflow). The behavior remains compliant and concrete validation exists; this is a sprint-plan coverage failure because both requirement subjects are directly modified deliverables." ;
+  qa:recommendation "Add REQ-RUN-0501 and REQ-RUN-0701 to the B-16 requirements list and trace them to the generation-mode and workflow work/acceptance criteria, then rerun requirements-plan QA. No implementation change is indicated by this finding." .

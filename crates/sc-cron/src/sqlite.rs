@@ -5,24 +5,21 @@
 //! standalone default; a caller may supply any other [`ScheduleStore`]. On open it sets the
 //! busy timeout first, then WAL, then checks the schema version in
 //! `PRAGMA user_version`. A fresh file (version 0, no tables) gets the
-//! schema and version [`SCHEMA_VERSION`]. A file at version 1, which lacks the
-//! `enabled` column, gains it in place with every schedule enabled
-//! (REQ-CRON-0014), then gains the hook columns. A file at version 2 gains
-//! the hook columns, defaulting every row to a Rust hook. A file at version 3
-//! gains `hook_source` and the three-way `hook_kind` check in a rebuild step.
-//! Any other `user_version`, or a file that already holds unrelated tables, is
-//! refused with [`StoreErrorKind::SchemaMismatch`].
+//! complete first-release schema and version [`SCHEMA_VERSION`]. Existing
+//! databases must match its semantic columns, defaults, constraints and indexes.
+//! Incompatible development databases are rejected without migration or data loss.
 //!
-//! `create` runs as one immediate transaction, so the active-name check and
-//! the write cannot interleave with another writer; so do `set_enabled_many`
-//! and `replace_and_set_enabled`, which change several rows at once
-//! (REQ-CRON-0017). Run-state writes are
+//! `create` runs as one immediate transaction, so the active-name check, the
+//! embedder row-limit check, and the write cannot interleave with another
+//! writer; so do `set_enabled_many` and `replace_and_set_enabled`, which
+//! change several rows at once (REQ-CRON-0017). Run-state writes are
 //! guarded by `id`, `generation` and `ended_at IS NULL`. Table CHECKs keep
 //! `next_run_at` set exactly while a schedule is active and `stop_reason`
 //! set exactly once it has ended, and repeat the size limits. Timestamps
 //! become text only here, in the fixed-width form [`Timestamp`] displays.
 
 use std::collections::HashSet;
+use std::num::NonZeroUsize;
 use std::path::Path;
 use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
@@ -32,63 +29,23 @@ use rusqlite::{
 };
 
 use crate::limits::{
-    MAX_EXPR_LEN, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, encode_payload,
+    MAX_EXPR_LEN, MAX_HOOK_SOURCE_BYTES, MAX_NAME_LEN, MAX_PAYLOAD_BYTES, ScheduleLimits,
+    encode_payload,
 };
 use crate::{
     CronError, CronExpr, Generation, HookTarget, NewSchedule, RunOutcome, RunTimeout, Schedule,
     ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore, StoreError, StoreErrorKind, Timestamp,
 };
 
+use crate::MAX_ENV_DOCUMENT_BYTES;
+
 const TABLE: &str = "sc_cron_schedule";
 
-/// The `PRAGMA user_version` this code writes. Version 1, the schema before
-/// the `enabled` column, and version 2, the schema before the hook columns,
-/// are upgraded in place on open.
-pub const SCHEMA_VERSION: i64 = 4;
+/// Complete first-release schema. Unreleased development schemas are not migrated.
+pub const SCHEMA_VERSION: i64 = 1;
 
-/// Adds the `enabled` column to a version 1 table; every row stays enabled.
-const ADD_ENABLED: &str = "ALTER TABLE sc_cron_schedule
-    ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1))";
-
-/// Adds the hook columns. Existing rows are Rust hooks.
-const ADD_HOOK: &str = "ALTER TABLE sc_cron_schedule
-    ADD COLUMN hook_kind TEXT NOT NULL DEFAULT 'rust';
-ALTER TABLE sc_cron_schedule
-    ADD COLUMN hook_module TEXT NOT NULL DEFAULT ''";
-
-/// Rebuilds the v1-v3 table so SQLite enforces the expanded hook kind check.
-/// SQLite cannot add a CHECK constraint to the v3 `hook_kind` column in place.
-const REBUILD_HOOK_TABLE: &str = "ALTER TABLE sc_cron_schedule RENAME TO sc_cron_schedule_v3;
-CREATE TABLE sc_cron_schedule (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    generation   INTEGER NOT NULL CHECK (generation BETWEEN 1 AND 4294967295),
-    name         TEXT    NOT NULL UNIQUE CHECK (length(CAST(name AS BLOB)) BETWEEN 1 AND 128),
-    expr         TEXT    NOT NULL CHECK (length(CAST(expr AS BLOB)) <= 256),
-    timeout_ms   INTEGER NOT NULL CHECK (timeout_ms > 0),
-    jitter_ms    INTEGER NOT NULL CHECK (jitter_ms >= 0),
-    payload      TEXT    NOT NULL CHECK (length(CAST(payload AS BLOB)) <= 65536),
-    created_at   TEXT    NOT NULL,
-    next_run_at  TEXT,
-    last_run_at  TEXT,
-    last_outcome TEXT,
-    ended_at     TEXT,
-    stop_reason  TEXT,
-    enabled      INTEGER NOT NULL DEFAULT 1 CHECK (enabled IN (0, 1)),
-    hook_kind    TEXT    NOT NULL DEFAULT 'rust' CHECK (hook_kind IN ('rust', 'python', 'monty')),
-    hook_module  TEXT    NOT NULL DEFAULT '',
-    hook_source  TEXT    NOT NULL DEFAULT '' CHECK (length(CAST(hook_source AS BLOB)) <= 65536),
-    CHECK ((ended_at IS NULL) = (next_run_at IS NOT NULL)),
-    CHECK ((ended_at IS NULL) = (stop_reason IS NULL))
-);
-INSERT INTO sc_cron_schedule
-    (id, generation, name, expr, timeout_ms, jitter_ms, payload, created_at,
-     next_run_at, last_run_at, last_outcome, ended_at, stop_reason, enabled,
-     hook_kind, hook_module, hook_source)
-SELECT id, generation, name, expr, timeout_ms, jitter_ms, payload, created_at,
-       next_run_at, last_run_at, last_outcome, ended_at, stop_reason, enabled,
-       hook_kind, hook_module, ''
-FROM sc_cron_schedule_v3;
-DROP TABLE sc_cron_schedule_v3";
+#[path = "sqlite_schema.rs"]
+mod schema_check;
 
 fn schema() -> String {
     format!(
@@ -113,6 +70,8 @@ fn schema() -> String {
     hook_module  TEXT    NOT NULL DEFAULT '',
     hook_source  TEXT    NOT NULL DEFAULT ''
                  CHECK (length(CAST(hook_source AS BLOB)) <= {MAX_HOOK_SOURCE_BYTES}),
+    hook_environment TEXT NOT NULL DEFAULT '{{\"dotenv\":[],\"variables\":{{}}}}'
+                 CHECK (length(CAST(hook_environment AS BLOB)) <= {MAX_ENV_DOCUMENT_BYTES}),
     CHECK ((ended_at IS NULL) = (next_run_at IS NOT NULL)),
     CHECK ((ended_at IS NULL) = (stop_reason IS NULL))
 );"
@@ -121,7 +80,7 @@ fn schema() -> String {
 
 const COLUMNS: &str = "id, generation, name, expr, timeout_ms, jitter_ms, payload, created_at, \
      next_run_at, last_run_at, last_outcome, ended_at, stop_reason, enabled, \
-     hook_kind, hook_module, hook_source";
+     hook_kind, hook_module, hook_source, hook_environment";
 
 /// How long a writer waits for another connection's lock on the same file.
 const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
@@ -131,14 +90,14 @@ const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 /// # Examples
 ///
 /// ```
-/// use sc_cron::{ScheduleStore, SqliteScheduleStore};
+/// use sc_cron::{ScheduleLimits, ScheduleStore, SqliteScheduleStore};
 ///
-/// let store = SqliteScheduleStore::open_in_memory()?;
+/// let store = SqliteScheduleStore::open_in_memory(ScheduleLimits::default())?;
 /// assert!(store.list_active()?.is_empty());
 /// # Ok::<(), sc_cron::CronError>(())
 /// ```
-#[derive(Debug)]
 pub struct SqliteScheduleStore {
+    logger: sc_command::observability::SharedCanonicalLog,
     // A rusqlite `Connection` is `Send` but not `Sync`, and the port's
     // methods take `&self` from any thread, so the one connection sits
     // behind a mutex. Calls are short single statements or one transaction.
@@ -146,17 +105,45 @@ pub struct SqliteScheduleStore {
     // Row ids already warned about as corrupt, so a bad row is reported once
     // per store rather than on every worker reload.
     warned: Mutex<HashSet<i64>>,
+    /// Embedder row ceiling. `None` does not enforce a count (ADR-RUN-0014).
+    limits: ScheduleLimits,
+}
+
+impl std::fmt::Debug for SqliteScheduleStore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SqliteScheduleStore")
+            .field("limits", &self.limits)
+            .field("service", self.logger.service_name())
+            .finish_non_exhaustive()
+    }
 }
 
 impl SqliteScheduleStore {
     /// Opens or creates the sc-cron database at `path`.
+    ///
+    /// `limits` is enforced in the same transaction as an insert of a new
+    /// name. [`ScheduleLimits::default`] does not cap the table. The value
+    /// stays in this process and is not written to the database. Every
+    /// writer of this file must pass the same `limits`.
     ///
     /// # Errors
     ///
     /// [`CronError::Store`]: [`StoreErrorKind::Unavailable`] if the file
     /// cannot be opened, [`StoreErrorKind::SchemaMismatch`] if it holds an
     /// unknown schema version or another store's tables.
-    pub fn open(path: impl AsRef<Path>) -> Result<Self, CronError> {
+    pub fn open(path: impl AsRef<Path>, limits: ScheduleLimits) -> Result<Self, CronError> {
+        Self::open_with_logger(path, limits, crate::noop_logger())
+    }
+
+    /// Opens a schedule database with a best-effort canonical logger.
+    ///
+    /// # Errors
+    /// Returns the same store errors as `open`.
+    pub fn open_with_logger(
+        path: impl AsRef<Path>,
+        limits: ScheduleLimits,
+        logger: sc_command::observability::SharedCanonicalLog,
+    ) -> Result<Self, CronError> {
         let connection = Connection::open(path.as_ref())
             .map_err(|error| store_error("failed to open database", error))?;
         connection
@@ -165,28 +152,41 @@ impl SqliteScheduleStore {
         connection
             .pragma_update(None, "journal_mode", "WAL")
             .map_err(|error| store_error("failed to enable WAL", error))?;
-        Self::with_connection(connection)
+        Self::with_connection(connection, limits, logger)
     }
 
     /// Opens a private in-memory database, for tests and ephemeral use.
     ///
+    /// `limits` is the same ceiling [`SqliteScheduleStore::open`] stores.
+    ///
     /// # Errors
     ///
     /// [`CronError::Store`] if SQLite cannot allocate the database.
-    pub fn open_in_memory() -> Result<Self, CronError> {
+    pub fn open_in_memory(limits: ScheduleLimits) -> Result<Self, CronError> {
         let connection = Connection::open_in_memory()
             .map_err(|error| store_error("failed to open database", error))?;
         connection
             .busy_timeout(BUSY_TIMEOUT)
             .map_err(|error| store_error("failed to set busy timeout", error))?;
-        Self::with_connection(connection)
+        Self::with_connection(connection, limits, crate::noop_logger())
     }
 
-    fn with_connection(mut connection: Connection) -> Result<Self, CronError> {
+    /// Returns the row ceiling this store was opened with.
+    pub fn limits(&self) -> ScheduleLimits {
+        self.limits
+    }
+
+    fn with_connection(
+        mut connection: Connection,
+        limits: ScheduleLimits,
+        logger: sc_command::observability::SharedCanonicalLog,
+    ) -> Result<Self, CronError> {
         init_schema(&mut connection)?;
         Ok(Self {
             connection: Mutex::new(connection),
+            logger,
             warned: Mutex::new(HashSet::new()),
+            limits,
         })
     }
 
@@ -198,8 +198,25 @@ impl SqliteScheduleStore {
                 return;
             }
         }
-        tracing::warn!(subsystem = "sc_cron", action = "skip_corrupt_row", id = ?id,
-            name = ?name, %error, "skipping corrupt schedule row; other schedules keep running");
+        let mut fields = serde_json::Map::new();
+        fields.insert("error".into(), error.to_string().into());
+        if let Some(id) = id {
+            fields.insert("schedule_id".into(), id.into());
+        }
+        if let Some(name) = name {
+            fields.insert("schedule_name".into(), name.into());
+        }
+        if let Some(event) = crate::component_event(
+            self.logger.service_name().clone(),
+            "cron.store",
+            "row.corrupt",
+            sc_observability_types::Level::Warn,
+            "failed",
+            Some("CORRUPT_SCHEDULE_ROW"),
+            fields,
+        ) {
+            let _ = self.logger.emit(event);
+        }
     }
 
     fn lock(&self) -> MutexGuard<'_, Connection> {
@@ -267,40 +284,7 @@ fn init_schema(connection: &mut Connection) -> Result<(), CronError> {
                 .pragma_update(None, "user_version", SCHEMA_VERSION)
                 .map_err(|error| store_error("failed to set schema version", error))?;
         }
-        SCHEMA_VERSION => {}
-        1 => {
-            transaction
-                .execute_batch(ADD_ENABLED)
-                .map_err(|error| store_error("failed to add the enabled column", error))?;
-            transaction
-                .execute_batch(ADD_HOOK)
-                .map_err(|error| store_error("failed to add the hook columns", error))?;
-            transaction
-                .execute_batch(REBUILD_HOOK_TABLE)
-                .map_err(|error| store_error("failed to rebuild the hook table", error))?;
-            transaction
-                .pragma_update(None, "user_version", SCHEMA_VERSION)
-                .map_err(|error| store_error("failed to set schema version", error))?;
-        }
-        2 => {
-            transaction
-                .execute_batch(ADD_HOOK)
-                .map_err(|error| store_error("failed to add the hook columns", error))?;
-            transaction
-                .execute_batch(REBUILD_HOOK_TABLE)
-                .map_err(|error| store_error("failed to rebuild the hook table", error))?;
-            transaction
-                .pragma_update(None, "user_version", SCHEMA_VERSION)
-                .map_err(|error| store_error("failed to set schema version", error))?;
-        }
-        3 => {
-            transaction
-                .execute_batch(REBUILD_HOOK_TABLE)
-                .map_err(|error| store_error("failed to rebuild the hook table", error))?;
-            transaction
-                .pragma_update(None, "user_version", SCHEMA_VERSION)
-                .map_err(|error| store_error("failed to set schema version", error))?;
-        }
+        SCHEMA_VERSION => schema_check::validate(&transaction)?,
         other => {
             return Err(StoreError::new(
                 StoreErrorKind::SchemaMismatch,
@@ -315,6 +299,10 @@ fn init_schema(connection: &mut Connection) -> Result<(), CronError> {
 }
 
 impl ScheduleStore for SqliteScheduleStore {
+    fn limits(&self) -> ScheduleLimits {
+        self.limits
+    }
+
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         let columns = Columns::new(schedule, created_at)?;
         let mut connection = self.lock();
@@ -340,10 +328,14 @@ impl ScheduleStore for SqliteScheduleStore {
                 return Err(CronError::AlreadyActive(schedule.spec.name.clone()));
             }
             Some((id, generation, false)) => {
+                reserve_new_row(self.limits, &transaction)?;
                 columns.rewrite(&transaction, id, generation, true)?;
                 id
             }
-            None => columns.insert(&transaction, schedule.spec.name.as_str(), true)?,
+            None => {
+                reserve_new_row(self.limits, &transaction)?;
+                columns.insert(&transaction, schedule.spec.name.as_str(), true)?
+            }
         };
         let row = select_one(&transaction, id)?.ok_or_else(|| {
             StoreError::new(
@@ -365,20 +357,24 @@ impl ScheduleStore for SqliteScheduleStore {
     }
 
     fn list_active(&self) -> Result<Vec<Schedule>, CronError> {
-        let connection = self.lock();
-        let mut statement = connection
-            .prepare(&format!(
-                "SELECT {COLUMNS} FROM sc_cron_schedule WHERE ended_at IS NULL
-                 ORDER BY created_at, id"
-            ))
-            .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?;
-        let rows = statement
-            .query_map([], |row| {
-                // Keep the id even when the rest of the row cannot be read.
-                Ok(RawRow::read(row).map_err(|error| (row.get::<_, i64>(0).ok(), error)))
-            })
-            .and_then(Iterator::collect::<Result<Vec<_>, _>>)
-            .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?;
+        // Own the raw rows, then release both the statement and connection
+        // before decoding can invoke an application-owned logging receiver.
+        let rows = {
+            let connection = self.lock();
+            let mut statement = connection
+                .prepare(&format!(
+                    "SELECT {COLUMNS} FROM sc_cron_schedule WHERE ended_at IS NULL
+                     ORDER BY created_at, id"
+                ))
+                .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?;
+            statement
+                .query_map([], |row| {
+                    // Keep the id even when the rest of the row cannot be read.
+                    Ok(RawRow::read(row).map_err(|error| (row.get::<_, i64>(0).ok(), error)))
+                })
+                .and_then(Iterator::collect::<Result<Vec<_>, _>>)
+                .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?
+        };
         let mut schedules = Vec::with_capacity(rows.len());
         for row in rows {
             let (id, name, error) = match row {
@@ -524,20 +520,35 @@ impl ScheduleStore for SqliteScheduleStore {
             .map_err(|error| store_error("failed to begin transaction", error))?;
         let existing = transaction
             .query_row(
-                "SELECT id, generation FROM sc_cron_schedule WHERE name = ?1",
+                "SELECT id, generation, ended_at IS NULL FROM sc_cron_schedule WHERE name = ?1",
                 [name.as_str()],
-                |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)),
+                |row| {
+                    Ok((
+                        row.get::<_, i64>(0)?,
+                        row.get::<_, i64>(1)?,
+                        row.get::<_, bool>(2)?,
+                    ))
+                },
             )
             .optional()
             .map_err(|error| store_error(&format!("failed to read {TABLE}"), error))?;
-        // Active or ended, the row is rewritten in place with its flag; a
-        // new name is inserted with it. No write sets another flag first.
+        // An active name is rewritten in place and does not change the row
+        // count. An ended name or a new name claims a slot. No write sets
+        // another flag first.
         let id = match existing {
-            Some((id, generation)) => {
+            Some((id, generation, true)) => {
                 columns.rewrite(&transaction, id, generation, enabled)?;
                 id
             }
-            None => columns.insert(&transaction, name.as_str(), enabled)?,
+            Some((id, generation, false)) => {
+                reserve_new_row(self.limits, &transaction)?;
+                columns.rewrite(&transaction, id, generation, enabled)?;
+                id
+            }
+            None => {
+                reserve_new_row(self.limits, &transaction)?;
+                columns.insert(&transaction, name.as_str(), enabled)?
+            }
         };
         if !set_flags(&transaction, flags)? {
             return Ok(None);
@@ -552,6 +563,49 @@ impl ScheduleStore for SqliteScheduleStore {
             .commit()
             .map_err(|error| store_error("failed to commit", error))?;
         Ok(Some(row))
+    }
+}
+
+/// Rejects a write that would add a non-ended row past `limits`.
+///
+/// Enabled and disabled rows both count. An ended row does not. The check
+/// runs in the caller's immediate transaction, before the insert, so two
+/// writers that enforce the same ceiling cannot both pass it (ADR-RUN-0014).
+/// The ceiling is the [`ScheduleLimits`] this process opened with. It is not
+/// stored in the database. A finite cap is always compared; a cap above
+/// [`i64::MAX`] is not treated as unlimited.
+fn reserve_new_row(limits: ScheduleLimits, transaction: &Transaction<'_>) -> Result<(), CronError> {
+    let Some(limit) = limits.max_schedule_rows else {
+        return Ok(());
+    };
+    let count: i64 = transaction
+        .query_row(
+            "SELECT COUNT(*) FROM sc_cron_schedule WHERE ended_at IS NULL",
+            [],
+            |row| row.get(0),
+        )
+        .map_err(|error| store_error(&format!("failed to count {TABLE}"), error))?;
+    if row_count_reached(count, limit) {
+        return Err(CronError::InvalidSpec(format!(
+            "schedule row limit is {limit}; current row count is {count}"
+        )));
+    }
+    Ok(())
+}
+
+/// Whether `count` is at or above the finite cap `limit`.
+///
+/// `count` is SQLite `COUNT(*)`, a signed integer. It is widened to `u64`
+/// and then compared as `usize` against `limit`. A cap that does not fit in
+/// `i64` stays a cap. A count that does not fit in `u64` or `usize` is
+/// already past every finite cap this process can name.
+fn row_count_reached(count: i64, limit: NonZeroUsize) -> bool {
+    let Ok(count) = u64::try_from(count) else {
+        return true;
+    };
+    match usize::try_from(count) {
+        Ok(count) => count >= limit.get(),
+        Err(_) => true,
     }
 }
 
@@ -590,11 +644,13 @@ struct Columns {
     hook_kind: String,
     hook_module: String,
     hook_source: String,
+    hook_environment: String,
 }
 
 impl Columns {
     fn new(schedule: &NewSchedule, created_at: Timestamp) -> Result<Self, CronError> {
         let spec = &schedule.spec;
+        spec.validate_environment()?;
         let (hook_kind, hook_module, hook_source) = spec.hook.stored();
         Ok(Self {
             expr: spec.expr.as_str().to_owned(),
@@ -606,6 +662,7 @@ impl Columns {
             hook_kind: hook_kind.to_owned(),
             hook_module: hook_module.to_owned(),
             hook_source: hook_source.to_owned(),
+            hook_environment: spec.environment.encode()?,
         })
     }
 
@@ -619,8 +676,8 @@ impl Columns {
             .execute(
                 "INSERT INTO sc_cron_schedule
                     (generation, name, expr, timeout_ms, jitter_ms, payload,
-                     created_at, next_run_at, enabled, hook_kind, hook_module, hook_source)
-                 VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+                     created_at, next_run_at, enabled, hook_kind, hook_module, hook_source, hook_environment)
+                 VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
                 params![
                     name,
                     self.expr,
@@ -633,6 +690,7 @@ impl Columns {
                     self.hook_kind,
                     self.hook_module,
                     self.hook_source,
+                    self.hook_environment,
                 ],
             )
             .map_err(|error| store_error(&format!("failed to insert {TABLE}"), error))?;
@@ -665,7 +723,7 @@ impl Columns {
                     jitter_ms = ?5, payload = ?6, created_at = ?7, next_run_at = ?8,
                     last_run_at = NULL, last_outcome = NULL, ended_at = NULL,
                     stop_reason = NULL, enabled = ?9, hook_kind = ?10, hook_module = ?11,
-                    hook_source = ?12
+                    hook_source = ?12, hook_environment = ?13
                  WHERE id = ?1",
                 params![
                     id,
@@ -680,6 +738,7 @@ impl Columns {
                     self.hook_kind,
                     self.hook_module,
                     self.hook_source,
+                    self.hook_environment,
                 ],
             )
             .map_err(|error| store_error(&format!("failed to restart {TABLE} id {id}"), error))?;
@@ -751,6 +810,7 @@ struct RawRow {
     hook_kind: String,
     hook_module: String,
     hook_source: String,
+    hook_environment: String,
 }
 
 impl RawRow {
@@ -773,6 +833,7 @@ impl RawRow {
             hook_kind: row.get(14)?,
             hook_module: row.get(15)?,
             hook_source: row.get(16)?,
+            hook_environment: row.get(17)?,
         })
     }
 
@@ -803,7 +864,7 @@ impl RawRow {
             })
             .transpose()?;
         let timeout = duration(self.timeout_ms, "timeout_ms")?;
-        Ok(Schedule {
+        let schedule = Schedule {
             id: ScheduleId::new(
                 u64::try_from(id).map_err(|_negative| corrupt("id is negative".into()))?,
             ),
@@ -816,6 +877,8 @@ impl RawRow {
                 expr: CronExpr::parse(&self.expr).map_err(|error| field("expr", error))?,
                 timeout: RunTimeout::new(timeout).map_err(|error| field("timeout_ms", error))?,
                 payload,
+                environment: crate::HookEnvironment::decode(&self.hook_environment)
+                    .map_err(|_| corrupt("invalid hook environment".into()))?,
                 hook: HookTarget::from_stored(
                     &self.hook_kind,
                     &self.hook_module,
@@ -835,13 +898,114 @@ impl RawRow {
                 1 => true,
                 other => return Err(corrupt(format!("enabled is {other}, not 0 or 1"))),
             },
-        })
+        };
+        schedule
+            .spec
+            .validate_environment()
+            .map_err(|_| corrupt("invalid hook environment pairing".into()))?;
+        Ok(schedule)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    struct ReentrantReceiver {
+        service: sc_observability_types::ServiceName,
+        store: Mutex<std::sync::Weak<SqliteScheduleStore>>,
+        callbacks: std::sync::atomic::AtomicUsize,
+    }
+
+    impl ReentrantReceiver {
+        fn reenter_without_waiting_on_a_held_lock(&self) {
+            let store = self.store.lock().unwrap().upgrade().unwrap();
+            // A pre-fix regression fails here immediately instead of hanging
+            // while trying to reenter the non-reentrant connection mutex.
+            drop(
+                store
+                    .connection
+                    .try_lock()
+                    .expect("callback must not own the connection"),
+            );
+            let listed = store.list_active().expect("receiver may reenter the store");
+            assert_eq!(listed.len(), 1);
+            assert_eq!(listed[0].spec.name.as_str(), "good");
+            self.callbacks
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+    }
+
+    impl sc_command::observability::CanonicalLog for ReentrantReceiver {
+        fn service_name(&self) -> &sc_observability_types::ServiceName {
+            self.reenter_without_waiting_on_a_held_lock();
+            &self.service
+        }
+
+        fn emit(
+            &self,
+            _event: sc_observability_types::LogEvent,
+        ) -> Result<(), sc_observability_types::v2::EventError> {
+            self.reenter_without_waiting_on_a_held_lock();
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn corrupt_row_callbacks_can_reenter_after_query_guards_drop() {
+        use std::sync::{
+            Arc, Weak,
+            atomic::{AtomicUsize, Ordering},
+        };
+        let root = tempfile::tempdir().unwrap();
+        let receiver = Arc::new(ReentrantReceiver {
+            service: sc_observability_types::ServiceName::new("reentrant-test").unwrap(),
+            store: Mutex::new(Weak::new()),
+            callbacks: AtomicUsize::new(0),
+        });
+        let store = Arc::new(
+            SqliteScheduleStore::open_with_logger(
+                root.path().join("cron.db"),
+                ScheduleLimits::default(),
+                receiver.clone(),
+            )
+            .unwrap(),
+        );
+        let now = Timestamp::from_datetime(chrono::Utc::now());
+        for name in ["bad", "good"] {
+            store
+                .create(
+                    &NewSchedule {
+                        spec: ScheduleSpec::new(
+                            name,
+                            "* * * * *",
+                            Duration::from_secs(1),
+                            serde_json::json!({}),
+                        )
+                        .unwrap(),
+                        jitter: Duration::ZERO,
+                        next_run_at: now,
+                    },
+                    now,
+                )
+                .unwrap();
+        }
+        store
+            .lock()
+            .execute(
+                "UPDATE sc_cron_schedule SET payload='not json' WHERE name='bad'",
+                [],
+            )
+            .unwrap();
+        *receiver.store.lock().unwrap() = Arc::downgrade(&store);
+        for _ in 0..2 {
+            let listed = store.list_active().unwrap();
+            assert_eq!(listed.len(), 1);
+            assert_eq!(listed[0].spec.name.as_str(), "good");
+        }
+        // One warning, with both service_name and emit safely reentering.
+        assert_eq!(receiver.callbacks.load(Ordering::Relaxed), 2);
+    }
 
     #[test]
     fn outcomes_round_trip_through_their_stored_text() {
@@ -874,6 +1038,29 @@ mod tests {
         assert_eq!(kind_of(ffi::SQLITE_FULL), StoreErrorKind::Unavailable);
         assert_eq!(kind_of(ffi::SQLITE_READONLY), StoreErrorKind::Unavailable);
         assert_eq!(kind_of(ffi::SQLITE_CONSTRAINT), StoreErrorKind::Other);
+    }
+
+    #[test]
+    fn a_finite_cap_above_i64_max_is_compared() {
+        let above = u64::try_from(i64::MAX).expect("i64::MAX") + 1;
+        let Some(cap) = usize::try_from(above).ok().and_then(NonZeroUsize::new) else {
+            // A 32-bit `usize` cannot name a cap above `i64::MAX`. A count
+            // that does not fit in `usize` is still at every finite cap.
+            let cap = NonZeroUsize::new(1).expect("one");
+            assert!(row_count_reached(i64::MAX, cap));
+            return;
+        };
+        assert!(
+            !row_count_reached(i64::MAX, cap),
+            "i64::MAX rows are under a larger finite cap"
+        );
+        assert!(
+            row_count_reached(-1, cap),
+            "a count that does not fit in u64 is not an unlimited bypass"
+        );
+        let ten = NonZeroUsize::new(10).expect("ten");
+        assert!(row_count_reached(10, ten));
+        assert!(!row_count_reached(9, ten));
     }
 
     #[test]

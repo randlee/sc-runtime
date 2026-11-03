@@ -121,7 +121,10 @@ async fn serialization_failure_returns_500_without_panicking() {
             ErrorCode::new_static(SERIALIZATION_CODE),
             "response envelope could not be serialized",
         )
-        .with_details(json!({ "cause": cause })),
+        .with_details(json!({ "cause": cause }))
+        .with_suggestion(
+            "Return a payload that serializes to JSON. The HTTP edge responds 500 with this code and does not panic. The MCP edge returns rmcp ErrorData internal error carrying this code and does not panic.",
+        ),
     ))
     .expect("failure envelope");
     assert_eq!(body, expected);

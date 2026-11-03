@@ -190,7 +190,7 @@ impl RunTimeout {
 /// [`sc-cron.hook.v1`](crate::hook::HOOK_PROTOCOL) JSON object (required
 /// `protocol`, `event`, `schedule`, `payload`, and `deadline`). Python
 /// writes it to the child's stdin; Monty passes it as the hook argument.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum HookTarget {
     /// Call the worker's in-process job.
@@ -208,6 +208,22 @@ pub enum HookTarget {
         /// Trusted Python-compatible hook program text.
         source: String,
     },
+}
+
+impl fmt::Debug for HookTarget {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Rust => f.write_str("Rust"),
+            Self::Python { module } => f
+                .debug_struct("Python")
+                .field("module_bytes", &module.as_os_str().len())
+                .finish(),
+            Self::Monty { source } => f
+                .debug_struct("Monty")
+                .field("source_bytes", &source.len())
+                .finish(),
+        }
+    }
 }
 
 impl HookTarget {
@@ -325,7 +341,7 @@ impl HookKind {
 /// [`ScheduleSpec::new`], by [`Scheduler::start`](crate::Scheduler::start)
 /// and by the store, with one rule. `hook` says whether the row calls that
 /// job or a Python file.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct ScheduleSpec {
     /// Unique name; an active schedule's name cannot be started again.
     pub name: ScheduleName,
@@ -337,9 +353,46 @@ pub struct ScheduleSpec {
     pub payload: serde_json::Value,
     /// Rust job or Python file for this row.
     pub hook: HookTarget,
+    /// Explicit shared Python/Monty environment policy; empty for Rust jobs.
+    pub environment: crate::HookEnvironment,
+}
+
+impl fmt::Debug for ScheduleSpec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ScheduleSpec")
+            .field("name", &self.name)
+            .field("expr", &self.expr)
+            .field("timeout", &self.timeout)
+            .field("hook", &self.hook)
+            .field("environment", &self.environment)
+            .finish_non_exhaustive()
+    }
 }
 
 impl ScheduleSpec {
+    /// Attaches explicit policy without capturing ambient process values.
+    ///
+    /// # Errors
+    /// Nonempty policy on a Rust target or an oversized document is InvalidSpec.
+    pub fn with_environment(
+        mut self,
+        environment: crate::HookEnvironment,
+    ) -> Result<Self, CronError> {
+        self.environment = environment;
+        self.validate_environment()?;
+        Ok(self)
+    }
+
+    pub(crate) fn validate_environment(&self) -> Result<(), CronError> {
+        self.environment.validate()?;
+        if matches!(self.hook, HookTarget::Rust) && !self.environment.is_empty() {
+            return Err(CronError::InvalidSpec(
+                "Rust targets require an empty hook environment".into(),
+            ));
+        }
+        Ok(())
+    }
+
     /// Validates every field and builds a spec.
     ///
     /// # Examples
@@ -400,6 +453,7 @@ impl ScheduleSpec {
             timeout: RunTimeout::new(timeout)?,
             payload,
             hook,
+            environment: crate::HookEnvironment::new(),
         };
         crate::limits::encode_payload(&spec.payload)?;
         Ok(spec)

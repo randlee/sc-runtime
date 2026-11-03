@@ -1,0 +1,49 @@
+{
+  "phase": "c",
+  "branch": "plan/phase-c",
+  "qa_rounds": [
+    {
+      "qa_pass": "qa-1",
+      "reviewed_commit": "83cbc5c",
+      "reviewer_spawn_gate": "pass",
+      "verdict": "FAIL",
+      "findings": [
+        "REQ-QA-001",
+        "REQ-QA-002",
+        "REQ-QA-003",
+        "REQ-QA-004",
+        "ARCH-C-001",
+        "ARCH-C-002",
+        "ARCH-C-003",
+        "RBQA-F001",
+        "RBQA-F002",
+        "RSH-001"
+      ],
+      "triage_paths": [
+        ".triage/c/findings/qa-1-plan-review.ttl"
+      ]
+    },
+    {
+      "qa_pass": "qa-2",
+      "reviewed_commit": "c7e96b8",
+      "reviewer_spawn_gate": "pass",
+      "verdict": "FAIL",
+      "findings": [
+        "ARCH-C-002"
+      ],
+      "triage_paths": [
+        ".triage/c/findings/qa-1-plan-review.ttl"
+      ]
+    },
+    {
+      "qa_pass": "qa-3",
+      "reviewed_commit": "cec30e7",
+      "reviewer_spawn_gate": "pass",
+      "verdict": "PASS",
+      "findings": [],
+      "triage_paths": [
+        ".triage/c/findings/qa-1-plan-review.ttl"
+      ]
+    }
+  ]
+}

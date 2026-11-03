@@ -1,0 +1,13 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:REQ-QA-005>
+  qa:id "REQ-QA-005" ;
+  qa:sprint "b-15" ;
+  qa:qaPass "qa-b-15-2" ;
+  qa:severity "Blocking" ;
+  qa:status "open" ;
+  qa:reviewer "req-qa" ;
+  qa:commit "e9d19647851a0a04a69214b1c4fa1945468c05a4" ;
+  qa:location "crates/sc-cron/README.md:9" ;
+  qa:issue "The README states that sc-cron depends on no other workspace crate, but active REQ-CRON-0001 explicitly requires the injected sc-observability-types workspace dependency, and Cargo.toml declares that dependency. The plan lists REQ-CRON-0001 and README.md is a supplied review target, so this documentation claim violates the governing requirement." ;
+  qa:recommendation "Update the README to say sc-cron uses sc-observability-types as its sole workspace-crate dependency (while retaining that it has no other workspace-crate dependencies)." .

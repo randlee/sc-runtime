@@ -10,16 +10,20 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
-use tracing::Instrument;
-
 use axum::Extension;
 use axum::Json;
-use axum::extract::Request;
+use axum::extract::{MatchedPath, Request};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use rmcp::transport::streamable_http_server::StreamableHttpService;
+use sc_command::observability::SharedCanonicalLog;
 use sc_command::{Envelope, ErrorKind, OpError};
+use sc_observability_types::{
+    ActionName, CorrelationId, ErrorCode, ErrorContext, Level, LogEvent,
+    OBSERVATION_SCHEMA_VERSION, OutcomeLabel, ProcessIdentity, Remediation, ServiceName,
+    TargetCategory, Timestamp,
+};
 use serde::Serialize;
 use utoipa::openapi::OpenApi;
 use utoipa_axum::router::OpenApiRouter;
@@ -77,6 +81,13 @@ const CODE_REQUEST_TIMEOUT: &str = "RUNTIME.REQUEST_TIMEOUT";
 /// Stable code when shutdown stops waiting for an in-flight handler.
 const CODE_DRAIN_TIMEOUT: &str = "RUNTIME.DRAIN_TIMEOUT";
 
+/// Wire `suggested_action` for [`CODE_REQUEST_TIMEOUT`].
+const REQUEST_TIMEOUT_RECOVERY: &str =
+    "retry the request; if it persists, shorten the handler or raise the request time limit";
+
+/// Wire `suggested_action` for [`CODE_DRAIN_TIMEOUT`].
+const DRAIN_TIMEOUT_RECOVERY: &str = "retry after the daemon is serving again";
+
 /// Body of the liveness probe `GET /health`.
 ///
 /// `status` is `"ok"` while this process is serving. It does not describe
@@ -132,8 +143,12 @@ fn request_id_from(request: &Request, metrics: &RequestMetrics) -> String {
         })
 }
 
+#[derive(Clone, Copy)]
+struct DeadlineCode(&'static str);
+
 async fn stamp_request_id(
     Extension(metrics): Extension<RequestMetrics>,
+    Extension(logger): Extension<SharedCanonicalLog>,
     mut request: Request,
     next: Next,
 ) -> Response {
@@ -141,12 +156,104 @@ async fn stamp_request_id(
     if let Ok(value) = axum::http::HeaderValue::from_str(&id) {
         request.headers_mut().insert(REQUEST_ID, value);
     }
-    let span = tracing::info_span!("http_request", request_id = %id);
-    let mut response = next.run(request).instrument(span).await;
+    let method = request.method().as_str().to_owned();
+    let path = request
+        .extensions()
+        .get::<MatchedPath>()
+        .map_or("<unmatched>", MatchedPath::as_str)
+        .to_owned();
+    let started = tokio::time::Instant::now();
+    if let Some(event) = request_event(logger.service_name(), &id, &method, &path, None) {
+        let _ = logger.emit(event);
+    }
+    let mut response = next.run(request).await;
+    let code = response
+        .extensions_mut()
+        .remove::<DeadlineCode>()
+        .map(|code| code.0);
+    let elapsed = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
+    if let Some(event) = request_event(
+        logger.service_name(),
+        &id,
+        &method,
+        &path,
+        Some((response.status(), elapsed, code)),
+    ) {
+        let _ = logger.emit(event);
+    }
     if let Ok(value) = axum::http::HeaderValue::from_str(&id) {
         response.headers_mut().insert(REQUEST_ID, value);
     }
     response
+}
+
+fn request_event(
+    service: &ServiceName,
+    request_id: &str,
+    method: &str,
+    path: &str,
+    terminal: Option<(axum::http::StatusCode, u64, Option<&'static str>)>,
+) -> Option<LogEvent> {
+    let (action, outcome, code, level) = match terminal {
+        None => ("request.start", None, None, Level::Info),
+        Some((_, _, Some(code))) => ("request.error", Some("timeout"), Some(code), Level::Error),
+        Some((status, _, None)) if status.is_server_error() => {
+            ("request.error", Some("server_error"), None, Level::Error)
+        }
+        Some((status, _, None)) if status.is_client_error() => {
+            ("request.finish", Some("client_error"), None, Level::Info)
+        }
+        Some(_) => ("request.finish", Some("success"), None, Level::Info),
+    };
+    let (Ok(target), Ok(action), Ok(request_id)) = (
+        TargetCategory::new("http.server"),
+        ActionName::new(action),
+        CorrelationId::new(request_id),
+    ) else {
+        return None;
+    };
+    let timestamp = Timestamp::now_utc();
+    let diagnostic = code.map(|code| {
+        let context = ErrorContext::new(
+            ErrorCode::new_static(code),
+            "request deadline elapsed",
+            Remediation::recoverable("Retry the request.", [] as [&str; 0]),
+        );
+        let mut diagnostic = context.diagnostic().clone();
+        diagnostic.timestamp = timestamp;
+        diagnostic
+    });
+    let mut event = LogEvent {
+        version: (*OBSERVATION_SCHEMA_VERSION).clone(),
+        timestamp,
+        level,
+        service: service.clone(),
+        target,
+        action,
+        message: None,
+        identity: ProcessIdentity::default(),
+        trace: None,
+        request_id: Some(request_id),
+        correlation_id: None,
+        outcome: outcome.and_then(|value| OutcomeLabel::new(value).ok()),
+        diagnostic,
+        state_transition: None,
+        fields: Default::default(),
+    };
+    event.fields.insert("method".into(), method.into());
+    event.fields.insert("path".into(), path.into());
+    if let Some((status, elapsed, code)) = terminal {
+        event
+            .fields
+            .insert("status".into(), u64::from(status.as_u16()).into());
+        event.fields.insert("elapsed_ms".into(), elapsed.into());
+        if code.is_some() {
+            event
+                .fields
+                .insert("deadline_remaining_ms".into(), 0_u64.into());
+        }
+    }
+    Some(event)
 }
 
 async fn count_request(
@@ -163,11 +270,16 @@ async fn count_request(
 }
 
 /// Request-id stamping and metrics counting scoped to one router instance.
-pub(crate) fn with_request_tracking(router: axum::Router, metrics: RequestMetrics) -> axum::Router {
+pub(crate) fn with_request_tracking(
+    router: axum::Router,
+    metrics: RequestMetrics,
+    logger: SharedCanonicalLog,
+) -> axum::Router {
     router
         .layer(axum::middleware::from_fn(count_request))
         .layer(axum::middleware::from_fn(stamp_request_id))
         .layer(Extension(metrics))
+        .layer(Extension(logger))
 }
 
 /// Merges the project router with the document route and the liveness route.
@@ -210,7 +322,8 @@ pub(crate) fn with_runtime_routes(
 /// the start of the request is the request-timeout case. Both failures use
 /// [`ErrorKind::Unavailable`]. [`ErrorKind::http_status_code`] selects the
 /// HTTP status, which is 503 for that kind. The codes are
-/// `RUNTIME.REQUEST_TIMEOUT` and `RUNTIME.DRAIN_TIMEOUT`.
+/// `RUNTIME.REQUEST_TIMEOUT` and `RUNTIME.DRAIN_TIMEOUT`. Each envelope
+/// sets `suggested_action` to the recovery for that code.
 ///
 /// When `limit` elapses, the middleware returns that 503 and drops the handler
 /// future. Drop cancels the future at its next `.await`. Cancellation is
@@ -314,17 +427,35 @@ async fn drain_handler(
 }
 
 fn request_timeout_response() -> Response {
-    deadline_response(CODE_REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY)
+    deadline_response(
+        CODE_REQUEST_TIMEOUT,
+        REQUEST_TIMEOUT_BODY,
+        REQUEST_TIMEOUT_RECOVERY,
+    )
 }
 
 fn drain_timeout_response() -> Response {
-    deadline_response(CODE_DRAIN_TIMEOUT, DRAIN_TIMEOUT_BODY)
+    deadline_response(
+        CODE_DRAIN_TIMEOUT,
+        DRAIN_TIMEOUT_BODY,
+        DRAIN_TIMEOUT_RECOVERY,
+    )
 }
 
 /// Failure envelope whose status comes only from [`ErrorKind::http_status_code`].
-fn deadline_response(code: &'static str, message: &'static str) -> Response {
-    Envelope::<()>::failure(OpError::from_code(ErrorKind::Unavailable, code, message))
-        .into_response()
+///
+/// `recovery` is the wire `suggested_action`.
+fn deadline_response(
+    code: &'static str,
+    message: &'static str,
+    recovery: &'static str,
+) -> Response {
+    let mut response = Envelope::<()>::failure(
+        OpError::from_code(ErrorKind::Unavailable, code, message).with_suggestion(recovery),
+    )
+    .into_response();
+    response.extensions_mut().insert(DeadlineCode(code));
+    response
 }
 
 /// Mounts the rmcp service at `/mcp` as it was given.
@@ -434,7 +565,13 @@ mod tests {
             .expect("slow");
         let status = slow.status();
         let body: serde_json::Value = slow.json().await.expect("envelope");
-        assert_unavailable_envelope(&status, &body, CODE_REQUEST_TIMEOUT, REQUEST_TIMEOUT_BODY);
+        assert_unavailable_envelope(
+            &status,
+            &body,
+            CODE_REQUEST_TIMEOUT,
+            REQUEST_TIMEOUT_BODY,
+            REQUEST_TIMEOUT_RECOVERY,
+        );
         drop(shutdown_tx);
     }
 
@@ -461,7 +598,13 @@ mod tests {
             .expect("slow");
         let status = slow.status();
         let body: serde_json::Value = slow.json().await.expect("envelope");
-        assert_unavailable_envelope(&status, &body, CODE_DRAIN_TIMEOUT, DRAIN_TIMEOUT_BODY);
+        assert_unavailable_envelope(
+            &status,
+            &body,
+            CODE_DRAIN_TIMEOUT,
+            DRAIN_TIMEOUT_BODY,
+            DRAIN_TIMEOUT_RECOVERY,
+        );
     }
 
     fn assert_unavailable_envelope(
@@ -469,12 +612,14 @@ mod tests {
         body: &serde_json::Value,
         code: &str,
         message: &str,
+        recovery: &str,
     ) {
         assert_eq!(status.as_u16(), ErrorKind::Unavailable.http_status_code());
         assert_eq!(body["ok"], false);
         assert_eq!(body["error"]["kind"], "unavailable");
         assert_eq!(body["error"]["code"], code);
         assert_eq!(body["error"]["message"], message);
+        assert_eq!(body["error"]["suggested_action"], recovery);
     }
 
     #[tokio::test]
@@ -516,6 +661,7 @@ mod tests {
                 .route(HEALTH, get(health))
                 .route(METRICS, get(metrics)),
             request_metrics,
+            Arc::new(sc_command::observability::NoopCanonicalLog::named_or_default("sc-runtime")),
         );
         let (addr, _handle) = serve_test_router(router).await;
         let client = reqwest::Client::builder()

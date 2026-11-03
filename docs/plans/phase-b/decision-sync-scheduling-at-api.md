@@ -5,7 +5,7 @@
 **Bead:** `run-zif.2` (parent `run-zif`)  
 **Owner intent:** 2026-10-26, amended 2026-10-27
 
-This record is the decision for `run-zif.2`. It names no change to PR #68. Row-limit **implementation** is [sprint b-12](sprint-b-12-sc-cron-schedule-row-limit.md) on `develop` ([ADR-RUN-0014](../../architecture.md)).
+This record is the decision for `run-zif.2`. It names no change to PR #68. Row-limit **implementation** is [sprint b-12](sprint-b-12-sc-cron-schedule-row-limit.md) on `integrate/phase-b-monty` ([ADR-RUN-0014](../../architecture.md)).
 
 ## Settled
 

@@ -37,7 +37,7 @@ async fn an_unresolvable_row_is_recorded_failed_and_stays_active_and_enabled() {
         .store
         .wait_write("a failed resolve recorded", |write| {
             matches!(write, common::Write::Run { id: ran, outcome: RunOutcome::Failed(why), changed: true }
-                if *ran == id && why.starts_with("resolve: "))
+                if *ran == id && why.starts_with("TARGET_RESOLVE_FAILED: "))
         })
         .await;
     shutdown(worker).await;

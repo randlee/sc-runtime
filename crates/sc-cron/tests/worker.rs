@@ -23,8 +23,8 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use sc_cron::{
     Clock, CronError, Generation, Job, ManualClock, MissedTickPolicy, NewSchedule, RunOutcome,
-    RunTimeout, Schedule, ScheduleId, ScheduleName, ScheduleSpec, ScheduleStore, Scheduler,
-    SeqJitter, SqliteScheduleStore, StopDecision, Timestamp, WorkerHandle,
+    RunTimeout, Schedule, ScheduleId, ScheduleLimits, ScheduleName, ScheduleSpec, ScheduleStore,
+    Scheduler, SeqJitter, SqliteScheduleStore, StopDecision, Timestamp, WorkerHandle,
 };
 use serde_json::{Value, json};
 use tokio::sync::watch;
@@ -197,8 +197,14 @@ struct RecordingStore {
 
 impl RecordingStore {
     fn new() -> Self {
+        Self::from_inner(
+            SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).expect("store"),
+        )
+    }
+
+    fn from_inner(inner: SqliteScheduleStore) -> Self {
         Self {
-            inner: SqliteScheduleStore::open_in_memory().expect("store"),
+            inner,
             writes: watch::Sender::new(Vec::new()),
             list_gate: Mutex::new(None),
             listing: watch::Sender::new(0),
@@ -250,6 +256,10 @@ impl RecordingStore {
 }
 
 impl ScheduleStore for RecordingStore {
+    fn limits(&self) -> ScheduleLimits {
+        self.inner.limits()
+    }
+
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         self.inner.create(schedule, created_at)
     }
@@ -794,7 +804,10 @@ async fn panicking_run_records_failed_and_the_worker_keeps_ticking() {
     fixture.step(60).await;
     fixture
         .store
-        .wait_recorded(&schedule, RunOutcome::Failed("job panicked: boom".into()))
+        .wait_recorded(
+            &schedule,
+            RunOutcome::Failed("JOB_JOIN_FAILED: boom; fix the job panic and retry".into()),
+        )
         .await;
     fixture.step(60).await;
     fixture.job.wait_entered(2).await;
@@ -967,3 +980,6 @@ async fn a_new_schedule_starts_at_the_first_generation() {
         RunTimeout::new(Duration::from_secs(20)).expect("timeout")
     );
 }
+
+#[path = "worker/lifecycle.rs"]
+mod lifecycle;

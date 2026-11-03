@@ -16,6 +16,10 @@ constructor = "public"
 [composition]
 roots = ["AppName", "Client", "TransportConfig", "Endpoint", "CODE_BIND", "CODE_DAEMON_NOT_RUNNING", "CODE_ENDPOINT_BUSY", "CODE_INSTANCE_ROOT", "CODE_INVALID_ENDPOINT", "CODE_INVALID_NAME", "CODE_MISSING_TCP_PORT", "CODE_NOT_A_SOCKET", "CODE_REQUEST", "CODE_RESPONSE_DECODE", "CODE_TIMED_OUT", "CODE_UNSUPPORTED_ENDPOINT", "TransportCause", "TransportError", "instance_root", "resolve_endpoint", "resolve_endpoint_from_env", "bind", "Listener"]
 
+# Production tool-package/import exclusion (normal + build, all production
+# features) is checked by the production-tool-boundary companion. It resolves
+# aliases/package identity and checks external/transitive cargo trees too;
+# dev-only test/benchmark references remain permitted (REQ-RUN-0005).
 [dependencies]
 allowed_dependents = ["sc-runtime"]
 allowed_dependencies = ["tokio", "reqwest", "serde", "serde_json"]

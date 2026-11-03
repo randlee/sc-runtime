@@ -379,6 +379,7 @@ def write_answers_for_compose(answers: dict) -> Path:
 
 
 def generate(dest: Path, var_file: Path, release: bool) -> None:
+    dest = dest.resolve()
     root = repo_root()
     schema = load_schema(root)
     answers = validate(schema, load_json(var_file))

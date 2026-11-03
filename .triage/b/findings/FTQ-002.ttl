@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-14:FTQ-002> qa:sprint "b-14" ;
+  qa:severity "important" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:location "crates/sc-runtime/tests/observability_http.rs:175" ;
+  qa:issue "The new deadline test awaits an HTTP request to an intentionally pending handler without an independent client timeout or outer deadline. If request/drain deadline enforcement stops completing the request, this test waits forever instead of reporting the regression. The later server abort is unreachable while this await is stuck." ;
+  qa:remedy "Give the HTTP exchange an independent hard bound covering both send and response-body collection, with a clear timeout failure, and ensure the test server is aborted and joined on failure. A reqwest client with an explicit whole-request timeout or a tokio timeout around the complete exchange can provide the bound." ;
+  qa:sourceCommit "e47ce120dd24035a6bbcb9ec67cc028c47181fdf" ;
+  qa:status "open" .

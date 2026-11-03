@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:FTQ-004> qa:sprint "b-15" ;
+  qa:severity "important" ;
+  qa:reviewer "flaky-test-qa" ;
+  qa:location "crates/sc-cron/tests/monty_host_bridge.rs:259" ;
+  qa:issue "This inherited B16 test treats one park_timeout call as proof that the row deadline elapsed. park_timeout explicitly permits spurious early returns and consumes available unpark tokens. When it returns early, the callback completes before the deadline and correct production code returns Ok, failing the test expectation of TimedOut. Adding ten milliseconds does not establish the ordering." ;
+  qa:remedy "Use a synchronization primitive whose timeout enforces the absolute deadline condition, such as a connected channel receive with a bounded deadline, and verify the callback returns only after that condition. Alternatively inject a clock at the deadline-check seam. Remove reliance on one timed park and its ten-millisecond padding." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .

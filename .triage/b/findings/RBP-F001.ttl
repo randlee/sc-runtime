@@ -1,0 +1,22 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+
+<urn:sc-runtime:qa:b-15:RBP-F001> qa:sprint "b-15" ;
+  qa:severity "minor" ;
+  qa:reviewer "rust-best-practices-agent" ;
+  qa:location "crates/sc-cron/src/monty_host.rs:23" ;
+  qa:issue "The public MontyHostCall exposes the registered host-function name as an unconstrained String, although the registry treats host names as validated identifiers." ;
+  qa:remedy "Introduce a validated host-function-name newtype and use it for registry keys and MontyHostCall.name, exposing as_str() for display and lookup where needed." ;
+  qa:sourceCommit "e01c07bee0b5cde4e38ef8c129e1e06d3e3c7437" ;
+  qa:status "open" .
+
+<urn:sc-runtime:qa:b-17:RBP-F001>
+  qa:id "RBP-F001" ;
+  qa:sprint "b-17" ;
+  qa:qaPass "qa-b-17-1" ;
+  qa:severity "Important" ;
+  qa:status "fixed" ;
+  qa:reviewer "rust-best-practices-agent" ;
+  qa:commit "a250fcf3144c1cf84ba8f7fbde81a520aad01ee0" ;
+  qa:location "crates/sc-cron/src/environment/resolve.rs:28" ;
+  qa:issue "Distinct hook-environment resolution failures carry stable codes but collapse to the same broad recovery message. For example, ENV_FILE_MISSING and ENV_SNAPSHOT_LIMIT do not tell the caller whether to restore or make a dotenv source optional, or reduce configured variables and values." ;
+  qa:recommendation "Keep diagnostics value-free, but map each stable failure code to the corresponding fixed recovery guidance documented for that code (including process allowlist/value, dotenv authorization/file, resolver configuration, and snapshot-limit actions)." .
