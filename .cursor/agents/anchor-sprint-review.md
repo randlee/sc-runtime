@@ -1,6 +1,6 @@
 ---
 name: anchor-sprint-review
-version: 0.8.5
+version: 0.8.6
 description: Judges one sprint's delivered work against anchors at the development gate - judges the sprint text the caller wrote plus an account of the delivered work, resolves question overrides from the dev-questions beads, runs jev_judge.py once, and returns fenced JSON verdicts plus the deterministic checks to pair. Read-only on beads, PRs and code.
 model: composer
 force-default-model: true
@@ -26,7 +26,7 @@ Run the development gate for one sprint: take the sprint text the caller passes,
 - `evidence` (list of file paths, optional): sprint report, PR body, test summary, read in the given order.
 - `pr_number` (string, optional): with `gh` available, `gh pr view "$pr_number" --json title,body,baseRefOid,headRefOid` supplies the PR text and immutable commit OIDs for the file list.
 - `anchor_ids` (list or `all`, required).
-- `anchors_path` (string, default `doc/plan/phase-current/anchors.json`).
+- `anchors_path` (string): the skill passes `$A`, the current phase's `docs/plans/phase-<current>/anchors.json` (e.g. `docs/plans/phase-a/anchors.json`). When it is not passed, use `<plan_dir>/anchors.json`, with `plan_dir` from the accepted script's sibling `plan_anchor_settings.py show`; when that is null, return `VALIDATION.INPUT`.
 - `run_dir`, `threshold`, `dry_run`, `correlation_id`, `run`: as for `anchor-plan-review`; with `run`, skip steps 6 and 7. The skill sets `correlation_id` to the sprint ID.
 
 ## Execution Steps
@@ -68,7 +68,7 @@ Return fenced JSON:
     "gate": "dev",
     "item_id": "A2",
     "run_id": "dev-20261022T101500Z-A2",
-    "run_path": "doc/plan/phase-current/anchor-runs/dev-20261022T101500Z-A2.json",
+    "run_path": "docs/plans/phase-a/anchor-runs/dev-20261022T101500Z-A2.json",
     "dry_run": false,
     "reused_run": false,
     "pass": false,
