@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "a8b2542ea4aa06e3efd3f87368493c2221abc8cf73eaf04784823bc4f44ff42a",
-      "bytes": 11082,
+      "sha256": "d034f1a18557c07c312b54538490f4bf27abacc64624c0cb2b82d6736664750c",
+      "bytes": 11985,
       "source": "authored index"
     },
     {
@@ -164,6 +164,144 @@
       "sha256": "211f9ddbc825e2ba07f07f8b2f488f7a6a814adae28a83d0fb80edc6cce392c3",
       "bytes": 23639,
       "source": "tuning/calibration-r1/live-authorized/seal-01/validation.json"
+    },
+    {
+      "path": "continuation/calibration/acceptance-table.json",
+      "sha256": "ae751e8f144aa8fb18c97cf227bcf104cd0b85022929794d88d6c75c25283890",
+      "bytes": 267327,
+      "source": "continuation/calibration/attempt-01/acceptance-table.json"
+    },
+    {
+      "path": "continuation/calibration/all-records.json",
+      "sha256": "d80d122bd927c42c9fab01028bf6d79ead34cda6852fd49675a2ac1125c7f7b6",
+      "bytes": 141942,
+      "source": "continuation/calibration/attempt-01/all-records.json"
+    },
+    {
+      "path": "continuation/calibration/attestation.json",
+      "sha256": "b548724d960b09d3992c6ff10f7520c39d22ce4e272bcf7b31147a6e34c2479e",
+      "bytes": 535,
+      "source": "continuation/calibration/attempt-01/attestation.json"
+    },
+    {
+      "path": "continuation/calibration/candidate-rankings.json",
+      "sha256": "55e40e492d7882b3635910e44e9cf82ea47a55ab872cb777698a6ddcab5cffe0",
+      "bytes": 5620,
+      "source": "continuation/calibration/attempt-01/candidate-rankings.json"
+    },
+    {
+      "path": "continuation/calibration/candidates.json",
+      "sha256": "7d0d8bdbc67d5e02408102cacbe1c9de48926c158607286c8c407343ce5f62ab",
+      "bytes": 9856,
+      "source": "continuation/calibration/attempt-01/candidates.json"
+    },
+    {
+      "path": "continuation/calibration/capability-proof.json",
+      "sha256": "bbe75017b4e9ecca26165335c5b06f195b57c08386d34a2b947c30dff9b22b52",
+      "bytes": 587,
+      "source": "continuation/calibration/attempt-01/capability-proof.json"
+    },
+    {
+      "path": "continuation/calibration/dedupe.json",
+      "sha256": "9d3bc51ba0bc6ea81a10481696ba04ec56a5984a624fe1939e2c189fd2de25f1",
+      "bytes": 3101,
+      "source": "continuation/calibration/attempt-01/dedupe.json"
+    },
+    {
+      "path": "continuation/calibration/deterministic-lint.json",
+      "sha256": "5298e213cb9b9ba4dacaa573183f51b21ede45f1f3d2026b1b75102a646ab328",
+      "bytes": 1144,
+      "source": "continuation/calibration/attempt-01/deterministic-lint.json"
+    },
+    {
+      "path": "continuation/calibration/diagnosis.json",
+      "sha256": "01850673abda7d43dde83b8e5f68c0ebc61f6e4cd99ae233d494cc77fde483eb",
+      "bytes": 1944,
+      "source": "continuation/calibration/attempt-01/diagnosis.json"
+    },
+    {
+      "path": "continuation/calibration/execution-summary.json",
+      "sha256": "2b3a33044738bcb78e6ae02cd37f6ecf500adc40ba0531457898dfc65c285b2b",
+      "bytes": 374,
+      "source": "continuation/calibration/attempt-01/execution-summary.json"
+    },
+    {
+      "path": "continuation/calibration/frozen-generic-supplement.json",
+      "sha256": "ad5fd9746543e07b71b335f46729b2e5f72745b07801fb85a4fafcf99f4b472a",
+      "bytes": 2712,
+      "source": "continuation/calibration/attempt-01/frozen-generic-supplement.json"
+    },
+    {
+      "path": "continuation/calibration/local-run-correlations.json",
+      "sha256": "eabd6bc5fbf7f4d6e63b3b1a4bd2f831f0f661acc8c0d0a39e4e2eb9e18d1e5f",
+      "bytes": 12885,
+      "source": "continuation/calibration/attempt-01/local-run-correlations.json"
+    },
+    {
+      "path": "continuation/calibration/observational-equivalence-proof.json",
+      "sha256": "8a6dd904792951fddd7b4fd70ba12950ed9b1f67df2c440c84a02fa2ff09c145",
+      "bytes": 3568,
+      "source": "continuation/calibration/attempt-01/observational-equivalence-proof.json"
+    },
+    {
+      "path": "continuation/calibration/oracle-freeze.json",
+      "sha256": "5704fce5e53cb9e3155aef4beaa1e8e2766259e2cbe5e164a0f2b38d6039eafe",
+      "bytes": 553,
+      "source": "continuation/calibration/attempt-01/oracle-freeze.json"
+    },
+    {
+      "path": "continuation/calibration/original-frozen-corpus.json",
+      "sha256": "ce5f4efcfee74ecc767bb8c140bf749ef2e33c779f82397d5c42d96698a7b1bc",
+      "bytes": 10814,
+      "source": "continuation/calibration/attempt-01/original-frozen-corpus.json"
+    },
+    {
+      "path": "continuation/calibration/outer_fence-validation.json",
+      "sha256": "073016db9e35e38a17a07809866188b8d2970d22e422b7d487b31381d34d27c4",
+      "bytes": 1894,
+      "source": "continuation/calibration/attempt-01/outer_fence-validation.json"
+    },
+    {
+      "path": "continuation/calibration/production-input-construction.txt",
+      "sha256": "d4116a4c9c9d0e0957e34e226ca7f3caf6cf309486801b430526e6604d0960c2",
+      "bytes": 3112,
+      "source": "continuation/calibration/attempt-01/production-input-construction.txt"
+    },
+    {
+      "path": "continuation/calibration/request_contract-validation.json",
+      "sha256": "54d60e677f86378d998027fe0855deb4c7942eb19cab1edfb6094186ad78458b",
+      "bytes": 127,
+      "source": "continuation/calibration/attempt-01/request_contract-validation.json"
+    },
+    {
+      "path": "continuation/calibration/result.json",
+      "sha256": "6dc6c7a1e817dd1c695c049d169cfcaea8e43f486f9e991af159703985c97045",
+      "bytes": 1834,
+      "source": "continuation/calibration/attempt-01/result.json"
+    },
+    {
+      "path": "continuation/calibration/result.md",
+      "sha256": "51a1e25a377524714f5799ada02e310dadc234486fd5734ad37363b259ea7d8b",
+      "bytes": 1875,
+      "source": "continuation/calibration/attempt-01/result.md"
+    },
+    {
+      "path": "continuation/calibration/result_contract-validation.json",
+      "sha256": "f0fe12cec3e573739bbf68f1fb1535ae46c767be5a90ac8c91fcafb410c1f6dd",
+      "bytes": 127,
+      "source": "continuation/calibration/attempt-01/result_contract-validation.json"
+    },
+    {
+      "path": "continuation/calibration/score-summary.json",
+      "sha256": "bb39c84de42d75f39e86cb09dceb55503811283bc44603144c080998f8f07655",
+      "bytes": 1327,
+      "source": "continuation/calibration/attempt-01/score-summary.json"
+    },
+    {
+      "path": "continuation/calibration/validations.json",
+      "sha256": "90524f4225a0c94984d543aa187f608dc8d35afe4db92f3d2cd98e23677b1994",
+      "bytes": 146,
+      "source": "continuation/calibration/attempt-01/validations.json"
     },
     {
       "path": "continuation/calibration-preparation/continuation-bindings.json",
@@ -892,5 +1030,15 @@
     "exclusions_applied": false,
     "live_gates_run": false,
     "path": "continuation/gate-preparation/inventory.json"
+  },
+  "continuation_calibration": {
+    "result": "EVIDENCE.INCOMPLETE",
+    "raw_responses": 134,
+    "original_corpus_score": "85/85",
+    "generic_supplement_score": "19/20",
+    "approved_context_cases": "opposite expected labels serialize to byte-identical requests without context",
+    "accepted_new_seal": false,
+    "schema_contract_fence_valid": true,
+    "source": "continuation/calibration/result.json"
   }
 }

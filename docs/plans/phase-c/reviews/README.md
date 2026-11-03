@@ -143,6 +143,19 @@ existing decision/seal bindings and is evidence of preparation, not a completed
 tournament. Upstream work owns the optional input feature; no consumer source,
 installed tooling, anchor, question or live gate was changed in this checkpoint.
 
+The actual continuation calibration has now returned typed
+[`EVIDENCE.INCOMPLETE`](continuation/calibration/result.json), with valid
+schemas/contracts/fences and no new accepted seal. Its 134 real responses,
+frozen original corpus and generic supplement, acceptance table and
+[observational-equivalence proof](continuation/calibration/observational-equivalence-proof.json)
+are preserved. The original corpus scored 85/85; the generic supplement
+scored 19/20. Generic authorized/unauthorized algorithm cases require opposite
+fidelity answers but serialize to identical visible requests when approved
+context is omitted; all three candidates answered the same way. This is an
+input distinguishability limitation, not evidence that current anchors or
+plans passed. Upstream owns the optional context/rubric input implementation;
+independent recalibration and actual fixture/full-sprint gates remain open.
+
 ## Current plan document SHA256
 
 | Document | SHA256 |
