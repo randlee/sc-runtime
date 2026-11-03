@@ -367,8 +367,10 @@ diagnostics, not live Jev sprint verdicts. No new current-plan Jev gate ran.
 The human has now explicitly approved all six new statements and their unchanged
 fixture pairs, with the clarified ANC-016 statement recorded in
 [the exact approval receipt](authority-approvals/new-anchor-approval-with-anc016-clarification.json).
-Only ANC-016's statement/summary/version/history changed; its quote and fixtures
-and all other 17 records remain unchanged. Its current wording uses common
+Only ANC-016's statement was clarified; its quote/fixtures and all other 17
+statements are unchanged. The six new records' provenance contexts now reflect
+that approval receipt, with previous contexts retained in version/history;
+all original 12 records remain unchanged. Its current wording uses common
 schedule-management subcommands across Python, Monty and Rust handlers.
 The original packet and earlier pending notes remain point-in-time evidence.
 All six records remain proposed, pending actual checks/locking; the bounded

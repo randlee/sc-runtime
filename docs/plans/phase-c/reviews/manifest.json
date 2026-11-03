@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "cc3b23fe6e03620776eabd668c63cfe1ac6dd17f562215e27400e629e5a2bca2",
-      "bytes": 26565,
+      "sha256": "17371d9b42d302cc09634a81f2f5ebaf08bdf7ab3f85df0d9a75c1381f8946c5",
+      "bytes": 26713,
       "source": "authored index"
     },
     {
@@ -14147,8 +14147,8 @@
     "proposed": 6,
     "retired": 2,
     "original12_objects_unchanged": true,
-    "record_sha256": "7aa11db99c9e7c4c9c7f91432c78feacaeb5745dea8e706cfd78fe400f13d51b",
-    "render_sha256": "6146a742ad0d6f35a532ebf4f57856423e3dd25efaafacad48745f161ad2bc02",
+    "record_sha256": "718b435282988259f91a22c156132aea56ad5820c0cf59b35312f6512eca11f6",
+    "render_sha256": "52d59c9c3cfdc5751defc100234f896096d45019bad542e2b463d32d996b1a4f",
     "actual_new_ids": [
       "ANC-013",
       "ANC-014",
@@ -14167,7 +14167,16 @@
     "statement_approval": "human-approved with explicit ANC016 exception",
     "approval_receipt": "authority-approvals/new-anchor-approval-with-anc016-clarification.json",
     "ANC016_current_statement": "The standard cron command set must use common schedule-management subcommands across Python, Monty, and Rust handlers.",
-    "ANC016_current_version": 4
+    "ANC016_current_version": 5,
+    "approval_contexts_refreshed": true,
+    "new_record_versions": {
+      "ANC-013": 4,
+      "ANC-014": 4,
+      "ANC-015": 4,
+      "ANC-016": 5,
+      "ANC-017": 4,
+      "ANC-018": 4
+    }
   },
   "current_results_report": "current-plan-anchor-results.md",
   "engineering_baseline": {

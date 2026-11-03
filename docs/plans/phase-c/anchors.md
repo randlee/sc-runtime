@@ -272,7 +272,7 @@ Anchor: Phase C must complete its dedicated compatibility sprint before publishi
 
 > Add a dedicated Phase C compatibility sprint (Recommended)
 
-Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 4.
 
 Summary: Compatibility precedes publication
 
@@ -288,7 +288,7 @@ Anchor: A consumer application must be able to omit the standard cron command se
 
 > it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface.
 
-Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 4.
 
 Summary: Optional standard cron commands
 
@@ -304,7 +304,7 @@ Anchor: Supported cron user interfaces must share the standard JSON command cont
 
 > it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface.
 
-Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 4.
 
 Summary: Shared cron JSON contract
 
@@ -320,7 +320,7 @@ Anchor: The standard cron command set must use common schedule-management subcom
 
 > yes, we have a few more options i.e. python, monty, rust handler. but the general subcommands should be standard
 
-Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 4.
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 5.
 
 Summary: Common schedule-management subcommands across handlers
 
@@ -336,7 +336,7 @@ Anchor: sc-runtime must expose supported extension points that let consumers rep
 
 > it is not sc-runtime job to guarantee a customer can not misuse the core libraries.
 
-Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 4.
 
 Summary: Supported consumer overrides
 
@@ -352,7 +352,7 @@ Anchor: sc-runtime must document a supported integration path that explains corr
 
 > it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries.
 
-Said by randlee, Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 3.
+Said by randlee, Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID., 2026-11-03. Status: proposed. Version 4.
 
 Summary: Documented integration and override responsibilities
 

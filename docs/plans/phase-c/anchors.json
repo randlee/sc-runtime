@@ -771,7 +771,7 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-03",
-      "context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID.",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID.",
       "summary": "Compatibility precedes publication",
       "scope": "Phase C compatibility completion and the 0.2.0 publication handoff",
       "deterministic_check": "",
@@ -784,7 +784,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "proposed",
       "promoted_to": null,
       "beads": {
@@ -811,6 +811,16 @@
           "fields": [
             "summary"
           ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
         }
       ]
     },
@@ -823,7 +833,7 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-03",
-      "context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID.",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID.",
       "summary": "Optional standard cron commands",
       "scope": "Standard cron command-set adoption and composition",
       "deterministic_check": "",
@@ -836,7 +846,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "proposed",
       "promoted_to": null,
       "beads": {
@@ -863,6 +873,16 @@
           "fields": [
             "summary"
           ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
         }
       ]
     },
@@ -875,7 +895,7 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-03",
-      "context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID.",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID.",
       "summary": "Shared cron JSON contract",
       "scope": "Supported cron UI JSON command contracts",
       "deterministic_check": "",
@@ -888,7 +908,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "proposed",
       "promoted_to": null,
       "beads": {
@@ -915,6 +935,16 @@
           "fields": [
             "summary"
           ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
         }
       ]
     },
@@ -927,7 +957,7 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-03",
-      "context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID.",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID.",
       "summary": "Common schedule-management subcommands across handlers",
       "scope": "Standard cron subcommand vocabulary and handler-kind selection",
       "deterministic_check": "",
@@ -940,7 +970,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 4,
+      "version": 5,
       "status": "proposed",
       "promoted_to": null,
       "beads": {
@@ -976,6 +1006,16 @@
             "summary"
           ],
           "previous_statement": "The standard cron subcommands must be the same for Python, Monty, and Rust handlers."
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
         }
       ]
     },
@@ -988,7 +1028,7 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-03",
-      "context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID.",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID.",
       "summary": "Supported consumer overrides",
       "scope": "Core-library integration hooks for consumer store/schema and shutdown policy",
       "deterministic_check": "",
@@ -1001,7 +1041,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "proposed",
       "promoted_to": null,
       "beads": {
@@ -1028,6 +1068,16 @@
           "fields": [
             "summary"
           ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
         }
       ]
     },
@@ -1040,7 +1090,7 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-03",
-      "context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID.",
+      "context": "Proposed only at the explicit user request to finalize anchors. Human approved all six statements and original fixtures, with the clarified ANC-016 statement. Testability/live verification remains pending; no accepted v3 rubric or live planning gate. Approval receipt: docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID.",
       "summary": "Documented integration and override responsibilities",
       "scope": "Default and extension integration guides and consumer responsibilities",
       "deterministic_check": "",
@@ -1053,7 +1103,7 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "proposed",
       "promoted_to": null,
       "beads": {
@@ -1080,6 +1130,16 @@
           "fields": [
             "summary"
           ]
+        },
+        {
+          "at": "2026-11-03T23:32:56.272107+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
+          "approval": "approved w/ anc-016 clear wording"
         }
       ]
     }
