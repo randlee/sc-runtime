@@ -98,3 +98,16 @@ parent merges. This docs amendment selects no replacement consumer pin.
 | b-16 Monty template examples | [sprint-b-16](plans/phase-b/sprint-b-16-monty-template-examples.md) | complete | `sprint/b-16-monty-template-examples` |
 | b-17 sc-cron hook environment | [sprint-b-17](plans/phase-b/sprint-b-17-sc-cron-hook-environment.md) | complete | `sprint/b-17-sc-cron-hook-environment` |
 | b-18 template observability integration | [sprint-b-18](plans/phase-b/sprint-b-18-template-observability-integration.md) | complete | `codex/b-18-publishing-kit` |
+
+Phase c is the post-Phase-b consumer-quality and ecosystem-release phase.
+It makes the generated sc-lint consumer complete and moves the public
+runtime/template pair to the approved latest RMCP and Utoipa family while
+retaining the rusqlite 0.39/SQLx compatibility guard. See [Phase c
+plan](plans/phase-c/phase-c-plan.md).
+
+| Sprint | Plan | Status | Branch |
+| --- | --- | --- | --- |
+| c-1 consumer/runtime compatibility contract | [sprint-c-1](plans/phase-c/sprint-c-1-consumer-runtime-contract.md) | planned | `sprint/c-1-consumer-runtime-contract` |
+| c-2 consumer sc-lint full profile | [sprint-c-2](plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md) | planned | `sprint/c-2-consumer-sc-lint-full-profile` |
+| c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | planned | `sprint/c-3-runtime-ecosystem-upgrade` |
+| c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | planned | `sprint/c-4-runtime-ecosystem-release` |

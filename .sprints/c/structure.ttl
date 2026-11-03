@@ -1,0 +1,30 @@
+@prefix triage: <urn:atm:triage:> .
+
+# c-1 owns the shared contract documents. Wave 2 contains the two independent
+# implementation sprints; c-4 is the authorized registry-release closure.
+
+triage:PhaseC a triage:Phase .
+
+triage:c-1 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 1 ;
+  triage:branch "sprint/c-1-consumer-runtime-contract" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md" .
+
+triage:c-2 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 2 ;
+  triage:branch "sprint/c-2-consumer-sc-lint-full-profile" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md" .
+
+triage:c-3 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 2 ;
+  triage:branch "sprint/c-3-runtime-ecosystem-upgrade" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md" .
+
+triage:c-4 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 3 ;
+  triage:branch "sprint/c-4-runtime-ecosystem-release" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md" .
