@@ -9,6 +9,7 @@ wave: 1
 branch: sprint/c-1-consumer-runtime-contract
 worktree: sprint/c-1-consumer-runtime-contract
 requirements:
+  - NFR-RT-0001
   - REQ-CRON-0001
   - NFR-CRON-0001
   - REQ-RUN-0004
@@ -184,6 +185,12 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
 
 Additional approved compatibility deliverables (REQ-CRON-0020/0021,
 REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
+
+- Reconcile NFR-RT-0001's closed public-method table and exact rustdoc criterion
+  with exactly stores/routes/mcp/logger and Ready-only run/run_with_cleanup/
+  run_with_cleanup_and_bound. Amend REQ-RT-0001 and ADR-RT-0001/0005 consistently.
+  This includes existing cleanup and the bound-receipt alternative only;
+  preserve fixed startup/typestate, no registry/macro/wrapper or extra engine.
 
 - Freeze [compatibility-contract.md](compatibility-contract.md) as exact public
   types/signatures, query limits/error inventory, absolute G/K semantics,

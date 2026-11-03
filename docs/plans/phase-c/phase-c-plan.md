@@ -1,5 +1,6 @@
 ---
 requirements:
+  - NFR-RT-0001
   - REQ-CRON-0001
   - NFR-CRON-0001
   - REQ-RUN-0004

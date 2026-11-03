@@ -9,6 +9,7 @@ wave: 2
 branch: sprint/c-3-runtime-ecosystem-upgrade
 worktree: sprint/c-3-runtime-ecosystem-upgrade
 requirements:
+  - NFR-RT-0001
   - REQ-CRON-0001
   - NFR-CRON-0001
   - REQ-RUN-0002
@@ -184,6 +185,11 @@ must satisfy that amendment:
 
 Additional implementation deliverables: REQ-RT-0005/0006 and
 REQ-RUN-0332/REQ-CRNC-0002, consuming c-1's compatibility contract:
+
+- Consume c-1's amended NFR-RT-0001 exact seven-method public surface and
+  ADR-RT-0001/0005 reconciliation. Rustdoc/default and test-util checks prove
+  Ready-only terminal alternatives, same-state logger, unchanged startup
+  order and no registry, macro, library wrapper or extra callback mechanism.
 
 - Register and poll both Windows Ctrl-C/Ctrl-Break before lock/store setup/bind,
   preserving early observed signals and Unix/private triggers. Native isolated

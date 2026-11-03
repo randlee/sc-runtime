@@ -4,7 +4,7 @@
 triage:COMPAT_SCOPE_001 a triage:Finding ;
     triage:severity "Important" ;
     triage:reviewer "plan-scope-reviewer" ;
-    triage:status "open" ;
+    triage:status "fixed-verified" ;
     triage:author_state "corrected-pending-independent-R2" ;
     triage:sprints "c-1,c-3,c-6" ;
     triage:target "docs/plans/phase-c/compatibility-contract.md:167" ;
@@ -14,7 +14,7 @@ triage:COMPAT_SCOPE_001 a triage:Finding ;
 triage:COMPAT_SCOPE_002 a triage:Finding ;
     triage:severity "Important" ;
     triage:reviewer "plan-scope-reviewer" ;
-    triage:status "open" ;
+    triage:status "fixed-verified" ;
     triage:author_state "corrected-pending-independent-R2" ;
     triage:sprints "c-1,c-3,c-5" ;
     triage:target "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:63" ;

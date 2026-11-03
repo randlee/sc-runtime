@@ -1,0 +1,16 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Parent-authored critical review R1 at 0b32ae2; independent scope R2 passed.
+triage:COMPAT_CRIT_001 a triage:Finding ;
+ triage:severity "Important" ; triage:reviewer "critical-plan-reviewer" ;
+ triage:status "open" ; triage:sprints "c-1,c-3" ;
+ triage:author_state "corrected-public-surface-pending-independent-verification" ;
+ triage:target "docs/sc-runtime/requirements.md:830" ;
+ triage:correction "Reconcile NFR-RT-0001 fixed public method table and rustdoc criterion with existing cleanup and approved bound-endpoint receipt APIs; add it to phase/c1/c3 governing IDs and narrow c1 ADR amendment while preserving typestate and wrapper limits." .
+
+triage:COMPAT_CRIT_002 a triage:Finding ;
+ triage:severity "Important" ; triage:reviewer "critical-plan-reviewer" ;
+ triage:status "open" ; triage:sprints "c-1,c-5" ;
+ triage:author_state "unresolved-policy-decision-no-contract-weakening-adopted" ;
+ triage:target "docs/plans/phase-c/compatibility-contract.md:98" ;
+ triage:correction "Freeze supported commit-admission versus stop/deadline linearization and accurate persisted outcomes after physical join, with causal final-check/COMMIT/shortening tests. Do not infer rollback from expiry, hold stop control across COMMIT, replay uncertain mutations, or assert unsupported strict physical deadlines." .

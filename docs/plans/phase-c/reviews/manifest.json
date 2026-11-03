@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "29390fe3a19172185e485e1614e8c5a261717d73b19c48308a47cdbe49471b7f",
-      "bytes": 20118,
+      "sha256": "4228b6c3595880bafe415e26a36b0fc60684c32930288da6ab88226bd45c3da5",
+      "bytes": 21286,
       "source": "authored index"
     },
     {
@@ -166,6 +166,18 @@
       "source": "tuning/calibration-r1/live-authorized/seal-01/validation.json"
     },
     {
+      "path": "compatibility-critical-r1/report.json",
+      "sha256": "db362cf043e4f2eb22ca1a02eb59202794a1e1b732663c8dc6bccf971c9b763f",
+      "bytes": 29204,
+      "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
+    },
+    {
+      "path": "compatibility-critical-r1/report.md",
+      "sha256": "5a11f7b1fdfc444340457f08ebc93aa7b288f090dbf778e86b58e08d18d90d6b",
+      "bytes": 8879,
+      "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
+    },
+    {
       "path": "compatibility-scope-r1/design-fix-proposal.md",
       "sha256": "a092f9807501c53e330c69d0410363137a4138ba1b4f64d3ff251234172ced55",
       "bytes": 16997,
@@ -194,6 +206,18 @@
       "sha256": "0c227b4eb9322c317ece1313b0a0d28d64330e1142cbb68c7e66649eaa78ab1c",
       "bytes": 19660,
       "source": "exact review/preparation/external intake evidence; unapproved or external material is not planning authority"
+    },
+    {
+      "path": "compatibility-scope-r2/report.json",
+      "sha256": "bf73a821efc817bad7ce4421d10517fc56df2e640d90e678d6b8f53933a6ff71",
+      "bytes": 29941,
+      "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
+    },
+    {
+      "path": "compatibility-scope-r2/report.md",
+      "sha256": "e3fb80a94682e0392b3f43f7cec675a79d094ed814c10a99cfc8039c915c4c79",
+      "bytes": 29953,
+      "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
     },
     {
       "path": "continuation/approved-intent/ANC-001.json",
@@ -12053,15 +12077,33 @@
     },
     {
       "path": "internal-unapproved/README.md",
-      "sha256": "a115c4d90c8ae2f9d0635274a4d4e24700da214de5537a600010ed96f12b1799",
-      "bytes": 400,
+      "sha256": "c5693b9b50d1c48988da4922b068bc0ed86e9dd34d5f67b2c9ae21782b693703",
+      "bytes": 790,
       "source": "exact review/preparation/external intake evidence; unapproved or external material is not planning authority"
+    },
+    {
+      "path": "internal-unapproved/commit-deadline-design-note.md",
+      "sha256": "9188e21fb92c3b6b41aace305e53fae29a5766c22684f63e9eb9057e7f76866d",
+      "bytes": 12812,
+      "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
+    },
+    {
+      "path": "internal-unapproved/commit-policy-review-packet.md",
+      "sha256": "ce37dea4d28784128fc7efd62f073a801a0cc1083833d9fc0c7b9f079d921d2c",
+      "bytes": 2085,
+      "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
     },
     {
       "path": "internal-unapproved/compatibility-anchor-candidates.md",
       "sha256": "43d0b62856442f9706ac9e95eb04fb5e2523e205ae89ca7e4d51915e2ed3bc52",
       "bytes": 8903,
       "source": "exact review/preparation/external intake evidence; unapproved or external material is not planning authority"
+    },
+    {
+      "path": "internal-unapproved/faithfulness-authority-proposal.md",
+      "sha256": "0f4b7d442a40b5563d60c8eea43f8b7e82de026c602862d0ab7ca350104d3cff",
+      "bytes": 12097,
+      "source": "genuine independent scope/critical report or explicitly unapproved policy proposal; no semantic adoption"
     },
     {
       "path": "planning-tuning-preparation/ANC-001-invocation-fence.md",
@@ -12888,11 +12930,11 @@
     "documents": [
       {
         "path": "docs/plans/phase-c/phase-c-plan.md",
-        "sha256": "3e41dee498893e93028bf1f65e448d0400505ec631e187294aa6cf1db5e025e2"
+        "sha256": "d172bfe13e4dae2a7cb13aef4dbb6fff149846957578ff520d2770ff50993dfc"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
-        "sha256": "3f26f34338df0de5278d2a5b94ed370493a8393e9c74d130568f0f7b38107800"
+        "sha256": "e530d817902df1488a727fcdfe3036f111aa334a2e045dae8e81c9c54aeabd4e"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
@@ -12900,7 +12942,7 @@
       },
       {
         "path": "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
-        "sha256": "a0ae7749c2f495be69cfe8fb828659f136a4d4e5d5cd524ee4bdf1af4525a24f"
+        "sha256": "049ce9921ecefa957f188c3f2a4c9d533eaa479519fa81f313c61849fcebb750"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
@@ -12916,7 +12958,7 @@
       },
       {
         "path": "docs/plans/phase-c/compatibility-contract.md",
-        "sha256": "d6908c4b6a7c220ff5804af5566454eb40c230192376bbfbca4ec5fc641d6400"
+        "sha256": "5d861940c9cb14c2e2da315465950004228e5b5f66e2b976c54c898be6c1229a"
       }
     ],
     "scope_r1": {
@@ -12928,6 +12970,12 @@
       ],
       "author_correction": "both corrected pending independent R2; triage remains open",
       "source": "compatibility-scope-r1/report.json"
+    },
+    "scope_r2": {
+      "status": "PASS",
+      "reviewed_commit": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
+      "sprints": 6,
+      "source": "compatibility-scope-r2/report.json"
     }
   },
   "evidence_wip_checkpoint": {
@@ -12940,5 +12988,14 @@
     "external_intake": "reported external evidence only; not owner QA/baseline/publication/waiver",
     "plan_anchor_pass": false,
     "replacement_seal": false
+  },
+  "critical_r1_wip": {
+    "status": "FAIL",
+    "reviewed_commit": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
+    "COMPAT-CRIT-001": "author-corrected pending independent verification",
+    "COMPAT-CRIT-002": "open pending parent/human policy; strict contract unchanged, alternatives unapproved",
+    "developer_step_pass": false,
+    "implementation_readiness": false,
+    "source": "compatibility-critical-r1/report.json"
   }
 }

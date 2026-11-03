@@ -51,6 +51,12 @@ typestate, [ADR-RT-0001](architecture.md)).
 | `.mcp(closure)` | a closure that receives the `Stores` value and returns an rmcp Streamable HTTP service | no |
 | `.logger(handle)` | a `sc_command::observability::SharedCanonicalLog` (ADR-RUN-0017 initial bridge); optional in every builder state and replaces the fixed `sc-runtime` Noop | no |
 | `.run().await` | none; returns `Result<(), RuntimeError>` | yes |
+| `.run_with_cleanup(cleanup).await` | ready-state alternative terminal run with once-only asynchronous application cleanup | no |
+| `.run_with_cleanup_and_bound(on_bound, cleanup).await` | Phase C ready-state alternative terminal run; reports the actual owned bound Endpoint, then preserves the same cleanup sequence | no |
+
+Choose exactly one ready-state terminal run method. These alternatives add no
+typestate, operation registry, library wrapper or new callback engine; all use
+the same fixed startup/teardown runner. NFR-RT-0001 limits this exact surface.
 
 The optional logger is a `SharedCanonicalLog` retained through `stores`,
 `routes`, and `run` without adding a typestate. Repeated `.logger()` calls
@@ -851,7 +857,7 @@ machine, never on a developer's host
 | Kind of public item | How many | Name |
 |---|---|---|
 | Entry type whose only public function is the constructor that returns the builder | one | `Daemon` (`Daemon::builder`) |
-| Builder type with exactly five public methods: three that each take one project closure (stores, routes, optional MCP service), one optional all-phase logger setter, and one that runs the daemon | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`) |
+| Builder type with exactly seven public methods: three project closure setters, one optional all-phase logger setter, and three alternative ready-state terminal run methods | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`, `run_with_cleanup`, `run_with_cleanup_and_bound`) |
 | Configuration struct implementing `serde::Deserialize` | one | `DaemonConfig` |
 | Error enum | one | `RuntimeError` |
 | Public module for tests, containing one fixture type, behind `test-util` | one | `testing` (`testing::DaemonFixture`) |
@@ -885,9 +891,13 @@ libraries, and would be code every project has to learn.
    build does not expose `testing`.
 3. Inspection of the crate's rustdoc index (`cargo doc -p sc-runtime
    --no-deps`, and again with `--features test-util`): the builder type has
-   exactly five public methods (`stores`, `routes`, `mcp`, `logger`, `run`), the entry
+   exactly seven public methods (`stores`, `routes`, `mcp`, `logger`, `run`,
+   `run_with_cleanup`, `run_with_cleanup_and_bound`), the entry
    type has exactly one public function (`builder`), and the index does not
    list `sc_runtime::AppName`. `testing` appears only when `test-util` is on.
+   The terminal run methods exist only in Ready; logger remains same-phase.
+   Cleanup and bound receipt reuse the fixed runner; no additional public
+   setter, registry, macro, wrapper, typestate or callback mechanism is allowed.
 4. The `arch-qa` architecture review confirms no public type has a field or
    newtype payload of an `axum`, `rmcp` or `sqlx` type, and no registry
    structure exists.

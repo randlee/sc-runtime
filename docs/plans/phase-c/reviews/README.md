@@ -276,6 +276,24 @@ hashes. This checkpoint leaves all eight authoritative files unchanged for
 the pending R2 retry. No valid R2 result is claimed; critical review, QA,
 new fixture approval/capture and actual Plan Anchor gates remain pending.
 
+Actual [scope R2](compatibility-scope-r2/report.json) passed all six sprints at
+`0b32ae2`; the two scope findings are independently fixed-verified. Actual
+[critical R1](compatibility-critical-r1/report.json) then failed two Important
+findings on that source. The author corrected COMPAT-CRIT-001: NFR-RT-0001 is
+governing in phase/c-1/c-3; its exact seven-method table/rustdoc and
+ADR-RT-0001/0005 preserve narrow Ready-only cleanup/bound-receipt alternatives,
+fixed startup/typestate and no extra engine. Independent verification is pending.
+
+COMPAT-CRIT-002 remains open pending the parent/human policy decision. Its
+[commit policy packet](internal-unapproved/commit-policy-review-packet.md) and
+exact source assessment are UNAPPROVED proposals, not a weakened strict
+guarantee or qualified capability. Commit admission cannot by itself certify
+physical commit/fsync cutoffs. The separate
+[faithfulness authority proposal](internal-unapproved/faithfulness-authority-proposal.md)
+is also unapproved. No developer Step PASS, implementation readiness, new
+fixture labels, question override, replacement seal or Plan Anchor PASS is
+claimed by this safe WIP checkpoint.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |

@@ -6,6 +6,13 @@ specification consumed by c-1/c-3/c-5/c-6/c-4; existing anchor records and quote
 remain unchanged. User-approved new facts await the parent's separate capture
 packet. External consumer evidence informs tests, not scope authority.
 
+Critical R1 status: the public-surface metadata correction is author-complete,
+pending independent verification. COMPAT-CRIT-002 remains unresolved: the
+strict commit/deadline guarantee below is not yet qualified. A separate
+UNAPPROVED admission/outcome proposal does not replace or weaken it; no
+cooperative capability freeze or implementation readiness is granted pending
+the parent/human policy decision and review.
+
 ## Requirements and decisions
 
 REQ-CRON-0020/0021, REQ-CRNC-0001/0002, NFR-CRNC-0001 and REQ-RUN-0332

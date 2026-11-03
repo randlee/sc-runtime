@@ -45,7 +45,7 @@ the application. Emission rejection never changes assembly or HTTP results.
 | Item | Purpose |
 |---|---|
 | `Daemon::builder(&sc_transport::AppName, &DaemonConfig)` | start assembly |
-| `DaemonBuilder::logger / stores / routes / mcp / run` | optional same-state logger injection, the project's three closures, then serve; the five-method surface adds no logger typestate |
+| `DaemonBuilder::logger / stores / routes / mcp / run / run_with_cleanup / run_with_cleanup_and_bound` | exactly seven methods; same-state logger, three project closures and three alternative Ready-state terminal runs; NFR-RT-0001, no new typestate or callback engine |
 | `DaemonConfig` | `#[non_exhaustive]` settings the project loads; `transport` is flattened `sc_transport::TransportConfig` (`endpoint`, `instance_root`, `tcp_port`); `endpoint_flag` is `Option<String>` for `--endpoint` ([ADR-RT-0001](#adr-rt-0001-daemonbuilder-run-is-assembly-only-in-a-fixed-order), [REQ-RT-0001](requirements.md), [REQ-RT-0008](requirements.md)) |
 | `RuntimeError` | typed error naming the failing step |
 | `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
@@ -68,6 +68,14 @@ decision.
 ---
 
 ## ADR-RT-0001: `DaemonBuilder` `run()` is assembly only, in a fixed order
+
+Phase C narrow public-surface reconciliation: NFR-RT-0001's closed table and
+rustdoc criterion include existing run_with_cleanup and the approved bound
+receipt alternative run_with_cleanup_and_bound. These remain Ready-only
+terminal alternatives through the same runner, with startup/teardown order
+and ADR-RT-0005 ownership unchanged. The bound callback observes the owned
+Endpoint after bind; it is not a registry, library wrapper, new typestate or
+general callback mechanism. No other public method is authorized by this change.
 
 **2026-10-31 amendment:** ADR-RUN-0017 changes only canonical port ownership
 to command for initial release; the existing command edge carries it. No
@@ -425,6 +433,11 @@ serve path.
 - [NFR-RUN-0005](../requirements.md)
 
 ## ADR-RT-0005: Await application cleanup before releasing runtime ownership
+
+NFR-RT-0001's exact seven-method surface includes this existing cleanup
+terminal method and the bound-receipt alternative alongside run. All three
+are Ready-only alternatives through the same runner, as reconciled in
+ADR-RT-0001; no extra setter, registry, wrapper or callback engine is added.
 
 Phase C target amendment (planned): REQ-RT-0006's additive portable
 `DaemonFixture::start_with_cleanup` reuses this production ownership sequence
