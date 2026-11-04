@@ -57,4 +57,3 @@ triage:C1_PLAN_R1_ANC_017 a triage:Finding ;
  triage:replacement "Consumers may replace the bundled store/schema via ScheduleStore, override scheduler operations and lifecycle/error policy via CronOperations, or replace command execution via CronExecutor; they own cancellation, physical joins, authorization and accurate outcomes/error mapping." ;
  triage:authority "locked ANC-017; framework charter; REQ-CRON-0020/0021; REQ-CRNC-0002; ADR-RUN-0018/0019; existing compatibility-contract supported defaults and consumer replacement; all predate this failed run" ;
  triage:verified_run "plan-20261104T063232Z-c-1" .
-

@@ -26,4 +26,3 @@ triage:c_5_R1_ANC_013 a triage:Finding ;
  triage:replacement "C-5 is Phase C's dedicated compatibility sprint and completes before c-4\npublishes sc-runtime 0.2.0, alongside its existing c-3/c-6 real-artifact\nprerequisites." ;
  triage:authority "locked ANC-013; existing c-4 must_follow [c-3, c-5, c-6] and phase-c handoff; REQ-RUN-0702; ADR-RUN-0402; all predate plan-20261104T055443Z-c-5" ;
  triage:verified_run "plan-20261104T063457Z-c-5" .
-

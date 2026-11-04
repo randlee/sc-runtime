@@ -84,4 +84,3 @@ triage:c_3_R1_ANC_017 a triage:Finding ;
  triage:replacement "Opaque Stores passes through the runtime; application-supplied CronExecutor lets consumers replace default behavior/lifecycle/error handling through existing public projections, with owned duties per c1." ;
  triage:authority "locked ANC-017; REQ-RT-0003; REQ-CRNC-0002; ADR-RT-0003; existing consumer replacement contract; predates failed run" ;
  triage:verified_run "plan-20261104T063341Z-c-3" .
-

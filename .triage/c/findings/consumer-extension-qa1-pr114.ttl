@@ -131,4 +131,3 @@ triage:CQA_F002 a triage:Finding ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "Existing sprint-planning-guidelines Process Artifacts rule; single normal-edge graph acceptance retained" ;
  triage:correction "Merge lines 263-267 into the earlier fixture acceptance criterion, retaining its explicit duplicate-in-either-closure failure rule once." .
-
