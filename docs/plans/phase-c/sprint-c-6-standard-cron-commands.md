@@ -23,6 +23,9 @@ requirements:
   - REQ-CRON-0021
   - NFR-RUN-0001
   - NFR-RUN-0009
+  - NFR-RUN-0002
+  - NFR-RUN-0005
+  - NFR-CMD-0003
 adrs:
   - ADR-RUN-0019
   - ADR-RUN-0018
@@ -95,6 +98,15 @@ versions/lock. No template source or shared registry edits here.
    disabled MCP disabled; no automatic job start or application migration.
 
 ## Acceptance criteria
+
+- Map the core's fixed `command_capacity_exhausted` reason through the existing
+  typed unavailable Envelope category without exposing SQL/provider/request
+  values or creating a second capacity-wait queue. Operation-double tests cover
+  immediate refused/no-mutation results versus admitted cancellation/uncertain
+  outcomes; only the former may recommend retrying a refused request. Document
+  default64, validated finite pre-start core configuration, shared capacity and
+  the caller's responsibility for custom executor/operation overload policy.
+  C-5 proves physical permit retention; c-4 proves actual mixed-UI saturation.
 
 Root: `boundary:BOUNDARY-sc-cron-commands`, `adr:ADR-CRNC-0001`.
 

@@ -25,6 +25,9 @@ requirements:
   - REQ-RUN-0332
   - NFR-RUN-0001
   - NFR-RUN-0010
+  - NFR-RUN-0002
+  - NFR-RUN-0005
+  - NFR-RUN-0009
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0017
@@ -37,6 +40,18 @@ adrs:
   - ADR-RUN-0019
   - ADR-RUN-0202
   - ADR-CRNC-0001
+  - ADR-RUN-0001
+  - ADR-RUN-0003
+  - ADR-RUN-0009
+  - ADR-RUN-0303
+  - ADR-CMD-0001
+  - ADR-CMD-0002
+  - ADR-CMD-0003
+  - ADR-RT-0001
+  - ADR-RT-0002
+  - ADR-RT-0003
+  - ADR-RT-0004
+  - ADR-RT-0005
 owned_paths:
   - install.py
   - README.sc-publish.md
@@ -118,6 +133,9 @@ patch.
 
 ## Acceptance criteria
 
+REQ-RUN-0503 is a supporting registry-fixture constraint here; c-2 alone owns
+its phase requirement root. Retain all existing real registry proofs.
+
 Additional sole feature-level integration deliverables and criteria, rooted
 at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
 
@@ -144,6 +162,16 @@ at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
   enable only approved edges, disabled MCP stays disabled, and core runtime
   still excludes cron/adapter. Standard list covers active/ended/all with
   bounded stable continuation; no mocked list_active-only substitute.
+- In this same real mixed-UI fixture, fill c-1's default64 shared Scheduler
+  command capacity while store work is held. Calls through multiple executors
+  and CLI/HTTP/MCP projections cannot multiply the limit; the next operation
+  receives the fixed typed unavailable refusal before registered/submitted work.
+  Drop admitted transport waiters and prove slots remain held through physical
+  completion. Race deadline/cancellation and stop while full; independent
+  cleanup/stop still progress and accepted work is physically joined with
+  accurate outcomes. Exercise a valid finite configuration override; default-off
+  generation and custom executor policy remain independent. No new receipt or
+  fixture venue is needed.
 - Packaged lifecycle/command proof consumes c-1/c-5 typed admission/persistence
   outcomes. A cutoff prohibits new admission; an already admitted late commit
   or unknown result is never reported as rollback, not-persisted or bounded
@@ -164,7 +192,7 @@ c-2's additional analyzer receipts are independently owned and are not a
 registry-release start prerequisite. If a future fixture recipe actually
 consumes a changed c-2 artifact, update the named dependency before execution.
 
-Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0503`, `req:REQ-RUN-0702`,
+Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0702`,
 `adr:ADR-RUN-0203`.
 
 - An authorized release record identifies `sc-runtime 0.2.0`; the release

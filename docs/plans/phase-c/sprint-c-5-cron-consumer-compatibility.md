@@ -22,6 +22,7 @@ requirements:
   - REQ-RUN-0005
   - NFR-RUN-0002
   - NFR-RUN-0005
+  - NFR-RUN-0009
 adrs:
   - ADR-RUN-0013
   - ADR-RUN-0014
@@ -106,6 +107,18 @@ manifest edits or dependency on an uncommitted c-3 feature change.
    custom code. Do not extend core Schedule/DTOs with application fields.
 
 ## Acceptance criteria
+
+- Implement and causally prove the default command-intake gate frozen by c-1
+  under REQ-CRON-0020/0021 and ADR-RUN-0018: default64 per Scheduler, immutable
+  validated pre-start override 1..=65536, shared across clones/context-aware
+  public operations. Permit ownership covers registered/queued/physical work,
+  including cancellation of its waiter. Full intake refuses immediately with
+  fixed typed unavailable/no-mutation evidence; no hidden waiter queue. Hold
+  store work, exceed capacity and race cancellation/deadline/stop; verify bounded
+  submitted work, exact permit release after physical completion, and independent
+  joined generation-fenced cleanup while full. Public commands cannot enter
+  private worker/cleanup paths to bypass saturation. Existing scheduled-job
+  concurrency and embedder row-limit policy remain separate; no global job lock.
 
 Roots: `req:REQ-CRON-0003`, `req:REQ-CRON-0019`,
 `req:REQ-CRON-0020`, `req:REQ-CRON-0021`.

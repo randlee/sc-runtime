@@ -284,6 +284,18 @@ Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
 
 ## REQ-CRON-0021: Tracked public operations and bounded schedule query
 
+The standard Scheduler path has finite shared intake for public context-aware
+start/end/query roots: default64, validated pre-start capacity 1..=65536,
+immediate fixed typed unavailable refusal before registered/queued work when
+full. One permit remains owned through actual physical completion even when
+its async waiter is dropped. Stop/deadline/cancellation admission is atomic;
+no hidden capacity-wait queue or automatic replay. Worker dispatch and restricted
+internal cleanup retain separate existing ownership and cannot serve as a
+public-command bypass. This completes REQ-CRON-0020's admission promise under
+NFR-RUN-0002 and ADR-RUN-0018; it does not alter embedder row limits or impose
+this mechanism on custom CronOperations/CronExecutor policy. The Phase C
+contract defines exact configuration, reason mapping and causal proof owners.
+
 The scheduler provides async context-aware start, generation-fenced stop and
 query operations using the same tracked admission and cancellation protocol.
 They are required by standard command execution; transport timeout cannot detach

@@ -603,6 +603,13 @@ envelope object or of the error object is rejected by
 
 ## NFR-CMD-0001: `sc-command` links axum and rmcp only behind `server`
 
+**Phase C planned amendment, owned by c-1:** replace only the `~3.7` RMCP
+minor-series allowlist below with ADR-RUN-0203's exact probe-selected series,
+alongside REQ-CMD-0005's nominal identity amendment. C-3 consumes that frozen
+matrix. All optional/server/defaults-off gating and remaining dependency,
+conversion and error restrictions remain binding; this does not permit
+server dependencies in a CLI's isolated normal graph.
+
 **2026-10-31 amendment:** ADR-RUN-0017 adds an unconditional neutral
 `observability` contract module and non-default `test-util = []` doubles using
 only std. Neither activates server/axum/rmcp. The exact types pin is temporary;

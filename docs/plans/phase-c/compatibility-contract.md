@@ -145,6 +145,70 @@ recipe in its existing generated-consumer proof before publication and again
 against registry packages. C-5/c-6 prove their local examples independently;
 the final real composition remains c-4's later-wave responsibility.
 
+## Bounded default command intake
+
+This completes the existing pre-submission admission/physical-ownership promise
+of REQ-CRON-0020/0021 and ADR-RUN-0018 under NFR-RUN-0002's nonblocking request
+path and the existing service-hardening production checklist section 7. It is
+not a new user anchor, a row cap or a global scheduled-job in-flight lock:
+ADR-RUN-0014's independent embedder row limits and ADR-RUN-0013's job semantics
+remain unchanged.
+
+The standard Scheduler-backed command path admits at most 64 context-aware
+public start/end/query operation roots per Scheduler by default. One root
+counts from admission, before registry insertion or blocking-pool submission,
+through actual physical completion of all its owned store work. Nested store
+calls share that root's permit; they neither acquire another nor bypass the
+bound. All StandardCronExecutor instances, clones and CLI/HTTP/MCP projections
+using that Scheduler share the same counter. Constructing another executor or
+child context must not reset it. Every public context-aware operation enters
+this gate, including direct calls outside the standard adapter.
+
+C-1 freezes the narrow pre-start configuration method on Scheduler:
+`with_command_capacity(self, capacity: u32) -> Result<Self, CronError>`.
+Accept only 1..=65536; reject zero/out-of-range and attempts after any worker or
+operation has started, before changing state. The default is 64, not unlimited.
+The application owns selecting a finite override appropriate to its memory,
+store and deployment; no new generator setting or universal tuning guarantee
+is required. C-5 owns this same immutable per-Scheduler configuration and gate.
+
+Admission atomically checks live stop/cancellation/deadline and the available
+slot before creating registered/submitted work. Full capacity returns promptly
+through existing CronError::Store/StoreErrorKind::Unavailable and canonical
+namespaced unavailable mapping, with fixed value-free reason
+`command_capacity_exhausted`, no mutation attempted and remediation to reduce
+concurrency or retry a refused request later. No SQL/provider/payload values,
+sleep/retry loop, waiter registry or hidden capacity-wait queue is created.
+Cancelled/expired/stopping requests return their existing typed status instead
+of entering work. Cancellation after admission never releases the slot merely
+because the transport future was dropped: the core-owned physical completion
+releases it exactly once, together with its tracked ownership. Stop closes
+intake independently of capacity, then joins accepted work under existing G/K
+and accurate persistence outcomes. Never automatically replay an admitted
+uncertain mutation.
+
+This bound counts public command roots, not already separately owned scheduled
+job execution or worker initial-load/reload/bookkeeping operations. Those remain
+subject to their existing worker dispatch and operation-ownership rules; they
+must not be used as a fallback route for a saturated public command. Only
+private worker/stop paths may classify internal operations. Restricted terminal
+cleanup and stop control do not acquire a command slot, cannot launch new jobs
+or accept ordinary commands, and remain joined, generation-fenced and K-limited.
+The bound is not a claim that arbitrary application jobs/providers have bounded
+concurrency or hard preemption. Consumers replacing CronOperations/CronExecutor
+own their different finite intake/overload policy and must document it; custom
+stores need not implement a semaphore or a SQLite-specific mechanism.
+
+C-5 causal tests hold real store work, fill capacity and prove the next direct
+operation is refused before registration/submission; drop admitted waiters and
+verify slots remain occupied until physical completion. Exercise cancellation,
+deadline, saturation-versus-stop races, and cleanup while full. C-6 maps the
+fixed typed refusal without adding an independent queue/timeout policy. C-4's
+existing real mixed-UI fixture shares one Scheduler across executors, exceeds
+capacity under a held store, verifies bounded submitted work/refusal, issues
+stop and physically joins accepted work. Configuration validation/default64
+and valid finite overrides are regression cases; no new test venue or receipt.
+
 ## Admission, budget and physical ownership
 
 In the built-in cooperative path, all worker/standard-command operations register before submission and blocking locks,

@@ -39,6 +39,31 @@ requirements:
   - REQ-CRNC-0001
   - REQ-CRNC-0002
   - NFR-CRNC-0001
+  - REQ-CMD-0001
+  - REQ-CMD-0002
+  - REQ-CMD-0003
+  - REQ-CMD-0004
+  - REQ-CMD-0006
+  - NFR-CMD-0003
+  - REQ-RT-0003
+  - REQ-RT-0007
+  - REQ-RT-0008
+  - NFR-RT-0002
+  - NFR-RT-0004
+  - REQ-CRON-0002
+  - REQ-CRON-0003
+  - REQ-CRON-0004
+  - REQ-CRON-0005
+  - REQ-CRON-0019
+  - NFR-CRON-0002
+  - REQ-CRON-0020
+  - REQ-CRON-0021
+  - REQ-DBSQ-0002
+  - REQ-DBSQ-0003
+  - REQ-DBSQ-0004
+  - NFR-RUN-0009
+  - NFR-RUN-0002
+  - NFR-RUN-0005
 adrs:
   - ADR-CMD-0001
   - ADR-CMD-0002
@@ -183,6 +208,9 @@ must satisfy that amendment:
 
 ## Acceptance criteria
 
+REQ-RUN-0503 is a supporting generated-project constraint here; c-2 alone
+owns its phase requirement root. Retain this sprint's full checkout proof.
+
 Additional implementation deliverables: REQ-RT-0005/0006 and
 REQ-RUN-0332/REQ-CRNC-0002, consuming c-1's compatibility contract:
 
@@ -227,7 +255,7 @@ REQ-RUN-0332/REQ-CRNC-0002, consuming c-1's compatibility contract:
   Cron implementation/tests belong solely to c-5; adapter implementation/tests
   solely to c-6. No serial sibling dependency is introduced by shared version.
 
-Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
+Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`,
   `req:REQ-RT-0001`, `req:REQ-RT-0004`, `req:REQ-CMD-0005`.
 
 - Root workspace tests and the runtime server-feature checks pass with the
@@ -237,7 +265,9 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
   `just lint`, `just test`, `just build-cli`, and `just build-daemon` with no
   source edit. Its locked metadata closure contains exactly one reachable
   `(name, version, source)` tuple each for `rmcp`, `utoipa`, and
-  `utoipa-axum` from the runtime/daemon roots.
+  `utoipa-axum` from the runtime/daemon roots. Both locked metadata documents
+  use the stated normal-edge reachability algorithm: a duplicate in either
+  closure fails; unrelated duplicates cannot waive this assertion.
 - Both `template/Cargo.toml` and `template/workspace.template.toml` require
   the frozen `sc-command 0.2.0` and `sc-runtime 0.2.0` lines and c-1's
   affected cron version. Tests reject a stale affected-package requirement
@@ -247,7 +277,9 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
   public builder/router and `IntoMcp` composition, and REQ-CMD-0005 plus
   NFR-CMD-0001/0002's server-feature and dependency boundaries.
   REQ-CMD-0005 is consumed with c-1's updated version identity and unchanged
-  conversion/error semantics. NFR-RUN-0001 still isolates CLI dependencies;
+  conversion/error semantics; NFR-CMD-0001 consumes c-1's amended minor series
+  with remaining dependency/server restrictions unchanged. NFR-RUN-0001's
+  narrow selected defaults-only adapter exception still isolates CLI dependencies;
   REQ-RT-0005 governs shutdown proof below; REQ-DBSQ-0001/0005 govern the
   independent SQLite writer and resolver guard. The observability guard
   accepts only c-1's aligned versions and rejects stale versions and forbidden
@@ -260,11 +292,6 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`, `req:REQ-RUN-0503`,
   linked against the former Utoipa 5 type, demonstrating that the intentional
   0.2.0 minor bump carries the breaking public dependency change rather than
   hiding it in a patch release.
-- The two locked Cargo-metadata documents, parsed by the stated normal-edge
-  reachability algorithm, contain exactly one identity each for `rmcp`,
-  `utoipa`, and `utoipa-axum` across the runtime/daemon composition graph. A
-  duplicate in either closure fails; unrelated duplicate crates do not waive
-  this assertion.
 - `crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs` and its companion tree
   assertions prove `rusqlite 0.39.x`, `libsqlite3-sys 0.37.x`, and template
   SQLx 0.9 compatibility; no 0.38+ native SQLite sys crate resolves.

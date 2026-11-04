@@ -3770,6 +3770,17 @@ the point at which generated projects become upgradeable by a normal
 
 ## NFR-RUN-0001: A CLI never links server-side dependencies
 
+**Phase C planned amendment, owned by c-1:** the closed generated-CLI allowlist
+below additionally permits defaults-only sc-cron-commands DTOs when standard
+cron commands are explicitly selected, directly or through api-types. This is
+the sole shared CronRequest identity, not a copied wire DTO. The exception
+introduces no scheduler/server/SQLite/Tokio/Monty dependency through the adapter
+edge and changes
+none of the existing forbidden normal edges. C-3's isolated CLI graph proof
+and c-4's registry repetition verify the amended rule; default-off generation
+is unchanged. REQ-CRNC-0002/NFR-CRNC-0001 and ADR-RUN-0019 govern that narrow
+optional adapter edge.
+
 **Status:** Active  
 
 ### Requirement Statement

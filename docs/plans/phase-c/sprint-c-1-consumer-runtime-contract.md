@@ -43,6 +43,24 @@ requirements:
   - REQ-RT-0005
   - REQ-RT-0001
   - REQ-RT-0006
+  - REQ-CMD-0001
+  - REQ-CMD-0002
+  - REQ-CMD-0003
+  - REQ-CMD-0004
+  - REQ-CMD-0006
+  - NFR-CMD-0003
+  - REQ-RT-0002
+  - REQ-RT-0003
+  - REQ-RT-0004
+  - REQ-RT-0007
+  - REQ-RT-0008
+  - NFR-RT-0002
+  - NFR-RT-0003
+  - NFR-RT-0004
+  - NFR-RUN-0009
+  - NFR-RUN-0002
+  - NFR-RUN-0005
+  - NFR-RUN-0001
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0005
@@ -62,6 +80,11 @@ adrs:
   - ADR-RT-0001
   - ADR-RT-0004
   - ADR-RT-0005
+  - ADR-RT-0002
+  - ADR-RT-0003
+  - ADR-CMD-0001
+  - ADR-CMD-0002
+  - ADR-CMD-0003
 owned_paths:
   - docs/requirements.md
   - docs/architecture.md
@@ -162,9 +185,12 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
    ADR-RUN-0017's temporary command dependency version and the cron
    requirements/architecture when that affected edge changes, preserving
    defaults-off/no-server semantics and deferred upstream logging cleanup.
-   Amend REQ-CMD-0005's explicit RMCP 3.7 type identity to the frozen matrix
+   Amend REQ-CMD-0005's explicit RMCP 3.7 type identity and NFR-CMD-0001's
+   independently binding RMCP minor-series allowlist to the frozen matrix
    in `docs/sc-command/requirements.md`, retaining its conversion, error,
-   serialization and server-feature semantics. c-3 consumes this amendment.
+   serialization and server-feature semantics, optional server gating,
+   defaults-off behavior and all remaining dependency restrictions. c-3
+   consumes both amended requirements, not an obsolete ~3.7 allowlist.
 6. Define `c-4` as the named authorized release handoff: only after an
    authorized `sc-runtime 0.2.0` publication and registry visibility may its
    no-patch fixture report the registry-consumer acceptance result.
@@ -191,6 +217,19 @@ do not require every consumer to adopt the default shutdown policy. Assign the
 custom-store README/example proof to c-5, adapter/selected-default recipe to c-6,
 and real recipe composition to c-4 using their existing owned paths. No new
 plugin framework or API is authorized without a specific demonstrated hook gap.
+
+Reconcile NFR-RUN-0001's closed generated-CLI allowlist for explicitly selected
+standard commands: permit defaults-only sc-cron-commands DTOs directly or
+through api-types; that adapter edge's own normal closure excludes scheduler,
+server, SQLite, Tokio and Monty. Keep all existing forbidden edges and isolated CLI proofs; do not copy
+the sole DTO to evade the amendment. Freeze the bounded default command intake
+section of compatibility-contract.md: default64, validated finite pre-start
+configuration, shared Scheduler ownership, immediate typed refusal, no hidden
+wait queue, physical slot retention after waiter cancellation and independent
+stop/cleanup. C-5 implements the core gate, c-6 maps its error, c-4 proves real
+mixed-UI saturation. This is a default capability, not a mandatory mechanism for
+arbitrary consumer overrides. Existing NFR-CMD/RT and ADR-CMD/RT constraints
+in frontmatter remain binding throughout these narrow amendments.
 
 ## Acceptance criteria
 
@@ -290,7 +329,7 @@ Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
   versions are recorded. ADR-RUN-0203 names those exact versions and the
   metadata algorithm; it no longer leaves its old pins as active evidence.
 - The probe output (release asset, exact commands, receipts, init-preservation
-  result, metadata JSON digest, and selected versions) is attached to the
+  result, and selected versions) is attached to the
   `c-1` PR and summarized in ADR-RUN-0005/0203. Before `c-1` merges, its
   owner deletes `examples/spike/phase-c-contract/`; `c-2` and `c-3` retain
   the durable generated-fixture and metadata regressions, respectively.

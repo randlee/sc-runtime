@@ -15,6 +15,7 @@ requirements:
   - REQ-RUN-0503
   - REQ-RUN-0701
   - NFR-RUN-0006
+  - NFR-RUN-0005
 adrs:
   - ADR-RUN-0005
   - ADR-RUN-0303
@@ -105,6 +106,10 @@ The standard consumer command names remain `setup`, `lint`, `test`, and
 ## Acceptance criteria
 
 Root: `req:REQ-RUN-0307`, `req:REQ-RUN-0503`.
+
+C-2 is the sole phase acceptance owner for REQ-RUN-0503. C-1's amendment,
+c-3's checkout fixture and c-4's registry repetition are supporting constraints
+and evidence; they do not create additional requirement roots or change the DAG.
 
 - A generated `sqlite-mcp` project completes `just setup` with no source
   change, and `sc-lint version --json` reports **0.8.4**.

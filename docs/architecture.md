@@ -3005,6 +3005,16 @@ no signing/approval gates, and no production dependency on sc-compose or ATM.
 
 ## ADR-RUN-0018: Cooperative cron operation and owned shutdown contract
 
+Phase C's default command intake completes this same pre-submission admission
+contract with finite per-Scheduler capacity (default64, validated finite
+pre-start override), immediate typed refusal rather than an unbounded wait
+queue, and permits retained until physical completion after waiter cancellation.
+Stop/cleanup remain independent; public commands cannot use private internal
+paths to bypass capacity. NFR-RUN-0002 and the existing service-hardening
+checklist section 7 motivate this operational bound. Existing row-limit and
+scheduled-job concurrency decisions are unchanged; custom operation/executor
+providers retain responsibility for their explicitly documented overload policy.
+
 **Status:** Approved Phase C target; implementation planned. REQ-CRON-0020/0021
 and [the Phase C contract](plans/phase-c/compatibility-contract.md) specify the
 public receiver facade, legacy-safe store admission, directly mutable real
