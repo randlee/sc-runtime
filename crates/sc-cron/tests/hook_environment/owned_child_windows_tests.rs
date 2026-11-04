@@ -41,6 +41,7 @@ fn witness(mode: &str) {
             command
                 .args([WITNESS, "observe"])
                 .arg(root.path())
+                .arg(mode)
                 .stdin(Stdio::null())
                 .stdout(Stdio::null())
                 .stderr(Stdio::inherit());

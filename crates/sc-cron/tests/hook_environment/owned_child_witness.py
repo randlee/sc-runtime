@@ -74,7 +74,7 @@ def bridge(mode, root, request):
     return owned_child.main(request)
 
 
-def observe(root):
+def observe(root, mode):
     until(root / 'pids')
     until(root / 'bridge-pid')
     pids = json.loads((root / 'pids').read_text()) + [json.loads((root / 'bridge-pid').read_text())]
@@ -94,8 +94,13 @@ def observe(root):
         for phase in ('before', 'after'):
             until(root / phase)
             states = []
+            deadline = time.monotonic() + 5
             for handle in handles:
-                result = kernel.WaitForSingleObject(handle, 0)
+                # Normal/omission observations are immediate and unmasked.
+                # A job kill initiates termination: retain each identity handle
+                # and await actual exit, without a guessed post-kill sleep.
+                milliseconds = max(0, int((deadline - time.monotonic()) * 1000)) if phase == 'after' or mode == 'stall' else 0
+                result = kernel.WaitForSingleObject(handle, milliseconds)
                 if result not in (0, 258):
                     raise ctypes.WinError(ctypes.get_last_error())
                 states.append(result == 0)
@@ -114,4 +119,4 @@ if __name__ == '__main__':
     elif action == 'target':
         target(root, sys.argv[3])
     elif action == 'observe':
-        observe(root)
+        observe(root, sys.argv[3])
