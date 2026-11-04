@@ -198,6 +198,16 @@ class Bootstrap:
                     self.binary = self.managed
             if status:
                 return status
+        probe = subprocess.run([self.binary, "version", "--json"], check=False, text=True, stdout=subprocess.PIPE)
+        try:
+            actual = json.loads(probe.stdout).get("data", {}).get("version")
+        except ValueError:
+            actual = None
+        expected = minimum_version(self.config)
+        if probe.returncode or actual != expected:
+            print(f"setup: expected sc-lint {expected}, got {actual!r} (CLI.SC_LINT_VERSION_MISMATCH)", file=sys.stderr)
+            return probe.returncode or 4
+        print(f"setup: verified sc-lint {actual}", flush=True)
         return 0
 
     def provision_venv(self, mode):
@@ -303,7 +313,7 @@ def run_consumer_lint(binary, config, positional):
     try:
         receipt = json.loads(completed.stdout)
     except ValueError:
-        return completed.returncode or 3
+        return completed.returncode
     for step in receipt.get("data", {}).get("steps", []):
         if step.get("status") in ("pass", "fail"):
             print(f"lint.{step['name']}: running {step['command']}", flush=True)

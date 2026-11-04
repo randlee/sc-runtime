@@ -12,7 +12,7 @@ import tomllib
 FACADES = {
     'api-types': 'Widget', 'schema': 'EngineStore', 'service': 'Stores',
     'daemon': 'instance_root', 'cli': 'Command', 'store-sqlite': 'Store',
-    'store-postgres': 'Store', 'store-mysql': 'Store', 'store-adaptor': 'Store',
+    'store-postgres': 'Store', 'store-mysql': 'Store', 'store-adaptor': 'TableFlags',
 }
 
 

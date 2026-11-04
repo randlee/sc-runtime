@@ -3,7 +3,6 @@ import importlib.util
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
 import tempfile
 import tomllib
@@ -107,6 +106,7 @@ class ConsumerProfileTests(unittest.TestCase):
                 assert_receipts(self, result.stdout)
             if mutation == 'command':
                 self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn('PROFILE.UNKNOWN_MEMBER', result.stdout)
             config.write_text(original)
         policy = next((root / 'boundaries').glob('*service/*.toml'))
         before = policy.read_text()
@@ -116,9 +116,10 @@ class ConsumerProfileTests(unittest.TestCase):
         result = subprocess.run([str(binary), 'lint', 'sc-boundary', '--root', '.', '--config', 'sc-lint.toml'],
                                 cwd=root, env=self.env, text=True, capture_output=True, check=False)
         self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('package_dependency_not_allowed', result.stdout + result.stderr)
         print('consumer proof: removing an allowed edge failed the actual boundary analyzer', flush=True)
         policy.write_text(before + '\n# Consumer-owned policy customization.\n')
-        preserved = {p: p.read_bytes() for p in (config, policy, root / 'Justfile', root / 'justfile')}
+        preserved = {p: p.read_bytes() for p in (config, policy, root / 'Justfile')}
         self.command(root, 'just', 'setup')
         self.command(root, 'just', 'upgrade')
         init = self.command(root, str(binary), 'init', '--just', expected=3)
