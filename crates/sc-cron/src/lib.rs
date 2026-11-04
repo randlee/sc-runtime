@@ -118,6 +118,7 @@ mod monty_host;
 mod monty_run;
 #[cfg(feature = "monty-test-handshake")]
 mod monty_test_os;
+pub mod observability;
 pub mod process;
 mod run_failure;
 mod scheduler;
