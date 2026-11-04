@@ -55,10 +55,18 @@ def bridge(mode, root, request):
     if mode == 'timeout':
         # Freeze only the owner module's clock, with independent real-clock
         # startup bounds above and in Rust. Expire after controller release.
-        real_sleep = time.sleep
-        owned_process.time = SimpleNamespace(
-            monotonic=lambda: 1000 if (root / 'expire').exists() else 0,
-            sleep=real_sleep)
+        real_sleep, real_now = time.sleep, time.monotonic
+        expired_at = None
+
+        def clock():
+            nonlocal expired_at
+            if expired_at is None and (root / 'expire').exists():
+                expired_at = real_now()
+            # After injection the clock advances normally, so cleanup bounds
+            # remain real bounds rather than freezing an unreapable job.
+            return 0 if expired_at is None else 1000 + real_now() - expired_at
+
+        owned_process.time = SimpleNamespace(monotonic=clock, sleep=real_sleep)
         config = json.loads(Path(request).read_text())
         config['timeout'] = 3  # Original execution bound, never startup padding.
         request = root / 'inner-request'
