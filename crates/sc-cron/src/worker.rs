@@ -49,6 +49,7 @@ use crate::{
     RunOutcome, Schedule, ScheduleStore, StopDecision, Timestamp,
 };
 
+mod store_calls;
 mod worker_runs;
 
 pub(crate) use worker_runs::{Event, event_record, terminal_event};
@@ -567,41 +568,6 @@ where
         Timestamp::from_datetime(self.clock.now())
     }
 
-    async fn store_call<T: Send + 'static>(
-        &self,
-        operation: impl FnOnce(&S) -> Result<T, CronError> + Send + 'static,
-    ) -> Result<T, CronError> {
-        let store = Arc::clone(&self.store);
-        let scoped = if self.cooperative {
-            let controller = self.controller.as_ref().expect("cooperative controller");
-            let root = crate::StoreOperationContext::root(Arc::clone(controller));
-            let context = if self.stopping { root.terminal() } else { root };
-            if let Err(error) = context.check() {
-                if context.cleanup {
-                    controller.record_cleanup(crate::TransactionOutcome {
-                        admission: crate::CommitAdmission::NotAttempted,
-                        persistence: crate::PersistenceOutcome::NoMutationAttempted,
-                        completed_after_cutoff: true,
-                    });
-                }
-                return Err(error);
-            }
-            let guard = controller.register(context.cleanup, context.external_deadline(), false)?;
-            Some((context, guard))
-        } else {
-            None
-        };
-        if let Some((context, guard)) = scoped {
-            let controller = Arc::clone(&context.state);
-            return controller
-                .run(guard, move || {
-                    store.with_operation_context(&context, operation)
-                })
-                .await;
-        }
-        crate::scheduler::blocking(move || operation(store.as_ref())).await
-    }
-
     async fn reload(&mut self) {
         self.reload_wanted = false;
         // A successful reload arms the poll again; a failed one is retried by
@@ -1039,11 +1005,6 @@ where
                 }
             }
         }
-    }
-
-    fn persistence_requires_reconciliation(&self, error: &CronError) -> bool {
-        self.cooperative
-            && matches!(error, CronError::Store(error) if error.kind() == crate::StoreErrorKind::Indeterminate || error.transaction_outcome().is_some_and(|outcome| matches!(outcome.persistence, crate::PersistenceOutcome::Committed | crate::PersistenceOutcome::Indeterminate)))
     }
 
     /// Stores the next run time; returns `false` only when fenced.
