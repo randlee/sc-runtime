@@ -7,11 +7,8 @@ pub const MAX_REQUEST_BYTES: usize = 2 * 1024 * 1024;
 
 /// Sole versioned cron request; parsing rejects duplicate and unknown fields.
 #[derive(Clone, Debug, PartialEq, Serialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema, utoipa::ToSchema))]
 pub struct CronRequest {
     /// Exact wire contract version, currently "1".
-    #[cfg_attr(feature = "schema", schemars(regex(pattern = "^1$")))]
-    #[cfg_attr(feature = "schema", schema(pattern = "^1$"))]
     pub version: String,
     /// Tagged standard operation.
     #[serde(flatten)]
@@ -281,4 +278,84 @@ pub struct ListResult {
     pub items: Vec<ScheduleView>,
     /// Exclusive next-page cursor, or null.
     pub next_cursor: Option<u64>,
+}
+
+#[cfg(feature = "schema")]
+fn request_schema(
+    start: serde_json::Value,
+    end: serde_json::Value,
+    list: serde_json::Value,
+) -> serde_json::Value {
+    let variants = [
+        ("cron.start", start),
+        ("cron.end", end),
+        ("cron.list", list),
+    ]
+    .into_iter()
+    .map(|(command, request)| {
+        serde_json::json!({
+            "type":"object", "additionalProperties":false,
+            "required":["version","command","request"],
+            "properties":{
+                "version":{"type":"string","enum":["1"]},
+                "command":{"type":"string","enum":[command]},
+                "request":request
+            }
+        })
+    })
+    .collect::<Vec<_>>();
+    serde_json::json!({"oneOf":variants})
+}
+
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for CronRequest {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "CronRequest".into()
+    }
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        serde_json::from_value(request_schema(
+            generator.subschema_for::<StartRequest>().to_value(),
+            generator.subschema_for::<EndRequest>().to_value(),
+            generator.subschema_for::<ListRequest>().to_value(),
+        ))
+        .expect("typed request schema is an object")
+    }
+}
+
+#[cfg(feature = "schema")]
+impl utoipa::PartialSchema for CronRequest {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        serde_json::from_value(request_schema(
+            serde_json::json!({"$ref":"#/components/schemas/StartRequest"}),
+            serde_json::json!({"$ref":"#/components/schemas/EndRequest"}),
+            serde_json::json!({"$ref":"#/components/schemas/ListRequest"}),
+        ))
+        .expect("typed request schema is valid OpenAPI")
+    }
+}
+
+#[cfg(feature = "schema")]
+impl utoipa::ToSchema for CronRequest {
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        schemas.push((
+            "StartRequest".into(),
+            <StartRequest as utoipa::PartialSchema>::schema(),
+        ));
+        schemas.push((
+            "EndRequest".into(),
+            <EndRequest as utoipa::PartialSchema>::schema(),
+        ));
+        schemas.push((
+            "ListRequest".into(),
+            <ListRequest as utoipa::PartialSchema>::schema(),
+        ));
+        <StartRequest as utoipa::ToSchema>::schemas(schemas);
+        <EndRequest as utoipa::ToSchema>::schemas(schemas);
+        <ListRequest as utoipa::ToSchema>::schemas(schemas);
+    }
 }

@@ -339,3 +339,10 @@ finish late and keeps owned joins. Typed persistence outcomes distinguish
 confirmed late commit, rollback and indeterminate; no blind replay or false
 not-persisted report. G/K is not a universal fsync/physical-2T guarantee.
 Actual state after physical join and no-effects-after-release are required.
+
+Phase C contract amendment (2026-11-04): the temporary nominal logging
+contract edge is defaults-off `sc-command 0.2.0`, before `sc-cron 0.2.0`
+publication, preserving no-server behavior and deferred upstream logging
+cleanup. Initial 0.1.1 release observations remain historical. Rusqlite remains
+0.39.x with bundled+hooks; provider callback/interrupt details are frozen in
+[the compatibility contract](../plans/phase-c/compatibility-contract.md).

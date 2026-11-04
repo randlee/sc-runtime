@@ -6,7 +6,8 @@
 
 `crates/sc-cron` is a workspace member, ported from beads-cache
 `crates/sc-cron` at `develop`. For the initial release ADR-RUN-0017 permits
-only a temporary normal `sc-command` 0.1.1 dependency with
+only a temporary normal `sc-command` 0.2.0 Phase C dependency (initial
+release 0.1.1) with
 `default-features = false` and no features for the canonical port. Canonical
 event values remain direct registry `sc-observability-types` imports.
 `sc-runtime` does not name it. The generated daemon may name it only as the

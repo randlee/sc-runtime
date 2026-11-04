@@ -3793,6 +3793,25 @@ the point at which generated projects become upgradeable by a normal
    readiness reports the outstanding release conditions rather than claiming
    criteria 6–7 passed.
 
+
+### Phase C authorized 0.2.0 continuation
+
+C-4 is the sole named release handoff for sc-command0.2.0, sc-cron0.2.0,
+sc-runtime0.2.0 and sc-cron-commands0.2.0; config/transport and unrelated
+packages remain0.1.1. Command publishes before cron/runtime and cron before
+cron-commands. The release commit carries v0.2.0 only after the existing
+human publication authorization, exact package visibility and real consumer
+proof conditions hold. A no-patch generated registry fixture can report
+registry-consumer acceptance only after authorized sc-runtime0.2.0 publication
+and registry visibility; checkout-patched tests do not satisfy it.
+ADR-RUN-0203 freezes package/schema identities. The exact canonical sc-publish
+kit must qualify per-package version verification, literal unchanged bases,
+publish=false, ordered affected publication and package-specific registry
+lookups under v0.2.0; its currently demonstrated uniform-version gap blocks
+C1 closure. No blanket version bump or handwritten workflow bypass is allowed.
+This extends the existing0.1.x release contract without claiming publication
+or release acceptance from contract declarations alone.
+
 ---
 
 ## NFR-RUN-0001: A CLI never links server-side dependencies

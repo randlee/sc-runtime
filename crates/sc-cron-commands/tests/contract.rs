@@ -34,6 +34,20 @@ fn owner_schemas_cover_real_request_and_envelope_types() {
     let envelope = schemars::schema_for!(sc_command::Envelope<CronResponse>);
     let error = schemars::schema_for!(sc_command::OpError);
     assert!(request.as_value().to_string().contains("cron.start"));
+    for alternative in request.as_value()["oneOf"]
+        .as_array()
+        .expect("command alternatives")
+    {
+        assert_eq!(alternative["additionalProperties"], false);
+        assert_eq!(
+            alternative["properties"]["version"]["enum"],
+            serde_json::json!(["1"])
+        );
+        assert_eq!(
+            alternative["required"].as_array().expect("required").len(),
+            3
+        );
+    }
     let alternatives = envelope.as_value()["oneOf"]
         .as_array()
         .expect("wire alternatives");

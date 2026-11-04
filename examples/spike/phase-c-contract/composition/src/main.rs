@@ -9,6 +9,7 @@ impl rmcp::ServerHandler for Server {}
 fn main() {
     let _parameters: Option<rmcp::handler::server::wrapper::Parameters<CronRequest>> = None;
     let _request = schemars::schema_for!(CronRequest);
+    std::fs::write("/tmp/c1-request-schema.json", serde_json::to_vec_pretty(&_request).unwrap()).unwrap();
     let _response = schemars::schema_for!(sc_command::Envelope<CronResponse>);
     let _openapi_request = <CronRequest as utoipa::PartialSchema>::schema();
     let _openapi_response = <sc_command::Envelope<CronResponse> as utoipa::PartialSchema>::schema();

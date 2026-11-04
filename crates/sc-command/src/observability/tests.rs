@@ -3,7 +3,7 @@ use std::sync::Arc;
 use super::*;
 use sc_observability_types::{
     ActionName, ErrorCode, Level, OBSERVATION_SCHEMA_VERSION, ProcessIdentity, Remediation,
-    TargetCategory, Timestamp, error_codes,
+    TargetCategory, Timestamp,
 };
 
 pub(crate) fn event(action: &str) -> LogEvent {

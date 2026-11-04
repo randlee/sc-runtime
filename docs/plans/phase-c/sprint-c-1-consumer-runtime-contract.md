@@ -1,7 +1,7 @@
 ---
 id: c-1
 phase: c
-status: planned
+status: in_progress
 closure_type: contract
 target_boundary: phase-c-consumer-runtime-contract
 track: contract
@@ -86,6 +86,8 @@ adrs:
   - ADR-CMD-0002
   - ADR-CMD-0003
 owned_paths:
+  - template/hooks/drop-template-exclude.rhai
+  - crates/sc-command/src/observability/tests.rs
   - docs/requirements.md
   - docs/architecture.md
   - .claude/project/quality-policy.md
@@ -394,3 +396,10 @@ Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
   runtime/template composition and atomic ecosystem migration (c-3), or actual
   cross-UI composition and publication (c-4). Contract declarations are not
   claims of those behaviors.
+
+
+C1 initial declaration ownership clarification (parent-approved 2026-11-04):
+`template/hooks/drop-template-exclude.rhai` rejects cron_commands without cron
+before output mutation; C3 owns subsequent generator implementation. The
+existing sc-command observability unit-test unused import is removed only to
+run feature-contract clippy, preserving all test meaning and lint enforcement.

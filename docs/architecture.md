@@ -123,7 +123,7 @@ workspace-internal edges and the forbidden edges.
 | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-| `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.2.0 for Phase C (initial release 0.1.1), defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
 `sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
@@ -232,7 +232,8 @@ types dependency to `=1.5.0`; root/runtime/cron caret 1.5.0 requirements unify
 with it. This exact-pin exception bounds the inspected validator and type
 identity but prevents resolution with consumer requirements for newer types.
 
-Permit only cron's normal `sc-command` 0.1.1 edge with defaults disabled and no
+Permit only cron's normal `sc-command` 0.2.0 Phase C edge (initial-release
+0.1.1 retained as historical evidence) with defaults disabled and no
 features. Command allowed_dependents becomes exactly runtime+cron. Runtime
 uses its existing server-enabled command edge. Restore the original cron
 forbidden edge and runtime-only command dependent at cleanup. All other
@@ -548,7 +549,7 @@ as its own selection.
    | `sc-command` | none | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-cron`, `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for injected canonical events. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
    | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
-   | `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+   | `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.2.0 for Phase C (initial release 0.1.1), defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
 
 `sc-observability-types` is allowed on `sc-command`, `sc-runtime`, and
 `sc-cron`; command temporarily owns the contract and runtime/cron construct canonical events from the published values.
@@ -3150,6 +3151,28 @@ release. C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves
 the actual admission race and persisted state after join, c-4 proves packaged
 behavior. This changes the prior strict physical-cutoff interpretation by the
 explicit human decision, not a finding waiver or implementation PASS.
+
+### Selective release toolkit qualification gap (2026-11-04)
+
+The exact canonical kit pin b6947ab2e495398a58123c60c0b86b5421f89979 was
+fetched from upstream and executed in a disposable fixture with workspace/tag
+version0.2.0, affected command/cron/runtime/adapter0.2.0 and literal unchanged
+config/transport0.1.1 with publish=false. Its existing `list-publish-plan`
+includes even disabled config/transport packages, then command, cron, runtime
+and cron-commands; it does not filter publish=false. Its actual `verify-version --version 0.2.0` fails:
+`sc-config: version mismatch: expected 0.2.0, got 0.1.1` (exit1). Source
+cmd_verify_version iterates every declared crate, including publish=false;
+`public-registry-check-plan` likewise passes one global args.version for all
+crate names. Thus publish=false and literal-base support in another preflight
+are insufficient to qualify selective publication. This is a demonstrated
+upstream capability gap and leaves C1 incomplete. No local workflow bypass,
+blanket version bump, unqualified newer pin or publication has been performed.
+An upstream released exact pin must qualify selective per-package versions,
+unchanged-package treatment, stale-command negative, per-package registry
+lookups and v0.2.0 tag semantics before release contract closure. Parent owns
+any authorization to undertake that upstream change; passing ordered output
+alone cannot establish the complete release capability.
+
 
 ## ADR-RUN-0019: Optional standard cron command adapter and generated wiring
 
