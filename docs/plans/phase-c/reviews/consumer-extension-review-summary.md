@@ -45,11 +45,17 @@ sprint verdicts. Generic calibration remains unaccepted after its bounded
 five-round run. Structural checks, human approval and scope/critical PASS
 cannot substitute for the actual anchor gate.
 
-The later finite representation comparison also failed acceptance. The next
-step follows the strict anchor-tuning process with existing validated question
-defect triage; offline request preparation adds no live run, cap reset, adoption
-or seal. [Current anchor status](current-plan-anchor-results.md) records the
-concise outcome; detailed evidence remains local.
+The later finite representation comparison also failed acceptance. Strict
+workflow review found no valid next tuning request under installed 0.8.7:
+the five-round budget is exhausted, old sealed question-defect proofs cannot
+authorize the v3 questions, and current generic corpus-case/migration policy
+is unrepresentable. Genuine upstream contract repair or a policy decision
+remains pending; request preparation alone is insufficient. The local guard
+prototype corrected two history/role-binding defects within independent local
+review scope only; it is not installed, production-ready or proof of a runnable
+current workflow. No additional live call, cap reset, adoption or seal follows.
+[Current anchor status](current-plan-anchor-results.md) records this block;
+detailed evidence remains local.
 
 Per the human instruction to publish typical reports rather than diagnostic
 logs or test results, this is a concise review summary. The cancelled broad

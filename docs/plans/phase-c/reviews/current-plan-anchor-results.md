@@ -5,6 +5,8 @@ original pass/fail fixtures, with the explicit ANC-016 wording clarification
 below. The records remain **proposed**, pending actual testability/live checks;
 they are not locked or given question Beads. The record validates: 18 total, comprising 10 locked,
 six proposed and two retired. All 12 original record objects are unchanged.
+Final scope and critical R3 pass all six sprints at bbd64de. Formal QA2/3
+and actual live Plan Anchor gates remain pending.
 
 ## Results against the current plan
 
@@ -12,8 +14,8 @@ six proposed and two retired. All 12 original record objects are unchanged.
 | --- | --- |
 | [Current structural checks](current-structural-anchor-checks.json) | Three PASS: Phase C naming, dedicated worktree and separate PR to develop. |
 | New-anchor live testability and live sprint-plan gates | Not run; no current-plan Jev verdict or Plan Anchor PASS is claimed. |
-| [Engineering baseline diagnostic](internal-unapproved/consumer-extension-baseline-diagnostic.md) | Four manual pre-gate findings; **not Jev**. The [focused plan revision](consumer-extension-plan-revision.md) now addresses their acceptance/ownership gaps; fresh independent reviews and actual live checks remain pending. |
-| [Critical R2](compatibility-critical-r2/report.json) | PASS at a265f65 for its reviewed six-sprint contract; subsequent consumer-control clarification still needs follow-up plan review. |
+| [Engineering baseline diagnostic](internal-unapproved/consumer-extension-baseline-diagnostic.md) | Four manual pre-gate findings; **not Jev**. Their plan corrections are verified by final scope/critical R3 at bbd64de. Actual live checks remain pending. |
+| [Historical critical R2](compatibility-critical-r2/report.json) | PASS at a265f65 for that earlier contract. Later consumer-control and schema revisions were reviewed separately, ending with current scope/critical R3 PASS at bbd64de. |
 | [Current review summary](consumer-extension-review-summary.md) | Fresh QA1 FAIL 8B/2I/1M; nine noninstrument corrections and the later schema finding are verified by critical R3. Final scope/critical R3 PASS all six at bbd64de. Formal QA2/3 not run; REQ-QA-001 and ARCH-C-002 remain open. |
 
 ## Bounded instrument result
@@ -43,10 +45,18 @@ completed without errors, retries or replacements. Full-cell passes were
 171/180 for the baseline and 172/180 for the structured representation;
 neither was accepted. A new container did not resolve the calibration failure.
 Raw evidence remains local; no adoption, replacement seal or current-plan
-gate PASS follows. Next is offline preparation of the valid request required
-by the strict anchor-tuning process, using the already validated ANC-001/003
-question_defect triage. No further live calls or calibration-cap reset is
-authorized by this status update.
+gate PASS follows. The strict tuning audit found **no valid next request under
+installed 0.8.7**: the five-round budget is exhausted, and the older sealed
+ANC-001/003 question_defect proofs cannot authorize the v3 questions. The
+current generic corpus-case binding and migration policy cannot be represented
+by that workflow. Genuine upstream contract repair or a policy decision remains
+necessary; preparing another request alone cannot clear this block. No further
+live calls or calibration-cap reset is authorized.
+
+A local guard prototype corrected two history/role-binding defects within its
+independently verified scope only. It is not installed, production-ready, or
+evidence that the current workflow can run. It supplies no accepted instrument,
+adoption, seal or live gate verdict.
 
 ## Approved statements and proposed records
 
