@@ -123,6 +123,13 @@ class GenericProjectionTests(unittest.TestCase):
             app = base / "app"
             driver.cargo_generate(ROOT, app, "cron-projection-probe", values)
             driver.apply_checkout_patch(app, ROOT)
+            cli = "cron-projection-probe-cli"
+            tree = OWNED.run(["cargo", "tree", "-p", cli, "--no-default-features", "-e", "normal", "--prefix", "none"],
+                cwd=app, timeout=120, check=True, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+            names = {line.split()[0] for line in tree.stdout.splitlines() if line.split()}
+            forbidden = {"axum", "rmcp", "sqlx", "sc-runtime", "sc-cron", "rusqlite", "monty", "utoipa", "utoipa-axum", "schemars"}
+            self.assertFalse(names & forbidden, tree.stdout)
+            verify_identities(metadata(app), ["sc-runtime", "cron-projection-probe-daemon"])
             support = app / "tests/support"
             support.mkdir(parents=True)
             shutil.copyfile(ROOT / "tests/contracts/phase-c/executor_double.rs", support / "executor_double.rs")
@@ -132,7 +139,6 @@ class GenericProjectionTests(unittest.TestCase):
                 cwd=app, timeout=900, capture_output=True, text=True, stdin=subprocess.DEVNULL)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("test result: ok.", result.stdout)
-            verify_identities(metadata(app), ["sc-runtime", "cron-projection-probe-daemon"])
 
 
 if __name__ == "__main__":
