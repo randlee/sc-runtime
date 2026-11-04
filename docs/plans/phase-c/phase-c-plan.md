@@ -339,8 +339,9 @@ contract; command schema traits obey ADR-CMD-0001/0002/0003.
 The approved ANC-013 through ANC-018 statements and fixtures are now locked.
 All six full-sprint plan gates pass at the production 0.6 threshold; the capture
 rubric outcomes remain inconclusive. Current semantic and structural coverage
-is recorded in reviews/current-plan-anchor-results.md; owning QA rechecks remain
-pending. The framework charter and REQ-CRON-0020/0021 govern supported store
+is recorded in reviews/current-plan-anchor-results.md. The four owning QA2
+reviews PASS at df5cc0c with all eleven QA1 findings resolved and the same ten
+planning deliverables complete; final manager/CI verification remains pending. The framework charter and REQ-CRON-0020/0021 govern supported store
 replacement and opt-in cooperation; REQ-CRNC-0002 governs actual selected wiring.
 C-1 freezes default-versus-custom responsibilities; c-5 proves a custom store
 with an application-owned schema field in its existing isolated consumer and

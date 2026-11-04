@@ -8,126 +8,137 @@ triage:REQ_QA_001 a triage:Finding ;
  triage:id "REQ-QA-001" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
- triage:author_state "actual-six-sprint-gates-pass-status-text-corrected-pending-owning-QA2" ;
+ triage:status "fixed-verified" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "Existing Phase C live Plan Anchor gate; no structural/manual/human-approval substitute" ;
- triage:correction "Keep implementation readiness false. Resolve the evaluator/testability prerequisite through its authorized workflow, perform genuine current-plan checks for the complete six-sprint baseline, and lock only records that actually meet the gate. Preserve the failed calibration and historical evidence; do not infer or manufacture PASS." .
+ triage:correction "Keep implementation readiness false. Resolve the evaluator/testability prerequisite through its authorized workflow, perform genuine current-plan checks for the complete six-sprint baseline, and lock only records that actually meet the gate. Preserve the failed calibration and historical evidence; do not infer or manufacture PASS." ;
+ triage:verified_review "req-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:REQ_QA_002 a triage:Finding ;
  triage:id "REQ-QA-002" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "Existing per-crate requirements; NFR-RUN-0002/0005/0009; req-qa coverage contract" ;
- triage:correction "Complete c-1 and c-3 requirements frontmatter from their owned crate requirements. Include the applicable repository constraints for public-error behavior, async request paths, and isolated tests (notably NFR-RUN-0009 for c-1/c-3/c-5, NFR-RUN-0002 for c-3/c-4/c-6 and NFR-RUN-0005 for the new fixture/test owners). Keep implementation ownership unchanged; adding a constraint does not assign another sprint implementation work." .
+ triage:correction "Complete c-1 and c-3 requirements frontmatter from their owned crate requirements. Include the applicable repository constraints for public-error behavior, async request paths, and isolated tests (notably NFR-RUN-0009 for c-1/c-3/c-5, NFR-RUN-0002 for c-3/c-4/c-6 and NFR-RUN-0005 for the new fixture/test owners). Keep implementation ownership unchanged; adding a constraint does not assign another sprint implementation work." ;
+ triage:verified_review "req-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:REQ_QA_003 a triage:Finding ;
  triage:id "REQ-QA-003" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "NFR-CMD-0001; REQ-CMD-0005; ADR-RUN-0203" ;
- triage:correction "Explicitly assign c-1 the NFR-CMD-0001 rmcp minor-series amendment alongside REQ-CMD-0005 and the frozen matrix, preserving optional server gating, defaults-off behavior and the remaining dependency restrictions. Make c-3 consume the amended NFR." .
+ triage:correction "Explicitly assign c-1 the NFR-CMD-0001 rmcp minor-series amendment alongside REQ-CMD-0005 and the frozen matrix, preserving optional server gating, defaults-off behavior and the remaining dependency restrictions. Make c-3 consume the amended NFR." ;
+ triage:verified_review "req-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:REQ_QA_004 a triage:Finding ;
  triage:id "REQ-QA-004" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "NFR-RUN-0001; REQ-CRNC-0002; NFR-CRNC-0001; ADR-RUN-0019" ;
- triage:correction "Assign c-1 a narrow NFR-RUN-0001 amendment allowing selected CLI use of defaults-only sc-cron-commands DTOs, directly or through api-types as appropriate. Preserve every server/scheduler/SQLite exclusion and retain isolated CLI graph acceptance in c-3/c-4. Do not duplicate DTOs to avoid the amendment." .
+ triage:correction "Assign c-1 a narrow NFR-RUN-0001 amendment allowing selected CLI use of defaults-only sc-cron-commands DTOs, directly or through api-types as appropriate. Preserve every server/scheduler/SQLite exclusion and retain isolated CLI graph acceptance in c-3/c-4. Do not duplicate DTOs to avoid the amendment." ;
+ triage:verified_review "req-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:REQ_QA_005 a triage:Finding ;
  triage:id "REQ-QA-005" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "REQ-RUN-0503; req-qa exactly-one acceptance-root rule" ;
- triage:correction "Name one sole req-root owner for REQ-RUN-0503 and make the other sprint acceptance checks explicit supporting constraints/proofs. Preserve the existing lint, checkout and registry behavior proofs and the six-sprint DAG." .
+ triage:correction "Name one sole req-root owner for REQ-RUN-0503 and make the other sprint acceptance checks explicit supporting constraints/proofs. Preserve the existing lint, checkout and registry behavior proofs and the six-sprint DAG." ;
+ triage:verified_review "req-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:ARCH_CE_001 a triage:Finding ;
  triage:id "ARCH-CE-001" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "ADR-RT-0002/0003; ADR-CMD-0001/0002/0003; RULE-ADR-PLAN" ;
- triage:correction "Add ADR-RT-0002, ADR-RT-0003 and ADR-CMD-0001/0002/0003 to c-1's single adrs list; retain their existing obligations in the contract amendments. Sweep the six lists against the owned paths under RULE-ADR-PLAN." .
+ triage:correction "Add ADR-RT-0002, ADR-RT-0003 and ADR-CMD-0001/0002/0003 to c-1's single adrs list; retain their existing obligations in the contract amendments. Sweep the six lists against the owned paths under RULE-ADR-PLAN." ;
+ triage:verified_review "arch-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:ARCH_CE_002 a triage:Finding ;
  triage:id "ARCH-CE-002" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "ADR-RUN-0001/0003/0009/0303; RULE-ADR-PLAN" ;
- triage:correction "Add those governing ADRs to c-4's adrs list and keep the composition and isolated real-process test obligations explicit in its acceptance/validation contract." .
+ triage:correction "Add those governing ADRs to c-4's adrs list and keep the composition and isolated real-process test obligations explicit in its acceptance/validation contract." ;
+ triage:verified_review "arch-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:ARCH_C_002 a triage:Finding ;
  triage:id "ARCH-C-002" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
- triage:author_state "pending-actual-anchor-prerequisite-and-live-gates" ;
+ triage:status "fixed-verified" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "Existing Phase C live Plan Anchor gate; no structural/manual/human-approval substitute" ;
- triage:correction "Keep readiness false. Resolve the accepted-instrument/testability prerequisite through the authorized workflow, run the actual anchor and full-sprint checks against the current plan, complete required locking/coverage and manager closeout, and record genuine results. Scope/critical approval, structural checks and preparation cannot replace live PASS evidence." .
+ triage:correction "Keep readiness false. Resolve the accepted-instrument/testability prerequisite through the authorized workflow, run the actual anchor and full-sprint checks against the current plan, complete required locking/coverage and manager closeout, and record genuine results. Scope/critical approval, structural checks and preparation cannot replace live PASS evidence." ;
+ triage:verified_review "arch-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:RSH_001 a triage:Finding ;
  triage:id "RSH-001" ;
  triage:severity "important" ;
  triage:reviewer "rust-service-hardening-agent" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "REQ-CRON-0020/0021; ADR-RUN-0018; NFR-RUN-0002; existing service-hardening production-checklist section7" ;
- triage:correction "Have c-1 specify the standard composition's bounded intake policy and owner, including what happens when full and how deadline/cancellation and stop interact with waiting or refused admission. Assign implementation to the existing core/executor/composition seam as appropriate and add a causal saturation acceptance test: hold the store, exceed the chosen capacity, verify bounded submitted work and the documented refusal or cancellable wait, then stop and physically join accepted work. Preserve consumer overrides and avoid requiring arbitrary custom providers to use a particular mechanism." .
+ triage:correction "Have c-1 specify the standard composition's bounded intake policy and owner, including what happens when full and how deadline/cancellation and stop interact with waiting or refused admission. Assign implementation to the existing core/executor/composition seam as appropriate and add a causal saturation acceptance test: hold the store, exceed the chosen capacity, verify bounded submitted work and the documented refusal or cancellable wait, then stop and physically join accepted work. Preserve consumer overrides and avoid requiring arbitrary custom providers to use a particular mechanism." ;
+ triage:verified_review "rust-service-hardening-agent QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:CQA_F001 a triage:Finding ;
  triage:id "CQA-F001" ;
  triage:severity "important" ;
  triage:reviewer "ceremony-qa" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "Existing sprint-planning-guidelines Process Artifacts rule; executable probe assertions retained" ;
- triage:correction "Remove the metadata JSON digest field from the required PR evidence; retain the actual probe commands, results, selected versions and normal-edge identity assertions." .
+ triage:correction "Remove the metadata JSON digest field from the required PR evidence; retain the actual probe commands, results, selected versions and normal-edge identity assertions." ;
+ triage:verified_review "ceremony-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .
 
 triage:CQA_F002 a triage:Finding ;
  triage:id "CQA-F002" ;
  triage:severity "minor" ;
  triage:reviewer "ceremony-qa" ;
  triage:status "fixed-verified" ;
- triage:author_state "independently-verified-critical-R3" ;
+ triage:author_state "independently-verified-owning-QA2" ;
  triage:verified_commit "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407" ;
  triage:verification "docs/plans/phase-c/reviews/consumer-extension-review-summary.md" ;
  triage:reviewed_commit "9456e36e78380f5a1da7ad97f0fd014ee3c7b3be" ;
  triage:authority "Existing sprint-planning-guidelines Process Artifacts rule; single normal-edge graph acceptance retained" ;
- triage:correction "Merge lines 263-267 into the earlier fixture acceptance criterion, retaining its explicit duplicate-in-either-closure failure rule once." .
+ triage:correction "Merge lines 263-267 into the earlier fixture acceptance criterion, retaining its explicit duplicate-in-either-closure failure rule once." ;
+ triage:verified_review "ceremony-qa QA2 PASS at df5cc0c027ccf95329b246b2776bae17246ca741" .

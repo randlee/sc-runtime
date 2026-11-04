@@ -392,14 +392,18 @@ Historical scope/critical approvals retain only their actual reviewed baselines.
 
 [The concise review summary](consumer-extension-review-summary.md) records
 fresh QA1 FAIL, nine corrected findings and the final schema correction.
-Scope/critical R3 pass all six sprints at bbd64de; formal QA2/3 have not run.
+Scope/critical R3 pass all six sprints at bbd64de. Four owning QA2 reviews
+PASS at df5cc0c: the same ten planning deliverables are complete, and all
+eleven QA1 findings are resolved with zero remaining findings. QA3 was not run.
 All six approved new anchors are now locked and linked, with inconclusive
 default testability preserved. Published-default planning fixtures pass;
 all six final full-item live gates PASS at production threshold 0.6. Scoped
 questions for ANC-010/013/018 were independently accepted and sealed; all
 thirteen semantic anchors are covered. The coverage CLI lists three
 deterministic-only anchors; paired actual structural checks all PASS.
-The 38 documented scope exclusions remain, and owning QA2 rechecks are pending.
+The 38 documented scope exclusions remain. Final manager verdict and exact-head
+CI verification on PR114 are pending; implementation/runtime proof is future
+sprint work. QA2 used the disclosed Codex fallback, not unavailable Cursor models.
 All six egress destinations are explicitly approved. Per the
 human instruction, the broad diagnostic archive is cancelled; this checkpoint
 adds typical reports only, with raw working evidence retained outside Git.

@@ -1,7 +1,7 @@
 # Phase C consumer-extension review
 
-**Current status: scope and critical reviews pass; implementation readiness
-remains false.** Six sprints retain critical path 3 and parallel width 4.
+**Current status: scope/critical and all four owning QA2 reviews PASS; final
+manager verdict and exact-head CI verification remain pending.** Six sprints retain critical path 3 and parallel width 4.
 
 | Review | Source commit | Actual outcome |
 | --- | --- | --- |
@@ -13,10 +13,11 @@ remains false.** Six sprints retain critical path 3 and parallel width 4.
 | Critical R2 | a2a9b17 | Nine noninstrument QA corrections verified; one Important schema-contract finding remained. |
 | Final scope R3 / critical R3 | bbd64de | All six PASS; zero findings. Schema finding resolved; 22 source hashes independently verified. |
 | Final developer consistency | bbd64de | PASS; no further source corrections. |
+| Scoped owning QA2: requirements, architecture, service, ceremony | df5cc0c | All four PASS; zero findings. Same QA1 planning checklist complete: 10/10. All eleven QA1 findings resolved. |
 
 QA1's actual manager result is on
 [PR114](https://github.com/randlee/sc-runtime/pull/114#issuecomment-6619211718).
-Formal QA2 and QA3 have **not run**. Historical approvals apply only to the
+Scoped owning QA2 has completed; QA3 was not run. Historical approvals apply only to the
 source commits stated above; they are not relabelled as later reviews.
 
 ## Corrections verified by critical R3
@@ -52,14 +53,24 @@ locking/fixtures and published defaults are permitted by the lifecycle audit;
 failed experimental generic calibration is historical, not an upstream repair
 prerequisite.
 
-REQ-QA-001, ARCH-C-002 and the other QA1 findings await their owning QA2 recheck.
-Prior scope/critical PASS stays tied to bbd64de; subsequent scoped wording
-corrections and documented applicability exclusions preserve existing
-requirements, ownership and the six-sprint DAG. Formal QA2/3 have not run;
-implementation readiness remains false. Final successful run IDs and the
-structural/semantic distinction are in the
-[current anchor status](current-plan-anchor-results.md). Raw evidence remains
-local.
+All eleven QA1 findings are fixed and independently verified by their owning
+QA2 reviewers at `df5cc0c027ccf95329b246b2776bae17246ca741`: requirements
+closed REQ-QA-001 through 005, architecture closed ARCH-CE-001/002 and
+ARCH-C-002 (also confirming the schema correction), service hardening closed
+RSH-001, and ceremony closed CQA-F001/002. The requirements reviewer retained
+the same ten-item planning denominator as QA1: 10/10 complete, zero findings.
+These reviewers disclosed inherited Codex fallback because requested Cursor
+Grok/Composer models were unavailable; no such model execution is claimed.
+
+Historical scope/critical R3 PASS remains tied to bbd64de. QA2 reviewed the
+subsequent scoped wording and status corrections with the six sprint sources,
+contract and anchors held fixed. This final report/status closeout changes no
+sprint, contract or anchor requirements. The final manager must verify the
+new exact-head CI and publish its verdict on PR114. That aggregate verdict and
+CI success are not claimed here. Sprint implementation and runtime proof remain
+future work, rather than deficiencies in the completed planning checklist.
+[Current anchor status](current-plan-anchor-results.md) lists the successful
+live runs and paired structural checks. Raw evidence remains local.
 
 Per the human instruction to publish typical reports rather than diagnostic
 logs or test results, this is a concise review summary. The cancelled broad
