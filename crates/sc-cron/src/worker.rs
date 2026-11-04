@@ -1007,7 +1007,7 @@ where
         }
     }
 
-    /// Stores the next run time; returns `false` only when fenced.
+    /// Stores the next run time; fencing or uncertain persistence refuses launch.
     async fn persist_next(&mut self, schedule: &Schedule, next: DateTime<Utc>) -> bool {
         let (id, generation) = (schedule.id, schedule.generation);
         let next = Timestamp::from_datetime(next);
@@ -1036,8 +1036,8 @@ where
         }
     }
 
-    /// Writes the end of a schedule; returns `false` only when the store
-    /// failed, so the caller can retry. A fenced write is answered (`true`).
+    /// Writes the end of a schedule; known failures may retry, while uncertain
+    /// or committed-late writes remain reported and cannot be replayed.
     async fn end(
         &mut self,
         schedule: &Schedule,

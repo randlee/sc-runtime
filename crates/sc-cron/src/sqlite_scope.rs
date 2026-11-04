@@ -56,7 +56,7 @@ pub(super) fn baseline_busy(attempt: i32) -> bool {
     if attempt >= 5000 {
         return false;
     }
-    std::thread::sleep(Duration::from_millis(1));
+    std::thread::park_timeout(Duration::from_millis(1));
     true
 }
 fn scoped_busy(attempt: i32) -> bool {
@@ -65,7 +65,7 @@ fn scoped_busy(attempt: i32) -> bool {
     if attempt >= 5000 || check().is_err() {
         return false;
     }
-    std::thread::sleep(Duration::from_millis(1));
+    std::thread::park_timeout(Duration::from_millis(1));
     check().is_ok()
 }
 

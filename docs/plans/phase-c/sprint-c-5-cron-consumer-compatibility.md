@@ -1,13 +1,13 @@
 ---
 id: c-5
 phase: c
-status: planned
+status: in_progress
 closure_type: integration
 target_boundary: sc-cron-consumer-compatibility
 track: cron
 wave: 2
 branch: sprint/c-5-cron-consumer-compatibility
-worktree: sprint/c-5-cron-consumer-compatibility
+worktree: /Users/randlee/github/sc-runtime-worktrees/sprint/c-5-cron-consumer-compatibility
 requirements:
   - REQ-CRON-0001
   - REQ-CRON-0002

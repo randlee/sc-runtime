@@ -145,7 +145,7 @@ impl Controller {
                         return;
                     };
                     tokio::select! {
-                        () = tokio::time::sleep_until(cutoff.into()) => {},
+                        _ = tokio::time::timeout_at(cutoff.into(), std::future::pending::<()>()) => {},
                         _ = lifecycle.changed() => {}
                     }
                 }

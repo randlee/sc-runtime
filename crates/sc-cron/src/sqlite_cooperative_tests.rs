@@ -882,3 +882,57 @@ async fn delayed_join_poll_reports_physical_completion_before_shortened_cutoffs(
     );
     assert!(!report.cleanup.completed_after_cutoff);
 }
+
+#[cfg(test)]
+#[test]
+fn queued_closures_keep_permits_and_recheck_scope_before_first_physical_store_call() {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(2)
+        .max_blocking_threads(1)
+        .enable_all()
+        .build()
+        .unwrap();
+    runtime.block_on(async {
+        let (entered, wait_entered) = mpsc::channel();
+        let (release, wait_release) = mpsc::channel();
+        let occupied = tokio::task::spawn_blocking(move || {
+            entered.send(()).unwrap();
+            wait_release.recv().unwrap();
+        });
+        wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
+        let scheduler = Arc::new(make_scheduler(1));
+        let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
+        let control = worker.stop_control();
+        let context = control.operation_context();
+        let command = {
+            let scheduler = Arc::clone(&scheduler);
+            let context = context.clone();
+            tokio::spawn(async move {
+                scheduler
+                    .start_with_context(spec("never-submitted-to-sqlite"), context)
+                    .await
+            })
+        };
+        commands(&context, 1).await;
+        assert_reason(
+            scheduler
+                .query_with_context(ScheduleQuery::default(), context.clone())
+                .await
+                .unwrap_err(),
+            "command_capacity_exhausted",
+        );
+        command.abort();
+        let _ = command.await;
+        control.cancel_now();
+        assert_eq!(
+            context.state.counts().1,
+            1,
+            "queued physical work still owns its permit after waiter cancellation"
+        );
+        release.send(()).unwrap();
+        occupied.await.unwrap();
+        worker.join_owned().await.unwrap();
+        assert_eq!(context.state.counts(), (0, 0));
+        assert!(scheduler.store().list_active().unwrap().is_empty());
+    });
+}
