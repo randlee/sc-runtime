@@ -246,59 +246,64 @@ pub(super) fn lock<'a>(
         quarantined,
     };
     if let Some(scope) = scope {
-        check()?;
-        let handle = Arc::new(guard.get_interrupt_handle());
-        scope
-            .context
-            .state
-            .add_interrupt(Arc::clone(&handle), scope.context.cleanup);
-        guard.interrupt = Some(handle);
-        guard
-            .busy_handler(Some(scoped_busy))
-            .map_err(callback_error)?;
-        let progress = scope.context.clone();
-        guard
-            .progress_handler(
-                64,
-                Some(move || {
-                    #[cfg(test)]
-                    observe(TestStage::Progress);
-                    progress.check().is_err()
-                }),
-            )
-            .map_err(callback_error)?;
-        let commit = scope.clone();
-        guard
-            .commit_hook(Some(move || {
-                #[cfg(test)]
-                test_gate(false);
-                let admitted = commit.context.check().is_ok()
-                    && commit
-                        .context
-                        .state
-                        .admit_commit(commit.context.cleanup, commit.context.external_deadline());
-                update(&commit, |outcome| {
-                    outcome.admission = if admitted {
-                        CommitAdmission::Admitted
-                    } else {
-                        CommitAdmission::Vetoed
-                    }
-                });
-                #[cfg(test)]
-                test_gate(true);
-                !admitted
-            }))
-            .map_err(callback_error)?;
-        guard
-            .rollback_hook(Some(move || {
-                update(&scope, |outcome| {
-                    outcome.persistence = PersistenceOutcome::RolledBack
-                })
-            }))
-            .map_err(callback_error)?;
+        install_callbacks(&mut guard, scope)?;
     }
     Ok(guard)
 }
+fn install_callbacks(guard: &mut Guard<'_>, scope: Scope) -> Result<(), CronError> {
+    check()?;
+    let handle = Arc::new(guard.get_interrupt_handle());
+    scope
+        .context
+        .state
+        .add_interrupt(Arc::clone(&handle), scope.context.cleanup);
+    guard.interrupt = Some(handle);
+    guard
+        .busy_handler(Some(scoped_busy))
+        .map_err(callback_error)?;
+    let progress = scope.context.clone();
+    guard
+        .progress_handler(
+            64,
+            Some(move || {
+                #[cfg(test)]
+                observe(TestStage::Progress);
+                progress.check().is_err()
+            }),
+        )
+        .map_err(callback_error)?;
+    let commit = scope.clone();
+    guard
+        .commit_hook(Some(move || {
+            #[cfg(test)]
+            test_gate(false);
+            let admitted = commit.context.check().is_ok()
+                && commit
+                    .context
+                    .state
+                    .admit_commit(commit.context.cleanup, commit.context.external_deadline());
+            update(&commit, |outcome| {
+                outcome.admission = if admitted {
+                    CommitAdmission::Admitted
+                } else {
+                    CommitAdmission::Vetoed
+                }
+            });
+            #[cfg(test)]
+            test_gate(true);
+            !admitted
+        }))
+        .map_err(callback_error)?;
+    guard
+        .rollback_hook(Some(move || {
+            update(&scope, |outcome| {
+                outcome.persistence = PersistenceOutcome::RolledBack
+            })
+        }))
+        .map_err(callback_error)?;
+    Ok(())
+}
+
 fn callback_error(_error: rusqlite::Error) -> CronError {
     StoreError::new(StoreErrorKind::Unavailable, "operation_callback_failed").into()
 }
