@@ -1,0 +1,202 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": false,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "You need to record the build digest in build.json.",
+        "quote": "you need to record the build digest in build.json",
+        "scope": "build output",
+        "verdict": "needs_work",
+        "failing": [
+          "statement is the verbatim quote",
+          "written as speech, not as a requirement",
+          "not phrased as a testable requirement"
+        ],
+        "answers": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.04,
+              "yes": 0.95
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.03,
+              "yes": 0.97
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.67,
+            "probabilities": {
+              "no": 0.04,
+              "unclear": 0.18,
+              "yes": 0.78
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          }
+        },
+        "lint": {
+          "warnings": [
+            "statement is the verbatim quote",
+            "written as speech, not as a requirement",
+            "not phrased as a testable requirement"
+          ],
+          "errors": [
+            "statement is the verbatim quote",
+            "written as speech, not as a requirement",
+            "not phrased as a testable requirement"
+          ]
+        },
+        "inputs": {
+          "question_seal": "c4d445315faaea84f2267cf5a641e26d09365754d0400f7499e6c1eaecc14f54",
+          "request_sha256": "f6b57f8fdddda690eb98d59d418f58de74b2094bd365a95a358342e5b17e2c7b"
+        },
+        "answers_second": {
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 1.0,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.0,
+              "yes": 1.0
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.04,
+              "yes": 0.95
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.02,
+              "yes": 0.98
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.74,
+            "probabilities": {
+              "no": 0.04,
+              "unclear": 0.13,
+              "yes": 0.83
+            }
+          },
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "needs_work",
+          "failing": [
+            "statement is the verbatim quote",
+            "written as speech, not as a requirement",
+            "not phrased as a testable requirement"
+          ],
+          "low_confidence": [],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.92,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.96,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.67,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false
+  },
+  "error": null
+}

@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "data": {
+    "screened": [
+      {
+        "id": "PLAN-SCOPE-001",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing must_follow relationships and sprint-planning-guidelines ownership/dependency rules.",
+        "reason": "The remedy corrects execution timing in existing plan prose and adds no process artifact, gate, or new evidence requirement."
+      },
+      {
+        "id": "PLAN-SCOPE-002",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing authoritative adrs frontmatter and ADR-RUN-0303 generated crate graph.",
+        "reason": "The remedy adds an already governing ADR identifier to existing reference lists and explicitly avoids creating a second graph artifact."
+      }
+    ]
+  },
+  "error": null
+}

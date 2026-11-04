@@ -1,0 +1,586 @@
+{
+  "schema_version": "1.0.0",
+  "qa_pass": "qa-2",
+  "reviewed_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+  "aggregation_source": "four_genuine_reviewer_fenced_json",
+  "reviewer_results": [
+    {
+      "reviewer": "req-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/req-qa-result.md",
+      "verdict": "PASS",
+      "source_result": {
+        "status": "PASS",
+        "reviewed_branch": "plan/phase-c",
+        "reviewed_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+        "previous_reviewed_commit": "1217978e257ed8db9508a5422d4de889286e913e",
+        "errors": [],
+        "scope": {
+          "phase": "c",
+          "sprint": "phase-c"
+        },
+        "review_mode": "plan",
+        "round_limit": true,
+        "model_adaptation": "Inherited Codex model executing the req-qa role; no Cursor Composer or Sonnet execution claimed.",
+        "assignment_basis": "Same exact QA1 JSON fields with parent-authorized QA2 commit, round_limit, delta, carry-forward findings and triage updates. Developer correction file was not yet present; actual committed delta and final source text were inspected.",
+        "baselines_read": [
+          ".claude/project/quality-policy.md",
+          "docs/requirements.md",
+          "docs/architecture.md",
+          "docs/project-plan.md",
+          "docs/framework-charter.md",
+          "docs/sc-runtime-design.md",
+          "docs/sc-runtime/requirements.md",
+          "docs/sc-command/requirements.md",
+          "docs/sc-cron/requirements.md",
+          "docs/sc-runtime-db-sqlite/requirements.md"
+        ],
+        "phase_or_sprint_docs_read": [
+          "docs/plans/phase-c/phase-c-plan.md",
+          "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+          "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+          "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+          "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+          "docs/plans/phase-c/anchors.json",
+          "docs/plans/phase-c/anchors.md"
+        ],
+        "triage_records_read": [
+          ".triage/c/findings/qa-1-plan-readiness-pr114.ttl"
+        ],
+        "requirement_checks": [
+          {
+            "id": "REQ-CMD-0005",
+            "source": "docs/sc-command/requirements.md:445",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:38",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:105",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:132",
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:195"
+            ],
+            "notes": "c-1 owns the command requirement amendment to the frozen RMCP identity and explicitly retains conversion, error, serialization and server-feature semantics; c-3 consumes it."
+          },
+          {
+            "id": "REQ-RUN-0004",
+            "source": "docs/requirements.md:404",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:58",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:131"
+            ],
+            "notes": "Current operational version clause is explicitly amended with historical observations preserved."
+          },
+          {
+            "id": "REQ-RUN-0503",
+            "source": "docs/requirements.md:3235",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:17",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:58",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:131"
+            ],
+            "notes": "The green-with-no-edits current tool version now has an explicit amendment owner and acceptance check."
+          },
+          {
+            "id": "REQ-RUN-0002",
+            "source": "docs/requirements.md:180",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:15"
+            ],
+            "notes": "c-1's independent package version/release contract now lists its governing requirement."
+          },
+          {
+            "id": "REQ-RUN-0301",
+            "source": "docs/requirements.md:1434",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:16",
+              "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md:13",
+              "docs/plans/phase-c/phase-c-plan.md:6"
+            ],
+            "notes": "Generated crate graph policy lists its governing requirement in c-1/c-2 and the phase union."
+          },
+          {
+            "id": "REQ-RUN-0003",
+            "source": "docs/requirements.md:277",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:15",
+              "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:13",
+              "docs/plans/phase-c/phase-c-plan.md:5"
+            ],
+            "notes": "Patched versus registry dependency proofs now name their requirement."
+          },
+          {
+            "id": "NFR-RUN-0001",
+            "source": "docs/requirements.md:3745",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:16",
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:196"
+            ],
+            "notes": "CLI graph isolation is listed and explicitly preserved."
+          },
+          {
+            "id": "REQ-RT-0005",
+            "source": "docs/sc-runtime/requirements.md:408",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:17",
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:197"
+            ],
+            "notes": "Existing shutdown contract is listed and paired with the isolated lifecycle proof."
+          },
+          {
+            "id": "REQ-DBSQ-0001",
+            "source": "docs/sc-runtime-db-sqlite/requirements.md:5",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:18",
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:197"
+            ],
+            "notes": "SQLite writer dependency boundary is listed and paired with its resolver guard."
+          },
+          {
+            "id": "REQ-DBSQ-0005",
+            "source": "docs/sc-runtime-db-sqlite/requirements.md:21",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:19",
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:197"
+            ],
+            "notes": "No-runtime/template-edge constraint is listed and preserved."
+          }
+        ],
+        "deliverable_checks": [
+          {
+            "item": "Phase plan and four complete sprint planning artifacts",
+            "status": "present",
+            "closure_state": "not-applicable",
+            "evidence_refs": [
+              "docs/plans/phase-c/phase-c-plan.md",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+              "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+              "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md"
+            ],
+            "notes": "Planning review only: future implementation and publication are not being claimed complete."
+          },
+          {
+            "item": "REQ-QA-001 command requirement amendment ownership",
+            "status": "present",
+            "closure_state": "closed",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:38",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:105"
+            ],
+            "notes": "Verified fixed on the reviewed commit."
+          },
+          {
+            "item": "REQ-QA-002 current operational sc-lint baseline amendment",
+            "status": "present",
+            "closure_state": "closed",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:58",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:131"
+            ],
+            "notes": "Verified fixed; historical evidence is explicitly retained."
+          },
+          {
+            "item": "REQ-QA-003 governing requirement traceability",
+            "status": "present",
+            "closure_state": "closed",
+            "evidence_refs": [
+              "docs/plans/phase-c/phase-c-plan.md:2",
+              "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:11",
+              "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md:11",
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:11",
+              "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:11"
+            ],
+            "notes": "All specifically dispatched requirement IDs now resolve in the required lists and phase union; preservation checks name existing authority."
+          }
+        ],
+        "resolved_findings": [
+          {
+            "id": "REQ-QA-001",
+            "status": "fixed",
+            "evidence": "c-1 owns docs/sc-command/requirements.md and amends REQ-CMD-0005's RMCP identity; c-3 consumes the amended contract."
+          },
+          {
+            "id": "REQ-QA-002",
+            "status": "fixed",
+            "evidence": "c-1 explicitly amends current operational 0004/0307/0503/NFR0006 clauses and tests their common 0.8.4 baseline."
+          },
+          {
+            "id": "REQ-QA-003",
+            "status": "fixed",
+            "evidence": "Required phase/sprint governing IDs and explicit lifecycle/CLI/SQLite preservation references are present."
+          }
+        ],
+        "findings": [],
+        "summary": {
+          "total_findings": 0,
+          "blocking_findings": 0,
+          "important_findings": 0,
+          "minor_findings": 0,
+          "overall_compliance": "compliant",
+          "deliverables_total": 5,
+          "deliverables_complete": 5,
+          "deliverables_incomplete": 0,
+          "deliverable_completion_percent": 100
+        },
+        "document_sha256": {
+          "docs/plans/phase-c/phase-c-plan.md": "5b44e96476d96c87cc950e5a953906949a1eebfea92f914a82af612ce8633367",
+          "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md": "da0aa6436388fd9cfef6c273de60b5da7dd3ff068451f89b6947800ace23262f",
+          "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md": "1c8a258ababc6e68b5b81e8c4cf7262bcb98090f957b6472d428c7767d45ff51",
+          "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md": "838334c0d06f18a24e0de5105102f738004c06a462ca932778a627cad32f1877",
+          "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md": "1410047a17fa2ace2e31eedd5fe016146ec1666862507df18a5f5a90595f6c6a"
+        },
+        "verification": [
+          "Assigned branch and exact HEAD verified before and after recheck.",
+          "Actual committed 1217978..45ffd3f delta inspected; triage read directly.",
+          "No regression to four-sprint ownership, user-approved boundary policy, consumer ownership, affected release closure or required validation found in the correction delta.",
+          "git diff --check passed."
+        ],
+        "limits": [
+          "This is scoped QA2 verification of req-qa's three findings and the changed planning text, not implementation or release verification.",
+          "ARCH-C-002 and all live Plan Anchor fixture/gate/coverage judgments remain the owning reviewer's and parent's separate open work; this PASS does not close them.",
+          "No repository or Beads mutation performed."
+        ],
+        "gate_reason": "All three dispatched req-qa findings are fixed on the exact reviewed commit, with no new requirement defect found in the bounded correction. Planning artifacts are complete; final aggregate readiness still requires the separately pending live anchor and manager gates."
+      }
+    },
+    {
+      "reviewer": "arch-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/arch-qa-result.md",
+      "verdict": "FAIL",
+      "source_result": {
+        "agent": "arch-qa",
+        "branch": "plan/phase-c",
+        "scope": {
+          "phase": "c",
+          "sprint": "phase-c"
+        },
+        "commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+        "previous_reviewed_commit": "1217978e257ed8db9508a5422d4de889286e913e",
+        "qa_pass": "qa-2",
+        "review_mode": "round_limit",
+        "round_limit": true,
+        "verdict": "FAIL",
+        "blocking": 1,
+        "important": 0,
+        "minor": 0,
+        "findings": [
+          {
+            "id": "ARCH-C-002",
+            "rule": "RULE-GATE",
+            "adr": null,
+            "severity": "BLOCKING",
+            "file": "docs/plans/phase-c/anchors.json",
+            "line": 1,
+            "description": "The existing Plan Anchor readiness gate remains open. The current Phase C plan directory contains the anchor record and sprint plans but no completed live sprint-run or coverage artifacts. The parent reports calibrated anchor testability, user approval for clarity/split corrections, fixture/tuning checks, four full-sprint gates and locked-anchor coverage are still pending. Developer fixes and triage correctly retain this finding as open and do not claim a live gate PASS.",
+            "remediation": "Finish the approved Plan Anchor workflow, including required clarity/split approval, accepted calibrated anchor testability, independent question/fixture checks, one passing live run for each whole c-1/c-2/c-3/c-4 sprint document, deterministic structural checks and complete locked-anchor coverage. Preserve actual evidence on the PR or beside the plan and request the bounded final evidence recheck."
+          }
+        ],
+        "resolved_findings": [
+          {
+            "id": "ARCH-C-001",
+            "status": "fixed",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:35",
+              "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:17",
+              "docs/plans/phase-c/phase-c-plan.md:28",
+              ".triage/c/findings/qa-1-plan-readiness-pr114.ttl:8"
+            ],
+            "notes": "Exact assigned source delta adds all requested c-3 ADR-RUN-0001/0006/0007/0009/0011 entries, c-4 ADR-RUN-0017 and the full phase union. Existing error, async, host-safety and logging decisions remain binding. The author fixes JSON matches the actual changes."
+          }
+        ],
+        "adr_checks": [
+          {
+            "adr": "ADR-RUN-0001",
+            "source": "docs/architecture.md:316",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:45"
+            ]
+          },
+          {
+            "adr": "ADR-RUN-0006",
+            "source": "docs/architecture.md:855",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:46"
+            ]
+          },
+          {
+            "adr": "ADR-RUN-0007",
+            "source": "docs/architecture.md:963",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:47"
+            ]
+          },
+          {
+            "adr": "ADR-RUN-0009",
+            "source": "docs/architecture.md:1124",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:48"
+            ]
+          },
+          {
+            "adr": "ADR-RUN-0011",
+            "source": "docs/architecture.md:2476",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:49"
+            ]
+          },
+          {
+            "adr": "ADR-RUN-0017",
+            "source": "docs/architecture.md:213",
+            "listed_in_sprint_doc": true,
+            "result": "upheld",
+            "evidence_refs": [
+              "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:19",
+              "docs/plans/phase-c/phase-c-plan.md:48"
+            ]
+          }
+        ],
+        "gate_artifact_checks": [
+          {
+            "artifact": "docs/plans/phase-c/anchors.json",
+            "status": "open",
+            "evidence_refs": [
+              "docs/plans/phase-c/anchors.json:1",
+              ".codex/skills/plan-anchoring/references/planning-gate.md:79",
+              ".triage/c/findings/qa-1-plan-readiness-pr114.ttl:9"
+            ],
+            "notes": "No completed live full-sprint gate/coverage artifacts were supplied for this recheck; scratch calibration cannot substitute for the planning-gate exit criteria."
+          },
+          {
+            "artifact": ".sc/plan-anchor/settings.yaml",
+            "status": "closed",
+            "evidence_refs": [
+              ".sc/plan-anchor/settings.yaml:3"
+            ],
+            "notes": "Tracker bd, existing remote-judge consent and Phase C directory remain configured."
+          }
+        ],
+        "merge_ready": false,
+        "validation": [
+          "Assigned branch and HEAD resolve exactly to plan/phase-c at 45ffd3fee9ca83eb27d48cf861551baa61b4a204.",
+          "Read the actual prior-to-current source delta, author fixes JSON and canonical QA-1 triage record.",
+          "Verified every requested governing reference directly in c-3, c-4 and phase frontmatter.",
+          "Inspected current Phase C gate-artifact inventory and installed planning-gate contract.",
+          "git diff --check passed."
+        ],
+        "notes": "Scoped QA-2 verification only, under the inherited Codex model. ARCH-C-001 is reviewer-verified fixed; ARCH-C-002 remains open. No new findings, repository edits, subagents, implementation-completion claims or inferred live gate verdicts. A final evidence recheck can close ARCH-C-002 when actual passing artifacts are supplied within the QA cycle cap."
+      }
+    },
+    {
+      "reviewer": "ruthless-boundary-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/ruthless-boundary-qa-result.md",
+      "verdict": "pass",
+      "source_result": {
+        "success": true,
+        "data": {
+          "status": "pass",
+          "reviewed_branch": "plan/phase-c",
+          "reviewed_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+          "review_mode": "doc_review",
+          "qa_pass": "qa-2",
+          "findings_scope_locked": true,
+          "carry_forward_findings": [
+            "RBQA-C-001"
+          ],
+          "findings": [
+            {
+              "id": "RBQA-C-001",
+              "severity": "important",
+              "class": "doc_gap",
+              "disposition": "fixed",
+              "status": "fixed",
+              "file": "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+              "line": 80,
+              "issue": "Mandatory observability guard migration previously lacked sprint ownership.",
+              "recommendation": "Resolved in the plan; implement the retained guard migration and regressions within c-3.",
+              "evidence": "c-3 owned_paths now includes scripts/check_observability_dependencies.py at line80. Deliverable3 at148-153 explicitly migrates command-version/path checks to c-1's frozen package contract, preserves exact defaults-off normal edge, rejects server/test-util activation and alias/target/build bypass, retains isolated default/Monty checks, and owns accepted-new/rejected-stale regressions in the existing test venue. Acceptance at198-200 requires aligned versions and forbidden-edge rejection. Triage and developer-fix records match the actual corrected text.",
+              "justification_check": "justified and retained",
+              "related_artifacts": [
+                "scripts/check_observability_dependencies.py",
+                ".triage/c/findings/qa-1-plan-readiness-pr114.ttl",
+                "tests/unit/generation/test_runtime_ecosystem_upgrade.py"
+              ]
+            }
+          ],
+          "summary": {
+            "total_findings": 0,
+            "resolved_findings": 1,
+            "by_severity": {
+              "critical": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          "notes": [
+            "Exact assigned branch/HEAD verified. Scoped QA-2 recheck covers RBQA-C-001 only, with no new finding sweep.",
+            "PASS verifies plan ownership and preservation requirements, not completion of the future implementation. The current guard remains unchanged by this plan PR as expected.",
+            "No live Plan Anchor gate, overall plan readiness, release authorization, or publication completion is claimed.",
+            "Inherited Codex model used; no Cursor/Grok execution claim. No repository edits, cargo commands, tests, or subagent spawns."
+          ]
+        },
+        "error": null
+      }
+    },
+    {
+      "reviewer": "ceremony-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/ceremony-qa-result.md",
+      "verdict": "pass",
+      "source_result": {
+        "success": true,
+        "data": {
+          "status": "pass",
+          "review_mode": "doc_review",
+          "reviewed_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+          "previous_reviewed_commit": "1217978e257ed8db9508a5422d4de889286e913e",
+          "reviewed_branch": "plan/phase-c",
+          "findings": [],
+          "dispositions": [
+            {
+              "id": "CQA-C-001",
+              "status": "fixed",
+              "evidence": "c-2 no longer owns template-consumer-lint.yml. Deliverable5 and the CI acceptance criterion now use the existing focused generation regression and template fixture CI, with ordinary logs proving real analyzer invocation and no separate receipt artifact. Negative analyzer/profile tests and the generated-consumer command sequence remain required."
+            }
+          ],
+          "validation": [
+            "Exact assigned HEAD verified.",
+            "Developer correction report and PR114 QA-1 triage read.",
+            "Complete five-plan-document delta from QA-1 reviewed for ceremony regressions; additions align existing requirement references and an existing guard rather than introducing another process artifact.",
+            "No new workflow, ledger, receipt artifact, or serial dependency introduced by the correction."
+          ],
+          "limits": [
+            "Scoped ceremony fix verification only; no live Plan Anchor or overall QA PASS claimed.",
+            "Inherited Codex model role adaptation; no Cursor model execution claimed."
+          ]
+        },
+        "error": null
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "ARCH-C-002",
+      "reviewer": "arch-qa",
+      "severity": "Blocking",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/arch-qa-result.md",
+      "source_finding": {
+        "id": "ARCH-C-002",
+        "rule": "RULE-GATE",
+        "adr": null,
+        "severity": "BLOCKING",
+        "file": "docs/plans/phase-c/anchors.json",
+        "line": 1,
+        "description": "The existing Plan Anchor readiness gate remains open. The current Phase C plan directory contains the anchor record and sprint plans but no completed live sprint-run or coverage artifacts. The parent reports calibrated anchor testability, user approval for clarity/split corrections, fixture/tuning checks, four full-sprint gates and locked-anchor coverage are still pending. Developer fixes and triage correctly retain this finding as open and do not claim a live gate PASS.",
+        "remediation": "Finish the approved Plan Anchor workflow, including required clarity/split approval, accepted calibrated anchor testability, independent question/fixture checks, one passing live run for each whole c-1/c-2/c-3/c-4 sprint document, deterministic structural checks and complete locked-anchor coverage. Preserve actual evidence on the PR or beside the plan and request the bounded final evidence recheck."
+      }
+    }
+  ],
+  "resolved_findings": [
+    {
+      "reviewer": "req-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/req-qa-result.md",
+      "source_resolution": {
+        "id": "REQ-QA-001",
+        "status": "fixed",
+        "evidence": "c-1 owns docs/sc-command/requirements.md and amends REQ-CMD-0005's RMCP identity; c-3 consumes the amended contract."
+      }
+    },
+    {
+      "reviewer": "req-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/req-qa-result.md",
+      "source_resolution": {
+        "id": "REQ-QA-002",
+        "status": "fixed",
+        "evidence": "c-1 explicitly amends current operational 0004/0307/0503/NFR0006 clauses and tests their common 0.8.4 baseline."
+      }
+    },
+    {
+      "reviewer": "req-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/req-qa-result.md",
+      "source_resolution": {
+        "id": "REQ-QA-003",
+        "status": "fixed",
+        "evidence": "Required phase/sprint governing IDs and explicit lifecycle/CLI/SQLite preservation references are present."
+      }
+    },
+    {
+      "reviewer": "arch-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/arch-qa-result.md",
+      "source_resolution": {
+        "id": "ARCH-C-001",
+        "status": "fixed",
+        "evidence_refs": [
+          "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:35",
+          "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:17",
+          "docs/plans/phase-c/phase-c-plan.md:28",
+          ".triage/c/findings/qa-1-plan-readiness-pr114.ttl:8"
+        ],
+        "notes": "Exact assigned source delta adds all requested c-3 ADR-RUN-0001/0006/0007/0009/0011 entries, c-4 ADR-RUN-0017 and the full phase union. Existing error, async, host-safety and logging decisions remain binding. The author fixes JSON matches the actual changes."
+      }
+    },
+    {
+      "reviewer": "ruthless-boundary-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/ruthless-boundary-qa-result.md",
+      "source_resolution": {
+        "id": "RBQA-C-001",
+        "severity": "important",
+        "class": "doc_gap",
+        "disposition": "fixed",
+        "status": "fixed",
+        "file": "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+        "line": 80,
+        "issue": "Mandatory observability guard migration previously lacked sprint ownership.",
+        "recommendation": "Resolved in the plan; implement the retained guard migration and regressions within c-3.",
+        "evidence": "c-3 owned_paths now includes scripts/check_observability_dependencies.py at line80. Deliverable3 at148-153 explicitly migrates command-version/path checks to c-1's frozen package contract, preserves exact defaults-off normal edge, rejects server/test-util activation and alias/target/build bypass, retains isolated default/Monty checks, and owns accepted-new/rejected-stale regressions in the existing test venue. Acceptance at198-200 requires aligned versions and forbidden-edge rejection. Triage and developer-fix records match the actual corrected text.",
+        "justification_check": "justified and retained",
+        "related_artifacts": [
+          "scripts/check_observability_dependencies.py",
+          ".triage/c/findings/qa-1-plan-readiness-pr114.ttl",
+          "tests/unit/generation/test_runtime_ecosystem_upgrade.py"
+        ]
+      }
+    },
+    {
+      "reviewer": "ceremony-qa",
+      "source_file": "/tmp/sc-runtime-phase-c-review/qa2/ceremony-qa-result.md",
+      "source_resolution": {
+        "id": "CQA-C-001",
+        "status": "fixed",
+        "evidence": "c-2 no longer owns template-consumer-lint.yml. Deliverable5 and the CI acceptance criterion now use the existing focused generation regression and template fixture CI, with ordinary logs proving real analyzer invocation and no separate receipt artifact. Negative analyzer/profile tests and the generated-consumer command sequence remain required."
+      }
+    }
+  ],
+  "counts": {
+    "total": 1,
+    "blocking": 1,
+    "important": 0,
+    "minor": 0,
+    "resolved": 6
+  }
+}

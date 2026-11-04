@@ -1,0 +1,62 @@
+{
+  "source": "docs/plans/phase-c/anchors.json",
+  "semantic_anchors": [
+    {
+      "id": "ANC-001",
+      "authority_version": 4,
+      "authority_records_sha256": "e2eef4b9b1a90d7af0725b8508ec2eb4bae68614a8727a4e683787a707fe1c71",
+      "fixtures_sha256": "3f6b08951053abc2fff982a1eb58b1ecb5f93f4b7b2c5636089c737f16241cfb",
+      "invocation": "ANC-001-invocation-fence.md"
+    },
+    {
+      "id": "ANC-003",
+      "authority_version": 2,
+      "authority_records_sha256": "a850631ccc95eedfc715baeb75c0b91e73875a634fba9265a934c87180dab323",
+      "fixtures_sha256": "0d88bda8595c231ad1f764c6f2b4209d88bd568596d13d1426ea7da12005b24c",
+      "invocation": "ANC-003-invocation-fence.md"
+    },
+    {
+      "id": "ANC-006",
+      "authority_version": 3,
+      "authority_records_sha256": "28e512d20a51d6053b93b0fa9a6b323a63152ef20f64a91445889f73da5b5cb3",
+      "fixtures_sha256": "6910e99230d7589fb39b140e08df41828c911cfbd43c7de89af7d2059903ac60",
+      "invocation": "ANC-006-invocation-fence.md"
+    },
+    {
+      "id": "ANC-007",
+      "authority_version": 2,
+      "authority_records_sha256": "f47594bdc205e493c4d421bf9f8767429512a437aeb5be2c55b474cf92ad22ec",
+      "fixtures_sha256": "9fad6364404a3d214a01a5693ad8327d8c53a48ac5ee8a153d9ffc09b221e98d",
+      "invocation": "ANC-007-invocation-fence.md"
+    },
+    {
+      "id": "ANC-008",
+      "authority_version": 3,
+      "authority_records_sha256": "0df903323a5008963759a882ba4d6c51ee11a5de1dccb58f3a8677ff8308f48a",
+      "fixtures_sha256": "32b04922ba9ddb298e707a910f97881f541f7e9ae825cc37405833937b2ba136",
+      "invocation": "ANC-008-invocation-fence.md"
+    },
+    {
+      "id": "ANC-009",
+      "authority_version": 2,
+      "authority_records_sha256": "1148bcdeee72a0efa53082e2334367bb5f2e76c1cd21b223b47bcea1b4a59c67",
+      "fixtures_sha256": "02275e6a734bec4e4743fc4fca1c29911955e2df6a1264a5ada034af70774404",
+      "invocation": "ANC-009-invocation-fence.md"
+    },
+    {
+      "id": "ANC-010",
+      "authority_version": 2,
+      "authority_records_sha256": "2a111e6b245df4c2e0b31aa5538808a56b0d6ff6033d1b4facf0032168eb94fc",
+      "fixtures_sha256": "7f74f8ad2242225c5282227ad9abba13a0d00aa47745b17e11bc6f5ea877e8c7",
+      "invocation": "ANC-010-invocation-fence.md"
+    }
+  ],
+  "structural_anchors": [
+    "ANC-004",
+    "ANC-011",
+    "ANC-012"
+  ],
+  "superseded_preparation_directory": "/tmp/sc-runtime-phase-c-review/tuning/plan",
+  "retired_anchor": "ANC-002",
+  "prior_tournament_decisions_preserved": true
+}

@@ -1,0 +1,17 @@
+{
+  "version": "0.8.7",
+  "source_commit": "273780863780a86c79be7f59c2f37c06039ee3a6",
+  "source_archive_sha256": "d1acee580774941a1891ba1b091b8d86dff3cb46293683f7623f2396fbec153c",
+  "source_archive_name": "plan-anchor-0.8.7-source.tar.gz",
+  "archive_copied_into_repository": false,
+  "sc_runtime_install_commit": "3c1d5d7f71ad75954e3fed422792205530104049",
+  "targets": ["claude", "codex", "cursor"],
+  "upstream_pr": {"url": "https://github.com/randlee/plan-anchor/pull/61", "state": "MERGED", "checks": "9 SUCCESS"},
+  "upstream_main_ci": {"url": "https://github.com/randlee/plan-anchor/actions/runs/41576212659", "status": "completed", "conclusion": "success", "head_sha": "273780863780a86c79be7f59c2f37c06039ee3a6"},
+  "heartbeat": {"reported_by": "parent orchestrator", "interval_minutes": 5, "state": "completed and deleted"},
+  "settings_preserved": {"anchor_tracker": "bd", "allow_remote_judge": true, "plan_dir": "docs/plans/phase-c", "sha256": "0e813822c9d5d649cb43c5eeab75c5e0ff74a7fae985ffc419413445603d08f6"},
+  "actual_triage": {"ANC-001 faithful": "EVIDENCE.INCOMPLETE", "ANC-003 single_constraint": "EVIDENCE.INCOMPLETE"},
+  "remaining_gap": "Decisive quote-to-analyzer provenance and a frozen atomicity oracle are missing; typed triage does not force an anchor/question disposition.",
+  "open_finding": "ARCH-C-002",
+  "overall_readiness": "pending-authority-evidence-testability-fixtures-live-plan-gates-coverage-and-manager"
+}

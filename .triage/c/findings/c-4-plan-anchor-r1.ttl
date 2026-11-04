@@ -1,0 +1,52 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Recorded BEFORE edits to C4. Actual gate plan-20261104T055416Z-c-4.
+# Plan-defect clarity replacements only; anchors, scopes, questions, approved
+# fixtures, thresholds, DAG, closure type and owned paths remain unchanged.
+# Source SHA-256: 3e0c6c14e1bfb7206d7f494cdeaf6f2561f6c853c0451c3fc5030707a88cce63
+
+triage:C4_PLAN_R1_ANC_013 a triage:Finding ;
+ triage:anchor_id "ANC-013" ; triage:item "c-4" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T055416Z-c-4" ; triage:action "replace" ;
+ triage:sentence "Close the production release contract left deliberately open by `c-3`:\npublish the approved `sc-runtime 0.2.0` only with release authorization, then\nprove a newly generated consumer resolves it from crates.io without a checkout\npatch." ;
+ triage:replacement "Publish `sc-runtime 0.2.0` only after c-5's dedicated compatibility sprint\nand c-3/c-6 implementation are complete and release is authorized. Then prove\na newly generated consumer resolves it from crates.io without a checkout patch." ;
+ triage:authority "locked ANC-013 in docs/plans/phase-c/anchors.json; existing C4 must_follow [c-3,c-5,c-6] and publication contract; REQ-RUN-0702 in docs/requirements.md; all predate plan-20261104T055416Z-c-4" ;
+ triage:verified_run "plan-20261104T064110Z-c-4" .
+
+triage:C4_PLAN_R1_ANC_015 a triage:Finding ;
+ triage:anchor_id "ANC-015" ; triage:item "c-4" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T055416Z-c-4" ; triage:action "replace" ;
+ triage:sentence "Exercise start/end/list for Rust, Python and\n  explicit Monty through CLI JSON, HTTP and selected MCP. Same request yields\n  equivalent normalized data/error across all projections; actual schedule\n  mutation/execution and generation conflicts occur, not just DTO serialization." ;
+ triage:replacement "Actual CLI, HTTP and selected MCP use the same\n  canonical JSON start/end/list command contract across Rust, Python and explicit\n  Monty targets, including typed results/errors; transport wrappers may differ.\n  Exercise real schedule mutation/execution and generation conflicts." ;
+ triage:authority "locked ANC-015/016 in docs/plans/phase-c/anchors.json; REQ-CRNC-0001/0002 in docs/sc-cron-commands/requirements.md; REQ-RUN-0332 in docs/requirements.md; ADR-CRNC-0001 in docs/sc-cron-commands/architecture.md; all predate plan-20261104T055416Z-c-4" ;
+ triage:verified_run "plan-20261104T064110Z-c-4" .
+
+triage:C4_PLAN_R1_ANC_017 a triage:Finding ;
+ triage:anchor_id "ANC-017" ; triage:item "c-4" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T055416Z-c-4" ; triage:action "replace" ;
+ triage:sentence "- Consume c-6's existing README selected-default recipe and its c-5 custom-store\n  link in the existing generated-consumer fixture. Use only documented options\n  and public APIs: selected cron/commands, bundled store, target registration,\n  explicit worker startup, real commands, and stop/physical join/outcome handling.\n  No private APIs or manual framework-source edits may be needed to make the\n  default recipe work. Record the exact recipe revision; repeat its packaged\n  public path in the existing registry-only proof. Application overrides and\n  schema extensions remain optional, with the documented responsibilities." ;
+ triage:replacement "- Follow c-6's selected-default README recipe and c-5's custom-store example in\n  the existing generated and registry-only consumer fixtures using documented\n  options/public APIs, without manual framework-source edits. Exercise selected\n  cron/commands, bundled store, target registration, explicit worker startup,\n  real commands and stop/physical join/outcomes; record the recipe revision.\n  Consumers may replace the store/schema through ScheduleStore and shutdown/\n  command policy through CronOperations or CronExecutor. Overrides are optional;\n  consumers own validation, cancellation, physical joins, persistence truth,\n  authorization and error mapping." ;
+ triage:authority "locked ANC-017/018 in docs/plans/phase-c/anchors.json; REQ-CRON-0020/0021 in docs/sc-cron/requirements.md; REQ-CRNC-0002 in docs/sc-cron-commands/requirements.md; ADR-CRNC-0001 in docs/sc-cron-commands/architecture.md; existing c5/c6 public replacement documentation; all predate plan-20261104T055416Z-c-4" ;
+ triage:verified_run "plan-20261104T064110Z-c-4" .
+
+# Central review corrections recorded BEFORE edit; C4 alone briefly unfrozen.
+triage:C4_REVIEW_NORMALIZED_PARITY a triage:Finding ;
+ triage:item "c-4" ; triage:anchor_id "ANC-015" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:action "replace" ;
+ triage:sentence "including typed results/errors; transport wrappers may differ." ;
+ triage:replacement "The same request yields equivalent normalized data/error across actual UI projections; transport wrappers may differ." ;
+ triage:authority "locked ANC-015; REQ-CRNC-0001/0002; C4 pre-existing same-request normalized data/error parity acceptance, before plan-20261104T055416Z-c-4" ;
+ triage:verified_run "plan-20261104T064110Z-c-4" .
+
+triage:C4_REVIEW_CUSTOM_STORE a triage:Finding ;
+ triage:item "c-4" ; triage:anchor_id "ANC-017" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:action "replace" ;
+ triage:sentence "Follow c-6's selected-default README recipe and c-5's custom-store example in the existing generated and registry-only consumer fixtures using documented options/public APIs, without manual framework-source edits." ;
+ triage:replacement "Exercise c5's public custom-store/schema example and its application-owned-field proof in the existing generated and registry-only consumer fixtures using documented options/public APIs." ;
+ triage:authority "locked ANC-017/018; REQ-CRON-0020/0021; C5 existing application-field example/proof and C4 documented consumer integration acceptance; main-session instruction restores explicit prior obligations, no new scope" ;
+ triage:verified_run "plan-20261104T064110Z-c-4" .

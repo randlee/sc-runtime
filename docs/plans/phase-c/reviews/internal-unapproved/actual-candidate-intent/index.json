@@ -1,0 +1,42 @@
+{
+  "schema": "phase-c/actual-candidate-source-intent-index/1",
+  "not_generic_oracle": true,
+  "provisional_references": [
+    {
+      "reference": "ANC-013",
+      "file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json",
+      "file_sha256": "0284d5d7404b27da2613b225d0e24f808051dea3b94fabed48001ce7253edc2a",
+      "content_sha256": "622bd240e3ddaa266c6247dce9e64267da98bebaaf4979a8df61fae18740dee8"
+    },
+    {
+      "reference": "ANC-014",
+      "file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json",
+      "file_sha256": "5a6e23d5e87e9da5bf2e4c02541667d89b580314f6334e570e9357eb6e12dbd0",
+      "content_sha256": "8b9dad3d39933c11cc7545cf94874ca39b5b26da59fadc5295a2cf7369969379"
+    },
+    {
+      "reference": "ANC-015",
+      "file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json",
+      "file_sha256": "1629c0ce5df923a0b9b50da0251fa9ba28e6f129af6f574f976408325f8656d3",
+      "content_sha256": "8358a5f06b45541797d0bb41da62afe93df097d3bb7af7f540923a035de6b151"
+    },
+    {
+      "reference": "ANC-016",
+      "file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json",
+      "file_sha256": "7429d5352b28147ed9f291e0d43af295691cfdc76617e9120c9277cda5a127e7",
+      "content_sha256": "7c0300f4e3c326c187b1e8f882faf416bc2550b4a565367b91248ceea3bdb9a8"
+    },
+    {
+      "reference": "ANC-018",
+      "file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json",
+      "file_sha256": "99d269023b6c74bfd91a7374cd7db7b206fe1349d67af92f3a006f29a0adfdbd",
+      "content_sha256": "3b0bef712b607eaaee2e3d11c7017f39780d3239ddd26766ac04d02a1f0aeb27"
+    },
+    {
+      "reference": "ANC-019",
+      "file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json",
+      "file_sha256": "0ef9547c06455326c90b85075e5024d36f4f4809c54935c8ca46b5aa718c85b1",
+      "content_sha256": "3b0bef712b607eaaee2e3d11c7017f39780d3239ddd26766ac04d02a1f0aeb27"
+    }
+  ]
+}

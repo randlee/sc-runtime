@@ -1,0 +1,154 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": true,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "The package may publish only when the release lead approves.",
+        "quote": "only publish after the release lead says yes",
+        "scope": "package publishing",
+        "verdict": null,
+        "failing": [],
+        "answers": null,
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "256a300b06168dd457a7f2b591a8cc92abce9189e418246aaf82ff9f789a61a0",
+          "request_sha256": "0dcbc1e381fafbbbfc96131dc8620a4c5919d81dd7d6481620311928e9094975"
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false,
+    "requests": [
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement adds an unsupported substantive choice or conflicts with supplied approved intent.",
+              "unclear": "The supplied authority does not determine whether the substantive duty is preserved.",
+              "yes": "The quote and any explicitly supplied approved intent support the duty after ordinary formalization."
+            },
+            "instructions": "Judge whether anchor.statement preserves the duty authorized by anchor.quote together with the explicitly supplied state.intent.content, when present. Approved intent may clarify the originally broad duty, including authorizing a specific algorithm. If intent is absent, no extra authorization may be assumed. Reject a policy or precision unsupported by both sources, or contrary to explicit intent. Ordinary wording, channel and JSON representation normalization is allowed; one quoted duty may be extracted. Ignore grammar and vagueness.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+              "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+              "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+            },
+            "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "At least two independently enforceable duties are joined in the statement.",
+              "unclear": "The statement leaves independence of its duties ambiguous.",
+              "yes": "All details enforce the same invariant and would be evaluated together."
+            },
+            "instructions": "Is anchor.statement one invariant applied to a subject, trigger, and possibly several output surfaces? Do not count the number of nouns or listed artifacts; count independently enforceable duties.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "The package may publish only when the release lead approves.",
+            "quote": "only publish after the release lead says yes",
+            "scope": "package publishing"
+          }
+        }
+      },
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement adds an unsupported substantive choice or conflicts with supplied approved intent.",
+              "unclear": "The supplied authority does not determine whether the substantive duty is preserved.",
+              "yes": "The quote and any explicitly supplied approved intent support the duty after ordinary formalization."
+            },
+            "instructions": "Judge whether anchor.statement preserves the duty authorized by anchor.quote together with the explicitly supplied state.intent.content, when present. Approved intent may clarify the originally broad duty, including authorizing a specific algorithm. If intent is absent, no extra authorization may be assumed. Reject a policy or precision unsupported by both sources, or contrary to explicit intent. Ordinary wording, channel and JSON representation normalization is allowed; one quoted duty may be extracted. Ignore grammar and vagueness.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+              "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+              "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+            },
+            "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "At least two independently enforceable duties are joined in the statement.",
+              "unclear": "The statement leaves independence of its duties ambiguous.",
+              "yes": "All details enforce the same invariant and would be evaluated together."
+            },
+            "instructions": "Is anchor.statement one invariant applied to a subject, trigger, and possibly several output surfaces? Do not count the number of nouns or listed artifacts; count independently enforceable duties.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "The package may publish only when the release lead approves.",
+            "quote": "only publish after the release lead says yes",
+            "scope": "package publishing"
+          }
+        }
+      }
+    ],
+    "totals": {
+      "requests": 2,
+      "bytes": 7050,
+      "max_request_bytes": 24000
+    }
+  },
+  "error": null
+}

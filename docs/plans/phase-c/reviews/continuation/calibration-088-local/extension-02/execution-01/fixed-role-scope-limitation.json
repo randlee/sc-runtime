@@ -1,0 +1,67 @@
+{
+  "role_scope": [
+    "faithful",
+    "single_constraint"
+  ],
+  "fixed_roles": [
+    "observable",
+    "scoped",
+    "self_contained"
+  ],
+  "fixed_role_failures": [
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-12-unrecorded-approval",
+      "role": "observable",
+      "expected": "no",
+      "answers": [
+        {
+          "choice": "no",
+          "confidence": 0.49
+        },
+        {
+          "choice": "no",
+          "confidence": 0.56
+        }
+      ]
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-12-unrecorded-approval",
+      "role": "observable",
+      "expected": "no",
+      "answers": [
+        {
+          "choice": "no",
+          "confidence": 0.52
+        },
+        {
+          "choice": "no",
+          "confidence": 0.53
+        }
+      ]
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-12-unrecorded-approval",
+      "role": "observable",
+      "expected": "no",
+      "answers": [
+        {
+          "choice": "no",
+          "confidence": 0.61
+        },
+        {
+          "choice": "no",
+          "confidence": 0.56
+        }
+      ]
+    }
+  ],
+  "accepted": false,
+  "new_question_set": null,
+  "fixed_roles_changed": false,
+  "actual_judge_choices_match_fixed_oracle": true,
+  "interpretation": "Correct but subthreshold fixed-role answers block the complete instrument under required confidence semantics. Confidence alone does not establish a semantic question defect or authorize widening role scope. No partial seal is valid.",
+  "next_boundary": "Any further calibration that changes a fixed role requires separate independent authority/review; these raw failures must remain preserved."
+}

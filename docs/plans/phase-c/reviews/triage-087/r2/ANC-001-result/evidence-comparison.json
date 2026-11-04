@@ -1,0 +1,91 @@
+{
+  "r1_result_path": "/tmp/sc-runtime-phase-c-review/triage-087/ANC-001-result/result.md",
+  "r1_preserved": true,
+  "new_authority": {
+    "intent_id": "sc-runtime-phase-c-review-completion-intent",
+    "intent_version": 2,
+    "intent_sha256": "e9f3cc7ae32002d5592d393ba24c82732f0e00d4633a37ad06928e1294777a0f"
+  },
+  "unchanged": {
+    "source_digest": "9b0c4ddbd6b33420151b3ec4818dbe07e738378641fdf92690c77c80e24f81e3",
+    "sealed_digest": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+    "anchor_records_digest": "e2eef4b9b1a90d7af0725b8508ec2eb4bae68614a8727a4e683787a707fe1c71",
+    "canonical_request_sha256": "fe9770eef376dfb0eb9bdf91c4114ac93c4043d118424f97db99b42832702d5b",
+    "raw_response_sha256": "be34a2901c5cf08347df94d4dd511b9c32b3e626d72d4cf01cdfd634d8155d2d"
+  },
+  "oracle_mismatch": {
+    "role": "faithful",
+    "expected": "yes",
+    "observed": [
+      {
+        "choice": "no",
+        "confidence": 0.62
+      },
+      {
+        "choice": "no",
+        "confidence": 0.7
+      }
+    ],
+    "rationale": "Explicit original human analyzer request and two recorded approvals authorize the current clarity replacement; the quote-only role omits this authority."
+  },
+  "original_rubric_outcome": {
+    "verdict": "inconclusive",
+    "failing": [
+      "faithful",
+      "self_contained"
+    ],
+    "low_confidence": [
+      "self_contained"
+    ],
+    "unstable": [],
+    "initial_disagreements": [],
+    "resolved": {
+      "faithful": {
+        "choice": "no",
+        "confidence": 0.62,
+        "matching_calls": [
+          1,
+          2
+        ]
+      },
+      "observable": {
+        "choice": "yes",
+        "confidence": 0.82,
+        "matching_calls": [
+          1,
+          2
+        ]
+      },
+      "scoped": {
+        "choice": "yes",
+        "confidence": 0.98,
+        "matching_calls": [
+          1,
+          2
+        ]
+      },
+      "self_contained": {
+        "choice": "yes",
+        "confidence": 0.24,
+        "matching_calls": [
+          1,
+          2
+        ]
+      },
+      "single_constraint": {
+        "choice": "yes",
+        "confidence": 0.66,
+        "matching_calls": [
+          1,
+          2
+        ]
+      }
+    }
+  },
+  "live_jev_calls": 0,
+  "active_plan_inspected": false,
+  "authority_edits": false,
+  "question_edits": false,
+  "planner_observation_used_as_authority": false,
+  "calibration_pointer_not_used_as_actual_anchor_label": true
+}
