@@ -1,0 +1,154 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": true,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "When --privacy is set, the exporter must replace every email address with [redacted].",
+        "quote": "with --privacy, replace email addresses with [redacted]",
+        "scope": "exporter privacy mode",
+        "verdict": null,
+        "failing": [],
+        "answers": null,
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "c4d445315faaea84f2267cf5a641e26d09365754d0400f7499e6c1eaecc14f54",
+          "request_sha256": "4b7cc7c2b317bd21081e5a62ae48912f82334f52310384941669b3e41e55f1a9"
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false,
+    "requests": [
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement adds or contradicts a substantive policy, implementation choice, strength, trigger or outcome unsupported by the supplied quote and intent.",
+              "unclear": "The supplied authority leaves substantive meaning preservation unresolved.",
+              "yes": "The same duty is preserved through ordinary language, channel or representation normalization, or precision expressly authorized by supplied intent."
+            },
+            "instructions": "Does anchor.statement preserve the duty authorized by anchor.quote and any explicitly supplied state.intent.content? Informal user language may become a formal requirement. Allow one atomic duty from several quoted duties, technical output-channel formalization for printing or logging, and ordinary JSON container terminology where no container distinction was specified. Supplied approved intent can authorize otherwise unmentioned implementation precision. Without that intent, do not invent policy. Preserve vagueness rather than inventing precision. Judge meaning preservation only.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+              "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+              "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+            },
+            "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "The statement requires two distinct actions or policies that can independently succeed or fail.",
+              "unclear": "The independence of the required duties cannot be determined.",
+              "yes": "Every detail instantiates one invariant and its applicability conditions, possibly across several surfaces."
+            },
+            "instructions": "Does anchor.statement express one enforceable invariant? A predicate applied uniformly to a subject, trigger and several output surfaces remains one constraint. A condition and the required consequence form one rule. Count distinct required actions or policies, not nouns, artifacts or locations. Judge the statement alone; other duties appearing only in its quote do not make it bundled.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "When --privacy is set, the exporter must replace every email address with [redacted].",
+            "quote": "with --privacy, replace email addresses with [redacted]",
+            "scope": "exporter privacy mode"
+          }
+        }
+      },
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement adds or contradicts a substantive policy, implementation choice, strength, trigger or outcome unsupported by the supplied quote and intent.",
+              "unclear": "The supplied authority leaves substantive meaning preservation unresolved.",
+              "yes": "The same duty is preserved through ordinary language, channel or representation normalization, or precision expressly authorized by supplied intent."
+            },
+            "instructions": "Does anchor.statement preserve the duty authorized by anchor.quote and any explicitly supplied state.intent.content? Informal user language may become a formal requirement. Allow one atomic duty from several quoted duties, technical output-channel formalization for printing or logging, and ordinary JSON container terminology where no container distinction was specified. Supplied approved intent can authorize otherwise unmentioned implementation precision. Without that intent, do not invent policy. Preserve vagueness rather than inventing precision. Judge meaning preservation only.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+              "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+              "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+            },
+            "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "The statement requires two distinct actions or policies that can independently succeed or fail.",
+              "unclear": "The independence of the required duties cannot be determined.",
+              "yes": "Every detail instantiates one invariant and its applicability conditions, possibly across several surfaces."
+            },
+            "instructions": "Does anchor.statement express one enforceable invariant? A predicate applied uniformly to a subject, trigger and several output surfaces remains one constraint. A condition and the required consequence form one rule. Count distinct required actions or policies, not nouns, artifacts or locations. Judge the statement alone; other duties appearing only in its quote do not make it bundled.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "When --privacy is set, the exporter must replace every email address with [redacted].",
+            "quote": "with --privacy, replace email addresses with [redacted]",
+            "scope": "exporter privacy mode"
+          }
+        }
+      }
+    ],
+    "totals": {
+      "requests": 2,
+      "bytes": 7918,
+      "max_request_bytes": 24000
+    }
+  },
+  "error": null
+}

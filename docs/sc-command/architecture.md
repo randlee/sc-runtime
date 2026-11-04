@@ -355,6 +355,16 @@ repository rule against wrappers and macro systems
 
 ## ADR-CMD-0003: The `server` feature gates axum and rmcp
 
+Phase C extends the existing feature separation with optional independent
+schema, using probe-frozen schemars/Utoipa identities for owner-local schema
+traits on canonical Envelope<T>/OpError/ErrorKind. Schema enables neither
+server nor scheduler, and defaults select neither feature. The manually owned
+Envelope schema matches its existing custom success/failure serialization;
+no wrapper DTO or generic response schema is introduced. C-1 owns only the
+narrow compileable declaration/manifest baseline before c-3's later migration;
+c-6 preserves/tests it and c-4 proves actual typed wire/schema parity. All
+ordinary error/conversion rules remain governed by ADR-CMD-0001/0002.
+
 **2026-10-31 amendment:** ADR-RUN-0017 adds `test-util = []`, off by default
 and independent of `server`; it exposes std-only recorder/rejector doubles.
 The public canonical port/Noop is unconditional. Exact bridge types pin is

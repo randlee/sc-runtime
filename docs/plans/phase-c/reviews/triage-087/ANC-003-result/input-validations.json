@@ -1,0 +1,22 @@
+{
+  "checks": {
+    "agent-runner-request": true,
+    "anchor-tuning-request": true,
+    "runtime_agent_digest": true,
+    "script_digest": true,
+    "contract_script_digest": true,
+    "template_digest": true,
+    "request_correlations": true,
+    "repeat_request_matches": true,
+    "disputed_response_matches": true,
+    "repeat_seal_matches": true
+  },
+  "contract": {
+    "data": {
+      "sha256": "50b8f7589a36adef5f0f9f9f533cd69cae3674043a56be253f748dcb25fbddf2",
+      "valid": true
+    },
+    "error": null,
+    "success": true
+  }
+}

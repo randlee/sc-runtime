@@ -42,9 +42,18 @@ The stop/tick ordering, generation fencing, retained REPL, interpreter-checkpoin
 
 ## REQ-CRON-0004: One configuration table
 
-The crate creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
+The bundled store creates one schedule table. A test writes a row without constructing `SqliteWriter`. The table is the configuration. The release-v1 row includes canonical `hook_environment` text with exact empty default `{"dotenv":[],"variables":{}}`; it does not add a second environment or secret table. The crate does not migrate the consumer's other tables. An embedder-supplied row limit counts enabled and disabled rows, and a new name over that limit is `CronError::InvalidSpec`. Every writer that opens one schedule database must pass identical `ScheduleLimits`. The limit is not stored in the table; a writer opened with a different limit, including unlimited, does not enforce another writer's cap.
 
 ## REQ-CRON-0005: One error enum
+
+Phase C planned amendment: cooperative operation failures remain CronError::Store
+with non-exhaustive StoreErrorKind additions Cancelled, DeadlineExceeded and
+Indeterminate, and optional typed TransactionOutcome accessor. No second error
+enum/channel or raw SQL/provider prose is added. DeadlineExceeded may carry
+confirmed committed-late evidence and must not trigger automatic retry;
+Indeterminate never asserts rollback/not-persisted. Existing legacy variants,
+stable top-level codes and row outcomes remain unchanged. REQ-CRON-0020 and
+ADR-RUN-0018 govern the exact admission/persistence report policy.
 
 Fallible library entry points return `CronError`, including both
 `process::supervise` and `process::supervise_with_logger`, which return
@@ -217,3 +226,87 @@ source. The complete first-release SQLite schema is version 1 with canonical
 reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
+
+## Phase C approved target contract (planned, not implemented)
+
+The following additive requirements describe the approved next release; they
+do not claim current implementation or alter Phase B provenance. The existing
+core remains free of product HTTP/MCP/CLI APIs. A separate optional standard
+command adapter is permitted by ADR-RUN-0019.
+
+## REQ-CRON-0020: Public receiver and cooperative owned shutdown
+
+The crate exposes the same nominal canonical logging receiver and supporting
+values through `sc_cron::observability`; no parallel trait is introduced.
+Existing constructors and legacy store implementations remain source compatible.
+The open ScheduleStore and generic Scheduler seam permits application-owned
+columns/tables through custom stores; bundled-schema preservation does not
+forbid consumer schemas or add product fields to Schedule/command DTOs.
+Cooperative custom providers must truthfully declare support and forward the
+live operation scope, fencing/query semantics and outcome/ownership contract
+using their own mechanisms. SQLite-specific callbacks apply to the bundled
+SqliteScheduleStore, not to every provider. Legacy/custom integrations may use
+the existing caller-owned path with explicitly documented guarantees. The cron
+README and isolated external consumer prove one custom field and the chosen
+cooperative-or-legacy lifecycle through public scheduling/query/end APIs.
+An opt-in cooperative mode rejects unsupported stores before starting work.
+It installs one shared operation context before initial load, queue submission,
+lock acquisition, reload, decode and all persistence/retry/end paths. Context
+checks and provider interruption observe directly mutable
+deadlines while blocked. No guard waits indefinitely before consulting context.
+
+Independent stop control closes admission, records only earlier deadlines and
+wakes/interrupts operations while an owning join runs. Grace and cleanup are
+absolute `std::time::Instant` deadlines in a real stop domain distinct from
+the schedule `Clock`. Equal deadlines are valid: T=0 cancels immediately and
+grants no cleanup-write budget. Physical joins may take time; no literal
+zero-duration or arbitrary native/custom-host preemption guarantee is made.
+All admitted worker and context-aware command tasks remain physically owned
+until completion even if their async waiter is cancelled. The human-approved
+commit admission/outcome contract forbids new ordinary commit admission at/after
+G and cleanup commit admission at/after K; it does not promise universal physical
+commit/fsync completion by those cutoffs. For bundled SQLite, final commit_hook admission briefly
+serializes with live stop state/class/generation/real time, releases the
+controller mutex before COMMIT/native I/O, and records stop-first/admission-first.
+Second stop remains independently callable while the commit path is blocked.
+Explicit and implicit writes share the fence. Confirmed committed-late,
+confirmed rollback, no-mutation and indeterminate outcomes are typed distinctly;
+expiry/Drop cannot imply rollback or not-persisted. No replay of uncertain
+mutations or expired-context readback. Bounded separately authorized readback
+may reconcile observed state without claiming exactly-once identity. Uncertain
+connection state remains owned/quarantined; restore known hooks/TLS baseline
+on safe paths. No effects occur after actual physical release. Cleanup expiry
+and actual persisted result are reported honestly after join; no bool false
+stands for unknown, no instantaneous T=0 join or universal 2T guarantee.
+Legacy direct calls remain
+caller-owned. Preserve bundled schema, generation fencing, stop-before-tick, existing
+Rust/Python/Monty hooks and REQ-CRON-0019 environment policy.
+
+## REQ-CRON-0021: Tracked public operations and bounded schedule query
+
+The standard Scheduler path has finite shared intake for public context-aware
+start/end/query roots: default64, validated pre-start capacity 1..=65536,
+immediate fixed typed unavailable refusal before registered/queued work when
+full. One permit remains owned through actual physical completion even when
+its async waiter is dropped. Stop/deadline/cancellation admission is atomic;
+no hidden capacity-wait queue or automatic replay. Worker dispatch and restricted
+internal cleanup retain separate existing ownership and cannot serve as a
+public-command bypass. This completes REQ-CRON-0020's admission promise under
+NFR-RUN-0002 and ADR-RUN-0018; it does not alter embedder row limits or impose
+this mechanism on custom CronOperations/CronExecutor policy. The Phase C
+contract defines exact configuration, reason mapping and causal proof owners.
+
+The scheduler provides async context-aware start, generation-fenced stop and
+query operations using the same tracked admission and cancellation protocol.
+They are required by standard command execution; transport timeout cannot detach
+a blocking mutation. A bounded query supports active/ended/all selection,
+optional name, ascending stable id continuation and a positive capped limit.
+It reads the existing table; `list_active` alone cannot satisfy this contract.
+A legacy store's new capability defaults to a fixed unsupported error. End by
+name resolves a specific id/generation and cannot end a replacement generation.
+The public object-safe native CronOperations port returns boxed Result futures
+for start/end/query with StoreOperationContext; it carries no adapter DTOs.
+Scheduler's real implementation belongs to c-5. with_deadline derives a child
+sharing stop/admission state and the earliest deadline; no independent registry.
+No new job kind, job registry, second database or arbitrary hard-delete command
+is implied. Ordinary registration continues through REQ-CRON-0003 APIs.

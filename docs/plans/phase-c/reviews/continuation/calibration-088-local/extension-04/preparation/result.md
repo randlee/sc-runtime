@@ -1,0 +1,11 @@
+```json
+{
+  "schema_version": "1.0.0",
+  "success": false,
+  "canceled": false,
+  "aborted_by": null,
+  "data": null,
+  "error": {"code":"EVIDENCE.INCOMPLETE","message":"Prepared extension-04 faithful-only tournament: three new reasoned frozen candidates, 69 complete request bodies and five confined CLI inputs; zero new live calls. Other four questions, including the observable remedy, are byte-identical to UNACCEPTED extension-03-01 as an experiment baseline only; actual production seal 96d8 is unchanged. All 23 case states, labels and thresholds are preserved, with no new oracle cases. Prior strict results, raw answers and history remain intact. Full 115-cell scoring is required; the previous faithful 0.50/0.66 pair cannot be waived, reused as new evidence or partially sealed. Strict packet, rationales, materialization plan and canonical testability history sidecar: /tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-04-prepared.","recoverable":true,"suggested_action":"Review the exact prepared continuation; materialize and commit its five repository-confined files, verify all hashes and 69 supported CLI dry-run projections/input digests, then request root authorization for the inspected deterministic runner. No question generation, relabeling, extra cases, confidence waiver or partial seal is authorized."},
+  "metadata": {"authoritative_sources_unchanged":true,"correlation_id":"sc-runtime-testability-extension-04-prepared","duration_ms":0,"jev_run_ids":[],"planner_observation_trust":null,"retry_count":0,"tool_calls":0}
+}
+```

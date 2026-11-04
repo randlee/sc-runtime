@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0.0",
+  "success": true,
+  "canceled": false,
+  "aborted_by": null,
+  "data": {
+    "acceptance_table": [],
+    "authority_citations": [
+      "INTENT sc-runtime-phase-c-review-completion-intent v2, original human provenance: do we install sc-lint as part of the template w/ pre-populated boundary lint and cros-platform lint and runtime lint set up by default?",
+      "INTENT v2 approval provenance 1: human answer Approve statements and fixtures, approving anchor-proposal.md ANC-001 full sc-lint installation and its explicit boundary, portability, and runtime analyzer pass fixture.",
+      "INTENT v2 approval provenance 2: human answer Approve clarity corrections and split fixtures, approving anchor-clarity-diagnosis.md ANC-001 exact replacement and narrowed setup scope.",
+      "ANC-001 v4 locked statement and pass/fail fixtures; anchors digest e2eef4b9b1a90d7af0725b8508ec2eb4bae68614a8727a4e683787a707fe1c71."
+    ],
+    "authority_recommendations": [],
+    "candidate_rankings": [],
+    "disposition": "question_defect",
+    "evidence": {
+      "active_plan_inspected": false,
+      "authority_edits": false,
+      "calibration_pointer_not_used_as_actual_anchor_label": true,
+      "live_jev_calls": 0,
+      "new_authority": {
+        "intent_id": "sc-runtime-phase-c-review-completion-intent",
+        "intent_sha256": "e9f3cc7ae32002d5592d393ba24c82732f0e00d4633a37ad06928e1294777a0f",
+        "intent_version": 2
+      },
+      "oracle_mismatch": {
+        "expected": "yes",
+        "observed": [
+          {
+            "choice": "no",
+            "confidence": 0.62
+          },
+          {
+            "choice": "no",
+            "confidence": 0.7
+          }
+        ],
+        "rationale": "Explicit original human analyzer request and two recorded approvals authorize the current clarity replacement; the quote-only role omits this authority.",
+        "role": "faithful"
+      },
+      "original_rubric_outcome": {
+        "failing": [
+          "faithful",
+          "self_contained"
+        ],
+        "initial_disagreements": [],
+        "low_confidence": [
+          "self_contained"
+        ],
+        "resolved": {
+          "faithful": {
+            "choice": "no",
+            "confidence": 0.62,
+            "matching_calls": [
+              1,
+              2
+            ]
+          },
+          "observable": {
+            "choice": "yes",
+            "confidence": 0.82,
+            "matching_calls": [
+              1,
+              2
+            ]
+          },
+          "scoped": {
+            "choice": "yes",
+            "confidence": 0.98,
+            "matching_calls": [
+              1,
+              2
+            ]
+          },
+          "self_contained": {
+            "choice": "yes",
+            "confidence": 0.24,
+            "matching_calls": [
+              1,
+              2
+            ]
+          },
+          "single_constraint": {
+            "choice": "yes",
+            "confidence": 0.66,
+            "matching_calls": [
+              1,
+              2
+            ]
+          }
+        },
+        "unstable": [],
+        "verdict": "inconclusive"
+      },
+      "planner_observation_used_as_authority": false,
+      "question_edits": false,
+      "r1_preserved": true,
+      "r1_result_path": "/tmp/sc-runtime-phase-c-review/triage-087/ANC-001-result/result.md",
+      "unchanged": {
+        "anchor_records_digest": "e2eef4b9b1a90d7af0725b8508ec2eb4bae68614a8727a4e683787a707fe1c71",
+        "canonical_request_sha256": "fe9770eef376dfb0eb9bdf91c4114ac93c4043d118424f97db99b42832702d5b",
+        "raw_response_sha256": "be34a2901c5cf08347df94d4dd511b9c32b3e626d72d4cf01cdfd634d8155d2d",
+        "sealed_digest": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+        "source_digest": "9b0c4ddbd6b33420151b3ec4818dbe07e738378641fdf92690c77c80e24f81e3"
+      }
+    },
+    "explanation": "The new INTENT v2 resolves R1's missing quote-to-statement provenance. The original human question expressly identifies template installation with boundary, cross-platform, and runtime lint by default. Human approval of the first packet authorizes the analyzer fixture; human approval of the second packet authorizes the exact current installation statement and scope as a clarity correction. These approvals, together with the original human utterance, establish that the three analyzer names express the authorized installation duty, rather than a newly chosen implementation policy. This reasoning does not adopt the assistant packets' analytical opinions as human facts. The faithful oracle expectation is yes against that approved authority. The sealed faithful question restricts authorization to anchor.quote and instructs preserving vagueness; the canonical request supplies only the abbreviated quote, statement, and scope, omitting the applicable approved clarification and original detailed utterance. Its repeated no answers therefore conflict with the authority-derived expectation because the question's quote-only evidence boundary cannot represent the approved provenance. This proves a question defect affecting faithful, rather than an anchor defect. The initial incomplete evidence prevented diagnosis; changing confidence did not resolve it. This adjudication leaves the raw no responses, confidence values, question seal, and recorded overall inconclusive rubric intact. It makes no live gate claim and does not diagnose the separately low-confidence self_contained role.",
+    "gate": "testability",
+    "operation": "triage",
+    "oracle_sha256": null,
+    "planner_action": "Preserve R1 and all original gate evidence. Reopen only the faithful rubric tournament using frozen authority-derived cases that cover approved clarifications and unauthorized additions. Run required regression checks before any separate reseal. Keep the current gate inconclusive until the proper review workflow independently resolves every required role.",
+    "question_action": "reopen_affected_tournament",
+    "sealed_question_set": {
+      "digest": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+      "questions": {
+        "faithful": {
+          "criteria": {
+            "no": "The requirement commits to an additional policy, implementation selection, strength, trigger or result.",
+            "unclear": "Meaning preservation cannot be decided from the quote and statement.",
+            "yes": "The user duty is preserved with ordinary language, channel or representation normalization only."
+          },
+          "instructions": "Does anchor.quote substantively authorize the duty in anchor.statement? Read informal user language as a requirement. Allow one atomic duty from several quoted duties, technical output-channel formalization for printing or logging, and ordinary JSON container terminology where no container distinction was specified. Preserve vagueness rather than inventing precision. Reject added policy commitments, including selecting an encryption algorithm or strength absent from the quote.",
+          "type": "choice"
+        },
+        "observable": {
+          "criteria": {
+            "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+            "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+            "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+          },
+          "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+          "type": "choice"
+        },
+        "scoped": {
+          "criteria": {
+            "no": "No work area or applicability set is identifiable.",
+            "unclear": "An area is named but its applicability cannot be determined.",
+            "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+          },
+          "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+          "type": "choice"
+        },
+        "self_contained": {
+          "criteria": {
+            "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+            "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+            "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+          },
+          "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+          "type": "choice"
+        },
+        "single_constraint": {
+          "criteria": {
+            "no": "At least two independently enforceable duties are joined in the statement.",
+            "unclear": "The statement leaves independence of its duties ambiguous.",
+            "yes": "All details enforce the same invariant and would be evaluated together."
+          },
+          "instructions": "Is anchor.statement one invariant applied to a subject, trigger, and possibly several output surfaces? Do not count the number of nouns or listed artifacts; count independently enforceable duties.",
+          "type": "choice"
+        }
+      }
+    },
+    "sealed_question_set_digest_after": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+    "sealed_question_set_digest_before": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4"
+  },
+  "error": null,
+  "metadata": {
+    "authoritative_sources_unchanged": true,
+    "correlation_id": "sc-runtime-phase-c-anc-001-testability-triage-087-r2",
+    "duration_ms": 33,
+    "jev_run_ids": [],
+    "planner_observation_trust": "untrusted",
+    "retry_count": 0,
+    "tool_calls": 3
+  }
+}

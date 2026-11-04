@@ -1,0 +1,154 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": true,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "When TYPESAFE_API_KEY is set to canary-123 and transport fails, stdout, stderr, and saved run artifacts must omit canary-123 and Authorization: Bearer <redacted>",
+        "quote": "test a transport failure with a canary TypeSafe key and make sure console output and saved run files contain neither the key nor its bearer <redacted>",
+        "scope": "transport-error output and persisted run artifacts",
+        "verdict": null,
+        "failing": [],
+        "answers": null,
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "cc8fc2477a2994c6099aeb918c6a158a796ad9e0542f46c593a2837f7cd06321",
+          "request_sha256": "24289e11fa3d12404d6b6d5c18a549bdd868466200779a2f33c7fd5775c719f2"
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false,
+    "requests": [
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement adds an unsupported substantive choice or conflicts with supplied approved intent.",
+              "unclear": "The supplied authority does not determine whether the substantive duty is preserved.",
+              "yes": "The quote and any explicitly supplied approved intent support the duty after ordinary formalization."
+            },
+            "instructions": "Evaluate semantic support for anchor.statement using anchor.quote and optional state.intent.content as the supplied approved authority. A specific implementation is faithful when the explicit intent authorizes it, and unfaithful when neither source supports it or intent disallows it. Without state.intent, use the quote alone and ordinary meaning-preserving formalization. Do not infer approval from the statement itself.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+              "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+              "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+            },
+            "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "The statement joins independent predicates that can be satisfied separately.",
+              "unclear": "Independence of the stated duties cannot be determined.",
+              "yes": "The statement enforces one predicate, possibly uniformly across multiple output surfaces."
+            },
+            "instructions": "Count independently enforceable predicates in anchor.statement, not nouns or output locations. One omission, format or behavior applied uniformly over several surfaces is one constraint. A trigger and its required outcome are one rule. Logging a format plus performing retries are distinct rules. Ignore quote contents when deciding whether the statement bundles duties.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "When TYPESAFE_API_KEY is set to canary-123 and transport fails, stdout, stderr, and saved run artifacts must omit canary-123 and Authorization: Bearer <redacted>",
+            "quote": "test a transport failure with a canary TypeSafe key and make sure console output and saved run files contain neither the key nor its bearer <redacted>",
+            "scope": "transport-error output and persisted run artifacts"
+          }
+        }
+      },
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement adds an unsupported substantive choice or conflicts with supplied approved intent.",
+              "unclear": "The supplied authority does not determine whether the substantive duty is preserved.",
+              "yes": "The quote and any explicitly supplied approved intent support the duty after ordinary formalization."
+            },
+            "instructions": "Evaluate semantic support for anchor.statement using anchor.quote and optional state.intent.content as the supplied approved authority. A specific implementation is faithful when the explicit intent authorizes it, and unfaithful when neither source supports it or intent disallows it. Without state.intent, use the quote alone and ordinary meaning-preserving formalization. Do not infer approval from the statement itself.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+              "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+              "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+            },
+            "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "The statement joins independent predicates that can be satisfied separately.",
+              "unclear": "Independence of the stated duties cannot be determined.",
+              "yes": "The statement enforces one predicate, possibly uniformly across multiple output surfaces."
+            },
+            "instructions": "Count independently enforceable predicates in anchor.statement, not nouns or output locations. One omission, format or behavior applied uniformly over several surfaces is one constraint. A trigger and its required outcome are one rule. Logging a format plus performing retries are distinct rules. Ignore quote contents when deciding whether the statement bundles duties.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "When TYPESAFE_API_KEY is set to canary-123 and transport fails, stdout, stderr, and saved run artifacts must omit canary-123 and Authorization: Bearer <redacted>",
+            "quote": "test a transport failure with a canary TypeSafe key and make sure console output and saved run files contain neither the key nor its bearer <redacted>",
+            "scope": "transport-error output and persisted run artifacts"
+          }
+        }
+      }
+    ],
+    "totals": {
+      "requests": 2,
+      "bytes": 7670,
+      "max_request_bytes": 24000
+    }
+  },
+  "error": null
+}

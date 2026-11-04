@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "data": {
+    "qa_pass": "qa-2",
+    "reviewed_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+    "source_aggregate": "/tmp/sc-runtime-phase-c-review/qa2/aggregate.json",
+    "screened": [
+      {
+        "id": "ARCH-C-002",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing user-requested Plan Anchor calibration, approved fixtures, four full-sprint live planning runs, deterministic structural checks and locked-anchor coverage.",
+        "reason": "The retained finding requests completion and review of the existing Plan Anchor gate and its already required outputs; it introduces no process artifact or additional gate."
+      }
+    ],
+    "summary": {
+      "input_findings": 1,
+      "screened_findings": 1,
+      "not_applicable": 1,
+      "keep": 0,
+      "ceremony": 0,
+      "concern_valid_remedy_ceremony": 0,
+      "retained_ids": ["ARCH-C-002"],
+      "rejected_ids": []
+    }
+  },
+  "error": null
+}

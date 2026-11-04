@@ -1,0 +1,42 @@
+{
+  "error": "RUBRIC.QUESTIONS",
+  "live_calls": 0,
+  "files": [
+    {
+      "name": "future-intent-01-rubric.json",
+      "members": [
+        "questions"
+      ],
+      "requires": [
+        "digest",
+        "questions"
+      ],
+      "actual_bytes_sha256": "404c98bc81fbfae177e2845aee38082ab7fbbdc54377d5725fd0a54afaf99e9d",
+      "valid_wrapper": false
+    },
+    {
+      "name": "future-intent-02-rubric.json",
+      "members": [
+        "questions"
+      ],
+      "requires": [
+        "digest",
+        "questions"
+      ],
+      "actual_bytes_sha256": "ee8f5b824425a7764434be899e36a5da023b26da25893d8107603dbf9c4d5140",
+      "valid_wrapper": false
+    },
+    {
+      "name": "future-intent-03-rubric.json",
+      "members": [
+        "questions"
+      ],
+      "requires": [
+        "digest",
+        "questions"
+      ],
+      "actual_bytes_sha256": "4d61ad46a76ec92ba6f377fe5fa2d4ec3a26e92cf1ce8c84342cad91063a50a2",
+      "valid_wrapper": false
+    }
+  ]
+}

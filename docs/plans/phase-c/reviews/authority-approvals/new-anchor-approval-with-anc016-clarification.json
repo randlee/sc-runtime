@@ -1,0 +1,24 @@
+{
+  "schema": "phase-c/human-anchor-approval/1",
+  "source": "direct human reply in current chat",
+  "recorded_at_utc": "2026-11-03T23:29:40.500527+00:00",
+  "questionItemId": "[\"request_user_input_async\",\"call_Ezw6Cwv7vTcmqutd3TRsV7Am\",0]",
+  "question": "Approve the six anchor statements and their pass/fail fixtures in /Users/randlee/github/sc-runtime-worktrees/plan/phase-c/docs/plans/phase-c/reviews/internal-unapproved/phase-c-six-candidate-approval-packet.md? They cover compatibility before 0.2.0, optional cron commands, shared JSON semantics, common verbs across handler kinds, supported consumer overrides, and documented integration/override responsibilities. The plan-anchoring skill requires “the user approves them” for fixtures; locking still waits for successful live checks.",
+  "answer": "approved w/ anc-016 clear wording",
+  "packet_sha256": "05e5d66ba041672cab8a091c9d455a40c64d0707416e72e1ca2760d9f2cd1b85",
+  "approved_actual_anchor_ids": [
+    "ANC-013",
+    "ANC-014",
+    "ANC-015",
+    "ANC-016",
+    "ANC-017",
+    "ANC-018"
+  ],
+  "exception": {
+    "id": "ANC-016",
+    "approved_statement": "The standard cron command set must use common schedule-management subcommands across Python, Monty, and Rust handlers.",
+    "preceding_direct_human_clarity_approval": "yes, that is better.  I misunderstood the first anchor, which is the anchors deficiency"
+  },
+  "fixtures": "All six original pass/fail fixture pairs approved unchanged.",
+  "locking": "Not authorized as a substitute for required successful live checks; records remain proposed pending calibration and verification."
+}

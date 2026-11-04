@@ -1,0 +1,82 @@
+{
+  "source_worktree": "/Users/randlee/github/plan-anchor-worktrees/codex/rubric-approved-inputs",
+  "base_commit": "273780863780a86c79be7f59c2f37c06039ee3a6",
+  "version": "0.8.8",
+  "root": "/tmp/plan-anchor-088-smoke-56bxrvbm",
+  "reports": [
+    {
+      "tracker": "br",
+      "dest": "/tmp/plan-anchor-088-smoke-56bxrvbm/br",
+      "installer_command": [
+        "/private/tmp/plan-anchor-triage-env.wxV4fK/bin/python",
+        "/Users/randlee/github/plan-anchor-worktrees/codex/rubric-approved-inputs/plugins/sc-plan-anchor/install.py",
+        "--dest",
+        "/tmp/plan-anchor-088-smoke-56bxrvbm/br",
+        "--tracker",
+        "br",
+        "--target",
+        "claude,codex,cursor",
+        "--no-remote-judge"
+      ],
+      "lock_version": "0.8.8",
+      "verified_lock_files": 162,
+      "scripts": [
+        {
+          "target": "claude",
+          "path": "/tmp/plan-anchor-088-smoke-56bxrvbm/br/.claude/skills/plan-anchoring/scripts/jev_judge.py",
+          "sha256": "715ebeb60a7cce8ef889b412c8ac63184623d754d4dc60741f93a6e38f38defb",
+          "request_sha256": "d4d015cb54a6caba942fdc2e33f740406a59702676eb2eeab532937872beee94"
+        },
+        {
+          "target": "codex",
+          "path": "/tmp/plan-anchor-088-smoke-56bxrvbm/br/.codex/skills/plan-anchoring/scripts/jev_judge.py",
+          "sha256": "715ebeb60a7cce8ef889b412c8ac63184623d754d4dc60741f93a6e38f38defb",
+          "request_sha256": "d4d015cb54a6caba942fdc2e33f740406a59702676eb2eeab532937872beee94"
+        },
+        {
+          "target": "cursor",
+          "path": "/tmp/plan-anchor-088-smoke-56bxrvbm/br/.cursor/skills/plan-anchoring/scripts/jev_judge.py",
+          "sha256": "715ebeb60a7cce8ef889b412c8ac63184623d754d4dc60741f93a6e38f38defb",
+          "request_sha256": "d4d015cb54a6caba942fdc2e33f740406a59702676eb2eeab532937872beee94"
+        }
+      ]
+    },
+    {
+      "tracker": "bd",
+      "dest": "/tmp/plan-anchor-088-smoke-56bxrvbm/bd",
+      "installer_command": [
+        "/private/tmp/plan-anchor-triage-env.wxV4fK/bin/python",
+        "/Users/randlee/github/plan-anchor-worktrees/codex/rubric-approved-inputs/plugins/sc-plan-anchor/install.py",
+        "--dest",
+        "/tmp/plan-anchor-088-smoke-56bxrvbm/bd",
+        "--tracker",
+        "bd",
+        "--target",
+        "claude,codex,cursor",
+        "--no-remote-judge"
+      ],
+      "lock_version": "0.8.8",
+      "verified_lock_files": 162,
+      "scripts": [
+        {
+          "target": "claude",
+          "path": "/tmp/plan-anchor-088-smoke-56bxrvbm/bd/.claude/skills/plan-anchoring/scripts/jev_judge.py",
+          "sha256": "a99b50920aa3516df2df09673f6e924166ab0390d98bd0c8a02bfb8cba6d84e3",
+          "request_sha256": "d4d015cb54a6caba942fdc2e33f740406a59702676eb2eeab532937872beee94"
+        },
+        {
+          "target": "codex",
+          "path": "/tmp/plan-anchor-088-smoke-56bxrvbm/bd/.codex/skills/plan-anchoring/scripts/jev_judge.py",
+          "sha256": "a99b50920aa3516df2df09673f6e924166ab0390d98bd0c8a02bfb8cba6d84e3",
+          "request_sha256": "d4d015cb54a6caba942fdc2e33f740406a59702676eb2eeab532937872beee94"
+        },
+        {
+          "target": "cursor",
+          "path": "/tmp/plan-anchor-088-smoke-56bxrvbm/bd/.cursor/skills/plan-anchoring/scripts/jev_judge.py",
+          "sha256": "a99b50920aa3516df2df09673f6e924166ab0390d98bd0c8a02bfb8cba6d84e3",
+          "request_sha256": "d4d015cb54a6caba942fdc2e33f740406a59702676eb2eeab532937872beee94"
+        }
+      ]
+    }
+  ]
+}

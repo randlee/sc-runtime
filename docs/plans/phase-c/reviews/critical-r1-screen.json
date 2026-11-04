@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "data": {
+    "screened": [
+      {
+        "id": "PLAN-CRIT-001",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing c-1 version/release contract, c-3 manifest edits, c-4 ordered publication and no-patch Cargo-metadata checks.",
+        "reason": "The remedy adds the affected sc-command package to existing version and publication decisions; it creates no new ledger, receipt, matrix, report or gate."
+      },
+      {
+        "id": "PLAN-CRIT-002",
+        "verdict": "not_applicable",
+        "missing": [],
+        "existing_coverage": "Existing canonical sc-publish consumer input, pinned installer, release preflight/version validation and ordered registry publication.",
+        "reason": "The remedy makes the existing publication path compatible with selective versions and tests that path through existing preflight/probe machinery; it requires no additional process artifact or standalone evidence gate."
+      }
+    ]
+  },
+  "error": null
+}

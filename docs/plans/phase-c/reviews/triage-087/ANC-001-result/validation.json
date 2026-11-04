@@ -1,0 +1,17 @@
+{
+  "request_schema": true,
+  "runner_request_schema": true,
+  "request_relational": true,
+  "request_fence": true,
+  "runtime_script_sha256": true,
+  "runtime_contract_script_sha256": true,
+  "supplied_agent_sha256": true,
+  "template_sha256": true,
+  "recorded_raw_repeat_binding": true,
+  "result_schema": true,
+  "runner_result_schema": true,
+  "result_relational": true,
+  "result_fence": true,
+  "request_schema_contract_valid": true,
+  "result_schema_contract_valid": true
+}

@@ -1,0 +1,154 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": true,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "The request logger must never write raw authentication tokens to stdout or stderr.",
+        "quote": "do not print raw auth tokens in request logs or errors",
+        "scope": "request logging and error output",
+        "verdict": null,
+        "failing": [],
+        "answers": null,
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "a5f70f95961c9913a8305c5bfb3b9d5566ffc264cd5526c783bed54714f93054",
+          "request_sha256": "72ea57b6484e93a5c42d31df0d5e5755d9fac173186adae855777c9c540c59f2"
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false,
+    "requests": [
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement invents a policy, implementation choice, trigger, strength or outcome, or contradicts an authorized duty.",
+              "unclear": "The authority cannot settle whether an apparent difference changes substantive meaning.",
+              "yes": "Every commitment belongs to an authorized duty; differences are ordinary requirement-language or technical-vocabulary normalization."
+            },
+            "instructions": "Are the substantive commitments in anchor.statement supported by anchor.quote together with optional state.intent.content? Conversational requirement wording may be normalized into formal modality, and ordinary technical synonyms may describe the same behavior, output format or output channel. This normalization is not a new implementation policy. A selected technology or precise policy needs explicit support, including support from a supplied approved clarification. Capturing one directive does not require copying every other directive in the quote.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "Compliance depends on an undefined quality, private shorthand, or approval without an identified observable record or decision mechanism.",
+              "unclear": "Evidence is identified, but the observation or decision needed to settle compliance remains ambiguous.",
+              "yes": "The stated behavior or artifact supplies a determinate observation; any decisive approval condition identifies its observable record or decision mechanism."
+            },
+            "instructions": "Does anchor.statement identify an inspectable behavior or artifact sufficient to settle compliance? Concrete outputs, paths, explicit actions and prohibitions can supply that evidence as written. An approval-dependent condition needs an identified observable approval record or decision mechanism; naming an approver alone does not supply one. Do not invent a missing record, witness procedure or later inquiry. Recorded human approval can be observable.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "It joins independently enforceable predicates requiring different behavior or policy.",
+              "unclear": "The statement does not establish whether its clauses express one predicate or separate duties.",
+              "yes": "The statement specifies one predicate, including a common predicate over several surfaces."
+            },
+            "instructions": "Evaluate whether anchor.statement governs one predicate. Repeating the same prohibition or outcome over terminal output, saved artifacts or other listed surfaces is one rule. A trigger restricts applicability rather than adding a separate duty. Different obligations such as formatting logs and retrying failures are independent even if the same service performs both. Ignore unused duties from the provenance quote.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "The request logger must never write raw authentication tokens to stdout or stderr.",
+            "quote": "do not print raw auth tokens in request logs or errors",
+            "scope": "request logging and error output"
+          }
+        }
+      },
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement invents a policy, implementation choice, trigger, strength or outcome, or contradicts an authorized duty.",
+              "unclear": "The authority cannot settle whether an apparent difference changes substantive meaning.",
+              "yes": "Every commitment belongs to an authorized duty; differences are ordinary requirement-language or technical-vocabulary normalization."
+            },
+            "instructions": "Are the substantive commitments in anchor.statement supported by anchor.quote together with optional state.intent.content? Conversational requirement wording may be normalized into formal modality, and ordinary technical synonyms may describe the same behavior, output format or output channel. This normalization is not a new implementation policy. A selected technology or precise policy needs explicit support, including support from a supplied approved clarification. Capturing one directive does not require copying every other directive in the quote.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "Compliance depends on an undefined quality, private shorthand, or approval without an identified observable record or decision mechanism.",
+              "unclear": "Evidence is identified, but the observation or decision needed to settle compliance remains ambiguous.",
+              "yes": "The stated behavior or artifact supplies a determinate observation; any decisive approval condition identifies its observable record or decision mechanism."
+            },
+            "instructions": "Does anchor.statement identify an inspectable behavior or artifact sufficient to settle compliance? Concrete outputs, paths, explicit actions and prohibitions can supply that evidence as written. An approval-dependent condition needs an identified observable approval record or decision mechanism; naming an approver alone does not supply one. Do not invent a missing record, witness procedure or later inquiry. Recorded human approval can be observable.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "It joins independently enforceable predicates requiring different behavior or policy.",
+              "unclear": "The statement does not establish whether its clauses express one predicate or separate duties.",
+              "yes": "The statement specifies one predicate, including a common predicate over several surfaces."
+            },
+            "instructions": "Evaluate whether anchor.statement governs one predicate. Repeating the same prohibition or outcome over terminal output, saved artifacts or other listed surfaces is one rule. A trigger restricts applicability rather than adding a separate duty. Different obligations such as formatting logs and retrying failures are independent even if the same service performs both. Ignore unused duties from the provenance quote.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "The request logger must never write raw authentication tokens to stdout or stderr.",
+            "quote": "do not print raw auth tokens in request logs or errors",
+            "scope": "request logging and error output"
+          }
+        }
+      }
+    ],
+    "totals": {
+      "requests": 2,
+      "bytes": 8620,
+      "max_request_bytes": 24000
+    }
+  },
+  "error": null
+}

@@ -1,0 +1,15 @@
+{
+  "strict_request_schema": true,
+  "strict_outer_schema": true,
+  "relational": true,
+  "runner_fence": true,
+  "render_equality": true,
+  "runtime_hashes": true,
+  "candidate_pool_sha256": "348f65e079e27a8d9658b922f364aa06c55d86952cbdd865bdc66aece9060206",
+  "frozen_requests_sha256": "10feba8d5b74e83ab4527d898730549cf9395b63bd9c4da8dfff8a48d871e0bf",
+  "same21cases_states_labels": true,
+  "fixed3questions_unchanged": true,
+  "empty_anchor_authority": true,
+  "source_neutral_history_sidecar_valid": true,
+  "per_anchor_history2_not_claimed": true
+}

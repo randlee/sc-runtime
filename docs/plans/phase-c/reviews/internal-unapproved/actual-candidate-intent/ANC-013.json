@@ -1,0 +1,6 @@
+{
+  "id": "sc-runtime-phase-c-candidate-anc-013-source-intent",
+  "version": 1,
+  "sha256": "622bd240e3ddaa266c6247dce9e64267da98bebaaf4979a8df61fae18740dee8",
+  "content": "{\n  \"source_records\": [\n    {\n      \"speaker\": \"assistant\",\n      \"text\": \"Beads-cache needs four upstream capabilities: a public cron logging facade, owned bounded store shutdown with second-stop shortening, Windows Ctrl-Break support, and a cleanup-capable test fixture. The shutdown behavior is new scope, and Ctrl-Break is explicitly undecided in current requirements. Should I plan a dedicated Phase C compatibility sprint before the 0.2.0 publication, or keep these in separate follow-up scope? The assessment is at /tmp/sc-runtime-phase-c-review/consumer-compatibility-assessment.md.\"\n    },\n    {\n      \"speaker\": \"human\",\n      \"text\": \"Add a dedicated Phase C compatibility sprint (Recommended)\"\n    }\n  ]\n}"
+}

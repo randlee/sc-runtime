@@ -1,0 +1,19 @@
+{
+  "execution_scope": "LOCAL UNRELEASED 0.8.8 extension-02 testing only",
+  "planning_head": "9bfd3cfde012553447ee854ac636016a56e798ad",
+  "working_tree_clean": true,
+  "actual_anchor_authority_records": 0,
+  "active_plan_or_anchor_file_used": false,
+  "payload_source": "Shipped17 generic fixtures and4 previously frozen hypothetical generic supplement cases only",
+  "original_request_bodies": 51,
+  "supplement_request_bodies": 12,
+  "dry_run_checks": 63,
+  "redacted_display_cases": 3,
+  "frozen_candidate_pool_sha256": "348f65e079e27a8d9658b922f364aa06c55d86952cbdd865bdc66aece9060206",
+  "frozen_request_shapes_sha256": "10feba8d5b74e83ab4527d898730549cf9395b63bd9c4da8dfff8a48d871e0bf",
+  "destination": "https://api.typesafe.ai/v1/systemone",
+  "actual_repository_committed_consent": true,
+  "smoke_policy_unchanged_false": true,
+  "root_authorization_required": true,
+  "live_calls_so_far": 0
+}

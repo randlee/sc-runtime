@@ -1,0 +1,6 @@
+{
+  "id": "sc-runtime-phase-c-candidate-anc-018-source-intent",
+  "version": 1,
+  "sha256": "3b0bef712b607eaaee2e3d11c7017f39780d3239ddd26766ac04d02a1f0aeb27",
+  "content": "{\n  \"source_records\": [\n    {\n      \"speaker\": \"human\",\n      \"text\": \"What we need to do at sc-runtime level is make sure the hooks are in place that the consumers can make changes they must AND. have full control to override behaviors so they don't get stuck.  \\n\\nsc-runtime goal is to provide a fast ramp up w/ appropriate hook points for extending.  i.e. atm-core MAY choose to extend the schems for each cron entry on their database, provide their own guarantees for shutdown.  A new customer should have enough in place, cron would work for them out of the box.  Does this make sense?  it is not sc-runtime job to guarantee a customer can not misuse the core libraries.  it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries.\"\n    },\n    {\n      \"speaker\": \"human\",\n      \"text\": \"these statements:  `it is not sc-runtime job to guarantee a customer can not misuse the core libraries.  it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries.` look like good anchor statements to me\"\n    }\n  ]\n}"
+}

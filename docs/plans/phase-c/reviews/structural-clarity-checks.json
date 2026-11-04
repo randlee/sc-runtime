@@ -1,0 +1,125 @@
+{
+  "observed_at_utc": "2026-11-03T03:39:57.710724+00:00",
+  "reviewed_commit": "c4aed15fd4df09e4e5edae3f7d3517005e233b1d",
+  "anchors_sha256": "187160917925d0c64823543c5d1858066b1eb98cdc43a5c79435125c800df7af",
+  "anchors": [
+    {
+      "id": "ANC-004",
+      "version": 3,
+      "status": "locked",
+      "statement": "sc-runtime's Phase C must use the identifier phase-c.",
+      "scope": "every Phase C plan item and its plan metadata"
+    },
+    {
+      "id": "ANC-011",
+      "version": 2,
+      "status": "locked",
+      "statement": "Phase C planning must use a dedicated Git worktree.",
+      "scope": "the Phase C planning branch and Git worktree metadata"
+    },
+    {
+      "id": "ANC-012",
+      "version": 2,
+      "status": "locked",
+      "statement": "Phase C planning must have a separate pull request targeting develop.",
+      "scope": "the Phase C planning pull request metadata"
+    }
+  ],
+  "naming": {
+    "pass": true,
+    "documents": [
+      {
+        "path": "docs/plans/phase-c/phase-c-plan.md",
+        "sha256": "5b44e96476d96c87cc950e5a953906949a1eebfea92f914a82af612ce8633367",
+        "phase": "c from path",
+        "id": null,
+        "branch": null,
+        "worktree": null
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+        "sha256": "da0aa6436388fd9cfef6c273de60b5da7dd3ff068451f89b6947800ace23262f",
+        "phase": "c",
+        "id": "c-1",
+        "branch": "sprint/c-1-consumer-runtime-contract",
+        "worktree": "sprint/c-1-consumer-runtime-contract"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+        "sha256": "1c8a258ababc6e68b5b81e8c4cf7262bcb98090f957b6472d428c7767d45ff51",
+        "phase": "c",
+        "id": "c-2",
+        "branch": "sprint/c-2-consumer-sc-lint-full-profile",
+        "worktree": "sprint/c-2-consumer-sc-lint-full-profile"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+        "sha256": "838334c0d06f18a24e0de5105102f738004c06a462ca932778a627cad32f1877",
+        "phase": "c",
+        "id": "c-3",
+        "branch": "sprint/c-3-runtime-ecosystem-upgrade",
+        "worktree": "sprint/c-3-runtime-ecosystem-upgrade"
+      },
+      {
+        "path": "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+        "sha256": "1410047a17fa2ace2e31eedd5fe016146ec1666862507df18a5f5a90595f6c6a",
+        "phase": "c",
+        "id": "c-4",
+        "branch": "sprint/c-4-runtime-ecosystem-release",
+        "worktree": "sprint/c-4-runtime-ecosystem-release"
+      }
+    ],
+    "excluded_from_current_metadata_scan": [
+      "historical reviewer reports",
+      "original quoted provenance",
+      "retired anchor history"
+    ]
+  },
+  "worktree": {
+    "pass": true,
+    "command": "git worktree list --porcelain",
+    "primary": {
+      "worktree": "/Users/randlee/github/sc-runtime",
+      "HEAD": "99772cf7c8700d0bac6048033c2ef6a412ba5668",
+      "branch": "refs/heads/develop"
+    },
+    "dedicated": {
+      "worktree": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c",
+      "HEAD": "c4aed15fd4df09e4e5edae3f7d3517005e233b1d",
+      "branch": "refs/heads/plan/phase-c"
+    },
+    "status_porcelain": "",
+    "clean_before_evidence_write": true
+  },
+  "pull_requests": {
+    "pass": true,
+    "current": {
+      "baseRefName": "develop",
+      "headRefName": "plan/phase-c",
+      "number": 114,
+      "state": "OPEN",
+      "url": "https://github.com/randlee/sc-runtime/pull/114"
+    },
+    "separate_dependency_pr": {
+      "baseRefName": "develop",
+      "headRefName": "codex/dependency-upgrades",
+      "number": 109,
+      "state": "OPEN",
+      "url": "https://github.com/randlee/sc-runtime/pull/109"
+    },
+    "original_merged_plan_pr": {
+      "baseRefName": "develop",
+      "headRefName": "plan/phase-c",
+      "number": 111,
+      "state": "MERGED",
+      "url": "https://github.com/randlee/sc-runtime/pull/111"
+    },
+    "note": "PR114 is a separate planning amendment to develop; PR111 preserves original planning history and PR109 the dependency work."
+  },
+  "deterministic_results": {
+    "ANC-004": "satisfied",
+    "ANC-011": "satisfied",
+    "ANC-012": "satisfied"
+  },
+  "scope": "Deterministic structural checks only; no semantic Jev, fixture, plan gate or overall readiness PASS."
+}

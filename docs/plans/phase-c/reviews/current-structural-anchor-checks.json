@@ -1,0 +1,31 @@
+{
+  "schema": "phase-c/structural-anchor-checks/1",
+  "checked_at_utc": "2026-11-03T21:09:12.807612+00:00",
+  "baseline": "967081f55dba772af38883a9a8f1a6469bc2976e",
+  "checks": [
+    {
+      "anchor": "ANC-004",
+      "passed": true,
+      "scope": "current sprint Markdown, phase README if present, compatibility-contract; historical evidence/quoted fail fixtures excluded",
+      "file_count": 7,
+      "violations": []
+    },
+    {
+      "anchor": "ANC-011",
+      "passed": true,
+      "worktree": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c",
+      "branch": "plan/phase-c"
+    },
+    {
+      "anchor": "ANC-012",
+      "passed": true,
+      "pull_request": {
+        "baseRefName": "develop",
+        "headRefName": "plan/phase-c",
+        "state": "OPEN",
+        "url": "https://github.com/randlee/sc-runtime/pull/114"
+      }
+    }
+  ],
+  "live_semantic_gate": false
+}

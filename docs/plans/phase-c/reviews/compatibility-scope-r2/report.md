@@ -1,0 +1,512 @@
+```json
+{
+  "status": "PASS",
+  "mode": "plan-scope-review",
+  "reviewer": "plan-scope-reviewer",
+  "round_id": "COMPATIBILITY-SCOPE-R2",
+  "round_index": 2,
+  "review_cycle_limit": 3,
+  "reviewed_commit": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
+  "previous_reviewed_commit": "e67ad9aec145dcc7db0593cbb85d4ec9bba6ef97",
+  "findings_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "scope": {
+    "phase": "c",
+    "sprint": null
+  },
+  "parallelism": {
+    "waves": 3,
+    "critical_path": 3,
+    "width": 4,
+    "sprint_count": 6,
+    "tracks": 6,
+    "must_follow_edges": 7,
+    "parallel_safe_edges": 6
+  },
+  "sprint_scores": [
+    {
+      "sprint": "c-1",
+      "closure_type": "contract",
+      "target_boundary": "phase-c-consumer-runtime-contract",
+      "status": "PASS",
+      "blocking_count": 0,
+      "important_count": 0,
+      "minor_count": 0
+    },
+    {
+      "sprint": "c-2",
+      "closure_type": "integration",
+      "target_boundary": "generated-consumer-lint",
+      "status": "PASS",
+      "blocking_count": 0,
+      "important_count": 0,
+      "minor_count": 0
+    },
+    {
+      "sprint": "c-3",
+      "closure_type": "integration",
+      "target_boundary": "runtime-template-ecosystem-integration",
+      "status": "PASS",
+      "blocking_count": 0,
+      "important_count": 0,
+      "minor_count": 0
+    },
+    {
+      "sprint": "c-4",
+      "closure_type": "integration",
+      "target_boundary": "published-runtime-template-consumer",
+      "status": "PASS",
+      "blocking_count": 0,
+      "important_count": 0,
+      "minor_count": 0
+    },
+    {
+      "sprint": "c-5",
+      "closure_type": "integration",
+      "target_boundary": "sc-cron-consumer-compatibility",
+      "status": "PASS",
+      "blocking_count": 0,
+      "important_count": 0,
+      "minor_count": 0
+    },
+    {
+      "sprint": "c-6",
+      "closure_type": "boundary",
+      "target_boundary": "sc-cron-commands",
+      "status": "PASS",
+      "blocking_count": 0,
+      "important_count": 0,
+      "minor_count": 0
+    }
+  ],
+  "docs_read": [
+    ".claude/agents/plan-scope-reviewer.md",
+    ".claude/skills/plan-hardening/sprint-planning-guidelines.md",
+    ".claude/project/quality-policy.md",
+    "docs/plans/phase-c/phase-c-plan.md",
+    "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+    "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+    "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+    "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+    "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
+    "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
+    "docs/plans/phase-c/compatibility-contract.md",
+    "docs/requirements.md",
+    "docs/architecture.md",
+    "docs/sc-cron/requirements.md",
+    "docs/sc-cron/architecture.md",
+    "docs/sc-runtime/requirements.md",
+    "docs/sc-runtime/architecture.md",
+    "docs/sc-cron-commands/requirements.md",
+    "docs/sc-cron-commands/architecture.md",
+    "boundaries/sc-cron/sc-cron.toml",
+    "boundaries/sc-command/sc-command.toml",
+    "boundaries/sc-runtime/sc-runtime.toml",
+    ".sprints/c/structure.ttl",
+    "crates/sc-cron/Cargo.toml",
+    "crates/sc-cron/src/lib.rs",
+    "crates/sc-cron/src/store.rs",
+    "crates/sc-cron/src/scheduler.rs",
+    "crates/sc-cron/src/sqlite.rs",
+    "crates/sc-cron/src/worker.rs",
+    "crates/sc-runtime/src/testing.rs",
+    "rusqlite0.39 published Cargo.toml/src/lib.rs/src/hooks/mod.rs (local registry source)",
+    "docs/plans/phase-c/reviews/compatibility-scope-r1/design-fix-proposal.md",
+    "docs/plans/phase-c/reviews/compatibility-scope-r1/portable-fixture-endpoint-addendum.md",
+    "crates/sc-transport/src/server.rs",
+    "crates/sc-runtime/src/builder.rs"
+  ],
+  "findings": [],
+  "minor_wording": [],
+  "resolved_findings": [
+    {
+      "id": "COMPAT-SCOPE-001",
+      "status": "fixed",
+      "evidence_refs": [
+        "docs/plans/phase-c/compatibility-contract.md:202",
+        "docs/plans/phase-c/compatibility-contract.md:236",
+        "docs/plans/phase-c/compatibility-contract.md:303",
+        "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:189",
+        "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:209",
+        "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:123",
+        "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md:65"
+      ],
+      "evidence": "The contract now gives sole CronRequest/CronOperation identity, default object-safe CronExecutor, core-native CronOperations and scheduler-feature ApplicationTargetBindings signatures. c-1 owns canonical operation/executor doubles plus a non-default real context probe. c-6 tests StandardCronExecutor against operation doubles; c-3 injects an executor double into generic projection tests. c-4 explicitly owns final selected factory/root binding using real c-5/c-6 artifacts. No required sibling implementation, production stub, duplicate DTO or hidden sibling dependency remains in the stated plan cut."
+    },
+    {
+      "id": "COMPAT-SCOPE-002",
+      "status": "fixed",
+      "evidence_refs": [
+        "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:81",
+        "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:213",
+        "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:217",
+        "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md:56",
+        "docs/plans/phase-c/compatibility-contract.md:347"
+      ],
+      "evidence": "c-1 owned_paths now includes crates/sc-cron/Cargo.toml and explicitly establishes rusqlite0.39 bundled+hooks and lock baseline. c-3 then retains those features during later version/path migration; c-5 writes source/tests only. The erroneous wholesale removal instruction is gone. Progress/interrupt/busy callback availability and restoration strategy are explicitly qualified before wave2, without a blanket dependency upgrade."
+    }
+  ],
+  "validation": [
+    "Actual assigned HEAD was checked and all eight current phase/sprint/contract SHA256 values independently matched exact Git blobs.",
+    "Genuine developer PASS/mode and full embedded unchanged R1 report inspected. Developer closure assertions were not used as independent review results.",
+    "The complete correction delta from fully reviewed e67ad9a was read, including all affected phase/sprint documents, compatibility contract, and governing requirements/ADRs.",
+    "All six wave2 sprint pairs checked against tracked paths plus future directory-prefix patterns: no same-wave owned-path intersection.",
+    "c1 owns contracts, initial crate/membership/generator registries, doubles and hooks prerequisite; c3 owns subsequent atomic ecosystem migration and generic projections; c5 owns real cron behavior; c6 closes adapter boundary; c4 owns small final selected template roots and real release composition. Sequential c1/c3 and c3/c4 ownership is explicit, not a same-wave collision.",
+    "Concrete graph c1→c2/c3/c5/c6 and c3/c5/c6→c4 has seven edges, critical path3 and width4. All edges retain parent development-push merge-forward, no parent-QA start barrier and parent-PR-before-child-completion semantics.",
+    "C5's public cron consumer integration and C6's boundary-only handler proof remain distinct from C4's sole real selected CLI/HTTP/MCP and registry closure. No repeated engine port or unowned feature-level acceptance was introduced.",
+    "Existing sc-transport Listener::local_endpoint and runtime bound-ready handling were inspected. The approved continuous port-zero ownership correction remains in c1 contract/c3 implementation/c4 runtime release, with no unowned transport modification or version bump.",
+    "Naming and planned status remain consistent across all six sprint documents; git diff --check passed. No builds or live Jev calls were run."
+  ],
+  "ready_for_next_step": true,
+  "errors": [],
+  "limits": [
+    "This is independent scope approval for the new six-sprint amendment at the stated commit only; it does not imply implementation, critical reviewer, QA manager or live Plan Anchor completion.",
+    "ARCH-C-002 remains separately pending, and historical four-sprint review results do not certify this scope.",
+    "An interrupted execution produced no prior valid R2 result; this is completed review round2 of limit3.",
+    "No repository, Git or Beads writes, outbound chats or new subagents; scratch review artifacts only.",
+    "Inherited Codex model used; no Sonnet or other model execution claim."
+  ],
+  "document_sha256": {
+    "docs/plans/phase-c/phase-c-plan.md": "3e41dee498893e93028bf1f65e448d0400505ec631e187294aa6cf1db5e025e2",
+    "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md": "3f26f34338df0de5278d2a5b94ed370493a8393e9c74d130568f0f7b38107800",
+    "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md": "3a389fa2f5687fe6f85286737a213cec3978de6955d7244b5231516c9d5dc0ad",
+    "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md": "a0ae7749c2f495be69cfe8fb828659f136a4d4e5d5cd524ee4bdf1af4525a24f",
+    "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md": "6b90c9ed6f870f6a75fb55f85e49901968f3fb4bd50283363eaf904989971b0c",
+    "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md": "26e8dbbc189ace05e718c4d52e40d939222dbd7b7a395540770b1fcf3c6ef027",
+    "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md": "dcb477739e189e32d670be4cbe52e28398816671c8b54a71cb3537dd2249a91b",
+    "docs/plans/phase-c/compatibility-contract.md": "d6908c4b6a7c220ff5804af5566454eb40c230192376bbfbca4ec5fc641d6400"
+  },
+  "previous_step_json": {
+    "status": "PASS",
+    "mode": "plan-hardening-sprint-scope",
+    "round_id": "COMPATIBILITY-SCOPE-HARDENING-R1",
+    "round_index": 1,
+    "reviewed_commit": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
+    "previous_reviewed_commit": "e67ad9aec145dcc7db0593cbb85d4ec9bba6ef97",
+    "iterations": 1,
+    "findings_resolved": 2,
+    "findings_resolved_ids": [
+      "COMPAT-SCOPE-001",
+      "COMPAT-SCOPE-002"
+    ],
+    "final_finding_count": 0,
+    "finding_resolution_scope": "author corrections only; both remain open pending independent scope R2",
+    "sprint_splits_added": 0,
+    "docs_modified": [
+      "docs/architecture.md",
+      "docs/plans/phase-c/compatibility-contract.md",
+      "docs/plans/phase-c/phase-c-plan.md",
+      "docs/plans/phase-c/reviews/README.md",
+      "docs/plans/phase-c/reviews/manifest.json",
+      "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+      "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+      "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+      "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
+      "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
+      "docs/sc-cron-commands/architecture.md",
+      "docs/sc-cron-commands/requirements.md",
+      "docs/sc-cron/architecture.md",
+      "docs/sc-cron/requirements.md",
+      "docs/sc-runtime/architecture.md",
+      "docs/sc-runtime/requirements.md"
+    ],
+    "docs_created": [
+      ".triage/c/findings/compatibility-scope-r1-pr114.ttl",
+      "docs/plans/phase-c/reviews/compatibility-scope-r1/design-fix-proposal.md",
+      "docs/plans/phase-c/reviews/compatibility-scope-r1/portable-fixture-endpoint-addendum.md",
+      "docs/plans/phase-c/reviews/compatibility-scope-r1/report.json",
+      "docs/plans/phase-c/reviews/compatibility-scope-r1/report.md"
+    ],
+    "generic_execution_evidence_files": 599,
+    "plan_refs": [
+      "docs/plans/phase-c/phase-c-plan.md",
+      "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+      "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+      "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+      "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+      "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
+      "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
+      "docs/plans/phase-c/compatibility-contract.md"
+    ],
+    "document_sha256": {
+      "docs/plans/phase-c/phase-c-plan.md": "3e41dee498893e93028bf1f65e448d0400505ec631e187294aa6cf1db5e025e2",
+      "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md": "3f26f34338df0de5278d2a5b94ed370493a8393e9c74d130568f0f7b38107800",
+      "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md": "3a389fa2f5687fe6f85286737a213cec3978de6955d7244b5231516c9d5dc0ad",
+      "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md": "a0ae7749c2f495be69cfe8fb828659f136a4d4e5d5cd524ee4bdf1af4525a24f",
+      "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md": "6b90c9ed6f870f6a75fb55f85e49901968f3fb4bd50283363eaf904989971b0c",
+      "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md": "26e8dbbc189ace05e718c4d52e40d939222dbd7b7a395540770b1fcf3c6ef027",
+      "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md": "dcb477739e189e32d670be4cbe52e28398816671c8b54a71cb3537dd2249a91b",
+      "docs/plans/phase-c/compatibility-contract.md": "d6908c4b6a7c220ff5804af5566454eb40c230192376bbfbca4ec5fc641d6400"
+    },
+    "critical_path": 3,
+    "width": 4,
+    "sprint_count": 6,
+    "validation": {
+      "defined_requirement_adr_ids_and_phase_union": "PASS",
+      "same_wave_owned_path_overlap": 0,
+      "manifest_entries_verified": 1524,
+      "git_diff_check": "PASS",
+      "clean_and_pushed": true,
+      "immutable_scope_r1_copy_sha256": "21579128d45021408fb562fed95e9215cd6aee51bec0f8a794d519576613d17b",
+      "anchors_questions_settings_tooling_source_cargo_changes": false,
+      "source_builds": "none; docs/evidence-only correction"
+    },
+    "corrections": {
+      "COMPAT-SCOPE-001": "Sole CronRequest; default object-safe CronExecutor, core-native CronOperations, scheduler target bindings, earliest-deadline child context; package-local operation double/test-utils probe and canonical test-only executor injection. C3generic projections, C4real selected factory/root binding and composition. No hidden sibling implementation or production stub.",
+      "COMPAT-SCOPE-002": "C1explicitrusqlite0.39bundled+hooks manifest/lockbaseline and sourcequalifiedinterrupt/busy/progress strategy; C3latermanifest/versionmigrationretainsfeatures; C5source/testsonly."
+    },
+    "additional_approved_fixture_correction": "continuous port-zero owned endpoint; existing transport no bump; additive runtime bound callback and causal real-signal/fixture ownership proof",
+    "ready_for_next_step": true,
+    "errors": [],
+    "independent_scope_r2": "required before critical gate",
+    "implementation_readiness": false,
+    "previous_step_json": {
+      "status": "FAIL",
+      "mode": "plan-scope-review",
+      "reviewer": "plan-scope-reviewer",
+      "round_id": "COMPATIBILITY-SCOPE-R1",
+      "round_index": 1,
+      "review_cycle_limit": 3,
+      "reviewed_commit": "e67ad9aec145dcc7db0593cbb85d4ec9bba6ef97",
+      "previous_reviewed_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+      "findings_hash": "db4e4f88ab4d3103ffa4078bcfdfacf17d4914562eb350272c164f465d04f92f",
+      "scope": {
+        "phase": "c",
+        "sprint": null
+      },
+      "parallelism": {
+        "waves": 3,
+        "critical_path": 3,
+        "width": 4,
+        "sprint_count": 6,
+        "tracks": 6,
+        "must_follow_edges": 7,
+        "parallel_safe_edges": 6,
+        "qualification": "Declared graph reproduced; width4 is not yet demonstrated until the adapter double seam and c-1 SQLite prerequisite are made directly consumable."
+      },
+      "sprint_scores": [
+        {
+          "sprint": "c-1",
+          "closure_type": "contract",
+          "target_boundary": "phase-c-consumer-runtime-contract",
+          "status": "FAIL",
+          "blocking_count": 0,
+          "important_count": 2,
+          "minor_count": 0
+        },
+        {
+          "sprint": "c-2",
+          "closure_type": "integration",
+          "target_boundary": "generated-consumer-lint",
+          "status": "PASS",
+          "blocking_count": 0,
+          "important_count": 0,
+          "minor_count": 0
+        },
+        {
+          "sprint": "c-3",
+          "closure_type": "integration",
+          "target_boundary": "runtime-template-ecosystem-integration",
+          "status": "FAIL",
+          "blocking_count": 0,
+          "important_count": 2,
+          "minor_count": 0
+        },
+        {
+          "sprint": "c-4",
+          "closure_type": "integration",
+          "target_boundary": "published-runtime-template-consumer",
+          "status": "PASS",
+          "blocking_count": 0,
+          "important_count": 0,
+          "minor_count": 0
+        },
+        {
+          "sprint": "c-5",
+          "closure_type": "integration",
+          "target_boundary": "sc-cron-consumer-compatibility",
+          "status": "FAIL",
+          "blocking_count": 0,
+          "important_count": 1,
+          "minor_count": 0
+        },
+        {
+          "sprint": "c-6",
+          "closure_type": "boundary",
+          "target_boundary": "sc-cron-commands",
+          "status": "FAIL",
+          "blocking_count": 0,
+          "important_count": 1,
+          "minor_count": 0
+        }
+      ],
+      "docs_read": [
+        ".claude/agents/plan-scope-reviewer.md",
+        ".claude/skills/plan-hardening/sprint-planning-guidelines.md",
+        ".claude/project/quality-policy.md",
+        "docs/plans/phase-c/phase-c-plan.md",
+        "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+        "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+        "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+        "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+        "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
+        "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
+        "docs/plans/phase-c/compatibility-contract.md",
+        "docs/requirements.md",
+        "docs/architecture.md",
+        "docs/sc-cron/requirements.md",
+        "docs/sc-cron/architecture.md",
+        "docs/sc-runtime/requirements.md",
+        "docs/sc-runtime/architecture.md",
+        "docs/sc-cron-commands/requirements.md",
+        "docs/sc-cron-commands/architecture.md",
+        "boundaries/sc-cron/sc-cron.toml",
+        "boundaries/sc-command/sc-command.toml",
+        "boundaries/sc-runtime/sc-runtime.toml",
+        ".sprints/c/structure.ttl",
+        "crates/sc-cron/Cargo.toml",
+        "crates/sc-cron/src/lib.rs",
+        "crates/sc-cron/src/store.rs",
+        "crates/sc-cron/src/scheduler.rs",
+        "crates/sc-cron/src/sqlite.rs",
+        "crates/sc-cron/src/worker.rs",
+        "crates/sc-runtime/src/testing.rs",
+        "rusqlite0.39 published Cargo.toml/src/lib.rs/src/hooks/mod.rs (local registry source)"
+      ],
+      "findings": [
+        {
+          "id": "COMPAT-SCOPE-001",
+          "severity": "Important",
+          "category": "MISSING-CODE-SAMPLE",
+          "classification": "structural",
+          "affects_ac": true,
+          "target_refs": [
+            "docs/plans/phase-c/compatibility-contract.md:167",
+            "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:185",
+            "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:197",
+            "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md:51"
+          ],
+          "issue": "The advertised parallel adapter/UI cut lacks the callable contract and usable double strategy required to make it independent. The sole handler sample accepts concrete Scheduler<S,C,J>, an undefined CronCommandRequest (the declared DTO is CronRequest), and an undefined ApplicationTargetBindings trait. c-6 must test against a c-1 operation double without c-5 behavior, while c-3 must wire selected UIs and test against a c-1 handler double without c-6 behavior. Only a directory for a DTO/handler double is specified; no executor/target-binding interface or method signatures explain how those doubles replace the concrete execute/scheduler calls. c-1 also forbids production stubs. As written, the independent branches must invent or renegotiate this seam or consume sibling implementation.",
+          "required_correction": "Specify the executor/operation and application-target-binding callable signatures, DTO name, feature boundary and test-double injection/import strategy in the single compatibility contract. Show how c-3's production composition remains linked to the actual c-6 handler while its boundary tests use only c-1's double, and how c-6 exercises its handler against a c-1 operation double without implementing the c-5 scheduler. Assign all necessary signatures/support exposure/allowed-test-double paths to c-1 and keep real composed proof in c-4. Do not solve this by adding a hidden c-3→c-6→c-5 dependency or a production success stub. If a different cut is necessary, recut the actual boundary rather than retaining an unsupported width claim."
+        },
+        {
+          "id": "COMPAT-SCOPE-002",
+          "severity": "Important",
+          "category": "SERIAL-RISK",
+          "classification": "structural",
+          "affects_ac": true,
+          "target_refs": [
+            "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:63",
+            "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:201",
+            "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:80",
+            "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md:53",
+            "crates/sc-cron/Cargo.toml:37"
+          ],
+          "issue": "The SQLite prerequisite ownership is conditional and internally contradictory despite a concrete missing prerequisite. c-5 requires SQLite progress callbacks; sc-cron's current rusqlite0.39 dependency enables only bundled, while rusqlite's progress_handler is in its hooks-gated module. c-1 says it owns any necessary feature edit and will remove that manifest from c-3, but crates/sc-cron/Cargo.toml is absent from c-1 owned_paths and present in c-3. Removing it wholesale from c-3 would then strand c-3's required cron version/command-dependency migration. The four-way wave cannot rely on an undecided manifest writer.",
+          "required_correction": "Make the known rusqlite hooks feature prerequisite an explicit c-1 baseline deliverable with crates/sc-cron/Cargo.toml in c-1 owned_paths and preserve rusqlite0.39. State the sequential ownership handoff: c-1 establishes features/lock prerequisite, then c-3 owns later ecosystem version/path changes in that manifest and retains those features; c-5 owns only source/tests and compiles against the c-1 baseline. Replace the instruction to remove the manifest wholesale from c-3. Verify the other required optional cancellation facilities against the c-1 baseline before claiming parallel-safe; no new sprint or CI artifact is needed."
+        }
+      ],
+      "minor_wording": [],
+      "ready_for_next_step": false,
+      "errors": [],
+      "validation": [
+        "Genuine developer guidelines PASS handoff accepted with expected mode. All eight source document hashes match exact reviewed commit blobs; worktree HEAD matches assignment.",
+        "All six same-wave pairs were checked against actual tracked paths and future directory-prefix globs: no lexical owned-path overlap. Findings concern semantic compile dependencies and manifest ownership handoff, not an invented same-wave file collision.",
+        "Declared graph has c1→c2/c3/c5/c6 and c3/c5/c6→c4: seven edges, longest chain3, wave2 width4. Added cron and adapter work is substantial, with existing three-target engine reused rather than re-ported.",
+        "c5 owns real cron public consumer integration; c6 closes adapter boundary against a contract double; c4 owns real cross-UI and exact registry proof. Feature-level integration ownership is present, provided the boundary doubles and baseline build are made concrete.",
+        "Shared root manifests, generator schema/prompts and initial new crate skeleton belong to c1; later atomic ecosystem migration belongs to c3; release kit inputs and generated outputs belong to c4.",
+        "Naming and six sprint planned statuses are consistent. No source build or implementation completion inferred from documentation."
+      ],
+      "limits": [
+        "This fresh six-sprint scope review supersedes no historical report and does not certify live anchor gates. Existing ARCH-C-002 remains separately open.",
+        "No code, plan or Git changes; report artifacts only. No outbound chats, extra subagents, tests or publication.",
+        "Inherited Codex model execution; no Sonnet execution claim."
+      ],
+      "document_sha256": {
+        "docs/plans/phase-c/phase-c-plan.md": "8699627153d64dace6dfed4908ecfa24484a59e41f39c05cbf4076a4daab626d",
+        "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md": "c6b6f15c46dbed6633f2c571e51fc2539743d33a12bb3792200df000e96292d8",
+        "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md": "3a389fa2f5687fe6f85286737a213cec3978de6955d7244b5231516c9d5dc0ad",
+        "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md": "f6d9810b514342a686dda38ecb80665c1e77fae57794ece27d25bf219f43d822",
+        "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md": "1f2d9d8cad5838c35cba25142305f90ef4a5d832e23eb2fe2080aadc9efd28d3",
+        "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md": "5f015ee8da95980d0391ff6df1391a42084691e62b3382b5412b1b846a6f19c4",
+        "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md": "08b16487307919268ebfd240ac5f0e31d71a9b9adaf31741c4f6260f36a8a6f6",
+        "docs/plans/phase-c/compatibility-contract.md": "c074c1db26ac96f8ea82b37e1358b3aecff0364c1b92d437fe01ede7039f4ebc"
+      },
+      "previous_step_json": {
+        "status": "PASS",
+        "mode": "plan-hardening-guidelines-pass",
+        "round_id": "COMPATIBILITY-SCOPE-STEP1-R1",
+        "round_index": 1,
+        "reviewed_commit": "e67ad9aec145dcc7db0593cbb85d4ec9bba6ef97",
+        "previous_reviewed_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
+        "iterations": 1,
+        "docs_modified": [
+          ".sprints/c/structure.ttl",
+          "docs/architecture.md",
+          "docs/plans/phase-c/phase-c-plan.md",
+          "docs/plans/phase-c/reviews/README.md",
+          "docs/plans/phase-c/reviews/manifest.json",
+          "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+          "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+          "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+          "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+          "docs/requirements.md",
+          "docs/sc-cron/architecture.md",
+          "docs/sc-cron/requirements.md",
+          "docs/sc-runtime/architecture.md",
+          "docs/sc-runtime/requirements.md"
+        ],
+        "docs_created": [
+          "docs/plans/phase-c/compatibility-contract.md",
+          "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
+          "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
+          "docs/sc-cron-commands/architecture.md",
+          "docs/sc-cron-commands/requirements.md"
+        ],
+        "ready_for_next_step": true,
+        "errors": [],
+        "scope_basis": "Human-approved compatibility and optional standard cron commands; existing3targets no re-port; real selected UI wiring default-off",
+        "critical_path": 3,
+        "width": 4,
+        "sprint_count": 6,
+        "plan_refs": [
+          "docs/plans/phase-c/phase-c-plan.md",
+          "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+          "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+          "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+          "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+          "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
+          "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
+          "docs/plans/phase-c/compatibility-contract.md"
+        ],
+        "document_sha256": {
+          "docs/plans/phase-c/phase-c-plan.md": "8699627153d64dace6dfed4908ecfa24484a59e41f39c05cbf4076a4daab626d",
+          "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md": "c6b6f15c46dbed6633f2c571e51fc2539743d33a12bb3792200df000e96292d8",
+          "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md": "3a389fa2f5687fe6f85286737a213cec3978de6955d7244b5231516c9d5dc0ad",
+          "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md": "f6d9810b514342a686dda38ecb80665c1e77fae57794ece27d25bf219f43d822",
+          "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md": "1f2d9d8cad5838c35cba25142305f90ef4a5d832e23eb2fe2080aadc9efd28d3",
+          "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md": "5f015ee8da95980d0391ff6df1391a42084691e62b3382b5412b1b846a6f19c4",
+          "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md": "08b16487307919268ebfd240ac5f0e31d71a9b9adaf31741c4f6260f36a8a6f6",
+          "docs/plans/phase-c/compatibility-contract.md": "c074c1db26ac96f8ea82b37e1358b3aecff0364c1b92d437fe01ede7039f4ebc"
+        },
+        "validation": {
+          "same_wave_owned_path_overlap": 0,
+          "defined_REQ_ADR_frontmatter_ids": true,
+          "phase_frontmatter_union": true,
+          "naming": "checked c1-c6 branches/slugs",
+          "manifest_entries_verified": 885,
+          "git_diff_check": "PASS",
+          "clean_and_pushed": true,
+          "source_code_builds": "not run: documentation-only authorized scope"
+        },
+        "new_sprint_beads": {
+          "c-5": "run-x8d.7",
+          "c-6": "run-x8d.8"
+        },
+        "independent_reviews": "fresh scope/critical delta and QA pending",
+        "anchor_gates": "pending; existing records/quotes unchanged",
+        "implementation_readiness": false
+      }
+    }
+  }
+}
+```

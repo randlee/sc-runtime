@@ -1,0 +1,357 @@
+[
+  {
+    "accepted": true,
+    "candidate_id": "faithful-06",
+    "complexity_bytes": 826,
+    "confidence_reference_cells": 16,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "faithful",
+    "selection_reason": "Best observed role candidate by correctness, stability, confident oracle matches, reference confidence, then complexity; no seal unless every cell accepted.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": true,
+    "candidate_id": "faithful-04",
+    "complexity_bytes": 912,
+    "confidence_reference_cells": 16,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "faithful",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": true,
+    "candidate_id": "faithful-05",
+    "complexity_bytes": 834,
+    "confidence_reference_cells": 14,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "faithful",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-01",
+    "complexity_bytes": 670,
+    "confidence_reference_cells": 13,
+    "confident_cells": 15,
+    "exact_cells": 17,
+    "failures": [
+      {
+        "case_id": "a0-02-valid-prohibition",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-04-global-scope",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "faithful",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-02",
+    "complexity_bytes": 690,
+    "confidence_reference_cells": 12,
+    "confident_cells": 15,
+    "exact_cells": 17,
+    "failures": [
+      {
+        "case_id": "a0-04-global-scope",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-15-duplicate-first",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "faithful",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-03",
+    "complexity_bytes": 685,
+    "confidence_reference_cells": 8,
+    "confident_cells": 10,
+    "exact_cells": 17,
+    "failures": [
+      {
+        "case_id": "a0-02-valid-prohibition",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-04-global-scope",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-05-atomic-from-multi-directive",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-09-explicit-testable-condition",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-13-shared-quote-first-atomic",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-15-duplicate-first",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-16-duplicate-second",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "faithful",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": true,
+    "candidate_id": "rubric-01",
+    "complexity_bytes": 548,
+    "confidence_reference_cells": 16,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "observable",
+    "selection_reason": "Best observed role candidate by correctness, stability, confident oracle matches, reference confidence, then complexity; no seal unless every cell accepted.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": true,
+    "candidate_id": "rubric-02",
+    "complexity_bytes": 623,
+    "confidence_reference_cells": 15,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "observable",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-03",
+    "complexity_bytes": 630,
+    "confidence_reference_cells": 15,
+    "confident_cells": 16,
+    "exact_cells": 17,
+    "failures": [
+      {
+        "case_id": "a0-12-unrecorded-approval",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "observable",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": true,
+    "candidate_id": "rubric-01",
+    "complexity_bytes": 481,
+    "confidence_reference_cells": 17,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "scoped",
+    "selection_reason": "Best observed role candidate by correctness, stability, confident oracle matches, reference confidence, then complexity; no seal unless every cell accepted.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": true,
+    "candidate_id": "rubric-02",
+    "complexity_bytes": 530,
+    "confidence_reference_cells": 17,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "scoped",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-03",
+    "complexity_bytes": 554,
+    "confidence_reference_cells": 11,
+    "confident_cells": 16,
+    "exact_cells": 17,
+    "failures": [
+      {
+        "case_id": "a0-11-private-shorthand",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "scoped",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": true,
+    "candidate_id": "rubric-01",
+    "complexity_bytes": 761,
+    "confidence_reference_cells": 14,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "self_contained",
+    "selection_reason": "Best observed role candidate by correctness, stability, confident oracle matches, reference confidence, then complexity; no seal unless every cell accepted.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-02",
+    "complexity_bytes": 832,
+    "confidence_reference_cells": 10,
+    "confident_cells": 13,
+    "exact_cells": 16,
+    "failures": [
+      {
+        "case_id": "a0-06-genuinely-bundled",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-14-shared-quote-second-atomic",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-16-duplicate-second",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-17-nondeclarative-form",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "self_contained",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-03",
+    "complexity_bytes": 787,
+    "confidence_reference_cells": 10,
+    "confident_cells": 12,
+    "exact_cells": 16,
+    "failures": [
+      {
+        "case_id": "a0-04-global-scope",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-06-genuinely-bundled",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-14-shared-quote-second-atomic",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-16-duplicate-second",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-17-nondeclarative-form",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "self_contained",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": true,
+    "candidate_id": "rubric-01",
+    "complexity_bytes": 477,
+    "confidence_reference_cells": 15,
+    "confident_cells": 17,
+    "exact_cells": 17,
+    "failures": [],
+    "role": "single_constraint",
+    "selection_reason": "Best observed role candidate by correctness, stability, confident oracle matches, reference confidence, then complexity; no seal unless every cell accepted.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-03",
+    "complexity_bytes": 514,
+    "confidence_reference_cells": 11,
+    "confident_cells": 15,
+    "exact_cells": 16,
+    "failures": [
+      {
+        "case_id": "a0-05-atomic-from-multi-directive",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-10-api-key-redaction",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "single_constraint",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  },
+  {
+    "accepted": false,
+    "candidate_id": "rubric-02",
+    "complexity_bytes": 523,
+    "confidence_reference_cells": 12,
+    "confident_cells": 13,
+    "exact_cells": 15,
+    "failures": [
+      {
+        "case_id": "a0-05-atomic-from-multi-directive",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-10-api-key-redaction",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-13-shared-quote-first-atomic",
+        "status": "inconclusive"
+      },
+      {
+        "case_id": "a0-14-shared-quote-second-atomic",
+        "status": "inconclusive"
+      }
+    ],
+    "role": "single_constraint",
+    "selection_reason": "Ranked below selected role candidate; retained as evidence.",
+    "stable_cells": 17,
+    "total_cells": 17
+  }
+]

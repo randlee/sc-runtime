@@ -1,0 +1,227 @@
+{
+  "schema_version": "1.0.0",
+  "operation": "triage",
+  "template": {
+    "id": "anchor-tuning-review-feedback",
+    "version": "0.4.1",
+    "sha256": "d3655b970a0cc4bdd8f7987b8ecd3233993350c5ba14708db9f5d0fb1f4fa076"
+  },
+  "correlation_id": "sc-runtime-phase-c-anc-001-testability-triage-087-r1",
+  "runtime": {
+    "workspace": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c",
+    "script": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c/.codex/skills/plan-anchoring/scripts/jev_judge.py",
+    "version": "0.8.7",
+    "sha256": "be99ae73699f25d5385e3611461eb5d874cd9ce72d7c451995869f09fa3012de",
+    "contract_script": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c/.codex/skills/plan-anchoring/scripts/anchor_tuning_contract.py",
+    "contract_sha256": "769cd7f5729f2662fc7018a9a4b3356bc203c0741c6a86adb15c0a92004bfdc0",
+    "agent": "anchor-tuning",
+    "harness": "codex",
+    "model": "sol"
+  },
+  "authority": {
+    "intent": {
+      "id": "sc-runtime-phase-c-review-completion-intent",
+      "version": 1,
+      "content": "I need you working through a checklist so that all of these items are completed",
+      "sha256": "6bbac0c410825010cc8da531e7cc4cecdd1b15dfb4752d6a371527874385264e"
+    },
+    "anchors": {
+      "sha256": "e2eef4b9b1a90d7af0725b8508ec2eb4bae68614a8727a4e683787a707fe1c71",
+      "records": [
+        {
+          "id": "ANC-001",
+          "version": 4,
+          "state": "locked",
+          "statement": "Generated consumer setup must install sc-lint with its sc-boundary, sc-portability, and sc-runtime analyzers.",
+          "kind": "directive",
+          "scope": "c-2 generated consumer setup and any plan item that installs the consumer lint toolchain.",
+          "check": "A generated fixture runs just setup, ordinary just lint, and named default and full profiles while its receipt records sc-boundary, sc-portability, and sc-runtime.",
+          "fixtures": {
+            "pass": [
+              "Consumer setup installs the full sc-lint toolchain, including its boundary, portability, and runtime analyzers."
+            ],
+            "fail": [
+              "Consumer setup installs only rustfmt and clippy and does not install the sc-lint toolchain."
+            ]
+          },
+          "quote": "a full sc-lint is installed on a consumer repo"
+        }
+      ]
+    }
+  },
+  "sealed_question_set": {
+    "digest": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+    "questions": {
+      "faithful": {
+        "criteria": {
+          "no": "The requirement commits to an additional policy, implementation selection, strength, trigger or result.",
+          "unclear": "Meaning preservation cannot be decided from the quote and statement.",
+          "yes": "The user duty is preserved with ordinary language, channel or representation normalization only."
+        },
+        "instructions": "Does anchor.quote substantively authorize the duty in anchor.statement? Read informal user language as a requirement. Allow one atomic duty from several quoted duties, technical output-channel formalization for printing or logging, and ordinary JSON container terminology where no container distinction was specified. Preserve vagueness rather than inventing precision. Reject added policy commitments, including selecting an encryption algorithm or strength absent from the quote.",
+        "type": "choice"
+      },
+      "observable": {
+        "criteria": {
+          "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+          "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+          "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+        },
+        "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+        "type": "choice"
+      },
+      "scoped": {
+        "criteria": {
+          "no": "No work area or applicability set is identifiable.",
+          "unclear": "An area is named but its applicability cannot be determined.",
+          "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+        },
+        "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+        "type": "choice"
+      },
+      "self_contained": {
+        "criteria": {
+          "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+          "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+          "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+        },
+        "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+        "type": "choice"
+      },
+      "single_constraint": {
+        "criteria": {
+          "no": "At least two independently enforceable duties are joined in the statement.",
+          "unclear": "The statement leaves independence of its duties ambiguous.",
+          "yes": "All details enforce the same invariant and would be evaluated together."
+        },
+        "instructions": "Is anchor.statement one invariant applied to a subject, trigger, and possibly several output surfaces? Do not count the number of nouns or listed artifacts; count independently enforceable duties.",
+        "type": "choice"
+      }
+    }
+  },
+  "gate": "testability",
+  "review": {
+    "role": "faithful",
+    "source_digest": "9b0c4ddbd6b33420151b3ec4818dbe07e738378641fdf92690c77c80e24f81e3",
+    "canonical_request": {
+      "model": "jev-1.14.0",
+      "questions": {
+        "faithful": {
+          "criteria": {
+            "no": "The requirement commits to an additional policy, implementation selection, strength, trigger or result.",
+            "unclear": "Meaning preservation cannot be decided from the quote and statement.",
+            "yes": "The user duty is preserved with ordinary language, channel or representation normalization only."
+          },
+          "instructions": "Does anchor.quote substantively authorize the duty in anchor.statement? Read informal user language as a requirement. Allow one atomic duty from several quoted duties, technical output-channel formalization for printing or logging, and ordinary JSON container terminology where no container distinction was specified. Preserve vagueness rather than inventing precision. Reject added policy commitments, including selecting an encryption algorithm or strength absent from the quote.",
+          "type": "choice"
+        },
+        "observable": {
+          "criteria": {
+            "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+            "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+            "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+          },
+          "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+          "type": "choice"
+        },
+        "scoped": {
+          "criteria": {
+            "no": "No work area or applicability set is identifiable.",
+            "unclear": "An area is named but its applicability cannot be determined.",
+            "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+          },
+          "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+          "type": "choice"
+        },
+        "self_contained": {
+          "criteria": {
+            "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+            "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+            "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+          },
+          "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+          "type": "choice"
+        },
+        "single_constraint": {
+          "criteria": {
+            "no": "At least two independently enforceable duties are joined in the statement.",
+            "unclear": "The statement leaves independence of its duties ambiguous.",
+            "yes": "All details enforce the same invariant and would be evaluated together."
+          },
+          "instructions": "Is anchor.statement one invariant applied to a subject, trigger, and possibly several output surfaces? Do not count the number of nouns or listed artifacts; count independently enforceable duties.",
+          "type": "choice"
+        }
+      },
+      "state": {
+        "anchor": {
+          "statement": "Generated consumer setup must install sc-lint with its sc-boundary, sc-portability, and sc-runtime analyzers.",
+          "quote": "a full sc-lint is installed on a consumer repo",
+          "scope": "c-2 generated consumer setup and any plan item that installs the consumer lint toolchain."
+        }
+      }
+    },
+    "raw_response": {
+      "model": "jev-1.14.0",
+      "answers": {
+        "faithful": {
+          "type": "choice",
+          "choice": "no",
+          "confidence": 0.62,
+          "probabilities": {
+            "no": 0.75,
+            "unclear": 0.09,
+            "yes": 0.16
+          }
+        },
+        "observable": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.82,
+          "probabilities": {
+            "no": 0.05,
+            "unclear": 0.07,
+            "yes": 0.88
+          }
+        },
+        "scoped": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.98,
+          "probabilities": {
+            "no": 0,
+            "unclear": 0.01,
+            "yes": 0.99
+          }
+        },
+        "self_contained": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.24,
+          "probabilities": {
+            "no": 0.39,
+            "unclear": 0.12,
+            "yes": 0.49
+          }
+        },
+        "single_constraint": {
+          "type": "choice",
+          "choice": "yes",
+          "confidence": 0.67,
+          "probabilities": {
+            "no": 0.2,
+            "unclear": 0.02,
+            "yes": 0.78
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 1089,
+        "output_tokens": 189
+      }
+    }
+  },
+  "planner_observation": {
+    "trust": "untrusted",
+    "text": "The current anchor and its pass/fail fixtures were approved by the user after the clarity review. The supplied raw response is disputed. Independently adjudicate from the exact source and approved authority; no disposition is requested. All original repeated responses are preserved as accompanying evidence."
+  }
+}
