@@ -46,7 +46,7 @@ use crate::coord::{MontyFeedGuard, RunCoord};
 use crate::hook::{ResolvedTarget, Step, stop_step, tick_outcome};
 use crate::{
     Clock, CronError, HookCall, HookEvent, HookTarget, Job, MissedTickPolicy, PythonHook,
-    RunOutcome, Schedule, ScheduleStore, StopDecision, StoreError, StoreErrorKind, Timestamp,
+    RunOutcome, Schedule, ScheduleStore, StopDecision, Timestamp,
 };
 
 mod worker_runs;
@@ -208,6 +208,8 @@ pub(crate) struct Worker<S, C> {
     environment: Arc<crate::HookEnvironmentHost>,
     #[cfg(feature = "monty")]
     hosts: Arc<crate::MontyHostRegistry>,
+    controller: Option<Arc<crate::operation::Controller>>,
+    cooperative: bool,
     shutdown: oneshot::Receiver<Option<tokio::time::Instant>>,
     /// Tokio instant from [`crate::WorkerHandle::shutdown`]. `None` when the
     /// handle was dropped, which stops the worker without a handle deadline.
@@ -370,6 +372,8 @@ where
             environment: Arc::new(crate::HookEnvironmentHost::new()),
             #[cfg(feature = "monty")]
             hosts,
+            controller: None,
+            cooperative: false,
             shutdown,
             handle_deadline: None,
             stopping: false,
@@ -392,6 +396,16 @@ where
         self
     }
 
+    pub(crate) fn with_operation_controller(
+        mut self,
+        controller: Arc<crate::operation::Controller>,
+        cooperative: bool,
+    ) -> Self {
+        self.controller = Some(controller);
+        self.cooperative = cooperative;
+        self
+    }
+
     /// Returns whether shutdown was requested, without waiting.
     fn note_stop(&mut self, deadline: Option<tokio::time::Instant>) {
         self.stopping = true;
@@ -401,6 +415,9 @@ where
     }
 
     fn stop_requested(&mut self) -> bool {
+        if let Some(budget) = self.controller.as_ref().and_then(|c| c.budget()) {
+            self.note_stop(Some(budget.grace.into()));
+        }
         if !self.stopping {
             match self.shutdown.try_recv() {
                 Ok(deadline) => self.note_stop(deadline),
@@ -413,6 +430,10 @@ where
 
     pub(crate) async fn run(mut self, mut reload: watch::Receiver<u64>) {
         let mut reload_open = true;
+        let mut lifecycle = self
+            .controller
+            .as_ref()
+            .map(|controller| controller.subscribe());
         loop {
             if self.stop_requested() {
                 break;
@@ -437,6 +458,10 @@ where
             let clock = Arc::clone(&self.clock);
             tokio::select! {
                 biased;
+                () = async {
+                    if let Some(lifecycle) = &mut lifecycle { let _ = lifecycle.changed().await; }
+                    else { std::future::pending::<()>().await; }
+                } => {}
                 message = &mut self.shutdown => {
                     self.note_stop(message.ok().flatten());
                     break;
@@ -451,6 +476,11 @@ where
                 }
                 () = clock.sleep_until(wake) => {}
             }
+        }
+        if self.cooperative
+            && let Some(controller) = &self.controller
+        {
+            controller.status(crate::ShutdownStatus::CleaningUp);
         }
         self.drain().await;
     }
@@ -541,15 +571,24 @@ where
         operation: impl FnOnce(&S) -> Result<T, CronError> + Send + 'static,
     ) -> Result<T, CronError> {
         let store = Arc::clone(&self.store);
-        // Not cancelled: shutdown waits out the current statement. Lock waits
-        // inside it are bounded by the store's SQLite busy timeout.
-        tokio::task::spawn_blocking(move || operation(store.as_ref()))
-            .await
-            .map_err(|error| {
-                CronError::Store(
-                    StoreError::new(StoreErrorKind::Other, "store task failed").with_source(error),
-                )
-            })?
+        let scoped = if self.cooperative {
+            let controller = self.controller.as_ref().expect("cooperative controller");
+            let root = crate::StoreOperationContext::root(Arc::clone(controller));
+            let context = if self.stopping { root.terminal() } else { root };
+            let guard = controller.register(&context, false)?;
+            Some((context, guard))
+        } else {
+            None
+        };
+        if let Some((context, guard)) = scoped {
+            let controller = Arc::clone(&context.state);
+            return controller
+                .run(guard, move || {
+                    store.with_operation_context(&context, operation)
+                })
+                .await;
+        }
+        crate::scheduler::blocking(move || operation(store.as_ref())).await
     }
 
     async fn reload(&mut self) {
@@ -821,6 +860,13 @@ where
     }
 
     fn launch(&mut self, index: usize, correlation: RunCorrelation) {
+        if self
+            .controller
+            .as_ref()
+            .is_some_and(|controller| !controller.admit_launch())
+        {
+            return;
+        }
         #[cfg(feature = "monty")]
         if matches!(
             self.slots.get(index).map(|slot| &slot.schedule.spec.hook),

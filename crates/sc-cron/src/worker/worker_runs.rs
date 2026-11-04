@@ -31,6 +31,10 @@ where
     /// not aborted.
     pub(super) async fn drain(&mut self) {
         let mut siblings_aborted = false;
+        let mut lifecycle = self
+            .controller
+            .as_ref()
+            .map(|controller| controller.subscribe());
         loop {
             if !self.slots.iter().any(|slot| slot.run.is_some()) {
                 return;
@@ -41,10 +45,17 @@ where
             } else {
                 self.nearest_abortable_deadline()
             };
+            if let Some(budget) = self.controller.as_ref().and_then(|c| c.budget()) {
+                self.handle_deadline = Some(budget.grace.into());
+            }
             let shutdown_at = self.handle_deadline.filter(|_| !siblings_aborted);
             let clock = Arc::clone(&self.clock);
             tokio::select! {
                 biased;
+                () = async {
+                    if let Some(lifecycle) = &mut lifecycle { let _ = lifecycle.changed().await; }
+                    else { std::future::pending::<()>().await; }
+                } => {}
                 (index, finished, guard) = finished(&mut self.slots) => {
                     self.on_finished(index, finished, guard).await;
                 }

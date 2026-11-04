@@ -31,6 +31,7 @@ use crate::{
 use sc_command::observability::SharedCanonicalLog;
 use sc_observability_types::Level;
 
+mod consumer;
 mod run_due;
 
 use run_due::record_due;
@@ -59,6 +60,7 @@ struct Core<S, C, J> {
     clock: Arc<C>,
     jitter: Arc<J>,
     reload: watch::Sender<u64>,
+    controller: Arc<crate::operation::Controller>,
 }
 
 impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
@@ -308,6 +310,7 @@ where
                 clock,
                 jitter,
                 reload: watch::channel(0).0,
+                controller: Arc::new(crate::operation::Controller::new()),
             }),
             policy: MissedTickPolicy::default(),
             reload_poll: DEFAULT_RELOAD_POLL,
@@ -588,6 +591,11 @@ where
     /// still running: two workers would run every schedule twice.
     #[must_use]
     pub fn spawn_worker(&self, job: Arc<dyn Job>) -> WorkerHandle {
+        self.spawn_worker_mode(job, false)
+    }
+
+    fn spawn_worker_mode(&self, job: Arc<dyn Job>, cooperative: bool) -> WorkerHandle {
+        self.core.controller.mark_started();
         let claimed = self
             .worker_live
             .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
@@ -610,13 +618,17 @@ where
             #[cfg(feature = "monty")]
             Arc::clone(&self.hosts),
         );
-        let worker = worker.with_hook_environment(Arc::clone(&self.environment));
+        let worker = worker
+            .with_hook_environment(Arc::clone(&self.environment))
+            .with_operation_controller(Arc::clone(&self.core.controller), cooperative);
         let task = tokio::spawn(async move {
             let _live = live;
             worker.run(reload).await;
         });
         WorkerHandle {
             shutdown: Some(shutdown),
+            controller: Arc::clone(&self.core.controller),
+            cooperative,
             task: Some(task),
             feeds: Arc::clone(&self.coord.feeds),
             logger: Arc::clone(&self.coord.logger),
@@ -848,6 +860,8 @@ impl Drop for LiveGuard {
 /// process exits first.
 pub struct WorkerHandle {
     shutdown: Option<oneshot::Sender<Option<tokio::time::Instant>>>,
+    controller: Arc<crate::operation::Controller>,
+    cooperative: bool,
     task: Option<JoinHandle<()>>,
     feeds: Arc<AtomicUsize>,
     logger: SharedCanonicalLog,
@@ -877,6 +891,8 @@ impl WorkerHandle {
         (
             Self {
                 shutdown: None,
+                controller: Arc::new(crate::operation::Controller::new()),
+                cooperative: false,
                 task: Some(task),
                 feeds: Arc::new(AtomicUsize::new(outstanding_feeds)),
                 logger,
@@ -902,6 +918,12 @@ impl WorkerHandle {
     /// cooperate. Await shutdown to completion before consuming logger shutdown;
     /// dropping this future cannot finish an asynchronous join.
     pub async fn shutdown(mut self, deadline: tokio::time::Instant) -> bool {
+        if self.cooperative {
+            let cutoff = deadline.into_std();
+            let _ = self
+                .controller
+                .stop(crate::ShutdownBudget::new(cutoff, cutoff).expect("equal shutdown cutoffs"));
+        }
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
             let _ = shutdown.send(Some(deadline));
@@ -910,6 +932,7 @@ impl WorkerHandle {
             return true;
         };
         if tokio::time::timeout_at(deadline, &mut task).await.is_ok() {
+            self.controller.join().await;
             return true;
         }
         if self.feeds.load(Ordering::Acquire) == 0 {
@@ -928,6 +951,7 @@ impl WorkerHandle {
                 let _ = self.logger.emit(event);
             }
             let _ = task.await;
+            self.controller.join().await;
             return false;
         }
         if let Some(event) = crate::component_event(
@@ -946,6 +970,7 @@ impl WorkerHandle {
             let _ = self.logger.emit(event);
         }
         let _ = task.await;
+        self.controller.join().await;
         false
     }
 
@@ -956,8 +981,16 @@ impl WorkerHandle {
     }
 }
 
+/// Cloneable lifecycle control without physical join ownership.
+#[derive(Clone, Debug)]
+pub struct WorkerStopControl {
+    controller: Arc<crate::operation::Controller>,
+}
 impl Drop for WorkerHandle {
     fn drop(&mut self) {
+        if self.cooperative && self.task.is_some() && !self.controller.stopping() {
+            self.controller.cancel();
+        }
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
             let _ = shutdown.send(None);

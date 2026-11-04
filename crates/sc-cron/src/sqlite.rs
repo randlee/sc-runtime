@@ -21,7 +21,7 @@
 use std::collections::HashSet;
 use std::num::NonZeroUsize;
 use std::path::Path;
-use std::sync::{Mutex, MutexGuard, PoisonError};
+use std::sync::{Mutex, PoisonError};
 use std::time::Duration;
 
 use rusqlite::{
@@ -83,7 +83,8 @@ const COLUMNS: &str = "id, generation, name, expr, timeout_ms, jitter_ms, payloa
      hook_kind, hook_module, hook_source, hook_environment";
 
 /// How long a writer waits for another connection's lock on the same file.
-const BUSY_TIMEOUT: Duration = Duration::from_secs(5);
+#[path = "sqlite_scope.rs"]
+mod scope;
 
 /// SQLite-backed schedule store on its own database file.
 ///
@@ -147,7 +148,7 @@ impl SqliteScheduleStore {
         let connection = Connection::open(path.as_ref())
             .map_err(|error| store_error("failed to open database", error))?;
         connection
-            .busy_timeout(BUSY_TIMEOUT)
+            .busy_handler(Some(scope::baseline_busy))
             .map_err(|error| store_error("failed to set busy timeout", error))?;
         connection
             .pragma_update(None, "journal_mode", "WAL")
@@ -166,7 +167,7 @@ impl SqliteScheduleStore {
         let connection = Connection::open_in_memory()
             .map_err(|error| store_error("failed to open database", error))?;
         connection
-            .busy_timeout(BUSY_TIMEOUT)
+            .busy_handler(Some(scope::baseline_busy))
             .map_err(|error| store_error("failed to set busy timeout", error))?;
         Self::with_connection(connection, limits, crate::noop_logger())
     }
@@ -219,12 +220,8 @@ impl SqliteScheduleStore {
         }
     }
 
-    fn lock(&self) -> MutexGuard<'_, Connection> {
-        // A panic while the lock was held cannot leave a transaction open:
-        // rusqlite rolls back on drop, so the connection is still sound.
-        self.connection
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
+    fn lock(&self) -> Result<scope::Guard<'_>, CronError> {
+        scope::lock(&self.connection)
     }
 
     /// Runs one guarded `UPDATE` and reports whether it changed the row.
@@ -243,9 +240,10 @@ impl SqliteScheduleStore {
         let mut all: Vec<&dyn ToSql> = vec![&id, &generation];
         all.extend_from_slice(values);
         let changed = self
-            .lock()
+            .lock()?
             .execute(sql, all.as_slice())
             .map_err(|error| store_error(&format!("failed to update {TABLE} id {id}"), error))?;
+        scope::committed();
         Ok(changed == 1)
     }
 }
@@ -299,13 +297,80 @@ fn init_schema(connection: &mut Connection) -> Result<(), CronError> {
 }
 
 impl ScheduleStore for SqliteScheduleStore {
+    fn operation_support(&self) -> crate::StoreOperationSupport {
+        crate::StoreOperationSupport::Cooperative
+    }
+
+    fn with_operation_context<T>(
+        &self,
+        context: &crate::StoreOperationContext,
+        operation: impl FnOnce(&Self) -> Result<T, CronError>,
+    ) -> Result<T, CronError> {
+        scope::with_scope(context, || operation(self))
+    }
+
+    fn query(&self, query: &crate::ScheduleQuery) -> Result<crate::SchedulePage, CronError> {
+        if !(1..=1000).contains(&query.limit) {
+            return Err(CronError::InvalidSpec(
+                "query limit must be 1..=1000".into(),
+            ));
+        }
+        let after = match query.after_id {
+            Some(id) => i64::try_from(id.get())
+                .ok()
+                .filter(|id| *id > 0)
+                .ok_or_else(|| CronError::InvalidSpec("invalid query cursor".into()))?,
+            None => 0,
+        };
+        let selection = match query.selection {
+            crate::ScheduleSelection::All => 0,
+            crate::ScheduleSelection::Active => 1,
+            crate::ScheduleSelection::Ended => 2,
+        };
+        let connection = self.lock()?;
+        let mut statement = connection.prepare(&format!("SELECT {COLUMNS} FROM sc_cron_schedule WHERE id > ?1 AND (?2 = 0 OR (?2 = 1 AND ended_at IS NULL) OR (?2 = 2 AND ended_at IS NOT NULL)) AND (?3 IS NULL OR name = ?3) ORDER BY id LIMIT ?4")).map_err(|error| store_error("query_failed", error))?;
+        let mut rows = statement
+            .query(params![
+                after,
+                selection,
+                query.name.as_ref().map(ScheduleName::as_str),
+                query.limit + 1
+            ])
+            .map_err(|error| store_error("query_failed", error))?;
+        let mut items = Vec::new();
+        while let Some(row) = rows
+            .next()
+            .map_err(|error| store_error("query_failed", error))?
+        {
+            scope::check()?;
+            items.push(
+                RawRow::read(row)
+                    .map_err(|error| store_error("query_decode_failed", error))?
+                    .decode()?,
+            );
+        }
+        let more = items.len() > query.limit as usize;
+        if more {
+            items.pop();
+        }
+        let next_after_id = if more {
+            items.last().map(|row| row.id)
+        } else {
+            None
+        };
+        Ok(crate::SchedulePage {
+            items,
+            next_after_id,
+        })
+    }
+
     fn limits(&self) -> ScheduleLimits {
         self.limits
     }
 
     fn create(&self, schedule: &NewSchedule, created_at: Timestamp) -> Result<Schedule, CronError> {
         let columns = Columns::new(schedule, created_at)?;
-        let mut connection = self.lock();
+        let mut connection = self.lock()?;
         let transaction = connection
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(|error| store_error("failed to begin transaction", error))?;
@@ -346,6 +411,7 @@ impl ScheduleStore for SqliteScheduleStore {
         transaction
             .commit()
             .map_err(|error| store_error("failed to commit", error))?;
+        scope::committed();
         Ok(row)
     }
 
@@ -353,14 +419,14 @@ impl ScheduleStore for SqliteScheduleStore {
         let Ok(id) = i64::try_from(id.get()) else {
             return Ok(None);
         };
-        select_one(&self.lock(), id)
+        select_one(&*self.lock()?, id)
     }
 
     fn list_active(&self) -> Result<Vec<Schedule>, CronError> {
         // Own the raw rows, then release both the statement and connection
         // before decoding can invoke an application-owned logging receiver.
         let rows = {
-            let connection = self.lock();
+            let connection = self.lock()?;
             let mut statement = connection
                 .prepare(&format!(
                     "SELECT {COLUMNS} FROM sc_cron_schedule WHERE ended_at IS NULL
@@ -377,6 +443,7 @@ impl ScheduleStore for SqliteScheduleStore {
         };
         let mut schedules = Vec::with_capacity(rows.len());
         for row in rows {
+            scope::check()?;
             let (id, name, error) = match row {
                 Ok(raw) => {
                     let (id, name) = (raw.id, raw.name.clone());
@@ -455,13 +522,14 @@ impl ScheduleStore for SqliteScheduleStore {
 
     fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<bool, CronError> {
         let changed = self
-            .lock()
+            .lock()?
             .execute(
                 "UPDATE sc_cron_schedule SET enabled = ?2
                  WHERE name = ?1 AND ended_at IS NULL",
                 params![name.as_str(), enabled],
             )
             .map_err(|error| store_error(&format!("failed to update {TABLE} {name}"), error))?;
+        scope::committed();
         Ok(changed == 1)
     }
 
@@ -485,7 +553,7 @@ impl ScheduleStore for SqliteScheduleStore {
     }
 
     fn set_enabled_many(&self, flags: &[(ScheduleName, bool)]) -> Result<bool, CronError> {
-        let mut connection = self.lock();
+        let mut connection = self.lock()?;
         let transaction = connection
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(|error| store_error("failed to begin transaction", error))?;
@@ -497,6 +565,7 @@ impl ScheduleStore for SqliteScheduleStore {
         transaction
             .commit()
             .map_err(|error| store_error("failed to commit", error))?;
+        scope::committed();
         Ok(true)
     }
 
@@ -514,7 +583,7 @@ impl ScheduleStore for SqliteScheduleStore {
             )));
         }
         let columns = Columns::new(schedule, created_at)?;
-        let mut connection = self.lock();
+        let mut connection = self.lock()?;
         let transaction = connection
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(|error| store_error("failed to begin transaction", error))?;
@@ -562,6 +631,7 @@ impl ScheduleStore for SqliteScheduleStore {
         transaction
             .commit()
             .map_err(|error| store_error("failed to commit", error))?;
+        scope::committed();
         Ok(Some(row))
     }
 }
@@ -753,6 +823,10 @@ fn millis(field: &str, value: Duration) -> Result<i64, CronError> {
 
 /// Classifies a rusqlite error so callers can tell busy from corrupt.
 fn store_error(context: &str, error: rusqlite::Error) -> CronError {
+    if let Err(cancelled) = scope::check() {
+        return cancelled;
+    }
+
     let kind = match error.sqlite_error_code() {
         Some(ErrorCode::DatabaseBusy | ErrorCode::DatabaseLocked) => StoreErrorKind::Busy,
         Some(ErrorCode::DatabaseCorrupt | ErrorCode::NotADatabase) => StoreErrorKind::Corrupt,
@@ -839,6 +913,7 @@ impl RawRow {
 
     /// Decodes every column; any malformed value is a `Corrupt` error naming the row.
     fn decode(self) -> Result<Schedule, CronError> {
+        scope::check()?;
         let id = self.id;
         let corrupt = |what: String| -> CronError {
             StoreError::new(StoreErrorKind::Corrupt, format!("{TABLE} id {id}: {what}")).into()
@@ -992,6 +1067,7 @@ mod tests {
         }
         store
             .lock()
+            .unwrap()
             .execute(
                 "UPDATE sc_cron_schedule SET payload='not json' WHERE name='bad'",
                 [],
@@ -1071,3 +1147,7 @@ mod tests {
         assert!(store.source().is_some());
     }
 }
+
+#[cfg(test)]
+#[path = "sqlite_cooperative_tests.rs"]
+mod cooperative_tests;

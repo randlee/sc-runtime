@@ -96,6 +96,7 @@
 mod clock;
 pub mod consumer_contract;
 mod coord;
+mod operation;
 #[cfg(feature = "test-utils")]
 #[doc(inline)]
 pub use consumer_contract::operation_context_probe;
@@ -173,7 +174,7 @@ pub use monty_host::{
 #[doc(inline)]
 pub use run_failure::RunFailureParts;
 #[doc(inline)]
-pub use scheduler::{DueRun, MissedTickPolicy, Scheduler, WorkerHandle};
+pub use scheduler::{DueRun, MissedTickPolicy, Scheduler, WorkerHandle, WorkerStopControl};
 #[doc(inline)]
 pub use sqlite::{SCHEMA_VERSION, SqliteScheduleStore};
 #[doc(inline)]

@@ -140,6 +140,12 @@ pub enum StoreErrorKind {
     SchemaMismatch,
     /// The file cannot be opened, read or written (I/O, permissions, full disk).
     Unavailable,
+    /// The live scope was explicitly cancelled.
+    Cancelled,
+    /// The real operation cutoff elapsed, possibly after commit admission.
+    DeadlineExceeded,
+    /// Persistence could not be established; mutation replay is unsafe.
+    Indeterminate,
     /// Any other failure.
     Other,
 }
@@ -153,6 +159,9 @@ impl StoreErrorKind {
             Self::Corrupt => "corrupt",
             Self::SchemaMismatch => "schema_mismatch",
             Self::Unavailable => "unavailable",
+            Self::Cancelled => "cancelled",
+            Self::DeadlineExceeded => "deadline_exceeded",
+            Self::Indeterminate => "indeterminate",
             Self::Other => "other",
         }
     }
@@ -167,6 +176,13 @@ impl StoreErrorKind {
                 "recreate an incompatible development schedule database using the first-release schema; preserve or export needed data first"
             }
             Self::Unavailable => "check the database path, permissions and free disk space",
+            Self::Cancelled => "operation cancelled; reconcile admitted mutations before retrying",
+            Self::DeadlineExceeded => {
+                "deadline exceeded; reconcile admitted mutations before retrying"
+            }
+            Self::Indeterminate => {
+                "reconcile persistence through a separately authorized operation; never replay automatically"
+            }
             Self::Other => "see the source error",
         }
     }
@@ -187,6 +203,7 @@ pub struct StoreError {
     kind: StoreErrorKind,
     context: String,
     source: Option<Arc<dyn Error + Send + Sync>>,
+    outcome: Option<crate::TransactionOutcome>,
 }
 
 impl StoreError {
@@ -197,6 +214,7 @@ impl StoreError {
             kind,
             context: context.into(),
             source: None,
+            outcome: None,
         }
     }
 
@@ -205,6 +223,19 @@ impl StoreError {
     pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
         self.source = Some(Arc::new(source));
         self
+    }
+
+    /// Attaches observed physical transaction evidence.
+    #[must_use]
+    pub fn with_transaction_outcome(mut self, outcome: crate::TransactionOutcome) -> Self {
+        self.outcome = Some(outcome);
+        self
+    }
+
+    /// Returns actual physical transaction evidence, when available.
+    #[must_use]
+    pub const fn transaction_outcome(&self) -> Option<&crate::TransactionOutcome> {
+        self.outcome.as_ref()
     }
 
     /// Returns the failure kind.

@@ -2,7 +2,7 @@
 
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::{
@@ -13,37 +13,29 @@ use crate::{
 /// Shared live operation state; child deadlines never extend the root scope.
 #[derive(Clone, Debug)]
 pub struct StoreOperationContext {
-    state: Arc<Mutex<OperationState>>,
+    pub(crate) state: Arc<crate::operation::Controller>,
     deadline: Option<Instant>,
-}
-
-#[derive(Debug, Default)]
-struct OperationState {
-    stop_requested: bool,
-    cutoff: Option<Instant>,
+    pub(crate) cleanup: bool,
+    parents: Vec<StoreOperationContext>,
 }
 
 impl StoreOperationContext {
     /// Returns the earliest local or shared operation cutoff.
     #[must_use]
     pub fn deadline(&self) -> Option<Instant> {
-        let state = self
-            .state
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        match (self.deadline, state.cutoff) {
-            (Some(a), Some(b)) => Some(a.min(b)),
-            (a, b) => a.or(b),
-        }
+        let shared = self.state.cutoff(self.cleanup);
+        self.parents
+            .iter()
+            .filter_map(Self::deadline)
+            .chain(self.deadline)
+            .chain(shared)
+            .min()
     }
 
     /// Reports the current shared stop request.
     #[must_use]
     pub fn stop_requested(&self) -> bool {
-        self.state
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .stop_requested
+        self.state.stopping()
     }
 
     /// Checks live cancellation and the real monotonic deadline.
@@ -51,14 +43,21 @@ impl StoreOperationContext {
     /// # Errors
     /// Returns a value-free unavailable error after cancellation or expiry.
     pub fn check(&self) -> Result<(), CronError> {
-        if self.stop_requested() {
-            return Err(unavailable("operation_cancelled"));
+        if self.state.cancelled(self.cleanup) {
+            return Err(StoreError::new(StoreErrorKind::Cancelled, "operation_cancelled").into());
+        }
+        for parent in &self.parents {
+            parent.check()?;
         }
         if self
             .deadline()
             .is_some_and(|deadline| Instant::now() >= deadline)
         {
-            return Err(unavailable("operation_deadline_exceeded"));
+            return Err(StoreError::new(
+                StoreErrorKind::DeadlineExceeded,
+                "operation_deadline_exceeded",
+            )
+            .into());
         }
         Ok(())
     }
@@ -68,10 +67,46 @@ impl StoreOperationContext {
     pub fn with_deadline(&self, deadline: Instant) -> Self {
         Self {
             state: Arc::clone(&self.state),
+            cleanup: self.cleanup,
+            parents: self.parents.clone(),
             deadline: Some(
                 self.deadline
                     .map_or(deadline, |current| current.min(deadline)),
             ),
+        }
+    }
+    pub(crate) fn external_deadline(&self) -> Option<Instant> {
+        self.parents
+            .iter()
+            .filter_map(Self::deadline)
+            .chain(self.deadline)
+            .min()
+    }
+
+    pub(crate) fn root(state: Arc<crate::operation::Controller>) -> Self {
+        Self {
+            state,
+            deadline: None,
+            cleanup: false,
+            parents: Vec::new(),
+        }
+    }
+
+    pub(crate) fn bind(&self, state: Arc<crate::operation::Controller>) -> Self {
+        let mut bound = Self::root(state);
+        if !Arc::ptr_eq(&bound.state, &self.state) {
+            bound.parents.push(self.clone());
+        }
+        bound.deadline = self.deadline;
+        bound
+    }
+
+    pub(crate) fn terminal(&self) -> Self {
+        Self {
+            cleanup: true,
+            deadline: None,
+            parents: Vec::new(),
+            ..self.clone()
         }
     }
 }
@@ -80,14 +115,18 @@ impl StoreOperationContext {
 #[cfg(feature = "test-utils")]
 #[must_use]
 pub fn operation_context_probe(deadline: Instant) -> StoreOperationContext {
-    StoreOperationContext {
-        state: Arc::new(Mutex::new(OperationState::default())),
-        deadline: Some(deadline),
-    }
+    StoreOperationContext::root(Arc::new(crate::operation::Controller::new()))
+        .with_deadline(deadline)
 }
 
 pub(crate) fn unavailable(reason: &'static str) -> CronError {
-    StoreError::new(StoreErrorKind::Unavailable, reason).into()
+    StoreError::new(StoreErrorKind::Unavailable, reason)
+        .with_transaction_outcome(TransactionOutcome {
+            admission: CommitAdmission::NotAttempted,
+            persistence: PersistenceOutcome::NoMutationAttempted,
+            completed_after_cutoff: false,
+        })
+        .into()
 }
 
 /// Cooperative store capability; legacy providers remain caller-owned.
@@ -103,12 +142,22 @@ pub enum StoreOperationSupport {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ShutdownBudget {
     /// Ordinary operation commit-admission cutoff G.
-    pub grace: Instant,
+    pub(crate) grace: Instant,
     /// Restricted cleanup commit-admission cutoff K, at least G.
-    pub cleanup: Instant,
+    pub(crate) cleanup: Instant,
 }
 
 impl ShutdownBudget {
+    /// Returns the ordinary-operation commit cutoff G.
+    #[must_use]
+    pub const fn grace(&self) -> Instant {
+        self.grace
+    }
+    /// Returns the terminal-cleanup commit cutoff K.
+    #[must_use]
+    pub const fn cleanup(&self) -> Instant {
+        self.cleanup
+    }
     /// Checks that cleanup does not precede ordinary drain.
     ///
     /// # Errors
@@ -283,10 +332,8 @@ mod tests {
     #[test]
     fn child_deadline_never_extends_shared_scope() {
         let deadline = Instant::now() + Duration::from_secs(60);
-        let parent = StoreOperationContext {
-            state: Arc::new(Mutex::new(OperationState::default())),
-            deadline: Some(deadline),
-        };
+        let parent = StoreOperationContext::root(Arc::new(crate::operation::Controller::new()))
+            .with_deadline(deadline);
         assert_eq!(
             parent
                 .with_deadline(deadline + Duration::from_secs(60))
@@ -295,7 +342,7 @@ mod tests {
         );
         let earlier = deadline - Duration::from_secs(30);
         assert_eq!(parent.with_deadline(earlier).deadline(), Some(earlier));
-        parent.state.lock().expect("state").stop_requested = true;
+        parent.state.cancel();
         assert!(parent.with_deadline(earlier).stop_requested());
         assert!(parent.check().is_err());
     }
