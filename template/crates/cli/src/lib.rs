@@ -415,6 +415,7 @@ pub fn exec_daemon(json: bool) -> DaemonStartReport {
     let mut command = std::process::Command::new(&path);
     #[cfg(unix)]
     {
+        #[cfg(unix)]
         use std::os::unix::process::CommandExt;
         let io_error = command.exec();
         DaemonExecError::io(&path, &io_error).report(json)

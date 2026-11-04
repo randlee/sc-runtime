@@ -3,6 +3,10 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.package]
+# Fill in application authors and URLs when creating its repository.
+authors = []
+homepage = ""
+repository = ""
 version = "0.1.1"
 edition = "2024"
 license = "{{licence}}"
