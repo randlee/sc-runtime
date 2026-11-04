@@ -2,5 +2,7 @@
   "project_name": "widget-apache",
   "db": "sqlite",
   "mcp": true,
-  "licence": "Apache-2.0"
+  "licence": "Apache-2.0",
+  "cron": false,
+  "cron_commands": false
 }

@@ -86,6 +86,9 @@ adrs:
   - ADR-CMD-0002
   - ADR-CMD-0003
 owned_paths:
+  - wizard/pages/page-3-options.html
+  - tests/unit/generation/test_schema.py
+  - tests/unit/generation/test_monty_example.py
   - template/hooks/drop-template-exclude.rhai
   - crates/sc-command/src/observability/tests.rs
   - docs/requirements.md
@@ -403,3 +406,24 @@ C1 initial declaration ownership clarification (parent-approved 2026-11-04):
 before output mutation; C3 owns subsequent generator implementation. The
 existing sc-command observability unit-test unused import is removed only to
 run feature-contract clippy, preserving all test meaning and lint enforcement.
+
+
+Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
+[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
+after SDK/consumer customization. Released0.8.4 returns exit3
+`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
+Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
+result explicitly; never report init PASS, hide its error, force overwrite,
+delete consumer edits or add a workaround wrapper. This known result does not
+block current C1/C2 acceptance. Issue117 owns restoration of the successful
+repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
+all three real analyzers in ordinary/default/full profiles, causal failure
+proofs, configuration-derived fresh boundary policy and consumer ownership/
+preservation, and usable public setup/lint/test/upgrade remain binding. No
+upstream source fix, release or new pin is authorized by this waiver.
+
+Parent-approved initial declaration prerequisites (2026-11-04): C1 owns the
+existing wizard option controls and the two exact schema/patch-inventory tests
+listed above, plus explicit false defaults in the existing eight fixtures.
+C3 owns later generator implementation after consuming this handoff. Test
+inventory assertions remain exact and existing default-off checks remain.

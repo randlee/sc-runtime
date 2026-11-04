@@ -2068,8 +2068,23 @@ After setup it is consumer-owned: later setup/upgrade and repeated
 `sc-lint init --just` must preserve policy edits, analyzer declarations, both
 profiles and `db-prepare`. Bootstrap execution receipts must identify all three
 exact analyzer commands and zero statuses; TOML inspection alone is insufficient.
-ADR-RUN-0005 records the current released-product preservation gap; this is a
-required acceptance condition, not an already qualified behavior.
+ADR-RUN-0005 records the released-product result and the narrow temporary
+user waiver below; byte preservation and real analyzer execution stay binding.
+
+
+Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
+[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
+after SDK/consumer customization. Released0.8.4 returns exit3
+`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
+Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
+result explicitly; never report init PASS, hide its error, force overwrite,
+delete consumer edits or add a workaround wrapper. This known result does not
+block current C1/C2 acceptance. Issue117 owns restoration of the successful
+repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
+all three real analyzers in ordinary/default/full profiles, causal failure
+proofs, configuration-derived fresh boundary policy and consumer ownership/
+preservation, and usable public setup/lint/test/upgrade remain binding. No
+upstream source fix, release or new pin is authorized by this waiver.
 
 ---
 

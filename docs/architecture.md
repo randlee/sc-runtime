@@ -519,6 +519,28 @@ linux `release_targets` row in `release/sc-publish-consumer-input.json`.
 
 ---
 
+### Selective release toolkit qualification gap (2026-11-04)
+
+The exact canonical kit pin b6947ab2e495398a58123c60c0b86b5421f89979 was
+fetched from upstream and executed in a disposable fixture with workspace/tag
+version0.2.0, affected command/cron/runtime/adapter0.2.0 and literal unchanged
+config/transport0.1.1 with publish=false. Its existing `list-publish-plan`
+includes even disabled config/transport packages, then command, cron, runtime
+and cron-commands; it does not filter publish=false. Its actual `verify-version --version 0.2.0` fails:
+`sc-config: version mismatch: expected 0.2.0, got 0.1.1` (exit1). Source
+cmd_verify_version iterates every declared crate, including publish=false;
+`public-registry-check-plan` likewise passes one global args.version for all
+crate names. Thus publish=false and literal-base support in another preflight
+are insufficient to qualify selective publication. This is a demonstrated
+upstream capability gap and leaves C1 incomplete. No local workflow bypass,
+blanket version bump, unqualified newer pin or publication has been performed.
+An upstream released exact pin must qualify selective per-package versions,
+unchanged-package treatment, stale-command negative, per-package registry
+lookups and v0.2.0 tag semantics before release contract closure. Parent owns
+any authorization to undertake that upstream change; passing ordered output
+alone cannot establish the complete release capability.
+
+
 ## ADR-RUN-0003: Crate dependency graph and the `server` cargo feature
 
 **Status:** Active  
@@ -895,10 +917,33 @@ consumer `db-prepare`, with exit 3 and
 `crates/sc-lint/src/consumer_integration.rs` classifies only canonical files
 or version-only configuration drift as preservable; arbitrary config/Justfile
 extensions conflict. No public extension marker was found. This fails the
-required two-init preservation criterion and blocks C1 closure; the passing
-profiles do not waive it. Never remove consumer edits or suppress analyzers
+original successful two-init criterion. The explicit user waiver below
+supersedes only that success condition; the passing profiles alone did not
+authorize a waiver. Never remove consumer edits or suppress analyzers
 to obtain a passing receipt. The temporary probe retains this failure until
 a supported released mechanism is qualified.
+
+
+Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
+[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
+after SDK/consumer customization. Released0.8.4 returns exit3
+`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
+Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
+result explicitly; never report init PASS, hide its error, force overwrite,
+delete consumer edits or add a workaround wrapper. This known result does not
+block current C1/C2 acceptance. Issue117 owns restoration of the successful
+repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
+all three real analyzers in ordinary/default/full profiles, causal failure
+proofs, configuration-derived fresh boundary policy and consumer ownership/
+preservation, and usable public setup/lint/test/upgrade remain binding. No
+upstream source fix, release or new pin is authorized by this waiver.
+
+The user-waiver probe was rerun successfully on the remaining criteria:
+ordinary/default/full each reported five passing steps; the structured
+`lint.ci.consumer` full-profile receipt identified the exact three analyzer
+argv strings with status pass. Both subsequent init attempts returned the
+recorded exit3, and config/Justfile/edited boundary policy stayed byte-exact.
+This is profile/preservation evidence under #117, never an init success claim.
 
 ## ADR-RUN-0006: Library errors are typed values; no public panics
 
@@ -3151,27 +3196,6 @@ release. C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves
 the actual admission race and persisted state after join, c-4 proves packaged
 behavior. This changes the prior strict physical-cutoff interpretation by the
 explicit human decision, not a finding waiver or implementation PASS.
-
-### Selective release toolkit qualification gap (2026-11-04)
-
-The exact canonical kit pin b6947ab2e495398a58123c60c0b86b5421f89979 was
-fetched from upstream and executed in a disposable fixture with workspace/tag
-version0.2.0, affected command/cron/runtime/adapter0.2.0 and literal unchanged
-config/transport0.1.1 with publish=false. Its existing `list-publish-plan`
-includes even disabled config/transport packages, then command, cron, runtime
-and cron-commands; it does not filter publish=false. Its actual `verify-version --version 0.2.0` fails:
-`sc-config: version mismatch: expected 0.2.0, got 0.1.1` (exit1). Source
-cmd_verify_version iterates every declared crate, including publish=false;
-`public-registry-check-plan` likewise passes one global args.version for all
-crate names. Thus publish=false and literal-base support in another preflight
-are insufficient to qualify selective publication. This is a demonstrated
-upstream capability gap and leaves C1 incomplete. No local workflow bypass,
-blanket version bump, unqualified newer pin or publication has been performed.
-An upstream released exact pin must qualify selective per-package versions,
-unchanged-package treatment, stale-command negative, per-package registry
-lookups and v0.2.0 tag semantics before release contract closure. Parent owns
-any authorization to undertake that upstream change; passing ordered output
-alone cannot establish the complete release capability.
 
 
 ## ADR-RUN-0019: Optional standard cron command adapter and generated wiring
