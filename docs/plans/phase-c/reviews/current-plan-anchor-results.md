@@ -14,6 +14,7 @@ six proposed and two retired. All 12 original record objects are unchanged.
 | New-anchor live testability and live sprint-plan gates | Not run; no current-plan Jev verdict or Plan Anchor PASS is claimed. |
 | [Engineering baseline diagnostic](internal-unapproved/consumer-extension-baseline-diagnostic.md) | Four manual pre-gate findings; **not Jev**. The [focused plan revision](consumer-extension-plan-revision.md) now addresses their acceptance/ownership gaps; fresh independent reviews and actual live checks remain pending. |
 | [Critical R2](compatibility-critical-r2/report.json) | PASS at a265f65 for its reviewed six-sprint contract; subsequent consumer-control clarification still needs follow-up plan review. |
+| [Current review summary](consumer-extension-review-summary.md) | Fresh QA1 FAIL 8B/2I/1M; nine noninstrument corrections and the later schema finding are verified by critical R3. Final scope/critical R3 PASS all six at bbd64de. Formal QA2/3 not run; REQ-QA-001 and ARCH-C-002 remain open. |
 
 ## Bounded instrument result
 
@@ -71,5 +72,8 @@ remain pending because no full rubric was accepted. Record validation and
 proposed persistence are not live testability or gate approval. Tracking remains
 in run-x8d.5/.6. The focused plan/REQ/ADR revision follows the direct approved
 consumer-extension intent, not calibration failures. Runtime source, evaluator,
-anchor quotes/fixtures and seals remain unchanged. The four manual findings
-remain to_fix pending independent verification; no new Plan Anchor PASS is claimed.
+anchor quotes/fixtures and seals remain unchanged. Independent scope/critical
+reviews verified the four manual corrections at their recorded baselines;
+formal QA2 and actual Plan Anchor gates remain pending. Typical reports are
+published; raw working evidence and the cancelled diagnostic archive stay
+outside Git. No new Plan Anchor PASS is claimed.

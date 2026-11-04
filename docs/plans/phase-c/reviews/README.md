@@ -388,6 +388,16 @@ The six-sprint DAG remains path 3/width 4. Author checks passed; fresh independe
 scope/critical/QA and actual Plan Anchor checks remain pending, not overall PASS.
 Historical scope/critical approvals retain only their actual reviewed baselines.
 
+## Current consumer-extension review
+
+[The concise review summary](consumer-extension-review-summary.md) records
+fresh QA1 FAIL, nine corrected findings and the final schema correction.
+Scope/critical R3 pass all six sprints at bbd64de; current actual Plan Anchor
+prerequisites remain open and formal QA2/3 have not run. All six new anchors
+and fixtures are approved but remain proposed pending actual checks. Per the
+human instruction, the broad diagnostic archive is cancelled; this checkpoint
+adds typical reports only, with raw working evidence retained outside Git.
+
 ## Prior reviewed plan document SHA256 (45ffd3f)
 
 | Document | SHA256 |

@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "2335892210ecd0c648fc156dea4b865cf4d554c417ff8c95fe0ca558505b683e",
-      "bytes": 27492,
+      "sha256": "d964e4039c9c5a010c18b8c29c4be78a8348bcc41df70a26077783fbb94cda27",
+      "bytes": 28064,
       "source": "authored index"
     },
     {
@@ -260,6 +260,12 @@
       "sha256": "e32c980a1c62557de3ba2e813bd1287e950f6bfc50445a79c77a0d07fbda40a1",
       "bytes": 2776,
       "source": "authored approved-intent pre-gate plan correction"
+    },
+    {
+      "path": "consumer-extension-review-summary.md",
+      "sha256": "496426732713b700b4361481ea26600bdf2497ad7a13fbb0fb75d4f8a81bc7e0",
+      "bytes": 3094,
+      "source": "concise usual review summary per direct human instruction"
     },
     {
       "path": "continuation/approved-intent/ANC-001.json",
@@ -12929,8 +12935,8 @@
     },
     {
       "path": "current-plan-anchor-results.md",
-      "sha256": "c91bbb0f436e0350272bc06b8b3e17d9c468ae628c63b85464a87a385d9ac853",
-      "bytes": 4773,
+      "sha256": "6f7b2d8d55f733f453515adacb59bdda953b18540fcd251b395cd04907e5be5c",
+      "bytes": 5257,
       "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
     },
     {
@@ -13922,7 +13928,7 @@
     "sprints": 6,
     "critical_path": 3,
     "width": 4,
-    "scope_critical_qa_anchor_reviews": "pending",
+    "scope_critical_qa_anchor_reviews": "scope/critical R3 PASS; formal QA2/3 not run; actual Plan Anchor prerequisites pending",
     "new_sprint_beads": {
       "c-5": "run-x8d.7",
       "c-6": "run-x8d.8"
@@ -13932,35 +13938,35 @@
     "documents": [
       {
         "path": "docs/plans/phase-c/phase-c-plan.md",
-        "sha256": "ba5c301bacbc8ba27fabcd39a74889acd05d258ddbf46f116f539495ab5a5d5d"
+        "sha256": "3c9de2c1388b65df075b538d8fc4789d9c2b92284f8374a46caa8b69a96eb8ea"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
-        "sha256": "5ad22c6343433bed83a8b8c524c171a2fee60517bc5264456917ca2c2f421cd2"
+        "sha256": "32fc4fb64b42e8b78a3c830f9257b99500d83ada38c873fcd7b062fe5820a5fc"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
-        "sha256": "3a389fa2f5687fe6f85286737a213cec3978de6955d7244b5231516c9d5dc0ad"
+        "sha256": "2d28eee187258c983d5430a3836c19fb9c7e48c411fc37e64514011427a7ee25"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
-        "sha256": "049ce9921ecefa957f188c3f2a4c9d533eaa479519fa81f313c61849fcebb750"
+        "sha256": "5391cc3eac76b797cdd8492a580acc735aef350c4854cc83e0c2d1e3d34444dd"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
-        "sha256": "933a0c2492aaf2cf15443dc120a45314c2cdb6cd2d6a55d7a17e2a10f89bf376"
+        "sha256": "3e0c6c14e1bfb7206d7f494cdeaf6f2561f6c853c0451c3fc5030707a88cce63"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
-        "sha256": "a37770435bde70c9184eb5196783c5eac975beb19e24c0f7c1e72e194790b44a"
+        "sha256": "d333702e6ed59f4e4d7126faa5f589ee1490c9fb050cebdae6e70799b3294886"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
-        "sha256": "11d0337c3cf24999eb3c46e5edb3ed35e7b5982ccb7051e7014660b8f0737fbe"
+        "sha256": "5fd360d63864790d0f8bb28b0c9af80a065e3cb8818602993092c160bca50079"
       },
       {
         "path": "docs/plans/phase-c/compatibility-contract.md",
-        "sha256": "5f741d29a12eea2ce6c5bdd3e34cb48993053f358b9147a3130fe8efb5bb6280"
+        "sha256": "81abd470c0d4d2f7e97ecd903e71e7c6f1f70c63a45e1475c117fb625292fe67"
       }
     ],
     "scope_r1": {
@@ -13978,7 +13984,8 @@
       "reviewed_commit": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
       "sprints": 6,
       "source": "compatibility-scope-r2/report.json"
-    }
+    },
+    "latest_reviewed_source_commit": "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407"
   },
   "evidence_wip_checkpoint": {
     "authoritative_plan_source": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
@@ -14204,5 +14211,22 @@
     "critical_path": 3,
     "width": 4,
     "report": "consumer-extension-plan-revision.md"
+  },
+  "current_consumer_extension_review": {
+    "summary": "consumer-extension-review-summary.md",
+    "source_commit": "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407",
+    "scope_r3": "PASS all six, zero findings",
+    "critical_r3": "PASS all six, zero findings",
+    "QA1": "FAIL at9456e36:8Blocking,2Important,1Minor",
+    "author_plan_corrections_verified_by_critical_r3": 10,
+    "remaining_anchor_findings": [
+      "REQ-QA-001",
+      "ARCH-C-002"
+    ],
+    "formal_QA2_QA3": "not_run",
+    "new_anchors": "all six statements/fixtures approved; records proposed",
+    "implementation_readiness": false,
+    "Plan_Anchor_PASS": false,
+    "broad_archive": "cancelled per direct human instruction; never committed/pushed; raw working evidence outsideGit"
   }
 }
