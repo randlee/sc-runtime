@@ -1,0 +1,11 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Genuine developer consistency finding at 945e4c0; not a Jev result.
+triage:CONSISTENCY_INDEX_001 a triage:Finding ;
+ triage:id "CONSISTENCY-INDEX-001" ;
+ triage:status "to_fix" ; triage:severity "Important" ;
+ triage:author_state "corrected-pending-independent-QA" ;
+ triage:origin "consumer-extension-step5-r1-developer" ;
+ triage:source "docs/project-plan.md:102-113" ; triage:sprints "c-5,c-6" ;
+ triage:authority "existing six-sprint Phase C plan; REQ-CRON-0020/0021; REQ-CRNC-0002; ADR-RUN-0018/0019" ;
+ triage:correction "Add c5 and c6 index rows linked to their existing authoritative sprint files and update the Phase C summary. Keep the eight authoritative documents and their scope unchanged." .

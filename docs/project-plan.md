@@ -102,7 +102,13 @@ parent merges. This docs amendment selects no replacement consumer pin.
 Phase c is the post-Phase-b consumer-quality and ecosystem-release phase.
 It makes the generated sc-lint consumer complete and moves the public
 runtime/template pair to the approved latest RMCP and Utoipa family while
-retaining the rusqlite 0.39/SQLx compatibility guard. See [Phase c
+retaining the rusqlite 0.39/SQLx compatibility guard. It also makes the existing
+cron core consumable through public logging, cooperative store/lifecycle and
+query contracts, with supported custom-store/behavior paths and documented
+consumer responsibilities. An optional standard cron command adapter supplies
+shared JSON across selected UIs; the release sprint proves the documented
+default recipe and actual packaged composition. These six sprints are planned,
+not claims of implemented or published behavior. See [Phase c
 plan](plans/phase-c/phase-c-plan.md).
 
 | Sprint | Plan | Status | Branch |
@@ -111,3 +117,5 @@ plan](plans/phase-c/phase-c-plan.md).
 | c-2 consumer sc-lint full profile | [sprint-c-2](plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md) | planned | `sprint/c-2-consumer-sc-lint-full-profile` |
 | c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | planned | `sprint/c-3-runtime-ecosystem-upgrade` |
 | c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | planned | `sprint/c-4-runtime-ecosystem-release` |
+| c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | planned | `sprint/c-5-cron-consumer-compatibility` |
+| c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | planned | `sprint/c-6-standard-cron-commands` |
