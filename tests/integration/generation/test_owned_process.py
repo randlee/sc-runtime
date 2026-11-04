@@ -92,29 +92,6 @@ class OwnedProcessTests(unittest.TestCase):
             self.assert_exited(direct)
             self.assert_exited(descendant)
 
-    def bridge_run(self, args, *, timeout, check, capture_output):
-        """Exercise the same request-file bridge called by the Rust helper."""
-        with tempfile.TemporaryDirectory(prefix="owned-bridge-") as temp:
-            request = Path(temp) / "request.json"
-            request.write_text(json.dumps({"args": args, "cwd": None, "env": [],
-                                           "timeout": timeout}))
-            bridge = Path(__file__).resolve().parents[3] / "crates/sc-cron/tests/hook_environment/owned_child.py"
-            # The enclosing tree owner is an emergency bound for a broken bridge.
-            result = run([sys.executable, str(bridge), str(request)], timeout=timeout + 25,
-                         capture_output=capture_output)
-            if result.returncode == 124:
-                raise subprocess.TimeoutExpired(args, timeout, output=result.stdout, stderr=result.stderr)
-            if check:
-                result.check_returncode()
-            return result
-
-    if os.name == "nt":
-        def test_bridge_success_cleans_ready_descendant(self):
-            self.witness("success", runner=self.bridge_run)
-
-        def test_bridge_timeout_cleans_ready_descendant(self):
-            self.witness(False, runner=self.bridge_run)
-
     def test_success_cleans_ready_descendant(self):
         self.witness("success")
 

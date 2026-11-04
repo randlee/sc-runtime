@@ -13,14 +13,23 @@ from tests.integration.generation.owned_process import run
 
 def main(request_path):
     request = json.loads(Path(request_path).read_text())
+    # JSON strings cannot carry a lone Windows surrogate through Rust serde.
+    # Transport every OS string as UTF-16 units and reconstruct without loss.
+    def decode(units):
+        return b"".join(unit.to_bytes(2, "little") for unit in units).decode("utf-16-le", "surrogatepass")
+
+    args = [decode(value) for value in request["args_utf16"]]
+    cwd = decode(request["cwd_utf16"]) if request["cwd_utf16"] is not None else None
     environment = dict(os.environ)
-    for key, value in request["env"]:
+    for raw_key, raw_value in request["env_utf16"]:
+        key = decode(raw_key)
+        value = decode(raw_value) if raw_value is not None else None
         if value is None:
             environment.pop(key, None)
         else:
             environment[key] = value
     try:
-        result = run(request["args"], cwd=request["cwd"], env=environment,
+        result = run(args, cwd=cwd, env=environment,
                      timeout=request["timeout"], stdin=subprocess.DEVNULL,
                      capture_output=True)
     except subprocess.TimeoutExpired as error:

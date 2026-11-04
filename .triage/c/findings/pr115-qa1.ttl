@@ -1,0 +1,69 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:PR115_QA1_REQ_QA_001 a triage:Finding ;
+ triage:id "REQ-QA-001" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e56a5439f6aefd52b8c902279c58fc79de7787d0" ;
+ triage:file "see reviewer refs" ;
+ triage:issue "The third bounded obligation requires actual native Windows successful and timeout/descendant cleanup proof plus the retained shared hook-environment assertions. That proof is unavailable for e56a5439f6aefd52b8c902279c58fc79de7787d0. Existing Windows evidence is the earlier hanging run; the available Unix owned-process pass cannot close this platform-specific regression." ;
+ triage:action "Obtain successful native Windows execution at the reviewed commit of the existing owned-process-windows success/timeout bridge witnesses and the default/Monty hook-environment and Monty host roots, including python_monty_and_both_cli_children_use_one_allowlisted_map. Preserve current assertions and strict failure behavior; use existing CI evidence, with no new process artifact." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6637976620" .
+
+triage:PR115_QA1_ARCH_001 a triage:Finding ;
+ triage:id "ARCH-001" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e56a5439f6aefd52b8c902279c58fc79de7787d0" ;
+ triage:file "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md" ;
+ triage:issue "The governing sprint adrs list omits binding ADR-RUN-0003 and ADR-RUN-0004, whose defaults-off dependency graph and types-only observability constraints govern this facade and its isolated consumer. ADR-RUN-0017 amends these decisions; it does not supersede their remaining constraints. RULE-ADR-PLAN explicitly requires every governing ADR in the list." ;
+ triage:action "Add ADR-RUN-0003 and ADR-RUN-0004 to the existing adrs list and verify coverage of the remaining governing repo ADRs; no change to facade behavior or expansion to full C-5 implementation is required." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6637976620" .
+
+triage:PR115_QA1_QA_001 a triage:Finding ;
+ triage:id "QA-001" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e56a5439f6aefd52b8c902279c58fc79de7787d0" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
+ triage:issue "The repaired Windows-only child owner has no completed native Windows execution proof at the assigned commit. The previous six-hour hang is platform-specific, so macOS passing tests cannot establish that the repair works." ;
+ triage:action "Before merge, require the existing exact-commit Windows hook environment CI job to complete successfully, including owned-process successful/timeout descendant cleanup and default/Monty hook execution; also require the existing Linux lint/test job to pass. Preserve all assertions and timeouts." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6637976620" .
+
+triage:PR115_QA1_FTQ_001 a triage:Finding ;
+ triage:id "FTQ-001" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e56a5439f6aefd52b8c902279c58fc79de7787d0" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
+ triage:issue "The Windows replacement waits for the Python bridge using Command::output(), which has no deadline or owning teardown guard. The timeout in request JSON bounds the target only after the bridge imports and enters its inner runner. If bridge startup or ownership setup stalls before that deadline is installed, the Rust test blocks indefinitely again; the caller cannot enforce its supplied timeout or clean up the bridge. The new Python bridge regressions use an additional outer owner that the Rust call does not have." ;
+ triage:action "Own the bridge process and its descendants from the Rust caller with a hard outer deadline, explicit completion/cleanup observation, and failure propagation. Keep the existing inner runner, but add a causal bridge-stall regression through the actual Rust entry point that proves bounded failure and physical cleanup without increasing the test timeout." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6637976620" .
+
+triage:PR115_QA1_FTQ_002 a triage:Finding ;
+ triage:id "FTQ-002" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e56a5439f6aefd52b8c902279c58fc79de7787d0" ;
+ triage:file "tests/integration/generation/test_owned_process.py" ;
+ triage:issue "The bridge cleanup tests observe descendant exit only after an enclosing owned-process run has terminated its own Windows job. That job contains the bridge and all its descendants, including descendants in the bridge nested job. Consequently a faulty bridge that returns success or 124 while leaving the descendant alive can still pass: enclosing cleanup kills the leaked descendant before witness() calls assert_exited(). These regressions cannot distinguish bridge-owned cleanup from emergency harness cleanup." ;
+ triage:action "Retain emergency ownership, but have a controller assert both direct-child and descendant termination after the bridge reports completion and before releasing the enclosing owner. Add an injected cleanup-omission negative case that must fail this observation, and exercise the actual Rust bridge invocation." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6637976620" .
+
+triage:PR115_QA1_FTQ_003 a triage:Finding ;
+ triage:id "FTQ-003" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e56a5439f6aefd52b8c902279c58fc79de7787d0" ;
+ triage:file "tests/integration/generation/test_owned_process.py" ;
+ triage:issue "The new Windows timeout regression arms the target timeout before its launcher, parent, and grandchild have acknowledged readiness. The timeout is three seconds while the parent itself allows five seconds for grandchild readiness. Under slow Windows startup or runner scheduling, the owner can correctly time out and clean up before ready/pids are written, then the test fails its readiness assertion or pidfile read. Its result therefore depends on process startup speed rather than a causally triggered timeout of an already-ready descendant." ;
+ triage:action "Separate bounded startup from timeout injection. Use an explicit ready/release handshake so the timeout scenario begins only after the controller has both process IDs and descendant readiness, then trigger the expiry and verify cleanup. Do not fix this by increasing or padding the timeout." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6637976620" .
+
+triage:PR115_CI_003 a triage:Finding ; triage:id "PR115-CI-003" ; triage:severity "Blocking" ; triage:status "open" ; triage:authority "REQ-CRON-0003; ADR-RUN-0016" ; triage:occurrence "crates/sc-cron/tests/hook_environment/owned_child.rs:67" ; triage:evidence "e56a543 native Windows job126744430173 run41878371956: invalid_nonunicode_or_oversized_allowlisted_process_values_fail_without_capture panics UTF-8 test command on deliberate lone UTF16 surrogate0xd800;22other default tests pass" ; triage:action "Preserve raw Windows UTF16 code units through bridge argv/cwd/environment; no lossy conversion or skipped invalid-Unicode canary" .

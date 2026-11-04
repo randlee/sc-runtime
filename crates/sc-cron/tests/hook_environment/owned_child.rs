@@ -58,33 +58,12 @@ pub(super) fn output(command: &mut Command, timeout: Duration) -> Output {
     }
 }
 
-/// The std JobObject wrapper consumes completion notifications during polling,
-/// so a later blocking wait can wait forever. Reuse the repository's tree owner:
-/// it terminates the job, observes ActiveProcesses == 0, and reaps its launcher.
+/// Keep a Rust-owned job around the bridge, including Python import/startup.
 #[cfg(windows)]
 pub(super) fn output(command: &mut Command, timeout: Duration) -> Output {
-    let request = tempfile::NamedTempFile::new().expect("owned command request");
-    let text = |value: &std::ffi::OsStr| value.to_str().expect("UTF-8 test command").to_owned();
-    let config = serde_json::json!({
-        "args": std::iter::once(command.get_program()).chain(command.get_args()).map(text).collect::<Vec<_>>(),
-        "cwd": command.get_current_dir().map(|path| text(path.as_os_str())),
-        "env": command.get_envs().map(|(key, value)| (text(key), value.map(text))).collect::<Vec<_>>(),
-        "timeout": timeout.as_secs_f64(),
-    });
-    std::fs::write(
-        request.path(),
-        serde_json::to_vec(&config).expect("request JSON"),
-    )
-    .expect("write request");
-    let mut output = Command::new(super::python_program())
-        .arg(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/hook_environment/owned_child.py"
-        ))
-        .arg(request.path())
-        .output()
-        .expect("bounded Python owned runner");
-    output.stdout.truncate(1024 * 1024);
-    output.stderr.truncate(1024 * 1024);
-    output
+    windows::output(command, timeout, windows::BRIDGE, || false, || {})
 }
+
+#[cfg(windows)]
+#[path = "owned_child_windows.rs"]
+mod windows;
