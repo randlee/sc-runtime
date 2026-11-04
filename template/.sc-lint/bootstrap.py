@@ -286,64 +286,30 @@ def main(argv=None):
         return status
     if operation == "test":
         return run([bootstrap.binary, "test", "--config", config, *positional])
-    return run_maintainer_lint(bootstrap.binary, config, positional)
+    return run_consumer_lint(bootstrap.binary, config, positional)
 
 
-def load_maintainer_lints(config):
+def run_consumer_lint(binary, config, positional):
+    """Display receipts returned by the released consumer orchestrator."""
+    command = [str(binary), "--json", "lint", "ci", "--consumer", "--config", config]
+    if positional and positional[0]:
+        command.extend(["--profile", positional[0]])
+    if len(positional) > 1:
+        command.extend(["--platform-scope", positional[1]])
+    completed = subprocess.run(command, check=False, text=True, stdout=subprocess.PIPE)
+    # Preserve the complete native receipt and its exact process status, including
+    # diagnostics on malformed profiles. Only returned executed steps get lines.
+    print(completed.stdout, end="", flush=True)
     try:
-        with Path(config).open("rb") as handle:
-            data = tomllib.load(handle)
-    except (OSError, tomllib.TOMLDecodeError) as error:
-        fail(f"lint: could not read {config}: {error} (CLI.SC_LINT_CONFIG_MALFORMED)", 3)
-    tool = data.get("tool", {}).get("sc-lint", {})
-    steps = {}
-    for item in tool.get("lint", []):
-        if not isinstance(item, dict) or not item.get("name") or not isinstance(item.get("command"), list):
-            fail(f"lint: malformed [[tool.sc-lint.lint]] entry in {config} (CLI.SC_LINT_CONFIG_MALFORMED)", 3)
-        steps[item["name"]] = [str(part) for part in item["command"]]
-    profiles = tool.get("lint_profiles", {})
-    if not isinstance(profiles, dict):
-        fail(f"lint: lint_profiles must be a table in {config} (CLI.SC_LINT_CONFIG_MALFORMED)", 3)
-    return steps, {name: list(names) for name, names in profiles.items()}
-
-
-def maintainer_lint_steps(config, positional):
-    steps, profiles = load_maintainer_lints(config)
-    selector = positional[0] if positional and positional[0] else "full"
-    if selector in profiles:
-        names = profiles[selector]
-    elif selector in steps:
-        names = [selector]
-    else:
-        known = ", ".join(sorted(set(profiles) | set(steps))) or "(none)"
-        fail(f"lint: unknown maintainer profile or step {selector!r}; known: {known}", 2)
-    commands = []
-    for name in names:
-        if name not in steps:
-            fail(f"lint: profile {selector!r} names unknown step {name!r}", 2)
-        commands.append((name, steps[name]))
-    return commands
-
-
-def rewrite_lint_command(command, binary):
-    if command and command[0] == "sc-lint":
-        return [str(binary), *command[1:]]
-    return command
-
-
-def run_maintainer_lint(binary, config, positional):
-    # Source-maintainer lint runs the named sc-lint.toml profile (full/gates)
-    # or a single declared step. It does not dispatch `sc-lint lint --consumer ci`.
-    status = 0
-    for name, command in maintainer_lint_steps(config, positional):
-        argv = rewrite_lint_command(command, binary)
-        print(f"lint.{name}: running {' '.join(argv)}")
-        step = run(argv)
-        print(f"lint.{name}: {'ok' if step == 0 else 'failed'}")
-        if step:
-            return step
-        status = step
-    return status
+        receipt = json.loads(completed.stdout)
+    except ValueError:
+        return completed.returncode or 3
+    for step in receipt.get("data", {}).get("steps", []):
+        if step.get("status") in ("pass", "fail"):
+            print(f"lint.{step['name']}: running {step['command']}", flush=True)
+            status = "ok" if step["status"] == "pass" else "failed"
+            print(f"lint.{step['name']}: {status}", flush=True)
+    return completed.returncode
 
 
 if __name__ == "__main__":
