@@ -140,6 +140,21 @@ fn actual_stop_requires_empty_membership_and_rejects_omitted_proof() {
         Bridge::spawn(command).expect("owned completion witness")
     };
     let mut owned = spawn();
+    // Establish leader exit independently before injecting nonempty membership.
+    // Ignoring that membership must fail even on an already-reaped leader;
+    // startup/termination scheduling cannot supply an accidental second poll.
+    owned.child.start_kill().expect("terminate query witness");
+    let deadline = Instant::now() + CLEANUP;
+    while owned
+        .child
+        .inner_mut()
+        .try_wait()
+        .expect("leader readiness")
+        .is_none()
+    {
+        assert!(Instant::now() < deadline, "leader readiness deadline");
+        std::thread::sleep(POLL); // allow: bounded test-only leader-exit handshake
+    }
     let mut queries = 0;
     owned
         .stop_with(|job| {
