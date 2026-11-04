@@ -37,25 +37,29 @@ crate claims. No new sprint, dependency edge or wire-model copy was added.
 
 ## What remains
 
-REQ-QA-001 and ARCH-C-002 remain open: the accepted evaluator/testability
-results and complete live six-sprint checks remain incomplete. All six new
-statements/fixtures are approved; the main session locked ANC-013 through
-ANC-018 and linked their Beads. Default testability remains inconclusive.
-Independent audit permits the published default questions, and all thirteen
-semantic planning fixture pairs passed. Failed experimental calibration does
-not prohibit those defaults or require an upstream repair before plan review.
+All six full-item Plan Anchor gates now PASS at production threshold 0.6,
+with no trimming, errors, unstable cells or semantic contradictions. All
+thirteen semantic anchors are covered. The coverage CLI still lists
+ANC-004/011/012 because those cells are deterministic-only; paired actual
+naming, dedicated-worktree and separate-PR checks all PASS.
 
-First live reviews have now completed for all six sprint plans. C-1's first
-fix reduced six underspecified cells to two. Further scoped clarity edits to
-C-1/C-3/C-4/C-5 and 38 documented item-specific exclusions retain existing
-requirements, owner boundaries and the six-sprint DAG; pre-edit to_fix records
-trace the replacements to locked authority. C-4 retains same-request normalized
-data/error parity and real public custom-store/application-field proof.
-All six plan/anchor/fixture egress destinations are now explicitly approved.
-Reruns are pending or in progress; no final full-plan PASS, completed coverage
-or formal QA2/3 is claimed. Earlier scope/critical PASS remains tied to bbd64de.
-[Current anchor status](current-plan-anchor-results.md) records this checkpoint;
-raw evidence remains local.
+Independent scoped tuning accepted and sealed ANC-010/013/018 questions against
+frozen oracles/history and approved fixtures. Existing question Beads
+run-evb.1, run-299.1 and run-c5i.1 retain those decisions. The six new capture
+testability results remain inconclusive. Records remain sixteen locked and two
+retired; statements, quotes and approved fixtures are unchanged. Normal approved
+locking/fixtures and published defaults are permitted by the lifecycle audit;
+failed experimental generic calibration is historical, not an upstream repair
+prerequisite.
+
+REQ-QA-001, ARCH-C-002 and the other QA1 findings await their owning QA2 recheck.
+Prior scope/critical PASS stays tied to bbd64de; subsequent scoped wording
+corrections and documented applicability exclusions preserve existing
+requirements, ownership and the six-sprint DAG. Formal QA2/3 have not run;
+implementation readiness remains false. Final successful run IDs and the
+structural/semantic distinction are in the
+[current anchor status](current-plan-anchor-results.md). Raw evidence remains
+local.
 
 Per the human instruction to publish typical reports rather than diagnostic
 logs or test results, this is a concise review summary. The cancelled broad

@@ -395,9 +395,12 @@ fresh QA1 FAIL, nine corrected findings and the final schema correction.
 Scope/critical R3 pass all six sprints at bbd64de; formal QA2/3 have not run.
 All six approved new anchors are now locked and linked, with inconclusive
 default testability preserved. Published-default planning fixtures pass;
-first live reviews completed all six; C-1 improved six unclear cells to two.
-Scoped clarity edits and 38 documented item exclusions await rerun outcomes;
-all six egress destinations are explicitly approved. No final live gate PASS. Per the
+all six final full-item live gates PASS at production threshold 0.6. Scoped
+questions for ANC-010/013/018 were independently accepted and sealed; all
+thirteen semantic anchors are covered. The coverage CLI lists three
+deterministic-only anchors; paired actual structural checks all PASS.
+The 38 documented scope exclusions remain, and owning QA2 rechecks are pending.
+All six egress destinations are explicitly approved. Per the
 human instruction, the broad diagnostic archive is cancelled; this checkpoint
 adds typical reports only, with raw working evidence retained outside Git.
 

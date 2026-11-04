@@ -1,48 +1,49 @@
 # Current Phase C plan-anchor results
 
-**NOT FINALIZED.** All six new statements and fixtures are human-approved,
-including clarified ANC-016. The main session locked ANC-013 through ANC-018
-and linked their six anchor Beads and twelve question Beads. There are now
-18 records: 16 locked and two retired. All eighteen statements, quotes, scopes,
-versions and fixtures are unchanged. The main session recorded 38 item-specific
-exclusions with reasons tied to existing scope and actual sprint ownership;
-these change applicability metadata, not what an anchor requires.
+**All six full sprint plan gates PASS. Final QA recheck is pending.** The
+production threshold remained 0.6. No plan was trimmed, and the final runs
+contain no errors, unstable cells or semantic contradictions.
 
-## Current checks
+| Sprint | Successful live run |
+| --- | --- |
+| c-1 | plan-20261104T063232Z-c-1 |
+| c-2 | plan-20261104T063651Z-c-2 |
+| c-3 | plan-20261104T063341Z-c-3 |
+| c-4 | plan-20261104T064110Z-c-4 |
+| c-5 | plan-20261104T063457Z-c-5 |
+| c-6 | plan-20261104T063526Z-c-6 |
 
-Published default questions are permitted by the independent workflow audit.
-All thirteen semantic planning fixture pairs passed with those defaults.
-The six new anchors' default testability results remain inconclusive; this is
-not a rubric PASS or proof that a sprint satisfies its anchors. The failed
-experimental generic calibration remains historical evidence, not a prohibition
-on using the published defaults.
+All thirteen semantic anchors are covered. The coverage CLI still lists
+ANC-004, ANC-011 and ANC-012 as uncovered because their cells are
+`deterministic_only`. Paired actual structural checks PASS for Phase C naming,
+the dedicated `plan/phase-c` worktree, and separate
+[PR114 to develop](https://github.com/randlee/sc-runtime/pull/114). These are
+not missing semantic coverage or Jev semantic verdicts.
 
-First live reviews completed for all six sprint plans. C-1's first correction
-reduced its failed cells from six to two; the remaining latest-release cells
-were underspecified, with satisfied leanings. The next focused correction
-requires resolved RMCP/Utoipa versions to equal the exact dated registry
-results. C-3/C-4/C-5 wording now states existing shared-command, consumer-hook,
-SQLite and prepublication obligations directly. Exact pre-edit to_fix records
-trace each replacement to pre-existing locked anchors and requirements/ADRs.
-No scope, question, fixture, threshold, ownership or sprint DAG changed.
+There are eighteen records: sixteen locked and two retired. All six new
+statements and fixtures are human-approved, including clarified ANC-016,
+and their anchor/question Beads are linked. The six capture testability
+results remain inconclusive, not PASS. Independent lifecycle audit permits the
+normal approved-lock/fixture path and published defaults; adopting an
+experimental generic rubric or repairing upstream is not a prerequisite.
 
-Scoped item exclusions keep constraints on their actual owners, including
-C-3's publication handoff and C-5's rusqlite/dedicated-compatibility duties.
-The user explicitly approved sending all six plans, anchors and fixtures to
-Jev; there is no remaining destination-permission block. Reruns of this frozen
-correction checkpoint are pending or in progress. No final full-six-sprint
-Plan Anchor PASS or completed coverage is claimed.
+Scoped question sets for ANC-010, ANC-013 and ANC-018 were independently
+accepted, sealed and validated against frozen oracles/history and approved
+fixtures before these runs. Existing question Beads `run-evb.1`, `run-299.1`
+and `run-c5i.1` retain those decisions. Production thresholds and anchor
+statements/quotes/fixtures did not change. These sets do not adopt the earlier
+failed experimental generic calibration. The 38 explicit item exclusions
+retain relevant obligations on their actual owners.
 
-## Other review status
+Plan wording fixes make existing latest-release, shared JSON, consumer
+extension, guide verification and prepublication obligations explicit. C-4
+retains actual custom-store/application-field proof, normalized UI parity and
+authorized publication after all prerequisite composition checks. Six sprint
+ownership boundaries and the DAG are unchanged.
 
-[The concise review summary](consumer-extension-review-summary.md) records
-scope/critical R3 PASS for all six sprints at bbd64de, before these wording
-revision. Nine QA1 plan corrections and the schema correction were verified;
-formal QA2/3 have not run. REQ-QA-001 and ARCH-C-002 remain open. The three
-[structural checks](current-structural-anchor-checks.json) passed at their
-recorded baseline; they do not replace live semantic checks.
-
-The [human approval receipt](authority-approvals/new-anchor-approval-with-anc016-clarification.json)
-and [original allocation mapping](proposed-anchor-allocation.json) preserve the
-six statements' provenance. No new approval of those statements is needed.
-Detailed working runs remain local; only ordinary reports are published.
+[The review summary](consumer-extension-review-summary.md) retains historical
+scope/critical approvals at their actual baselines. QA1 findings, including
+REQ-QA-001 and ARCH-C-002, await their owning QA2 recheck. This result does not
+close them or claim implementation readiness. No development gate or runtime
+implementation PASS is claimed. Raw working runs remain local; only ordinary
+reports are published.

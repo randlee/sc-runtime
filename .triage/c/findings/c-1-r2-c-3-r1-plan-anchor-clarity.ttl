@@ -6,73 +6,82 @@
 
 triage:c_1_R2_ANC_009 a triage:Finding ;
  triage:anchor_id "ANC-009" ; triage:item "c-1" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055139Z-c-1" ; triage:action "replace" ;
  triage:sentence "4. At probe execution, query crates.io for the latest released `rmcp` AND latest released `utoipa`; select those exact releases and record both versions in ADR-RUN-0203's runtime dependency matrix." ;
  triage:replacement "Require resolved RMCP identity version to equal the exact latest release from c1 dated registry query; fail mismatch, preserve c3 frozen-matrix consumption." ;
- triage:authority "locked ANC-009; ADR-RUN-0203; NFR-RUN-0007; predates failed run" .
+ triage:authority "locked ANC-009; ADR-RUN-0203; NFR-RUN-0007; predates failed run" ;
+ triage:verified_run "plan-20261104T063232Z-c-1" .
 
 triage:c_1_R2_ANC_010 a triage:Finding ;
  triage:anchor_id "ANC-010" ; triage:item "c-1" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055139Z-c-1" ; triage:action "replace" ;
  triage:sentence "4. At probe execution, query crates.io for the latest released `rmcp` AND latest released `utoipa`; select those exact releases and record both versions in ADR-RUN-0203's runtime dependency matrix." ;
  triage:replacement "Require resolved Utoipa identity version to equal the exact latest release from c1 dated registry query; fail mismatch, preserve c3 frozen-matrix consumption." ;
- triage:authority "locked ANC-010; ADR-RUN-0203; predates failed run" .
+ triage:authority "locked ANC-010; ADR-RUN-0203; predates failed run" ;
+ triage:verified_run "plan-20261104T063232Z-c-1" .
 
 triage:c_3_R1_ANC_009 a triage:Finding ;
  triage:anchor_id "ANC-009" ; triage:item "c-3" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055031Z-c-3" ; triage:action "replace" ;
  triage:sentence "Use the exact stable versions selected and frozen by c-1 in\n   ADR-RUN-0203." ;
  triage:replacement "Require resolved RMCP identity version to equal the exact latest release from c1 dated registry query; fail mismatch, preserve c3 frozen-matrix consumption." ;
- triage:authority "locked ANC-009; ADR-RUN-0203; NFR-RUN-0007; predates failed run" .
+ triage:authority "locked ANC-009; ADR-RUN-0203; NFR-RUN-0007; predates failed run" ;
+ triage:verified_run "plan-20261104T063341Z-c-3" .
 
 triage:c_3_R1_ANC_010 a triage:Finding ;
  triage:anchor_id "ANC-010" ; triage:item "c-3" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055031Z-c-3" ; triage:action "replace" ;
  triage:sentence "Use the exact stable versions selected and frozen by c-1 in\n   ADR-RUN-0203." ;
  triage:replacement "Require resolved Utoipa identity version to equal the exact latest release from c1 dated registry query; fail mismatch, preserve c3 frozen-matrix consumption." ;
- triage:authority "locked ANC-010; ADR-RUN-0203; predates failed run" .
+ triage:authority "locked ANC-010; ADR-RUN-0203; predates failed run" ;
+ triage:verified_run "plan-20261104T063341Z-c-3" .
 
 triage:c_3_R1_ANC_013 a triage:Finding ;
  triage:anchor_id "ANC-013" ; triage:item "c-3" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055031Z-c-3" ; triage:action "replace" ;
  triage:sentence "Upgrade the runtime's RMCP and OpenAPI ecosystem without creating two type\nuniverses in the generated application." ;
  triage:replacement "C3 hands verified prepublication inputs to c4; c5 is the dedicated cron compatibility sprint, and existing c4 dependencies require c3/c5/c6 completion before0.2.0publication. C3 does not wait for sibling QA or close their work." ;
- triage:authority "locked ANC-013; existing c3 deliverable7 and c4 must_follow[c3,c5,c6]; REQ-RUN-0702; ADR-RUN-0402; predates failed run" .
+ triage:authority "locked ANC-013; existing c3 deliverable7 and c4 must_follow[c3,c5,c6]; REQ-RUN-0702; ADR-RUN-0402; predates failed run" ;
+ triage:verified_run "plan-20261104T063341Z-c-3" .
 
 triage:c_3_R1_ANC_014 a triage:Finding ;
  triage:anchor_id "ANC-014" ; triage:item "c-3" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055031Z-c-3" ; triage:action "replace" ;
  triage:sentence "Prepare generic CLI/HTTP/optional-MCP projections taking Arc<dyn CronExecutor>\nand forwarding the sole CronRequest/deadline through c-1's contract." ;
  triage:replacement "Consumers may omit the entire standard cron command set via default cron_commands=false; no standard commands are required then." ;
- triage:authority "locked ANC-014; REQ-RUN-0332; REQ-CRNC-0002; ADR-RUN-0019; predates failed run" .
+ triage:authority "locked ANC-014; REQ-RUN-0332; REQ-CRNC-0002; ADR-RUN-0019; predates failed run" ;
+ triage:verified_run "plan-20261104T063341Z-c-3" .
 
 triage:c_3_R1_ANC_015 a triage:Finding ;
  triage:anchor_id "ANC-015" ; triage:item "c-3" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055031Z-c-3" ; triage:action "replace" ;
  triage:sentence "Prepare generic CLI/HTTP/optional-MCP projections taking Arc<dyn CronExecutor>\nand forwarding the sole CronRequest/deadline through c-1's contract." ;
  triage:replacement "Generic CLI/HTTP/enabled-MCP projections forward the same versioned CronRequest JSON and deadline to the injected executor." ;
- triage:authority "locked ANC-015; REQ-CRNC-0001/0002; ADR-CRNC-0001; predates failed run" .
+ triage:authority "locked ANC-015; REQ-CRNC-0001/0002; ADR-CRNC-0001; predates failed run" ;
+ triage:verified_run "plan-20261104T063341Z-c-3" .
 
 triage:c_3_R1_ANC_016 a triage:Finding ;
  triage:anchor_id "ANC-016" ; triage:item "c-3" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055031Z-c-3" ; triage:action "replace" ;
  triage:sentence "Prepare generic CLI/HTTP/optional-MCP projections taking Arc<dyn CronExecutor> and forwarding the sole CronRequest/deadline through c-1's contract." ;
  triage:replacement "Common cron.start/cron.end/cron.list vocabulary applies to Rust/Python/optionalMonty target choices in the same contract; target-specific choices are options." ;
- triage:authority "locked clarified ANC-016; REQ-CRNC-0001; REQ-CRON-0003; ADR-CRNC-0001; predates failed run" .
+ triage:authority "locked clarified ANC-016; REQ-CRNC-0001; REQ-CRON-0003; ADR-CRNC-0001; predates failed run" ;
+ triage:verified_run "plan-20261104T063341Z-c-3" .
 
 triage:c_3_R1_ANC_017 a triage:Finding ;
  triage:anchor_id "ANC-017" ; triage:item "c-3" ;
- triage:status "to_fix" ; triage:classification "plan_defect" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
  triage:run "plan-20261104T055031Z-c-3" ; triage:action "replace" ;
  triage:sentence "Prepare generic CLI/HTTP/optional-MCP projections taking Arc<dyn CronExecutor>\nand forwarding the sole CronRequest/deadline through c-1's contract." ;
  triage:replacement "Opaque Stores passes through the runtime; application-supplied CronExecutor lets consumers replace default behavior/lifecycle/error handling through existing public projections, with owned duties per c1." ;
- triage:authority "locked ANC-017; REQ-RT-0003; REQ-CRNC-0002; ADR-RT-0003; existing consumer replacement contract; predates failed run" .
+ triage:authority "locked ANC-017; REQ-RT-0003; REQ-CRNC-0002; ADR-RT-0003; existing consumer replacement contract; predates failed run" ;
+ triage:verified_run "plan-20261104T063341Z-c-3" .
 

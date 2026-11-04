@@ -1,7 +1,7 @@
 {
   "schema": "phase-c-review-evidence/1",
   "plan_content_commit": "45ffd3fee9ca83eb27d48cf861551baa61b4a204",
-  "overall_readiness": "NOT_FINALIZED: all six statements/fixtures approved; rubric unaccepted after five rounds, actual testability/live checks and locking pending",
+  "overall_readiness": "All six full-item plan-anchor gates PASS; owning QA2 rechecks pending; implementation readiness false",
   "qa2": {
     "resolved": 6,
     "remaining_blocking": [
@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "127169c53ce072ce3f12a9118acf95df25b55c211c50f5df379078c5ed45c26b",
-      "bytes": 28297,
+      "sha256": "742e98afda67b6a8062a5bf7aa536f9c875dd3cf2912f436f561780097d4cf45",
+      "bytes": 28486,
       "source": "authored index"
     },
     {
@@ -263,8 +263,8 @@
     },
     {
       "path": "consumer-extension-review-summary.md",
-      "sha256": "507edb244928e0666cc29cb5f566f2244ee24b302aa033a397f87d09acf2d925",
-      "bytes": 3924,
+      "sha256": "ea4b4642f4ca95fb2b1cb31ed7adc46a49c225f98336450bf264001d5010bd3f",
+      "bytes": 4003,
       "source": "concise usual review summary per direct human instruction"
     },
     {
@@ -12935,8 +12935,8 @@
     },
     {
       "path": "current-plan-anchor-results.md",
-      "sha256": "f2a0286297958e1b0e28a27f43b56e6d6a39e7bb194f36302c796169e51fb657",
-      "bytes": 2843,
+      "sha256": "4ecdf463ab1554dcb1897eda95ea57b01bb42e46761128a513f38ec7ec92bf22",
+      "bytes": 2623,
       "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
     },
     {
@@ -13928,7 +13928,7 @@
     "sprints": 6,
     "critical_path": 3,
     "width": 4,
-    "scope_critical_qa_anchor_reviews": "scope/critical R3 PASS; formal QA2/3 not run; actual Plan Anchor prerequisites pending",
+    "scope_critical_qa_anchor_reviews": "Historical scope/critical R3 PASS at bbd64de; all six current plan-anchor gates PASS; formal QA2/3 not run",
     "new_sprint_beads": {
       "c-5": "run-x8d.7",
       "c-6": "run-x8d.8"
@@ -13950,11 +13950,11 @@
       },
       {
         "path": "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
-        "sha256": "35d78322cbc1143220840edab84e404620d6e62044c785930c128f7ff9ff7a18"
+        "sha256": "666d46d89b2937acd34cf7bc17331f09cf5702e25145ec2d5132da7cecfbbe05"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
-        "sha256": "d0abf1606deae59d46442cba87e11606a4ba547a7770f3b78942c60c4dc175e4"
+        "sha256": "478bd1ae6b5c603aeebe52f872af888cc2c0e1ab62e0b6ce737c255ea596952e"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
@@ -13986,7 +13986,7 @@
       "source": "compatibility-scope-r2/report.json"
     },
     "latest_reviewed_source_commit": "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407",
-    "document_hash_scope": "Current six-sprint round2 freeze; actual reruns pending/in progress. Historical scope/critical review remains at bbd64de."
+    "document_hash_scope": "Current final six-sprint live-gate freeze; historical scope/critical review remains at bbd64de."
   },
   "evidence_wip_checkpoint": {
     "authoritative_plan_source": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
@@ -14194,7 +14194,7 @@
     "new_anchor_beads": 6,
     "validation_snapshot_scope": "existing proposal-validation artifact is historical; main-session locking/linking is current",
     "planning_fixtures": "all13 semantic planning pairs PASS using permitted published defaults",
-    "status_note": "legacy field name; six new approved records are now locked and linked; no full-plan PASS",
+    "status_note": "Legacy field name; six new approved records locked and linked; all six full-item plan-anchor gates PASS; capture testability remains inconclusive",
     "record_change_scope": "38 item-specific exclusions/history only; all18 statements/quotes/scopes/versions/fixtures unchanged",
     "item_specific_exclusions": 38
   },
@@ -14233,12 +14233,25 @@
     "formal_QA2_QA3": "not_run",
     "new_anchors": "all six approved statements/fixtures locked and linked by main session; default testability inconclusive",
     "implementation_readiness": false,
-    "Plan_Anchor_PASS": false,
+    "Plan_Anchor_PASS": true,
     "broad_archive": "cancelled per direct human instruction; never committed/pushed; raw working evidence outsideGit",
-    "actual_plan_gate": "First live reviews completed all6;C1 six failed cells reduced to2;scoped clarity/exclusions applied;reruns pending or in progress,no finalPASS",
+    "actual_plan_gate": "All six full-item gates PASS at production 0.6; thirteen semantic anchors covered; coverage CLI lists three deterministic-only IDs paired with actual structural PASS",
     "published_defaults": "permitted by independent audit;13semantic planfixture pairsPASS",
     "experimental_calibration_scope": "historical failed experiments do not prohibit published defaults",
     "plan_review_egress": "user explicitly approved all six sprint plans/anchors/fixtures; no remaining permission block",
-    "source_checkpoint": "six source hashes frozen outsideGit for rerun; no new source inventory export"
+    "source_checkpoint": "Final six sprint source hashes frozen outside Git; no source inventory export",
+    "accepted_scoped_questions": {
+      "anchors": [
+        "ANC-010",
+        "ANC-013",
+        "ANC-018"
+      ],
+      "question_beads": [
+        "run-evb.1",
+        "run-299.1",
+        "run-c5i.1"
+      ],
+      "status": "Independently accepted and sealed; frozen-oracle/history validation and approved fixtures PASS; no experimental generic adoption"
+    }
   }
 }

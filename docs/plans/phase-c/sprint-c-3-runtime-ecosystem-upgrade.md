@@ -253,8 +253,9 @@ REQ-RUN-0332/REQ-CRNC-0002, consuming c-1's compatibility contract:
   with client/accessors/health. Causal competing bind to the same owned endpoint
   fails before readiness; planted reserve/drop handoff permits takeover. No
   pre-bind success receipt, weakened real-signal test or implicit endpoint change.
-- Prepare generic CLI/HTTP/enabled-MCP projections that share c-1's versioned
-  CronRequest JSON contract: `cron.start`, `cron.end`, `cron.list`. The same
+- Implement public CLI/HTTP/enabled-MCP projection handlers, all using the same
+  canonical versioned CronRequest JSON contract: `cron.start`, `cron.end`,
+  `cron.list`. Transport-specific wrappers remain permitted. The same
   start/end/list schedule-management verbs apply to Rust, Python and optional
   Monty target selections through that contract's options. Consumers may omit
   the entire command set (`cron_commands=false`, default); then no standard

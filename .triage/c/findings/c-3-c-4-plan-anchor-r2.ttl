@@ -1,0 +1,44 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Recorded before the single C4 tuned-R1 clarity replacement.
+triage:c_4_tuned_R1_ANC_018 a triage:Finding ;
+ triage:item "c-4" ; triage:anchor_id "ANC-018" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:action "replace" ; triage:run "plan-20261104T063404Z-c-4" ;
+ triage:sentence "C-5/C-6 author the guides; c-4 verifies their public path and responsibility assertions through its consumer proof, without new guide docs." ;
+ triage:replacement "Require the named C5/C6 guides to document the supported public-API integration path, correct core-library use and the listed consumer override responsibilities; C4 executes and verifies those documented paths through its existing consumer proof, while C5/C6 retain guide authorship." ;
+ triage:authority "locked ANC-018; REQ-CRNC-0002; existing C5/C6 README ownership, compatibility-contract Supported defaults and consumer replacement, and C4 consumer proof; all predate tuned R1" ;
+ triage:verified_run "plan-20261104T064110Z-c-4" .
+
+# Recorded BEFORE source edits against actual R2 results.
+# ANC010 clear latest-release text is unchanged: validated review says no bead
+# edit indicated; both conflict answers are no with low confidence. No question
+# defect or permission to tune is inferred from that live result.
+
+triage:c_3_R2_ANC_015 a triage:Finding ;
+ triage:item "c-3" ; triage:anchor_id "ANC-015" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:action "replace" ; triage:run "plan-20261104T060612Z-c-3" ;
+ triage:sentence "Prepare generic CLI/HTTP/enabled-MCP projections that share c-1's versioned CronRequest JSON contract: `cron.start`, `cron.end`, `cron.list`." ;
+ triage:replacement "Implement public CLI/HTTP/enabled-MCP projection handlers, all using the same canonical versioned CronRequest JSON command contract; preserve transport-specific wrappers and defer actual default factory/root binding to c4." ;
+ triage:authority "locked ANC-015; REQ-CRNC-0001/0002; REQ-RUN-0332; ADR-CRNC-0001; existing C3 production projection closure; all predate R2 failed run" ;
+ triage:verified_run "plan-20261104T063341Z-c-3" .
+
+triage:c_4_R2_ANC_013 a triage:Finding ;
+ triage:item "c-4" ; triage:anchor_id "ANC-013" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:action "replace" ; triage:run "plan-20261104T060727Z-c-4" ;
+ triage:sentence "Publish `sc-runtime 0.2.0` only after c-5's dedicated compatibility sprint and c-3/c-6 implementation are complete and release is authorized." ;
+ triage:replacement "Before any publication complete c3/c5/c6 and required validation plus c4 checkout composition proofs; only then perform authorized dependency-ordered publication, then registry visibility and no-patch rerun." ;
+ triage:authority "locked ANC-013; existing C4 must_follow[c3,c5,c6], prepublication composition acceptance and required validation; REQ-RUN-0702; ADR-RUN-0402; all predate R2 failed run" ;
+ triage:verified_run "plan-20261104T064110Z-c-4" .
+
+triage:c_4_R2_ANC_018 a triage:Finding ;
+ triage:item "c-4" ; triage:anchor_id "ANC-018" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:action "replace" ;
+ triage:sentence "Follow c-6's selected-default README recipe and exercise c-5's public custom-store/schema example and application-owned-field proof in the existing generated and registry-only consumer fixtures using documented options/public APIs, without manual framework-source edits." ;
+ triage:replacement "Verify existing crates/sc-cron-commands/README.md and crates/sc-cron/README.md public integration paths and their explicit ScheduleStore/CronOperations/CronExecutor responsibility mapping through the existing consumer fixture; C5/C6 remain guide authors." ;
+ triage:authority "locked ANC-018 and ANC-017; REQ-CRNC-0002; existing compatibility-contract Supported defaults and consumer replacement and C4 guide-consumption proof; all predate C4R2; independent applicability review retains this obligation without duplicate guide authoring" ;
+ triage:verified_run "plan-20261104T064110Z-c-4" .
+

@@ -105,8 +105,15 @@ a newly generated consumer resolves it from crates.io without a checkout patch.
 
 ## Deliverables
 
-1. Use the existing authorization and publication workflow for `sc-runtime
-   0.2.0` and every affected package frozen by c-1. Change only canonical
+1. **Before any publication**, require completed c-3 runtime/ecosystem and
+   fixture work, c-5's dedicated cron compatibility work, and c-6's command
+   adapter work, with their required validation. Complete this sprint's
+   checkout-patched composition, schema, shared-UI, lifecycle and custom-store
+   proofs specified below. All must pass before publication; completed parent
+   work alone does not replace c-4's own prepublication proofs.
+2. **Authorized publication:** after stage 1, use the existing authorization
+   and publication workflow for `sc-runtime 0.2.0` and every affected package
+   frozen by c-1. Change only canonical
    `release/sc-publish-consumer-input.json` and the qualified exact
    `release/sc-publish-pin.toml`, then rerun its installer. Include its actual
    destination inventory in this sprint's release-owned paths; any additional
@@ -117,11 +124,12 @@ a newly generated consumer resolves it from crates.io without a checkout patch.
    Unaffected packages stay at 0.1.1 and are not republished. `v0.2.0` names
    the qualified affected-package release according to c-1's tag contract;
    do not infer credentials or publish authority from this plan.
-2. Wait for registry visibility, then generate the `sqlite-mcp` release-mode
+3. **Registry-only rerun:** after authorized dependency-ordered publication
+   and registry visibility, generate the `sqlite-mcp` release-mode
    fixture with no `[patch.crates-io]` entry and run its standard no-edit
    sequence: `just setup`, `just lint`, `just test`, `just build-cli`, and
    `just build-daemon`.
-3. Run locked `cargo metadata --format-version 1 --all-features` **only in the
+   Run locked `cargo metadata --format-version 1 --all-features` **only in the
    no-patch generated fixture**. Starting at the rendered `daemon` resolve ID,
    follow normal dependency edges and enforce exactly one reachable
    `(name, version, source)` tuple each for `rmcp`, `utoipa`, and
@@ -129,9 +137,10 @@ a newly generated consumer resolves it from crates.io without a checkout patch.
    affected cron version frozen by c-1, all from crates.io rather than path,
    git or patch sources. Assert unaffected packages retain their approved
    0.1.1 versions and no stale command RMCP type reaches the daemon.
-4. Store the authorization reference, publication reference, visibility
-   evidence, no-patch assertion, and package-identity receipt in the release
-   PR/check output.
+
+Store the authorization reference, publication reference, visibility evidence,
+no-patch assertion and package-identity receipt in the existing release PR/check
+output. No credentials or publish authority are granted by this plan.
 
 ## Acceptance criteria
 
@@ -162,16 +171,23 @@ at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
   Monty targets. The same request yields equivalent normalized data/error
   across actual UI projections; transport wrappers may differ.
   Exercise real schedule mutation/execution and generation conflicts.
-- Follow c-6's selected-default README recipe and exercise c-5's public custom-
-  store/schema example and application-owned-field proof in the existing
+- Follow c-6's `crates/sc-cron-commands/README.md` selected-default recipe and
+  exercise c-5's `crates/sc-cron/README.md` public custom-store/schema example
+  and application-owned-field proof in the existing
   generated and registry-only consumer fixtures using documented
   options/public APIs, without manual framework-source edits. Exercise selected
   cron/commands, bundled store, target registration, explicit worker startup,
   real commands and stop/physical join/outcomes; record the recipe revision.
-  Consumers may replace the store/schema through ScheduleStore and shutdown/
-  command policy through CronOperations or CronExecutor. Overrides are optional;
-  consumers own validation, cancellation, physical joins, persistence truth,
-  authorization and error mapping.
+  Verify these guides map ScheduleStore replacement to consumer schema,
+  validation, generation fencing and persistence truth; CronOperations to
+  application operations/shutdown, cancellation and physical joins; and
+  CronExecutor to command authorization, dispatch and error mapping. Overrides
+  remain optional and consumer-owned, with accurate errors/outcomes under their
+  selected policy. Release acceptance requires both named C-5/C-6 guides to
+  document a concrete supported public-API integration path, correct use of the
+  core libraries, and the consumer override responsibilities listed above.
+  C-5/C-6 retain guide authorship; c-4 executes and verifies those documented
+  paths and responsibility assertions through its existing consumer proof.
 - Prove default-off generation has no standard commands/adapter worker,
   DTO-only CLI graphs remain server/cron/SQLite/Monty free, scheduler/Monty
   enable only approved edges, disabled MCP stays disabled, and core runtime
