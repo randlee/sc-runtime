@@ -6,9 +6,10 @@ use std::sync::atomic::AtomicUsize;
 const WAIT: Duration = Duration::from_secs(5);
 
 fn port_zero_config() -> DaemonConfig {
-    let mut config = DaemonConfig::default();
-    config.endpoint_flag = Some("tcp:127.0.0.1:0".into());
-    config
+    DaemonConfig {
+        endpoint_flag: Some("tcp:127.0.0.1:0".into()),
+        ..DaemonConfig::default()
+    }
 }
 
 #[tokio::test]

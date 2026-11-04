@@ -55,3 +55,8 @@ required-features = ["test-util"]
 name = "signals"
 path = "tests/signals.rs"
 required-features = ["test-util"]
+
+[[test]]
+name = "windows_console"
+path = "tests/windows_console.rs"
+required-features = ["test-util"]
