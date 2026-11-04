@@ -246,8 +246,10 @@ impl<T: schemars::JsonSchema> schemars::JsonSchema for Envelope<T> {
 }
 
 #[cfg(feature = "schema")]
-impl<T: utoipa::ToSchema> utoipa::PartialSchema for Envelope<T> {
-    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+impl<T: utoipa::ToSchema> utoipa::__dev::ComposeSchema for Envelope<T> {
+    fn compose(
+        _: Vec<utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>>,
+    ) -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
         use utoipa::openapi::schema::{AdditionalProperties, ObjectBuilder, OneOfBuilder, Type};
         let object = || {
             ObjectBuilder::new()
@@ -295,5 +297,47 @@ impl<T: utoipa::ToSchema> utoipa::ToSchema for Envelope<T> {
     ) {
         schemas.push((T::name().into_owned(), T::schema()));
         T::schemas(schemas);
+    }
+}
+
+#[cfg(all(test, feature = "schema"))]
+mod typed_projection_schema {
+    use super::Envelope;
+    use utoipa::OpenApi;
+
+    #[derive(utoipa::ToSchema)]
+    struct Body {
+        value: String,
+    }
+
+    #[utoipa::path(post, path = "/typed", responses((status = 200, body = Envelope<Body>)))]
+    fn typed_route() {}
+
+    #[derive(utoipa::OpenApi)]
+    #[openapi(paths(typed_route))]
+    struct Api;
+
+    #[test]
+    fn actual_typed_path_preserves_generic_envelope_payload_schema() {
+        typed_route();
+        let body = Body {
+            value: "typed".into(),
+        };
+        assert_eq!(body.value, "typed");
+        let specification = serde_json::to_value(Api::openapi()).expect("OpenAPI");
+        let response = &specification["paths"]["/typed"]["post"]["responses"]["200"];
+        assert!(response.to_string().contains("Envelope_Body"));
+        let reference = response["content"]["application/json"]["schema"]["$ref"]
+            .as_str()
+            .expect("typed response schema reference");
+        let component = reference
+            .strip_prefix("#/components/schemas/")
+            .expect("component reference");
+        let schema = &specification["components"]["schemas"][component];
+        assert_eq!(
+            schema["oneOf"][0]["properties"]["data"]["properties"]["value"]["type"],
+            "string"
+        );
+        assert_eq!(schema["oneOf"][1]["properties"]["data"]["type"], "null");
     }
 }

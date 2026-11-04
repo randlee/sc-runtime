@@ -1,5 +1,9 @@
 //! Report-only CLI. `daemon start` is the one command that execs the daemon.
 
+{% if cron_commands %}
+pub mod cron_commands;
+{% endif %}
+
 use std::ffi::OsStr;
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -33,6 +37,17 @@ const DAEMON_EXEC_MESSAGE: &str = "the daemon binary could not be started";
 /// Parsed argv, excluding the program name.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Command {
+    {% if cron_commands %}
+    /// Standard cron request sent unchanged through the daemon boundary.
+    Cron {
+        /// Canonical version-1 JSON request.
+        request: Value,
+        /// Endpoint override.
+        endpoint: Option<String>,
+        /// Print the canonical JSON envelope.
+        json: bool,
+    },
+    {% endif %}
     /// Exec the daemon binary. Report-only commands never produce this.
     DaemonStart {
         /// `--json` was present.
@@ -158,6 +173,13 @@ struct CliArgs {
 
 #[derive(Subcommand, Debug)]
 enum CliCommand {
+    {% if cron_commands %}
+    /// Optional standard cron management commands.
+    Cron {
+        #[command(subcommand)]
+        action: cron_commands::CronAction,
+    },
+    {% endif %}
     /// Daemon process commands.
     Daemon {
         #[command(subcommand)]
@@ -238,6 +260,11 @@ pub fn parse(args: &[String]) -> Result<Command, ParseError> {
     let endpoint = parsed.endpoint;
     let json = parsed.json;
     let command = match parsed.command {
+        {% if cron_commands %}
+        CliCommand::Cron { action } => Command::Cron {
+            request: cron_commands::parse(action)?, endpoint, json,
+        },
+        {% endif %}
         CliCommand::Daemon {
             action: DaemonAction::Start,
         } => Command::DaemonStart { json },
@@ -294,6 +321,20 @@ pub fn map_transport(error: &TransportError) -> OpError {
 /// JSON envelope when `--json` is set.
 pub async fn execute(command: Command) -> (ExitCode, String) {
     let (endpoint_flag, json, path, body) = match command {
+        {% if cron_commands %}
+        Command::Cron { request, endpoint, json } => {
+            let parsed: sc_cron_commands::CronRequest = match serde_json::from_value(request) {
+                Ok(parsed) => parsed,
+                Err(_) => return usage_result("invalid versioned cron request"),
+            };
+            let path = match cron_commands::verb(&parsed) {
+                "cron.start" => "/ops/cron.start",
+                "cron.end" => "/ops/cron.end",
+                _ => "/ops/cron.list",
+            };
+            (endpoint, json, path, WidgetBody::Cron(parsed))
+        },
+        {% endif %}
         Command::DaemonStart { .. } => {
             return (
                 ExitCode::from(1),
@@ -545,6 +586,9 @@ fn exec_operation(error: &DaemonExecError) -> OpError {
 }
 
 enum WidgetBody {
+    {% if cron_commands %}
+    Cron(sc_cron_commands::CronRequest),
+    {% endif %}
     Create(CreateWidget),
     Get(GetWidget),
     #[cfg(feature = "general-db")]
@@ -559,6 +603,9 @@ impl Serialize for WidgetBody {
         S: serde::Serializer,
     {
         match self {
+            {% if cron_commands %}
+            Self::Cron(body) => body.serialize(serializer),
+            {% endif %}
             Self::Create(body) => body.serialize(serializer),
             Self::Get(body) => body.serialize(serializer),
             #[cfg(feature = "general-db")]

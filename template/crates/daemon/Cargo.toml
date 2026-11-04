@@ -11,9 +11,9 @@ rust-version.workspace = true
 
 [features]
 {% if db == "none" %}
-default = []
+default = [{% if cron %}"cron"{% endif %}]
 {% else %}
-default = ["general-db"]
+default = ["general-db"{% if cron %}, "cron"{% endif %}]
 {% endif %}
 general-db = []
 cron = ["dep:sc-cron", "dep:async-trait"]

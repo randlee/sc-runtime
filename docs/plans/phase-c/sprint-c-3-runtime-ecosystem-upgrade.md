@@ -364,3 +364,45 @@ results retain the analyzer's nonfatal trait-self-loop signals; no policy or
 severity was changed. Root formatting and strict all-target Clippy pass. Full
 consumer behavior and the remaining ecosystem/runtime deliverables are still
 in progress; this checkpoint does not claim sprint completion.
+
+### Ecosystem and runtime checkpoint
+
+The workspace now resolves RMCP 3.8.0, Utoipa 6.0.0 and Utoipa-Axum 0.3.0.
+Affected command, cron, runtime and adapter packages are 0.2.0; config,
+transport and db-sqlite remain 0.1.1. The isolated observability version/feature
+guard and its stale-version rejections pass. The SQLite resolver additionally
+requires one rusqlite 0.39.x, SQLx 0.9.x and native libsqlite3-sys 0.37.x.
+The former Utoipa5 router is intentionally rejected at the public routes seam.
+`tests/unit/generation/test_runtime_ecosystem_upgrade.py` supplies the actual
+locked normal-edge identity verifier for both workspace and daemon roots.
+
+The seven-method builder surface includes the frozen bound-endpoint callback;
+cleanup-capable fixtures use the existing runner and physically own their
+threads through startup/drop and queued joins. Native Windows CI at
+`5e81b533df32a5c35169fd2e4fabc847d726e5ca` passed 34 runtime tests and six real
+console scenarios: Ctrl-C and Ctrl-Break, each with an in-flight request,
+cleanup/instance-lock retention, same-root restart and an early store-setup
+signal. Mac runtime tests and strict Windows-target compilation also pass.
+
+Generic CLI/HTTP/MCP projections import the sole adapter DTOs, accept the
+application executor, and forward the runtime's original absolute request
+Instant through HTTP extensions/RMCP request parts. Schema activation stays on
+selected daemon/service edges. Utoipa's owner-local generic Envelope schema now
+supports actual typed path composition. Final selected root registration stays
+with C4; this checkpoint claims no real standard executor registration.
+
+Acceptance remains incomplete. `run-x8d.1.1` tracks the canonical Schemars root
+object missing from actual RMCP tools; C3 preserves the frozen adapter source
+and provides a tested owner patch separately. Apply the object marker only in
+the JsonSchema conversion: adding it to shared Utoipa input would discard its
+oneOf alternatives. `run-x8d.3.1` tracks duplicate raw MCP arguments collapsing
+into Value before DTO validation. The committed generated-projection regression
+keeps these failures visible. A temporary schema-only clone passed four initial
+UI projection checks; that diagnostic is not unmodified-source acceptance.
+
+C4's eventual publication order is command before cron/runtime, cron before
+cron-commands. Registry acceptance must verify all four exact 0.2.0 packages
+are visible, generate without SDK checkout patches, and rerun the same locked
+identity verifier from the runtime/daemon roots. The selective publish-kit
+qualification remains an open C1 requirement; no publication, qualified kit pin,
+registry-consumer success or sprint completion is claimed here.

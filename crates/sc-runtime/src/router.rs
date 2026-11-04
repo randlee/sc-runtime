@@ -345,15 +345,18 @@ pub(crate) fn with_request_timeout(
 }
 
 async fn enforce_deadlines(
-    request: Request,
+    mut request: Request,
     next: Next,
     limit: Duration,
     shutdown: &mut tokio::sync::watch::Receiver<bool>,
     drain: Duration,
 ) -> Response {
+    let deadline = tokio::time::Instant::now() + limit;
+    // Project HTTP/MCP adapters forward this same absolute deadline to their
+    // owned executor. Do not restart the request budget inside an operation.
+    request.extensions_mut().insert(deadline.into_std());
     let handler = next.run(request);
     tokio::pin!(handler);
-    let deadline = tokio::time::Instant::now() + limit;
     match tokio::time::timeout_at(
         deadline,
         race_handler_or_shutdown(handler.as_mut(), shutdown),
