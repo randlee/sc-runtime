@@ -1,11 +1,14 @@
 //! Windows bridge ownership; all waits inspect the std leader, never job ports.
-use process_wrap::std::{ChildWrapper, CommandWrap, JobObject};
+use process_wrap::std::{ChildWrapper, CommandWrap, CommandWrapper, JobObject};
 use std::io::{Read, Seek, SeekFrom};
 use std::os::windows::ffi::OsStrExt;
+use std::os::windows::io::AsRawHandle;
 use std::os::windows::process::ExitStatusExt;
 use std::path::Path;
 use std::process::{Command, ExitStatus, Output, Stdio};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
+use win32job::{ExtendedLimitInfo, Job};
 
 pub(super) const BRIDGE: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -15,30 +18,94 @@ pub(super) const BRIDGE: &str = concat!(
 const CLEANUP: Duration = Duration::from_secs(10);
 const POLL: Duration = Duration::from_millis(10);
 
+// win32job 2.0.3 exposes supported safe job membership queries, including
+// nested jobs: https://docs.rs/win32job/2.0.3/win32job/struct.Job.html .
+// It is a target-Windows dev dependency only; no SDK edge or unsafe is added.
+#[derive(Debug)]
+struct Membership(Arc<Job>);
+impl CommandWrapper for Membership {
+    fn post_spawn(
+        &mut self,
+        _: &mut Command,
+        child: &mut std::process::Child,
+        core: &CommandWrap,
+    ) -> std::io::Result<()> {
+        assert!(
+            core.has_wrap::<JobObject>(),
+            "assignment requires JobObject suspended spawn"
+        );
+        // All post_spawn hooks run before JobObject::wrap_child resumes the
+        // child. Its first instruction therefore already belongs to this job.
+        if let Err(error) = self.0.assign_process(child.as_raw_handle() as isize) {
+            child.kill()?;
+            let deadline = Instant::now() + CLEANUP;
+            while child.try_wait()?.is_none() {
+                if Instant::now() >= deadline {
+                    return Err(std::io::Error::other(
+                        "failed to reap suspended child after job assignment failure",
+                    ));
+                }
+                std::thread::sleep(POLL); // allow: bounded test-only suspended-child cleanup poll
+            }
+            return Err(std::io::Error::other(error));
+        }
+        Ok(())
+    }
+}
+
 struct Bridge {
     child: Box<dyn ChildWrapper>,
+    job: Arc<Job>,
     cleaned: bool,
+    cleanup_deadline: Option<Instant>,
 }
 impl Bridge {
+    fn spawn(command: Command) -> std::io::Result<Self> {
+        let mut limits = ExtendedLimitInfo::new();
+        limits.limit_kill_on_job_close();
+        let job = Arc::new(Job::create_with_limit_info(&limits).map_err(std::io::Error::other)?);
+        let mut wrapped = CommandWrap::from(command);
+        wrapped.wrap(Membership(Arc::clone(&job))).wrap(JobObject);
+        Ok(Self {
+            child: wrapped.spawn()?,
+            job,
+            cleaned: false,
+            cleanup_deadline: None,
+        })
+    }
+
     fn stop(&mut self) -> std::io::Result<()> {
+        self.stop_with(|job| job.query_process_id_list().map_err(std::io::Error::other))
+    }
+
+    // The private query seam permits deterministic unavailable/nonempty-proof
+    // fault injection. The actual stop path always queries the retained job.
+    fn stop_with(
+        &mut self,
+        mut members: impl FnMut(&Job) -> std::io::Result<Vec<usize>>,
+    ) -> std::io::Result<()> {
         if self.cleaned {
             return Ok(());
         }
-        self.cleaned = true;
+        let deadline = *self
+            .cleanup_deadline
+            .get_or_insert_with(|| Instant::now() + CLEANUP);
         self.child.start_kill()?;
-        let deadline = Instant::now() + CLEANUP;
         loop {
-            // JobObject::try_wait consumes completion notifications. Only the
-            // underlying std child is polled; no second job-port wait exists.
-            if self.child.inner_mut().try_wait()?.is_some() {
+            // Never consume completion-port messages. Empty membership is a
+            // genuine all-member job query, not a PID-absence heuristic.
+            let reaped = self.child.inner_mut().try_wait()?.is_some();
+            let empty = members(&self.job)?.is_empty();
+            if reaped && empty {
+                self.cleaned = true;
                 return Ok(());
             }
             if Instant::now() >= deadline {
                 return Err(std::io::Error::other(
-                    "bridge leader did not exit after job termination",
+                    "bridge job or leader did not physically exit before cleanup deadline",
                 ));
             }
-            std::thread::sleep(POLL);
+            std::thread::sleep(POLL); // allow: bounded test-only physical job completion poll
         }
     }
 }
@@ -89,12 +156,7 @@ pub(super) fn output(
         .stdin(Stdio::null())
         .stdout(Stdio::from(stdout.try_clone().expect("stdout clone")))
         .stderr(Stdio::from(stderr.try_clone().expect("stderr clone")));
-    let mut wrapped = CommandWrap::from(launcher);
-    wrapped.wrap(JobObject);
-    let mut owned = Bridge {
-        child: wrapped.spawn().expect("spawn owned bridge"),
-        cleaned: false,
-    };
+    let mut owned = Bridge::spawn(launcher).expect("spawn owned bridge");
     let mut expired = false;
     let mut status = loop {
         if let Some(status) = owned
@@ -109,7 +171,7 @@ pub(super) fn output(
             expired = true;
             break ExitStatus::from_raw(124);
         }
-        std::thread::sleep(POLL);
+        std::thread::sleep(POLL); // allow: bounded test-only bridge deadline poll
     };
     // A terminal bridge is inspected before emergency cleanup can conceal a
     // leaked target. Expiry instead requires cleanup before any observation.

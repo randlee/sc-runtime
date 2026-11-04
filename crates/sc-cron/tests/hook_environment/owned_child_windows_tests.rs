@@ -14,7 +14,7 @@ fn wait(path: &Path) {
             "missing readiness: {}",
             path.display()
         );
-        std::thread::sleep(POLL);
+        std::thread::sleep(POLL); // allow: bounded test-only causal readiness poll
     }
 }
 fn states(root: &Path, phase: &str) -> Vec<bool> {
@@ -45,12 +45,7 @@ fn witness(mode: &str) {
                 .stdin(Stdio::null())
                 .stdout(Stdio::null())
                 .stderr(Stdio::inherit());
-            let mut wrapped = CommandWrap::from(command);
-            wrapped.wrap(JobObject);
-            *observer.borrow_mut() = Some(Bridge {
-                child: wrapped.spawn().expect("observer"),
-                cleaned: false,
-            });
+            *observer.borrow_mut() = Some(Bridge::spawn(command).expect("observer"));
             wait(&root.path().join("observer-ready"));
             // All three process handles exist before release or expiry.
             std::fs::write(root.path().join("release"), b"release").expect("release target");
@@ -131,4 +126,63 @@ fn cleanup_omission_is_detected_before_emergency_release() {
 #[test]
 fn stalled_bridge_is_expired_and_physically_reaped_through_rust_entry() {
     witness("stall");
+}
+
+#[test]
+fn actual_stop_requires_empty_membership_and_rejects_omitted_proof() {
+    let spawn = || {
+        let mut command = Command::new(super::super::super::python_program());
+        command
+            .args(["-c", "import time; time.sleep(30)"])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        Bridge::spawn(command).expect("owned completion witness")
+    };
+    let mut owned = spawn();
+    let mut queries = 0;
+    owned
+        .stop_with(|job| {
+            queries += 1;
+            let actual = job.query_process_id_list().map_err(std::io::Error::other)?;
+            // A nonempty observation cannot establish completion even when the
+            // leader is already gone. Subsequent observations use the real job.
+            Ok(if queries == 1 {
+                vec![usize::MAX]
+            } else {
+                actual
+            })
+        })
+        .expect("wait for genuine empty membership");
+    assert!(
+        queries >= 2,
+        "leader-only return omitted the completion wait"
+    );
+    assert!(
+        owned
+            .job
+            .query_process_id_list()
+            .expect("actual empty job")
+            .is_empty()
+    );
+
+    let mut owned = spawn();
+    let proof =
+        owned.stop_with(|_| Err(std::io::Error::other("injected omitted completion proof")));
+    assert!(
+        proof.is_err(),
+        "owner returned success without physical completion proof"
+    );
+    // The emergency guard remains owned after rejection and uses the same
+    // absolute cleanup deadline to physically reclaim every member.
+    owned
+        .stop()
+        .expect("emergency completion after rejected proof");
+    assert!(
+        owned
+            .job
+            .query_process_id_list()
+            .expect("reclaimed job")
+            .is_empty()
+    );
 }

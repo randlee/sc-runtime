@@ -414,6 +414,187 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
+    },
+    {
+      "qa_pass": "qa-pr115-2",
+      "commit": "69bc1b083f04d3ac8fe79b0de71707c578528822",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6639034878",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/pr115_req_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/pr115_arch_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/pr115_rust_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FINDINGS",
+          "findings": {
+            "blocking": 0,
+            "important": 2,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/pr115_flaky_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FINDINGS",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/pr115-qa2.ttl"
+      ],
+      "finding_ids": [
+        "REQ-QA-002",
+        "QA-001",
+        "QA-002",
+        "FTQ-001"
+      ],
+      "coordinator_task_id": "/root/pr115_manager_qa2",
+      "machine_status": {
+        "sprint": "pr115-bounded-c5-hotfix",
+        "task": "qa-pr115-2",
+        "branch": "codex/cron-logging-facade-proposal",
+        "commit": "69bc1b083f04d3ac8fe79b0de71707c578528822",
+        "pr": 115,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 2,
+          "total": 3,
+          "percent": 66.67
+        },
+        "findings": {
+          "blocking": 1,
+          "important": 3,
+          "minor": 0
+        },
+        "blocking_ids": [
+          "REQ-QA-002"
+        ],
+        "merge_readiness": "not ready",
+        "merge_reason": "Four open finding IDs (1B+3I+0m), two underlying issues, and required Linux CI failure; no waivers.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/pr115_req_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/pr115_arch_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/pr115_rust_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FINDINGS",
+            "findings": {
+              "blocking": 0,
+              "important": 2,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/pr115_flaky_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FINDINGS",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-2",
+          "commit": "69bc1b083f04d3ac8fe79b0de71707c578528822",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/115#issuecomment-6639034878",
+          "coordinator_task_id": "/root/pr115_manager_qa2",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/pr115-qa1.ttl",
+              ".triage/c/findings/pr115-ci-repair.ttl"
+            ],
+            "new_round_triage_owner": "parent-orchestrator"
+          },
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "open_finding_ids": [
+            "REQ-QA-002",
+            "QA-001",
+            "QA-002",
+            "FTQ-001"
+          ],
+          "correlated_groups": [
+            [
+              "REQ-QA-002",
+              "QA-001"
+            ],
+            [
+              "QA-002",
+              "FTQ-001"
+            ]
+          ],
+          "central_screen": "all four not_applicable; no findings rejected or waived",
+          "scope": "bounded PR115 facade and CI hotfix; not full C5",
+          "ci": {
+            "windows": "SUCCESS",
+            "linux": "FAILURE; ADR-RUN-0011 three poll guards; Test skipped"
+          },
+          "model_execution": "Inherited available Codex fallback; Cursor Composer/Grok/Sonnet models not run"
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
     }
   ],
   "execution_branch": "integrate/phase-c"

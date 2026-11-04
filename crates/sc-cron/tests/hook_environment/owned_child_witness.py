@@ -94,13 +94,10 @@ def observe(root, mode):
         for phase in ('before', 'after'):
             until(root / phase)
             states = []
-            deadline = time.monotonic() + 5
             for handle in handles:
-                # Normal/omission observations are immediate and unmasked.
-                # A job kill initiates termination: retain each identity handle
-                # and await actual exit, without a guessed post-kill sleep.
-                milliseconds = max(0, int((deadline - time.monotonic()) * 1000)) if phase == 'after' or mode == 'stall' else 0
-                result = kernel.WaitForSingleObject(handle, milliseconds)
+                # No compensating wait: the real owner must have completed
+                # the entire job before its return/probe boundary.
+                result = kernel.WaitForSingleObject(handle, 0)
                 if result not in (0, 258):
                     raise ctypes.WinError(ctypes.get_last_error())
                 states.append(result == 0)
