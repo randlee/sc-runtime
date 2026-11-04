@@ -242,10 +242,10 @@ impl Store {
             sqlx::Error::PoolTimedOut | sqlx::Error::PoolClosed | sqlx::Error::Io(_)
         ) || err.as_database_error().is_some_and(|db| {
             db.code()
-                .is_some_and(|code| TRANSIENT_SQLSTATES.contains(&code.as_ref()))
+                .is_some_and(|code| Self::TRANSIENT_SQLSTATES.contains(&code.as_ref()))
                 || db
                     .try_downcast_ref::<sqlx::mysql::MySqlDatabaseError>()
-                    .is_some_and(|mysql| TRANSIENT_ERRNOS.contains(&mysql.number()))
+                    .is_some_and(|mysql| Self::TRANSIENT_ERRNOS.contains(&mysql.number()))
         })
     }
 
