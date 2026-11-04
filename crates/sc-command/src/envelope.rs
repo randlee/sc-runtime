@@ -248,12 +248,36 @@ impl<T: schemars::JsonSchema> schemars::JsonSchema for Envelope<T> {
 #[cfg(feature = "schema")]
 impl<T: utoipa::ToSchema> utoipa::PartialSchema for Envelope<T> {
     fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
-        let value = envelope_schema(
-            serde_json::to_value(T::schema()).expect("payload schema serializes"),
-            serde_json::to_value(<OpError as utoipa::PartialSchema>::schema())
-                .expect("error schema serializes"),
-        );
-        serde_json::from_value(value).expect("canonical Envelope schema is valid OpenAPI")
+        use utoipa::openapi::schema::{AdditionalProperties, ObjectBuilder, OneOfBuilder, Type};
+        let object = || {
+            ObjectBuilder::new()
+                .schema_type(Type::Object)
+                .additional_properties(Some(AdditionalProperties::FreeForm(false)))
+                .required("version")
+                .required("ok")
+                .required("data")
+                .required("error")
+                .property("version", <String as utoipa::PartialSchema>::schema())
+        };
+        let success = object()
+            .property(
+                "ok",
+                ObjectBuilder::new()
+                    .schema_type(Type::Boolean)
+                    .enum_values(Some([true])),
+            )
+            .property("data", T::schema())
+            .property("error", ObjectBuilder::new().schema_type(Type::Null));
+        let failure = object()
+            .property(
+                "ok",
+                ObjectBuilder::new()
+                    .schema_type(Type::Boolean)
+                    .enum_values(Some([false])),
+            )
+            .property("data", ObjectBuilder::new().schema_type(Type::Null))
+            .property("error", <OpError as utoipa::PartialSchema>::schema());
+        OneOfBuilder::new().item(success).item(failure).into()
     }
 }
 

@@ -88,3 +88,15 @@ fn environment_wire_matches_core_and_rejects_duplicate_names() {
     let duplicate = r#"{"dotenv":[],"variables":{"MODE":{"set":"a"},"MODE":{"set":"b"}}}"#;
     assert!(serde_json::from_str::<sc_cron_commands::EnvironmentPolicy>(duplicate).is_err());
 }
+
+#[cfg(feature = "schema")]
+#[test]
+fn canonical_envelope_schema_accepts_arbitrary_json_payload_types() {
+    let schema = <sc_command::Envelope<serde_json::Value> as utoipa::PartialSchema>::schema();
+    let json = serde_json::to_value(schema).expect("generic envelope schema");
+    assert_eq!(
+        json["oneOf"][0]["properties"]["data"],
+        serde_json::json!({})
+    );
+    assert_eq!(json["oneOf"][1]["properties"]["data"]["type"], "null");
+}
