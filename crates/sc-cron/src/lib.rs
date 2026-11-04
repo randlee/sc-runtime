@@ -94,7 +94,18 @@
 #![warn(unreachable_pub)]
 
 mod clock;
+pub mod consumer_contract;
 mod coord;
+#[cfg(feature = "test-utils")]
+#[doc(inline)]
+pub use consumer_contract::operation_context_probe;
+#[doc(inline)]
+pub use consumer_contract::{
+    CommitAdmission, CronOperationFuture, CronOperations, EndSchedule, EndedSchedule,
+    PersistenceOutcome, SchedulePage, ScheduleQuery, ScheduleSelection, ShutdownBudget,
+    ShutdownReport, ShutdownStatus, StoreOperationContext, StoreOperationSupport,
+    TransactionOutcome,
+};
 mod environment;
 mod error;
 pub use environment::{
