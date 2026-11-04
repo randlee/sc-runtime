@@ -188,7 +188,7 @@ impl Store {
         ) || err
             .as_database_error()
             .and_then(sqlx::error::DatabaseError::code)
-            .is_some_and(|code| TRANSIENT_SQLSTATES.contains(&code.as_ref()))
+            .is_some_and(|code| Self::TRANSIENT_SQLSTATES.contains(&code.as_ref()))
     }
 
     fn constraint_violation(err: &sqlx::Error) -> bool {
