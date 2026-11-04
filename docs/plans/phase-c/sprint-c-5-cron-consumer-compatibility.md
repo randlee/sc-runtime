@@ -55,10 +55,13 @@ Merge every c-1 development push before each development/fix round. Parent
 QA does not delay development; c-1 merges before this PR completes. Consume
 the signatures, error policy, clock/budget policy and query contract frozen
 by c-1. c-3 alone changes later shared ecosystem manifests and Cargo.lock.
-C-1 first enables rusqlite 0.39 `bundled,hooks` and qualifies interrupt/busy/
+C-1 first enables rusqlite 0.39.x `bundled,hooks` and qualifies interrupt/busy/
 progress facilities with its lock baseline; c-3 retains these features during
-migration. C-5 compiles against that committed prerequisite and owns no shared
-manifest edits or dependency on an uncommitted c-3 feature change.
+migration.
+C-5 preserves that qualified version/features in its SQLite implementation and
+isolated consumer manifest/lock, with no rusqlite/SQLx/libsqlite3-sys version
+upgrade. It compiles against c-1's committed prerequisite, with no shared manifest
+edits or dependency on an uncommitted c-3 feature change.
 
 ## Deliverables
 
@@ -178,4 +181,6 @@ it does not alter shared workspace/template manifests.
 
 Consumer beads-cache migration or QA, runtime signals/fixtures (c-3), standard
 command DTO/handler boundary (c-6), generated UI command composition and registry
-publication (c-4). The last requires c-3, c-5 and c-6 real artifacts together.
+publication (c-4). C-5 is Phase C's dedicated compatibility sprint and completes before c-4
+publishes sc-runtime 0.2.0, alongside its existing c-3/c-6 real-artifact
+prerequisites.

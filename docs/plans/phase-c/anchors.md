@@ -39,6 +39,12 @@ Scope: c-2 generated consumer setup and any plan item that installs the consumer
 
 Deterministic check to pair with the development gate: A generated fixture runs just setup, ordinary just lint, and named default and full profiles while its receipt records sc-boundary, sc-portability, and sc-runtime.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-3`: C-3 upgrades runtime/projection code; consumer lint toolchain installation is owned by C-2.
+- `c-4`: C-4 verifies runtime composition/publication; it does not install the consumer lint toolchain owned by C-2.
+- `c-5`: C-5 implements cron behavior and consumer examples; it does not install lint tools.
+- `c-6`: C-6 is the command-adapter boundary, not consumer lint installation.
+
 Beads: anchor `run-32b`, plan questions `run-32b.1`, dev questions `run-32b.2`
 
 Fixtures:
@@ -78,6 +84,12 @@ Summary: Repository and template share sc-lint 0.8.4
 Scope: the c-1 consumer contract and c-2 template lint profile sprints
 
 Deterministic check to pair with the development gate: The root and template sc-lint configuration require 0.8.4, and each bootstrap path installs or verifies that version.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-3`: This anchor scope explicitly names C-1 and C-2; C-3 does not select the repository/template sc-lint version.
+- `c-4`: This anchor scope names C-1/C-2 sc-lint version selection, not C-4 runtime publication.
+- `c-5`: The sc-lint version anchor explicitly governs C-1/C-2, not C-5 cron code or fixtures.
+- `c-6`: The sc-lint version scope explicitly names C-1/C-2, not C-6.
 
 Beads: anchor `run-83r`, plan questions `run-83r.1`, dev questions `run-83r.2`
 
@@ -139,6 +151,11 @@ Scope: the c-3 runtime ecosystem upgrade sprint and any plan item that changes C
 
 Deterministic check to pair with the development gate: Cargo metadata and the SQLite resolver test show rusqlite 0.39.x and libsqlite3-sys 0.37 with no libsqlite3-sys 0.38.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: C-2 installs lint tools and consumer policies; it does not change rusqlite, sqlx or libsqlite3-sys dependency versions.
+- `c-4`: C-4 consumes the frozen dependency graph and owns no manifest selecting or changing rusqlite/sqlx/libsqlite3-sys versions.
+- `c-6`: C-6 owns adapter source/tests/docs and no manifest changing rusqlite/sqlx/libsqlite3-sys versions; C-1/C-3 own that baseline.
+
 Beads: anchor `run-ioz`, plan questions `run-ioz.1`, dev questions `run-ioz.2`
 
 Fixtures:
@@ -160,6 +177,12 @@ Scope: c-1 consumer policy contract and c-2 fresh-install implementation
 
 Deterministic check to pair with the development gate: Generate supported consumer configurations and verify their emitted policy matches selected crates and edges.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-3`: Default consumer boundaries-policy generation is owned by C-1/C-2; C-3 does not implement it.
+- `c-4`: Fresh-install boundaries-policy generation is C-1/C-2 work, not C-4 runtime composition.
+- `c-5`: C-5 does not generate consumer boundaries policies; that is C-1/C-2 scope.
+- `c-6`: C-6 does not implement fresh-install boundaries-policy generation.
+
 Beads: anchor `run-a7e`, plan questions `run-a7e.1`, dev questions `run-a7e.2`
 
 Fixtures:
@@ -179,6 +202,12 @@ Summary: Consumer-owned boundaries policy
 Scope: c-1 consumer policy ownership contract and c-2 generated policy handoff
 
 Deterministic check to pair with the development gate: Generated policy lives in the consumer repository and documented setup identifies the consumer as owner.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-3`: Consumer boundaries-policy ownership is explicitly scoped to C-1/C-2, not C-3 runtime upgrades.
+- `c-4`: The existing policy-ownership scope names C-1/C-2; C-4 owns no consumer policy handoff.
+- `c-5`: C-5 does not manage consumer boundaries-policy handoff or subsequent policy decisions.
+- `c-6`: C-6 does not own consumer boundaries-policy handoff or later policy decisions.
 
 Beads: anchor `run-81q`, plan questions `run-81q.1`, dev questions `run-81q.2`
 
@@ -200,6 +229,12 @@ Scope: the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints
 
 Deterministic check to pair with the development gate: Verify the c-1 dated registry query and frozen rmcp version used by the runtime/template graph.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: The existing scope assigns RMCP version selection/upgrades to C-1 and C-3, not the C-2 lint profile.
+- `c-4`: The existing RMCP upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions.
+- `c-5`: RMCP version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts.
+- `c-6`: The existing RMCP version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior.
+
 Beads: anchor `run-qt3`, plan questions `run-qt3.1`, dev questions `run-qt3.2`
 
 Fixtures:
@@ -219,6 +254,12 @@ Summary: upgrade utoipa to its latest released version.
 Scope: the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints
 
 Deterministic check to pair with the development gate: Verify the c-1 dated registry query and frozen utoipa version used by the runtime/template graph.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: The existing scope assigns Utoipa version selection/upgrades to C-1 and C-3, not the C-2 lint profile.
+- `c-4`: The existing Utoipa upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions.
+- `c-5`: Utoipa version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts.
+- `c-6`: The existing Utoipa version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior.
 
 Beads: anchor `run-evb`, plan questions `run-evb.1`, dev questions `run-evb.2`
 
@@ -278,6 +319,10 @@ Summary: Compatibility precedes publication
 
 Scope: Phase C compatibility completion and the 0.2.0 publication handoff
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: C-2 owns the independent lint profile, not the dedicated C-5 compatibility completion or C-4 publication handoff.
+- `c-6`: C-6 closes the adapter boundary and explicitly excludes publication; C-5 owns dedicated compatibility completion and C-4 enforces its publication precedence.
+
 Beads: anchor `run-299`, plan questions `run-299.1`, dev questions `run-299.2`
 
 Fixtures:
@@ -295,6 +340,10 @@ Said by randlee, Proposed only at the explicit user request to finalize anchors.
 Summary: Optional standard cron commands
 
 Scope: Standard cron command-set adoption and composition
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: C-2 does not adopt or compose cron commands; that contract/adapter/composition work belongs to C-1/C-6/C-4.
+- `c-5`: C-5 owns cron core/store behavior; optional standard-command adoption/composition is C-1/C-6/C-4 work.
 
 Beads: anchor `run-8co`, plan questions `run-8co.1`, dev questions `run-8co.2`
 
@@ -314,6 +363,10 @@ Summary: Shared cron JSON contract
 
 Scope: Supported cron UI JSON command contracts
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: C-2 installs analyzers and boundaries policy, not cron UI JSON projections.
+- `c-5`: C-5 has no CLI/HTTP/MCP standard JSON projections; the adapter and composition owners are C-6/C-4.
+
 Beads: anchor `run-m9k`, plan questions `run-m9k.1`, dev questions `run-m9k.2`
 
 Fixtures:
@@ -331,6 +384,10 @@ Said by randlee, Proposed only at the explicit user request to finalize anchors.
 Summary: Common schedule-management subcommands across handlers
 
 Scope: Standard cron subcommand vocabulary and handler-kind selection
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: C-2 has no cron management verbs or Rust/Python/Monty target selection.
+- `c-5`: C-5 does not implement the standard management-command vocabulary or its target-selection UI; C-6/C-4 do.
 
 Beads: anchor `run-fwe`, plan questions `run-fwe.1`, dev questions `run-fwe.2`
 
@@ -350,6 +407,9 @@ Summary: Supported consumer overrides
 
 Scope: Core-library integration hooks for consumer store/schema and shutdown policy
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: C-2 policy ownership is covered by ANC-008; it does not replace core-library stores, schemas or shutdown policies.
+
 Beads: anchor `run-ifo`, plan questions `run-ifo.1`, dev questions `run-ifo.2`
 
 Fixtures:
@@ -367,6 +427,10 @@ Said by randlee, Proposed only at the explicit user request to finalize anchors.
 Summary: Documented integration and override responsibilities
 
 Scope: Default and extension integration guides and consumer responsibilities
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-2`: C-2 documents lint setup and policy ownership, not the core-library default/override integration guides.
+- `c-3`: Default/override guides are owned by C-5/C-6 and consumed by C-4; C-3 owns code/projection fixtures, not those guides.
 
 Beads: anchor `run-c5i`, plan questions `run-c5i.1`, dev questions `run-c5i.2`
 

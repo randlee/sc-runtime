@@ -45,15 +45,17 @@ Independent audit permits the published default questions, and all thirteen
 semantic planning fixture pairs passed. Failed experimental calibration does
 not prohibit those defaults or require an upstream repair before plan review.
 
-The actual first c-1 run failed six underspecified cells. A focused wording
-revision, recorded before editing in six authority-linked to_fix entries,
-clarifies latest rmcp/utoipa selection, optional shared cron commands/common
-verbs and consumer replacement responsibilities. That c-1 revision awaits
-rerun; the earlier scope/critical PASS remains tied to bbd64de. C-2/C-3 egress
-was automatically rejected despite committed consent, with explicit destination
-approval pending. No actual full-plan PASS, completed coverage or formal QA2/3
-is claimed. [Current anchor status](current-plan-anchor-results.md) records
-the current checks and execution block; raw evidence remains local.
+First live reviews have now completed for all six sprint plans. C-1's first
+fix reduced six underspecified cells to two. Further scoped clarity edits to
+C-1/C-3/C-4/C-5 and 38 documented item-specific exclusions retain existing
+requirements, owner boundaries and the six-sprint DAG; pre-edit to_fix records
+trace the replacements to locked authority. C-4 retains same-request normalized
+data/error parity and real public custom-store/application-field proof.
+All six plan/anchor/fixture egress destinations are now explicitly approved.
+Reruns are pending or in progress; no final full-plan PASS, completed coverage
+or formal QA2/3 is claimed. Earlier scope/critical PASS remains tied to bbd64de.
+[Current anchor status](current-plan-anchor-results.md) records this checkpoint;
+raw evidence remains local.
 
 Per the human instruction to publish typical reports rather than diagnostic
 logs or test results, this is a concise review summary. The cancelled broad

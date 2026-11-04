@@ -133,9 +133,9 @@ PR completes.
 ## Goal
 
 Upgrade the runtime's RMCP and OpenAPI ecosystem without creating two type
-universes in the generated application. The completed consumer must use the
-exact stable compatible versions frozen by `c-1` (the current planning
-candidates are RMCP 3.8.0, Utoipa 6.0.0, and Utoipa-Axum 0.3.0) and produces
+universes in the generated application. Upgrade RMCP and Utoipa to the exact
+latest releases returned by c-1's dated crates.io query and frozen in its
+ADR-RUN-0203 matrix, with the matching Utoipa-Axum release. Produce
 the complete checkout-patched prepublication proof for `sc-runtime 0.2.0`. The separately
 authorized `c-4` owns publication and registry consumption.
 The upgrade explicitly leaves the rusqlite/sqlx compatibility boundary intact.
@@ -143,16 +143,16 @@ The upgrade explicitly leaves the rusqlite/sqlx compatibility boundary intact.
 ## Upgrade contract
 
 Before editing manifests, consume the binding `c-1` amendment to
-**ADR-RUN-0203**. It replaces the old 0.2/5.5.0/3.7 evidence matrix with the
-exact Utoipa/RMCP matrix, including exact package-identity counts;
+**ADR-RUN-0203**. It freezes the dated latest-release Utoipa/RMCP matrix,
+including resolved-version equality and exact package-identity counts;
 this sprint may not leave the obsolete pin evidence active. The implementation
 must satisfy that amendment:
 
 - `sc_runtime::DaemonBuilder` continues to accept/compose the ordinary
   Utoipa-Axum router type; the public type moves as one unit from Utoipa 5 to
-  the approved Utoipa 6 family.
+  the probe-selected Utoipa release family.
 - RMCP remains an optional server capability with the existing stateless
-  streamable HTTP behavior. Any 3.8 API migration stays inside the current
+  streamable HTTP behavior. Released API migration stays inside the current
   runtime and generated MCP composition seams; it does not introduce a
   framework command registry or a public wrapper around RMCP.
 - A 0.1.x consumer using the Utoipa 5 `OpenApiRouter` is not source
@@ -163,9 +163,10 @@ must satisfy that amendment:
 
 ## Deliverables
 
-1. Use the exact stable versions selected and frozen by `c-1` in
-   ADR-RUN-0203. A later replacement is out of scope unless its owner first
-   amends that ADR and reruns the `c-1` contract probe; prereleases are
+1. Upgrade to c-1's exact latest released RMCP and Utoipa versions from its
+   dated query, frozen in ADR-RUN-0203. Locked resolved versions must equal
+   that matrix; mismatch fails. A replacement requires its owner first to
+   amend that ADR and rerun the `c-1` contract probe; prereleases are
    excluded.
 2. Update every direct root and template manifest that shares the runtime
    composition: `rmcp`, `utoipa`, and `utoipa-axum`. Update source for the
@@ -204,7 +205,10 @@ must satisfy that amendment:
    package version and dependency order, qualified selective-publish kit pin,
    no-patch fixture recipe, exact graph assertion, and registry
    visibility predicate. This sprint does not publish and does not claim a
-   release-mode registry result.
+   release-mode registry result. C-5 is the dedicated cron compatibility sprint;
+   c-4's existing c-3/c-5/c-6 prerequisites require its completion before 0.2.0
+   publication. This handoff does not authorize publication or make c-3 wait
+   for sibling implementation/QA before completing its own work.
 
 ## Acceptance criteria
 
@@ -249,11 +253,17 @@ REQ-RUN-0332/REQ-CRNC-0002, consuming c-1's compatibility contract:
   with client/accessors/health. Causal competing bind to the same owned endpoint
   fails before readiness; planted reserve/drop handoff permits takeover. No
   pre-bind success receipt, weakened real-signal test or implicit endpoint change.
-- Prepare generic CLI/HTTP/optional-MCP projections taking Arc<dyn CronExecutor>
-  and forwarding the sole CronRequest/deadline through c-1's contract. Test
-  them using the canonical executor double copied only to generated tests/
-  support; no production double exports or concrete StandardCronExecutor import.
-  Default-off generation remains functional. Actual selected factory/root
+- Prepare generic CLI/HTTP/enabled-MCP projections that share c-1's versioned
+  CronRequest JSON contract: `cron.start`, `cron.end`, `cron.list`. The same
+  start/end/list schedule-management verbs apply to Rust, Python and optional
+  Monty target selections through that contract's options. Consumers may omit
+  the entire command set (`cron_commands=false`, default); then no standard
+  cron commands are required. Forward request/deadline to an application-supplied
+  Arc<dyn CronExecutor>, letting consumers replace default command/lifecycle/
+  error behavior with their owned implementation and responsibilities from c-1.
+  Preserve opaque application Stores pass-through (REQ-RT-0003). Test with the
+  canonical executor double copied only into generated tests/support, never
+  production exports; no concrete StandardCronExecutor import. Actual factory/root
   registration is c-4 after real c-5/c-6 artifacts exist; this sprint does not
   enable incomplete selected commands or claim their production acceptance.
   Core runtime gains no cron dependency and MCP remains independently selected.

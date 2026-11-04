@@ -83,6 +83,52 @@
             "scope"
           ],
           "previous_statement": "A generated consumer repository must have the full sc-lint toolchain installed."
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "C-3 upgrades runtime/projection code; consumer lint toolchain installation is owned by C-2.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "C-4 verifies runtime composition/publication; it does not install the consumer lint toolchain owned by C-2.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 implements cron behavior and consumer examples; it does not install lint tools.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 is the command-adapter boundary, not consumer lint installation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-3",
+          "reason": "C-3 upgrades runtime/projection code; consumer lint toolchain installation is owned by C-2."
+        },
+        {
+          "item": "c-4",
+          "reason": "C-4 verifies runtime composition/publication; it does not install the consumer lint toolchain owned by C-2."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 implements cron behavior and consumer examples; it does not install lint tools."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 is the command-adapter boundary, not consumer lint installation."
         }
       ]
     },
@@ -215,6 +261,52 @@
           "status": "locked",
           "approved_by": "randlee",
           "approval": "User explicitly approved the Phase C anchor statements and fixture packet in this session."
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "This anchor scope explicitly names C-1 and C-2; C-3 does not select the repository/template sc-lint version.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "This anchor scope names C-1/C-2 sc-lint version selection, not C-4 runtime publication.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "The sc-lint version anchor explicitly governs C-1/C-2, not C-5 cron code or fixtures.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "The sc-lint version scope explicitly names C-1/C-2, not C-6.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-3",
+          "reason": "This anchor scope explicitly names C-1 and C-2; C-3 does not select the repository/template sc-lint version."
+        },
+        {
+          "item": "c-4",
+          "reason": "This anchor scope names C-1/C-2 sc-lint version selection, not C-4 runtime publication."
+        },
+        {
+          "item": "c-5",
+          "reason": "The sc-lint version anchor explicitly governs C-1/C-2, not C-5 cron code or fixtures."
+        },
+        {
+          "item": "c-6",
+          "reason": "The sc-lint version scope explicitly names C-1/C-2, not C-6."
         }
       ]
     },
@@ -427,6 +519,41 @@
             "statement"
           ],
           "previous_statement": "Phase C must keep rusqlite on the 0.39 release line."
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 installs lint tools and consumer policies; it does not change rusqlite, sqlx or libsqlite3-sys dependency versions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "C-4 consumes the frozen dependency graph and owns no manifest selecting or changing rusqlite/sqlx/libsqlite3-sys versions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 owns adapter source/tests/docs and no manifest changing rusqlite/sqlx/libsqlite3-sys versions; C-1/C-3 own that baseline.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 installs lint tools and consumer policies; it does not change rusqlite, sqlx or libsqlite3-sys dependency versions."
+        },
+        {
+          "item": "c-4",
+          "reason": "C-4 consumes the frozen dependency graph and owns no manifest selecting or changing rusqlite/sqlx/libsqlite3-sys versions."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 owns adapter source/tests/docs and no manifest changing rusqlite/sqlx/libsqlite3-sys versions; C-1/C-3 own that baseline."
         }
       ]
     },
@@ -481,6 +608,52 @@
             "plan_questions": "run-a7e.1",
             "dev_questions": "run-a7e.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "Default consumer boundaries-policy generation is owned by C-1/C-2; C-3 does not implement it.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "Fresh-install boundaries-policy generation is C-1/C-2 work, not C-4 runtime composition.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 does not generate consumer boundaries policies; that is C-1/C-2 scope.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 does not implement fresh-install boundaries-policy generation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-3",
+          "reason": "Default consumer boundaries-policy generation is owned by C-1/C-2; C-3 does not implement it."
+        },
+        {
+          "item": "c-4",
+          "reason": "Fresh-install boundaries-policy generation is C-1/C-2 work, not C-4 runtime composition."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 does not generate consumer boundaries policies; that is C-1/C-2 scope."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 does not implement fresh-install boundaries-policy generation."
         }
       ]
     },
@@ -543,6 +716,52 @@
             "statement"
           ],
           "previous_statement": "After fresh setup, the generated boundaries policy must be owned by the consumer repository."
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "Consumer boundaries-policy ownership is explicitly scoped to C-1/C-2, not C-3 runtime upgrades.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "The existing policy-ownership scope names C-1/C-2; C-4 owns no consumer policy handoff.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 does not manage consumer boundaries-policy handoff or subsequent policy decisions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 does not own consumer boundaries-policy handoff or later policy decisions.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-3",
+          "reason": "Consumer boundaries-policy ownership is explicitly scoped to C-1/C-2, not C-3 runtime upgrades."
+        },
+        {
+          "item": "c-4",
+          "reason": "The existing policy-ownership scope names C-1/C-2; C-4 owns no consumer policy handoff."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 does not manage consumer boundaries-policy handoff or subsequent policy decisions."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 does not own consumer boundaries-policy handoff or later policy decisions."
         }
       ]
     },
@@ -597,6 +816,52 @@
             "plan_questions": "run-qt3.1",
             "dev_questions": "run-qt3.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "The existing scope assigns RMCP version selection/upgrades to C-1 and C-3, not the C-2 lint profile.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "The existing RMCP upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "RMCP version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "The existing RMCP version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "The existing scope assigns RMCP version selection/upgrades to C-1 and C-3, not the C-2 lint profile."
+        },
+        {
+          "item": "c-4",
+          "reason": "The existing RMCP upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions."
+        },
+        {
+          "item": "c-5",
+          "reason": "RMCP version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts."
+        },
+        {
+          "item": "c-6",
+          "reason": "The existing RMCP version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior."
         }
       ]
     },
@@ -651,6 +916,52 @@
             "plan_questions": "run-evb.1",
             "dev_questions": "run-evb.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "The existing scope assigns Utoipa version selection/upgrades to C-1 and C-3, not the C-2 lint profile.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-4",
+          "reason": "The existing Utoipa upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "Utoipa version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "The existing Utoipa version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "The existing scope assigns Utoipa version selection/upgrades to C-1 and C-3, not the C-2 lint profile."
+        },
+        {
+          "item": "c-4",
+          "reason": "The existing Utoipa upgrade scope names C-1/C-3; C-4 consumes their frozen matrix without selecting upgrade versions."
+        },
+        {
+          "item": "c-5",
+          "reason": "Utoipa version selection/upgrades are assigned to C-1/C-3; C-5 uses their existing contracts."
+        },
+        {
+          "item": "c-6",
+          "reason": "The existing Utoipa version-selection/upgrade scope is C-1/C-3, not C-6 adapter behavior."
         }
       ]
     },
@@ -830,6 +1141,30 @@
             "plan_questions": "run-299.1",
             "dev_questions": "run-299.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 owns the independent lint profile, not the dedicated C-5 compatibility completion or C-4 publication handoff.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 closes the adapter boundary and explicitly excludes publication; C-5 owns dedicated compatibility completion and C-4 enforces its publication precedence.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 owns the independent lint profile, not the dedicated C-5 compatibility completion or C-4 publication handoff."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 closes the adapter boundary and explicitly excludes publication; C-5 owns dedicated compatibility completion and C-4 enforces its publication precedence."
         }
       ]
     },
@@ -901,6 +1236,30 @@
             "plan_questions": "run-8co.1",
             "dev_questions": "run-8co.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 does not adopt or compose cron commands; that contract/adapter/composition work belongs to C-1/C-6/C-4.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 owns cron core/store behavior; optional standard-command adoption/composition is C-1/C-6/C-4 work.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 does not adopt or compose cron commands; that contract/adapter/composition work belongs to C-1/C-6/C-4."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 owns cron core/store behavior; optional standard-command adoption/composition is C-1/C-6/C-4 work."
         }
       ]
     },
@@ -972,6 +1331,30 @@
             "plan_questions": "run-m9k.1",
             "dev_questions": "run-m9k.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:22+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 installs analyzers and boundaries policy, not cron UI JSON projections.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 has no CLI/HTTP/MCP standard JSON projections; the adapter and composition owners are C-6/C-4.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 installs analyzers and boundaries policy, not cron UI JSON projections."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 has no CLI/HTTP/MCP standard JSON projections; the adapter and composition owners are C-6/C-4."
         }
       ]
     },
@@ -1052,6 +1435,30 @@
             "plan_questions": "run-fwe.1",
             "dev_questions": "run-fwe.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 has no cron management verbs or Rust/Python/Monty target selection.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:24+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 does not implement the standard management-command vocabulary or its target-selection UI; C-6/C-4 do.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 has no cron management verbs or Rust/Python/Monty target selection."
+        },
+        {
+          "item": "c-5",
+          "reason": "C-5 does not implement the standard management-command vocabulary or its target-selection UI; C-6/C-4 do."
         }
       ]
     },
@@ -1123,6 +1530,19 @@
             "plan_questions": "run-ifo.1",
             "dev_questions": "run-ifo.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 policy ownership is covered by ANC-008; it does not replace core-library stores, schemas or shutdown policies.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 policy ownership is covered by ANC-008; it does not replace core-library stores, schemas or shutdown policies."
         }
       ]
     },
@@ -1194,6 +1614,30 @@
             "plan_questions": "run-c5i.1",
             "dev_questions": "run-c5i.2"
           }
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 documents lint setup and policy ownership, not the core-library default/override integration guides.",
+          "replaced": false
+        },
+        {
+          "at": "2026-11-04T06:02:23+00:00",
+          "event": "excluded",
+          "item": "c-3",
+          "reason": "Default/override guides are owned by C-5/C-6 and consumed by C-4; C-3 owns code/projection fixtures, not those guides.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-2",
+          "reason": "C-2 documents lint setup and policy ownership, not the core-library default/override integration guides."
+        },
+        {
+          "item": "c-3",
+          "reason": "Default/override guides are owned by C-5/C-6 and consumed by C-4; C-3 owns code/projection fixtures, not those guides."
         }
       ]
     }

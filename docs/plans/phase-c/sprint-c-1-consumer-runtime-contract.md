@@ -171,17 +171,17 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
    schema, selected-crate/edge mapping and initialization behavior in
    ADR-RUN-0005. If supported configuration cannot express it, report the
    upstream capability gap rather than suppressing the analyzer.
-4. At probe execution, query crates.io for the latest released `rmcp` AND
-   latest released `utoipa`; select those exact releases and record both
-   versions in ADR-RUN-0203's runtime dependency matrix. Create the temporary
-   composition manifest with matching `utoipa-axum` and run locked
-   `cargo metadata --format-version 1 --all-features`. Starting at its runtime/daemon
-   resolve IDs, assert one reachable `(name, version, source)` tuple for each
-   of `rmcp`, `utoipa`, and `utoipa-axum`. The probe must compile the ordinary
-   `OpenApiRouter`/streamable-HTTP composition. If the latest releases cannot
-   compose, fail the probe rather than silently choosing older releases.
+4. Query crates.io at probe execution and date its latest released `rmcp` AND
+   `utoipa` results. Record both exact versions in ADR-RUN-0203's runtime
+   dependency matrix. Create the composition manifest with matching
+   `utoipa-axum` and run locked `cargo metadata --format-version 1 --all-features`.
+   From runtime/daemon resolve IDs, require one reachable `(name, version,
+   source)` tuple each for `rmcp`, `utoipa`, and `utoipa-axum`. Both locked
+   rmcp/utoipa versions must equal their dated query's exact latest releases;
+   a mismatch fails. Compile ordinary `OpenApiRouter`/streamable-HTTP
+   composition; failure blocks closure, with no older-release fallback.
 5. Freeze those exact registry-selected versions and the identity algorithm
-   in ADR-RUN-0203, replacing its obsolete 0.2/5.5.0/3.7 matrix. `c-3`
+   in ADR-RUN-0203, superseding the prior version matrix. `c-3`
    consumes this frozen matrix and cannot select newer versions without a new
    ADR amendment and a repeat of this probe. Freeze `sc-command 0.2.0`
    alongside `sc-runtime 0.2.0`: the command crate exposes the changed RMCP
@@ -193,12 +193,12 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
    ADR-RUN-0017's temporary command dependency version and the cron
    requirements/architecture when that affected edge changes, preserving
    defaults-off/no-server semantics and deferred upstream logging cleanup.
-   Amend REQ-CMD-0005's explicit RMCP 3.7 type identity and NFR-CMD-0001's
+   Amend REQ-CMD-0005's prior RMCP type identity and NFR-CMD-0001's
    independently binding RMCP minor-series allowlist to the frozen matrix
    in `docs/sc-command/requirements.md`, retaining its conversion, error,
    serialization and server-feature semantics, optional server gating,
    defaults-off behavior and all remaining dependency restrictions. c-3
-   consumes both amended requirements, not an obsolete ~3.7 allowlist.
+   consumes both amended requirements with that frozen minor series.
 6. Define `c-4` as the named authorized release handoff: only after an
    authorized `sc-runtime 0.2.0` publication and registry visibility may its
    no-patch fixture report the registry-consumer acceptance result.

@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "b50103ba54fa7be122e4b58525fad9dae11f60d4d12aa310bcb4bb7c7723060b",
-      "bytes": 28211,
+      "sha256": "127169c53ce072ce3f12a9118acf95df25b55c211c50f5df379078c5ed45c26b",
+      "bytes": 28297,
       "source": "authored index"
     },
     {
@@ -263,8 +263,8 @@
     },
     {
       "path": "consumer-extension-review-summary.md",
-      "sha256": "76df72c1abde4a1a114c4b7ffce550e5521b524d7cc7c132965d37a521da0d7d",
-      "bytes": 3802,
+      "sha256": "507edb244928e0666cc29cb5f566f2244ee24b302aa033a397f87d09acf2d925",
+      "bytes": 3924,
       "source": "concise usual review summary per direct human instruction"
     },
     {
@@ -12935,8 +12935,8 @@
     },
     {
       "path": "current-plan-anchor-results.md",
-      "sha256": "37ba26690ca1d5910624141bcfceb9e9207e67fcffb406af0ca52c96f6cf6fd3",
-      "bytes": 2503,
+      "sha256": "f2a0286297958e1b0e28a27f43b56e6d6a39e7bb194f36302c796169e51fb657",
+      "bytes": 2843,
       "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
     },
     {
@@ -13942,7 +13942,7 @@
       },
       {
         "path": "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
-        "sha256": "55d77e14e1cb0f7c6cfa540949c433ce97ec965941acd21565d42c28ee8e9866"
+        "sha256": "885119570c270fc1244cf95e9bad8fb36a29662765e0d35211ee10bcf363c033"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
@@ -13950,15 +13950,15 @@
       },
       {
         "path": "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
-        "sha256": "5391cc3eac76b797cdd8492a580acc735aef350c4854cc83e0c2d1e3d34444dd"
+        "sha256": "35d78322cbc1143220840edab84e404620d6e62044c785930c128f7ff9ff7a18"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
-        "sha256": "3e0c6c14e1bfb7206d7f494cdeaf6f2561f6c853c0451c3fc5030707a88cce63"
+        "sha256": "d0abf1606deae59d46442cba87e11606a4ba547a7770f3b78942c60c4dc175e4"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md",
-        "sha256": "d333702e6ed59f4e4d7126faa5f589ee1490c9fb050cebdae6e70799b3294886"
+        "sha256": "fd081944d6d9eeaea61b5e18921bb54ab1d54ee2a82a99b3143c3675d194a4c9"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md",
@@ -13986,7 +13986,7 @@
       "source": "compatibility-scope-r2/report.json"
     },
     "latest_reviewed_source_commit": "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407",
-    "document_hash_scope": "Current plan; c1 wording clarification pending actual rerun. Scope/critical review remains at bbd64de."
+    "document_hash_scope": "Current six-sprint round2 freeze; actual reruns pending/in progress. Historical scope/critical review remains at bbd64de."
   },
   "evidence_wip_checkpoint": {
     "authoritative_plan_source": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
@@ -14160,9 +14160,9 @@
     "locked": 16,
     "proposed": 0,
     "retired": 2,
-    "original12_objects_unchanged": true,
-    "record_sha256": "c6c677b6c8d826999bc33e7dbef9a92ef21bb9e8729f45b7b8e257a73371276b",
-    "render_sha256": "2b5eb1c454eea7a2e2478120b8e3c094d40fbc992adf60dc61581f62ab78331c",
+    "original12_objects_unchanged": false,
+    "record_sha256": "ebeb409c9036b3bac1ae02d6801c0a9da370a13237031ee866d7d7879a273271",
+    "render_sha256": "00bc4fd1a492c1efd9aae246b399c69b18b9e411a7ebc175364f287b9ce64556",
     "actual_new_ids": [
       "ANC-013",
       "ANC-014",
@@ -14194,7 +14194,9 @@
     "new_anchor_beads": 6,
     "validation_snapshot_scope": "existing proposal-validation artifact is historical; main-session locking/linking is current",
     "planning_fixtures": "all13 semantic planning pairs PASS using permitted published defaults",
-    "status_note": "legacy field name; six new approved records are now locked and linked; no full-plan PASS"
+    "status_note": "legacy field name; six new approved records are now locked and linked; no full-plan PASS",
+    "record_change_scope": "38 item-specific exclusions/history only; all18 statements/quotes/scopes/versions/fixtures unchanged",
+    "item_specific_exclusions": 38
   },
   "current_results_report": "current-plan-anchor-results.md",
   "engineering_baseline": {
@@ -14233,8 +14235,10 @@
     "implementation_readiness": false,
     "Plan_Anchor_PASS": false,
     "broad_archive": "cancelled per direct human instruction; never committed/pushed; raw working evidence outsideGit",
-    "actual_plan_gate": "c1 r1 failed6underspecified; c1 clarity correction pending rerun, c2/c3 destination approval pending",
+    "actual_plan_gate": "First live reviews completed all6;C1 six failed cells reduced to2;scoped clarity/exclusions applied;reruns pending or in progress,no finalPASS",
     "published_defaults": "permitted by independent audit;13semantic planfixture pairsPASS",
-    "experimental_calibration_scope": "historical failed experiments do not prohibit published defaults"
+    "experimental_calibration_scope": "historical failed experiments do not prohibit published defaults",
+    "plan_review_egress": "user explicitly approved all six sprint plans/anchors/fixtures; no remaining permission block",
+    "source_checkpoint": "six source hashes frozen outsideGit for rerun; no new source inventory export"
   }
 }

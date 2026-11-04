@@ -99,10 +99,9 @@ authorization gate below. These real implementations cannot be contract stubs.
 
 ## Goal
 
-Close the production release contract left deliberately open by `c-3`:
-publish the approved `sc-runtime 0.2.0` only with release authorization, then
-prove a newly generated consumer resolves it from crates.io without a checkout
-patch.
+Publish `sc-runtime 0.2.0` only after c-5's dedicated compatibility sprint
+and c-3/c-6 implementation are complete and release is authorized. Then prove
+a newly generated consumer resolves it from crates.io without a checkout patch.
 
 ## Deliverables
 
@@ -158,18 +157,21 @@ at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
   projections. This takes the explicit later-wave source handoff from c-3;
   no same-wave sibling writes those paths or supplies a fake production factory.
   Compose c-5 scheduler/SQLite operations and c-6 executor in the release fixture
-  venue with checkout patches. Exercise start/end/list for Rust, Python and
-  explicit Monty through CLI JSON, HTTP and selected MCP. Same request yields
-  equivalent normalized data/error across all projections; actual schedule
-  mutation/execution and generation conflicts occur, not just DTO serialization.
-- Consume c-6's existing README selected-default recipe and its c-5 custom-store
-  link in the existing generated-consumer fixture. Use only documented options
-  and public APIs: selected cron/commands, bundled store, target registration,
-  explicit worker startup, real commands, and stop/physical join/outcome handling.
-  No private APIs or manual framework-source edits may be needed to make the
-  default recipe work. Record the exact recipe revision; repeat its packaged
-  public path in the existing registry-only proof. Application overrides and
-  schema extensions remain optional, with the documented responsibilities.
+  venue with checkout patches. Actual CLI, HTTP and selected MCP use the same
+  canonical JSON start/end/list command contract across Rust, Python and explicit
+  Monty targets. The same request yields equivalent normalized data/error
+  across actual UI projections; transport wrappers may differ.
+  Exercise real schedule mutation/execution and generation conflicts.
+- Follow c-6's selected-default README recipe and exercise c-5's public custom-
+  store/schema example and application-owned-field proof in the existing
+  generated and registry-only consumer fixtures using documented
+  options/public APIs, without manual framework-source edits. Exercise selected
+  cron/commands, bundled store, target registration, explicit worker startup,
+  real commands and stop/physical join/outcomes; record the recipe revision.
+  Consumers may replace the store/schema through ScheduleStore and shutdown/
+  command policy through CronOperations or CronExecutor. Overrides are optional;
+  consumers own validation, cancellation, physical joins, persistence truth,
+  authorization and error mapping.
 - Prove default-off generation has no standard commands/adapter worker,
   DTO-only CLI graphs remain server/cron/SQLite/Monty free, scheduler/Monty
   enable only approved edges, disabled MCP stays disabled, and core runtime

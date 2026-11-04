@@ -1,0 +1,27 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Recorded before C5 source edits. Actual C5R1 plan-defect clarity corrections.
+# No new dependency barrier, behavior, anchor, question, fixture or threshold.
+
+triage:c_5_R1_ANC_006 a triage:Finding ;
+ triage:anchor_id "ANC-006" ;
+ triage:item "c-5" ;
+ triage:status "to_fix" ;
+ triage:classification "plan_defect" ;
+ triage:run "plan-20261104T055443Z-c-5" ;
+ triage:action "replace" ;
+ triage:sentence "C-1 first enables rusqlite 0.39 `bundled,hooks` and qualifies interrupt/busy/\nprogress facilities with its lock baseline; c-3 retains these features during\nmigration. C-5 compiles against that committed prerequisite and owns no shared\nmanifest edits or dependency on an uncommitted c-3 feature change." ;
+ triage:replacement "C-1 first enables rusqlite 0.39.x `bundled,hooks` and qualifies interrupt/busy/\nprogress facilities with its lock baseline; c-3 retains these features during\nmigration.\nC-5 preserves that qualified version/features in its SQLite implementation and\nisolated consumer manifest/lock, with no rusqlite/SQLx/libsqlite3-sys version\nupgrade. It compiles against c-1's committed prerequisite, with no shared manifest\nedits or dependency on an uncommitted c-3 feature change." ;
+ triage:authority "locked ANC-006; existing phase-c SQLite constraint and c-1 qualified bundled/hooks baseline; REQ-CRON-0020; ADR-RUN-0018; all predate plan-20261104T055443Z-c-5" .
+
+triage:c_5_R1_ANC_013 a triage:Finding ;
+ triage:anchor_id "ANC-013" ;
+ triage:item "c-5" ;
+ triage:status "to_fix" ;
+ triage:classification "plan_defect" ;
+ triage:run "plan-20261104T055443Z-c-5" ;
+ triage:action "replace" ;
+ triage:sentence "The last requires c-3, c-5 and c-6 real artifacts together." ;
+ triage:replacement "C-5 is Phase C's dedicated compatibility sprint and completes before c-4\npublishes sc-runtime 0.2.0, alongside its existing c-3/c-6 real-artifact\nprerequisites." ;
+ triage:authority "locked ANC-013; existing c-4 must_follow [c-3, c-5, c-6] and phase-c handoff; REQ-RUN-0702; ADR-RUN-0402; all predate plan-20261104T055443Z-c-5" .
+
