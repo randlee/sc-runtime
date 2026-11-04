@@ -1,0 +1,171 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": true,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "Backup archives must use AES-256-GCM encryption.",
+        "quote": "Keep backup archives encrypted.",
+        "scope": "backup archive storage",
+        "verdict": null,
+        "failing": [],
+        "answers": null,
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "5f1dac89fb210e0521c668506202e5236a417909e898a10f9f9be13b9c5b16fa",
+          "request_sha256": "2d16c79fc5745607135c12fc731c059f82156de186af3f0e272d67347192ea12",
+          "intent": {
+            "id": "generic-clarification-generic-unauthorized-algorithm",
+            "version": 1,
+            "sha256": "ce021492bbd3c5808ab1fc7175e90139327d64f56e399f972a01fc536e9e2985"
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false,
+    "requests": [
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement invents substantive policy or precision, or departs from the supplied authority.",
+              "unclear": "Substantive support cannot be established or rejected from the supplied authority.",
+              "yes": "The statement expresses an authorized duty with only ordinary formalization or explicitly approved clarification."
+            },
+            "instructions": "Is the authored requirement substantively authorized? Read anchor.quote plus optional state.intent.content as the supplied authority. Normalize ordinary directive wording, printing/logging output channels, and unspecified JSON container terminology without treating that vocabulary alone as a new policy. Selecting one duty from a compound quote is allowed. An explicit clarification in intent may authorize a named technology or precise policy; otherwise adding that choice is invention. Judge authorization, not whether the resulting requirement is observable or well scoped.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+              "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+              "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+            },
+            "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "At least two substantive obligations remain independently enforceable.",
+              "unclear": "The wording leaves the number of independently enforceable obligations ambiguous.",
+              "yes": "All required details belong to a single invariant, including its trigger and any uniformly governed surfaces."
+            },
+            "instructions": "Can anchor.statement be assessed as one invariant? Multiple destinations governed by the same required outcome do not create multiple duties. Trigger/action/outcome clauses that define when the same rule applies stay together. Separately required behaviors that are not instances of one predicate are bundled. Evaluate only the duties stated in the requirement itself.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "Backup archives must use AES-256-GCM encryption.",
+            "quote": "Keep backup archives encrypted.",
+            "scope": "backup archive storage"
+          },
+          "intent": {
+            "content": "Do not select an algorithm; leave that choice open.",
+            "id": "generic-clarification-generic-unauthorized-algorithm",
+            "sha256": "ce021492bbd3c5808ab1fc7175e90139327d64f56e399f972a01fc536e9e2985",
+            "version": 1
+          }
+        }
+      },
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "The statement invents substantive policy or precision, or departs from the supplied authority.",
+              "unclear": "Substantive support cannot be established or rejected from the supplied authority.",
+              "yes": "The statement expresses an authorized duty with only ordinary formalization or explicitly approved clarification."
+            },
+            "instructions": "Is the authored requirement substantively authorized? Read anchor.quote plus optional state.intent.content as the supplied authority. Normalize ordinary directive wording, printing/logging output channels, and unspecified JSON container terminology without treating that vocabulary alone as a new policy. Selecting one duty from a compound quote is allowed. An explicit clarification in intent may authorize a named technology or precise policy; otherwise adding that choice is invention. Judge authorization, not whether the resulting requirement is observable or well scoped.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "It supplies only a subjective quality, undefined shorthand, or an approval with no observable record.",
+              "unclear": "Some evidence is named, but the observation needed to settle compliance remains ambiguous.",
+              "yes": "It names evidence or behavior that can be inspected with a determinate outcome."
+            },
+            "instructions": "Does anchor.statement define a checkable behavior or artifact without relying on an undefined label or an approval that has no identified record? Judge only whether the stated outcome can be observed.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "At least two substantive obligations remain independently enforceable.",
+              "unclear": "The wording leaves the number of independently enforceable obligations ambiguous.",
+              "yes": "All required details belong to a single invariant, including its trigger and any uniformly governed surfaces."
+            },
+            "instructions": "Can anchor.statement be assessed as one invariant? Multiple destinations governed by the same required outcome do not create multiple duties. Trigger/action/outcome clauses that define when the same rule applies stay together. Separately required behaviors that are not instances of one predicate are bundled. Evaluate only the duties stated in the requirement itself.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "Backup archives must use AES-256-GCM encryption.",
+            "quote": "Keep backup archives encrypted.",
+            "scope": "backup archive storage"
+          },
+          "intent": {
+            "content": "Do not select an algorithm; leave that choice open.",
+            "id": "generic-clarification-generic-unauthorized-algorithm",
+            "sha256": "ce021492bbd3c5808ab1fc7175e90139327d64f56e399f972a01fc536e9e2985",
+            "version": 1
+          }
+        }
+      }
+    ],
+    "totals": {
+      "requests": 2,
+      "bytes": 8024,
+      "max_request_bytes": 24000
+    }
+  },
+  "error": null
+}

@@ -1,0 +1,16 @@
+{
+  "append_only": true,
+  "parent_result_sha256": "5ecbc6dc4c15593b2cfa2e54a5ff39e6299b2d2a3fac801ffe73d58f12fcffd5",
+  "sources": [
+    {
+      "directory": "/tmp/sc-runtime-phase-c-review/tuning/calibration-r1/live-authorized",
+      "frozen_oracle_sha256": "ce5f4efcfee74ecc767bb8c140bf749ef2e33c779f82397d5c42d96698a7b1bc",
+      "records_sha256": "3dc2be207d820fa22983d9fde78bd496b22055c96360aaa9795a042938779a0f"
+    },
+    {
+      "directory": "/tmp/sc-runtime-phase-c-review/tuning/calibration-r1/live-authorized/continuation-01",
+      "frozen_oracle_sha256": "ce5f4efcfee74ecc767bb8c140bf749ef2e33c779f82397d5c42d96698a7b1bc",
+      "records_sha256": "5b4ef9cc8d65aef58be72815287cc7b9888c5e503d72654400f613ddffd74c62"
+    }
+  ]
+}

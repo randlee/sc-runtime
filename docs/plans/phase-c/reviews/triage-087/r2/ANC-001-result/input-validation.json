@@ -1,0 +1,12 @@
+{
+  "request_schema": true,
+  "runner_request_schema": true,
+  "request_relational": true,
+  "request_fence": true,
+  "runtime_script_digest": true,
+  "runtime_contract_script_digest": true,
+  "supplied_agent_digest": true,
+  "template_digest": true,
+  "r1_judged_source_response_anchors_seal_unchanged": true,
+  "repeat_raw_binding": true
+}

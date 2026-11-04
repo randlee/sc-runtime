@@ -1,0 +1,1583 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": false,
+    "fixture": false,
+    "path": "docs/plans/phase-c/anchors.json",
+    "anchors": [
+      {
+        "id": "ANC-001",
+        "statement": "A generated consumer repository must have the full sc-lint toolchain installed.",
+        "quote": "a full sc-lint is installed on a consumer repo",
+        "scope": "the c-2 generated-consumer lint sprint and any plan item that edits template sc-lint setup or default or full lint commands",
+        "verdict": "inconclusive",
+        "failing": [
+          "observable",
+          "faithful",
+          "self_contained"
+        ],
+        "answers": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.19,
+            "probabilities": {
+              "no": 0.21,
+              "unclear": 0.33,
+              "yes": 0.46
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.37,
+            "probabilities": {
+              "no": 0.4,
+              "unclear": 0.02,
+              "yes": 0.58
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.18,
+            "probabilities": {
+              "no": 0.45,
+              "unclear": 0.14,
+              "yes": 0.41
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "answers_second": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.0,
+              "yes": 0.98
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.2,
+            "probabilities": {
+              "no": 0.2,
+              "unclear": 0.33,
+              "yes": 0.47
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.38,
+            "probabilities": {
+              "no": 0.39,
+              "unclear": 0.02,
+              "yes": 0.59
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.16,
+            "probabilities": {
+              "no": 0.44,
+              "unclear": 0.12,
+              "yes": 0.44
+            }
+          }
+        },
+        "answers_third": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.0,
+              "yes": 0.99
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.31,
+            "probabilities": {
+              "no": 0.17,
+              "unclear": 0.29,
+              "yes": 0.54
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.34,
+            "probabilities": {
+              "no": 0.41,
+              "unclear": 0.03,
+              "yes": 0.56
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.18,
+            "probabilities": {
+              "no": 0.43,
+              "unclear": 0.12,
+              "yes": 0.45
+            }
+          }
+        },
+        "attempts": 3,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "observable",
+            "faithful",
+            "self_contained"
+          ],
+          "low_confidence": [
+            "observable",
+            "faithful",
+            "self_contained"
+          ],
+          "unstable": [],
+          "initial_disagreements": [
+            "self_contained"
+          ],
+          "resolved": {
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.97,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.19,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.37,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": null,
+              "confidence": null,
+              "matching_calls": []
+            }
+          }
+        }
+      },
+      {
+        "id": "ANC-002",
+        "statement": "Phase C must upgrade rmcp and utoipa to their latest released versions.",
+        "quote": "upgrading rmcp/utopia to the latest releave version should be planned in phase-<next>",
+        "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
+        "verdict": "inconclusive",
+        "failing": [
+          "faithful",
+          "single_constraint",
+          "observable",
+          "self_contained"
+        ],
+        "answers": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.3,
+            "probabilities": {
+              "no": 0.45,
+              "unclear": 0.02,
+              "yes": 0.53
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.13,
+            "probabilities": {
+              "no": 0.27,
+              "unclear": 0.31,
+              "yes": 0.42
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.72,
+            "probabilities": {
+              "no": 0.81,
+              "unclear": 0.09,
+              "yes": 0.1
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.62,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.23,
+              "yes": 0.75
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.25,
+            "probabilities": {
+              "no": 0.5,
+              "unclear": 0.16,
+              "yes": 0.34
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "answers_second": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.34,
+            "probabilities": {
+              "no": 0.56,
+              "unclear": 0.02,
+              "yes": 0.42
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.13,
+            "probabilities": {
+              "no": 0.26,
+              "unclear": 0.32,
+              "yes": 0.42
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.7,
+            "probabilities": {
+              "no": 0.8,
+              "unclear": 0.08,
+              "yes": 0.12
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.77,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.14,
+              "yes": 0.85
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.14,
+            "probabilities": {
+              "no": 0.43,
+              "unclear": 0.19,
+              "yes": 0.38
+            }
+          }
+        },
+        "answers_third": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.28,
+            "probabilities": {
+              "no": 0.52,
+              "unclear": 0.02,
+              "yes": 0.46
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.07,
+            "probabilities": {
+              "no": 0.28,
+              "unclear": 0.34,
+              "yes": 0.38
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.68,
+            "probabilities": {
+              "no": 0.79,
+              "unclear": 0.11,
+              "yes": 0.1
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.74,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.15,
+              "yes": 0.83
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.28,
+            "probabilities": {
+              "no": 0.52,
+              "unclear": 0.14,
+              "yes": 0.34
+            }
+          }
+        },
+        "attempts": 3,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "faithful",
+            "single_constraint",
+            "observable",
+            "self_contained"
+          ],
+          "low_confidence": [
+            "single_constraint",
+            "observable",
+            "self_contained"
+          ],
+          "unstable": [],
+          "initial_disagreements": [
+            "single_constraint"
+          ],
+          "resolved": {
+            "single_constraint": {
+              "choice": null,
+              "confidence": null,
+              "matching_calls": []
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.13,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "faithful": {
+              "choice": "no",
+              "confidence": 0.7,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.62,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "no",
+              "confidence": 0.14,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "ANC-003",
+        "statement": "The repository and generated template must both use sc-lint 0.8.4.",
+        "quote": "both repo and templates should use 0.8.4",
+        "scope": "the c-1 consumer contract and c-2 template lint profile sprints",
+        "verdict": "inconclusive",
+        "failing": [
+          "single_constraint"
+        ],
+        "answers": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.46,
+            "probabilities": {
+              "no": 0.64,
+              "unclear": 0.01,
+              "yes": 0.35
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.03,
+              "yes": 0.95
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.66,
+            "probabilities": {
+              "no": 0.21,
+              "unclear": 0.02,
+              "yes": 0.77
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.04,
+              "yes": 0.95
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.62,
+            "probabilities": {
+              "no": 0.18,
+              "unclear": 0.07,
+              "yes": 0.75
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "answers_second": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.49,
+            "probabilities": {
+              "no": 0.66,
+              "unclear": 0.01,
+              "yes": 0.33
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.02,
+              "yes": 0.97
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.68,
+            "probabilities": {
+              "no": 0.19,
+              "unclear": 0.02,
+              "yes": 0.79
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.03,
+              "yes": 0.97
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.7,
+            "probabilities": {
+              "no": 0.13,
+              "unclear": 0.07,
+              "yes": 0.8
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "single_constraint"
+          ],
+          "low_confidence": [
+            "single_constraint"
+          ],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "single_constraint": {
+              "choice": "no",
+              "confidence": 0.46,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.92,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.66,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.92,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.62,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "ANC-004",
+        "statement": "The current phase must be named phase-c.",
+        "quote": "rename to phase-c",
+        "scope": "every Phase C plan item and its plan metadata",
+        "verdict": "inconclusive",
+        "failing": [
+          "self_contained"
+        ],
+        "answers": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "no": 0.03,
+              "unclear": 0.01,
+              "yes": 0.96
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.02,
+              "yes": 0.96
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.79,
+            "probabilities": {
+              "no": 0.13,
+              "unclear": 0.01,
+              "yes": 0.86
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.5,
+            "probabilities": {
+              "no": 0.18,
+              "unclear": 0.15,
+              "yes": 0.67
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "answers_second": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.01,
+              "yes": 0.97
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.97,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.01,
+              "yes": 0.98
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.83,
+            "probabilities": {
+              "no": 0.1,
+              "unclear": 0.01,
+              "yes": 0.89
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.62,
+            "probabilities": {
+              "no": 0.15,
+              "unclear": 0.1,
+              "yes": 0.75
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "self_contained"
+          ],
+          "low_confidence": [
+            "self_contained"
+          ],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.94,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.94,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.79,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.5,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "ANC-005",
+        "statement": "Phase C planning must use a dedicated worktree and a separate pull request to develop.",
+        "quote": "planning should be done on a second pr to develop on a dedicated $sc-git-worktree",
+        "scope": "the Phase C plan branch, worktree, and pull request metadata",
+        "verdict": "inconclusive",
+        "failing": [
+          "single_constraint",
+          "faithful",
+          "self_contained"
+        ],
+        "answers": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.64,
+            "probabilities": {
+              "no": 0.76,
+              "unclear": 0.01,
+              "yes": 0.23
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.85,
+            "probabilities": {
+              "no": 0.04,
+              "unclear": 0.06,
+              "yes": 0.9
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.58,
+            "probabilities": {
+              "no": 0.26,
+              "unclear": 0.02,
+              "yes": 0.72
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.03,
+              "yes": 0.97
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.2,
+            "probabilities": {
+              "no": 0.4,
+              "unclear": 0.13,
+              "yes": 0.47
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "answers_second": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.68,
+            "probabilities": {
+              "no": 0.79,
+              "unclear": 0.01,
+              "yes": 0.2
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.03,
+              "yes": 0.95
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.56,
+            "probabilities": {
+              "no": 0.27,
+              "unclear": 0.02,
+              "yes": 0.71
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.04,
+              "yes": 0.95
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.16,
+            "probabilities": {
+              "no": 0.39,
+              "unclear": 0.17,
+              "yes": 0.44
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "single_constraint",
+            "faithful",
+            "self_contained"
+          ],
+          "low_confidence": [
+            "faithful",
+            "self_contained"
+          ],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "single_constraint": {
+              "choice": "no",
+              "confidence": 0.64,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.85,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.56,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.92,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.16,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "ANC-006",
+        "statement": "Phase C must keep rusqlite on the 0.39 release line.",
+        "quote": "so rusqlite will remain at 0.39? I will have beads-cache downgrade so everything is consistent.",
+        "scope": "the c-3 runtime ecosystem upgrade sprint and any plan item that changes Cargo dependency versions for rusqlite, sqlx, or libsqlite3-sys",
+        "verdict": "inconclusive",
+        "failing": [
+          "faithful",
+          "self_contained"
+        ],
+        "answers": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.94,
+            "probabilities": {
+              "no": 0.03,
+              "unclear": 0.01,
+              "yes": 0.96
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.83,
+            "probabilities": {
+              "no": 0.06,
+              "unclear": 0.05,
+              "yes": 0.89
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.3,
+            "probabilities": {
+              "no": 0.53,
+              "unclear": 0.18,
+              "yes": 0.29
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.16,
+            "probabilities": {
+              "no": 0.43,
+              "unclear": 0.13,
+              "yes": 0.44
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "answers_second": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.01,
+              "yes": 0.97
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.82,
+            "probabilities": {
+              "no": 0.07,
+              "unclear": 0.05,
+              "yes": 0.88
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.31,
+            "probabilities": {
+              "no": 0.54,
+              "unclear": 0.15,
+              "yes": 0.31
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.24,
+            "probabilities": {
+              "no": 0.49,
+              "unclear": 0.12,
+              "yes": 0.39
+            }
+          }
+        },
+        "answers_third": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.96,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.01,
+              "yes": 0.97
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.82,
+            "probabilities": {
+              "no": 0.07,
+              "unclear": 0.05,
+              "yes": 0.88
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.24,
+            "probabilities": {
+              "no": 0.49,
+              "unclear": 0.2,
+              "yes": 0.31
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.98,
+            "probabilities": {
+              "no": 0.0,
+              "unclear": 0.01,
+              "yes": 0.99
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "no",
+            "confidence": 0.18,
+            "probabilities": {
+              "no": 0.45,
+              "unclear": 0.11,
+              "yes": 0.44
+            }
+          }
+        },
+        "attempts": 3,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "faithful",
+            "self_contained"
+          ],
+          "low_confidence": [
+            "faithful",
+            "self_contained"
+          ],
+          "unstable": [],
+          "initial_disagreements": [
+            "self_contained"
+          ],
+          "resolved": {
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.94,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.82,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "faithful": {
+              "choice": "no",
+              "confidence": 0.3,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.98,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": null,
+              "confidence": null,
+              "matching_calls": []
+            }
+          }
+        }
+      },
+      {
+        "id": "ANC-007",
+        "statement": "Fresh consumer installation must generate a default boundaries policy selected from the consumer's configuration settings.",
+        "quote": "and you will need to determine the 'appropriate' default policy to install on consumer repos\nbased on configuration settings",
+        "scope": "c-1 consumer policy contract and c-2 fresh-install implementation",
+        "verdict": "inconclusive",
+        "failing": [
+          "observable",
+          "faithful",
+          "self_contained"
+        ],
+        "answers": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.86,
+            "probabilities": {
+              "no": 0.08,
+              "unclear": 0.01,
+              "yes": 0.91
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.28,
+            "probabilities": {
+              "no": 0.24,
+              "unclear": 0.24,
+              "yes": 0.52
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.46,
+            "probabilities": {
+              "no": 0.34,
+              "unclear": 0.02,
+              "yes": 0.64
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.92,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.04,
+              "yes": 0.95
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.2,
+            "probabilities": {
+              "no": 0.39,
+              "unclear": 0.14,
+              "yes": 0.47
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "answers_second": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.86,
+            "probabilities": {
+              "no": 0.08,
+              "unclear": 0.01,
+              "yes": 0.91
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.26,
+            "probabilities": {
+              "no": 0.24,
+              "unclear": 0.25,
+              "yes": 0.51
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.46,
+            "probabilities": {
+              "no": 0.34,
+              "unclear": 0.02,
+              "yes": 0.64
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.91,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.05,
+              "yes": 0.94
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.26,
+            "probabilities": {
+              "no": 0.37,
+              "unclear": 0.12,
+              "yes": 0.51
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "observable",
+            "faithful",
+            "self_contained"
+          ],
+          "low_confidence": [
+            "observable",
+            "faithful",
+            "self_contained"
+          ],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.86,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.26,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.46,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.91,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.2,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "ANC-008",
+        "statement": "After fresh setup, the generated boundaries policy must be owned by the consumer repository.",
+        "quote": "you will need to generate a boundaries policy for a 'fresh install' once a consumer is set up, they will have their own boundaries policy",
+        "scope": "c-1 consumer policy ownership contract and c-2 generated policy handoff",
+        "verdict": "inconclusive",
+        "failing": [
+          "faithful",
+          "self_contained"
+        ],
+        "answers": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.83,
+            "probabilities": {
+              "no": 0.1,
+              "unclear": 0.01,
+              "yes": 0.89
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.79,
+            "probabilities": {
+              "no": 0.04,
+              "unclear": 0.1,
+              "yes": 0.86
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.61,
+            "probabilities": {
+              "no": 0.23,
+              "unclear": 0.03,
+              "yes": 0.74
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.88,
+            "probabilities": {
+              "no": 0.01,
+              "unclear": 0.07,
+              "yes": 0.92
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.31,
+            "probabilities": {
+              "no": 0.21,
+              "unclear": 0.25,
+              "yes": 0.54
+            }
+          }
+        },
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "answers_second": {
+          "single_constraint": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.82,
+            "probabilities": {
+              "no": 0.11,
+              "unclear": 0.01,
+              "yes": 0.88
+            }
+          },
+          "observable": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.72,
+            "probabilities": {
+              "no": 0.06,
+              "unclear": 0.13,
+              "yes": 0.81
+            }
+          },
+          "faithful": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.55,
+            "probabilities": {
+              "no": 0.27,
+              "unclear": 0.03,
+              "yes": 0.7
+            }
+          },
+          "scoped": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.8,
+            "probabilities": {
+              "no": 0.02,
+              "unclear": 0.11,
+              "yes": 0.87
+            }
+          },
+          "self_contained": {
+            "type": "choice",
+            "choice": "yes",
+            "confidence": 0.42,
+            "probabilities": {
+              "no": 0.18,
+              "unclear": 0.21,
+              "yes": 0.61
+            }
+          }
+        },
+        "attempts": 2,
+        "confirmations": {
+          "verdict": "inconclusive",
+          "failing": [
+            "faithful",
+            "self_contained"
+          ],
+          "low_confidence": [
+            "faithful",
+            "self_contained"
+          ],
+          "unstable": [],
+          "initial_disagreements": [],
+          "resolved": {
+            "single_constraint": {
+              "choice": "yes",
+              "confidence": 0.82,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "observable": {
+              "choice": "yes",
+              "confidence": 0.72,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "faithful": {
+              "choice": "yes",
+              "confidence": 0.55,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "scoped": {
+              "choice": "yes",
+              "confidence": 0.8,
+              "matching_calls": [
+                1,
+                2
+              ]
+            },
+            "self_contained": {
+              "choice": "yes",
+              "confidence": 0.31,
+              "matching_calls": [
+                1,
+                2
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "needs_work": [
+      "ANC-001",
+      "ANC-002",
+      "ANC-003",
+      "ANC-004",
+      "ANC-005",
+      "ANC-006",
+      "ANC-007",
+      "ANC-008"
+    ],
+    "pass": false
+  },
+  "error": null
+}

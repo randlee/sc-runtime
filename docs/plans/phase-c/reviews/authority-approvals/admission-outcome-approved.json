@@ -1,0 +1,9 @@
+{
+  "question": "Approve the admission/outcome contract in /tmp/sc-runtime-phase-c-review/compatibility-review/commit-deadline-design-note.md? It prevents new commit admission after the cutoff, retains ownership until physical completion, and reports committed-late or indeterminate outcomes accurately. SQLite cannot guarantee physical completion within 2T for every already-admitted commit.",
+  "answer": "Approve admission/outcome contract (Recommended)",
+  "proposal": "/tmp/sc-runtime-phase-c-review/compatibility-review/commit-deadline-design-note.md",
+  "question_item_id": "[\"request_user_input_async\",\"call_7adec3865e764671a09e34c491d64e1f\",1]",
+  "source": "Direct human send_user_message_question_reply in this chat",
+  "recorded_at_utc": "2026-11-03T18:50:20.596162+00:00",
+  "proposal_sha256": "9188e21fb92c3b6b41aace305e53fae29a5766c22684f63e9eb9057e7f76866d"
+}

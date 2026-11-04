@@ -1,0 +1,6 @@
+{
+  "content": "For this backup requirement, use AES-256-GCM.",
+  "id": "generic-clarification-generic-authorized-algorithm",
+  "sha256": "91d3cd2dca9db76703f9ba9e6a923669af46df1d39876c4910b18a09f36597f2",
+  "version": 1
+}

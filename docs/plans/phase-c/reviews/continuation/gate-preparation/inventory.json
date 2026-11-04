@@ -1,0 +1,673 @@
+{
+  "mode": "offline-gate-preparation",
+  "reviewed_commit": "bfa809711c31f9a58e1d2fb6738130a55c99310e",
+  "installed_version": "0.8.7",
+  "anchor_record_sha256": "187160917925d0c64823543c5d1858066b1eb98cdc43a5c79435125c800df7af",
+  "active_anchors": [
+    {
+      "id": "ANC-001",
+      "version": 4,
+      "kind": "directive",
+      "scope": "c-2 generated consumer setup and any plan item that installs the consumer lint toolchain.",
+      "beads": {
+        "anchor": "run-32b",
+        "plan_questions": "run-32b.1",
+        "dev_questions": "run-32b.2"
+      }
+    },
+    {
+      "id": "ANC-003",
+      "version": 2,
+      "kind": "directive",
+      "scope": "the c-1 consumer contract and c-2 template lint profile sprints",
+      "beads": {
+        "anchor": "run-83r",
+        "plan_questions": "run-83r.1",
+        "dev_questions": "run-83r.2"
+      }
+    },
+    {
+      "id": "ANC-004",
+      "version": 3,
+      "kind": "structural",
+      "scope": "every Phase C plan item and its plan metadata",
+      "beads": {
+        "anchor": "run-xiw",
+        "plan_questions": "run-xiw.1",
+        "dev_questions": "run-xiw.2"
+      }
+    },
+    {
+      "id": "ANC-006",
+      "version": 3,
+      "kind": "directive",
+      "scope": "the c-3 runtime ecosystem upgrade sprint and any plan item that changes Cargo dependency versions for rusqlite, sqlx, or libsqlite3-sys",
+      "beads": {
+        "anchor": "run-ioz",
+        "plan_questions": "run-ioz.1",
+        "dev_questions": "run-ioz.2"
+      }
+    },
+    {
+      "id": "ANC-007",
+      "version": 2,
+      "kind": "directive",
+      "scope": "c-1 consumer policy contract and c-2 fresh-install implementation",
+      "beads": {
+        "anchor": "run-a7e",
+        "plan_questions": "run-a7e.1",
+        "dev_questions": "run-a7e.2"
+      }
+    },
+    {
+      "id": "ANC-008",
+      "version": 3,
+      "kind": "directive",
+      "scope": "c-1 consumer policy ownership contract and c-2 generated policy handoff",
+      "beads": {
+        "anchor": "run-81q",
+        "plan_questions": "run-81q.1",
+        "dev_questions": "run-81q.2"
+      }
+    },
+    {
+      "id": "ANC-009",
+      "version": 2,
+      "kind": "directive",
+      "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
+      "beads": {
+        "anchor": "run-qt3",
+        "plan_questions": "run-qt3.1",
+        "dev_questions": "run-qt3.2"
+      }
+    },
+    {
+      "id": "ANC-010",
+      "version": 2,
+      "kind": "directive",
+      "scope": "the c-1 compatibility contract and c-3 runtime ecosystem upgrade sprints",
+      "beads": {
+        "anchor": "run-evb",
+        "plan_questions": "run-evb.1",
+        "dev_questions": "run-evb.2"
+      }
+    },
+    {
+      "id": "ANC-011",
+      "version": 2,
+      "kind": "structural",
+      "scope": "the Phase C planning branch and Git worktree metadata",
+      "beads": {
+        "anchor": "run-alr",
+        "plan_questions": "run-alr.1",
+        "dev_questions": "run-alr.2"
+      }
+    },
+    {
+      "id": "ANC-012",
+      "version": 2,
+      "kind": "structural",
+      "scope": "the Phase C planning pull request metadata",
+      "beads": {
+        "anchor": "run-mwv",
+        "plan_questions": "run-mwv.1",
+        "dev_questions": "run-mwv.2"
+      }
+    }
+  ],
+  "items": [
+    {
+      "item_id": "c-1",
+      "item_file": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c/docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+      "sha256": "da0aa6436388fd9cfef6c273de60b5da7dd3ff068451f89b6947800ace23262f",
+      "chars": 10142,
+      "bytes": 10150,
+      "whole_document": true,
+      "concatenate_other_sources": false
+    },
+    {
+      "item_id": "c-2",
+      "item_file": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c/docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+      "sha256": "1c8a258ababc6e68b5b81e8c4cf7262bcb98090f957b6472d428c7767d45ff51",
+      "chars": 6649,
+      "bytes": 6651,
+      "whole_document": true,
+      "concatenate_other_sources": false
+    },
+    {
+      "item_id": "c-3",
+      "item_file": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c/docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+      "sha256": "838334c0d06f18a24e0de5105102f738004c06a462ca932778a627cad32f1877",
+      "chars": 11173,
+      "bytes": 11177,
+      "whole_document": true,
+      "concatenate_other_sources": false
+    },
+    {
+      "item_id": "c-4",
+      "item_file": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c/docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+      "sha256": "1410047a17fa2ace2e31eedd5fe016146ec1666862507df18a5f5a90595f6c6a",
+      "chars": 5225,
+      "bytes": 5229,
+      "whole_document": true,
+      "concatenate_other_sources": false
+    }
+  ],
+  "tuning_request_validation": [
+    {
+      "id": "ANC-001",
+      "file": "docs/plans/phase-c/reviews/planning-tuning-preparation/ANC-001-request.json",
+      "sha256": "69a998c59de759e7d78f2f8f18794fedec4b137e859f68f1dfd32a088e6bb4aa",
+      "schema_valid": true,
+      "schema_errors": [],
+      "relational_exit_code": 0,
+      "relational_validation": {
+        "data": {
+          "sha256": "c4e7607aa13480becbe6993f7ba206d94dfe139731ed29edec36224ff7be0c95",
+          "valid": true
+        },
+        "error": null,
+        "success": true
+      },
+      "anchor_authority_matches_current": true,
+      "runtime_bindings_match_installed087": false,
+      "refresh_required": [
+        "Refresh immutable 0.8.7 runtime/script/contract/agent descriptor and rerender runner envelope before dispatch"
+      ],
+      "dispatch_ready": false
+    },
+    {
+      "id": "ANC-003",
+      "file": "docs/plans/phase-c/reviews/planning-tuning-preparation/ANC-003-request.json",
+      "sha256": "de0e09ef3eb3229ac66dcebf043a4069b08087704a6e41e3a4f8ffae2f1768e8",
+      "schema_valid": true,
+      "schema_errors": [],
+      "relational_exit_code": 0,
+      "relational_validation": {
+        "data": {
+          "sha256": "b4ac71068d0e30ebdc2b83995f3adae6d36c39d719a92149716b7e055b7df2ac",
+          "valid": true
+        },
+        "error": null,
+        "success": true
+      },
+      "anchor_authority_matches_current": true,
+      "runtime_bindings_match_installed087": false,
+      "refresh_required": [
+        "Refresh immutable 0.8.7 runtime/script/contract/agent descriptor and rerender runner envelope before dispatch"
+      ],
+      "dispatch_ready": false
+    },
+    {
+      "id": "ANC-006",
+      "file": "docs/plans/phase-c/reviews/planning-tuning-preparation/ANC-006-request.json",
+      "sha256": "34d7cd1e1256806ee16d6e54ce237f90a9dbea960242b7baa466cd5a29b812cf",
+      "schema_valid": true,
+      "schema_errors": [],
+      "relational_exit_code": 0,
+      "relational_validation": {
+        "data": {
+          "sha256": "18d3a6c8b9c154f1cbe7d95e43bf612f4914f43b2a5ecf47a29bae11a16ee7c9",
+          "valid": true
+        },
+        "error": null,
+        "success": true
+      },
+      "anchor_authority_matches_current": true,
+      "runtime_bindings_match_installed087": false,
+      "refresh_required": [
+        "Refresh immutable 0.8.7 runtime/script/contract/agent descriptor and rerender runner envelope before dispatch"
+      ],
+      "dispatch_ready": false
+    },
+    {
+      "id": "ANC-007",
+      "file": "docs/plans/phase-c/reviews/planning-tuning-preparation/ANC-007-request.json",
+      "sha256": "295716bd95a45f3f7c2026573b6c324f9f4e3c2375d733eb08b333c58f2d0927",
+      "schema_valid": true,
+      "schema_errors": [],
+      "relational_exit_code": 0,
+      "relational_validation": {
+        "data": {
+          "sha256": "1e1d3334d2a54c68091d5aa6884713946938f2794a9b6d25056b3dec0f5aa894",
+          "valid": true
+        },
+        "error": null,
+        "success": true
+      },
+      "anchor_authority_matches_current": true,
+      "runtime_bindings_match_installed087": false,
+      "refresh_required": [
+        "Refresh immutable 0.8.7 runtime/script/contract/agent descriptor and rerender runner envelope before dispatch"
+      ],
+      "dispatch_ready": false
+    },
+    {
+      "id": "ANC-008",
+      "file": "docs/plans/phase-c/reviews/planning-tuning-preparation/ANC-008-request.json",
+      "sha256": "426f81a2b710e64ffab753f083ed89e71ac5c9b6304fd10ed1dedafb81b74e2e",
+      "schema_valid": true,
+      "schema_errors": [],
+      "relational_exit_code": 0,
+      "relational_validation": {
+        "data": {
+          "sha256": "6e4a3f57792e498c89d874111eca8cfd0bed4697303cb00d995283bf29b2c187",
+          "valid": true
+        },
+        "error": null,
+        "success": true
+      },
+      "anchor_authority_matches_current": true,
+      "runtime_bindings_match_installed087": false,
+      "refresh_required": [
+        "Refresh immutable 0.8.7 runtime/script/contract/agent descriptor and rerender runner envelope before dispatch"
+      ],
+      "dispatch_ready": false
+    },
+    {
+      "id": "ANC-009",
+      "file": "docs/plans/phase-c/reviews/planning-tuning-preparation/ANC-009-request.json",
+      "sha256": "0a48a1644886e2468ed82b42038626d228da1b14a9b0789f9999dd94bd4c591e",
+      "schema_valid": true,
+      "schema_errors": [],
+      "relational_exit_code": 0,
+      "relational_validation": {
+        "data": {
+          "sha256": "5a3c56acd4325486000784b9a338084c9658550bbf8fca18f13b731418892322",
+          "valid": true
+        },
+        "error": null,
+        "success": true
+      },
+      "anchor_authority_matches_current": true,
+      "runtime_bindings_match_installed087": false,
+      "refresh_required": [
+        "Refresh immutable 0.8.7 runtime/script/contract/agent descriptor and rerender runner envelope before dispatch"
+      ],
+      "dispatch_ready": false
+    },
+    {
+      "id": "ANC-010",
+      "file": "docs/plans/phase-c/reviews/planning-tuning-preparation/ANC-010-request.json",
+      "sha256": "55a50eff62400c1d9a77f936d963f3c7425148a03fc5605433a9659be9d627fe",
+      "schema_valid": true,
+      "schema_errors": [],
+      "relational_exit_code": 0,
+      "relational_validation": {
+        "data": {
+          "sha256": "0f7499f23d0a0dca90728223cf1a183fb899ea88966b220fa94e33e678dbce70",
+          "valid": true
+        },
+        "error": null,
+        "success": true
+      },
+      "anchor_authority_matches_current": true,
+      "runtime_bindings_match_installed087": false,
+      "refresh_required": [
+        "Refresh immutable 0.8.7 runtime/script/contract/agent descriptor and rerender runner envelope before dispatch"
+      ],
+      "dispatch_ready": false
+    }
+  ],
+  "immutable_packet_checks": [
+    {
+      "path": "docs/plans/phase-c/reviews/anchor-proposal.md",
+      "sha256": "e8eb9409529dda5655275a32d5137a4b33dc7741454668a64e57e04b07406a06",
+      "matches_immutable_manifest": true
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/anchor-clarity-diagnosis.md",
+      "sha256": "34af9d6945fdd2b913cdae7ce4df1cc0d3b23c84206980330369d2c522f1eafd",
+      "matches_immutable_manifest": true
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/approved-rubric.json",
+      "sha256": "f0452441080fce53c515f4a4b9f65504515237b1a1681105923c1c2d330fb03f",
+      "matches_immutable_manifest": true
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/calibration/frozen-oracle.json",
+      "sha256": "9e23c1f7b7af915438dfe72e3f4def34de19208766505f6b8415bd6709466b40",
+      "matches_immutable_manifest": true
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/calibration/acceptance-table-complete.json",
+      "sha256": "cc1fdfce35c95db556b82d6d4292c6cbfb365c5243d02d5f1522580cd7352393",
+      "matches_immutable_manifest": true
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/calibration/sealed-rubric.json",
+      "sha256": "6b5ceb41bb766acf1a808fbd5fbd18d13622b94cd319358aea6cc233ceb63600",
+      "matches_immutable_manifest": true
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/triage-087/r2/existing-approved-intent-v2.md",
+      "sha256": "e9f3cc7ae32002d5592d393ba24c82732f0e00d4633a37ad06928e1294777a0f",
+      "matches_immutable_manifest": true
+    }
+  ],
+  "live_gate_run": false,
+  "exclusions_applied": false,
+  "remaining": "Current testability diagnoses require independent retuning/reseal and optional upstream approved-context/rubric input support; no fixture/full-sprint gate PASS.",
+  "bead_snapshot": [
+    {
+      "id": "run-32b",
+      "title": "ANC-001: Generated consumer runs every configured analyzer",
+      "status": "open",
+      "description": "Generated consumer setup must install sc-lint with its sc-boundary, sc-portability, and sc-runtime analyzers.",
+      "updated_at": "2026-11-03T03:32:43Z"
+    },
+    {
+      "id": "run-32b.1",
+      "title": "ANC-001 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:45Z"
+    },
+    {
+      "id": "run-32b.2",
+      "title": "ANC-001 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:45Z"
+    },
+    {
+      "id": "run-83r",
+      "title": "ANC-003: Repository and template share sc-lint 0.8.4",
+      "status": "open",
+      "description": "The repository and generated template must both use sc-lint 0.8.4.",
+      "updated_at": "2026-11-03T02:59:47Z"
+    },
+    {
+      "id": "run-83r.1",
+      "title": "ANC-003 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:48Z"
+    },
+    {
+      "id": "run-83r.2",
+      "title": "ANC-003 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:48Z"
+    },
+    {
+      "id": "run-xiw",
+      "title": "ANC-004: Phase C uses c consistently",
+      "status": "open",
+      "description": "sc-runtime's Phase C must use the identifier phase-c.",
+      "updated_at": "2026-11-03T03:33:46Z"
+    },
+    {
+      "id": "run-xiw.1",
+      "title": "ANC-004 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:49Z"
+    },
+    {
+      "id": "run-xiw.2",
+      "title": "ANC-004 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:50Z"
+    },
+    {
+      "id": "run-ioz",
+      "title": "ANC-006: Keep rusqlite 0.39.x SQLite compatibility",
+      "status": "open",
+      "description": "Phase C's rusqlite dependency must remain at version 0.39.x.",
+      "updated_at": "2026-11-03T03:33:47Z"
+    },
+    {
+      "id": "run-ioz.1",
+      "title": "ANC-006 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:52Z"
+    },
+    {
+      "id": "run-ioz.2",
+      "title": "ANC-006 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:52Z"
+    },
+    {
+      "id": "run-a7e",
+      "title": "ANC-007: Configuration-selected default boundaries",
+      "status": "open",
+      "description": "Fresh consumer installation must generate a default boundaries policy selected from the consumer's configuration settings.",
+      "updated_at": "2026-11-03T02:59:53Z"
+    },
+    {
+      "id": "run-a7e.1",
+      "title": "ANC-007 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:53Z"
+    },
+    {
+      "id": "run-a7e.2",
+      "title": "ANC-007 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:53Z"
+    },
+    {
+      "id": "run-81q",
+      "title": "ANC-008: Consumer-owned boundaries policy",
+      "status": "open",
+      "description": "After fresh setup, the consumer repository must control subsequent boundaries-policy decisions.",
+      "updated_at": "2026-11-03T03:33:47Z"
+    },
+    {
+      "id": "run-81q.1",
+      "title": "ANC-008 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:54Z"
+    },
+    {
+      "id": "run-81q.2",
+      "title": "ANC-008 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T02:59:55Z"
+    },
+    {
+      "id": "run-qt3",
+      "title": "ANC-009: upgrade rmcp to its latest released version.",
+      "status": "open",
+      "description": "Phase C must upgrade rmcp to its latest released version.",
+      "updated_at": "2026-11-03T03:32:13Z"
+    },
+    {
+      "id": "run-qt3.1",
+      "title": "ANC-009 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T03:32:13Z"
+    },
+    {
+      "id": "run-qt3.2",
+      "title": "ANC-009 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T03:32:14Z"
+    },
+    {
+      "id": "run-evb",
+      "title": "ANC-010: upgrade utoipa to its latest released version.",
+      "status": "open",
+      "description": "Phase C must upgrade utoipa to its latest released version.",
+      "updated_at": "2026-11-03T03:32:15Z"
+    },
+    {
+      "id": "run-evb.1",
+      "title": "ANC-010 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T03:32:15Z"
+    },
+    {
+      "id": "run-evb.2",
+      "title": "ANC-010 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T03:32:16Z"
+    },
+    {
+      "id": "run-alr",
+      "title": "ANC-011: use a dedicated Git worktree.",
+      "status": "open",
+      "description": "Phase C planning must use a dedicated Git worktree.",
+      "updated_at": "2026-11-03T03:32:16Z"
+    },
+    {
+      "id": "run-alr.1",
+      "title": "ANC-011 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T03:32:17Z"
+    },
+    {
+      "id": "run-alr.2",
+      "title": "ANC-011 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T03:32:17Z"
+    },
+    {
+      "id": "run-mwv",
+      "title": "ANC-012: have a separate pull request targeting develop.",
+      "status": "open",
+      "description": "Phase C planning must have a separate pull request targeting develop.",
+      "updated_at": "2026-11-03T03:32:18Z"
+    },
+    {
+      "id": "run-mwv.1",
+      "title": "ANC-012 plan questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T03:32:18Z"
+    },
+    {
+      "id": "run-mwv.2",
+      "title": "ANC-012 dev questions",
+      "status": "open",
+      "description": "Jev question overrides for {{anchor_id}} at the {{gate}} gate.\n\nLeave the fenced block empty (`{}`) to use the default question set in\n`assets/questions/{{gate}}.json`. To override, give only the questions whose\nwording should change for this anchor; ids and the yes/no/unclear options must match the default set.\n\n```json\n{}\n```\n",
+      "updated_at": "2026-11-03T03:32:19Z"
+    },
+    {
+      "id": "run-x8d.1",
+      "title": "c-1: freeze consumer lint and runtime ecosystem contract",
+      "status": "open",
+      "description": "Execute docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md. Recheck crates.io, run the isolated consumer and package-identity probes, and amend the named requirements/ADRs/quality policy with the exact approved sc-lint and RMCP/Utoipa/Utoipa-Axum contract.",
+      "updated_at": "2026-11-03T02:31:23Z"
+    },
+    {
+      "id": "run-x8d.2",
+      "title": "c-2: install and prove full consumer sc-lint profile",
+      "status": "open",
+      "description": "Execute docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md after c-1 freezes the profile. Make generated consumers install and invoke sc-lint 0.8.4's boundary, portability, and runtime analyzers through just setup and just lint.",
+      "updated_at": "2026-11-03T02:31:33Z"
+    },
+    {
+      "id": "run-x8d.3",
+      "title": "c-3: upgrade runtime and template ecosystem stack",
+      "status": "open",
+      "description": "Execute docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md after c-1 freezes the exact matrix. Upgrade the public runtime/template composition to one approved RMCP/Utoipa/Utoipa-Axum universe, adapt APIs, preserve the SQLite resolver guard, and prove the checkout-patched generated consumer.",
+      "updated_at": "2026-11-03T02:31:39Z"
+    },
+    {
+      "id": "run-x8d.4",
+      "title": "c-4: publish and prove registry consumer release",
+      "status": "open",
+      "description": "Execute docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md only after c-3 and separate release authorization. Publish the approved sc-runtime 0.2.0 line and prove a no-patch generated consumer resolves the registry package.",
+      "updated_at": "2026-11-03T02:31:46Z"
+    }
+  ],
+  "bead_links_verified": true,
+  "coverage_preparation": {
+    "semantic_ids": [
+      "ANC-001",
+      "ANC-003",
+      "ANC-006",
+      "ANC-007",
+      "ANC-008",
+      "ANC-009",
+      "ANC-010"
+    ],
+    "structural_ids": [
+      "ANC-004",
+      "ANC-011",
+      "ANC-012"
+    ],
+    "send_selection": "--all: retain all ten active locked IDs on each complete sprint; retired ANC-002/005 omitted by lifecycle only",
+    "deterministic_evidence": "docs/plans/phase-c/reviews/structural-clarity-checks.json",
+    "expected_primary_ownership": {
+      "c-1": [
+        "ANC-003",
+        "ANC-007",
+        "ANC-008",
+        "ANC-009",
+        "ANC-010"
+      ],
+      "c-2": [
+        "ANC-001",
+        "ANC-003",
+        "ANC-007",
+        "ANC-008"
+      ],
+      "c-3": [
+        "ANC-006",
+        "ANC-009",
+        "ANC-010"
+      ],
+      "c-4": [
+        "registry publication consumes frozen package versions; applicability to preserved semantic constraints must be judged"
+      ]
+    },
+    "potential_explicit_exclusions": [
+      {
+        "items": [
+          "c-2"
+        ],
+        "anchors": [
+          "ANC-006",
+          "ANC-009",
+          "ANC-010"
+        ],
+        "reason": "Consumer lint implementation does not change SQLite or ecosystem dependency selections."
+      },
+      {
+        "items": [
+          "c-3"
+        ],
+        "anchors": [
+          "ANC-001",
+          "ANC-003",
+          "ANC-007",
+          "ANC-008"
+        ],
+        "reason": "Runtime ecosystem sprint consumes setup in fixtures but does not edit consumer lint installation or policy; judge relevance first."
+      },
+      {
+        "items": [
+          "c-4"
+        ],
+        "anchors": [
+          "ANC-001",
+          "ANC-003",
+          "ANC-007",
+          "ANC-008"
+        ],
+        "reason": "Registry proof consumes existing generated setup rather than selecting/installing consumer lint policy; judge relevance first."
+      }
+    ],
+    "exclusion_policy": "Candidates only. No exclusions applied; no relevance question override or smaller anchor list. Re-read scope and actual cell before any explicit exclude.",
+    "coverage_result": "not computed: no completed current live sprint runs"
+  }
+}

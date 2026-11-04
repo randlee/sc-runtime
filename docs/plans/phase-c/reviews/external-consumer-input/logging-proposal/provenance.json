@@ -1,0 +1,31 @@
+{
+  "source_repository": "/Users/randlee/github/sc-runtime",
+  "source_commit": "725420b5980e4a0e4a85db3d77a227c9b18a8c88",
+  "v0_1_1_tag_commit": "5af24c862fe7ed8dae8710b7bd64a84a29506b51",
+  "archive_sha256": "6b5dff46ce98d844305dc2e06fd99684114469819350a9f56604018684c2371f",
+  "package": "sc-cron",
+  "workspace_version": "0.1.1",
+  "registry_cache": "/Users/randlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sc-cron-0.1.1",
+  "files": {
+    "src/lib.rs": {
+      "inspected_sha256": "b2117d1588f2e82db5384b907382359fa8435dfab69a2c7d2e0e401f218d284d",
+      "registry_0_1_1_sha256": "b2117d1588f2e82db5384b907382359fa8435dfab69a2c7d2e0e401f218d284d",
+      "identical": true
+    },
+    "src/scheduler.rs": {
+      "inspected_sha256": "3a8f06305f19b80eba54956f9c8a152c58f4095cf3a3c2cca960789fc838f239",
+      "registry_0_1_1_sha256": "3a8f06305f19b80eba54956f9c8a152c58f4095cf3a3c2cca960789fc838f239",
+      "identical": true
+    },
+    "src/store.rs": {
+      "inspected_sha256": "8aaad2544e3d8ae9ba3e39264bb685d1591351baa1873668da3df63f316094d4",
+      "registry_0_1_1_sha256": "8aaad2544e3d8ae9ba3e39264bb685d1591351baa1873668da3df63f316094d4",
+      "identical": true
+    },
+    "src/worker.rs": {
+      "inspected_sha256": "0465e34736530f4ad32881f65df08e39a182763f5dfd4affd95741d206630ab6",
+      "registry_0_1_1_sha256": "0465e34736530f4ad32881f65df08e39a182763f5dfd4affd95741d206630ab6",
+      "identical": true
+    }
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: question-tuning
-version: 0.8.6
+version: 0.8.7
 description: When and how to replace the generic Jev questions with anchor-specific wording, where the overrides live, how to test a question set with fixtures and known beads before trusting it, and when to stop tuning.
 ---
 
@@ -50,6 +50,27 @@ the referenced payload format. The shipped v2 descriptor references
 its canonical JSON SHA-256 and semantic case count; do not require these format
 identities to match or relabel the frozen corpus. Its legacy expected role
 `atomicity` corresponds to the rubric's `single_constraint` role.
+
+For a disputed result on an approved anchor after calibration, delegate
+`operation: triage`, `gate: testability` through
+`templates/anchor-tuning-review-feedback.md.j2`. Pass the actual request and raw
+response, the disputed rubric role ID, the five-role sealed rubric, and the
+approved locked anchor and fixtures. The evaluator may return `anchor_defect`
+with a clarity recommendation or `question_defect` with authority for reopening
+the affected rubric tournament. An anchor defect keeps the rubric digest
+unchanged. Insufficient evidence or low confidence alone produces
+`EVIDENCE.INCOMPLETE`; adjudication never waives the rubric or confidence rule.
+The plan-independent calibration corpus remains frozen and separate from this
+single-anchor diagnosis.
+
+Testability triage binds the exact sealed questions to the actual request and
+all five valid raw answers. `review.source_digest` hashes the canonical JSON
+`canonical_request.state.anchor` object (`statement`, `quote`, `scope`), which
+must match a locked authority record with nonempty approved `pass` and `fail`
+fixture arrays. The authority's record digest hashes canonical JSON records;
+the intent digest hashes its UTF-8 `content`. Both result digest fields retain
+the actual rubric seal: triage diagnoses, and a separate tournament changes
+questions. Planning/development payloads retain their existing contracts.
 
 ## Who tunes
 

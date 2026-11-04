@@ -1,0 +1,50 @@
+{
+  "status": "offline-valid-staging-required",
+  "validation": {
+    "schemas": true,
+    "relational_and_fence_previously_validated": true,
+    "render_equality": true,
+    "runtime_hashes": true,
+    "original_seal": true,
+    "empty_anchor_authority": true,
+    "actual_repo_committed_consent": true,
+    "local_smoke_consent_remains_false": true
+  },
+  "files": [
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/inputs/future-intent-01-rubric.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/inputs/future-intent-01-rubric.json",
+      "file_bytes_sha256": "404c98bc81fbfae177e2845aee38082ab7fbbdc54377d5725fd0a54afaf99e9d",
+      "canonical_json_sha256": "256a300b06168dd457a7f2b591a8cc92abce9189e418246aaf82ff9f789a61a0",
+      "rubric_digest": "256a300b06168dd457a7f2b591a8cc92abce9189e418246aaf82ff9f789a61a0"
+    },
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/inputs/future-intent-02-rubric.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/inputs/future-intent-02-rubric.json",
+      "file_bytes_sha256": "ee8f5b824425a7764434be899e36a5da023b26da25893d8107603dbf9c4d5140",
+      "canonical_json_sha256": "cc8fc2477a2994c6099aeb918c6a158a796ad9e0542f46c593a2837f7cd06321",
+      "rubric_digest": "cc8fc2477a2994c6099aeb918c6a158a796ad9e0542f46c593a2837f7cd06321"
+    },
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/inputs/future-intent-03-rubric.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/inputs/future-intent-03-rubric.json",
+      "file_bytes_sha256": "4d61ad46a76ec92ba6f377fe5fa2d4ec3a26e92cf1ce8c84342cad91063a50a2",
+      "canonical_json_sha256": "79edf334503e0795fe47189d24c7fd518781b9076e1bc397f4097330e87f9648",
+      "rubric_digest": "79edf334503e0795fe47189d24c7fd518781b9076e1bc397f4097330e87f9648"
+    },
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/inputs/generic-authorized-algorithm-intent.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/inputs/generic-authorized-algorithm-intent.json",
+      "file_bytes_sha256": "6da1c2b95600f7dbff0704553104eb31390d4fcedcc5355975b48a51c7fc947f",
+      "canonical_json_sha256": "af560520e5b13046e8d3cff480d800ee48b093c244e06b8c6695ec2ee6635319",
+      "intent_content_sha256": "91d3cd2dca9db76703f9ba9e6a923669af46df1d39876c4910b18a09f36597f2"
+    },
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/inputs/generic-unauthorized-algorithm-intent.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/inputs/generic-unauthorized-algorithm-intent.json",
+      "file_bytes_sha256": "ef64a5e338bd5c9a588f72a0a7e7ba020e9215a26fa4b3be538678b1918d9232",
+      "canonical_json_sha256": "11c9aaae07ef258dd328a2b7ce48f93e33d75ae470ff297cc4924ab25377e8cb",
+      "intent_content_sha256": "ce021492bbd3c5808ab1fc7175e90139327d64f56e399f972a01fc536e9e2985"
+    }
+  ]
+}

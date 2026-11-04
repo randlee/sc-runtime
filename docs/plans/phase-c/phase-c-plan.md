@@ -1,45 +1,111 @@
 ---
 requirements:
-  - REQ-RUN-0002
+  - NFR-RT-0001
+  - REQ-CRON-0001
+  - NFR-CRON-0001
   - REQ-RUN-0004
-  - REQ-RUN-0005
-  - REQ-RUN-0307
+  - REQ-RUN-0002
+  - REQ-RUN-0301
   - REQ-RUN-0503
-  - REQ-RUN-0701
+  - REQ-RUN-0307
   - REQ-RUN-0702
   - NFR-RUN-0006
   - NFR-RUN-0007
+  - REQ-CMD-0005
+  - NFR-CMD-0001
+  - NFR-CMD-0002
+  - REQ-CRON-0002
+  - REQ-CRON-0003
+  - REQ-CRON-0004
+  - REQ-CRON-0005
+  - REQ-CRON-0019
+  - REQ-CRON-0020
+  - REQ-CRON-0021
+  - NFR-CRON-0002
+  - REQ-CRNC-0001
+  - REQ-CRNC-0002
+  - NFR-CRNC-0001
+  - REQ-RUN-0332
+  - REQ-RUN-0401
+  - REQ-RUN-0402
+  - REQ-RUN-0403
+  - REQ-RUN-0001
+  - REQ-RUN-0005
+  - REQ-RT-0005
+  - REQ-RT-0006
+  - REQ-RUN-0701
+  - REQ-RUN-0003
+  - NFR-RUN-0001
+  - REQ-DBSQ-0001
+  - REQ-DBSQ-0005
+  - REQ-RUN-0302
   - NFR-RUN-0010
   - NFR-RT-0003
   - REQ-RT-0001
   - REQ-RT-0004
-  - REQ-CMD-0005
-  - NFR-CMD-0001
-  - NFR-CMD-0002
+  - REQ-RT-0002
+  - NFR-RUN-0002
+  - NFR-RUN-0005
+  - REQ-CMD-0001
+  - REQ-CMD-0002
+  - REQ-CMD-0003
+  - REQ-CMD-0006
+  - NFR-RUN-0009
+  - REQ-CMD-0004
+  - NFR-CMD-0003
+  - REQ-RT-0003
+  - REQ-RT-0007
+  - REQ-RT-0008
+  - NFR-RT-0002
+  - NFR-RT-0004
+  - REQ-DBSQ-0002
+  - REQ-DBSQ-0003
+  - REQ-DBSQ-0004
 adrs:
+  - ADR-RUN-0002
+  - ADR-RUN-0005
+  - ADR-RUN-0017
+  - ADR-RUN-0202
+  - ADR-RUN-0203
+  - ADR-RUN-0303
+  - ADR-RUN-0003
+  - ADR-RUN-0013
+  - ADR-RUN-0014
+  - ADR-RUN-0016
+  - ADR-RUN-0018
+  - ADR-RUN-0019
+  - ADR-RUN-0401
+  - ADR-RUN-0402
+  - ADR-CRNC-0001
+  - ADR-RT-0001
+  - ADR-RT-0004
+  - ADR-RT-0005
   - ADR-CMD-0001
   - ADR-CMD-0002
   - ADR-CMD-0003
-  - ADR-RT-0001
   - ADR-RT-0002
   - ADR-RT-0003
-  - ADR-RT-0004
-  - ADR-RT-0005
-  - ADR-RUN-0002
-  - ADR-RUN-0003
-  - ADR-RUN-0005
+  - ADR-RUN-0001
+  - ADR-RUN-0006
+  - ADR-RUN-0007
+  - ADR-RUN-0009
+  - ADR-RUN-0011
   - ADR-RUN-0012
-  - ADR-RUN-0202
-  - ADR-RUN-0203
-  - ADR-RUN-0401
-  - ADR-RUN-0402
+  - ADR-RUN-0301
+  - ADR-RUN-0302
 ---
 
-# Phase c — consumer lint completeness and runtime ecosystem release
+# Phase c — consumer lint, cron compatibility and runtime ecosystem release
+
+Readiness: **not approved to begin implementation**. This approved scope
+amendment requires fresh scope/critical delta review, QA and actual anchor
+checks. Earlier PASS reports retain their historical baselines. Existing
+anchor records/quotes are unchanged; newly discussed intent awaits its separate
+capture packet, not silent adoption from external consumer evidence.
 
 ## Objective
 
-Phase `c` closes two independent adoption gaps left after Phase b:
+Phase `c` closes the following adoption gaps left after Phase b:
 
 1. A newly generated consumer must install the complete `sc-lint` **0.8.4**
    toolchain with `just setup`, then run the pre-populated boundary,
@@ -50,12 +116,24 @@ Phase `c` closes two independent adoption gaps left after Phase b:
    compatible `rmcp`, `utoipa`, and `utoipa-axum` releases. The generated
    consumer must use the same Utoipa type generation as the published
    `sc-runtime`, rather than resolve two incompatible OpenAPI stacks.
+3. Existing cron Rust/Python/Monty registration remains usable through a public
+   nominal logging facade and cooperative owned store/shutdown/query protocol.
+   Runtime Windows Ctrl-Break and real fixture cleanup cover consumer lifecycle
+   seams. Cron is already ported; no new job kind or re-port is planned.
+4. An optional standard start/end/list JSON adapter presents the same
+   operation/result/error to CLI, HTTP and selected MCP. Default-off generated
+   configuration leaves core usable alone; explicitly selected configuration
+   wires the real shared handler into the existing UIs.
 
 After the contract sprint establishes the authoritative shared decisions, the
 lint and runtime-to-template implementation tracks are deliberately
 independent. Their integration sprints close end-to-end implementation proof;
 the authorized release sprint closes the separately external registry proof.
-The phase has no artificial phase-wide integration sprint.
+The phase has no artificial phase-wide integration sprint. The exact new
+contracts and causal proof policy live in
+[compatibility-contract.md](compatibility-contract.md), governed by the new
+REQ/ADR target amendments. External beads-cache evidence is test/reference
+input; actual consumer migration/QA remains external.
 
 ## Entry state and non-negotiable constraints
 
@@ -74,22 +152,65 @@ The phase has no artificial phase-wide integration sprint.
 - `sc-runtime` exposes `utoipa_axum::OpenApiRouter` in its builder surface.
   Moving that public type from Utoipa 5 to 6 is a pre-1.0 breaking change.
   The release therefore publishes `sc-runtime 0.2.0`, and the template
-  consumes that exact new minor line. The other standalone library crates
-  are not version-bumped unless their manifests actually change.
-- `template/` remains consumer code. It may carry only the narrowly declared,
-  sc-lint-owned 0.8.4 profile entries approved by `c-1`; it may not gain a
-  hand-written `boundaries/`, clippy, rustfmt, or deny policy. The amendment
+  consumes that exact new minor line. `sc-command` also moves to `0.2.0`:
+  its public RMCP `IntoMcp`/`McpError` types change with the same stack.
+  `sc-cron` consumes the command-owned logging trait through a versioned
+  path dependency; the new cron public compatibility contract and optional
+  adapter are both 0.2.0 in c-1's proven affected closure. Unaffected standalone
+  libraries retain `0.1.1`.
+- Selective publication is a contract to prove, not an assumed kit feature.
+  The current pin's release-tag version checks cover all declared crates and
+  its registry lookups use the tag version. `c-1` probes the canonical kit
+  with affected package versions and unchanged literal-base packages. If it
+  cannot validate and publish only the affected closure, the upstream kit
+  capability gap blocks release work until an enhancement is qualified;
+  do not bypass validation or bump unaffected packages to accommodate it.
+- `template/` remains consumer code. Fresh generation installs an appropriate
+  default boundary policy derived from the selected project configuration;
+  after setup the consumer owns that policy. It does not copy this
+  repository's maintainer policy. It may carry the sc-lint-owned 0.8.4
+  profile entries approved by `c-1`, but no clippy, rustfmt, or deny policy. The amendment
   to REQ-RUN-0307, NFR-RUN-0006, ADR-RUN-0005, and the quality policy makes
-  that exception explicit before either implementation sprint begins.
+  that exception explicit in the pushed contract consumed by the implementation sprints.
 
 ## Boundary map
 
 | Track | Boundary / composition root | Contract change | Sprint | Owned-path boundary |
 | --- | --- | --- | --- | --- |
-| phase contract | consumer lint plus public runtime composition | the binding 0.8.4 consumer-profile exception, its executable receipt/init-preservation protocol, the frozen Utoipa/RMCP package-identity matrix, and the release handoff | `c-1` | requirements, ADRs, quality-policy text, and a temporary contract probe recorded before deletion |
+| phase contract | consumer lint plus public runtime composition | the binding 0.8.4 consumer-profile and configuration-derived default boundary policy contract, its executable receipt/init-preservation protocol, the frozen Utoipa/RMCP package-identity matrix, and the release handoff | `c-1` | requirements, ADRs, quality-policy text, and a temporary contract probe recorded before deletion |
 | consumer lint | generated consumer lint contract | `setup` installs working 0.8.4 binaries; ordinary `just lint` plus named default/full lint profiles invoke `sc-boundary`, `sc-portability`, and `sc-runtime` using the `c-1` contract | `c-2` | `template/sc-lint.toml`, bootstrap/Just integration, generation fixture tests and template CI |
 | ecosystem integration | `sc-runtime` public builder plus generated daemon | one Utoipa 6 type universe and RMCP 3.8 API adaptation; the checkout-patched consumer proves the public composition before publication | `c-3` | runtime manifests/source/tests, template manifests/daemon source, lockfile, compatibility tests, fixture CI |
 | ecosystem release | published `sc-runtime` plus registry consumer | authorized publication and the no-patch, registry-resolved consumer proof | `c-4` | release workflow/metadata and a release-mode fixture |
+| cron core compatibility | existing `BOUNDARY-sc-cron` | same logging trait facade; shared real-Instant stop/admission context, physical owned join, bounded active/ended/all query and context-aware operations | `c-5` | cron source/tests and isolated external consumer; no shared Cargo writer |
+| standard cron adapter | new `BOUNDARY-sc-cron-commands` | sole CronRequest DTO, injectable CronExecutor and optional scheduler executor over native CronOperations; generic projections c-3, real root binding c-4 | `c-6` | adapter source/tests/schema/docs; no template or shared manifest edits |
+
+C-1 updates existing command/cron allowed-dependent lists and creates the new
+adapter boundary: adapter→defaults-off command, optional adapter→cron. Runtime
+and command have no reverse cron/adapter edge. DTO defaults exclude cron,
+SQLite, Tokio, Monty and server libraries. Generator shared prompt/schema/
+answers/member/feature declarations and exact executor/operation/binding ports
+are c-1's baseline; c-3 owns generic UI projections and atomic ecosystem
+manifests/lock after that baseline. C-4 owns final selected template binding.
+C-1 provides canonical dev-only operation/executor doubles and a real context
+probe on existing non-default test-utils; no production stub or sibling
+implementation is needed for c-3/c-6 tests. C-5 and
+c-6 consume c-1's compileable public contracts/double and have disjoint source
+paths. C-1 explicitly enables rusqlite 0.39 `bundled,hooks` and commits the
+lock prerequisite; c-3 subsequently retains those features while migrating
+versions/path edges. C-5 depends on that committed baseline, never an
+uncommitted c-3 manifest edit. No manifest is removed from c-3 wholesale.
+
+The existing `BOUNDARY-sc-runtime` manifest allows transport and command
+server dependencies plus its third-party runtime stack, permits no workspace
+dependents, and forbids config, cron, SQLite-writer, SQLx, and full logging
+runtime edges. `BOUNDARY-sc-command` permits `sc-runtime`/`sc-cron` dependents
+and serde/serde_json/sc-observability-types dependencies; its server-feature
+exceptions remain governed by NFR-CMD-0001/0002. The c-3 upgrade changes
+versions inside those contracts, not dependency direction. The authoritative
+lists remain `boundaries/sc-runtime/sc-runtime.toml` and
+`boundaries/sc-command/sc-command.toml`. c-2 generates a separate consumer
+policy from ADR-RUN-0303's selected application crate graph; it never vendors
+these maintainer manifests.
 
 `c-3` is intentionally vertical. `DaemonBuilder` accepts ordinary
 `utoipa_axum::OpenApiRouter`, so the runtime implementation, the generated
@@ -107,19 +228,32 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 | 1 | contract | `c-1` | contract | phase-c-consumer-runtime-contract | `sprint/c-1-consumer-runtime-contract` | REQ/ADR/quality-policy amendments and a temporary contract probe |
 | 2 | lint | `c-2` | integration | generated-consumer-lint | `sprint/c-2-consumer-sc-lint-full-profile` | template lint/bootstrap/recipes, generated-fixture validation, template CI |
 | 2 | ecosystem | `c-3` | integration | runtime-template-ecosystem-integration | `sprint/c-3-runtime-ecosystem-upgrade` | runtime and template dependency/API surfaces, lockfile, compatibility tests, checkout fixture CI |
-| 3 | release | `c-4` | integration | published-runtime-template-consumer | `sprint/c-4-runtime-ecosystem-release` | release workflow/metadata and release-mode fixture |
+| 2 | cron | `c-5` | integration | sc-cron-consumer-compatibility | `sprint/c-5-cron-consumer-compatibility` | cron source/tests and isolated external consumer |
+| 2 | cron-commands | `c-6` | boundary | sc-cron-commands | `sprint/c-6-standard-cron-commands` | adapter implementation/schema/tests/docs |
+| 3 | release | `c-4` | integration | published-runtime-template-consumer | `sprint/c-4-runtime-ecosystem-release` | final selected template root binding, release workflow/metadata and composed release fixture |
 
 - Critical path: **3 sprints** (`c-1` → `c-3` → `c-4`).
-- Width: **2 sprints**.
-- Sprint count: **4**.
-- `c-1` establishes the authoritative consumer and dependency contracts and
-  must finish before `c-2` or `c-3`. `c-2` and `c-3` are `parallel_safe`:
-  they have disjoint owned paths.
+- Width: **4 sprints**.
+- Sprint count: **6**. Added substantial independent cron and adapter
+  boundaries raise usable width without increasing the critical path.
+- `c-1` establishes the authoritative consumer and dependency contracts.
+  Its development push triggers merge-forward into `c-2`, `c-3`, `c-5` and `c-6` before
+  every child development/fix round; parent QA is not a start barrier, and
+  the `c-1` PR must merge before any child PR completes.
+  All four wave-2 siblings are `parallel_safe` with disjoint owned paths.
   `c-2` must not modify runtime/template dependency manifests; `c-3` must
   not change `template/sc-lint.toml`, bootstrap behavior, or consumer lint
-  profile names. `c-4` must follow `c-3` and owns the authorized registry
-  proof; it does not modify runtime or template source.
-- Both branches are cut from `integrate/phase-c`; each gets a distinct
+  profile names. C-5 owns cron implementation/tests, c-6 adapter implementation/
+  tests. `c-4` consumes `c-3`'s prepared ecosystem/UI implementation,
+  c-5's real query/lifecycle and c-6's concrete handler:
+  every parent development push triggers merge-forward before each
+  child development/fix round, parent QA is not a start barrier, and the
+  parent PR must merge before the `c-4` PR completes. `c-4` owns the authorized
+  registry proof and small final selected-template root binding. C-3 hands
+  those listed template call sites to c-4 in the later wave; c-4 does not edit
+  core runtime/cron/adapter implementation. Real callable ports, rather than
+  concrete sibling types or fake factory bodies, preserve the parallel cut.
+- Each sibling branch is cut from `integrate/phase-c`; each gets a distinct
   worktree and a PR to that integration branch. The final integration PR is
   `integrate/phase-c` to `develop`.
 
@@ -127,16 +261,31 @@ implementer, one consumer" exception from the sprint-planning guidelines.
 
 | Feature-level criterion | Sole owner | Proof |
 | --- | --- | --- |
-| The consumer-profile exception and package-identity/release contracts are unambiguous before implementation starts. | `c-1` | An executable isolated 0.8.4 no-manifest/init-preservation probe and a temporary metadata probe pass before the amended REQ/ADR/quality-policy text freezes their exact results and the authorized release handoff. |
+| The consumer-profile exception and package-identity/release contracts are unambiguous before implementation starts. | `c-1` | An executable isolated 0.8.4 fresh-policy/init-preservation probe and a temporary metadata probe pass before the amended REQ/ADR/quality-policy text freezes their exact results and the authorized release handoff. |
 | A generated consumer installs and executes the complete configured sc-lint toolchain without source edits. | `c-2` | Generated fixture runs `just setup`, ordinary `just lint`, and named default/full profiles; the installed `sc-lint` launcher’s analyzer invocation receipt proves all three analyzers actually ran. |
 | A runtime/template consumer compiles with one RMCP/Utoipa/Utoipa-Axum universe at their approved latest releases. | `c-3` | Checkout-patched fixture and targeted type-composition tests assert exactly one package identity for each contract package on the runtime/daemon composition graph. |
-| Published `sc-runtime 0.2.0` can be consumed by the template without a checkout patch. | `c-4` | The authorized release workflow publishes only after the release-mode fixture resolves the crates.io package and passes the consumer command sequence. |
+| Published `sc-runtime 0.2.0` can be consumed by the template without a checkout patch. | `c-4` | The authorized release workflow publishes after prepublication checks; once the package is visible, the release-mode fixture resolves it from crates.io and passes the consumer command sequence before release closure. |
 | SQLite compatibility remains stable. | `c-3` | The existing `sqlx_resolve` test and tree assertion prove `rusqlite 0.39.x` with `libsqlite3-sys 0.37`, and no `libsqlite3-sys 0.38` appears. |
+| Existing cron hooks, facade and cooperative owned store/query/lifecycle work through the public library. | `c-5` | Real causal blocked-operation/SQLite/physical-join tests and isolated Rust/Python/Monty consumer; fixed budget/cleanup/error contract, no detached success. |
+| Standard command adapter closes its boundary against admitted-operation contract. | `c-6` | Strict JSON/Envelope/error/feature graph and contract-double tests; no real-worker claim. |
+| Windows Ctrl-Break and fixture cleanup preserve production lifecycle ownership. | `c-3` | Native isolated signal/restart proof plus coordinated portable cleanup/lock/thread tests. |
+| Selected generated CLI/HTTP/MCP actually share start/end/list for all three existing targets. | `c-4` | Final real template factory/root binding composes c-3 projections with c-5 Scheduler/CronOperations and c-6 StandardCronExecutor; checkout and registry fixture prove normalized data/error parity and minimal default-off graph. |
 
 ## Required decisions and exact compatibility contract
 
-Sprint `c-1` amends the active architecture before either implementation
-sprint starts: **ADR-RUN-0203, “Library versions on one router; one struct for
+The human approved the commit admission/outcome decision: stop new ordinary
+commit admission at G and cleanup admission at K, retain physical ownership
+through completion, and report confirmed committed-late or indeterminate
+outcomes accurately. There is no universal physical COMMIT/fsync completion
+within 2T promise, no blind replay/false rollback and no effects after actual
+owned release. C-1 freezes final commit-hook linearization and typed outcomes;
+c-5 tests the race and actual persisted state; c-4 proves the released contract.
+The exact assistant question and human approval are retained in
+reviews/authority-approvals/admission-outcome-approved.json. This is a documented
+approved tradeoff, not a waiver of critical review, QA or actual anchor gates.
+
+Sprint `c-1` supplies the pushed contract consumed by the implementation
+sprints: **ADR-RUN-0203, “Library versions on one router; one struct for
 both schemas.”** The amendment replaces its old 0.2/5.5.0/3.7 evidence matrix
 with the approved Utoipa 6/RMCP 3.8 matrix and retires obsolete pin evidence.
 It must state all of the following, so a future dependency update cannot
@@ -163,7 +312,10 @@ sc_runtime::Daemon::builder()
   RMCP 3.8 package identity and preserve the existing stateless streamable-HTTP
   composition.
 - The `sc-runtime` public crate version changes from `0.1.1` to `0.2.0`.
-  Template registry requirements and release-mode tests use `0.2.0` exactly;
+  Command, cron and new cron-commands are `0.2.0` in the affected closure.
+  Publication follows dependency order: command first, then cron and runtime,
+  then cron-commands after cron visibility.
+  Template registry requirements and release-mode tests use the frozen versions exactly;
   local development retains only the driver-owned `[patch.crates-io]` path.
 - The SQLite writer remains an independent rusqlite building block. The
   template stores remain SQLx; no dependency edit creates an edge between the
@@ -173,14 +325,48 @@ sc_runtime::Daemon::builder()
   complete checkout-patched prepublication proof and may not claim the
   registry-consumer criterion.
 
+## Consumer extension and onboarding closure
+
+The sole adapter DTO and canonical Envelope/OpError family have owner-local
+JsonSchema/ToSchema support under independent optional schema features. C-1
+owns compileable declaration/manifest/boundary prerequisites with probe-frozen
+identities; c-3 owns typed projection activation/checks, c-6 preserves/tests
+schema and scheduler combinations, and c-4 actual tools/list/OpenAPI wire
+parity. DTO/CLI defaults stay lean; no second model or sibling implementation
+dependency is introduced. ADR-RUN-0203 and ADR-CRNC-0001 govern this same-struct
+contract; command schema traits obey ADR-CMD-0001/0002/0003.
+
+The approved ANC-013 through ANC-018 statements and fixtures are now locked.
+All six full-sprint plan gates pass at the production 0.6 threshold; the capture
+rubric outcomes remain inconclusive. Current semantic and structural coverage
+is recorded in reviews/current-plan-anchor-results.md. The four owning QA2
+reviews PASS at df5cc0c with all eleven QA1 findings resolved and the same ten
+planning deliverables complete; final manager/CI verification remains pending. The framework charter and REQ-CRON-0020/0021 govern supported store
+replacement and opt-in cooperation; REQ-CRNC-0002 governs actual selected wiring.
+C-1 freezes default-versus-custom responsibilities; c-5 proves a custom store
+with an application-owned schema field in its existing isolated consumer and
+documents legacy/cooperative choices; c-6 documents public operation/executor
+replacement and one working selected-default recipe; c-4 follows that recipe
+through real generated and registry-only integration. The bundled SQLite
+admission/outcome promises do not become universal consumer policy enforcement.
+Default defensive checks, truthful outcomes and physical ownership remain.
+
+Existing README/test venues and owned paths suffice: no new plugin framework,
+consumer-product migration, automatic job start, sprint or dependency edge.
+The six-sprint DAG remains critical path 3, width 4. Fresh scope/critical/QA and
+actual Plan Anchor checks are required for this revision; historical PASS
+reports cover their recorded baselines only.
+
 ## Out of scope
 
 - Updating `rusqlite` above `0.39.x`, updating SQLx, or resolving the
   `libsqlite3-sys 0.38` incompatibility.
-- Adding consumer boundary manifests or copying this repository's boundary
-  policy into generated projects.
-- New runtime features, new MCP tools, OpenAPI routes, or changes to the
-  builder's intended composition responsibility.
+- Copying this repository's maintainer boundary policy into generated
+  projects, or overwriting an existing consumer-owned boundary policy.
+- Features beyond the explicitly approved lifecycle compatibility and optional
+  standard cron projections. No core runtime cron edge, mandatory command
+  installation, ATM-specific fields, new cron port/job type/catalog, unrelated
+  CRUD expansion or consumer-product migration/QA waiver.
 - Replacing `sc-lint`'s installation/bootstrap mechanism or implementing new
   analyzer rules in sc-runtime.
 - Publishing anything without the existing release authorization and CI
@@ -189,7 +375,7 @@ sc_runtime::Daemon::builder()
 
 ## Phase validation and exit
 
-The integration PR may close only after both sprint acceptance sets pass on
+The integration PR may close only after all six sprint acceptance sets pass on
 the composed head:
 
 1. `just lint && just test` succeeds, including the current configured
@@ -206,6 +392,16 @@ the composed head:
    fixture and proves `sc-runtime 0.2.0` has a crates.io registry source.
 5. The SQLite resolver guard continues to prove the pinned 0.39/0.37
    rusqlite/libsqlite3-sys pairing.
+6. C-5 proves existing three-target registration, real cooperative store/query
+   cancellation, restricted cleanup and physical joins; c-3 proves Windows
+   signals and real fixture cleanup. No timeout status substitutes for joins.
+7. C-4 proves selected standard commands across actual CLI/HTTP/optional MCP,
+   both checkout and registry, with c-5/c-6 implementations and default-off
+   feature graphs. Earlier boundary/double evidence is not this composition.
+8. Fresh scope/critical delta review, manager QA and actual Plan Anchor
+   testability/fixtures/full-sprint gates cover the amended six-sprint plan.
+   Historic review reports/seals remain intact; unfinished gates keep readiness
+   false regardless of source-code or preparation checkpoint success.
 
 The phase is complete when its final PR reaches `develop` **after `c-4`'s
 authorized release handoff has recorded a successful registry-consumer proof**.

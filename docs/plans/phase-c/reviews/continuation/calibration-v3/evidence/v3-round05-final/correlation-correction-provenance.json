@@ -1,0 +1,1 @@
+{"previous": "sc-runtime-testability-v3-first-prepared", "correct": "sc-runtime-testability-v3-round05", "reason": "Bind final cumulative outcome to exact latest strict invocation; raw evidence, scores and accepted:false decision unchanged.", "prior_render_preserved": "/tmp/sc-runtime-phase-c-review/continuation/calibration/v3-round05-final/prior-bootstrap-correlation"}

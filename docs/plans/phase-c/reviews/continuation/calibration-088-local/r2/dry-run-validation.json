@@ -1,0 +1,56 @@
+{
+  "source_commit": "c313d007 (test-only successor; local package originally b410ceab)",
+  "script_sha256": "a99b50920aa3516df2df09673f6e924166ab0390d98bd0c8a02bfb8cba6d84e3",
+  "dry_runs": [
+    {
+      "file": "future-intent-01-authorized.stdout.json",
+      "questions_match_frozen": true,
+      "intent_matches_frozen": true,
+      "question_seal": "256a300b06168dd457a7f2b591a8cc92abce9189e418246aaf82ff9f789a61a0",
+      "request_sha256": "5be3bdbf4ed5e809d1bc9dd1c0aae052283ffb2f1f62602c7d291df9c008be02",
+      "stdout_sha256": "f5c26cec7ddbbf1443931403d3d88031454ade4bd64bfdd1aa85366173073c7d"
+    },
+    {
+      "file": "future-intent-01-unauthorized.stdout.json",
+      "questions_match_frozen": true,
+      "intent_matches_frozen": true,
+      "question_seal": "256a300b06168dd457a7f2b591a8cc92abce9189e418246aaf82ff9f789a61a0",
+      "request_sha256": "03b4f9f133851ea77e133b9c2ef54734e3010afc4a2e3717d9d41cec5877bcfe",
+      "stdout_sha256": "e66ae409e26e749d32e9ab85c630aa2b3df8d761e8fa746b22be79fc02b05627"
+    },
+    {
+      "file": "future-intent-02-authorized.stdout.json",
+      "questions_match_frozen": true,
+      "intent_matches_frozen": true,
+      "question_seal": "cc8fc2477a2994c6099aeb918c6a158a796ad9e0542f46c593a2837f7cd06321",
+      "request_sha256": "e0726f37625f0504d75015319e1c7a53ac2d0b682b4dba89869810c72ec549ee",
+      "stdout_sha256": "d259e8977d8d1a92cca035a9b961657a1cc6f2fc8eb25ea2e45a81490a76134b"
+    },
+    {
+      "file": "future-intent-02-unauthorized.stdout.json",
+      "questions_match_frozen": true,
+      "intent_matches_frozen": true,
+      "question_seal": "cc8fc2477a2994c6099aeb918c6a158a796ad9e0542f46c593a2837f7cd06321",
+      "request_sha256": "c3fdf37aa759600ad5fe0dc776646442a3be7b25d0106417624835c2a30f9a28",
+      "stdout_sha256": "5dbdee583bbae57afec169321865cc5a4586dbf6f4ac17f3bc3297360e89921c"
+    },
+    {
+      "file": "future-intent-03-authorized.stdout.json",
+      "questions_match_frozen": true,
+      "intent_matches_frozen": true,
+      "question_seal": "79edf334503e0795fe47189d24c7fd518781b9076e1bc397f4097330e87f9648",
+      "request_sha256": "2de517634ef5b4fb2d279292aedfbd29d1a8686f3e985383996496b9a4824d57",
+      "stdout_sha256": "cead8c61e47061e8d38fbccd36270b4c5d6ab9150d2b0fdb760be94b94c4d20e"
+    },
+    {
+      "file": "future-intent-03-unauthorized.stdout.json",
+      "questions_match_frozen": true,
+      "intent_matches_frozen": true,
+      "question_seal": "79edf334503e0795fe47189d24c7fd518781b9076e1bc397f4097330e87f9648",
+      "request_sha256": "91c4ef575a953f2f5c7419bf707994a1ae27f331f8cd49e3765b0503fa40e86c",
+      "stdout_sha256": "03cdcb01e9beb822d1244ed09df025cbd98ee57e20e74f4080529c95fab73344"
+    }
+  ],
+  "live_calls": 0,
+  "new_seal_accepted": false
+}

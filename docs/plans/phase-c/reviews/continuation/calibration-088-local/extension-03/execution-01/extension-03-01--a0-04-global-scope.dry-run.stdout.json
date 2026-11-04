@@ -1,0 +1,154 @@
+{
+  "success": true,
+  "data": {
+    "threshold": 0.6,
+    "dry_run": true,
+    "fixture": false,
+    "path": null,
+    "anchors": [
+      {
+        "id": "candidate",
+        "statement": "Every CLI subcommand must emit a JSON object on stdout.",
+        "quote": "all CLI commands should print JSON on stdout",
+        "scope": "all CLI subcommands",
+        "verdict": null,
+        "failing": [],
+        "answers": null,
+        "lint": {
+          "warnings": [],
+          "errors": []
+        },
+        "inputs": {
+          "question_seal": "af5b460294f80ba76bb00984efcb16d6a384ecefa5eb3474cb30815b14c54e32",
+          "request_sha256": "5069a19f6a382b070b73258185a124b83fc97207f69e6861e0cbf39537c5ed44"
+        }
+      }
+    ],
+    "needs_work": [
+      "candidate"
+    ],
+    "pass": false,
+    "requests": [
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "A new policy, algorithm, strength, condition or required result lacks supplied authorization or conflicts with it.",
+              "unclear": "The available quote and intent do not resolve whether substantive content was preserved.",
+              "yes": "The obligation is supported by the quote or explicit approved intent, allowing routine formalization of its wording and output representation."
+            },
+            "instructions": "Compare the substantive requirement in anchor.statement with the supplied authority: anchor.quote together with state.intent.content when present. Extracting one quoted duty is permitted. Routine formalization includes must wording, print/log terminology expressed through stdout or stderr, and JSON output described as a JSON object when the authority does not distinguish JSON shapes. Explicit intent may add the authorization for a specific algorithm; absent intent grants no such authorization. Evaluate support for the duty, independently of its testability.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "Compliance depends on an undefined quality, private shorthand, or approval without an identified observable record or decision mechanism.",
+              "unclear": "Evidence is identified, but the observation or decision needed to settle compliance remains ambiguous.",
+              "yes": "The stated behavior or artifact supplies a determinate observation; any decisive approval condition identifies its observable record or decision mechanism."
+            },
+            "instructions": "Does anchor.statement identify an inspectable behavior or artifact sufficient to settle compliance? Concrete outputs, paths, explicit actions and prohibitions can supply that evidence as written. An approval-dependent condition needs an identified observable approval record or decision mechanism; naming an approver alone does not supply one. Do not invent a missing record, witness procedure or later inquiry. Recorded human approval can be observable.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "It joins independently enforceable predicates requiring different behavior or policy.",
+              "unclear": "The statement does not establish whether its clauses express one predicate or separate duties.",
+              "yes": "The statement specifies one predicate, including a common predicate over several surfaces."
+            },
+            "instructions": "Evaluate whether anchor.statement governs one predicate. Repeating the same prohibition or outcome over terminal output, saved artifacts or other listed surfaces is one rule. A trigger restricts applicability rather than adding a separate duty. Different obligations such as formatting logs and retrying failures are independent even if the same service performs both. Ignore unused duties from the provenance quote.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "Every CLI subcommand must emit a JSON object on stdout.",
+            "quote": "all CLI commands should print JSON on stdout",
+            "scope": "all CLI subcommands"
+          }
+        }
+      },
+      {
+        "model": "jev-latest",
+        "questions": {
+          "faithful": {
+            "criteria": {
+              "no": "A new policy, algorithm, strength, condition or required result lacks supplied authorization or conflicts with it.",
+              "unclear": "The available quote and intent do not resolve whether substantive content was preserved.",
+              "yes": "The obligation is supported by the quote or explicit approved intent, allowing routine formalization of its wording and output representation."
+            },
+            "instructions": "Compare the substantive requirement in anchor.statement with the supplied authority: anchor.quote together with state.intent.content when present. Extracting one quoted duty is permitted. Routine formalization includes must wording, print/log terminology expressed through stdout or stderr, and JSON output described as a JSON object when the authority does not distinguish JSON shapes. Explicit intent may add the authorization for a specific algorithm; absent intent grants no such authorization. Evaluate support for the duty, independently of its testability.",
+            "type": "choice"
+          },
+          "observable": {
+            "criteria": {
+              "no": "Compliance depends on an undefined quality, private shorthand, or approval without an identified observable record or decision mechanism.",
+              "unclear": "Evidence is identified, but the observation or decision needed to settle compliance remains ambiguous.",
+              "yes": "The stated behavior or artifact supplies a determinate observation; any decisive approval condition identifies its observable record or decision mechanism."
+            },
+            "instructions": "Does anchor.statement identify an inspectable behavior or artifact sufficient to settle compliance? Concrete outputs, paths, explicit actions and prohibitions can supply that evidence as written. An approval-dependent condition needs an identified observable approval record or decision mechanism; naming an approver alone does not supply one. Do not invent a missing record, witness procedure or later inquiry. Recorded human approval can be observable.",
+            "type": "choice"
+          },
+          "scoped": {
+            "criteria": {
+              "no": "No work area or applicability set is identifiable.",
+              "unclear": "An area is named but its applicability cannot be determined.",
+              "yes": "A reviewer can identify the work area where this anchor applies, including an explicit all-items set."
+            },
+            "instructions": "Do anchor.statement and anchor.scope identify the governed activity, component, artifact, or explicit global set, independent of whether the requirement itself is vague or otherwise defective?",
+            "type": "choice"
+          },
+          "self_contained": {
+            "criteria": {
+              "no": "At least one decisive term is an undefined quality or private label, or compliance depends on an approval with no identified record.",
+              "unclear": "A possible outside-context dependency exists but the statement does not show whether it is decisive.",
+              "yes": "None of those outside-context dependencies is needed; ordinary technical terms, concrete prohibitions, lists, and explicit input/action/outcome conditions are sufficient."
+            },
+            "instructions": "Is anchor.statement independently understandable and applicable without any of these disqualifiers: an undefined subjective quality (for example robust), private shorthand, or a human approval that has no identified recorded artifact? Ignore grammar, bundling, fidelity, and scope.",
+            "type": "choice"
+          },
+          "single_constraint": {
+            "criteria": {
+              "no": "It joins independently enforceable predicates requiring different behavior or policy.",
+              "unclear": "The statement does not establish whether its clauses express one predicate or separate duties.",
+              "yes": "The statement specifies one predicate, including a common predicate over several surfaces."
+            },
+            "instructions": "Evaluate whether anchor.statement governs one predicate. Repeating the same prohibition or outcome over terminal output, saved artifacts or other listed surfaces is one rule. A trigger restricts applicability rather than adding a separate duty. Different obligations such as formatting logs and retrying failures are independent even if the same service performs both. Ignore unused duties from the provenance quote.",
+            "type": "choice"
+          }
+        },
+        "state": {
+          "anchor": {
+            "statement": "Every CLI subcommand must emit a JSON object on stdout.",
+            "quote": "all CLI commands should print JSON on stdout",
+            "scope": "all CLI subcommands"
+          }
+        }
+      }
+    ],
+    "totals": {
+      "requests": 2,
+      "bytes": 8546,
+      "max_request_bytes": 24000
+    }
+  },
+  "error": null
+}

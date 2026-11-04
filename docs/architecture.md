@@ -15,7 +15,9 @@ Repo-level architecture and ADRs for `sc-runtime`, extracted from
 [sc-config](sc-config/architecture.md),
 [sc-transport](sc-transport/architecture.md),
 [sc-command](sc-command/architecture.md),
-[sc-runtime](sc-runtime/architecture.md).
+[sc-runtime](sc-runtime/architecture.md),
+[sc-cron](sc-cron/architecture.md),
+[sc-cron-commands](sc-cron-commands/architecture.md) (Phase C target).
 
 ADR entries follow the shared SC requirement and ADR templates.
 
@@ -27,7 +29,7 @@ An ADR whose status field reads Active or Approved is binding on every plan,
 change and fix. An ADR whose status field reads Proposed is not binding, and
 no sprint may depend on it, until it is made Active. ADR ids have the form
 `ADR-<DOMAIN>-nnnn`, where the domain is `RUN` (this file), `CFG`, `TRN`,
-`CMD` or `RT` (the crate files).
+`CMD`, `RT` or `CRNC` (the crate files).
 
 ## System shape
 
@@ -1481,6 +1483,22 @@ nothing.
 ---
 
 ## ADR-RUN-0203: Library versions on one router; one struct for both schemas
+
+**Phase C planned amendment, owned by c-1:** the optional standard-cron DTO is
+defined once in sc-cron-commands, and api-types/projections import that owned
+type. Its independent optional schema feature implements JsonSchema/ToSchema
+on the same request/response family using the existing probe's frozen schemars
+and Utoipa identities. Adapter/schema also selects command/schema: the canonical
+Envelope<T>/OpError/ErrorKind owners supply schema traits matching their custom
+wire serialization, with no wire changes, copied wrapper models or orphan
+implementations. C-1 commits compileable declarations and schema manifest/
+boundary baseline before c-3/c-6; c-3 enables schema on selected daemon/service
+edges and compiles real Parameters<CronRequest>/typed Utoipa projections against
+the executor double. C-6 preserves the contract; c-4 verifies actual tools/list
+and OpenAPI schema consistency. CLI/default graphs remain schema/server-free
+through this adapter edge. This extends the one-struct decision's ownership
+for the shared library type; it does not authorize duplicate DTOs or generic
+schemas in place of the typed library-native projections.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
@@ -3000,3 +3018,79 @@ source. The complete first-release SQLite schema is version 1 with canonical
 reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
+
+## ADR-RUN-0018: Cooperative cron operation and owned shutdown contract
+
+Phase C's default command intake completes this same pre-submission admission
+contract with finite per-Scheduler capacity (default64, validated finite
+pre-start override), immediate typed refusal rather than an unbounded wait
+queue, and permits retained until physical completion after waiter cancellation.
+Stop/cleanup remain independent; public commands cannot use private internal
+paths to bypass capacity. NFR-RUN-0002 and the existing service-hardening
+checklist section 7 motivate this operational bound. Existing row-limit and
+scheduled-job concurrency decisions are unchanged; custom operation/executor
+providers retain responsibility for their explicitly documented overload policy.
+
+**Status:** Approved Phase C target; implementation planned. REQ-CRON-0020/0021
+and [the Phase C contract](plans/phase-c/compatibility-contract.md) specify the
+public receiver facade, legacy-safe store admission, directly mutable real
+monotonic budgets, tracked public CRUD/query, restricted generation-fenced
+cleanup, typed expiry and actual physical ownership. This extends ADR-RUN-0013
+without changing the bundled schema, existing Rust/Python/Monty targets or environment
+policy in ADR-RUN-0016. It preserves ADR-RUN-0017's temporary nominal command
+logging port rather than claiming upstream observability cleanup.
+
+Caller absolute G/K permits equality. T=0 cancels immediately with no hidden
+cleanup allowance or instantaneous-join promise. The shared real stop clock
+is independent of schedule ManualClock; test-only forced expiry proves
+propagation, while real-clock tests prove elapsed bounds. Unsupported stores
+cannot enter cooperative mode, and provider overruns cannot become successful
+bounded completion by dropping a waiter or emitting early status.
+
+The framework charter retains custom ScheduleStore/schema and caller-owned
+legacy integrations. The cooperative guarantees here apply to the standard
+path and any custom provider explicitly implementing that capability. SQLite
+hooks/TLS/interrupt are bundled-provider mechanisms, not requirements to use
+SQLite in every application. Custom providers forward the live scope and
+truthfully declare support or remain on the documented legacy path. C-5 proves
+one application-field store example without changing shared Schedule/DTOs.
+
+Human-approved commit clarification: G/K cut off new commit admission, not
+universal physical commit/fsync completion. An owned commit_hook decision
+briefly serializes stop/real-time/class/generation eligibility then releases
+the controller lock before COMMIT. Admitted transactions may finish later and
+remain physically owned. Report confirmed committed-late, explicit rollback
+or indeterminate truthfully; expiry/Drop is not rollback evidence. No uncertain
+mutation replay, expired-budget reconciliation or effects after physical
+release. C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves
+the actual admission race and persisted state after join, c-4 proves packaged
+behavior. This changes the prior strict physical-cutoff interpretation by the
+explicit human decision, not a finding waiver or implementation PASS.
+
+## ADR-RUN-0019: Optional standard cron command adapter and generated wiring
+
+**Status:** Approved Phase C target; implementation planned. The new optional
+`sc-cron-commands` library provides common start/end/list JSON and canonical
+Envelope errors, with Rust/Python/Monty execution options. DTO-only defaults
+use serde/serde_json and defaults-off command; optional scheduler adds cron.
+Core command and runtime gain no cron/adapter reverse edge. This explicitly
+amends ADR-RUN-0003's workspace graph and the product-API restriction of
+ADR-RUN-0013 only for the separate adapter: scheduler core keeps no binary,
+HTTP/MCP routes or configuration-file loading.
+
+REQ-RUN-0332 adds default-off generation selection and real selected CLI/HTTP/
+optional-MCP wiring, governed by ADR-CRNC-0001. C-1 owns new manifests/shared
+declarations/contracts and injectable native-operation/executor/target-binding
+ports; c-3 generic template projections, c-5 real core operations, c-6 concrete
+adapter behavior, c-4 final selected-template binding and real prepublication/
+registry integration. Canonical dev-only doubles and real context probe support
+parallel work without production stubs. The actual
+ATM start/end/list and ADR-069 inform the general verbs only: no ATM package,
+team/phase/mandatory-until, six-field-only grammar or second response envelope.
+Public CronOperations/CronExecutor ports also permit application behavior and
+lifecycle policy replacement. The standard executor retains shared-context
+safety; custom implementations document their own authorization, cancellation,
+physical ownership and truthful error/outcome duties. C-6 extends existing
+usage documentation with one selected-default recipe and the c-5 store-example
+link; c-4 consumes it through real generated and registry-only composition.
+No new plugin framework, automatic job start or private wiring is required.

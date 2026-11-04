@@ -1,0 +1,59 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Actual c1 plan run plan-20261104T053619Z-c-1: six underspecified cells.
+# Recorded BEFORE plan edit. Defaults passed approved semantic fixtures; these
+# corrections clarify the plan only. No anchor/question/fixture/threshold edit.
+
+triage:C1_PLAN_R1_ANC_009 a triage:Finding ;
+ triage:anchor_id "ANC-009" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T053619Z-c-1" ; triage:action "replace" ;
+ triage:sentence "4. In the same test, recheck crates.io, create a temporary composition manifest for the newest stable candidates, and run locked `cargo metadata --format-version 1 --all-features`." ;
+ triage:replacement "At probe execution, query crates.io for the latest released rmcp and utoipa versions, select those exact versions, and record both registry selections in ADR-RUN-0203 runtime dependency matrix consumed unchanged by c-3. Incompatible latest releases fail the probe; do not silently select an older release." ;
+ triage:authority "locked ANC-009; ADR-RUN-0203; NFR-RUN-0007; existing c1/c3 frozen matrix contract; all predate this failed run" ;
+ triage:verified_run "plan-20261104T063232Z-c-1" .
+
+triage:C1_PLAN_R1_ANC_010 a triage:Finding ;
+ triage:anchor_id "ANC-010" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T053619Z-c-1" ; triage:action "replace" ;
+ triage:sentence "4. In the same test, recheck crates.io, create a temporary composition manifest for the newest stable candidates, and run locked `cargo metadata --format-version 1 --all-features`." ;
+ triage:replacement "At probe execution, query crates.io for the latest released rmcp and utoipa versions, select those exact versions, and record both registry selections in ADR-RUN-0203 runtime dependency matrix consumed unchanged by c-3. Incompatible latest releases fail the probe; do not silently select an older release." ;
+ triage:authority "locked ANC-010; ADR-RUN-0203; existing c1/c3 frozen matrix contract; all predate this failed run" ;
+ triage:verified_run "plan-20261104T063232Z-c-1" .
+
+triage:C1_PLAN_R1_ANC_014 a triage:Finding ;
+ triage:anchor_id "ANC-014" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T053619Z-c-1" ; triage:action "replace" ;
+ triage:sentence "Reconcile NFR-RUN-0001's closed generated-CLI allowlist for explicitly selected standard commands: permit defaults-only sc-cron-commands DTOs directly or through api-types; that adapter edge's own normal closure excludes scheduler, server, SQLite, Tokio and Monty." ;
+ triage:replacement "A consumer may omit the entire standard cron command set: cron_commands=false is the default. Selection requires cron and leaves independently disabled MCP disabled." ;
+ triage:authority "locked ANC-014; REQ-CRNC-0002; REQ-RUN-0332; ADR-RUN-0019; ADR-CRNC-0001; all predate this failed run" ;
+ triage:verified_run "plan-20261104T063232Z-c-1" .
+
+triage:C1_PLAN_R1_ANC_015 a triage:Finding ;
+ triage:anchor_id "ANC-015" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T053619Z-c-1" ; triage:action "replace" ;
+ triage:sentence "Reconcile NFR-RUN-0001's closed generated-CLI allowlist for explicitly selected standard commands: permit defaults-only sc-cron-commands DTOs directly or through api-types; that adapter edge's own normal closure excludes scheduler, server, SQLite, Tokio and Monty." ;
+ triage:replacement "Selecting cron_commands enables the same versioned CronRequest JSON contract across CLI, HTTP and enabled MCP, using cron.start, cron.end and cron.list." ;
+ triage:authority "locked ANC-015; REQ-CRNC-0001/0002; ADR-RUN-0019; ADR-CRNC-0001; all predate this failed run" ;
+ triage:verified_run "plan-20261104T063232Z-c-1" .
+
+triage:C1_PLAN_R1_ANC_016 a triage:Finding ;
+ triage:anchor_id "ANC-016" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T053619Z-c-1" ; triage:action "replace" ;
+ triage:sentence "Reconcile NFR-RUN-0001's closed generated-CLI allowlist for explicitly selected standard commands: permit defaults-only sc-cron-commands DTOs directly or through api-types; that adapter edge's own normal closure excludes scheduler, server, SQLite, Tokio and Monty." ;
+ triage:replacement "The same start/end/list schedule-management verbs apply to Rust, Python and optional Monty target selections; handler-kind options select execution within that common contract." ;
+ triage:authority "locked ANC-016 clarified common-subcommands wording; REQ-CRNC-0001; REQ-CRON-0003; ADR-CRNC-0001; all predate this failed run" ;
+ triage:verified_run "plan-20261104T063232Z-c-1" .
+
+triage:C1_PLAN_R1_ANC_017 a triage:Finding ;
+ triage:anchor_id "ANC-017" ;
+ triage:status "fixed" ; triage:classification "plan_defect" ;
+ triage:run "plan-20261104T053619Z-c-1" ; triage:action "replace" ;
+ triage:sentence "Distinguish bundled SQLite cooperative guarantees from custom cooperative providers and the caller-owned legacy path. Name the existing ScheduleStore, CronOperations and CronExecutor replacement seams, capability/scope forwarding, schema ownership and lifecycle/error responsibilities." ;
+ triage:replacement "Consumers may replace the bundled store/schema via ScheduleStore, override scheduler operations and lifecycle/error policy via CronOperations, or replace command execution via CronExecutor; they own cancellation, physical joins, authorization and accurate outcomes/error mapping." ;
+ triage:authority "locked ANC-017; framework charter; REQ-CRON-0020/0021; REQ-CRNC-0002; ADR-RUN-0018/0019; existing compatibility-contract supported defaults and consumer replacement; all predate this failed run" ;
+ triage:verified_run "plan-20261104T063232Z-c-1" .

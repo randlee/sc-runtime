@@ -1,0 +1,665 @@
+{
+  "status": "PASS_OFFLINE_SUPPORTED_CLI",
+  "live_calls": 0,
+  "cases_checked": 63,
+  "materialization": [
+    {
+      "path": "docs/plans/phase-c/reviews/continuation/calibration-088-local/extension-02/inputs/extension-02-01-rubric.json",
+      "exact_source_equals_destination": true,
+      "sha256": "7be721d58cb32652075a9d391431fb28fd6044e37db657c0ab857344fda71f8d"
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/continuation/calibration-088-local/extension-02/inputs/extension-02-02-rubric.json",
+      "exact_source_equals_destination": true,
+      "sha256": "5a17d42f6cc53894b409dfddbd6f6418f4c7d4f866517fba9967694fe429b273"
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/continuation/calibration-088-local/extension-02/inputs/extension-02-03-rubric.json",
+      "exact_source_equals_destination": true,
+      "sha256": "211cb4f3e5b8973ecebe6d84fd1a4bbcf74403f1ce36848aa1bfadcf6b72667d"
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/continuation/calibration-088-local/extension-02/inputs/generic-authorized-algorithm-intent.json",
+      "exact_source_equals_destination": true,
+      "sha256": "af560520e5b13046e8d3cff480d800ee48b093c244e06b8c6695ec2ee6635319"
+    },
+    {
+      "path": "docs/plans/phase-c/reviews/continuation/calibration-088-local/extension-02/inputs/generic-unauthorized-algorithm-intent.json",
+      "exact_source_equals_destination": true,
+      "sha256": "11c9aaae07ef258dd328a2b7ce48f93e33d75ae470ff297cc4924ab25377e8cb"
+    }
+  ],
+  "checks": [
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-01-valid-directive",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "23a9b5d922b125b8edbc0603add37cff26bcab6ab9510ba0dbd4b00319462e2a",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-02-valid-prohibition",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "28e4079f8e8aab8b07bd7d9aad796c53db97d3b174460c322abe7c159ecbead0",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-03-structural-scope",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "c7848a645b16a9f396b1c3f6ed5afb6243771888c26f4f4983f9ba2c5978ed33",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-04-global-scope",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "a24efb1ac91490a6da72b68df56b15e7d5fcb8a4dadd95a1de43a6db7d650a7b",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-05-atomic-from-multi-directive",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "b7171886f2525f598037c2aa4d7c7f29094dc6a3828de4d7d59fd6bcc348b0e5",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-06-genuinely-bundled",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "1fb2f2ee559065311e560a50543adb596687d0fcb5cafe45e79bfd21056687cd",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-07-unsupported-elaboration",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "a3614f58cfc0da5ea199ba3e38dd3ad0b6411dcaccc7c2be87832a1dd6521d20",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-08-vague-outcome",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "8c8515cbd56872109ddaedf89432fd43507ccd36ddab01aa9cca134bd54c3f91",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-09-explicit-testable-condition",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "4b7cc7c2b317bd21081e5a62ae48912f82334f52310384941669b3e41e55f1a9",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-10-api-key-redaction",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "e6a2eff47adc8d25689b702b3bb8015e9552c58f0dcbcc6a956143999ce4610b",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": true
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-11-private-shorthand",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "c45ff75be282491a0c19cf3ab3fcbe1ecd030e45f2af98ffe88b27d1905c987e",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-12-unrecorded-approval",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "6a267d7bb5d5bb303d49a83fa837660fd1f5ced2da300e4686763ec9501b510c",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-13-shared-quote-first-atomic",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "5d476b3d4d90e8e80d8a416f0710024ed9e1dca5959868d42a46ab369ca086d1",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-14-shared-quote-second-atomic",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "2b01703012db03954e82a232159ca0023715241bc7af235c7b88676c9fdc40b3",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-15-duplicate-first",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "b937a0dfade12e97ee8865fafbea8a061d50847d20c2b07d27b45012fd149548",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-16-duplicate-second",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "c486687dde110f8c304a377f0b41e97b16efbc020c38cf50d6c6716376d48653",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "a0-17-nondeclarative-form",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "f6b57f8fdddda690eb98d59d418f58de74b2094bd365a95a358342e5b17e2c7b",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "generic-authorized-algorithm",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "87964d6bd46a4a671d588def9ffc4aea0fa849bf291abb679db65825984e8f5e",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "generic-unauthorized-algorithm",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "a552a41ce42892b619de16b97c88626ab10f00dae84b03ca9daeeedfe0755302",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "generic-shared-predicate-surfaces",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "10f1d9f627b4d59c185a80fb80675b796d83a0e9b399dedb631644cef0b42297",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-01",
+      "case_id": "generic-independent-duties",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "0b0b54097d374e6c9947104347c2413996a326f00c8ab609da42aaa812f76a4c",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-01-valid-directive",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "b081ef6475b442e3192eebf7df1006655cff6e94526450112e658f7e4989e0d3",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-02-valid-prohibition",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "e96c83390310cce2c63ed9f160b062d9ee6c23a5b0c4d1e2e0c67c76a4a8e353",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-03-structural-scope",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "8d7478a57518bdcba640265496c52839f5f92e6262a2329e37cf872b769bfdd1",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-04-global-scope",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "306e7279cb3301bec1a07c9f9da1615d64498358d2a4380848da064ee3ffed11",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-05-atomic-from-multi-directive",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "141613f52ac8ec8bb58afa19f10fff2e6afeedf5d3e1634d2ca3119606ca0855",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-06-genuinely-bundled",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "040e3d7c123208f54a540231f1e9ef50ba5b4ff87ac171d54a8bbc0847271886",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-07-unsupported-elaboration",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "b643a8e9b56fa25ed07f75d72b5ae7dcff93edf2b5dd4b14ce58ab615c0d442f",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-08-vague-outcome",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "a8af93556d60151089c999ba4ecfa0f5738b76e027b3f5c03cf83300f4b28bf8",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-09-explicit-testable-condition",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "3d43a0f69b10c82648a14a187bd452a2e24edb7682fa1ce36ad8a6bf4b2a20ef",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-10-api-key-redaction",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "00123f50df6729a03c9c3faa5a417078a8a3a30d727acb9f0415402986b9cc4d",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": true
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-11-private-shorthand",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "87d7823bf42059ceab97654feeaecc80ee37a03fcc9371a21f79f8acc2f2f7b6",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-12-unrecorded-approval",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "71633bb211ec2a91baa5322318162dd51c71eee00e567969a64f45baad97e754",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-13-shared-quote-first-atomic",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "8e572c493ea94cfc2f623e48232287f14fd0460f0a9e15e5e9cf10b47cba5ed8",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-14-shared-quote-second-atomic",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "9192353e6d6ff3275d6631e052459e22e9bccf5f644eee840f7e4fc1cffa9138",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-15-duplicate-first",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "7452a78ca47181d4db582929ab1718e392c9811a5d65f0ae5284d210f8f77b99",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-16-duplicate-second",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "a706a71ea16432a6fec03567c2435e85d971929c43bc259f6b90e955a79b66c7",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "a0-17-nondeclarative-form",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "501f0fbb20febbb8d2a89495dfeb43b6ab0cd38f7d81482870229a3d38326c28",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "generic-authorized-algorithm",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "77c0b16f111593639f3f5eb498e37b180fff7923ba3fc8d3bec86ffb6860b9fe",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "generic-unauthorized-algorithm",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "5a7958332e22a7b7e7feb81fd734f23abde99739f5492a80ce6490157f1834d1",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "generic-shared-predicate-surfaces",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "6931c6d436d67c8cc699fac73f75e6746ae1cdd298748e84242cd819fe819ea6",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-02",
+      "case_id": "generic-independent-duties",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "3fae8654104da35cce5a8da59418d3125a735a5aa930ea34561713d4d97c4b0a",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-01-valid-directive",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "7d1f27b76b95107e63ca229ef393306e63ad6fed633414bfcf299185cbac6fa7",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-02-valid-prohibition",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "d2027dbe904e9ba7dc211831b90f9c5070611e172209ac4ae9cbc17837e7b6ae",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-03-structural-scope",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "4f4411f8c155bf305c4271e904d519b76de4ca5b8bded15afcab3c08bea2d091",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-04-global-scope",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "3bf8db5d0c830ad0d80218268632b114521bd493f0b057df873e0d7f1f1a9fe0",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-05-atomic-from-multi-directive",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "b91270637485f709bdb1f5380983d11a504eab4c223e647c8002c5e5cdf6da6c",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-06-genuinely-bundled",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "ca7a3577fcef082d7cd6478447977f731a92488b8643c21490a8436b560a5782",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-07-unsupported-elaboration",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "27db38ec8fc075cc20d4f1ad8922a0bc071b81978c5a6555a91a61c2b1581eb5",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-08-vague-outcome",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "6381ccc09cb9dff023549887373533d245b62e1a4fb495b9343dad102dbb6645",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-09-explicit-testable-condition",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "2f68a3183a8d8aba0c54dad9db67db84fb33539216a4964d0808a9bf32a8d6cf",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-10-api-key-redaction",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "31186e968bd72e9796f4ce7ab489c71dc5830965a653366299c4e215a021cc0e",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": true
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-11-private-shorthand",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "38c4ce3e3de605d655618b5cb8f9ba879302de4376266727b43c223dd458f217",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-12-unrecorded-approval",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "3de91ff3bf1262c2e44792e14a3347f4befaafdf7207c7a8370ca1e65fac072e",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-13-shared-quote-first-atomic",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "dbf2336d053dd145b8e6a144378979cca27a7e1d08b147fcdfaf1f406ecc2d89",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-14-shared-quote-second-atomic",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "5a0c1d7c958f0c1beb0330bbeb8bcfc687cc5b9303a012cb9ed906997aa7363a",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-15-duplicate-first",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "0df1309ca176f5e5d405e00982d1d3966e586152743aa8b2d3318c27c5447abc",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-16-duplicate-second",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "98977d2a49cfbd127dd54e2ff9735e36a638ff9f6458a9b3939fcdc1c2de5651",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "a0-17-nondeclarative-form",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "e762871cdc51d1fa950e5bbdd270a39f46d3ba521547f750a5d992cb5b3d8074",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "generic-authorized-algorithm",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "d3b986dc6f0d1314aec3371bf6cd7699aa8a63788cac9bfe939485de6870508f",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "generic-unauthorized-algorithm",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "2d16c79fc5745607135c12fc731c059f82156de186af3f0e272d67347192ea12",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "generic-shared-predicate-surfaces",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "b4af63e182b526d8eb13dc8126bcf51e36cb63d211c72f29fe119a437659b4de",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    },
+    {
+      "candidate_id": "extension-02-03",
+      "case_id": "generic-independent-duties",
+      "exit_code": 0,
+      "displayed_repeat_pair_equal": true,
+      "presentation_matches_installed_redaction": true,
+      "canonical_unredacted_request_digest": "de80fe26c6361fda85158789e89936c5322ce74f685d332f4711755767d4af18",
+      "provenance_matches_frozen": true,
+      "presentation_differs_from_source": false
+    }
+  ],
+  "scope": "LOCAL TEST0.8.8unreleased patch; dryrun provenance/display evidence only, not livejudge acceptance"
+}

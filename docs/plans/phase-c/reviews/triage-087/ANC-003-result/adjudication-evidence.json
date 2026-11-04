@@ -1,0 +1,17 @@
+{
+  "authority_citations": [
+    "sc-runtime-phase-c-review-completion-intent v1 sha256 6bbac0c410825010cc8da531e7cc4cecdd1b15dfb4752d6a371527874385264e",
+    "ANC-003 v2 locked: statement, quote, scope, check and approved pass/fail fixtures"
+  ],
+  "source_digest": "b0a1b4167089de9ea0c501719e74c4909650db7625bc70b926959861d5f64fb7",
+  "sealed_question_set_digest_before": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+  "sealed_question_set_digest_after": "96d8f74cf022d7515aaa0d4a8f4e103b9be8c7b776bf99794d9926ef13d8fdb4",
+  "role": "single_constraint",
+  "question_action": "unchanged_pending_diagnosis",
+  "original_outcome": "inconclusive",
+  "new_jev_calls": 0,
+  "active_plan_reads": 0,
+  "authority_changes": 0,
+  "confidence_override": false,
+  "reason": "The recorded single_constraint answer is no (confidence 0.46; repeat no at 0.53), but the supplied approved evidence does not settle whether this is an anchor_defect or question_defect. ANC-003 v2 requires the same sc-lint 0.8.4 version on the repository and generated template. Its approved pass fixture requires both artifacts to declare and bootstrap that version; its fail fixture distinguishes a template at 0.8.0. These fixtures establish the required version and conjunctive coverage, but supply no approved expected single_constraint rubric answer. The sealed question expressly permits one invariant across several output surfaces while its no criterion counts independently enforceable duties. Repository and template version compliance can be inspected independently, yet can also be read as two applications of the same fixed-version invariant. The supplied raw response has choices/probabilities but no rationale resolving that distinction. No frozen rubric-role oracle or calibration example independently establishes which interpretation applies here. Low confidence and repeated no choices establish neither disposition; neither planner approval nor user approval of implementation fixtures alone proves an atomicity oracle mismatch. The original inconclusive testability outcome and sealed rubric remain unchanged. No live gate PASS is claimed."
+}

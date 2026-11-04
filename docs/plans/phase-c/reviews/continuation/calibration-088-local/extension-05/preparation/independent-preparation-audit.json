@@ -1,0 +1,24 @@
+{
+  "candidate_count": 6,
+  "question_variants_unique": true,
+  "changed_roles": [
+    "faithful"
+  ],
+  "fixed_roles_exact": [
+    "observable",
+    "single_constraint",
+    "scoped",
+    "self_contained"
+  ],
+  "request_count": 138,
+  "generic_case_count": 23,
+  "candidate_wrapper_count": 6,
+  "intent_descriptor_count": 2,
+  "new_cases_added": 0,
+  "new_live_calls": 0,
+  "concurrent_evaluators_maximum": 3,
+  "no_confidence_coaching": true,
+  "no_case_ids_in_questions": true,
+  "selection_policy": "Size selection applies only after full 115-cell acceptance; minimum canonical bundle bytes then candidate ID.",
+  "actual_production_seal_unchanged": true
+}
