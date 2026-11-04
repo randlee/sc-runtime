@@ -39,6 +39,7 @@ allowed_dependencies = [
 # use scripts/check_observability_dependencies.py in the existing CI test path
 # to inspect resolved normal package identities, including aliases/transitive edges.
 forbidden_edges = [
+  "sc-runtime -> sc-cron-commands",
   "sc-runtime -> sc-config",
   "sc-runtime -> sc-runtime-db-sqlite",
   "sc-runtime -> sc-cron",
