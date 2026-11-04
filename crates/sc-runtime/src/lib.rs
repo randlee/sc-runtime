@@ -9,7 +9,7 @@
 //! ready state. An optional all-phase `.logger(handle)` replaces the fixed
 //! `sc-runtime` Noop; the application owns flushing and shutdown. Endpoint text is resolved before the lock so an invalid
 //! endpoint does not open stores. Signal listeners are registered, and on
-//! Windows Ctrl-C is polled, before the lock and before bind. The order after
+//! Windows Ctrl-C and Ctrl-Break are polled, before the lock and before bind. The order after
 //! a valid endpoint is signals, lock, stores, routes and optional MCP, then
 //! bind. The assembled router limits handler time. Shutdown drains in-flight
 //! requests up to a bound. [`DaemonBuilder::run_with_cleanup`] then awaits

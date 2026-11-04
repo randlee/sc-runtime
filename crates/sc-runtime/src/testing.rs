@@ -102,7 +102,47 @@ impl DaemonFixture {
         let builder = crate::Daemon::builder(app, &config)
             .stores(stores)
             .routes(routes);
-        spawn(builder, temp).await
+        spawn(builder, temp, || async {}).await
+    }
+
+    /// Starts a daemon with application cleanup on the existing isolated runner.
+    ///
+    /// Cleanup runs once after serving or a startup failure. Stores, logger
+    /// and any acquired instance lock remain owned through cleanup. The endpoint
+    /// stays continuously bound from its receipt through health confirmation.
+    /// Dropping the fixture or its startup future stops and physically joins
+    /// the owning thread; cleanup must eventually finish for that join to return.
+    ///
+    /// # Errors
+    /// Returns the primary startup/serving error after cleanup, or a join fault.
+    pub async fn start_with_cleanup<S, FStores, Fut, FRoutes, FCleanup, Cleanup>(
+        app: &AppName,
+        config: DaemonConfig,
+        stores: FStores,
+        routes: FRoutes,
+        cleanup: FCleanup,
+    ) -> Result<Self, RuntimeError>
+    where
+        S: Clone + Send + Sync + 'static,
+        FStores: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
+        FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+        FCleanup: FnOnce() -> Cleanup + Send + 'static,
+        Cleanup: Future<Output = ()> + Send + 'static,
+    {
+        let (config, temp) = match prepare_config(config) {
+            Ok(prepared) => prepared,
+            Err(error) => {
+                drop(stores);
+                drop(routes);
+                cleanup().await;
+                return Err(error);
+            }
+        };
+        let builder = crate::Daemon::builder(app, &config)
+            .stores(stores)
+            .routes(routes);
+        spawn(builder, temp, cleanup).await
     }
 
     /// Starts a daemon with an injected canonical logger on an isolated root.
@@ -127,7 +167,7 @@ impl DaemonFixture {
             .logger(logger)
             .stores(stores)
             .routes(routes);
-        spawn(builder, temp).await
+        spawn(builder, temp, || async {}).await
     }
 
     /// Starts a daemon that also mounts an rmcp service.
@@ -157,7 +197,7 @@ impl DaemonFixture {
             .stores(stores)
             .routes(routes)
             .mcp(mcp);
-        spawn(builder, temp).await
+        spawn(builder, temp, || async {}).await
     }
 
     /// Connected client for this daemon's bound endpoint.
@@ -239,34 +279,54 @@ fn prepare_config(
     Ok((config, dir))
 }
 
-async fn spawn<S, FStores, Fut, FRoutes>(
+async fn spawn<S, FStores, Fut, FRoutes, FCleanup, Cleanup>(
     builder: DaemonBuilder<Ready, S, FStores, FRoutes>,
     temp: tempfile::TempDir,
+    cleanup: FCleanup,
 ) -> Result<DaemonFixture, RuntimeError>
 where
     S: Clone + Send + Sync + 'static,
     FStores: FnOnce() -> Fut + Send + 'static,
     Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+    FCleanup: FnOnce() -> Cleanup + Send + 'static,
+    Cleanup: Future<Output = ()> + Send + 'static,
 {
     let root = temp.path().to_path_buf();
     let (serving_tx, serving_rx) = oneshot::channel();
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
-    let thread = std::thread::spawn(move || drive_on_thread(builder, shutdown_rx, serving_tx));
+    let runtime = match tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+    {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            drop(builder);
+            cleanup().await;
+            return Err(RuntimeError::serve_failed(error.to_string()));
+        }
+    };
+    let thread = std::thread::spawn(move || {
+        drive_on_thread(builder, shutdown_rx, serving_tx, cleanup, runtime)
+    });
+    let mut owner = StartupOwner {
+        shutdown: Some(shutdown_tx),
+        thread: Some(thread),
+    };
     let endpoint = match tokio::time::timeout(STARTUP_BUDGET, serving_rx).await {
         Ok(Ok(Ok(endpoint))) => endpoint,
         Ok(Ok(Err(err))) => {
-            let _ = stop_and_join(shutdown_tx, thread).await;
+            let _ = owner.stop_and_join().await;
             return Err(err);
         }
         Ok(Err(_)) => {
-            return Err(match stop_and_join(shutdown_tx, thread).await {
+            return Err(match owner.stop_and_join().await {
                 Err(err) => err,
                 Ok(()) => RuntimeError::serve_failed("daemon exited before it was ready"),
             });
         }
         Err(_) => {
-            let _ = stop_and_join(shutdown_tx, thread).await;
+            let _ = owner.stop_and_join().await;
             return Err(RuntimeError::serve_failed(format!(
                 "daemon did not become ready within {STARTUP_BUDGET:?}"
             )));
@@ -275,7 +335,7 @@ where
     let client = match Client::new(endpoint.clone()) {
         Ok(client) => client,
         Err(err) => {
-            let _ = stop_and_join(shutdown_tx, thread).await;
+            let _ = owner.stop_and_join().await;
             return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
@@ -283,20 +343,37 @@ where
         client,
         endpoint,
         instance_root: root,
-        shutdown_tx: Some(shutdown_tx),
-        thread: Some(thread),
+        shutdown_tx: owner.shutdown.take(),
+        thread: owner.thread.take(),
         _temp: temp,
     })
 }
 
-async fn stop_and_join(
-    shutdown_tx: oneshot::Sender<()>,
-    thread: JoinHandle<Result<(), RuntimeError>>,
-) -> Result<(), RuntimeError> {
-    drop(shutdown_tx);
-    match join_bounded_async(thread).await {
-        Ok(result) => result,
-        Err(fault) => Err(fault.into_error()),
+/// Owns startup until the complete fixture is transferred to the caller.
+struct StartupOwner {
+    shutdown: Option<oneshot::Sender<()>>,
+    thread: Option<JoinHandle<Result<(), RuntimeError>>>,
+}
+
+impl StartupOwner {
+    async fn stop_and_join(&mut self) -> Result<(), RuntimeError> {
+        drop(self.shutdown.take());
+        let Some(thread) = self.thread.take() else {
+            return Ok(());
+        };
+        match join_bounded_async(thread).await {
+            Ok(result) => result,
+            Err(fault) => Err(fault.into_error()),
+        }
+    }
+}
+
+impl Drop for StartupOwner {
+    fn drop(&mut self) {
+        drop(self.shutdown.take());
+        if let Some(thread) = self.thread.take() {
+            join_quietly(thread);
+        }
     }
 }
 
@@ -362,6 +439,7 @@ fn join_quietly(thread: JoinHandle<Result<(), RuntimeError>>) {
     let _ = thread.join();
 }
 
+#[cfg(test)]
 fn join_bounded(
     thread: JoinHandle<Result<(), RuntimeError>>,
     budget: Duration,
@@ -372,7 +450,10 @@ fn join_bounded(
 async fn join_bounded_async(
     thread: JoinHandle<Result<(), RuntimeError>>,
 ) -> Result<Result<(), RuntimeError>, JoinFault> {
-    match tokio::task::spawn_blocking(move || join_bounded(thread, SHUTDOWN_BUDGET)).await {
+    // Construct before queuing: cancellation of a queued blocking task must
+    // drop the owner, which physically joins rather than detaching its thread.
+    let guard = JoinGuard::new(thread);
+    match tokio::task::spawn_blocking(move || guard.join_within(SHUTDOWN_BUDGET)).await {
         Ok(result) => result,
         Err(_) => Err(JoinFault::Panicked),
     }
@@ -390,45 +471,41 @@ enum ProbeFailure {
     ServeFinished(RuntimeError),
 }
 
-fn drive_on_thread<S, FStores, Fut, FRoutes>(
+fn drive_on_thread<S, FStores, Fut, FRoutes, FCleanup, Cleanup>(
     builder: DaemonBuilder<Ready, S, FStores, FRoutes>,
     shutdown_rx: oneshot::Receiver<()>,
     serving_tx: oneshot::Sender<Serving>,
+    cleanup: FCleanup,
+    runtime: tokio::runtime::Runtime,
 ) -> Result<(), RuntimeError>
 where
     S: Clone + Send + Sync + 'static,
     FStores: FnOnce() -> Fut + Send + 'static,
     Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+    FCleanup: FnOnce() -> Cleanup + Send + 'static,
+    Cleanup: Future<Output = ()> + Send + 'static,
 {
-    let runtime = match tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-    {
-        Ok(runtime) => runtime,
-        Err(err) => {
-            let err = RuntimeError::serve_failed(err.to_string());
-            let _ = serving_tx.send(Err(err.clone()));
-            return Err(err);
-        }
-    };
-    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx)) // allow: NFR-RUN-0002 fixture thread
+    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx, cleanup)) // allow: NFR-RUN-0002 fixture thread
 }
 
-async fn run_until_stopped<S, FStores, Fut, FRoutes>(
+async fn run_until_stopped<S, FStores, Fut, FRoutes, FCleanup, Cleanup>(
     builder: DaemonBuilder<Ready, S, FStores, FRoutes>,
     shutdown_rx: oneshot::Receiver<()>,
     serving_tx: oneshot::Sender<Serving>,
+    cleanup: FCleanup,
 ) -> Result<(), RuntimeError>
 where
     S: Clone + Send + Sync + 'static,
     FStores: FnOnce() -> Fut + Send + 'static,
     Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+    FCleanup: FnOnce() -> Cleanup + Send + 'static,
+    Cleanup: Future<Output = ()> + Send + 'static,
 {
     let (bound_tx, bound_rx) = oneshot::channel();
     let builder = builder.with_control(RunControl::detached(Some(bound_tx), Some(shutdown_rx)));
-    let mut serve = tokio::spawn(builder.run());
+    let mut serve = tokio::spawn(builder.run_with_cleanup(cleanup));
     let endpoint = match bound_rx.await {
         Ok(endpoint) => endpoint,
         Err(_) => {

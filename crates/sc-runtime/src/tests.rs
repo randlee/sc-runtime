@@ -413,3 +413,5 @@ fn error_is_a_std_error() {
 }
 
 mod lifecycle;
+
+mod phase_c_hooks;
