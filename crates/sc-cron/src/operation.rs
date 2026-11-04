@@ -13,6 +13,9 @@ struct State {
     active: usize,
     interrupts: Vec<(Arc<rusqlite::InterruptHandle>, bool)>,
     cleanup: Option<crate::TransactionOutcome>,
+    ordinary_completed: Option<Instant>,
+    cleanup_completed: Option<Instant>,
+    worker_finished: bool,
 }
 
 pub(crate) struct Controller {
@@ -40,6 +43,9 @@ impl Controller {
                 active: 0,
                 interrupts: Vec::new(),
                 cleanup: None,
+                ordinary_completed: None,
+                cleanup_completed: None,
+                worker_finished: false,
             })),
             changed: Arc::new(Notify::new()),
             tasks: Mutex::new(Vec::new()),
@@ -83,10 +89,23 @@ impl Controller {
         self.status.subscribe()
     }
     pub(crate) fn status(&self, status: ShutdownStatus) {
-        let current = *self.status.borrow();
-        if current != ShutdownStatus::Joined && current != status {
-            self.status.send_replace(status);
+        fn rank(status: ShutdownStatus) -> u8 {
+            match status {
+                ShutdownStatus::Running => 0,
+                ShutdownStatus::Draining => 1,
+                ShutdownStatus::CleaningUp => 2,
+                ShutdownStatus::DeadlineExceeded => 3,
+                ShutdownStatus::Joined => 4,
+            }
         }
+        self.status.send_if_modified(|current| {
+            if rank(status) > rank(*current) {
+                *current = status;
+                true
+            } else {
+                false
+            }
+        });
     }
     pub(crate) fn stop(self: &Arc<Self>, budget: ShutdownBudget) -> Result<(), CronError> {
         ShutdownBudget::new(budget.grace, budget.cleanup)?;
@@ -101,7 +120,7 @@ impl Controller {
             } else {
                 state.budget = Some(budget);
             }
-            self.status.send_replace(ShutdownStatus::Draining);
+            self.status(ShutdownStatus::Draining);
         }
         self.changed.notify_waiters();
         self.interrupt_if_expired();
@@ -137,7 +156,10 @@ impl Controller {
     fn interrupt_if_expired(&self) {
         let handles = {
             let state = self.lock();
-            if !state.cancelled && !state.budget.is_some_and(|b| Instant::now() >= b.grace) {
+            if state.worker_finished && state.active == 0 {
+                return;
+            }
+            if !state.cancelled && state.budget.is_none_or(|b| Instant::now() < b.grace) {
                 return;
             }
             state
@@ -208,6 +230,7 @@ impl Controller {
             state: Arc::clone(&self.state),
             changed: Arc::clone(&self.changed),
             command,
+            cleanup,
         })
     }
     /// Serializes final admission with stop/shortening, without holding across native COMMIT.
@@ -234,9 +257,32 @@ impl Controller {
     }
     pub(crate) fn record_cleanup(&self, outcome: crate::TransactionOutcome) {
         let mut state = self.lock();
-        if outcome.persistence != crate::PersistenceOutcome::NoMutationAttempted {
-            state.cleanup = Some(outcome);
+        if outcome.persistence != crate::PersistenceOutcome::NoMutationAttempted
+            || outcome.completed_after_cutoff
+        {
+            let mut observed = outcome;
+            if let Some(previous) = state.cleanup {
+                observed.completed_after_cutoff |= previous.completed_after_cutoff;
+                if previous.persistence == crate::PersistenceOutcome::Indeterminate
+                    || observed.persistence == crate::PersistenceOutcome::NoMutationAttempted
+                {
+                    observed.admission = previous.admission;
+                    observed.persistence = previous.persistence;
+                }
+            }
+            state.cleanup = Some(observed);
         }
+    }
+    pub(crate) fn note_ordinary_completion(&self) {
+        self.lock().ordinary_completed = Some(Instant::now());
+    }
+    pub(crate) fn worker_finished(&self) {
+        self.lock().worker_finished = true;
+        self.changed.notify_waiters();
+    }
+    pub(crate) fn completion_times(&self) -> (Option<Instant>, Option<Instant>) {
+        let state = self.lock();
+        (state.ordinary_completed, state.cleanup_completed)
     }
     pub(crate) fn cleanup_outcome(&self) -> Option<crate::TransactionOutcome> {
         self.lock().cleanup
@@ -310,6 +356,7 @@ pub(crate) struct PhysicalGuard {
     state: Arc<Mutex<State>>,
     changed: Arc<Notify>,
     command: bool,
+    cleanup: bool,
 }
 impl Drop for PhysicalGuard {
     fn drop(&mut self) {
@@ -319,6 +366,11 @@ impl Drop for PhysicalGuard {
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
             state.active -= 1;
+            if self.cleanup {
+                state.cleanup_completed = Some(Instant::now());
+            } else {
+                state.ordinary_completed = Some(Instant::now());
+            }
             if self.command {
                 state.commands -= 1;
             }

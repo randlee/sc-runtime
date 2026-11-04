@@ -135,8 +135,17 @@ pub(super) fn with_scope<T>(
         };
         let kind = if outcome.persistence == PersistenceOutcome::Indeterminate {
             StoreErrorKind::Indeterminate
+        } else if outcome.completed_after_cutoff
+            && outcome.persistence == PersistenceOutcome::Committed
+        {
+            StoreErrorKind::DeadlineExceeded
         } else {
             kind
+        };
+        let reason = if kind == StoreErrorKind::DeadlineExceeded {
+            "operation_deadline_exceeded"
+        } else {
+            reason
         };
         return Err(StoreError::new(kind, reason)
             .with_transaction_outcome(outcome)
@@ -343,4 +352,16 @@ pub(super) fn lose_result() {
             outcome.persistence = PersistenceOutcome::Indeterminate
         });
     }
+}
+
+#[cfg(test)]
+pub(super) fn has_committed() -> bool {
+    current().is_some_and(|scope| {
+        scope
+            .outcome
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .persistence
+            == PersistenceOutcome::Committed
+    })
 }

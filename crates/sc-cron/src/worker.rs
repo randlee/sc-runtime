@@ -477,10 +477,11 @@ where
                 () = clock.sleep_until(wake) => {}
             }
         }
-        if self.cooperative
-            && let Some(controller) = &self.controller
-        {
-            controller.status(crate::ShutdownStatus::CleaningUp);
+        if let Some(controller) = &self.controller {
+            controller.note_ordinary_completion();
+            if self.cooperative {
+                controller.status(crate::ShutdownStatus::CleaningUp);
+            }
         }
         self.drain().await;
     }
@@ -575,7 +576,16 @@ where
             let controller = self.controller.as_ref().expect("cooperative controller");
             let root = crate::StoreOperationContext::root(Arc::clone(controller));
             let context = if self.stopping { root.terminal() } else { root };
-            context.check()?;
+            if let Err(error) = context.check() {
+                if context.cleanup {
+                    controller.record_cleanup(crate::TransactionOutcome {
+                        admission: crate::CommitAdmission::NotAttempted,
+                        persistence: crate::PersistenceOutcome::NoMutationAttempted,
+                        completed_after_cutoff: true,
+                    });
+                }
+                return Err(error);
+            }
             let guard = controller.register(context.cleanup, context.external_deadline(), false)?;
             Some((context, guard))
         } else {
@@ -924,6 +934,9 @@ where
         result: Result<Report, JoinError>,
         correlation: RunCorrelation,
     ) -> bool {
+        if let Some(controller) = &self.controller {
+            controller.note_ordinary_completion();
+        }
         let Some(slot) = self.slots.get_mut(index) else {
             return false;
         };
@@ -1028,6 +1041,11 @@ where
         }
     }
 
+    fn persistence_requires_reconciliation(&self, error: &CronError) -> bool {
+        self.cooperative
+            && matches!(error, CronError::Store(error) if error.kind() == crate::StoreErrorKind::Indeterminate || error.transaction_outcome().is_some_and(|outcome| matches!(outcome.persistence, crate::PersistenceOutcome::Committed | crate::PersistenceOutcome::Indeterminate)))
+    }
+
     /// Stores the next run time; returns `false` only when fenced.
     async fn persist_next(&mut self, schedule: &Schedule, next: DateTime<Utc>) -> bool {
         let (id, generation) = (schedule.id, schedule.generation);
@@ -1042,7 +1060,8 @@ where
                 false
             }
             Err(error) => {
-                // The in-memory next run still drives this process.
+                // Uncertain persistence cannot authorize an external launch or automatic replay.
+                let reconcile = self.persistence_requires_reconciliation(&error);
                 if let Some(event) = event_record(
                     self.coord.logger.service_name().clone(),
                     Event::ScheduleNextFailed,
@@ -1051,7 +1070,7 @@ where
                 ) {
                     let _ = self.coord.logger.emit(event);
                 };
-                true
+                !reconcile
             }
         }
     }
@@ -1093,7 +1112,7 @@ where
                     event.correlation_id = correlation.clone();
                     let _ = self.coord.logger.emit(event);
                 };
-                return false;
+                return self.persistence_requires_reconciliation(&error);
             }
         }
         self.write_answered();
@@ -1142,7 +1161,9 @@ where
                     event.correlation_id = correlation.clone();
                     let _ = self.coord.logger.emit(event);
                 };
-                self.rebuild_later();
+                if !self.persistence_requires_reconciliation(&error) {
+                    self.rebuild_later();
+                }
             }
         }
     }

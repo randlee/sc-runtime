@@ -21,7 +21,7 @@
 use std::collections::HashSet;
 use std::num::NonZeroUsize;
 use std::path::Path;
-use std::sync::{Mutex, PoisonError};
+use std::sync::Mutex;
 use std::time::Duration;
 
 use rusqlite::{
@@ -104,6 +104,10 @@ pub struct SqliteScheduleStore {
     // behind a mutex. Calls are short single statements or one transaction.
     connection: Mutex<Connection>,
     quarantined: std::sync::atomic::AtomicBool,
+    #[cfg(test)]
+    lose_write_result: std::sync::atomic::AtomicBool,
+    #[cfg(test)]
+    stop_attempts: std::sync::atomic::AtomicUsize,
     // Row ids already warned about as corrupt, so a bad row is reported once
     // per store rather than on every worker reload.
     warned: Mutex<HashSet<i64>>,
@@ -187,6 +191,10 @@ impl SqliteScheduleStore {
         Ok(Self {
             connection: Mutex::new(connection),
             quarantined: std::sync::atomic::AtomicBool::new(false),
+            #[cfg(test)]
+            lose_write_result: std::sync::atomic::AtomicBool::new(false),
+            #[cfg(test)]
+            stop_attempts: std::sync::atomic::AtomicUsize::new(0),
             logger,
             warned: Mutex::new(HashSet::new()),
             limits,
@@ -196,7 +204,18 @@ impl SqliteScheduleStore {
     /// Warns about a skipped corrupt row, once per row id for this store.
     fn warn_corrupt(&self, id: Option<i64>, name: Option<&str>, error: &CronError) {
         if let Some(id) = id {
-            let mut warned = self.warned.lock().unwrap_or_else(PoisonError::into_inner);
+            let mut warned = loop {
+                if scope::check().is_err() {
+                    return;
+                }
+                match self.warned.try_lock() {
+                    Ok(warned) => break warned,
+                    Err(std::sync::TryLockError::Poisoned(error)) => break error.into_inner(),
+                    Err(std::sync::TryLockError::WouldBlock) => {
+                        std::thread::park_timeout(Duration::from_millis(1))
+                    }
+                }
+            };
             if !warned.insert(id) {
                 return;
             }
@@ -309,7 +328,22 @@ impl ScheduleStore for SqliteScheduleStore {
         context: &crate::StoreOperationContext,
         operation: impl FnOnce(&SqliteScheduleStore) -> Result<T, CronError>,
     ) -> Result<T, CronError> {
-        let result = scope::with_provider(context, self, operation);
+        let result = scope::with_provider(context, self, |store| {
+            let result = operation(store);
+            #[cfg(test)]
+            if result.is_ok()
+                && scope::has_committed()
+                && store
+                    .lose_write_result
+                    .swap(false, std::sync::atomic::Ordering::AcqRel)
+            {
+                scope::lose_result();
+                return Err(
+                    StoreError::new(StoreErrorKind::Indeterminate, "injected_lost_result").into(),
+                );
+            }
+            result
+        });
         if matches!(&result, Err(CronError::Store(error)) if error.kind() == StoreErrorKind::Indeterminate)
         {
             self.quarantined
@@ -520,6 +554,9 @@ impl ScheduleStore for SqliteScheduleStore {
         at: Timestamp,
         reason: &str,
     ) -> Result<bool, CronError> {
+        #[cfg(test)]
+        self.stop_attempts
+            .fetch_add(1, std::sync::atomic::Ordering::AcqRel);
         self.guarded_update(
             "UPDATE sc_cron_schedule SET ended_at = ?3, stop_reason = ?4, next_run_at = NULL
              WHERE id = ?1 AND generation = ?2 AND ended_at IS NULL",

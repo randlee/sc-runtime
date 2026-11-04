@@ -625,9 +625,11 @@ where
         let worker = worker
             .with_hook_environment(Arc::clone(&self.environment))
             .with_operation_controller(Arc::clone(&self.core.controller), cooperative);
+        let controller = Arc::clone(&self.core.controller);
         let task = tokio::spawn(async move {
             let _live = live;
             worker.run(reload).await;
+            controller.worker_finished();
         });
         WorkerHandle {
             shutdown: Some(shutdown),

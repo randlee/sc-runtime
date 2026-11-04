@@ -135,20 +135,21 @@ impl WorkerHandle {
         self.shutdown.take();
         self.controller.join().await;
         joined?;
-        let now = std::time::Instant::now();
+        let (ordinary_completed, cleanup_completed) = self.controller.completion_times();
+        let cleanup_outcome = self.controller.cleanup_outcome();
         let budget = self.controller.budget();
         self.controller.status(crate::ShutdownStatus::Joined);
         Ok(crate::ShutdownReport {
-            grace_exceeded: budget.is_some_and(|b| now >= b.grace),
-            cleanup_exceeded: budget.is_some_and(|b| now >= b.cleanup),
-            cleanup: self
-                .controller
-                .cleanup_outcome()
-                .unwrap_or(crate::TransactionOutcome {
-                    admission: crate::CommitAdmission::NotAttempted,
-                    persistence: crate::PersistenceOutcome::NoMutationAttempted,
-                    completed_after_cutoff: budget.is_some_and(|b| now >= b.cleanup),
-                }),
+            grace_exceeded: budget
+                .is_some_and(|b| ordinary_completed.is_some_and(|at| at >= b.grace)),
+            cleanup_exceeded: budget
+                .is_some_and(|b| cleanup_completed.is_some_and(|at| at >= b.cleanup))
+                || cleanup_outcome.is_some_and(|outcome| outcome.completed_after_cutoff),
+            cleanup: cleanup_outcome.unwrap_or(crate::TransactionOutcome {
+                admission: crate::CommitAdmission::NotAttempted,
+                persistence: crate::PersistenceOutcome::NoMutationAttempted,
+                completed_after_cutoff: false,
+            }),
         })
     }
 }

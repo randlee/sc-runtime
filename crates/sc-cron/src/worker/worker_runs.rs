@@ -86,6 +86,9 @@ where
                 cancel_slot_run(slot).await;
             }
         }
+        if let Some(controller) = &self.controller {
+            controller.note_ordinary_completion();
+        }
     }
 
     fn nearest_abortable_deadline(&self) -> Option<Instant> {

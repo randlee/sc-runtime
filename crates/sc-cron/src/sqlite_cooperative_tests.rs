@@ -181,6 +181,14 @@ async fn real_grace_expiry_is_published_without_join_or_releasing_connection() {
     let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
     let control = worker.stop_control();
     let mut status = control.subscribe_status();
+    let context = control.operation_context();
+    tokio::time::timeout(Duration::from_secs(5), async {
+        while context.state.counts().0 == 0 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .expect("initial load is physically admitted before stop");
     let now = Instant::now();
     control
         .request_stop(
@@ -323,8 +331,10 @@ async fn query_is_bounded_includes_ended_and_end_fences_replacement() {
 async fn final_hook_stop_first_vetoes_and_admission_first_reports_committed_late() {
     for cleanup in [false, true] {
         for after_admission in [false, true] {
+            let directory = tempfile::tempdir().unwrap();
+            let path = directory.path().join("commit-race.db");
             let store =
-                Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).unwrap());
+                Arc::new(SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap());
             let controller = Arc::new(crate::operation::Controller::new());
             let root = StoreOperationContext::root(Arc::clone(&controller));
             let context = if cleanup { root.terminal() } else { root };
@@ -367,15 +377,16 @@ async fn final_hook_stop_first_vetoes_and_admission_first_reports_committed_late
                 panic!("typed transaction failure");
             };
             let outcome = error.transaction_outcome().unwrap();
+            let independent = SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap();
             assert!(outcome.completed_after_cutoff);
             if after_admission {
                 assert_eq!(outcome.admission, CommitAdmission::Admitted);
                 assert_eq!(outcome.persistence, PersistenceOutcome::Committed);
-                assert_eq!(store.list_active().unwrap().len(), 1);
+                assert_eq!(independent.list_active().unwrap().len(), 1);
             } else {
                 assert_eq!(outcome.admission, CommitAdmission::Vetoed);
                 assert_eq!(outcome.persistence, PersistenceOutcome::RolledBack);
-                assert!(store.list_active().unwrap().is_empty());
+                assert!(independent.list_active().unwrap().is_empty());
             }
             // Hooks and TLS are restored, so unrelated legacy work can commit.
             let now = Timestamp::from_datetime(chrono::Utc::now());
@@ -618,8 +629,10 @@ async fn injected_lost_result_reports_indeterminate_without_claiming_a_physical_
 async fn implicit_update_commit_hook_races_preserve_generation_and_physical_outcome() {
     for cleanup in [false, true] {
         for after_admission in [false, true] {
+            let directory = tempfile::tempdir().unwrap();
+            let path = directory.path().join("commit-race.db");
             let store =
-                Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).unwrap());
+                Arc::new(SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap());
             let now = Timestamp::from_datetime(chrono::Utc::now());
             let row = store
                 .create(
@@ -680,7 +693,8 @@ async fn implicit_update_commit_hook_races_preserve_generation_and_physical_outc
                     PersistenceOutcome::RolledBack
                 }
             );
-            let actual = store.get(row.id).unwrap().unwrap();
+            let independent = SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap();
+            let actual = independent.get(row.id).unwrap().unwrap();
             assert_eq!(actual.generation, row.generation);
             assert_eq!(actual.enabled, !after_admission);
         }
@@ -774,4 +788,97 @@ async fn generation_fenced_terminal_cleanup_has_independent_admission_while_comm
     let actual = scheduler.store().get(row.id).unwrap().unwrap();
     assert_eq!(actual.generation, row.generation);
     assert_eq!(actual.last_outcome, Some(RunOutcome::Ok));
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn uncertain_worker_end_is_reported_once_without_automatic_mutation_replay() {
+    struct DeleteJob(Arc<SqliteScheduleStore>);
+    #[async_trait::async_trait]
+    impl crate::Job for DeleteJob {
+        async fn run(&self, _: &serde_json::Value, _: Instant) -> RunOutcome {
+            panic!("delete stop check must prevent tick")
+        }
+        async fn should_stop(&self, _: &serde_json::Value) -> crate::StopDecision {
+            self.0
+                .lose_write_result
+                .store(true, std::sync::atomic::Ordering::Release);
+            crate::StopDecision::Delete("terminal".into())
+        }
+    }
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("end-loss.db");
+    let store = Arc::new(SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap());
+    let clock = Arc::new(crate::ManualClock::new(
+        "2026-10-19T00:00:00Z".parse().unwrap(),
+    ));
+    let scheduler = Scheduler::new(
+        Arc::clone(&store),
+        Arc::clone(&clock),
+        Arc::new(crate::SeqJitter::default()),
+    );
+    let row = scheduler.start(spec("uncertain-end")).unwrap();
+    let worker = scheduler
+        .spawn_worker_cooperative(Arc::new(DeleteJob(Arc::clone(&store))))
+        .unwrap();
+    let control = worker.stop_control();
+    clock.wait_parks_above(0).await;
+    clock.advance_settled(chrono::Duration::seconds(60)).await;
+    tokio::time::timeout(Duration::from_secs(5), async {
+        while !store.quarantined.load(std::sync::atomic::Ordering::Acquire) {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    clock.advance_settled(chrono::Duration::seconds(60)).await;
+    assert_eq!(
+        store
+            .stop_attempts
+            .load(std::sync::atomic::Ordering::Acquire),
+        1,
+        "uncertain end must not be replayed by retry bookkeeping"
+    );
+    control.cancel_now();
+    worker.join_owned().await.unwrap();
+    let independent = SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap();
+    let actual = independent.get(row.id).unwrap().unwrap();
+    assert_eq!(actual.generation, row.generation);
+    assert!(!actual.is_active());
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn delayed_join_poll_reports_physical_completion_before_shortened_cutoffs() {
+    let scheduler = make_scheduler(1);
+    let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
+    let control = worker.stop_control();
+    let now = Instant::now();
+    control
+        .request_stop(
+            ShutdownBudget::new(
+                now + Duration::from_secs(60),
+                now + Duration::from_secs(120),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    tokio::time::timeout(Duration::from_secs(5), async {
+        while !worker.is_finished() {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    // Physically complete before the second, already-current cutoff; no arbitrary sleep is needed.
+    let cutoff = Instant::now();
+    control
+        .request_stop(ShutdownBudget::new(cutoff, cutoff).unwrap())
+        .unwrap();
+    let report = worker.join_owned().await.unwrap();
+    assert!(!report.grace_exceeded);
+    assert!(!report.cleanup_exceeded);
+    assert_eq!(
+        report.cleanup.persistence,
+        PersistenceOutcome::NoMutationAttempted
+    );
+    assert!(!report.cleanup.completed_after_cutoff);
 }
