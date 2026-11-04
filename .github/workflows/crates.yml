@@ -144,6 +144,19 @@ jobs:
         with:
           tool: cargo-audit@0.22.2
 
+      # All-targets checks include the cron command adapter's SQLite-backed
+      # dev dependency even when SQLite-owning workspace roots are excluded.
+      - name: Install LLVM archiver for Windows cross-builds
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        run: |
+          set -euo pipefail
+          sudo -n apt-get update
+          sudo -n apt-get install -y llvm
+          llvm_bin="$(llvm-config --bindir)"
+          test -x "$llvm_bin/llvm-lib"
+          echo "$llvm_bin" >> "$GITHUB_PATH"
+          "$llvm_bin/llvm-config" --version
+
       - name: Setup
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just setup
