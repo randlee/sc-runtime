@@ -2,5 +2,7 @@
   "project_name": "widget-mysql",
   "db": "mysql",
   "mcp": true,
-  "licence": "MIT"
+  "licence": "MIT",
+  "cron": false,
+  "cron_commands": false
 }

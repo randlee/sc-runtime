@@ -519,6 +519,28 @@ linux `release_targets` row in `release/sc-publish-consumer-input.json`.
 
 ---
 
+### Selective release toolkit qualification gap (2026-11-04)
+
+The exact canonical kit pin b6947ab2e495398a58123c60c0b86b5421f89979 was
+fetched from upstream and executed in a disposable fixture with workspace/tag
+version0.2.0, affected command/cron/runtime/adapter0.2.0 and literal unchanged
+config/transport0.1.1 with publish=false. Its existing `list-publish-plan`
+includes even disabled config/transport packages, then command, cron, runtime
+and cron-commands; it does not filter publish=false. Its actual `verify-version --version 0.2.0` fails:
+`sc-config: version mismatch: expected 0.2.0, got 0.1.1` (exit1). Source
+cmd_verify_version iterates every declared crate, including publish=false;
+`public-registry-check-plan` likewise passes one global args.version for all
+crate names. Thus publish=false and literal-base support in another preflight
+are insufficient to qualify selective publication. This is a demonstrated
+upstream capability gap and leaves C1 incomplete. No local workflow bypass,
+blanket version bump, unqualified newer pin or publication has been performed.
+An upstream released exact pin must qualify selective per-package versions,
+unchanged-package treatment, stale-command negative, per-package registry
+lookups and v0.2.0 tag semantics before release contract closure. Parent owns
+any authorization to undertake that upstream change; passing ordered output
+alone cannot establish the complete release capability.
+
+
 ## ADR-RUN-0003: Crate dependency graph and the `server` cargo feature
 
 **Status:** Active  
@@ -3174,27 +3196,6 @@ release. C-1 freezes typed TransactionOutcome/report/error policy, c-5 proves
 the actual admission race and persisted state after join, c-4 proves packaged
 behavior. This changes the prior strict physical-cutoff interpretation by the
 explicit human decision, not a finding waiver or implementation PASS.
-
-### Selective release toolkit qualification gap (2026-11-04)
-
-The exact canonical kit pin b6947ab2e495398a58123c60c0b86b5421f89979 was
-fetched from upstream and executed in a disposable fixture with workspace/tag
-version0.2.0, affected command/cron/runtime/adapter0.2.0 and literal unchanged
-config/transport0.1.1 with publish=false. Its existing `list-publish-plan`
-includes even disabled config/transport packages, then command, cron, runtime
-and cron-commands; it does not filter publish=false. Its actual `verify-version --version 0.2.0` fails:
-`sc-config: version mismatch: expected 0.2.0, got 0.1.1` (exit1). Source
-cmd_verify_version iterates every declared crate, including publish=false;
-`public-registry-check-plan` likewise passes one global args.version for all
-crate names. Thus publish=false and literal-base support in another preflight
-are insufficient to qualify selective publication. This is a demonstrated
-upstream capability gap and leaves C1 incomplete. No local workflow bypass,
-blanket version bump, unqualified newer pin or publication has been performed.
-An upstream released exact pin must qualify selective per-package versions,
-unchanged-package treatment, stale-command negative, per-package registry
-lookups and v0.2.0 tag semantics before release contract closure. Parent owns
-any authorization to undertake that upstream change; passing ordered output
-alone cannot establish the complete release capability.
 
 
 ## ADR-RUN-0019: Optional standard cron command adapter and generated wiring

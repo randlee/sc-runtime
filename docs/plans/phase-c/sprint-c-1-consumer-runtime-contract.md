@@ -86,6 +86,9 @@ adrs:
   - ADR-CMD-0002
   - ADR-CMD-0003
 owned_paths:
+  - wizard/pages/page-3-options.html
+  - tests/unit/generation/test_schema.py
+  - tests/unit/generation/test_monty_example.py
   - template/hooks/drop-template-exclude.rhai
   - crates/sc-command/src/observability/tests.rs
   - docs/requirements.md
@@ -418,3 +421,9 @@ all three real analyzers in ordinary/default/full profiles, causal failure
 proofs, configuration-derived fresh boundary policy and consumer ownership/
 preservation, and usable public setup/lint/test/upgrade remain binding. No
 upstream source fix, release or new pin is authorized by this waiver.
+
+Parent-approved initial declaration prerequisites (2026-11-04): C1 owns the
+existing wizard option controls and the two exact schema/patch-inventory tests
+listed above, plus explicit false defaults in the existing eight fixtures.
+C3 owns later generator implementation after consuming this handoff. Test
+inventory assertions remain exact and existing default-off checks remain.
