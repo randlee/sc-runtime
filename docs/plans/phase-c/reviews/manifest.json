@@ -11,8 +11,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "d964e4039c9c5a010c18b8c29c4be78a8348bcc41df70a26077783fbb94cda27",
-      "bytes": 28064,
+      "sha256": "b50103ba54fa7be122e4b58525fad9dae11f60d4d12aa310bcb4bb7c7723060b",
+      "bytes": 28211,
       "source": "authored index"
     },
     {
@@ -263,8 +263,8 @@
     },
     {
       "path": "consumer-extension-review-summary.md",
-      "sha256": "4007e025ca4200d61aa3a29fa489f1dabea40b854b10331cf34d5b094e71f0c7",
-      "bytes": 3894,
+      "sha256": "76df72c1abde4a1a114c4b7ffce550e5521b524d7cc7c132965d37a521da0d7d",
+      "bytes": 3802,
       "source": "concise usual review summary per direct human instruction"
     },
     {
@@ -12935,8 +12935,8 @@
     },
     {
       "path": "current-plan-anchor-results.md",
-      "sha256": "05c890942ed2a835e9d4069cc5bee66811bb1ec84c339af349dc8020ed893611",
-      "bytes": 6565,
+      "sha256": "37ba26690ca1d5910624141bcfceb9e9207e67fcffb406af0ca52c96f6cf6fd3",
+      "bytes": 2503,
       "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
     },
     {
@@ -13942,7 +13942,7 @@
       },
       {
         "path": "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
-        "sha256": "32fc4fb64b42e8b78a3c830f9257b99500d83ada38c873fcd7b062fe5820a5fc"
+        "sha256": "55d77e14e1cb0f7c6cfa540949c433ce97ec965941acd21565d42c28ee8e9866"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
@@ -13985,7 +13985,8 @@
       "sprints": 6,
       "source": "compatibility-scope-r2/report.json"
     },
-    "latest_reviewed_source_commit": "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407"
+    "latest_reviewed_source_commit": "bbd64de38ba39f56fe1f2dcb71682f1da8dd7407",
+    "document_hash_scope": "Current plan; c1 wording clarification pending actual rerun. Scope/critical review remains at bbd64de."
   },
   "evidence_wip_checkpoint": {
     "authoritative_plan_source": "0b32ae20f26c9a4db6fc67c98b7331724aeacf3c",
@@ -14156,12 +14157,12 @@
   },
   "proposed_anchor_records": {
     "total": 18,
-    "locked": 10,
-    "proposed": 6,
+    "locked": 16,
+    "proposed": 0,
     "retired": 2,
     "original12_objects_unchanged": true,
-    "record_sha256": "718b435282988259f91a22c156132aea56ad5820c0cf59b35312f6512eca11f6",
-    "render_sha256": "52d59c9c3cfdc5751defc100234f896096d45019bad542e2b463d32d996b1a4f",
+    "record_sha256": "c6c677b6c8d826999bc33e7dbef9a92ef21bb9e8729f45b7b8e257a73371276b",
+    "render_sha256": "2b5eb1c454eea7a2e2478120b8e3c094d40fbc992adf60dc61581f62ab78331c",
     "actual_new_ids": [
       "ANC-013",
       "ANC-014",
@@ -14171,12 +14172,12 @@
       "ANC-018"
     ],
     "fixture_approval": "human-approved all six original pairs, unchanged",
-    "rubric": "not_run",
-    "new_question_beads": 0,
-    "locked_new_records": 0,
+    "rubric": "six new default testability results inconclusive, preserved; not PASS",
+    "new_question_beads": 12,
+    "locked_new_records": 6,
     "allocation": "proposed-anchor-allocation.json",
     "validation": "proposed-anchor-record-validation.json",
-    "no_actual_current_plan_Jev_results": true,
+    "no_actual_current_plan_Jev_results": false,
     "statement_approval": "human-approved with explicit ANC016 exception",
     "approval_receipt": "authority-approvals/new-anchor-approval-with-anc016-clarification.json",
     "ANC016_current_statement": "The standard cron command set must use common schedule-management subcommands across Python, Monty, and Rust handlers.",
@@ -14189,7 +14190,11 @@
       "ANC-016": 5,
       "ANC-017": 4,
       "ANC-018": 4
-    }
+    },
+    "new_anchor_beads": 6,
+    "validation_snapshot_scope": "existing proposal-validation artifact is historical; main-session locking/linking is current",
+    "planning_fixtures": "all13 semantic planning pairs PASS using permitted published defaults",
+    "status_note": "legacy field name; six new approved records are now locked and linked; no full-plan PASS"
   },
   "current_results_report": "current-plan-anchor-results.md",
   "engineering_baseline": {
@@ -14224,9 +14229,12 @@
       "ARCH-C-002"
     ],
     "formal_QA2_QA3": "not_run",
-    "new_anchors": "all six statements/fixtures approved; records proposed",
+    "new_anchors": "all six approved statements/fixtures locked and linked by main session; default testability inconclusive",
     "implementation_readiness": false,
     "Plan_Anchor_PASS": false,
-    "broad_archive": "cancelled per direct human instruction; never committed/pushed; raw working evidence outsideGit"
+    "broad_archive": "cancelled per direct human instruction; never committed/pushed; raw working evidence outsideGit",
+    "actual_plan_gate": "c1 r1 failed6underspecified; c1 clarity correction pending rerun, c2/c3 destination approval pending",
+    "published_defaults": "permitted by independent audit;13semantic planfixture pairsPASS",
+    "experimental_calibration_scope": "historical failed experiments do not prohibit published defaults"
   }
 }

@@ -392,9 +392,11 @@ Historical scope/critical approvals retain only their actual reviewed baselines.
 
 [The concise review summary](consumer-extension-review-summary.md) records
 fresh QA1 FAIL, nine corrected findings and the final schema correction.
-Scope/critical R3 pass all six sprints at bbd64de; current actual Plan Anchor
-prerequisites remain open and formal QA2/3 have not run. All six new anchors
-and fixtures are approved but remain proposed pending actual checks. Per the
+Scope/critical R3 pass all six sprints at bbd64de; formal QA2/3 have not run.
+All six approved new anchors are now locked and linked, with inconclusive
+default testability preserved. Published-default planning fixtures pass;
+actual c-1 failed six unclear cells and its wording correction awaits rerun.
+C-2/C-3 egress approval remains pending; no complete live gate PASS. Per the
 human instruction, the broad diagnostic archive is cancelled; this checkpoint
 adds typical reports only, with raw working evidence retained outside Git.
 

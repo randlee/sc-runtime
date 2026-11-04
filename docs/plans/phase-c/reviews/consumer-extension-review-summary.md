@@ -38,24 +38,22 @@ crate claims. No new sprint, dependency edge or wire-model copy was added.
 ## What remains
 
 REQ-QA-001 and ARCH-C-002 remain open: the accepted evaluator/testability
-prerequisite and actual full-sprint Plan Anchor checks are incomplete. All six
-new statements/fixtures are human-approved, including clarified ANC-016, but
-ANC-013 through ANC-018 remain **proposed**, with no new locked records or live
-sprint verdicts. Generic calibration remains unaccepted after its bounded
-five-round run. Structural checks, human approval and scope/critical PASS
-cannot substitute for the actual anchor gate.
+results and complete live six-sprint checks remain incomplete. All six new
+statements/fixtures are approved; the main session locked ANC-013 through
+ANC-018 and linked their Beads. Default testability remains inconclusive.
+Independent audit permits the published default questions, and all thirteen
+semantic planning fixture pairs passed. Failed experimental calibration does
+not prohibit those defaults or require an upstream repair before plan review.
 
-The later finite representation comparison also failed acceptance. Strict
-workflow review found no valid next tuning request under installed 0.8.7:
-the five-round budget is exhausted, old sealed question-defect proofs cannot
-authorize the v3 questions, and current generic corpus-case/migration policy
-is unrepresentable. Genuine upstream contract repair or a policy decision
-remains pending; request preparation alone is insufficient. The local guard
-prototype corrected two history/role-binding defects within independent local
-review scope only; it is not installed, production-ready or proof of a runnable
-current workflow. No additional live call, cap reset, adoption or seal follows.
-[Current anchor status](current-plan-anchor-results.md) records this block;
-detailed evidence remains local.
+The actual first c-1 run failed six underspecified cells. A focused wording
+revision, recorded before editing in six authority-linked to_fix entries,
+clarifies latest rmcp/utoipa selection, optional shared cron commands/common
+verbs and consumer replacement responsibilities. That c-1 revision awaits
+rerun; the earlier scope/critical PASS remains tied to bbd64de. C-2/C-3 egress
+was automatically rejected despite committed consent, with explicit destination
+approval pending. No actual full-plan PASS, completed coverage or formal QA2/3
+is claimed. [Current anchor status](current-plan-anchor-results.md) records
+the current checks and execution block; raw evidence remains local.
 
 Per the human instruction to publish typical reports rather than diagnostic
 logs or test results, this is a concise review summary. The cancelled broad

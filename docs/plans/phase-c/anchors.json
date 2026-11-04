@@ -785,12 +785,12 @@
       },
       "question_overrides": {},
       "version": 4,
-      "status": "proposed",
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-299",
+        "plan_questions": "run-299.1",
+        "dev_questions": "run-299.2"
       },
       "history": [
         {
@@ -821,6 +821,15 @@
           "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json. Packet reference ANC-013 is provisional, not its allocated ID.",
           "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
           "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:51+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-299",
+            "plan_questions": "run-299.1",
+            "dev_questions": "run-299.2"
+          }
         }
       ]
     },
@@ -847,12 +856,12 @@
       },
       "question_overrides": {},
       "version": 4,
-      "status": "proposed",
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-8co",
+        "plan_questions": "run-8co.1",
+        "dev_questions": "run-8co.2"
       },
       "history": [
         {
@@ -883,6 +892,15 @@
           "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json. Packet reference ANC-014 is provisional, not its allocated ID.",
           "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
           "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:52+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-8co",
+            "plan_questions": "run-8co.1",
+            "dev_questions": "run-8co.2"
+          }
         }
       ]
     },
@@ -909,12 +927,12 @@
       },
       "question_overrides": {},
       "version": 4,
-      "status": "proposed",
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-m9k",
+        "plan_questions": "run-m9k.1",
+        "dev_questions": "run-m9k.2"
       },
       "history": [
         {
@@ -945,6 +963,15 @@
           "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json. Packet reference ANC-015 is provisional, not its allocated ID.",
           "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
           "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:54+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-m9k",
+            "plan_questions": "run-m9k.1",
+            "dev_questions": "run-m9k.2"
+          }
         }
       ]
     },
@@ -971,12 +998,12 @@
       },
       "question_overrides": {},
       "version": 5,
-      "status": "proposed",
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-fwe",
+        "plan_questions": "run-fwe.1",
+        "dev_questions": "run-fwe.2"
       },
       "history": [
         {
@@ -1016,6 +1043,15 @@
           "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json. Packet reference ANC-016 is provisional, not its allocated ID.",
           "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
           "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:55+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-fwe",
+            "plan_questions": "run-fwe.1",
+            "dev_questions": "run-fwe.2"
+          }
         }
       ]
     },
@@ -1042,12 +1078,12 @@
       },
       "question_overrides": {},
       "version": 4,
-      "status": "proposed",
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-ifo",
+        "plan_questions": "run-ifo.1",
+        "dev_questions": "run-ifo.2"
       },
       "history": [
         {
@@ -1078,6 +1114,15 @@
           "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json. Packet reference ANC-018 is provisional, not its allocated ID.",
           "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
           "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:56+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-ifo",
+            "plan_questions": "run-ifo.1",
+            "dev_questions": "run-ifo.2"
+          }
         }
       ]
     },
@@ -1104,12 +1149,12 @@
       },
       "question_overrides": {},
       "version": 4,
-      "status": "proposed",
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-c5i",
+        "plan_questions": "run-c5i.1",
+        "dev_questions": "run-c5i.2"
       },
       "history": [
         {
@@ -1140,6 +1185,15 @@
           "previous_context": "Proposed only at the explicit user request to finalize anchors. Statement and draft fixture approval pending; no accepted v3 rubric or live planning gate. Verbatim approved-source context: docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json. Packet reference ANC-019 is provisional, not its allocated ID.",
           "approval_record": "docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json",
           "approval": "approved w/ anc-016 clear wording"
+        },
+        {
+          "at": "2026-11-04T05:40:58+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-c5i",
+            "plan_questions": "run-c5i.1",
+            "dev_questions": "run-c5i.2"
+          }
         }
       ]
     }

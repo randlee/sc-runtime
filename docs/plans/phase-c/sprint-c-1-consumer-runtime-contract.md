@@ -171,14 +171,17 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
    schema, selected-crate/edge mapping and initialization behavior in
    ADR-RUN-0005. If supported configuration cannot express it, report the
    upstream capability gap rather than suppressing the analyzer.
-4. In the same test, recheck crates.io, create a temporary composition
-   manifest for the newest stable candidates, and run locked `cargo metadata
-   --format-version 1 --all-features`. Starting at the probe’s runtime/daemon
+4. At probe execution, query crates.io for the latest released `rmcp` AND
+   latest released `utoipa`; select those exact releases and record both
+   versions in ADR-RUN-0203's runtime dependency matrix. Create the temporary
+   composition manifest with matching `utoipa-axum` and run locked
+   `cargo metadata --format-version 1 --all-features`. Starting at its runtime/daemon
    resolve IDs, assert one reachable `(name, version, source)` tuple for each
    of `rmcp`, `utoipa`, and `utoipa-axum`. The probe must compile the ordinary
-   `OpenApiRouter`/streamable-HTTP composition; otherwise it fails.
-5. Amend ADR-RUN-0203 with the exact probe-selected versions and identity
-   algorithm, replacing its obsolete 0.2/5.5.0/3.7 evidence matrix. `c-3`
+   `OpenApiRouter`/streamable-HTTP composition. If the latest releases cannot
+   compose, fail the probe rather than silently choosing older releases.
+5. Freeze those exact registry-selected versions and the identity algorithm
+   in ADR-RUN-0203, replacing its obsolete 0.2/5.5.0/3.7 matrix. `c-3`
    consumes this frozen matrix and cannot select newer versions without a new
    ADR amendment and a repeat of this probe. Freeze `sc-command 0.2.0`
    alongside `sc-runtime 0.2.0`: the command crate exposes the changed RMCP
@@ -214,20 +217,29 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
 
 Additional contract deliverable under the framework charter, REQ-CRON-0020/0021
 and REQ-CRNC-0002: freeze the default/override guide in compatibility-contract.md.
-Distinguish bundled SQLite cooperative guarantees from custom cooperative
-providers and the caller-owned legacy path. Name the existing ScheduleStore,
-CronOperations and CronExecutor replacement seams, capability/scope forwarding,
-schema ownership and lifecycle/error responsibilities. Preserve default safety;
-do not require every consumer to adopt the default shutdown policy. Assign the
-custom-store README/example proof to c-5, adapter/selected-default recipe to c-6,
-and real recipe composition to c-4 using their existing owned paths. No new
-plugin framework or API is authorized without a specific demonstrated hook gap.
+Consumers may replace the bundled store/schema through ScheduleStore, override
+scheduler operations and lifecycle/error policy through CronOperations, or
+replace command execution through CronExecutor. Consumers own cancellation,
+physical joins, target authorization and accurate persistence/error reporting
+for their overrides. Distinguish advertised custom cooperative guarantees and
+scope forwarding from the caller-owned legacy path; preserve default safety.
+C-5 owns the custom-store README/example proof, c-6 the adapter/default recipe,
+and c-4 real recipe composition. Use existing paths; no new framework or API
+without a demonstrated missing hook.
 
-Reconcile NFR-RUN-0001's closed generated-CLI allowlist for explicitly selected
-standard commands: permit defaults-only sc-cron-commands DTOs directly or
-through api-types; that adapter edge's own normal closure excludes scheduler,
-server, SQLite, Tokio and Monty. Keep all existing forbidden edges and isolated CLI proofs; do not copy
-the sole DTO to evade the amendment. Freeze the bounded default command intake
+A consumer may omit the entire standard cron command set
+(`cron_commands=false`, default). Selection requires cron; CLI, HTTP and enabled
+MCP then share the same versioned CronRequest JSON contract: `cron.start`,
+`cron.end`, `cron.list`. The same start/end/list schedule-management verbs apply
+to Rust, Python and optional Monty handler-kind selections; options select the
+execution target. C-1 owns prompt/schema/default/answers and optional manifests
+once; c-3 supplies generic projections, c-4 actual root binding. Independently
+disabled MCP stays disabled.
+
+Amend NFR-RUN-0001 to permit selected defaults-only sc-cron-commands DTOs directly
+or through api-types, keeping that edge free of scheduler/server/SQLite/Tokio/
+Monty and preserving existing forbidden edges and isolated CLI proofs.
+Freeze the bounded default command intake
 section of compatibility-contract.md: default64, validated finite pre-start
 configuration, shared Scheduler ownership, immediate typed refusal, no hidden
 wait queue, physical slot retention after waiter cancellation and independent
@@ -300,11 +312,6 @@ REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
   Default DTO-only graph excludes cron/SQLite/Tokio/Monty/server; scheduler is
   optional. Existing runtime→cron/adapter and command→cron/adapter stay forbidden.
   Same nominal logging trait, bundled schema/generation/environment behavior preserved.
-- Freeze prompt/schema/default/answers and optional manifest declarations for
-  `cron_commands=false`; selected requires cron and wires real existing CLI,
-  HTTP and optional MCP through c-3 generic projections and c-4 actual root
-  binding, never enables disabled MCP. C-1 owns these
-  shared registries once; no implementation sibling edits prompts/schema.
 - Enable rusqlite 0.39's `hooks` feature alongside existing `bundled` in
   `crates/sc-cron/Cargo.toml`, and establish its Cargo.lock baseline before
   wave 2. `progress_handler` is hooks-gated; this is a known c-5 prerequisite,
