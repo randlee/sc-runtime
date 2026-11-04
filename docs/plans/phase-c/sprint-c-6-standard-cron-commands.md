@@ -26,6 +26,8 @@ requirements:
   - NFR-RUN-0002
   - NFR-RUN-0005
   - NFR-CMD-0003
+  - NFR-CMD-0001
+  - NFR-CMD-0002
 adrs:
   - ADR-RUN-0019
   - ADR-RUN-0018
@@ -33,6 +35,8 @@ adrs:
   - ADR-CMD-0001
   - ADR-CMD-0002
   - ADR-CRNC-0001
+  - ADR-CMD-0003
+  - ADR-RUN-0203
 owned_paths:
   - crates/sc-cron-commands/src/
   - crates/sc-cron-commands/tests/
@@ -62,8 +66,9 @@ versions/lock. No template source or shared registry edits here.
 
 ## Deliverables
 
-1. REQ-CRNC-0001: strict versioned/tagged start/end/list DTOs, schema and
-   canonical typed response. Start validates expression/timeout/target/payload
+1. REQ-CRNC-0001: preserve c-1's compileable sole versioned/tagged DTO/schema
+   declarations and implement their strict validation and canonical typed
+   response behavior. Start validates expression/timeout/target/payload
    and allowed environment; end requires name and generation; list provides
    active/ended/all bounded id-ordered continuation. Shared generation types
    remain DTO primitives at the default boundary, not imports of core cron.
@@ -98,6 +103,14 @@ versions/lock. No template source or shared registry edits here.
    disabled MCP disabled; no automatic job start or application migration.
 
 ## Acceptance criteria
+
+- Preserve c-1's owner-local schema trait implementations and frozen optional
+  feature/dependency baseline. Test defaults-only, schema-only, scheduler-only
+  and schema+scheduler against the canonical DTO/fixture shapes, including
+  actual command-owned Envelope<CronResponse>/OpError schemas and their
+  serialized success/failure/nullability cases, with no
+  accidental feature leakage or second wire model. This does not consume
+  c-5's real implementation; c-4 owns actual schema-bearing UI composition.
 
 - Map the core's fixed `command_capacity_exhausted` reason through the existing
   typed unavailable Envelope category without exposing SQL/provider/request

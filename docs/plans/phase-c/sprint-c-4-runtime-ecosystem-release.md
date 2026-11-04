@@ -10,6 +10,9 @@ branch: sprint/c-4-runtime-ecosystem-release
 worktree: sprint/c-4-runtime-ecosystem-release
 requirements:
   - REQ-CRON-0005
+  - REQ-CMD-0001
+  - REQ-CMD-0002
+  - NFR-CMD-0001
   - REQ-RUN-0002
   - REQ-RUN-0003
   - REQ-RUN-0301
@@ -132,6 +135,16 @@ patch.
    PR/check output.
 
 ## Acceptance criteria
+
+- In the existing real selected composition fixture, MCP tools/list input
+  schemas and OpenAPI request/data schemas agree with c-1's same adapter DTO
+  and strict version/tag/required/target wire fixtures; typed canonical
+  Envelope<CronResponse>/OpError response schemas match serialized success/
+  failure/nullability cases. The actual schema
+  features use the frozen compatible identities; canonical Envelope/OpError
+  wrapping stays unchanged. Exercise positive/negative structural examples
+  and real commands, repeating packaged/registry composition; no generic
+  object schema or duplicate DTO can stand in for the typed public contract.
 
 REQ-RUN-0503 is a supporting registry-fixture constraint here; c-2 alone owns
 its phase requirement root. Retain all existing real registry proofs.

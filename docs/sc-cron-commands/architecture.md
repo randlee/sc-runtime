@@ -2,6 +2,23 @@
 
 ## ADR-CRNC-0001: Optional shared protocol and scheduler adapter
 
+The adapter owns its schema-trait implementations as well as its sole DTOs.
+C-1 commits the optional independent schema feature (schemars JsonSchema and
+Utoipa ToSchema) and compileable declarations/manifest/boundary baseline before
+parallel consumers. Its existing probe freezes exact identities compatible
+with selected RMCP Parameters<T> and runtime Utoipa, satisfying ADR-RUN-0203.
+Defaults and CLI select neither schema nor scheduler; schema adds no runtime,
+server or scheduling stack. Generated api-types imports these types rather
+than violating orphan rules or duplicating a wire model. C-3 owns selected
+projection feature activation and typed schema tests using the executor double;
+c-6 preserves/tests the declaration surface while implementing behavior; c-4
+compares actual tools/list/OpenAPI schemas and canonical fixtures. Canonical
+Envelope/OpError wrapping remains unchanged; adapter schema forwards
+command/schema, whose owner-local Envelope<T>/OpError/ErrorKind schemas match
+custom wire serialization rather than deriving a different enum representation.
+The full typed Envelope<CronResponse> family is compiled and fixture-checked
+by c-1.
+
 **Status:** Approved Phase C design; implementation planned in c-1/c-6, real
 composition in c-4. Requirements are [requirements.md](requirements.md).
 

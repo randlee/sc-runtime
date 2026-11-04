@@ -1484,6 +1484,22 @@ nothing.
 
 ## ADR-RUN-0203: Library versions on one router; one struct for both schemas
 
+**Phase C planned amendment, owned by c-1:** the optional standard-cron DTO is
+defined once in sc-cron-commands, and api-types/projections import that owned
+type. Its independent optional schema feature implements JsonSchema/ToSchema
+on the same request/response family using the existing probe's frozen schemars
+and Utoipa identities. Adapter/schema also selects command/schema: the canonical
+Envelope<T>/OpError/ErrorKind owners supply schema traits matching their custom
+wire serialization, with no wire changes, copied wrapper models or orphan
+implementations. C-1 commits compileable declarations and schema manifest/
+boundary baseline before c-3/c-6; c-3 enables schema on selected daemon/service
+edges and compiles real Parameters<CronRequest>/typed Utoipa projections against
+the executor double. C-6 preserves the contract; c-4 verifies actual tools/list
+and OpenAPI schema consistency. CLI/default graphs remain schema/server-free
+through this adapter edge. This extends the one-struct decision's ownership
+for the shared library type; it does not authorize duplicate DTOs or generic
+schemas in place of the typed library-native projections.
+
 **Status:** Active  
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: both facts are marked by the design as unverified and to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0202 and ADR-RUN-0302 so that those two hold only accepted decisions  

@@ -1,0 +1,10 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Actual critical R2 FAIL at a2a9b17; ceremony screen not_applicable.
+triage:PLAN_CRIT_CE_R2_001 a triage:Finding ;
+ triage:id "PLAN-CRIT-CE-R2-001" ; triage:severity "Important" ;
+ triage:status "to_fix" ; triage:author_state "corrected-pending-independent-review" ;
+ triage:reviewer "critical-plan-reviewer" ; triage:sprints "c-1,c-3,c-4,c-6" ;
+ triage:authority "REQ-CRNC-0001; NFR-CRNC-0001; REQ-CMD-0001/0002; NFR-CMD-0001; ADR-CMD-0001/0002/0003; ADR-CRNC-0001; ADR-RUN-0203 one-struct dual-schema decision" ;
+ triage:source "consumer-extension-review/critical-r2/report.json" ;
+ triage:correction "C1 owns compileable sole DTO schema trait implementations and independent optional schema feature/manifest/boundary baseline with probe-frozen schemars/Utoipa identities before parallel C3/C6. C3 owns real typed projections/selected feature activation, C6 preserves/tests feature combinations, C4 actual tools-list/OpenAPI schema parity. Defaults/CLI stay lean; no orphan impl, second wire DTO or sibling implementation dependency." .

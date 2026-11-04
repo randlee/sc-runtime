@@ -92,6 +92,7 @@ owned_paths:
   - docs/sc-cron/requirements.md
   - docs/sc-cron/architecture.md
   - docs/sc-command/requirements.md
+  - docs/sc-command/architecture.md
   - docs/sc-runtime/requirements.md
   - docs/sc-runtime/architecture.md
   - docs/sc-cron-commands/
@@ -102,6 +103,10 @@ owned_paths:
   - boundaries/sc-cron-commands/
   - boundaries/README.md
   - crates/sc-cron/src/
+  - crates/sc-command/Cargo.toml
+  - crates/sc-command/src/envelope.rs
+  - crates/sc-command/src/error.rs
+  - crates/sc-command/src/lib.rs
   - crates/sc-cron/Cargo.toml
   - crates/sc-cron-commands/
   - tests/contracts/phase-c/
@@ -232,6 +237,23 @@ arbitrary consumer overrides. Existing NFR-CMD/RT and ADR-CMD/RT constraints
 in frontmatter remain binding throughout these narrow amendments.
 
 ## Acceptance criteria
+
+- REQ-CRNC-0001/NFR-CRNC-0001, ADR-CRNC-0001 and ADR-RUN-0203: supply the
+  compileable sole adapter DTO family and canonical command Envelope<T>/OpError/
+  ErrorKind with owner-local JsonSchema/ToSchema
+  implementations under independent optional schema feature, optional
+  schemars/Utoipa identities frozen by the existing compatibility probe and
+  exact manifest/boundary declarations. Adapter/schema forwards command/schema;
+  command schema manually matches custom Envelope serialization and all five
+  OpError wire fields, including nullability/success/failure alternatives, with
+  no wire changes or copied model. C-1 owns only the narrow declaration modules/
+  manifests listed above before c-3 migrates their engine/source in its later
+  handoff. Real Parameters<CronRequest> and Envelope<CronResponse>,
+  schema_for! and Utoipa schema generation compile against those identities.
+  Schema fixtures preserve version/tag/required/target structure; runtime-only
+  checks remain explicit. Defaults stay lean, with no schema/server/scheduler
+  activation. This declaration prerequisite lands before c-3/c-6; neither a
+  generated orphan impl, second DTO, generic schema nor c-6 stub is accepted.
 
 - The contract identifies default guarantees and transferred responsibilities
   for each supported replacement seam. The c-5 custom-field consumer proof and

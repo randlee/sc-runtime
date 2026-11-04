@@ -610,6 +610,19 @@ matrix. All optional/server/defaults-off gating and remaining dependency,
 conversion and error restrictions remain binding; this does not permit
 server dependencies in a CLI's isolated normal graph.
 
+The same c-1 contract also adds independent optional
+`schema = ["dep:schemars", "dep:utoipa"]`, with compatible identities frozen
+by ADR-RUN-0203. Schema-only adds those schema dependencies to the otherwise
+unchanged default allowlist; schema+server uses the union of the two explicit
+feature allowlists. Neither schema nor server enables the other or enters
+defaults. C-1 owns compileable owner-local JsonSchema/ToSchema implementations
+for Envelope<T>, OpError and ErrorKind in the narrow declaration modules before
+c-3's later migration. Envelope's custom four-field wire representation and
+OpError's five fields require schemas matching existing serialization exactly,
+not a derive over internal enum variants. Foreign ErrorCode is represented by
+its canonical serialized leaf shape inside the owned schema, without orphan
+impls or duplicate error models. REQ-CMD-0001/0002 wire behavior is unchanged.
+
 **2026-10-31 amendment:** ADR-RUN-0017 adds an unconditional neutral
 `observability` contract module and non-default `test-util = []` doubles using
 only std. Neither activates server/axum/rmcp. The exact types pin is temporary;

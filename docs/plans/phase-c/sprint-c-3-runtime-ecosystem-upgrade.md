@@ -208,6 +208,17 @@ must satisfy that amendment:
 
 ## Acceptance criteria
 
+- Consume c-1's committed sole DTO/schema feature baseline; activate schema
+  only on selected daemon/service edges, never shared workspace/CLI defaults.
+  Real RMCP Parameters<CronRequest> and typed Utoipa request/data projections
+  compile against the actual adapter declarations and executor double, with
+  typed Envelope<CronResponse>/OpError response schemas supplied by the actual
+  command/schema owner rather than a foreign impl or model copy. They use
+  frozen schemars/Utoipa identities and no c-6 implementation dependency.
+  Verify version/tag/required/target schema shapes and keep disabled MCP and
+  isolated CLI graphs intact. No foreign orphan impl, copied wire DTO or
+  generic object schema replaces the same typed contract.
+
 REQ-RUN-0503 is a supporting generated-project constraint here; c-2 alone
 owns its phase requirement root. Retain this sprint's full checkout proof.
 

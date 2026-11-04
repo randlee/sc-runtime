@@ -327,6 +327,15 @@ sc_runtime::Daemon::builder()
 
 ## Consumer extension and onboarding closure
 
+The sole adapter DTO and canonical Envelope/OpError family have owner-local
+JsonSchema/ToSchema support under independent optional schema features. C-1
+owns compileable declaration/manifest/boundary prerequisites with probe-frozen
+identities; c-3 owns typed projection activation/checks, c-6 preserves/tests
+schema and scheduler combinations, and c-4 actual tools/list/OpenAPI wire
+parity. DTO/CLI defaults stay lean; no second model or sibling implementation
+dependency is introduced. ADR-RUN-0203 and ADR-CRNC-0001 govern this same-struct
+contract; command schema traits obey ADR-CMD-0001/0002/0003.
+
 The direct human approval of ANC-017/018 statements/fixtures is planning intent;
 the records remain proposed pending actual testability and live checks. This
 revision addresses the four manual pre-gate baseline findings, not a failed Jev

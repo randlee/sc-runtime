@@ -59,3 +59,19 @@ exclude cron, SQLite, Tokio, Monty, clap, Axum, RMCP and command/server. The
 non-default scheduler feature adds only approved cron/async edges; Monty remains
 separately explicit. No sc-command→cron/adapter cycle or sc-runtime→cron/adapter
 edge is allowed. UI CLI clients share DTOs without linking scheduler/server.
+
+Optional `schema = ["dep:schemars", "dep:utoipa", "sc-command/schema"]` supplies JsonSchema and
+ToSchema on the same adapter-owned DTO family. Dependencies remain optional;
+c-1 freezes exact compatible identities with ADR-RUN-0203's real Parameters<T>
+and Utoipa probe, then commits compileable declarations/impls and feature/boundary
+baseline before c-3/c-6 parallel work. Schema is independent of scheduler and
+adds no cron/SQLite/Tokio/Monty/Axum/RMCP/command-server edge. Defaults activate
+neither feature. Selected daemon/service projections enable schema on their
+own edges; isolated CLI defaults do not. No foreign orphan impl, second wire DTO
+or generic schema substitutes for the typed canonical contract. C-3 checks real
+typed projections; c-6 preserves/tests all feature combinations; c-4 compares
+actual tools/list and OpenAPI schemas in its existing composition fixture.
+The command schema feature supplies canonical owner-local Envelope<T>, OpError
+and ErrorKind traits matching their existing custom serialization exactly.
+Typed Envelope<CronResponse> and all nested schema types compile under the
+same identities; no copied envelope/error model or generic response schema.

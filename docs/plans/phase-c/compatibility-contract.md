@@ -366,6 +366,66 @@ invalid_input for bad expression/spec, conflict for active/fenced,
 not_found for absent rows, unavailable for busy/cancelled/capability,
 internal for unexpected failures; retain existing Envelope/OpError semantics.
 
+### Owned schema traits and feature baseline (c-1)
+
+REQ-CRNC-0001, NFR-CRNC-0001 and ADR-RUN-0203's one-struct dual-schema
+decision apply to the adapter-owned DTO family. C-1 supplies compileable sole
+CronRequest/CronOperation and nested request/target/result DTO declarations,
+including owner-local JsonSchema/ToSchema implementations, before c-3/c-6 run.
+Generated api-types cannot implement foreign traits for these foreign DTOs;
+it imports/re-exports the same types instead of introducing another wire model.
+
+Freeze adapter `schema = ["dep:schemars", "dep:utoipa", "sc-command/schema"]`
+and command `schema = ["dep:schemars", "dep:utoipa"]`, both independent optional
+features. Dependencies are optional with defaults disabled unless required by the
+qualified derives. Default features remain empty and do not select schema or
+scheduler. Schema alone introduces neither cron, Tokio, SQLite, Monty, Axum,
+RMCP nor command/server. Scheduler and schema remain independent; their
+combination is explicitly tested. No schema dependency is added to CLI defaults.
+C-1's existing compatibility probe records the exact schemars identity required
+by the selected RMCP Parameters<T> bound and the same Utoipa identity used by
+runtime/OpenApiRouter. It commits the adapter feature/manifest, allowed boundary
+edges and actual trait implementations as its declaration baseline; c-3 retains
+them during the later atomic ecosystem/version migration. This prerequisite is
+owned contract work, not a dependency on c-6's executor implementation.
+
+All public request/response DTOs exposed as schemas implement both traits under
+schema, including nested variants and the canonical response wrapper/error
+family. C-1 supplies sc-command-owned implementations on Envelope<T>, OpError
+and ErrorKind; foreign leaf ErrorCode is described by its existing serialized
+string contract inside those owner-local schemas, never by an orphan impl or
+second error model. Envelope has custom serialization: its schema must manually
+match the exact existing version/ok/data/error success/failure wire alternatives
+and nullability, not derive the Rust enum internal variants. OpError retains
+all five canonical wire fields and existing code/kind/detail/action shapes.
+No runtime serialization or wire field changes are authorized. Both traits on
+Envelope<CronResponse> compile under the same qualified identities as its
+nested DTO/error family. The same strict versioned/tagged wire fields,
+required/optional fields and target shapes must be represented; use owner-local
+schema attributes/implementations where derives alone are insufficient. Duplicate
+JSON keys and runtime-only validation remain parser/behavior checks rather than
+false claims of schema expressiveness. C-1 compiles real Parameters<CronRequest>,
+schema_for!(CronRequest) and Utoipa schema generation against the selected
+identities in its existing probe, with the sole DTO supplied by the actual
+adapter crate. A generic JSON/object schema or uncompiled JSON file cannot close
+this contract. These proofs use declarations only, never a production executor
+stub. The actual typed Envelope<CronResponse>/OpError response schema and its
+serialized positive/negative fixtures must agree; generic object schemas,
+copied envelope models or separately maintained adapter schema builders cannot
+substitute for the canonical owner-local implementations.
+
+C-3 activates schema only on selected daemon/service projection edges; shared
+workspace and CLI dependency declarations remain defaults-only. Its real
+RMCP Parameters<CronRequest>/typed Utoipa projections compile against c-1
+declarations and the executor double; typed schema tests preserve the sole
+versioned contract and disabled MCP. C-6 preserves/tests this schema surface
+while implementing validation/executor behavior. C-4's existing real fixture
+compares MCP tools/list input schemas and OpenAPI request/data schemas with the
+same DTO's wire fixtures, then repeats packaged composition. Each selected
+schema admits/rejects the specified structural examples; actual command checks
+retain non-schema validation. No sibling-owned DTO/manifest edit or orphan impl
+is needed, and isolated default CLI graphs remain lean.
+
 ### Injectable operation/executor contracts (c-1 baseline)
 
 CronRequest below is the sole wire identity; there is no CronCommandRequest.
