@@ -336,10 +336,11 @@ parity. DTO/CLI defaults stay lean; no second model or sibling implementation
 dependency is introduced. ADR-RUN-0203 and ADR-CRNC-0001 govern this same-struct
 contract; command schema traits obey ADR-CMD-0001/0002/0003.
 
-The direct human approval of ANC-017/018 statements/fixtures is planning intent;
-the records remain proposed pending actual testability and live checks. This
-revision addresses the four manual pre-gate baseline findings, not a failed Jev
-sprint gate. The framework charter and REQ-CRON-0020/0021 govern supported store
+The approved ANC-013 through ANC-018 statements and fixtures are now locked.
+All six full-sprint plan gates pass at the production 0.6 threshold; the capture
+rubric outcomes remain inconclusive. Current semantic and structural coverage
+is recorded in reviews/current-plan-anchor-results.md; owning QA rechecks remain
+pending. The framework charter and REQ-CRON-0020/0021 govern supported store
 replacement and opt-in cooperation; REQ-CRNC-0002 governs actual selected wiring.
 C-1 freezes default-versus-custom responsibilities; c-5 proves a custom store
 with an application-owned schema field in its existing isolated consumer and

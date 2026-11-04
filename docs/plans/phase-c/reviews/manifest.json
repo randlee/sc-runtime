@@ -13938,7 +13938,7 @@
     "documents": [
       {
         "path": "docs/plans/phase-c/phase-c-plan.md",
-        "sha256": "3c9de2c1388b65df075b538d8fc4789d9c2b92284f8374a46caa8b69a96eb8ea"
+        "sha256": "f0e2386c1e532e93184cdfbe1ccd49866925e0d286abde691dd7edfb0ae7d346"
       },
       {
         "path": "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
