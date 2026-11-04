@@ -392,3 +392,386 @@ async fn final_hook_stop_first_vetoes_and_admission_first_reports_committed_late
         }
     }
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn every_store_path_observes_shortening_while_waiting_on_real_connection_mutex() {
+    for operation in 0..12 {
+        let scheduler = make_scheduler(2);
+        let row = scheduler.start(spec("existing")).unwrap();
+        let store = Arc::clone(scheduler.store());
+        let (release, holder) = hold(Arc::clone(&store));
+        let controller = Arc::new(crate::operation::Controller::new());
+        let context = StoreOperationContext::root(Arc::clone(&controller));
+        let (entered, wait_entered) = mpsc::channel();
+        let physical = std::thread::spawn(move || {
+            scope::set_observer(move |stage| {
+                if stage == scope::TestStage::LockWait {
+                    let _ = entered.send(());
+                }
+            });
+            store.with_operation_context(&context, |store| {
+                let now = Timestamp::from_datetime(chrono::Utc::now());
+                let flags = [(row.spec.name.clone(), false)];
+                match operation {
+                    0 => store.get(row.id).map(|_| ()),
+                    1 => store.list_active().map(|_| ()),
+                    2 => store.query(&ScheduleQuery::default()).map(|_| ()),
+                    3 => store
+                        .record_run(row.id, row.generation, now, &RunOutcome::Ok)
+                        .map(|_| ()),
+                    4 => store.set_next(row.id, row.generation, now).map(|_| ()),
+                    5 => store.stop(row.id, row.generation, now, "stop").map(|_| ()),
+                    6 => store.set_enabled(&row.spec.name, false).map(|_| ()),
+                    7 => store
+                        .disable(row.id, row.generation, now, "disable")
+                        .map(|_| ()),
+                    8 => store.set_enabled_many(&flags).map(|_| ()),
+                    9 => store
+                        .replace_and_set_enabled(
+                            &NewSchedule {
+                                spec: spec("replacement"),
+                                jitter: Duration::ZERO,
+                                next_run_at: now,
+                            },
+                            true,
+                            now,
+                            &flags,
+                        )
+                        .map(|_| ()),
+                    10 => store
+                        .create(
+                            &NewSchedule {
+                                spec: spec("new"),
+                                jitter: Duration::ZERO,
+                                next_run_at: now,
+                            },
+                            now,
+                        )
+                        .map(|_| ()),
+                    _ => store
+                        .create(
+                            &NewSchedule {
+                                spec: spec("existing"),
+                                jitter: Duration::ZERO,
+                                next_run_at: now,
+                            },
+                            now,
+                        )
+                        .map(|_| ()),
+                }
+            })
+        });
+        wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
+        let now = Instant::now();
+        controller
+            .stop(ShutdownBudget::new(now, now).unwrap())
+            .unwrap();
+        // The cancellation result is available while the physical mutex is still held.
+        let error = physical.join().unwrap().unwrap_err();
+        assert!(
+            matches!(error, CronError::Store(ref error) if error.kind() == StoreErrorKind::DeadlineExceeded),
+            "path {operation}: {error}"
+        );
+        release.send(()).unwrap();
+        holder.join().unwrap();
+        assert_eq!(
+            scheduler.store().get(row.id).unwrap().unwrap().last_outcome,
+            None
+        );
+        assert_eq!(scheduler.store().list_active().unwrap().len(), 1);
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn sqlite_busy_progress_and_row_decode_observe_live_cutoff_and_restore_scope() {
+    for stage in [
+        scope::TestStage::Busy,
+        scope::TestStage::Progress,
+        scope::TestStage::Decode,
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("cron.db");
+        let store = Arc::new(SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap());
+        let now = Timestamp::from_datetime(chrono::Utc::now());
+        store
+            .create(
+                &NewSchedule {
+                    spec: spec("existing"),
+                    jitter: Duration::ZERO,
+                    next_run_at: now,
+                },
+                now,
+            )
+            .unwrap();
+        let peer = Connection::open(&path).unwrap();
+        if stage == scope::TestStage::Busy {
+            peer.execute_batch("BEGIN IMMEDIATE").unwrap();
+        }
+        let controller = Arc::new(crate::operation::Controller::new());
+        let context = StoreOperationContext::root(Arc::clone(&controller));
+        let (entered, wait_entered) = mpsc::channel();
+        let (release, wait_release) = mpsc::channel();
+        let physical = {
+            let store = Arc::clone(&store);
+            std::thread::spawn(move || {
+                let once = std::cell::Cell::new(false);
+                scope::set_observer(move |observed| {
+                    if observed == stage && !once.replace(true) {
+                        entered.send(()).unwrap();
+                        wait_release.recv().unwrap();
+                    }
+                });
+                store.with_operation_context(&context, |store| {
+                match stage {
+                    scope::TestStage::Busy => store.set_enabled(&ScheduleName::new("existing").unwrap(), false).map(|_| ()),
+                    scope::TestStage::Progress => {
+                        let connection = store.lock()?;
+                        connection.query_row("WITH RECURSIVE numbers(n) AS (VALUES(0) UNION ALL SELECT n+1 FROM numbers WHERE n<100000000) SELECT sum(n) FROM numbers", [], |row| row.get::<_, i64>(0)).map(|_| ()).map_err(|error| store_error("progress_query", error))
+                    }
+                    _ => store.list_active().map(|_| ()),
+                }
+            })
+            })
+        };
+        wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
+        let now = Instant::now();
+        controller
+            .stop(ShutdownBudget::new(now, now).unwrap())
+            .unwrap();
+        release.send(()).unwrap();
+        let error = physical.join().unwrap().unwrap_err();
+        if stage == scope::TestStage::Busy {
+            let CronError::Store(error) = error else {
+                panic!("typed busy cancellation");
+            };
+            assert_eq!(error.kind(), StoreErrorKind::Indeterminate);
+            assert_eq!(
+                error.transaction_outcome().unwrap().persistence,
+                PersistenceOutcome::Indeterminate
+            );
+            peer.execute_batch("ROLLBACK").unwrap();
+            assert!(
+                store.list_active().is_err(),
+                "unknown mutation evidence quarantines this connection"
+            );
+            let independent = SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap();
+            assert!(independent.list_active().unwrap()[0].enabled);
+        } else {
+            assert!(
+                matches!(error, CronError::Store(ref error) if error.kind() == StoreErrorKind::DeadlineExceeded)
+            );
+            assert!(
+                store
+                    .set_enabled(&ScheduleName::new("existing").unwrap(), true)
+                    .unwrap()
+            );
+            assert_eq!(store.list_active().unwrap().len(), 1);
+        }
+    }
+}
+
+#[tokio::test]
+async fn injected_lost_result_reports_indeterminate_without_claiming_a_physical_fsync_failure() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("lost-result.db");
+    let store = SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap();
+    let context = crate::operation_context_probe(Instant::now() + Duration::from_secs(60));
+    let error = store
+        .with_operation_context(&context, |store| {
+            let now = Timestamp::from_datetime(chrono::Utc::now());
+            store.create(
+                &NewSchedule {
+                    spec: spec("lost-result"),
+                    jitter: Duration::ZERO,
+                    next_run_at: now,
+                },
+                now,
+            )?;
+            scope::lose_result();
+            Err::<(), _>(
+                StoreError::new(StoreErrorKind::Indeterminate, "injected_lost_result").into(),
+            )
+        })
+        .unwrap_err();
+    let CronError::Store(error) = error else {
+        panic!("transaction evidence");
+    };
+    assert_eq!(error.kind(), StoreErrorKind::Indeterminate);
+    assert_eq!(
+        error.transaction_outcome().unwrap().admission,
+        CommitAdmission::Admitted
+    );
+    assert_eq!(
+        error.transaction_outcome().unwrap().persistence,
+        PersistenceOutcome::Indeterminate
+    );
+    // Independent authorized observation proves the fixture committed, not causal certainty for the lost result.
+    assert!(
+        store.list_active().is_err(),
+        "uncertain connection is quarantined"
+    );
+    let independent = SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap();
+    assert_eq!(independent.list_active().unwrap().len(), 1);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn implicit_update_commit_hook_races_preserve_generation_and_physical_outcome() {
+    for cleanup in [false, true] {
+        for after_admission in [false, true] {
+            let store =
+                Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).unwrap());
+            let now = Timestamp::from_datetime(chrono::Utc::now());
+            let row = store
+                .create(
+                    &NewSchedule {
+                        spec: spec("implicit"),
+                        jitter: Duration::ZERO,
+                        next_run_at: now,
+                    },
+                    now,
+                )
+                .unwrap();
+            let controller = Arc::new(crate::operation::Controller::new());
+            let context = StoreOperationContext::root(Arc::clone(&controller));
+            let context = if cleanup { context.terminal() } else { context };
+            let (entered, wait_entered) = mpsc::channel();
+            let (release, wait_release) = mpsc::channel();
+            let physical = {
+                let store = Arc::clone(&store);
+                let name = row.spec.name.clone();
+                std::thread::spawn(move || {
+                    scope::set_commit_gate(move |after| {
+                        if after == after_admission {
+                            entered.send(()).unwrap();
+                            wait_release.recv().unwrap();
+                        }
+                    });
+                    store.with_operation_context(&context, |store| store.set_enabled(&name, false))
+                })
+            };
+            wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
+            let now = Instant::now();
+            controller
+                .stop(ShutdownBudget::new(now, now).unwrap())
+                .unwrap();
+            controller
+                .stop(ShutdownBudget::new(now, now).unwrap())
+                .unwrap();
+            release.send(()).unwrap();
+            let error = physical.join().unwrap().unwrap_err();
+            let CronError::Store(error) = error else {
+                panic!("transaction evidence");
+            };
+            let outcome = error.transaction_outcome().unwrap();
+            assert!(outcome.completed_after_cutoff);
+            assert_eq!(
+                outcome.admission,
+                if after_admission {
+                    CommitAdmission::Admitted
+                } else {
+                    CommitAdmission::Vetoed
+                }
+            );
+            assert_eq!(
+                outcome.persistence,
+                if after_admission {
+                    PersistenceOutcome::Committed
+                } else {
+                    PersistenceOutcome::RolledBack
+                }
+            );
+            let actual = store.get(row.id).unwrap().unwrap();
+            assert_eq!(actual.generation, row.generation);
+            assert_eq!(actual.enabled, !after_admission);
+        }
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn generation_fenced_terminal_cleanup_has_independent_admission_while_command_intake_is_full()
+{
+    struct GateJob {
+        entered: tokio::sync::Notify,
+        release: tokio::sync::Notify,
+    }
+    #[async_trait::async_trait]
+    impl crate::Job for GateJob {
+        async fn run(&self, _: &serde_json::Value, _: Instant) -> RunOutcome {
+            self.entered.notify_one();
+            self.release.notified().await;
+            RunOutcome::Ok
+        }
+        async fn should_stop(&self, _: &serde_json::Value) -> crate::StopDecision {
+            crate::StopDecision::Continue
+        }
+    }
+    let clock = Arc::new(crate::ManualClock::new(
+        "2026-10-19T00:00:00Z".parse().unwrap(),
+    ));
+    let scheduler = Arc::new(
+        Scheduler::new(
+            Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).unwrap()),
+            Arc::clone(&clock),
+            Arc::new(crate::SeqJitter::default()),
+        )
+        .with_command_capacity(1)
+        .unwrap(),
+    );
+    let row = scheduler.start(spec("cleanup")).unwrap();
+    let job = Arc::new(GateJob {
+        entered: tokio::sync::Notify::new(),
+        release: tokio::sync::Notify::new(),
+    });
+    let worker = scheduler.spawn_worker_cooperative(job.clone()).unwrap();
+    let control = worker.stop_control();
+    let context = control.operation_context();
+    clock.wait_parks_above(0).await;
+    clock.advance_settled(chrono::Duration::seconds(60)).await;
+    tokio::time::timeout(Duration::from_secs(5), job.entered.notified())
+        .await
+        .unwrap();
+    let (release, holder) = hold(Arc::clone(scheduler.store()));
+    let command = {
+        let scheduler = Arc::clone(&scheduler);
+        let context = context.clone();
+        tokio::spawn(async move {
+            scheduler
+                .query_with_context(ScheduleQuery::default(), context)
+                .await
+        })
+    };
+    commands(&context, 1).await;
+    let now = Instant::now();
+    control
+        .request_stop(
+            ShutdownBudget::new(
+                now + Duration::from_secs(60),
+                now + Duration::from_secs(120),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    job.release.notify_one();
+    tokio::time::timeout(Duration::from_secs(5), async {
+        while context.state.counts().0 < 2 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    assert_eq!(
+        context.state.counts().1,
+        1,
+        "cleanup neither consumes nor bypasses public command capacity"
+    );
+    release.send(()).unwrap();
+    holder.join().unwrap();
+    command.await.unwrap().unwrap();
+    let report = worker.join_owned().await.unwrap();
+    assert!(!report.grace_exceeded);
+    assert!(!report.cleanup_exceeded);
+    assert_eq!(report.cleanup.persistence, PersistenceOutcome::Committed);
+    let actual = scheduler.store().get(row.id).unwrap().unwrap();
+    assert_eq!(actual.generation, row.generation);
+    assert_eq!(actual.last_outcome, Some(RunOutcome::Ok));
+}

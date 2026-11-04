@@ -16,7 +16,7 @@ pub struct StoreOperationContext {
     pub(crate) state: Arc<crate::operation::Controller>,
     deadline: Option<Instant>,
     pub(crate) cleanup: bool,
-    parents: Vec<StoreOperationContext>,
+    parents: Vec<(Arc<crate::operation::Controller>, Option<Instant>)>,
 }
 
 impl StoreOperationContext {
@@ -26,7 +26,7 @@ impl StoreOperationContext {
         let shared = self.state.cutoff(self.cleanup);
         self.parents
             .iter()
-            .filter_map(Self::deadline)
+            .filter_map(|(state, deadline)| state.cutoff(false).into_iter().chain(*deadline).min())
             .chain(self.deadline)
             .chain(shared)
             .min()
@@ -35,7 +35,7 @@ impl StoreOperationContext {
     /// Reports the current shared stop request.
     #[must_use]
     pub fn stop_requested(&self) -> bool {
-        self.state.stopping()
+        self.state.stopping() || self.parents.iter().any(|(state, _)| state.stopping())
     }
 
     /// Checks live cancellation and the real monotonic deadline.
@@ -46,8 +46,8 @@ impl StoreOperationContext {
         if self.state.cancelled(self.cleanup) {
             return Err(StoreError::new(StoreErrorKind::Cancelled, "operation_cancelled").into());
         }
-        for parent in &self.parents {
-            parent.check()?;
+        if self.parents.iter().any(|(state, _)| state.cancelled(false)) {
+            return Err(StoreError::new(StoreErrorKind::Cancelled, "operation_cancelled").into());
         }
         if self
             .deadline()
@@ -78,7 +78,7 @@ impl StoreOperationContext {
     pub(crate) fn external_deadline(&self) -> Option<Instant> {
         self.parents
             .iter()
-            .filter_map(Self::deadline)
+            .filter_map(|(state, deadline)| state.cutoff(false).into_iter().chain(*deadline).min())
             .chain(self.deadline)
             .min()
     }
@@ -94,8 +94,9 @@ impl StoreOperationContext {
 
     pub(crate) fn bind(&self, state: Arc<crate::operation::Controller>) -> Self {
         let mut bound = Self::root(state);
+        bound.parents = self.parents.clone();
         if !Arc::ptr_eq(&bound.state, &self.state) {
-            bound.parents.push(self.clone());
+            bound.parents.push((Arc::clone(&self.state), self.deadline));
         }
         bound.deadline = self.deadline;
         bound

@@ -103,6 +103,7 @@ pub struct SqliteScheduleStore {
     // methods take `&self` from any thread, so the one connection sits
     // behind a mutex. Calls are short single statements or one transaction.
     connection: Mutex<Connection>,
+    quarantined: std::sync::atomic::AtomicBool,
     // Row ids already warned about as corrupt, so a bad row is reported once
     // per store rather than on every worker reload.
     warned: Mutex<HashSet<i64>>,
@@ -185,6 +186,7 @@ impl SqliteScheduleStore {
         init_schema(&mut connection)?;
         Ok(Self {
             connection: Mutex::new(connection),
+            quarantined: std::sync::atomic::AtomicBool::new(false),
             logger,
             warned: Mutex::new(HashSet::new()),
             limits,
@@ -221,7 +223,7 @@ impl SqliteScheduleStore {
     }
 
     fn lock(&self) -> Result<scope::Guard<'_>, CronError> {
-        scope::lock(&self.connection)
+        scope::lock(&self.connection, &self.quarantined)
     }
 
     /// Runs one guarded `UPDATE` and reports whether it changed the row.
@@ -239,8 +241,9 @@ impl SqliteScheduleStore {
         let generation = generation.get();
         let mut all: Vec<&dyn ToSql> = vec![&id, &generation];
         all.extend_from_slice(values);
-        let changed = self
-            .lock()?
+        let connection = self.lock()?;
+        scope::attempted()?;
+        let changed = connection
             .execute(sql, all.as_slice())
             .map_err(|error| store_error(&format!("failed to update {TABLE} id {id}"), error))?;
         scope::committed();
@@ -304,9 +307,15 @@ impl ScheduleStore for SqliteScheduleStore {
     fn with_operation_context<T>(
         &self,
         context: &crate::StoreOperationContext,
-        operation: impl FnOnce(&Self) -> Result<T, CronError>,
+        operation: impl FnOnce(&SqliteScheduleStore) -> Result<T, CronError>,
     ) -> Result<T, CronError> {
-        scope::with_scope(context, || operation(self))
+        let result = scope::with_provider(context, self, operation);
+        if matches!(&result, Err(CronError::Store(error)) if error.kind() == StoreErrorKind::Indeterminate)
+        {
+            self.quarantined
+                .store(true, std::sync::atomic::Ordering::Release);
+        }
+        result
     }
 
     fn query(&self, query: &crate::ScheduleQuery) -> Result<crate::SchedulePage, CronError> {
@@ -521,8 +530,9 @@ impl ScheduleStore for SqliteScheduleStore {
     }
 
     fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<bool, CronError> {
-        let changed = self
-            .lock()?
+        let connection = self.lock()?;
+        scope::attempted()?;
+        let changed = connection
             .execute(
                 "UPDATE sc_cron_schedule SET enabled = ?2
                  WHERE name = ?1 AND ended_at IS NULL",
@@ -686,6 +696,7 @@ fn set_flags(
     flags: &[(ScheduleName, bool)],
 ) -> Result<bool, CronError> {
     for (name, enabled) in flags {
+        scope::attempted()?;
         let changed = transaction
             .execute(
                 "UPDATE sc_cron_schedule SET enabled = ?2
@@ -742,6 +753,7 @@ impl Columns {
         name: &str,
         enabled: bool,
     ) -> Result<i64, CronError> {
+        scope::attempted()?;
         transaction
             .execute(
                 "INSERT INTO sc_cron_schedule
@@ -787,6 +799,7 @@ impl Columns {
                     format!("{TABLE} id {id}: generation exhausted"),
                 )
             })?;
+        scope::attempted()?;
         transaction
             .execute(
                 "UPDATE sc_cron_schedule SET generation = ?2, expr = ?3, timeout_ms = ?4,
@@ -913,6 +926,8 @@ impl RawRow {
 
     /// Decodes every column; any malformed value is a `Corrupt` error naming the row.
     fn decode(self) -> Result<Schedule, CronError> {
+        #[cfg(test)]
+        scope::observe(scope::TestStage::Decode);
         scope::check()?;
         let id = self.id;
         let corrupt = |what: String| -> CronError {

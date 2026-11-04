@@ -575,7 +575,8 @@ where
             let controller = self.controller.as_ref().expect("cooperative controller");
             let root = crate::StoreOperationContext::root(Arc::clone(controller));
             let context = if self.stopping { root.terminal() } else { root };
-            let guard = controller.register(&context, false)?;
+            context.check()?;
+            let guard = controller.register(context.cleanup, context.external_deadline(), false)?;
             Some((context, guard))
         } else {
             None

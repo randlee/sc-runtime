@@ -35,6 +35,15 @@ fn update(scope: &Scope, f: impl FnOnce(&mut TransactionOutcome)) {
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner));
 }
+pub(super) fn attempted() -> Result<(), CronError> {
+    check()?;
+    if let Some(scope) = current() {
+        update(&scope, |outcome| {
+            outcome.persistence = PersistenceOutcome::Indeterminate
+        });
+    }
+    Ok(())
+}
 pub(super) fn committed() {
     if let Some(scope) = current() {
         update(&scope, |outcome| {
@@ -51,11 +60,21 @@ pub(super) fn baseline_busy(attempt: i32) -> bool {
     true
 }
 fn scoped_busy(attempt: i32) -> bool {
+    #[cfg(test)]
+    observe(TestStage::Busy);
     if attempt >= 5000 || check().is_err() {
         return false;
     }
     std::thread::sleep(Duration::from_millis(1));
     check().is_ok()
+}
+
+pub(super) fn with_provider<S, T>(
+    context: &StoreOperationContext,
+    provider: &S,
+    operation: impl FnOnce(&S) -> Result<T, CronError>,
+) -> Result<T, CronError> {
+    with_scope(context, || operation(provider))
 }
 
 pub(super) fn with_scope<T>(
@@ -101,7 +120,17 @@ pub(super) fn with_scope<T>(
     };
     if let Some(error) = failure {
         let (kind, reason) = match error {
-            CronError::Store(ref error) => (error.kind(), error.context().to_owned()),
+            CronError::Store(ref error) => (
+                error.kind(),
+                match error.kind() {
+                    StoreErrorKind::Cancelled => "operation_cancelled",
+                    StoreErrorKind::DeadlineExceeded => "operation_deadline_exceeded",
+                    StoreErrorKind::Indeterminate => "operation_persistence_indeterminate",
+                    StoreErrorKind::Busy => "operation_store_busy",
+                    StoreErrorKind::Corrupt => "operation_store_corrupt",
+                    _ => "operation_store_failed",
+                },
+            ),
             _ => return result,
         };
         let kind = if outcome.persistence == PersistenceOutcome::Indeterminate {
@@ -120,6 +149,7 @@ pub(super) struct Guard<'a> {
     connection: MutexGuard<'a, Connection>,
     scope: Option<Scope>,
     interrupt: Option<Arc<rusqlite::InterruptHandle>>,
+    quarantined: &'a std::sync::atomic::AtomicBool,
 }
 impl Deref for Guard<'_> {
     type Target = Connection;
@@ -135,6 +165,17 @@ impl DerefMut for Guard<'_> {
 impl Drop for Guard<'_> {
     fn drop(&mut self) {
         if let Some(scope) = &self.scope {
+            let uncertain = scope
+                .outcome
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .persistence
+                == PersistenceOutcome::Indeterminate;
+            if !self.connection.is_autocommit() || uncertain {
+                self.quarantined
+                    .store(true, std::sync::atomic::Ordering::Release);
+                return;
+            }
             let _ = self.connection.progress_handler(0, None::<fn() -> bool>);
             let _ = self.connection.commit_hook(None::<fn() -> bool>);
             let _ = self.connection.rollback_hook(None::<fn()>);
@@ -145,15 +186,34 @@ impl Drop for Guard<'_> {
         }
     }
 }
-pub(super) fn lock(connection: &Mutex<Connection>) -> Result<Guard<'_>, CronError> {
+pub(super) fn lock<'a>(
+    connection: &'a Mutex<Connection>,
+    quarantined: &'a std::sync::atomic::AtomicBool,
+) -> Result<Guard<'a>, CronError> {
+    if quarantined.load(std::sync::atomic::Ordering::Acquire) {
+        return Err(StoreError::new(
+            StoreErrorKind::Indeterminate,
+            "operation_connection_quarantined",
+        )
+        .into());
+    }
     let scope = current();
     let connection = if scope.is_some() {
         loop {
             check()?;
+            if quarantined.load(std::sync::atomic::Ordering::Acquire) {
+                return Err(StoreError::new(
+                    StoreErrorKind::Indeterminate,
+                    "operation_connection_quarantined",
+                )
+                .into());
+            }
             match connection.try_lock() {
                 Ok(guard) => break guard,
                 Err(TryLockError::Poisoned(error)) => break error.into_inner(),
                 Err(TryLockError::WouldBlock) => {
+                    #[cfg(test)]
+                    observe(TestStage::LockWait);
                     std::thread::park_timeout(Duration::from_millis(1))
                 }
             }
@@ -163,10 +223,18 @@ pub(super) fn lock(connection: &Mutex<Connection>) -> Result<Guard<'_>, CronErro
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
     };
+    if quarantined.load(std::sync::atomic::Ordering::Acquire) {
+        return Err(StoreError::new(
+            StoreErrorKind::Indeterminate,
+            "operation_connection_quarantined",
+        )
+        .into());
+    }
     let mut guard = Guard {
         connection,
         scope: scope.clone(),
         interrupt: None,
+        quarantined,
     };
     if let Some(scope) = scope {
         check()?;
@@ -181,7 +249,14 @@ pub(super) fn lock(connection: &Mutex<Connection>) -> Result<Guard<'_>, CronErro
             .map_err(callback_error)?;
         let progress = scope.context.clone();
         guard
-            .progress_handler(64, Some(move || progress.check().is_err()))
+            .progress_handler(
+                64,
+                Some(move || {
+                    #[cfg(test)]
+                    observe(TestStage::Progress);
+                    progress.check().is_err()
+                }),
+            )
             .map_err(callback_error)?;
         let commit = scope.clone();
         guard
@@ -189,7 +264,10 @@ pub(super) fn lock(connection: &Mutex<Connection>) -> Result<Guard<'_>, CronErro
                 #[cfg(test)]
                 test_gate(false);
                 let admitted = commit.context.check().is_ok()
-                    && commit.context.state.admit_commit(&commit.context);
+                    && commit
+                        .context
+                        .state
+                        .admit_commit(commit.context.cleanup, commit.context.external_deadline());
                 update(&commit, |outcome| {
                     outcome.admission = if admitted {
                         CommitAdmission::Admitted
@@ -231,4 +309,38 @@ fn test_gate(after_admission: bool) {
             gate(after_admission);
         }
     });
+}
+
+#[cfg(test)]
+#[derive(Clone, Copy, PartialEq)]
+pub(super) enum TestStage {
+    LockWait,
+    Busy,
+    Progress,
+    Decode,
+}
+#[cfg(test)]
+type ObserveGate = Option<Box<dyn Fn(TestStage)>>;
+#[cfg(test)]
+thread_local! { static OBSERVE_GATE: RefCell<ObserveGate> = const { RefCell::new(None) }; }
+#[cfg(test)]
+pub(super) fn set_observer(gate: impl Fn(TestStage) + 'static) {
+    OBSERVE_GATE.with(|current| current.replace(Some(Box::new(gate))));
+}
+#[cfg(test)]
+pub(super) fn observe(stage: TestStage) {
+    OBSERVE_GATE.with(|gate| {
+        if let Some(gate) = gate.borrow().as_ref() {
+            gate(stage);
+        }
+    });
+}
+
+#[cfg(test)]
+pub(super) fn lose_result() {
+    if let Some(scope) = current() {
+        update(&scope, |outcome| {
+            outcome.persistence = PersistenceOutcome::Indeterminate
+        });
+    }
 }

@@ -68,6 +68,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     /// a future occurrence required, the jitter drawn and the next run
     /// computed. `start` and `replace_and_set_enabled` share it.
     fn new_schedule(&self, spec: ScheduleSpec) -> Result<(NewSchedule, DateTime<Utc>), CronError> {
+        self.controller.mark_started();
         encode_payload(&spec.payload)?;
         spec.validate_environment()?;
         let now = self.clock.now();
@@ -94,6 +95,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     }
 
     fn stop(&self, id: ScheduleId, generation: Generation, reason: &str) -> Result<(), CronError> {
+        self.controller.mark_started();
         let at = Timestamp::from_datetime(self.clock.now());
         if !self.store.stop(id, generation, at, reason)? {
             return Err(CronError::Fenced { id, generation });
@@ -103,6 +105,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     }
 
     fn set_enabled(&self, name: &ScheduleName, enabled: bool) -> Result<(), CronError> {
+        self.controller.mark_started();
         if !self.store.set_enabled(name, enabled)? {
             return Err(CronError::NotFound(name.clone()));
         }
@@ -111,6 +114,7 @@ impl<S: ScheduleStore, C: Clock, J: JitterSource> Core<S, C, J> {
     }
 
     fn set_enabled_many(&self, flags: &[(ScheduleName, bool)]) -> Result<(), CronError> {
+        self.controller.mark_started();
         if !self.store.set_enabled_many(flags)? {
             return Err(self.first_missing(flags.iter().map(|(name, _)| name))?);
         }
@@ -785,6 +789,7 @@ where
     /// The store's errors on the first read; later store failures are logged
     /// and do not stop the other runs.
     pub async fn run_due(&self, job: Arc<dyn Job>) -> Result<Vec<DueRun>, CronError> {
+        self.core.controller.mark_started();
         run_due::drive(self, job).await
     }
 

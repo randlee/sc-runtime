@@ -1,5 +1,5 @@
 //! Shared admission and physical completion ownership for cooperative work.
-use crate::{CronError, ShutdownBudget, ShutdownStatus, StoreOperationContext};
+use crate::{CronError, ShutdownBudget, ShutdownStatus};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Instant;
 use tokio::sync::{Notify, watch};
@@ -16,8 +16,8 @@ struct State {
 }
 
 pub(crate) struct Controller {
-    state: Mutex<State>,
-    pub(crate) changed: Notify,
+    state: Arc<Mutex<State>>,
+    pub(crate) changed: Arc<Notify>,
     tasks: Mutex<Vec<tokio::task::JoinHandle<()>>>,
     status: watch::Sender<ShutdownStatus>,
 }
@@ -31,7 +31,7 @@ impl std::fmt::Debug for Controller {
 impl Controller {
     pub(crate) fn new() -> Self {
         Self {
-            state: Mutex::new(State {
+            state: Arc::new(Mutex::new(State {
                 budget: None,
                 cancelled: false,
                 started: false,
@@ -40,8 +40,8 @@ impl Controller {
                 active: 0,
                 interrupts: Vec::new(),
                 cleanup: None,
-            }),
-            changed: Notify::new(),
+            })),
+            changed: Arc::new(Notify::new()),
             tasks: Mutex::new(Vec::new()),
             status: watch::channel(ShutdownStatus::Running).0,
         }
@@ -170,11 +170,10 @@ impl Controller {
     }
     pub(crate) fn register(
         self: &Arc<Self>,
-        context: &StoreOperationContext,
+        cleanup: bool,
+        external: Option<Instant>,
         command: bool,
     ) -> Result<PhysicalGuard, CronError> {
-        context.check()?;
-        let external = context.external_deadline();
         let mut state = self.lock();
         if external.is_some_and(|deadline| Instant::now() >= deadline) {
             return Err(crate::StoreError::new(
@@ -183,10 +182,10 @@ impl Controller {
             )
             .into());
         }
-        if state.budget.is_some() && !context.cleanup {
-            return Err(crate::consumer_contract::unavailable("operation_stopping"));
+        if state.budget.is_some() && !cleanup {
+            return Err(refusal("operation_stopping"));
         }
-        if context.cleanup
+        if cleanup
             && state
                 .budget
                 .is_some_and(|budget| Instant::now() >= budget.cleanup)
@@ -198,9 +197,7 @@ impl Controller {
             .into());
         }
         if command && state.commands >= state.capacity {
-            return Err(crate::consumer_contract::unavailable(
-                "command_capacity_exhausted",
-            ));
+            return Err(refusal("command_capacity_exhausted"));
         }
         state.started = true;
         state.active += 1;
@@ -208,18 +205,18 @@ impl Controller {
             state.commands += 1;
         }
         Ok(PhysicalGuard {
-            controller: Arc::clone(self),
+            state: Arc::clone(&self.state),
+            changed: Arc::clone(&self.changed),
             command,
         })
     }
     /// Serializes final admission with stop/shortening, without holding across native COMMIT.
-    pub(crate) fn admit_commit(&self, context: &StoreOperationContext) -> bool {
-        let external = context.external_deadline();
+    pub(crate) fn admit_commit(&self, cleanup: bool, external: Option<Instant>) -> bool {
         let state = self.lock();
         let cutoff = state
             .budget
-            .map(|b| if context.cleanup { b.cleanup } else { b.grace });
-        if !context.cleanup && state.cancelled {
+            .map(|b| if cleanup { b.cleanup } else { b.grace });
+        if !cleanup && state.cancelled {
             return false;
         }
         if cutoff
@@ -285,9 +282,7 @@ impl Controller {
             tasks.retain(|task| !task.is_finished());
             tasks.push(owner);
         }
-        receive
-            .await
-            .map_err(|_| crate::consumer_contract::unavailable("store_owner_failed"))?
+        receive.await.map_err(|_| refusal("store_owner_failed"))?
     }
     pub(crate) async fn join(&self) {
         loop {
@@ -312,18 +307,32 @@ impl Controller {
 }
 
 pub(crate) struct PhysicalGuard {
-    controller: Arc<Controller>,
+    state: Arc<Mutex<State>>,
+    changed: Arc<Notify>,
     command: bool,
 }
 impl Drop for PhysicalGuard {
     fn drop(&mut self) {
         {
-            let mut state = self.controller.lock();
+            let mut state = self
+                .state
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
             state.active -= 1;
             if self.command {
                 state.commands -= 1;
             }
         }
-        self.controller.changed.notify_waiters();
+        self.changed.notify_waiters();
     }
+}
+
+fn refusal(reason: &'static str) -> CronError {
+    crate::StoreError::new(crate::StoreErrorKind::Unavailable, reason)
+        .with_transaction_outcome(crate::TransactionOutcome {
+            admission: crate::CommitAdmission::NotAttempted,
+            persistence: crate::PersistenceOutcome::NoMutationAttempted,
+            completed_after_cutoff: false,
+        })
+        .into()
 }

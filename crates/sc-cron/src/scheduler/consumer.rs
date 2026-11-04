@@ -37,10 +37,20 @@ impl<S: ScheduleStore + 'static, C: Clock + 'static, J: JitterSource + 'static> 
     ) -> Result<Schedule, CronError> {
         let core = Arc::clone(&self.core);
         self.command(context, move || {
-            core.stop(id, generation, &reason)?;
-            core.store
+            let mut row = core
+                .store
                 .get(id)?
-                .ok_or(CronError::Fenced { id, generation })
+                .filter(|row| row.generation == generation && row.is_active())
+                .ok_or(CronError::Fenced { id, generation })?;
+            let at = Timestamp::from_datetime(core.clock.now());
+            if !core.store.stop(id, generation, at, &reason)? {
+                return Err(CronError::Fenced { id, generation });
+            }
+            row.ended_at = Some(at);
+            row.stop_reason = Some(reason);
+            row.next_run_at = None;
+            core.signal_reload();
+            Ok(row)
         })
         .await
     }
@@ -70,7 +80,11 @@ impl<S: ScheduleStore + 'static, C: Clock + 'static, J: JitterSource + 'static> 
             ));
         }
         let context = context.bind(Arc::clone(&self.core.controller));
-        let guard = self.core.controller.register(&context, true)?;
+        context.check()?;
+        let guard =
+            self.core
+                .controller
+                .register(context.cleanup, context.external_deadline(), true)?;
         let store = Arc::clone(&self.core.store);
         // The permit lives inside the physical closure, independent of its transport waiter.
         self.core
