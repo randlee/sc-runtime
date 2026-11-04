@@ -44,11 +44,14 @@ class ConsumerProfileTests(unittest.TestCase):
         self.assertEqual(result.returncode, expected, result.stdout)
         return result.stdout
 
-    def generate(self, fixture):
-        destination = self.base / fixture.removesuffix('.json')
+    def generate(self, fixture, mcp=None):
+        suffix = '' if mcp is None else f'-mcp-{mcp}'
+        destination = self.base / (fixture.removesuffix('.json') + suffix)
         if destination.exists():
             return destination
         answers = json.loads((ROOT / 'wizard/fixtures' / fixture).read_text())
+        if mcp is not None:
+            answers['mcp'] = mcp
         schema = self.driver.load_schema(ROOT)
         answers = self.driver.validate(schema, answers)
         values = self.driver.write_values(answers)
@@ -60,9 +63,9 @@ class ConsumerProfileTests(unittest.TestCase):
         return destination
 
     def test_selected_policy_inventory(self):
-        for fixture in ('sqlite-mcp.json', 'sqlite-no-mcp.json', 'sqlite-postgres.json', 'sqlite-mysql.json', 'none.json'):
-            with self.subTest(fixture=fixture):
-                root = self.generate(fixture)
+        for fixture, mcp in ((fixture, mcp) for fixture in ('sqlite-mcp.json', 'sqlite-postgres.json', 'sqlite-mysql.json', 'none.json') for mcp in (False, True)):
+            with self.subTest(fixture=fixture, mcp=mcp):
+                root = self.generate(fixture, mcp)
                 manifests = [tomllib.loads(p.read_text()) for p in (root / 'crates').glob('*/Cargo.toml')]
                 packages = {data['package']['name'] for data in manifests}
                 policies = [tomllib.loads(p.read_text()) for p in (root / 'boundaries').glob('*/*.toml')]
@@ -70,9 +73,30 @@ class ConsumerProfileTests(unittest.TestCase):
                 for policy in policies:
                     self.assertTrue(set(policy['dependencies']['allowed_dependencies']) <= packages)
                     self.assertTrue(set(policy['dependencies']['allowed_dependents']) <= packages)
+                roles = {p.parent.name: tomllib.loads(p.read_text())['package']['name']
+                         for p in (root / 'crates').glob('*/Cargo.toml')}
+                service = next(p for p in policies if p['owner_package'] == roles['service'])
+                expected = {roles['api-types']}
+                if 'schema' in roles:
+                    expected.add(roles['schema'])
+                    store = 'store-adaptor' if 'store-adaptor' in roles else 'store-sqlite'
+                    expected.add(roles[store])
+                self.assertEqual(set(service['dependencies']['allowed_dependencies']), expected)
+                self.assertEqual((root / 'crates/daemon/src/mcp.rs').exists(), mcp)
                 for prohibited in ('clippy.toml', 'rustfmt.toml', 'deny.toml'):
                     self.assertFalse(list(root.rglob(prohibited)))
                 self.assertFalse((root / 'boundaries/render.py').exists())
+
+    def test_policy_render_refuses_existing_consumer_bytes(self):
+        root = self.generate('sqlite-no-mcp.json')
+        policy = next((root / 'boundaries').glob('*service/*.toml'))
+        policy.write_text(policy.read_text() + "\n# Application-owned policy edit.\n")
+        before = policy.read_bytes()
+        result = subprocess.run(['python3', str(ROOT / 'template/boundaries/render.py'), str(root)],
+                                text=True, capture_output=True, check=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('refuses to overwrite consumer policy', result.stderr)
+        self.assertEqual(policy.read_bytes(), before)
 
     def test_public_profiles_and_preservation(self):
         root = self.generate('sqlite-mcp.json')
@@ -113,11 +137,23 @@ class ConsumerProfileTests(unittest.TestCase):
         parsed = tomllib.loads(before)
         self.assertTrue(parsed['dependencies']['allowed_dependencies'])
         policy.write_text(before.replace('allowed_dependencies = '+json.dumps(parsed['dependencies']['allowed_dependencies']), 'allowed_dependencies = []'))
-        result = subprocess.run([str(binary), 'lint', 'sc-boundary', '--root', '.', '--config', 'sc-lint.toml'],
+        result = subprocess.run([str(binary), '--json', 'lint', 'sc-boundary', '--root', '.', '--config', 'sc-lint.toml'],
                                 cwd=root, env=self.env, text=True, capture_output=True, check=False)
         self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn('package_dependency_not_allowed', result.stdout + result.stderr)
         print('consumer proof: removing an allowed edge failed the actual boundary analyzer', flush=True)
+        policy.write_text(before)
+        store_manifest = root / 'crates/store-sqlite/Cargo.toml'
+        store_before = store_manifest.read_text()
+        types_package = tomllib.loads((root / 'crates/api-types/Cargo.toml').read_text())['package']['name']
+        store_manifest.write_text(store_before.replace('[dependencies]',
+            '[dependencies]\napi-types = { path = "../api-types", package = "' + types_package + '", version = "0.1.1" }'))
+        forbidden = subprocess.run([str(binary), '--json', 'lint', 'sc-boundary', '--root', '.', '--config', 'sc-lint.toml'],
+                                   cwd=root, env=self.env, text=True, capture_output=True, check=False)
+        self.assertNotEqual(forbidden.returncode, 0, forbidden.stdout + forbidden.stderr)
+        self.assertIn('package_dependency_not_allowed', forbidden.stdout + forbidden.stderr)
+        store_manifest.write_text(store_before)
+        print('consumer proof: adding a forbidden dependency failed the actual boundary analyzer', flush=True)
         policy.write_text(before + '\n# Consumer-owned policy customization.\n')
         preserved = {p: p.read_bytes() for p in (config, policy, root / 'Justfile')}
         self.command(root, 'just', 'setup')
