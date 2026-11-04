@@ -263,8 +263,8 @@
     },
     {
       "path": "consumer-extension-review-summary.md",
-      "sha256": "496426732713b700b4361481ea26600bdf2497ad7a13fbb0fb75d4f8a81bc7e0",
-      "bytes": 3094,
+      "sha256": "c9310a228ef84f7783026857eb8c0aefbed1107e4919c641e8cf334e3621e423",
+      "bytes": 3458,
       "source": "concise usual review summary per direct human instruction"
     },
     {
@@ -12935,8 +12935,8 @@
     },
     {
       "path": "current-plan-anchor-results.md",
-      "sha256": "6f7b2d8d55f733f453515adacb59bdda953b18540fcd251b395cd04907e5be5c",
-      "bytes": 5257,
+      "sha256": "9b8dc90896bbb473f239d7e44578f894d6286c1cf0247bb54da63f2ea1aff15a",
+      "bytes": 5931,
       "source": "exact final bounded calibration archive/report or proposed-record status evidence; no actual plan Jev PASS"
     },
     {

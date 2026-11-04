@@ -45,6 +45,12 @@ sprint verdicts. Generic calibration remains unaccepted after its bounded
 five-round run. Structural checks, human approval and scope/critical PASS
 cannot substitute for the actual anchor gate.
 
+The later finite representation comparison also failed acceptance. The next
+step follows the strict anchor-tuning process with existing validated question
+defect triage; offline request preparation adds no live run, cap reset, adoption
+or seal. [Current anchor status](current-plan-anchor-results.md) records the
+concise outcome; detailed evidence remains local.
+
 Per the human instruction to publish typical reports rather than diagnostic
 logs or test results, this is a concise review summary. The cancelled broad
 archive was never committed or pushed. Detailed working evidence remains

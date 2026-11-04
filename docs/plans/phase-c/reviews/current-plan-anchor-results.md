@@ -36,7 +36,19 @@ correlation/summary corrections are preserved in byte-exact archives with
 The old corpus, labels, evidence, production seal and installed tools remain
 unchanged.
 
-## Proposed records and approval packet
+## Later representation diagnostic
+
+Later finite representation diagnostic: 72 evaluations and 148 responses
+completed without errors, retries or replacements. Full-cell passes were
+171/180 for the baseline and 172/180 for the structured representation;
+neither was accepted. A new container did not resolve the calibration failure.
+Raw evidence remains local; no adoption, replacement seal or current-plan
+gate PASS follows. Next is offline preparation of the valid request required
+by the strict anchor-tuning process, using the already validated ANC-001/003
+question_defect triage. No further live calls or calibration-cap reset is
+authorized by this status update.
+
+## Approved statements and proposed records
 
 The [six-statement/fixture packet](internal-unapproved/phase-c-six-candidate-approval-packet.md)
 retains its original provisional references. The
