@@ -802,7 +802,7 @@ for the order in point 4.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the historical sc-lint 0.8.0 consumer install. Phase C updates the active contract to 0.8.4. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document  
+**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the historical sc-lint 0.8.0 consumer install. Phase C updates the active contract to 0.8.4. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document
 
 ### Context
 
