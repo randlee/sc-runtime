@@ -144,3 +144,9 @@ The sole generated-policy exception is ADR-RUN-0005/REQ-RUN-0307: fresh
 configuration-derived selected application crate/edge inventory, consumer-owned
 after setup. No copied maintainer manifests or lint rules. Execution receipts
 prove all three analyzers ran; a configured TOML row alone is insufficient.
+
+Successful repeated init after customized SDK files is temporarily waived
+only by [the user decision in #117](https://github.com/randlee/sc-runtime/issues/117),
+tracking [upstream #849](https://github.com/randlee/sc-lint/issues/849).
+Record actual exit3 and unchanged consumer bytes; keep exact0.8.4 and all
+three analyzer/profile proofs. All other quality gates remain binding.

@@ -39,13 +39,22 @@ with tempfile.TemporaryDirectory(prefix='phase-c-lint-') as directory:
     with (root/'Justfile').open('a') as stream:
         stream.write('\n# Consumer-owned recipe.\ndb-prepare:\n    @echo consumer-db-prepare\n')
     policy.write_text(policy.read_text()+'\n# Consumer-owned customization.\n')
-    before=(config.read_bytes(),policy.read_bytes())
+    before=(config.read_bytes(),policy.read_bytes(),(root/'Justfile').read_bytes())
     run(root,str(BINARY),'--json','lint','sc-boundary','--root','.','--config','sc-lint.toml')
     for profile in ['', 'default', 'full']:
             output=run(root,'just','lint',*([profile] if profile else []))
             assert 'lint.ci.consumer: pass' in output, output
+    receipt = run(root,str(BINARY),'--json','lint','ci','--consumer','--profile','full','--config','sc-lint.toml')
+    Path('/tmp/c1-consumer-receipt.json').write_text(receipt)
+    steps = {step['name']: step for step in json.loads(receipt)['data']['steps']}
+    for name in ['sc-boundary', 'sc-portability', 'sc-runtime']:
+        assert steps[name]['command'] == f'sc-lint lint {name} --root . --config sc-lint.toml'
+        assert steps[name]['status'] == 'pass'
+
     for iteration in range(2):
-        run(root,str(BINARY),'init','--just')
-        assert before==(config.read_bytes(),policy.read_bytes())
+        result = subprocess.run([str(BINARY), 'init', '--just'], cwd=root, env=ENV, text=True, capture_output=True)
+        print(json.dumps({'argv':[str(BINARY),'init','--just'],'status':result.returncode,'stderr':result.stderr,'waived_acceptance':'https://github.com/randlee/sc-runtime/issues/117'}))
+        assert result.returncode == 3 and 'CLI.SC_LINT_INTEGRATION_CONFLICT' in result.stderr
+        assert before==(config.read_bytes(),policy.read_bytes(),(root/'Justfile').read_bytes())
         assert 'db-prepare:' in (root/'Justfile').read_text()
-    print('LINT_INIT_POLICY_PASS')
+    print('LINT_PROFILES_POLICY_PRESERVATION_PASS; REPEATED_INIT_EXIT3_TEMPORARILY_WAIVED_117')

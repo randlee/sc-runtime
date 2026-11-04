@@ -895,10 +895,33 @@ consumer `db-prepare`, with exit 3 and
 `crates/sc-lint/src/consumer_integration.rs` classifies only canonical files
 or version-only configuration drift as preservable; arbitrary config/Justfile
 extensions conflict. No public extension marker was found. This fails the
-required two-init preservation criterion and blocks C1 closure; the passing
-profiles do not waive it. Never remove consumer edits or suppress analyzers
+original successful two-init criterion. The explicit user waiver below
+supersedes only that success condition; the passing profiles alone did not
+authorize a waiver. Never remove consumer edits or suppress analyzers
 to obtain a passing receipt. The temporary probe retains this failure until
 a supported released mechanism is qualified.
+
+
+Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
+[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
+after SDK/consumer customization. Released0.8.4 returns exit3
+`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
+Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
+result explicitly; never report init PASS, hide its error, force overwrite,
+delete consumer edits or add a workaround wrapper. This known result does not
+block current C1/C2 acceptance. Issue117 owns restoration of the successful
+repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
+all three real analyzers in ordinary/default/full profiles, causal failure
+proofs, configuration-derived fresh boundary policy and consumer ownership/
+preservation, and usable public setup/lint/test/upgrade remain binding. No
+upstream source fix, release or new pin is authorized by this waiver.
+
+The user-waiver probe was rerun successfully on the remaining criteria:
+ordinary/default/full each reported five passing steps; the structured
+`lint.ci.consumer` full-profile receipt identified the exact three analyzer
+argv strings with status pass. Both subsequent init attempts returned the
+recorded exit3, and config/Justfile/edited boundary policy stayed byte-exact.
+This is profile/preservation evidence under #117, never an init success claim.
 
 ## ADR-RUN-0006: Library errors are typed values; no public panics
 

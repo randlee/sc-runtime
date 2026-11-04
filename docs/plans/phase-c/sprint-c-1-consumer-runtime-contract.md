@@ -403,3 +403,18 @@ C1 initial declaration ownership clarification (parent-approved 2026-11-04):
 before output mutation; C3 owns subsequent generator implementation. The
 existing sc-command observability unit-test unused import is removed only to
 run feature-contract clippy, preserving all test meaning and lint enforcement.
+
+
+Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
+[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
+after SDK/consumer customization. Released0.8.4 returns exit3
+`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
+Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
+result explicitly; never report init PASS, hide its error, force overwrite,
+delete consumer edits or add a workaround wrapper. This known result does not
+block current C1/C2 acceptance. Issue117 owns restoration of the successful
+repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
+all three real analyzers in ordinary/default/full profiles, causal failure
+proofs, configuration-derived fresh boundary policy and consumer ownership/
+preservation, and usable public setup/lint/test/upgrade remain binding. No
+upstream source fix, release or new pin is authorized by this waiver.
