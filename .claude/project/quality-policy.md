@@ -86,7 +86,7 @@ in `doc_review` or pre-implementation sprints.
 
 ## Boundary Enforcement
 
-**Product:** sc-lint **0.8.0** (`minimum_version` in root `sc-lint.toml`).
+**Product:** sc-lint **0.8.4** (`minimum_version` in root `sc-lint.toml`).
 
 **Local integration:** `sc-lint init --just` manages `justfile`, `sc-lint.toml`,
 and `.sc-lint/bootstrap.py`. First use on a clean checkout: `just setup`.
@@ -139,3 +139,8 @@ an interface, its compatibility rule, evidence paths, and approval authority,
 Phase ids progress as sequential single letters: `a`, `b`, `c`, then the next
 unused letter. A phase uses its declared identifier consistently across its
 plan paths, branch names, sprint identifiers, triage records, and QA evidence.
+
+The sole generated-policy exception is ADR-RUN-0005/REQ-RUN-0307: fresh
+configuration-derived selected application crate/edge inventory, consumer-owned
+after setup. No copied maintainer manifests or lint rules. Execution receipts
+prove all three analyzers ran; a configured TOML row alone is insufficient.

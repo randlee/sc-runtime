@@ -1997,7 +1997,7 @@ retired.
 1. The install command is `sc-lint init --just`.
 2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.4
    and `template/.sc-lint/bootstrap.py`. `sc-lint.toml` is the consumer pin.
-   It is not a hand-written clippy, rustfmt, deny, or `boundaries/` policy.
+   The only additional invocation wiring is the three analyzer entries below.
 3. The public recipes are `setup`, `lint`, `test`, and `upgrade`.
 4. The consumer-owned recipe `db-prepare` regenerates the checked-in `sqlx`
    offline query data in `crates/store-sqlite/.sqlx/`. It MUST survive a
@@ -2040,9 +2040,36 @@ remain after a later init.
    is `just lint` and at least one that is `just test`; every `run:` step
    that lints or tests is one of those two; the file contains no direct
    `cargo test`, `cargo clippy` or `cargo fmt` invocation.
-6. `template/` contains no hand-written `clippy.toml`, `rustfmt.toml`,
-   `deny.toml`, or `boundaries/` policy. The consumer pin is
-   `template/sc-lint.toml`.
+6. No maintainer boundary manifests, clippy, rustfmt, deny, custom rules or
+   `just` modules are copied. The sole fresh-install policy exception is
+   configuration-derived application crate/edge inventory (ADR-RUN-0005).
+
+
+Phase C invocation contract (sc-lint **0.8.4** for repository and consumer):
+
+```toml
+[[tool.sc-lint.lint]]
+name = "sc-boundary"
+command = ["sc-lint", "lint", "sc-boundary", "--root", ".", "--config", "sc-lint.toml"]
+[[tool.sc-lint.lint]]
+name = "sc-portability"
+command = ["sc-lint", "lint", "sc-portability", "--root", ".", "--config", "sc-lint.toml"]
+[[tool.sc-lint.lint]]
+name = "sc-runtime"
+command = ["sc-lint", "lint", "sc-runtime", "--root", ".", "--config", "sc-lint.toml"]
+[tool.sc-lint.lint_profiles]
+default = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
+full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
+```
+
+Fresh generation derives inventory only from selected application crates and
+allowed direct edges (ADR-RUN-0303), omitting disabled store/MCP components.
+After setup it is consumer-owned: later setup/upgrade and repeated
+`sc-lint init --just` must preserve policy edits, analyzer declarations, both
+profiles and `db-prepare`. Bootstrap execution receipts must identify all three
+exact analyzer commands and zero statuses; TOML inspection alone is insufficient.
+ADR-RUN-0005 records the current released-product preservation gap; this is a
+required acceptance condition, not an already qualified behavior.
 
 ---
 
@@ -4123,8 +4150,8 @@ the easy path and test suites stay parallel and fast.
 
 The `cargo-generate` template under `template/` MUST NOT contain:
 
-- lint configuration of its own;
-- crate-boundary rules or boundary manifests;
+- lint configuration beyond the three REQ-RUN-0307 invocation declarations;
+- copied maintainer crate-boundary rules or manifests;
 - `just` modules or imported `just` files;
 - tooling that checks that the REST, MCP and CLI surfaces stay in step, such
   as snapshots of `openapi.json`, of the MCP `tools/list` result or of the
@@ -4139,7 +4166,13 @@ recipes are owned by [REQ-RUN-0307](requirements.md). The template does not
 ship a placeholder `Justfile` and does not hand the install to a later
 prototype-handoff.
 
-All of the excluded infrastructure is owned by the sc-lint project. The
+The narrow fresh-install exception permits configuration-derived application
+crate/edge inventory only, as defined in ADR-RUN-0005/0303. It includes only
+selected crates and allowed edges, omits disabled store/MCP components, and
+becomes consumer-owned after setup. No maintainer manifests, clippy, rustfmt,
+deny, custom rules or `just` modules may be copied.
+
+All other excluded infrastructure is owned by the sc-lint project. The
 consumer pin is `sc-lint.toml`, not a hand-written clippy, rustfmt, deny,
 or `boundaries/` policy.
 
@@ -4160,7 +4193,7 @@ rule changes from sc-lint and nothing in this repository changes.
 ### Success Criteria
 
 1. `find template` lists none of: `clippy.toml`, `.clippy.toml`,
-   `rustfmt.toml`, `.rustfmt.toml`, `deny.toml`, a `boundaries` directory,
+   `rustfmt.toml`, `.rustfmt.toml`, `deny.toml`, copied maintainer manifests,
    any `*.just` file.
 2. `grep -rn "^\[lints\|^\[workspace.lints" template` prints nothing.
 3. `template/sc-lint.toml` sets `minimum_version` to `0.8.4`, and

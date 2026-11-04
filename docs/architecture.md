@@ -779,7 +779,7 @@ for the order in point 4.
 
 **Status:** Active  
 **Decision Date:** 2026-09-19  
-**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the sc-lint 0.8.0 consumer install. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document  
+**Source:** sc-runtime design, 2026-09-19: the shared `just` system and the inverted sc-lint hand-off stated by the owner. Sprint a-1 retired the placeholder `Justfile` and the prototype-handoff order and recorded the sc-lint 0.8.4 consumer install. Point 6 (boundary manifests and `sc-lint-boundary` for this repository's own crates) is decided in this document  
 
 ### Context
 
@@ -794,14 +794,16 @@ be upgraded.
 
 ### Decision
 
-1. `template/` MUST NOT contain hand-written lint configuration, crate-boundary
-   rules, adapter-drift tooling, or `just` modules. `sc-lint.toml` is the
+1. `template/` MUST NOT contain copied maintainer lint/boundary configuration,
+   adapter-drift tooling, or `just` modules. The narrow fresh-install exception
+   below permits configuration-derived application boundary inventory and
+   the three REQ-RUN-0307 analyzer invocation declarations only. `sc-lint.toml` is the
    consumer pin. It is not a hand-written clippy, rustfmt, deny, or
    `boundaries/` policy.
 2. This repository MUST NOT build surface-snapshot or adapter-drift tooling.
-3. A generated project gets its `just` and lint install from sc-lint 0.8.0.
+3. A generated project gets its `just` and lint install from sc-lint 0.8.4.
    The install command is `sc-lint init --just`. The template commits
-   `template/sc-lint.toml` with `minimum_version` 0.8.0 and
+   `template/sc-lint.toml` with `minimum_version` 0.8.4 and
    `template/.sc-lint/bootstrap.py`.
 4. The public recipes are `setup`, `lint`, `test`, and `upgrade`. The
    consumer-owned recipe `db-prepare` MUST survive a later `sc-lint init`.
@@ -837,12 +839,12 @@ a later init. a-6 owns the generated install.
 
 **Enforced by:** [NFR-RUN-0006](requirements.md), checked by inspecting the contents of
 `template/` for lint configuration, boundary rules and `just` modules;
-`req-qa` on [REQ-RUN-0307](requirements.md) (the sc-lint 0.8.0 consumer install); `req-qa` on
+`req-qa` on [REQ-RUN-0307](requirements.md) (the sc-lint 0.8.4 consumer install); `req-qa` on
 [REQ-RUN-0005](requirements.md) for point 6.
 
 ### Related Documents
 
-- [REQ-RUN-0307](requirements.md): sc-lint 0.8.0 consumer install and its recipe names.
+- [REQ-RUN-0307](requirements.md): sc-lint 0.8.4 consumer install and its recipe names.
 - [NFR-RUN-0006](requirements.md): the template carries no lint knowledge.
 - [REQ-RUN-0004](requirements.md): this repository's own `just lint`, `just test` and
   `just new <dest>`.
@@ -853,6 +855,49 @@ a later init. a-6 owns the generated install.
   is `sc-lint init --just`, owned by a-6, not a prototype handoff.
 
 ---
+
+### Phase C fresh-install qualification (2026-11-04)
+
+The generated consumer needs its own default boundary policy: derive one active
+record per selected application crate, with outgoing `allowed_dependencies`
+and incoming `allowed_dependents` restricted to actual selected direct edges
+from ADR-RUN-0303. Include api-types/service/daemon/CLI and only selected store
+and MCP components; never list absent optional owners or permissions. The
+policy is consumer-owned after setup; subsequent setup/upgrade and repeated
+`sc-lint init --just` must preserve its edits, `db-prepare`, all three analyzer
+entries, and ordinary/default/full execution. This exception supplies missing
+consumer policy; it does not copy maintainer manifests, clippy/rustfmt/deny,
+custom rules or `just` modules.
+
+Released 0.8.4 inventory schema uses
+`boundaries/<owner_package>/<record>.toml`: boundary_id, owner_package,
+owner_crate_path and name, with public.facade, implementation, composition,
+dependencies, references, testing, enforcement and status tables. Active
+records use `state = "concrete_landed"`. A nonempty public facade and
+`boundaries/planning.toml` with `[planning].current_sprint = "A.1"` are
+required even for a new consumer. The planning value is initial consumer
+metadata, not a copy of this repository's sprint state.
+
+Observed released archive:
+`sc-lint_0.8.4_aarch64-apple-darwin.tar.gz`, SHA256
+`798e245719cad2383650eb51dc7ccabd8eaa63e44c53733a4313a3a1cc69dbf2`.
+A minimal consumer-shaped workspace with fresh generated inventory ran
+`just lint`, `just lint default`, and `just lint full` successfully, each
+reporting five steps. The bootstrap receipt, exact command argv and zero exit
+status for sc-boundary/sc-portability/sc-runtime are required evidence; TOML
+inspection alone cannot certify analyzer execution.
+
+**Open capability gap:** the same released binary rejects subsequent
+`sc-lint init --just` after adding the three declarations/profiles and
+consumer `db-prepare`, with exit 3 and
+`CLI.SC_LINT_INTEGRATION_CONFLICT`. Release source
+`crates/sc-lint/src/consumer_integration.rs` classifies only canonical files
+or version-only configuration drift as preservable; arbitrary config/Justfile
+extensions conflict. No public extension marker was found. This fails the
+required two-init preservation criterion and blocks C1 closure; the passing
+profiles do not waive it. Never remove consumer edits or suppress analyzers
+to obtain a passing receipt. The temporary probe retains this failure until
+a supported released mechanism is qualified.
 
 ## ADR-RUN-0006: Library errors are typed values; no public panics
 
