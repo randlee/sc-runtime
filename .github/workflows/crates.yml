@@ -206,6 +206,7 @@ jobs:
       - name: Execute isolated runtime Ctrl-C and Ctrl-Break lifecycle
         env:
           SC_RUNTIME_EPHEMERAL_CI: '1'
+          SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST: '1'
         run: python crates/sc-runtime/tests/windows_console_driver.py
       - uses: dtolnay/rust-toolchain@1.96.1
       - name: Execute Monty shared hook environment root

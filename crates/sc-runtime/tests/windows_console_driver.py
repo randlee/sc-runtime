@@ -86,7 +86,7 @@ def scenario(binary, directory, event, early):
             environment["SC_RUNTIME_CONSOLE_EARLY"] = "1"
         with tempfile.TemporaryFile() as output:
             child = subprocess.Popen([binary, "--exact", "console_child", "--nocapture"],
-                env=environment, stdout=output, stderr=subprocess.STDOUT,
+                env=environment, stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT,
                 creationflags=subprocess.CREATE_NEW_CONSOLE)
             attached = None
             try:
@@ -115,7 +115,7 @@ def scenario(binary, directory, event, early):
                 # A real contender must see the old lock while cleanup owns it.
                 probe_env = dict(environment, SC_RUNTIME_CONSOLE_LOCK_PROBE="1")
                 probe = subprocess.run([binary, "--exact", "console_child", "--nocapture"],
-                    env=probe_env, capture_output=True, timeout=WAIT,
+                    env=probe_env, stdin=subprocess.DEVNULL, capture_output=True, timeout=WAIT,
                     creationflags=subprocess.CREATE_NEW_CONSOLE)
                 assert probe.returncode == 0, probe.stdout + probe.stderr
                 release(cleanup)
@@ -147,7 +147,10 @@ def worker(binary):
 
 def main():
     assert os.name == "nt", "native Windows only"
-    assert os.environ.get("SC_RUNTIME_EPHEMERAL_CI") == "1", "isolated CI only"
+    assert all(os.environ.get(key) == value for key, value in {
+        "SC_RUNTIME_EPHEMERAL_CI": "1", "SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST": "1",
+        "GITHUB_ACTIONS": "true", "RUNNER_ENVIRONMENT": "github-hosted",
+    }.items()), "isolated GitHub-hosted CI only"
     if len(sys.argv) == 3 and sys.argv[1] == "--worker":
         worker(sys.argv[2])
         return
