@@ -167,6 +167,7 @@ pub struct EnvironmentPolicy {
     /// Ordered absolute dotenv sources.
     pub dotenv: Vec<DotenvSource>,
     /// Portable environment names and operations.
+    #[serde(deserialize_with = "unique_variables")]
     pub variables: BTreeMap<String, EnvironmentOperation>,
 }
 
@@ -181,17 +182,42 @@ pub struct DotenvSource {
     pub required: bool,
 }
 
-/// Persisted set/reference/clear intent, resolved only for an occurrence.
+/// Persisted environment intent using the existing core wire representation.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema, utoipa::ToSchema))]
-#[serde(tag = "op", rename_all = "snake_case", deny_unknown_fields)]
+#[serde(rename_all = "snake_case")]
 pub enum EnvironmentOperation {
-    /// Explicit persisted plaintext.
-    Set { value: String },
-    /// Application-owned opaque locator.
-    Reference { locator: String },
-    /// Remove any previously supplied value.
-    Clear,
+    /// Explicit persisted plaintext: `{ "set": "value" }`.
+    Set(String),
+    /// Application-owned opaque locator: `{ "reference": "locator" }`.
+    Reference(String),
+    /// Remove earlier values: `{ "clear": true }`; false fails validation.
+    Clear(bool),
+}
+
+fn unique_variables<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<BTreeMap<String, EnvironmentOperation>, D::Error> {
+    struct Unique;
+    impl<'de> serde::de::Visitor<'de> for Unique {
+        type Value = BTreeMap<String, EnvironmentOperation>;
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            formatter.write_str("unique environment variable names")
+        }
+        fn visit_map<M: serde::de::MapAccess<'de>>(
+            self,
+            mut map: M,
+        ) -> Result<Self::Value, M::Error> {
+            let mut variables = BTreeMap::new();
+            while let Some((name, operation)) = map.next_entry::<String, EnvironmentOperation>()? {
+                if variables.insert(name, operation).is_some() {
+                    return Err(serde::de::Error::custom("duplicate environment variable"));
+                }
+            }
+            Ok(variables)
+        }
+    }
+    deserializer.deserialize_map(Unique)
 }
 
 /// Typed operation result in the canonical command Envelope.

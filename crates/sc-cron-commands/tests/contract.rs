@@ -60,3 +60,17 @@ fn owner_schemas_cover_real_request_and_envelope_types() {
     );
     let _ = <CronRequest as utoipa::PartialSchema>::schema();
 }
+
+#[test]
+fn environment_wire_matches_core_and_rejects_duplicate_names() {
+    let source = r#"{"dotenv":[],"variables":{"TOKEN":{"reference":"secrets/token"},"MODE":{"set":"batch"},"OLD":{"clear":true}}}"#;
+    let policy: sc_cron_commands::EnvironmentPolicy =
+        serde_json::from_str(source).expect("adapter policy");
+    let core: sc_cron::HookEnvironment = serde_json::from_str(source).expect("core policy");
+    assert_eq!(
+        serde_json::to_value(policy).expect("adapter json"),
+        serde_json::to_value(core).expect("core json")
+    );
+    let duplicate = r#"{"dotenv":[],"variables":{"MODE":{"set":"a"},"MODE":{"set":"b"}}}"#;
+    assert!(serde_json::from_str::<sc_cron_commands::EnvironmentPolicy>(duplicate).is_err());
+}
