@@ -15,6 +15,9 @@ sc-transport = { version = "0.1.1" }
 sc-command = { version = "0.1.1" }
 sc-runtime = { version = "0.1.1" }
 sc-cron = { version = "0.1.1" }
+{% if cron_commands %}
+sc-cron-commands = { version = "0.2.0", default-features = false }
+{% endif %}
 sc-observability = { version = "=1.5.0" }
 sc-observability-types = { version = "=1.5.0" }
 serde = { version = "1", features = ["derive"] }

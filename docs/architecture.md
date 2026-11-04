@@ -1550,6 +1550,45 @@ schemas in place of the typed library-native projections.
 **Source:** sc-runtime design, 2026-09-19: both facts are marked by the design as unverified and to be confirmed by the spike before anything relies on them. Split out of ADR-RUN-0202 and ADR-RUN-0302 so that those two hold only accepted decisions  
 **Acceptance:** made Active, or amended, by sprint a-1
 
+### Phase C frozen runtime matrix (queried 2026-11-04)
+
+This matrix supersedes the historical a-1 pins below for Phase C. Official
+crates.io sparse index records were queried at
+`https://index.crates.io/rm/cp/rmcp`, `https://index.crates.io/ut/oi/utoipa`, and
+`https://index.crates.io/ut/oi/utoipa-axum`. Latest non-yanked released versions
+were **rmcp 3.8.0**, **utoipa 6.0.0**, and **utoipa-axum 0.3.0**. Freeze
+schemars **1.2.3**, the resolved identity satisfying RMCP's JsonSchema bound.
+C-3 consumes this exact matrix; newer versions require an ADR amendment and
+repeat qualification, not an implicit latest upgrade.
+
+The temporary composition manifest compiles ordinary OpenApiRouter split and
+Axum nest_service of the streamable-HTTP service, real Parameters<CronRequest>,
+schema_for!(CronRequest), Envelope<CronResponse> JSON/OpenAPI schemas, and the
+same sc-command nominal logging trait with command-dependent cron. Locked
+`cargo metadata --format-version 1 --all-features` is traversed from each
+runtime/daemon composition root via resolve.nodes[].deps[].pkg. Identify each
+reachable package by `(name, version, source)`, not display text or dependency
+key aliases; require exactly one tuple for each selected rmcp/utoipa/
+utoipa-axum/schemars identity, and require locked RMCP/Utoipa equal the dated
+latest registry selections. The composition probe passed on this matrix.
+C-3 repeats this algorithm for the actual migrated runtime and generated
+daemon graphs; this probe does not claim their later migration is complete.
+
+Affected release versions: sc-command **0.2.0**, sc-cron **0.2.0**,
+sc-runtime **0.2.0**, sc-cron-commands **0.2.0**. Unrelated sc-config,
+sc-transport and sc-runtime-db-sqlite remain **0.1.1**. Command publishes
+before cron and runtime; cron publishes before cron-commands. Preserve
+sc-cron's defaults-off temporary command edge and the same nominal logging
+trait (ADR-RUN-0017), without server activation or an upstream cleanup claim.
+C-3 owns the atomic existing-package manifest/version migration; C1's additive
+adapter declaration currently points at the checkout's existing 0.1.1 native
+packages until that handoff. C-4 alone owns the authorized runtime0.2.0 release
+handoff, registry visibility and no-patch registry-consumer acceptance. Existing
+publication authorization gates remain. The selective sc-publish exact pin
+qualification remains required and unproven; the matrix is not publication
+approval and C1 cannot close while that capability gap is unresolved.
+
+
 ### Context
 
 [ADR-RUN-0202](architecture.md) fixes the shape: one `axum::Router` carries

@@ -3890,6 +3890,15 @@ the only process that opens the local database.
    No criterion inspects the `cli` binary produced by `cargo build --workspace`.
    a-6 owns `cargo tree -p <cli package> -e normal`. a-5 does not run it.
 
+
+Selected `cron_commands` consumers may depend on defaults-only
+sc-cron-commands DTOs directly or through api-types. That edge must introduce
+no scheduler, SQLite, Tokio, Monty or server dependency; isolated CLI graph
+proofs and all other forbidden edges remain binding. `cron_commands=false`
+is the generation default; true requires cron and preserves independently
+disabled MCP. Schema activation belongs only on selected daemon/service
+projection edges, never shared CLI defaults.
+
 ---
 
 ## NFR-RUN-0002: Async end to end

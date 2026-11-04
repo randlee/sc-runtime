@@ -614,3 +614,17 @@ CLI/HTTP/MCP interfaces, minimal/default-off/Monty graphs and exact registry
 artifacts. Command→cron→cron-commands order and command→runtime dependency
 order are visible before each dependent. Unrelated crates stay unchanged,
 rusqlite stays 0.39.x; no publication without existing authorization.
+
+### Declaration baseline wire inventory (C1)
+
+The compileable sole DTO declarations live in sc-cron-commands::contract.
+CronResponse uses `{result:"started"|"ended"|"listed",data:...}`. Started
+contains ScheduleView; ended contains `{id,generation}`; listed contains
+`{items,next_cursor}`. Safe ScheduleView fields are id, generation, name,
+cron, target (kind only), enabled, state and nullable next_run_ms. Aggregate
+request JSON is limited to 2MiB; core field/environment/source limits remain
+binding. Semantic expression, positive generation/cursor, 1..=1000 page limit,
+size and capability validation remain explicit executor checks. The strict
+deserializer rejects top-level and nested struct duplicate/unknown fields and
+unsupported versions without changing canonical Envelope serialization.
+Schema compilation does not certify these runtime-only semantic checks.

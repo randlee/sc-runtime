@@ -1,0 +1,16 @@
+[package]
+name = "phase-c-runtime-probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[workspace]
+[dependencies]
+sc-command = { path = "../../../../crates/sc-command", default-features = false, features = ["schema"] }
+sc-cron = { path = "../../../../crates/sc-cron", default-features = false }
+sc-cron-commands = { path = "../../../../crates/sc-cron-commands", default-features = false, features = ["schema"] }
+rmcp = { version = "=3.8.0", default-features = false, features = ["server", "transport-streamable-http-server"] }
+utoipa = { version = "=6.0.0", default-features = false, features = ["macros"] }
+utoipa-axum = "=0.3.0"
+schemars = "=1.2.3"
+serde_json = "1"
+axum = "0.8.9"

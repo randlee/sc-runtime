@@ -21,7 +21,7 @@ roots = ["DotenvSource", "EnvName", "EnvOperationRef", "HookEnvironment", "HookE
 # aliases/package identity and checks external/transitive cargo trees too;
 # dev-only test/benchmark references remain permitted (REQ-RUN-0005).
 [dependencies]
-allowed_dependents = []
+allowed_dependents = ["sc-cron-commands"]
 # The integration tests enable `test-utils` through a dev-dependency on this
 # crate. That edge is not a runtime dependent.
 allowed_dev_dependents = ["sc-cron"]

@@ -404,3 +404,47 @@ where
 {
     T::deserialize(value).map_err(|error| format!("{DISCRIMINANT_CODE}: {error}"))
 }
+
+#[cfg(feature = "schema")]
+fn error_kind_schema() -> Value {
+    serde_json::json!({"type":"string", "enum":["invalid_input","not_found","conflict","unavailable","internal"]})
+}
+
+#[cfg(feature = "schema")]
+fn op_error_schema() -> Value {
+    serde_json::json!({
+        "type":"object", "additionalProperties":false,
+        "required":["kind","code","message","details","suggested_action"],
+        "properties":{
+            "kind":error_kind_schema(),
+            "code":{"type":"string"},
+            "message":{"type":"string"},
+            "details":{"type":["object","array","string","number","boolean","null"]},
+            "suggested_action":{"type":["string","null"]}
+        }
+    })
+}
+
+#[cfg(feature = "schema")]
+macro_rules! canonical_schema {
+    ($type:ty, $schema:ident) => {
+        impl schemars::JsonSchema for $type {
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                stringify!($type).into()
+            }
+            fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                serde_json::from_value($schema()).expect("canonical error schema is an object")
+            }
+        }
+        impl utoipa::PartialSchema for $type {
+            fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+                serde_json::from_value($schema()).expect("canonical error schema is valid OpenAPI")
+            }
+        }
+        impl utoipa::ToSchema for $type {}
+    };
+}
+#[cfg(feature = "schema")]
+canonical_schema!(ErrorKind, error_kind_schema);
+#[cfg(feature = "schema")]
+canonical_schema!(OpError, op_error_schema);

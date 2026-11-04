@@ -1,0 +1,35 @@
+boundary_id = "BOUNDARY-sc-cron-commands"
+owner_package = "sc-cron-commands"
+owner_crate_path = "sc_cron_commands"
+name = "sc-cron-commands"
+
+[public]
+facade = "contract, CronRequest, CronOperation, CronResponse, CronExecutor, ExecutorFuture, StartRequest, EndRequest, ListRequest, ExecutionTarget, EnvironmentPolicy, EnvironmentOperation, DotenvSource, ScheduleState, TargetKind, ScheduleView, EndResult, ListResult, ApplicationTargetBindings, ResolvedTarget"
+notes = "DTO-only defaults; independent schema and scheduler features; no production executor until c-6."
+[implementation]
+type = "library"
+module = "sc_cron_commands"
+visibility = "public"
+constructor = "public"
+[composition]
+roots = ["CronRequest", "CronExecutor", "ApplicationTargetBindings"]
+[dependencies]
+allowed_dependencies = ["sc-command", "sc-cron", "serde", "serde_json", "schemars", "utoipa"]
+allowed_dependents = []
+allowed_dev_dependencies = ["sc-cron"]
+forbidden_edges = ["sc-cron-commands -> sc-runtime", "sc-cron-commands -> sc-transport", "sc-cron-commands -> sc-config", "sc-cron-commands -> sc-runtime-db-sqlite"]
+
+[references]
+scope = "outside_owner_crate"
+forbidden = []
+
+[testing]
+allowed_test_double_paths = ["crates/sc-cron-commands/tests/support/operation_double.rs", "tests/contracts/phase-c/executor_double.rs"]
+forbidden_test_bypasses = []
+
+[enforcement]
+lint_rules = []
+review_gates = []
+
+[status]
+state = "concrete_landed"

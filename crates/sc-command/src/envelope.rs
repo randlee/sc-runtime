@@ -215,3 +215,61 @@ where
         Ok(Envelope::Failure { version, error })
     }
 }
+
+#[cfg(feature = "schema")]
+fn envelope_schema(data: Value, error: Value) -> Value {
+    serde_json::json!({
+        "oneOf": [
+            {"type":"object", "additionalProperties":false,
+             "required":["version","ok","data","error"],
+             "properties":{"version":{"type":"string"},"ok":{"type":"boolean","enum":[true]},"data":data,"error":{"type":"null"}}},
+            {"type":"object", "additionalProperties":false,
+             "required":["version","ok","data","error"],
+             "properties":{"version":{"type":"string"},"ok":{"type":"boolean","enum":[false]},"data":{"type":"null"},"error":error}}
+        ]
+    })
+}
+
+#[cfg(feature = "schema")]
+impl<T: schemars::JsonSchema> schemars::JsonSchema for Envelope<T> {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        format!("Envelope_{}", T::schema_name()).into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let value = envelope_schema(
+            generator.subschema_for::<T>().to_value(),
+            generator.subschema_for::<OpError>().to_value(),
+        );
+        serde_json::from_value(value).expect("canonical Envelope schema is an object")
+    }
+}
+
+#[cfg(feature = "schema")]
+impl<T: utoipa::ToSchema> utoipa::PartialSchema for Envelope<T> {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        let value = envelope_schema(
+            serde_json::to_value(T::schema()).expect("payload schema serializes"),
+            serde_json::to_value(<OpError as utoipa::PartialSchema>::schema())
+                .expect("error schema serializes"),
+        );
+        serde_json::from_value(value).expect("canonical Envelope schema is valid OpenAPI")
+    }
+}
+
+#[cfg(feature = "schema")]
+impl<T: utoipa::ToSchema> utoipa::ToSchema for Envelope<T> {
+    fn name() -> std::borrow::Cow<'static, str> {
+        format!("Envelope_{}", T::name()).into()
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        schemas.push((T::name().into_owned(), T::schema()));
+        T::schemas(schemas);
+    }
+}

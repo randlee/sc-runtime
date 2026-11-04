@@ -1,0 +1,62 @@
+//! Wire and optional schema declaration checks.
+use sc_cron_commands::CronRequest;
+#[cfg(feature = "schema")]
+use sc_cron_commands::CronResponse;
+
+#[path = "support/operation_double.rs"]
+#[allow(dead_code)]
+mod operations;
+
+#[test]
+fn strict_request_preserves_the_versioned_wire_shape() {
+    let source = r#"{"version":"1","command":"cron.end","request":{"name":"nightly","generation":1,"reason":"operator stopped"}}"#;
+    let parsed: CronRequest = serde_json::from_str(source).expect("valid request");
+    assert_eq!(
+        serde_json::to_value(parsed).expect("serialize"),
+        serde_json::from_str::<serde_json::Value>(source).expect("json")
+    );
+    for invalid in [
+        source.replace("\"version\":\"1\"", "\"version\":\"2\""),
+        source.replace("\"version\":\"1\"", "\"version\":\"1\",\"version\":\"1\""),
+        source.replace("\"generation\":1", "\"generation\":1,\"generation\":1"),
+        source.replace("\"generation\":1", "\"generation\":4294967296"),
+        source.replace("\"name\":", "\"extra\":true,\"name\":"),
+        source.replace("\"version\":", "\"extra\":true,\"version\":"),
+    ] {
+        assert!(serde_json::from_str::<CronRequest>(&invalid).is_err());
+    }
+}
+
+#[cfg(feature = "schema")]
+#[test]
+fn owner_schemas_cover_real_request_and_envelope_types() {
+    let request = schemars::schema_for!(CronRequest);
+    let envelope = schemars::schema_for!(sc_command::Envelope<CronResponse>);
+    let error = schemars::schema_for!(sc_command::OpError);
+    assert!(request.as_value().to_string().contains("cron.start"));
+    let alternatives = envelope.as_value()["oneOf"]
+        .as_array()
+        .expect("wire alternatives");
+    assert_eq!(alternatives.len(), 2);
+    assert_eq!(
+        alternatives[0]["properties"]["ok"]["enum"],
+        serde_json::json!([true])
+    );
+    assert_eq!(alternatives[1]["properties"]["data"]["type"], "null");
+    assert_eq!(
+        error.as_value()["required"]
+            .as_array()
+            .expect("fields")
+            .len(),
+        5
+    );
+    let schema = <sc_command::Envelope<CronResponse> as utoipa::PartialSchema>::schema();
+    assert_eq!(
+        serde_json::to_value(schema).expect("OpenAPI schema")["oneOf"]
+            .as_array()
+            .expect("wire alternatives")
+            .len(),
+        2
+    );
+    let _ = <CronRequest as utoipa::PartialSchema>::schema();
+}

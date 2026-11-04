@@ -5,7 +5,11 @@
   "type": "object",
   "additionalProperties": false,
   "x-schema-version": 2,
-  "required": ["project_name", "db", "mcp"],
+  "required": [
+    "project_name",
+    "db",
+    "mcp"
+  ],
   "properties": {
     "project_name": {
       "type": "string",
@@ -14,7 +18,14 @@
     },
     "db": {
       "type": "string",
-      "enum": ["none", "sqlite", "postgres", "mysql", "sqlite-postgres", "sqlite-mysql"],
+      "enum": [
+        "none",
+        "sqlite",
+        "postgres",
+        "mysql",
+        "sqlite-postgres",
+        "sqlite-mysql"
+      ],
       "default": "sqlite",
       "x-role": "database"
     },
@@ -26,6 +37,38 @@
       "type": "string",
       "minLength": 1,
       "default": "MIT"
+    },
+    "cron": {
+      "type": "boolean",
+      "default": false
+    },
+    "cron_commands": {
+      "type": "boolean",
+      "default": false
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "cron_commands": {
+            "const": true
+          }
+        },
+        "required": [
+          "cron_commands"
+        ]
+      },
+      "then": {
+        "properties": {
+          "cron": {
+            "const": true
+          }
+        },
+        "required": [
+          "cron"
+        ]
+      }
+    }
+  ]
 }
