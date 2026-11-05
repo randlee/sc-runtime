@@ -93,7 +93,6 @@
 #![forbid(unsafe_code)]
 #![warn(unreachable_pub)]
 
-#[doc(inline)]
 mod clock;
 pub mod consumer_contract;
 mod coord;

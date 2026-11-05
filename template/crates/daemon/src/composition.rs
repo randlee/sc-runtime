@@ -11,6 +11,12 @@ use std::sync::Arc;
 #[derive(Default)]
 pub struct CronServices {
     resolver: Option<Arc<dyn sc_cron::EnvironmentReferenceResolver>>,
+    job: Option<Arc<dyn sc_cron::Job>>,
+    #[cfg(feature = "cron-commands")]
+    bindings: Option<Arc<dyn sc_cron_commands::ApplicationTargetBindings>>,
+    #[cfg(feature = "cron-commands")]
+    executor: Option<Arc<dyn sc_cron_commands::CronExecutor>>,
+    capacity: Option<u32>,
     #[cfg(feature = "monty")]
     hosts: sc_cron::MontyHostRegistry,
 }
@@ -21,6 +27,36 @@ impl CronServices {
     #[must_use]
     pub fn with_reference_resolver(mut self, resolver: Arc<dyn sc_cron::EnvironmentReferenceResolver>) -> Self {
         self.resolver = Some(resolver);
+        self
+    }
+
+    /// Replaces the application Rust job dispatcher before worker startup.
+    #[must_use]
+    pub fn with_job(mut self, job: Arc<dyn sc_cron::Job>) -> Self {
+        self.job = Some(job);
+        self
+    }
+
+    /// Replaces target authorization; command DTOs and shared native admission remain unchanged.
+    #[cfg(feature = "cron-commands")]
+    #[must_use]
+    pub fn with_target_bindings(mut self, bindings: Arc<dyn sc_cron_commands::ApplicationTargetBindings>) -> Self {
+        self.bindings = Some(bindings);
+        self
+    }
+
+    /// Replaces command dispatch policy. The consumer owns its authorization and physical work.
+    #[cfg(feature = "cron-commands")]
+    #[must_use]
+    pub fn with_executor(mut self, executor: Arc<dyn sc_cron_commands::CronExecutor>) -> Self {
+        self.executor = Some(executor);
+        self
+    }
+
+    /// Sets the finite shared scheduler capacity; invalid values fail before worker startup.
+    #[must_use]
+    pub fn with_command_capacity(mut self, capacity: u32) -> Self {
+        self.capacity = Some(capacity);
         self
     }
 
@@ -44,9 +80,13 @@ impl CronServices {
         if let Some(resolver) = self.resolver {
             hook_environment = hook_environment.with_reference_resolver(resolver);
         }
-        crate::cron::open(config, instance_root, logger, hook_environment,
+        let scheduler = crate::cron::open(config, instance_root, logger, hook_environment,
             #[cfg(feature = "monty")] self.hosts,
-        )
+        )?;
+        match self.capacity {
+            Some(capacity) => scheduler.with_command_capacity(capacity),
+            None => Ok(scheduler),
+        }
     }
 }
 
@@ -80,33 +120,45 @@ pub async fn run(
             #[cfg(feature = "cron")]
             {
                 // Endpoint validation and daemon.lock precede every database open.
-                let scheduler = match cron_services.open_scheduler(
-                    &cron_config, &instance_root, cron_logger,
-                ) {
-                    Ok(scheduler) => scheduler,
+                let runtime = match cron_services.start(&cron_config, &instance_root, cron_logger) {
+                    Ok(runtime) => runtime,
                     Err(error) => {
-                        // Preserve the typed cron cause across the SDK's stores-error boundary.
                         let _ = worker_tx.send(Err(error));
                         return Err(sc_runtime::RuntimeError::stores_failed(
-                            "DAEMON.CRON_OPEN", "cron startup failed", "fix cron configuration or database path and retry", None,
+                            "DAEMON.CRON_START", "cron startup failed", "check cron configuration and retry", None,
                         ));
                     }
                 };
-                let worker = scheduler.spawn_worker(std::sync::Arc::new(crate::cron::ApplicationJob));
-                let _ = worker_tx.send(Ok(CronRuntime { scheduler, worker }));
+                #[cfg(feature = "cron-commands")]
+                let executor = runtime.executor();
+                // Cleanup owns the only worker handle even when UI requests are dropped.
+                let _ = worker_tx.send(Ok(runtime));
+                #[cfg(feature = "cron-commands")]
+                return Ok(RuntimeStores { stores, executor });
             }
-            Ok(stores)
+            #[cfg(not(feature = "cron-commands"))]
+            Ok(RuntimeStores { stores })
         })
-        .routes(crate::routes::router)
-        {% if mcp %}.mcp(crate::mcp::service){% endif %}
+        .routes(|state: RuntimeStores| {
+            let router = crate::routes::router(state.stores);
+            #[cfg(feature = "cron-commands")]
+            let router = router.merge(crate::cron_commands::router(state.executor));
+            router
+        })
+        {% if mcp %}.mcp(|state: RuntimeStores| {
+            #[cfg(feature = "cron-commands")]
+            { crate::mcp::service_with_cron_executor(state.stores, state.executor) }
+            #[cfg(not(feature = "cron-commands"))]
+            { crate::mcp::service(state.stores) }
+        }){% endif %}
         ;
     #[cfg(feature = "cron")]
     let result = result.run_with_cleanup(|| async {
         match worker_rx.await {
-            Ok(Ok(CronRuntime { scheduler, worker })) => {
-                let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(5);
-                let _drained = worker.shutdown(deadline).await;
-                drop(scheduler);
+            Ok(Ok(runtime)) => {
+                if let Err(error) = runtime.shutdown().await {
+                    cron_failure = Some(error);
+                }
             }
             Ok(Err(error)) => cron_failure = Some(error),
             // The SDK drops unused startup closures before early-error cleanup.
@@ -127,9 +179,77 @@ fn cron_error(error: sc_cron::CronError) -> String {
     crate::agent_error::format_agent_error("DAEMON.CRON_OPEN", error, "fix cron configuration or database path and retry")
 }
 
-// Application-only ownership transferred from stores startup to awaited cleanup.
+/// Application-owned worker lifetime transferred from stores startup to awaited cleanup.
+/// Call shutdown after closing intake; dropping this handle is not a physical join.
 #[cfg(feature = "cron")]
-struct CronRuntime {
-    scheduler: sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>,
+pub struct CronRuntime {
+    scheduler: Arc<sc_cron::Scheduler<sc_cron::SqliteScheduleStore, sc_cron::SystemClock, sc_cron::SystemJitter>>,
     worker: sc_cron::WorkerHandle,
+    #[cfg(feature = "cron-commands")]
+    executor: Arc<dyn sc_cron_commands::CronExecutor>,
+}
+
+// The SDK receives one cloneable root, shared by all selected UI projections.
+#[derive(Clone)]
+struct RuntimeStores {
+    stores: service::Stores,
+    #[cfg(feature = "cron-commands")]
+    executor: Arc<dyn sc_cron_commands::CronExecutor>,
+}
+
+#[cfg(feature = "cron")]
+impl CronServices {
+    /// Starts the real scheduler, native worker and selected command root.
+    /// Call only after acquiring the instance lock. Startup is explicit; no jobs are scheduled.
+    ///
+    /// # Errors
+    /// Returns configuration, open, capacity or cooperative worker startup errors.
+    pub fn start(mut self, config: &crate::cron::CronConfig, instance_root: &std::path::Path,
+                 logger: sc_command::observability::SharedCanonicalLog) -> Result<CronRuntime, sc_cron::CronError> {
+        let job = self.job.take().unwrap_or_else(|| {
+            #[cfg(feature = "cron-commands")]
+            { Arc::new(crate::cron_commands::HeartbeatJob) }
+            #[cfg(not(feature = "cron-commands"))]
+            { Arc::new(crate::cron::ApplicationJob) }
+        });
+        #[cfg(feature = "cron-commands")]
+        let bindings = self.bindings.take().unwrap_or_else(|| Arc::new(crate::cron_commands::RegisteredTargets::default()));
+        #[cfg(feature = "cron-commands")]
+        let executor_override = self.executor.take();
+        let scheduler = Arc::new(self.open_scheduler(config, instance_root, logger)?);
+        let worker = scheduler.spawn_worker_cooperative(job)?;
+        #[cfg(feature = "cron-commands")]
+        let executor = executor_override.unwrap_or_else(|| Arc::new(sc_cron_commands::StandardCronExecutor::new(
+            Arc::clone(&scheduler), bindings, worker.stop_control().operation_context(),
+        )));
+        Ok(CronRuntime { scheduler, worker, #[cfg(feature = "cron-commands")] executor })
+    }
+}
+
+#[cfg(feature = "cron")]
+impl CronRuntime {
+    /// The single selected root shared by HTTP, MCP and CLI transport calls.
+    #[cfg(feature = "cron-commands")]
+    #[must_use]
+    pub fn executor(&self) -> Arc<dyn sc_cron_commands::CronExecutor> {
+        Arc::clone(&self.executor)
+    }
+
+    /// Restricts new admission, then physically joins worker and accepted command work.
+    /// Call after stopping UI intake. Already admitted native work can outlive the cutoffs.
+    ///
+    /// # Errors
+    /// Returns native stop or worker join failure; never treats a cutoff as physical completion.
+    pub async fn shutdown(self) -> Result<sc_cron::ShutdownReport, sc_cron::CronError> {
+        let now = std::time::Instant::now();
+        let budget = sc_cron::ShutdownBudget::new(
+            now + std::time::Duration::from_secs(5), now + std::time::Duration::from_secs(10),
+        )?;
+        let stop = self.worker.stop_control().request_stop(budget);
+        // Retain both scheduler and worker until actual native completion, even on stop error.
+        let joined = self.worker.join_owned().await;
+        drop(self.scheduler);
+        stop?;
+        joined
+    }
 }

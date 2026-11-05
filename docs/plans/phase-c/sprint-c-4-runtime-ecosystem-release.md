@@ -1,7 +1,7 @@
 ---
 id: c-4
 phase: c
-status: planned
+status: in_progress
 closure_type: integration
 target_boundary: published-runtime-template-consumer
 track: release
@@ -31,6 +31,9 @@ requirements:
   - NFR-RUN-0002
   - NFR-RUN-0005
   - NFR-RUN-0009
+  - NFR-RUN-0003
+  - NFR-RUN-0004
+  - NFR-RUN-0008
 adrs:
   - ADR-RUN-0002
   - ADR-RUN-0017
@@ -56,6 +59,8 @@ adrs:
   - ADR-RT-0004
   - ADR-RT-0005
 owned_paths:
+  - scripts/run_generation_tests.py
+  - template/crates/daemon/Cargo.toml
   - install.py
   - README.sc-publish.md
   - .github/workflows/*release*.yml
@@ -81,7 +86,7 @@ owned_paths:
   - template/crates/cli/src/main.rs
   - template/crates/service/src/cron_commands.rs
   - template/crates/service/src/lib.rs
-must_follow: [c-3, c-5, c-6]
+must_follow: [c-2, c-3, c-5, c-6]
 parallel_safe: []
 recommended_agent: solar
 recommended_model: sol
@@ -89,6 +94,11 @@ vertical_rationale: Final selected template binding consumes c-3 generic UI proj
 ---
 
 # Sprint c-4 — runtime ecosystem authorized release
+
+The final generated fixture consumes c-2’s full bootstrap profile; c-2 is
+therefore a named dependency before fixture execution. Parent-authorized daemon
+manifest ownership is limited to forwarding scheduler/cron and optional Monty
+features, with no dependency or version changes.
 
 Dependency execution: consume c-3's ecosystem/template implementation, c-5's
 real tracked query/lifecycle and c-6's concrete shared command handler by

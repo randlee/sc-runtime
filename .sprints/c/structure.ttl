@@ -24,6 +24,7 @@ triage:c-3 a triage:Sprint ;
   triage:criteria "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md" .
 
 triage:c-4 a triage:Sprint ;
+  triage:dependsOn triage:c-2, triage:c-3, triage:c-5, triage:c-6 ;
   triage:inPhase triage:PhaseC ;
   triage:order 3 ;
   triage:branch "sprint/c-4-runtime-ecosystem-release" ;
