@@ -257,3 +257,47 @@ fn empty_accounting_does_not_bypass_unsignaled_retained_identity() {
     );
     assert!(Bridge::signaled(&mut owned.members).expect("actual retained signals"));
 }
+
+#[test]
+fn recycled_identifier_retains_a_new_live_identity() {
+    let spawn = || {
+        let mut command = Command::new(super::super::super::python_program());
+        command
+            .args(["-c", "import time; time.sleep(30)"])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        Bridge::spawn(command).expect("identity generation")
+    };
+    let mut old = spawn();
+    old.retain_members().expect("first identity");
+    let old_pid = old.child.id() as usize;
+    old.stop().expect("first generation complete");
+    let finished = old
+        .members
+        .remove(&old_pid)
+        .expect("retained first identity");
+    let mut current = spawn();
+    let pid = current.child.id() as usize;
+    // Deterministically present an earlier completed generation under the live
+    // PID. No actual OS PID recycling or timing lottery is needed to test it.
+    current.members.insert(pid, finished);
+    current.retain_members().expect("retain current generation");
+    assert!(
+        current.members[&pid].len() >= 2,
+        "finished identity suppressed a live generation"
+    );
+    assert!(
+        current
+            .members
+            .get_mut(&pid)
+            .expect("generations")
+            .last_mut()
+            .expect("live identity")
+            .wait_timeout(Duration::ZERO)
+            .expect("live check")
+            .is_none()
+    );
+    current.stop().expect("all generations signaled");
+    assert!(Bridge::signaled(&mut current.members).expect("actual completion"));
+}

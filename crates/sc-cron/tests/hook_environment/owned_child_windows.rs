@@ -60,7 +60,7 @@ struct Bridge {
     job: Arc<Job>,
     cleaned: bool,
     cleanup_deadline: Option<Instant>,
-    members: BTreeMap<usize, WaitHandle>,
+    members: BTreeMap<usize, Vec<WaitHandle>>,
 }
 impl Bridge {
     fn spawn(command: Command) -> std::io::Result<Self> {
@@ -90,13 +90,16 @@ impl Bridge {
             .query_process_id_list()
             .map_err(std::io::Error::other)?
         {
-            if self.members.contains_key(&pid) {
+            if let Some(identities) = self.members.get_mut(&pid)
+                && let Some(latest) = identities.last_mut()
+                && latest.wait_timeout(Duration::ZERO)?.is_none()
+            {
                 continue;
             }
             let native_pid = i32::try_from(pid).map_err(std::io::Error::other)?;
             match WaitHandle::open(native_pid) {
                 Ok(handle) => {
-                    self.members.insert(pid, handle);
+                    self.members.entry(pid).or_default().push(handle);
                 }
                 // ERROR_INVALID_PARAMETER means the process object no longer
                 // exists. Access failures are never treated as proof of exit.
@@ -113,9 +116,9 @@ impl Bridge {
         Ok(())
     }
 
-    fn signaled(members: &mut BTreeMap<usize, WaitHandle>) -> std::io::Result<bool> {
+    fn signaled(members: &mut BTreeMap<usize, Vec<WaitHandle>>) -> std::io::Result<bool> {
         let mut complete = true;
-        for member in members.values_mut() {
+        for member in members.values_mut().flatten() {
             complete &= member.wait_timeout(Duration::ZERO)?.is_some();
         }
         Ok(complete)
@@ -131,7 +134,7 @@ impl Bridge {
     fn stop_with_signals(
         &mut self,
         mut members: impl FnMut(&Job) -> std::io::Result<Vec<usize>>,
-        mut signaled: impl FnMut(&mut BTreeMap<usize, WaitHandle>) -> std::io::Result<bool>,
+        mut signaled: impl FnMut(&mut BTreeMap<usize, Vec<WaitHandle>>) -> std::io::Result<bool>,
     ) -> std::io::Result<()> {
         if self.cleaned {
             return Ok(());
