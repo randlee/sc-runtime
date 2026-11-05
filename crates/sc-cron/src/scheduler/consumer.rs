@@ -195,6 +195,7 @@ impl WorkerStopControl {
                 "operation_completion_owner_required",
             ));
         }
+        self.controller.cancel();
         self.controller.worker_finished();
         self.controller.status(crate::ShutdownStatus::Joined);
         Ok(())
