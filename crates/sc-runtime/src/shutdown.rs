@@ -1,4 +1,4 @@
-//! SIGINT, SIGTERM, and the fixture's private shutdown trigger.
+//! SIGINT, SIGTERM, Windows Ctrl-C/Ctrl-Break, and the fixture's private shutdown trigger.
 
 use std::time::Duration;
 
@@ -15,6 +15,7 @@ pub(crate) const DRAIN_BACKSTOP: Duration = Duration::from_secs(1);
 /// How `run` waits before it stops accepting connections.
 pub(crate) struct RunControl {
     pub(crate) ready: Option<oneshot::Sender<sc_transport::Endpoint>>,
+    pub(crate) on_bound: Option<Box<dyn FnOnce(sc_transport::Endpoint) + Send>>,
     pub(crate) shutdown: Option<oneshot::Receiver<()>>,
     /// Production listens for process signals. The in-process fixture does not,
     /// because a process signal would stop every fixture in the test binary.
@@ -28,6 +29,7 @@ impl RunControl {
     pub(crate) fn production() -> Self {
         Self {
             ready: None,
+            on_bound: None,
             shutdown: None,
             listen_for_signals: true,
             drain: DRAIN_TIMEOUT,
@@ -42,6 +44,7 @@ impl RunControl {
     ) -> Self {
         Self {
             ready,
+            on_bound: None,
             shutdown,
             listen_for_signals: false,
             drain: DRAIN_TIMEOUT,
@@ -55,11 +58,13 @@ pub(crate) struct Signals {
     interrupt: tokio::signal::unix::Signal,
     #[cfg(unix)]
     terminate: tokio::signal::unix::Signal,
-    /// Same listener polled during install. A later `ctrl_c()` call would
+    /// Same listeners polled during install. A later `ctrl_c()` call would
     /// miss a Ctrl-C that arrived while the daemon was locking or binding.
     #[cfg(windows)]
     ctrl_c: tokio::signal::windows::CtrlC,
-    /// Set when the install poll already observed Ctrl-C.
+    #[cfg(windows)]
+    ctrl_break: tokio::signal::windows::CtrlBreak,
+    /// Set when either install poll already observed a console event.
     #[cfg(windows)]
     seen: bool,
 }
@@ -68,9 +73,9 @@ pub(crate) struct Signals {
 ///
 /// The caller awaits this before the instance lock and before bind. Unix
 /// registers SIGINT and SIGTERM when [`tokio::signal::unix::signal`] returns.
-/// On Windows, [`tokio::signal::windows::ctrl_c`] installs the console handler
+/// On Windows, Ctrl-C and Ctrl-Break install their console handlers
 /// when it is called, and the listener does nothing until it is polled. This
-/// function polls that listener once before returning, so a Ctrl-C during
+/// function polls both listeners once before returning, so an event during
 /// lock, stores, or bind is observed by the same listener [`wait`] uses.
 ///
 /// # Errors
@@ -94,12 +99,21 @@ pub(crate) async fn install(listen: bool) -> Result<Option<Signals>, RuntimeErro
     #[cfg(windows)]
     {
         let mut ctrl_c = tokio::signal::windows::ctrl_c().map_err(RuntimeError::serve_failed_io)?;
-        let seen = std::future::poll_fn(|cx| match ctrl_c.poll_recv(cx) {
-            std::task::Poll::Ready(_) => std::task::Poll::Ready(true),
-            std::task::Poll::Pending => std::task::Poll::Ready(false),
+        let mut ctrl_break =
+            tokio::signal::windows::ctrl_break().map_err(RuntimeError::serve_failed_io)?;
+        let seen = std::future::poll_fn(|cx| {
+            // Poll both listeners even if the first has already observed an
+            // event: both must be registered before lock/store/bind begins.
+            let interrupt = ctrl_c.poll_recv(cx).is_ready();
+            let breaking = ctrl_break.poll_recv(cx).is_ready();
+            std::task::Poll::Ready(interrupt || breaking)
         })
         .await;
-        Ok(Some(Signals { ctrl_c, seen }))
+        Ok(Some(Signals {
+            ctrl_c,
+            ctrl_break,
+            seen,
+        }))
     }
     #[cfg(not(any(unix, windows)))]
     {
@@ -108,7 +122,7 @@ pub(crate) async fn install(listen: bool) -> Result<Option<Signals>, RuntimeErro
     }
 }
 
-/// Waits for Ctrl-C, SIGTERM on Unix, or the private shutdown receiver.
+/// Waits for Unix signals, Windows Ctrl-C/Ctrl-Break, or the private trigger.
 pub(crate) async fn wait(signals: Option<Signals>, cancel: Option<oneshot::Receiver<()>>) {
     let Some(signals) = signals else {
         recv_cancel(cancel).await;
@@ -129,8 +143,10 @@ pub(crate) async fn wait(signals: Option<Signals>, cancel: Option<oneshot::Recei
             return;
         }
         let mut ctrl_c = signals.ctrl_c;
+        let mut ctrl_break = signals.ctrl_break;
         tokio::select! {
             _ = ctrl_c.recv() => {}
+            _ = ctrl_break.recv() => {}
             _ = recv_cancel(cancel) => {}
         }
     }

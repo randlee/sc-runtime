@@ -11,11 +11,12 @@ rust-version.workspace = true
 
 [features]
 {% if db == "none" %}
-default = []
+default = [{% if cron_commands %}"cron-commands"{% endif %}]
 {% else %}
-default = ["general-db"]
+default = ["general-db"{% if cron_commands %}, "cron-commands"{% endif %}]
 {% endif %}
 general-db = []
+cron-commands = ["dep:sc-cron-commands"]
 
 [dependencies]
 api-types = { path = "../api-types", version = "0.1.1" }
@@ -32,9 +33,7 @@ store-mysql = { path = "../store-mysql", version = "0.1.1" }
 store-adaptor = { path = "../store-adaptor", version = "0.1.1" }
 {% endif %}
 sc-command.workspace = true
-{% if cron_commands %}
-sc-cron-commands = { workspace = true, features = ["schema"] }
-{% endif %}
+sc-cron-commands = { workspace = true, features = ["schema"], optional = true }
 sc-observability-types.workspace = true
 serde_json.workspace = true
 

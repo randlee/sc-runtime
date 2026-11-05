@@ -328,8 +328,11 @@ panicking; callers retain/await the owning run future. Port-zero is explicit
 configuration, preserving endpoint precedence and ordinary private UDS fixtures.
 C-3 tests concurrent port-zero fixtures with distinct nonzero actual endpoints
 and agreeing client/accessors, and a causal competing bind to that exact owned
-endpoint fails between receipt and readiness. A reserve/drop negative must
-permit takeover. Pre-bind failure emits no receipt and still preserves cleanup.
+endpoint fails between receipt and readiness. Do not retain a naked-port
+reserve/drop takeover test: its unowned interval can race any local binder.
+The continuously owned listener and immediate prebind closure-drop witnesses
+prove the required ownership/order without that race. Pre-bind failure emits
+no receipt and still preserves cleanup.
 
 ```rust
 pub async fn start_with_cleanup<S,FStores,Fut,FRoutes,FCleanup,Cleanup>(

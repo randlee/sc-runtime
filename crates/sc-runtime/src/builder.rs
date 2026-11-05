@@ -203,8 +203,8 @@ where
     /// on that ready state.
     ///
     /// Endpoint text is resolved before the lock so an invalid endpoint does
-    /// not open stores. Signal listeners are registered, and on Windows Ctrl-C
-    /// is polled, before the lock and before bind. The order after a valid
+    /// not open stores. Signal listeners are registered, and on Windows Ctrl-C and Ctrl-Break
+    /// are polled, before the lock and before bind. The order after a valid
     /// endpoint is signals, lock, stores, routes, optional MCP, then bind.
     /// Shutdown stops accepting, waits up to the drain bound for in-flight
     /// requests, then releases the listener and the instance lock.
@@ -257,16 +257,40 @@ where
         FCleanup: FnOnce() -> Cleanup,
         Cleanup: Future<Output = ()>,
     {
+        self.run_with_cleanup_and_bound(|_| {}, cleanup).await
+    }
+
+    /// Reports the actual owned endpoint after binding, then runs with application cleanup.
+    ///
+    /// `on_bound` runs once after successful binding while the same listener
+    /// remains owned. It reports binding, not health readiness, and must return
+    /// promptly. Handle a dropped receipt receiver without panicking. No callback
+    /// is made on a pre-bind failure. Startup order and cleanup ownership are the
+    /// same as [`Self::run_with_cleanup`]; await the returned future to completion.
+    ///
+    /// # Errors
+    /// Returns the same startup and serving error after cleanup completes.
+    pub async fn run_with_cleanup_and_bound<FBound, FCleanup, Cleanup>(
+        self,
+        on_bound: FBound,
+        cleanup: FCleanup,
+    ) -> Result<(), RuntimeError>
+    where
+        FBound: FnOnce(Endpoint) + Send + 'static,
+        FCleanup: FnOnce() -> Cleanup,
+        Cleanup: Future<Output = ()>,
+    {
         let DaemonBuilder {
             app,
             config,
             stores,
             routes,
             mount,
-            control,
+            mut control,
             logger,
             ..
         } = self;
+        control.on_bound = Some(Box::new(on_bound));
         let check_mcp = mount.is_some();
         drive(
             &app,
@@ -366,6 +390,9 @@ async fn serve(
             return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
+    if let Some(on_bound) = control.on_bound.take() {
+        on_bound(bound.clone());
+    }
     if let Some(ready) = control.ready.take() {
         let _ = ready.send(bound);
     }

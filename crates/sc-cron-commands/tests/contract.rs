@@ -162,3 +162,28 @@ mod typed_projection {
         assert!(schemas["ErrorKind"]["enum"].is_array());
     }
 }
+
+#[cfg(feature = "schema")]
+#[test]
+fn canonical_request_schema_has_mcp_object_root_and_typed_openapi_variants() {
+    let json = schemars::schema_for!(CronRequest).to_value();
+    assert_eq!(json["type"], "object");
+    assert_eq!(json["oneOf"].as_array().expect("typed variants").len(), 3);
+    let openapi = serde_json::to_value(<CronRequest as utoipa::PartialSchema>::schema())
+        .expect("OpenAPI schema");
+    assert_eq!(
+        openapi["oneOf"].as_array().expect("typed variants").len(),
+        3
+    );
+    for (variant, command) in openapi["oneOf"].as_array().expect("variants").iter().zip([
+        "cron.start",
+        "cron.end",
+        "cron.list",
+    ]) {
+        assert_eq!(
+            variant["properties"]["command"]["enum"],
+            serde_json::json!([command])
+        );
+        assert!(variant["properties"]["request"]["$ref"].is_string());
+    }
+}
