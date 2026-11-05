@@ -49,6 +49,7 @@ adrs:
   - ADR-RUN-0001
   - ADR-RUN-0003
   - ADR-RUN-0009
+  - ADR-RUN-0008
   - ADR-RUN-0303
   - ADR-CMD-0001
   - ADR-CMD-0002
@@ -59,6 +60,7 @@ adrs:
   - ADR-RT-0004
   - ADR-RT-0005
 owned_paths:
+  - template/crates/cli/Cargo.toml
   - scripts/run_generation_tests.py
   - template/crates/daemon/Cargo.toml
   - install.py
