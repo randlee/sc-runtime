@@ -83,10 +83,10 @@ const CODE_DRAIN_TIMEOUT: &str = "RUNTIME.DRAIN_TIMEOUT";
 
 /// Wire `suggested_action` for [`CODE_REQUEST_TIMEOUT`].
 const REQUEST_TIMEOUT_RECOVERY: &str =
-    "retry the request; if it persists, shorten the handler or raise the request time limit";
+    "completion may be unknown; reconcile the operation outcome before considering a replay";
 
 /// Wire `suggested_action` for [`CODE_DRAIN_TIMEOUT`].
-const DRAIN_TIMEOUT_RECOVERY: &str = "retry after the daemon is serving again";
+const DRAIN_TIMEOUT_RECOVERY: &str = "completion may be unknown; after serving resumes, reconcile the operation outcome before considering a replay";
 
 /// Body of the liveness probe `GET /health`.
 ///
@@ -217,7 +217,7 @@ fn request_event(
         let context = ErrorContext::new(
             ErrorCode::new_static(code),
             "request deadline elapsed",
-            Remediation::recoverable("Retry the request.", [] as [&str; 0]),
+            Remediation::recoverable(REQUEST_TIMEOUT_RECOVERY, [] as [&str; 0]),
         );
         let mut diagnostic = context.diagnostic().clone();
         diagnostic.timestamp = timestamp;

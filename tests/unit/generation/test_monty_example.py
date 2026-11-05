@@ -4,11 +4,9 @@ import hashlib
 import importlib.util
 import os
 import re
-import signal
 import sys
 from pathlib import Path
 import shutil
-import subprocess
 import tempfile
 import tomllib
 import unittest
@@ -25,89 +23,16 @@ def driver():
     return module
 
 
-def stop_generation(process):
-    """Terminate the owned session/tree and boundedly reap its direct child."""
-    try:
-        if os.name == "posix":
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            try:
-                process.wait(timeout=1)
-            except subprocess.TimeoutExpired:
-                pass
-            finally:
-                try:
-                    os.killpg(process.pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
-        elif process.poll() is None:
-            subprocess.run(["taskkill", "/F", "/T", "/PID", str(process.pid)],
-                           capture_output=True, timeout=5, check=False)
-    finally:
-        if process.poll() is None:
-            process.kill()
-        try:
-            process.wait(timeout=5)
-        finally:
-            for pipe in (process.stdout, process.stderr):
-                if pipe is not None:
-                    pipe.close()
-
-
-def run_generation(command, timeout=120):
-    """Bound cargo/plugin/hooks independently of the unittest or CI job."""
-    options = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               text=True, **options)
-    try:
-        try:
-            stdout, stderr = process.communicate(timeout=timeout)
-        except subprocess.TimeoutExpired as error:
-            raise AssertionError(f"generation command exceeded {timeout}s: {command!r}; captured output: {error.output!r}; stderr: {error.stderr!r}") from error
-        return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
-    finally:
-        stop_generation(process)
+from tests.integration.generation.generate_owned import cargo_generate, run_generation
 
 
 class MontyExampleTests(unittest.TestCase):
-    @unittest.skipUnless(os.name == "posix", "Unix session cleanup witness")
-    def test_stalled_generation_times_out_and_reaps_owned_tree(self):
-        import queue
-        import threading
-        original = subprocess.Popen
-        captured = []
-        children = []
-        script = """import subprocess, signal, sys
-child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])
-def stop(*_):
-    child.wait(timeout=5)
-    sys.exit(0)
-signal.signal(signal.SIGTERM, stop)
-print(child.pid, flush=True)
-signal.pause()
-"""
-        def ready_process(*args, **kwargs):
-            process = original(*args, **kwargs)
-            captured.append(process)
-            ready = queue.Queue()
-            reader = threading.Thread(target=lambda: ready.put(process.stdout.readline()), daemon=True)
-            reader.start()
-            try:
-                children.append(int(ready.get(timeout=10)))
-            except BaseException:
-                stop_generation(process)
-                raise
-            finally:
-                reader.join(timeout=1)
-            return process
-        with patch.object(subprocess, "Popen", side_effect=ready_process):
-            with self.assertRaisesRegex(AssertionError, "generation command exceeded"):
-                run_generation([sys.executable, "-c", script], timeout=0.1)
-        self.assertIsNotNone(captured[0].returncode)
-        with self.assertRaises(ProcessLookupError):
-            os.kill(children[0], 0)
+    def test_failed_generation_reaps_ready_pipe_writer(self):
+        from tests.integration.generation.test_owned_process import OwnedProcessTests
+
+        # The generator exits only after its child acknowledges readiness. That
+        # child retains captured output, so pipe-only capture cannot finish.
+        OwnedProcessTests().witness(True, runner=run_generation)
 
     def test_manifest_inventory_and_default_off_features(self):
         for name in ("Cargo.toml", "workspace.template.toml"):
@@ -133,6 +58,22 @@ signal.pause()
         for path in (ROOT / "template/crates").glob("*/Cargo.toml"):
             if path.parent.name != "daemon":
                 self.assertNotRegex(path.read_text(), r"(?m)^sc-cron\s*(?:=|\.)", str(path))
+
+    def test_local_maintainer_lock_is_not_copied_into_generated_consumer(self):
+        generation = driver()
+        with tempfile.TemporaryDirectory(prefix="runtime-stale-template-lock-") as temporary:
+            base = Path(temporary)
+            source = base / "source"
+            source.mkdir()
+            shutil.copytree(ROOT / "template", source / "template",
+                            ignore=shutil.ignore_patterns("target", "__pycache__"))
+            (source / "template/Cargo.lock").write_text(
+                'version = 4\n[[package]]\nname = "stale-maintainer-identity"\nversion = "9.9.9"\n')
+            values = base / "values.toml"
+            values.write_text('[values]\ndb="none"\nmcp=false\ncron=false\ncron_commands=false\nlicence="MIT"\n')
+            app = base / "app"
+            cargo_generate(source, app, "fresh-lock-probe", values)
+            self.assertFalse((app / "Cargo.lock").exists(), "local template lock must never become a consumer baseline")
 
     def test_checked_source_and_application_closure_documentation(self):
         source = (ROOT / "template/examples/monty/cron.py").read_text()
