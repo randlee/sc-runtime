@@ -619,6 +619,173 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
+    },
+    {
+      "qa_pass": "qa-pr116-sprint-3",
+      "commit": "ba70e69982f730f108ff6cb734c31b6908605cd1",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6663225322",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c1_req_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c1_arch_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c1_rust_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c1_flaky_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c1-qa3.ttl"
+      ],
+      "finding_ids": [
+        "QA-C1-009"
+      ],
+      "coordinator_task_id": "/root/c1_manager_qa3",
+      "machine_status": {
+        "sprint": "c-1",
+        "task": "qa-pr116-sprint-3",
+        "branch": "sprint/c-1-consumer-runtime-contract",
+        "commit": "ba70e69982f730f108ff6cb734c31b6908605cd1",
+        "pr": 116,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 17,
+          "total": 17,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 1,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "One Important direct-regression finding remains in the cleanup test's natural-exit correctness window.17/17 deliverables and successful current checks do not settle test causality.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c1_req_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c1_arch_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c1_rust_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c1_flaky_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr116-sprint-3",
+          "commit": "ba70e69982f730f108ff6cb734c31b6908605cd1",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6663225322",
+          "coordinator_task_id": "/root/c1_manager_qa3",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c1-qa1.ttl",
+              ".triage/c/findings/c1-qa2.ttl"
+            ],
+            "owner": "prior QA2 triage correlated; parent records QA3 triage before fix dispatch"
+          },
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "central_screen": {
+            "findings": 1,
+            "keep": 0,
+            "not_applicable": 1,
+            "rejected": 0
+          },
+          "ci": {
+            "head_matches": true,
+            "required_checks": 17,
+            "successful_checks": 16,
+            "pending_checks": 1,
+            "waited_for_ci": false
+          },
+          "model_execution": "Inherited available Codex fallback; configured Cursor models unavailable"
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
     }
   ]
 }
