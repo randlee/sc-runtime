@@ -53,14 +53,22 @@ pub struct RegisteredTargets {
 }
 
 impl RegisteredTargets {
-    /// Authorizes one configured Python module; relative paths are resolved by the core runner.
+    /// Authorizes one configured Python script path, independent of its working directory.
+    /// Prefer an absolute path to a repository script. SQLite stores this path, not a copy
+    /// of the file: edits to that file affect subsequent runs. Relative paths resolve from
+    /// the daemon's working directory when a hook starts, before entering private scratch.
+    /// A consumer may register a temporary script, but owns keeping it present for every
+    /// scheduled run and removing it only after work is physically joined.
+    /// The core's fresh private working directory does not change the script's location.
     #[must_use]
     pub fn with_python(mut self, module: impl Into<String>) -> Self {
         self.python.insert(module.into());
         self
     }
 
-    /// Authorizes one trusted Monty program. The daemon's monty feature must also be enabled.
+    /// Authorizes one trusted Monty source string. SQLite stores the source snapshot,
+    /// so editing an unrelated script file does not change this scheduled program.
+    /// The daemon's monty feature must also be explicitly enabled.
     #[must_use]
     pub fn with_monty(mut self, source: impl Into<String>) -> Self {
         self.monty.insert(source.into());

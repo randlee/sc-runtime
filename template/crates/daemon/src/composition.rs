@@ -304,6 +304,17 @@ where S: sc_cron::ScheduleStore + 'static, C: sc_cron::Clock + 'static,
         let budget = sc_cron::ShutdownBudget::new(
             now + std::time::Duration::from_secs(5), now + std::time::Duration::from_secs(10),
         )?;
+        self.shutdown_with_budget(budget).await
+    }
+
+    /// Uses the consumer's checked shutdown cutoffs instead of the starter's five/ten seconds.
+    /// Stop intake first. A later request may shorten but cannot extend existing cutoffs.
+    /// Every admitted native call and custom cleanup still remains owned until completion.
+    ///
+    /// # Errors
+    /// Returns native stop, custom cleanup or physical worker join errors.
+    pub async fn shutdown_with_budget(self, budget: sc_cron::ShutdownBudget)
+        -> Result<sc_cron::ShutdownReport, sc_cron::CronError> {
         let stop = self.worker.stop_control().request_stop(budget);
         // Retain both scheduler and worker until actual native completion, even on stop error.
         let custom = match self.cleanup {

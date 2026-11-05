@@ -265,3 +265,34 @@ Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0702`,
   or adapter boundary (`c-6`) implementation. This sprint owns their real
   command/release composition and the explicitly listed final template binding
   paths, not the cron/adapter implementation source.
+
+## Prepublication development checkpoint — 2026-11-05
+
+The selected application root now shares one native Scheduler and
+StandardCronExecutor across HTTP, MCP and CLI. Public hooks cover registered
+Python/Monty targets, Rust jobs, a consumer-owned Scheduler/store/clock,
+command policy, finite capacity, independent stop, custom physical cleanup and
+checked consumer shutdown budgets. Python registration stores a live script
+path; its private working directory is separate from the script location.
+Monty registration persists source. These hooks do not schedule jobs by
+construction or transfer custom persistence/cleanup obligations to the core.
+
+The official generated consumer proof passed eight real Rust tests: all three
+command projections across all three target kinds; real deterministic target
+execution; typed schemas and pagination; native default64 shared capacity and
+retained slots after dropped waiters; committed-before-cutoff persistence truth;
+finite override validation; consumer executor/physical cleanup; and the default
+file-opening factory. The existing C5 application-schema example also passed
+its ten macOS tests inside that generated consumer. Exact package closure,
+DTO-only CLI and default-off/core-runtime graphs passed. The exact pinned
+publishing kit's installer repeat dry-run was clean.
+
+The untouched-consumer sequence passed setup with sc-lint0.8.4, full lint,
+workspace tests and release CLI build. Its daemon compiled, but the existing
+whole-tree tempfile guard failed because production Python cron uses tempfile.
+REQ-RUN-0503 criterion6 and REQ-RUN-0701 command6/criterion1 explicitly forbid
+that transitive package; a requirement decision remains pending. The guard and
+requirements remain unchanged. The final small consumer-budget API/doc addition
+still needs its next generated validation, and final composed `just lint &&
+just test`, parent fixes/QA/CI, publication and registry-only acceptance remain
+open. This is a development checkpoint, not full sprint qualification or closure.

@@ -16,6 +16,7 @@ from tests.integration.release.test_published_runtime_ecosystem import check_dae
 ROOT = Path(__file__).resolve().parents[3]
 RUST_PROOF = r'''
 
+
 use sc_runtime::{DaemonConfig, testing::DaemonFixture};
 use serde_json::{Value, json};
 use std::{sync::Arc, time::Duration};
@@ -27,21 +28,16 @@ fn request(command: &str, body: Value) -> Value {
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn real_selected_root_shares_native_state_between_http_mcp_cli() {
     let root = tempfile::tempdir().unwrap();
-    let log = Arc::new(sc_command::observability::NoopCanonicalLog::named_or_default("c4-proof"));
     let bindings = daemon::cron_commands::RegisteredTargets::default()
         .with_python("/configured/nightly.py")
-        .with_monty(
-            "def cron_stop(hook):\n    return False\ndef cron_tick(hook):\n    return None\n",
-        );
-    let services = daemon::composition::CronServices::default()
-        .with_target_bindings(Arc::new(bindings))
-        .with_command_capacity(3);
-    let opening_root = root.path().to_path_buf();
-    let (fixture, runtime) = mixed_fixture(
-        move || services.start(&daemon::cron::CronConfig::default(), &opening_root, log),
-        root.path(),
-    )
-    .await;
+        .with_monty("def cron_stop(hook):\n    return False\ndef cron_tick(hook):\n    return None\n");
+    let services=daemon::composition::CronServices::default()
+        .with_target_bindings(Arc::new(bindings)).with_command_capacity(3);
+    let clock=Arc::new(sc_cron::ManualClock::new("2026-10-19T00:00:00Z".parse().unwrap()));
+    let scheduler=sc_cron::Scheduler::new(
+        Arc::new(sc_cron::SqliteScheduleStore::open_in_memory(sc_cron::ScheduleLimits::default()).unwrap()),
+        clock,Arc::new(sc_cron::SeqJitter::default()));
+    let (fixture,runtime)=mixed_fixture(move || services.start_with_scheduler(scheduler),root.path()).await;
     let mut examples = Vec::new();
     let mut responses = Vec::new();
     // Every target uses the same verbs and mutates the same persisted scheduler.
@@ -460,17 +456,18 @@ async fn await_entries(received: std::sync::mpsc::Receiver<()>, count: usize) {
 }
 
 async fn call_surface(fixture: &DaemonFixture, surface: usize, body: Value) -> Value {
+    let verb=body["command"].as_str().unwrap().to_owned();
     match surface % 3 {
         0 => fixture
             .client()
-            .post("/ops/cron.list", &body)
+            .post(&format!("/ops/{verb}"), &body)
             .await
             .unwrap(),
         1 => {
             let rpc = mcp_rpc(
                 fixture,
                 json!({"jsonrpc":"2.0","id":1,"method":"tools/call",
-                "params":{"name":"cron.list","arguments":body}}),
+                "params":{"name":verb,"arguments":body}}),
             )
             .await;
             find_envelope(&rpc).unwrap().clone()
@@ -481,7 +478,7 @@ async fn call_surface(fixture: &DaemonFixture, surface: usize, body: Value) -> V
                 "--endpoint".into(),
                 fixture.endpoint_str(),
                 "cron".into(),
-                "list".into(),
+                verb.strip_prefix("cron.").unwrap().into(),
                 "--request".into(),
                 body.to_string(),
             ];
@@ -764,6 +761,60 @@ async fn consumer_executor_and_cleanup_own_policy_and_physical_completion() {
     assert!(joined.await.unwrap().is_err());
     assert!(completed.load(std::sync::atomic::Ordering::SeqCst));
     assert_eq!(*control.subscribe_status().borrow(),sc_cron::ShutdownStatus::Joined);
+    fixture.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn every_target_uses_all_three_real_command_projections() {
+    let root=tempfile::tempdir().unwrap();
+    let monty="def cron_stop(hook):\n    return {'action': 'continue'}\ndef cron_tick(hook):\n    return None\n";
+    let bindings=daemon::cron_commands::RegisteredTargets::default().with_python("/configured/job.py").with_monty(monty);
+    let clock=Arc::new(sc_cron::ManualClock::new("2026-10-19T00:00:00Z".parse().unwrap()));
+    let scheduler=sc_cron::Scheduler::new(
+        Arc::new(sc_cron::SqliteScheduleStore::open_in_memory(sc_cron::ScheduleLimits::default()).unwrap()),
+        clock,Arc::new(sc_cron::SeqJitter::default()));
+    let services=daemon::composition::CronServices::default().with_target_bindings(Arc::new(bindings));
+    let (fixture,runtime)=mixed_fixture(move || services.start_with_scheduler(scheduler),root.path()).await;
+    for (kind,target) in [json!({"kind":"rust"}),json!({"kind":"python","module":"/configured/job.py"}),
+        json!({"kind":"monty","source":monty})].into_iter().enumerate() {
+        let mut expected=None;
+        for surface in 0..3 {
+            let name=format!("kind-{kind}-ui-{surface}");
+            let start=request("cron.start",json!({"name":name,"cron":"0 * * * *","timeout_ms":1000,
+                "target":target,"payload":{"job":"heartbeat"},"environment":{"dotenv":[],"variables":{}}}));
+            let started=call_surface(&fixture,surface,start.clone()).await;
+            assert_eq!(started["ok"],true,"{started}");
+            let mut normalized=started["data"]["data"].clone();
+            for key in ["id","name"] { normalized.as_object_mut().unwrap().remove(key); }
+            match &expected { Some(expected) => assert_eq!(&normalized,expected),None => expected=Some(normalized) }
+            let refused=call_surface(&fixture,0,start.clone()).await;
+            assert_eq!(refused["ok"],false);
+            for other in [1,2] { assert_eq!(call_surface(&fixture,other,start.clone()).await,refused); }
+            let end=request("cron.end",json!({"name":name,"generation":1,"reason":"matrix complete"}));
+            let ended=call_surface(&fixture,surface,end.clone()).await;
+            assert_eq!(ended["ok"],true,"{ended}");
+            let fenced=call_surface(&fixture,0,end.clone()).await;
+            assert_eq!(fenced["ok"],false);
+            for other in [1,2] { assert_eq!(call_surface(&fixture,other,end.clone()).await,fenced); }
+        }
+    }
+    runtime.shutdown().await.unwrap();
+    fixture.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn default_file_factory_opens_selected_root_without_scheduling_work() {
+    let root=tempfile::tempdir().unwrap();
+    let opening=root.path().to_path_buf();
+    let (fixture,runtime)=mixed_fixture(move || daemon::composition::CronServices::default().start(
+        &daemon::cron::CronConfig::default(),&opening,
+        Arc::new(sc_command::observability::NoopCanonicalLog::named_or_default("c4-default"))),root.path()).await;
+    assert!(root.path().join("cron.db").is_file());
+    let list=request("cron.list",json!({"state":"all","limit":1,"cursor":null}));
+    let response=call_surface(&fixture,0,list).await;
+    assert_eq!(response["ok"],true);
+    assert!(response["data"]["data"]["items"].as_array().unwrap().is_empty());
+    runtime.shutdown().await.unwrap();
     fixture.shutdown().await.unwrap();
 }
 '''
