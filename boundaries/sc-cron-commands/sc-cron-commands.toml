@@ -24,7 +24,7 @@ scope = "outside_owner_crate"
 forbidden = []
 
 [testing]
-allowed_test_double_paths = ["crates/sc-cron-commands/tests/support/operation_double.rs", "tests/contracts/phase-c/executor_double.rs"]
+allowed_test_double_paths = ["crates/sc-cron-commands/tests/support/operation_double.rs", "tests/contracts/phase-c/executor_double.rs", "crates/sc-cron-commands/tests/custom_executor.rs"]
 forbidden_test_bypasses = []
 
 [enforcement]

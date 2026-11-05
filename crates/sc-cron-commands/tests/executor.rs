@@ -3,7 +3,7 @@
 mod operations;
 
 use operations::{OperationCall, RecordingOperations};
-use sc_command::{Envelope, ErrorKind, OpError};
+use sc_command::{ErrorKind, OpError};
 use sc_cron::{
     CommitAdmission, CronError, EndedSchedule, Generation, HookTarget, PersistenceOutcome,
     Schedule, ScheduleId, SchedulePage, ScheduleSelection, ScheduleSpec, ShutdownBudget,
@@ -462,22 +462,6 @@ async fn capacity_refusal_and_explicit_monty_capability() {
         operations.calls.lock().unwrap().len(),
         1 + usize::from(cfg!(feature = "monty"))
     );
-}
-
-#[test]
-fn custom_executor_uses_same_protocol_without_scheduler() {
-    struct Custom;
-    impl CronExecutor for Custom {
-        fn execute(&self, _request: CronRequest, _deadline: Instant) -> ExecutorFuture<'_> {
-            Box::pin(async {
-                Envelope::success(CronResponse::Ended(EndResult {
-                    id: 1,
-                    generation: 1,
-                }))
-            })
-        }
-    }
-    let _: Arc<dyn CronExecutor> = Arc::new(Custom);
 }
 
 #[tokio::test(flavor = "current_thread")]
