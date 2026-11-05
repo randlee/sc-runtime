@@ -97,6 +97,7 @@ async fn cooperative_duplicate_start_is_typed_and_original_worker_still_joins() 
         .unwrap();
 }
 
+#[cfg(test)]
 #[test]
 fn cooperative_start_without_runtime_returns_error_without_claiming_worker() {
     if supervised(
@@ -120,6 +121,7 @@ fn cooperative_start_without_runtime_returns_error_without_claiming_worker() {
     });
 }
 
+#[cfg(test)]
 #[test]
 fn physical_permit_survives_shutdown_of_its_async_runtime() {
     if supervised("lifecycle::physical_permit_survives_shutdown_of_its_async_runtime") {
