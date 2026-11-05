@@ -2862,7 +2862,7 @@ Rust/Python/Monty options. Feature-off core and generated builds gain no
 scheduler/server dependency from DTO use. This amends REQ-RUN-0301's optional
 cron composition and REQ-RUN-0401/0402/0403's schema/fixture key set; a docs-only
 example or DTO library does not satisfy selected generation. REQ-RUN-0702's
-affected release closure includes the optional new adapter. CLI clients remain
+shared public release includes the optional new adapter. CLI clients remain
 free of cron/server implementation under NFR-RUN-0001.
 
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
@@ -3811,21 +3811,24 @@ the point at which generated projects become upgradeable by a normal
 
 ### Phase C authorized 0.2.0 continuation
 
-C-4 is the sole named release handoff for sc-command0.2.0, sc-cron0.2.0,
-sc-runtime0.2.0 and sc-cron-commands0.2.0; config/transport and unrelated
-packages remain0.1.1. Command publishes before cron/runtime and cron before
-cron-commands. The release commit carries v0.2.0 only after the existing
-human publication authorization, exact package visibility and real consumer
-proof conditions hold. A no-patch generated registry fixture can report
-registry-consumer acceptance only after authorized sc-runtime0.2.0 publication
-and registry visibility; checkout-patched tests do not satisfy it.
-ADR-RUN-0203 freezes package/schema identities. The exact canonical sc-publish
-kit must qualify per-package version verification, literal unchanged bases,
-publish=false, ordered affected publication and package-specific registry
-lookups under v0.2.0; its currently demonstrated uniform-version gap blocks
-C1 closure. No blanket version bump or handwritten workflow bypass is allowed.
-This extends the existing0.1.x release contract without claiming publication
-or release acceptance from contract declarations alone.
+The owner clarified on 2026-11-04: "I expect we will release all crates every
+release". C-4 is the sole authorized release handoff for all six public crates
+at the shared 0.2.0 version: sc-config, sc-transport, sc-command, sc-runtime,
+sc-cron and sc-cron-commands. The internal publish=false SQLite helper stays
+private. Publish in dependency order, including command before cron/runtime
+and cron before adapter, after each prerequisite's exact registry visibility.
+The tag v0.2.0 identifies that shared-version release only after the existing
+human authorization and real consumer-proof conditions hold.
+
+C-3 owns coherent normal manifests/lock/template and canonical kit-input
+regeneration; C-4 qualifies the existing pinned kit's all-crates version
+checks, ordered publication and exact registry visibility. It then runs the
+no-patch registry fixture. Checkout-patched tests cannot establish registry
+acceptance. ADR-RUN-0203 retains the frozen third-party package/schema matrix
+and rusqlite0.39/libsqlite3-sys0.37 constraint. Historical selective-probe
+failure is not a current capability prerequisite; do not claim it passed or
+add an unnecessary selective publisher enhancement. No hand-edited vendored
+workflow bypass or publication authority follows from these declarations.
 
 ---
 

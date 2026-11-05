@@ -13,14 +13,16 @@ use crate::{
 /// Shared live operation state; child deadlines never extend the root scope.
 #[derive(Clone, Debug)]
 pub struct StoreOperationContext {
-    state: Arc<Mutex<OperationState>>,
-    deadline: Option<Instant>,
+    pub(crate) state: Arc<Mutex<OperationState>>,
+    pub(crate) deadline: Option<Instant>,
 }
 
 #[derive(Debug, Default)]
-struct OperationState {
-    stop_requested: bool,
-    cutoff: Option<Instant>,
+pub(crate) struct OperationState {
+    pub(crate) stop_requested: bool,
+    pub(crate) cutoff: Option<Instant>,
+    pub(crate) cancelled: bool,
+    pub(crate) budget: Option<ShutdownBudget>,
 }
 
 impl StoreOperationContext {
@@ -51,14 +53,23 @@ impl StoreOperationContext {
     /// # Errors
     /// Returns a value-free unavailable error after cancellation or expiry.
     pub fn check(&self) -> Result<(), CronError> {
-        if self.stop_requested() {
-            return Err(unavailable("operation_cancelled"));
+        if self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .cancelled
+        {
+            return Err(StoreError::new(StoreErrorKind::Cancelled, "operation_cancelled").into());
         }
         if self
             .deadline()
             .is_some_and(|deadline| Instant::now() >= deadline)
         {
-            return Err(unavailable("operation_deadline_exceeded"));
+            return Err(StoreError::new(
+                StoreErrorKind::DeadlineExceeded,
+                "operation_deadline_exceeded",
+            )
+            .into());
         }
         Ok(())
     }
@@ -99,16 +110,38 @@ pub enum StoreOperationSupport {
     Cooperative,
 }
 
-/// Absolute ordinary and terminal-cleanup cutoffs.
+/// Absolute ordinary and terminal-cleanup cutoffs, checked by [`Self::new`].
+///
+/// Consumers cannot bypass the ordering check with literal construction:
+/// ```compile_fail
+/// let cutoff = std::time::Instant::now();
+/// let _ = sc_cron::ShutdownBudget { grace: cutoff, cleanup: cutoff };
+/// ```
+/// Checked fields also cannot be changed after construction:
+/// ```compile_fail
+/// let cutoff = std::time::Instant::now();
+/// let mut budget = sc_cron::ShutdownBudget::new(cutoff, cutoff).unwrap();
+/// budget.cleanup = cutoff - std::time::Duration::from_secs(1);
+/// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ShutdownBudget {
     /// Ordinary operation commit-admission cutoff G.
-    pub grace: Instant,
+    pub(crate) grace: Instant,
     /// Restricted cleanup commit-admission cutoff K, at least G.
-    pub cleanup: Instant,
+    pub(crate) cleanup: Instant,
 }
 
 impl ShutdownBudget {
+    /// Ordinary operation admission cutoff.
+    #[must_use]
+    pub const fn grace(&self) -> Instant {
+        self.grace
+    }
+    /// Restricted cleanup admission cutoff.
+    #[must_use]
+    pub const fn cleanup(&self) -> Instant {
+        self.cleanup
+    }
     /// Checks that cleanup does not precede ordinary drain.
     ///
     /// # Errors

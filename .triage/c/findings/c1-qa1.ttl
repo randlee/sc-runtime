@@ -4,350 +4,382 @@ triage:C1_QA1_REQ_C1_001 a triage:Finding ;
  triage:id "REQ-C1-001" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-command/src/envelope.rs:244; crates/sc-command/src/error.rs:436; crates/sc-command/src/error.rs:441" ;
  triage:issue "New public command schema trait implementations contain expect calls. The binding banned-construct rule explicitly rejects invariant/comment justifications; the existing Noop literal exception does not cover schema conversion." ;
  triage:action "Construct canonical schemas with infallible native schema APIs, preserving exact Envelope/OpError wire shape and both schema engines; verify no new public-path banned constructs remain. The adapter schema expects at contract.rs:321/333 also warrant the same owner-schema repair rather than a panic-policy waiver." ;
+ triage:disposition "Infallible native Schemars/Utoipa schemas in sc-command envelope/error and sc-cron-commands contract; six schema-enabled contract regressions, including exact arbitrary-JSON wire checks." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_REQ_C1_002 a triage:Finding ;
  triage:id "REQ-C1-002" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron-commands/src/contract.rs:9; crates/sc-cron-commands/src/contract.rs:76; crates/sc-cron-commands/src/contract.rs:128; crates/sc-cron-commands/src/contract.rs:159; crates/sc-cron-commands/src/contract.rs:183" ;
  triage:issue "The new request/target/environment DTOs derive Debug over payloads, Python module/Monty source and Set/Reference strings. Formatting a normal CronRequest/StartRequest diagnostically exposes the sensitive values that the contract prohibits in diagnostics, unlike the core environment model's value-free Debug." ;
  triage:action "Provide value-free Debug implementations for sensitive DTOs and nested variants, retaining names/kinds/counts where safe; add canary tests through complete CronRequest/StartRequest formatting, without changing intentional raw wire serialization." ;
+ triage:disposition "Value-free sensitive leaf and aggregate Debug in sc-cron-commands/src/contract.rs; nested source/payload/environment/reference canary and unchanged serialization tests." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_REQ_C1_003 a triage:Finding ;
  triage:id "REQ-C1-003" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron-commands/src/contract.rs:307; crates/sc-cron-commands/src/contract.rs:315; examples/spike/phase-c-contract/composition/src/main.rs:10" ;
  triage:issue "CronRequest JsonSchema has oneOf but no root type:object. The temporary probe only declares Option<Parameters<CronRequest>> and does not exercise actual RMCP tool-schema construction. The actual C3 projection failure reports that this owner schema is invalid for RMCP inputSchema; C6's narrow fix is not present at reviewed 030f9ed." ;
  triage:action "Backport the canonical JsonSchema-only object-root repair and regression (a952ed2 or equivalent), preserving the Utoipa oneOf typed variants; verify actual RMCP tool construction, not only an Option type declaration. Do not add type:object to the shared OpenAPI conversion if that erases its oneOf." ;
+ triage:disposition "CronRequest JsonSchema-only object root; actual rmcp3.8 schema_for_input and Tool construction in tests/contracts/phase-c/application-control; typed Utoipa oneOf remains separate." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_REQ_C1_004 a triage:Finding ;
  triage:id "REQ-C1-004" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/src/consumer_contract.rs:15; crates/sc-cron/src/consumer_contract.rs:79; docs/plans/phase-c/compatibility-contract.md:529" ;
  triage:issue "The supported custom CronOperations path cannot supply the StoreOperationContext required by StandardCronExecutor::new in an ordinary downstream build. Context fields are private and its only factory at this C1 snapshot is operation_context_probe behind test-utils; no normal constructor/default or standalone owner factory is declared. Requiring a framework worker or a test feature defeats the documented own-lifecycle replacement path." ;
  triage:action "Freeze and supply a narrow normal public context/owner creation seam suitable for custom operations and document its cancellation/deadline/ownership responsibilities. Add a normal-only external consumer composition proof with custom CronOperations, without enabling test-utils or starting a bundled worker. Production Scheduler/executor behavior remains C5/C6 work." ;
+ triage:disposition "Normal WorkerStopControl::new and finish_application_shutdown in application_control.rs; external ordinary-feature custom provider proves earliest deadline, shared cancellation, ordinary-thread stop and revocation after acknowledgement with future grace. Contract documents application join responsibility and later framework restriction." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_REQ_C1_005 a triage:Finding ;
  triage:id "REQ-C1-005" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:195; docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:210; docs/architecture.md:522; docs/architecture.md:1623" ;
  triage:issue "The authoritative C1 release contract still requires config/transport at0.1.1 and treats selective publication as a blocking upstream enhancement. This conflicts with the explicit new all-public-crates shared-release policy. This finding is documentation/contract alignment, not a demand to repair the superseded selective kit capability." ;
  triage:action "Consume the coherent all-six-public-crates0.2.0 contract/ADR/requirement amendment owned by C3, remove current selective-only blockers, preserve historical probe evidence as historical, and leave actual existing-kit publication/registry proof to C4. Keep third-party SQLite pins unchanged." ;
+ triage:disposition "Current Phase C plan, C1/C3/C4, requirements, compatibility contract and ADR matrix require all six public crates0.2.0; failed selective probe retained as history. C3 owns actual manifest/input regeneration; C4 owns authorized publication." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_REQ_C1_006 a triage:Finding ;
  triage:id "REQ-C1-006" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:11" ;
  triage:issue "The C1 requirements list omits applicable repo-level NFR-RUN-0003/0004/0008 while adding reusable crate code, schema integration and source files. All listed52 ids resolve, but the universal standard-crate/less-code/source-length constraints are not included in the sprint's binding coverage list." ;
  triage:action "Add the applicable ids and trace them to C1 declaration/minimality and configured source-length validation. No extra local line-counting tool or policy waiver is needed." ;
+ triage:disposition "Added applicable NFR-RUN-0003/0004/0008 and ADR-RUN-0001/0004/0006/0007/0008/0011 to authoritative C1 metadata. Existing source-length and strict Clippy/ADR checks retained." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_REQ_C1_007 a triage:Finding ;
  triage:id "REQ-C1-007" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "examples/spike/phase-c-contract/probe.py:1; examples/spike/phase-c-contract/selective_probe.py:1; examples/spike/phase-c-contract/composition/Cargo.toml:1; PR116 body and comments at review time" ;
  triage:issue "Required pre-merge contract closeout remains open: the temporary probe tree is still tracked, and PR116's initial-checkpoint body still says declarations/qualification are in progress without the required current concise probe qualification summary. ADRs contain useful summaries, but the PR closeout/removal criterion has not been completed." ;
  triage:action "Before C1 merge, remove examples/spike/phase-c-contract as promised and update the PR's concise final probe summary with exact released asset/digest, analyzer/profile receipt outcome, explicit waived init exit3/preserved bytes, frozen versions/composition outcome and all-crates policy. Do not upload diagnostic logs or a raw evidence archive." ;
+ triage:disposition "Removed entire examples/spike/phase-c-contract tree. Concise current qualification closeout belongs in existing PR116 body; actual frozen ADR results retained. Durable consumer uses canonical bounded owned_process.run." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_ARCH_C1_001 a triage:Finding ;
  triage:id "ARCH-C1-001" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md" ;
- triage:issue "" ;
+ triage:issue "The ADR list omits governing ADR-RUN-0001,0004,0006,0007,0008 and0011. C1 adds public operation/schema types and error behavior, documents application wiring and logging placement, and introduces shared Mutex-backed asynchronous-operation contracts. In particular the required public-panic and lock-across-await reviews are not represented in the sprint list." ;
  triage:action "Add the applicable binding ADRs to this one adrs list and retain explicit conformance checks; adding the references does not waive the source violations below." ;
+ triage:disposition "Added applicable NFR-RUN-0003/0004/0008 and ADR-RUN-0001/0004/0006/0007/0008/0011 to authoritative C1 metadata. Existing source-length and strict Clippy/ADR checks retained." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_ARCH_C1_002 a triage:Finding ;
  triage:id "ARCH-C1-002" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-command/src/envelope.rs" ;
- triage:issue "" ;
+ triage:issue "Public schema trait methods reach prohibited expect calls: Envelope<T>::json_schema at envelope.rs244 and the ErrorKind/OpError canonical_schema expansions at error.rs436/441. ADR0006 point3 bans reachable expect, including fixed-schema conversion assertions; ADR0017 grants only the named Noop invariant exception." ;
  triage:action "Construct the owned Schemars/OpenAPI schemas with infallible native map/builders while preserving the actual wire shape. Remove all three public schema conversion expects; do not add a panic-policy waiver." ;
+ triage:disposition "Infallible native Schemars/Utoipa schemas in sc-command envelope/error and sc-cron-commands contract; six schema-enabled contract regressions, including exact arbitrary-JSON wire checks." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_ARCH_C1_003 a triage:Finding ;
  triage:id "ARCH-C1-003" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron-commands/src/contract.rs" ;
- triage:issue "" ;
+ triage:issue "EnvironmentOperation derives Debug over Set(String) and Reference(String); the containing EnvironmentPolicy, StartRequest, CronOperation and CronRequest propagate those raw fields. ExecutionTarget also derives Debug over Monty source/Python module and StartRequest includes arbitrary payload. This newly shared wire model creates value-bearing diagnostic formatting rather than the value-free environment-model behavior required by ADR0016 points6/8." ;
  triage:action "Give sensitive leaf/aggregate DTOs value-free Debug implementations or remove unsupported Debug derivations, preserving serde/schema behavior. Add a diagnostic canary proving plaintext values, locators, source, payload and sensitive paths do not appear." ;
+ triage:disposition "Value-free sensitive leaf and aggregate Debug in sc-cron-commands/src/contract.rs; nested source/payload/environment/reference canary and unchanged serialization tests." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_ARCH_C1_004 a triage:Finding ;
  triage:id "ARCH-C1-004" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "docs/plans/phase-c/compatibility-contract.md" ;
- triage:issue "" ;
+ triage:issue "The frozen StandardCronExecutor constructor requires StoreOperationContext, but the shared context has private fields and C1 offers no ordinary public root construction/control contract. The sole worker-free constructor operation_context_probe is test-utils-gated (consumer_contract.rs82). The same contract advertises custom CronOperations for application-owned schema/shutdown at lines116-125, while ADR-CRNC0001 explicitly forbids hidden concrete-Scheduler/private wiring as a replacement for those ports. A custom provider cannot compose the promised narrower override through normal APIs." ;
  triage:action "Freeze a minimal supported production context-creation/cancellation-ownership seam for application-owned CronOperations, without a dummy Scheduler worker or test-utils. Preserve shared live cancellation and earliest-deadline semantics and add a normal-feature external composition proof. C1 owns the usable contract; this finding does not demand the later C5/C6 implementation bodies here." ;
+ triage:disposition "Normal WorkerStopControl::new and finish_application_shutdown in application_control.rs; external ordinary-feature custom provider proves earliest deadline, shared cancellation, ordinary-thread stop and revocation after acknowledgement with future grace. Contract documents application join responsibility and later framework restriction." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_ARCH_C1_005 a triage:Finding ;
  triage:id "ARCH-C1-005" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "docs/architecture.md" ;
- triage:issue "" ;
+ triage:issue "The current authoritative release matrix still leaves config/transport at0.1.1 and makes an unqualified selective-publishing capability a C1 closure blocker (lines1623-1635; C1 deliverables5/7). This conflicts with the explicit current human policy that all six public crates release together. Future C3 alignment is not yet part of this pinned contract." ;
  triage:action "Amend the active matrix, C1/phase/release handoff text and affected checks coherently to one all-public-crates0.2.0 release policy, recording the new authority and preserving historical evidence. Remove the superseded selective-capability gate; do not claim its old probe passed or require an unnecessary publishing-kit feature." ;
+ triage:disposition "Current Phase C plan, C1/C3/C4, requirements, compatibility contract and ADR matrix require all six public crates0.2.0; failed selective probe retained as history. C3 owns actual manifest/input regeneration; C4 owns authorized publication." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_ARCH_C1_006 a triage:Finding ;
  triage:id "ARCH-C1-006" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md" ;
- triage:issue "" ;
+ triage:issue "C1 explicitly requires deletion of examples/spike/phase-c-contract before merge, but the entire probe/composition/lock/selective-probe tree remains in the reviewed diff. The structural pre-merge cleanup gate is open." ;
  triage:action "Retain the concise authoritative result/compatibility matrix and durable owner regressions, then remove this temporary probe tree before C1 closeout. Do not replace it with raw diagnostic archives." ;
+ triage:disposition "Removed entire examples/spike/phase-c-contract tree. Concise current qualification closeout belongs in existing PR116 body; actual frozen ADR results retained. Durable consumer uses canonical bounded owned_process.run." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_EXT_C1_001 a triage:Finding ;
  triage:id "EXT-C1-001" ;
  triage:severity "important" ;
  triage:reviewer "extensibility-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "See reviewer source and target references in the published QA report." ;
  triage:issue "The frozen custom CronOperations seam requires a context with no normal worker-independent construction contract." ;
  triage:action "Freeze a minimal supported normal-build context construction and cancellation/deadline ownership seam for an application-owned CronOperations implementation, independent of a framework Scheduler worker and test-utils. State transferred responsibilities and require the C5/C6 normal-feature external consumer to demonstrate constructing the custom provider/executor and preserving cancellation plus earliest deadlines. C1 need not implement future production scheduling behavior." ;
+ triage:disposition "Normal WorkerStopControl::new and finish_application_shutdown in application_control.rs; external ordinary-feature custom provider proves earliest deadline, shared cancellation, ordinary-thread stop and revocation after acknowledgement with future grace. Contract documents application join responsibility and later framework restriction." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_EXT_C1_002 a triage:Finding ;
  triage:id "EXT-C1-002" ;
  triage:severity "important" ;
  triage:reviewer "extensibility-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "See reviewer source and target references in the published QA report." ;
  triage:issue "New native control-plane refusals inherit database-repair remediation that cannot resolve their cause." ;
  triage:action "Freeze reason-appropriate stable cause/recovery behavior for cancellation, expiry and unsupported capability refusals and give the additive declarations accurate value-free remediation. Retain existing database recovery for real database failures. Prove a normal consumer can distinguish and act on those refusals without parsing provider prose or changing database files." ;
+ triage:disposition "StoreError/CronError reason-specific recovery retains existing database kinds; cancellation/deadline/indeterminate and unsupported/nested/capacity/runtime ownership reasons have actionable value-free guidance." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_RBQA_C1_001 a triage:Finding ;
  triage:id "RBQA-C1-001" ;
  triage:severity "critical" ;
  triage:reviewer "ruthless-boundary-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron-commands/src/contract.rs" ;
  triage:issue "Canonical request DTO Debug implementations expose payload, interpreter source and persisted environment values/references across the diagnostic boundary." ;
  triage:action "Provide value-free Debug implementations for the entire sensitive DTO chain, preserving its existing serialization/schema contract; add canary formatting regressions in the existing owner contract tests." ;
+ triage:disposition "Value-free sensitive leaf and aggregate Debug in sc-cron-commands/src/contract.rs; nested source/payload/environment/reference canary and unchanged serialization tests." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_RBQA_C1_002 a triage:Finding ;
  triage:id "RBQA-C1-002" ;
  triage:severity "critical" ;
  triage:reviewer "ruthless-boundary-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/src/consumer_contract.rs" ;
  triage:issue "The advertised custom CronOperations replacement port requires a context that normal production consumers cannot construct without a framework worker." ;
  triage:action "Freeze a minimal normal-feature context/control construction and ownership seam usable with application-owned CronOperations and the standard executor, without a dummy Scheduler worker or enabling test-utils. Preserve common cancellation and earliest deadlines and prove ordinary external construction in the existing contract venue." ;
+ triage:disposition "Normal WorkerStopControl::new and finish_application_shutdown in application_control.rs; external ordinary-feature custom provider proves earliest deadline, shared cancellation, ordinary-thread stop and revocation after acknowledgement with future grace. Contract documents application join responsibility and later framework restriction." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_RBQA_C1_003 a triage:Finding ;
  triage:id "RBQA-C1-003" ;
  triage:severity "critical" ;
  triage:reviewer "ruthless-boundary-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron-commands/src/contract.rs" ;
  triage:issue "The canonical Schemars request schema omits root type:object, so it is rejected at the selected RMCP input-schema boundary." ;
  triage:action "Make the canonical Schemars CronRequest schema explicitly object-rooted while retaining typed oneOf variants and the existing OpenAPI representation. Exercise actual RMCP input-schema construction/validation in the existing declaration probe or contract venue, rather than only naming Parameters<CronRequest>." ;
+ triage:disposition "CronRequest JsonSchema-only object root; actual rmcp3.8 schema_for_input and Tool construction in tests/contracts/phase-c/application-control; typed Utoipa oneOf remains separate." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_QA_C1_001 a triage:Finding ;
  triage:id "QA-C1-001" ;
  triage:severity "critical" ;
  triage:reviewer "rust-qa-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-command/src/envelope.rs" ;
  triage:issue "Public owner-schema implementations contain prohibited expect calls." ;
  triage:action "Construct the owner schemas with infallible native builders/maps, preserving canonical schema semantics and optional feature boundaries; remove every public schema expect occurrence." ;
+ triage:disposition "Infallible native Schemars/Utoipa schemas in sc-command envelope/error and sc-cron-commands contract; six schema-enabled contract regressions, including exact arbitrary-JSON wire checks." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_QA_C1_002 a triage:Finding ;
  triage:id "QA-C1-002" ;
  triage:severity "critical" ;
  triage:reviewer "rust-qa-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron-commands/src/contract.rs" ;
  triage:issue "Public DTO Debug renders environment values/references, interpreter source and payload." ;
  triage:action "Use value-free Debug throughout the sensitive DTO chain and add canary regression tests without changing serialized wire data or schemas." ;
+ triage:disposition "Value-free sensitive leaf and aggregate Debug in sc-cron-commands/src/contract.rs; nested source/payload/environment/reference canary and unchanged serialization tests." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_QA_C1_003 a triage:Finding ;
  triage:id "QA-C1-003" ;
  triage:severity "critical" ;
  triage:reviewer "rust-qa-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron-commands/src/contract.rs" ;
  triage:issue "The canonical Schemars input schema is rejected by the selected RMCP validator because its root lacks type:object." ;
  triage:action "Supply an explicit object root in the canonical Schemars input schema while preserving typed Utoipa oneOf; add a real RMCP schema_for_input/tool-construction regression rather than only naming Parameters<CronRequest>." ;
+ triage:disposition "CronRequest JsonSchema-only object root; actual rmcp3.8 schema_for_input and Tool construction in tests/contracts/phase-c/application-control; typed Utoipa oneOf remains separate." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_QA_C1_004 a triage:Finding ;
  triage:id "QA-C1-004" ;
  triage:severity "important" ;
  triage:reviewer "rust-qa-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/src/consumer_contract.rs" ;
  triage:issue "The public custom CronOperations seam requires a context an ordinary production consumer cannot construct." ;
  triage:action "Freeze and provide a supported normal-feature context/control construction and ownership path without a dummy framework worker or test-utils, retaining shared cancellation and earliest deadlines; prove it from an ordinary external consumer." ;
+ triage:disposition "Normal WorkerStopControl::new and finish_application_shutdown in application_control.rs; external ordinary-feature custom provider proves earliest deadline, shared cancellation, ordinary-thread stop and revocation after acknowledgement with future grace. Contract documents application join responsibility and later framework restriction." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_QA_C1_005 a triage:Finding ;
  triage:id "QA-C1-005" ;
  triage:severity "critical" ;
  triage:reviewer "rust-qa-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-command/src/envelope.rs" ;
  triage:issue "A real typed Utoipa6 path response using the public generic Envelope does not compile." ;
  triage:action "Implement the required Utoipa6 generic ComposeSchema behavior correctly while retaining native owner schema semantics, and add a durable consumer macro-composition regression for Envelope<Value> and typed cron responses. Do not lower the frozen dependency or replace the typed envelope." ;
+ triage:disposition "Public Envelope generic implements actual Utoipa6 ComposeSchema. Typed #[path] regression in sc-cron-commands/tests/contract.rs passes." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_QA_C1_006 a triage:Finding ;
  triage:id "QA-C1-006" ;
  triage:severity "important" ;
  triage:reviewer "rust-qa-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "examples/spike/phase-c-contract/probe.py" ;
  triage:issue "The retained temporary qualification probes run subprocesses with captured pipes and no deadline or owned-tree cleanup." ;
  triage:action "Complete the already-required retirement of temporary probes before merge and retain meaningful durable regressions/concise qualification results in the existing mechanisms. Any still-needed executable probe must use bounded owned subprocess execution; do not weaken assertions or add retries." ;
+ triage:disposition "Removed entire examples/spike/phase-c-contract tree. Concise current qualification closeout belongs in existing PR116 body; actual frozen ADR results retained. Durable consumer uses canonical bounded owned_process.run." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_QA_C1_007 a triage:Finding ;
  triage:id "QA-C1-007" ;
  triage:severity "important" ;
  triage:reviewer "rust-qa-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/src/consumer_contract.rs" ;
  triage:issue "New cancellation/deadline/unsupported-operation failures recommend repairing database paths and permissions." ;
  triage:action "Preserve classified, value-free failures but give reason-appropriate recovery for cancellation, expiry and unsupported cooperative/query capabilities; do not recommend storage repairs for capability/admission refusals." ;
+ triage:disposition "StoreError/CronError reason-specific recovery retains existing database kinds; cancellation/deadline/indeterminate and unsupported/nested/capacity/runtime ownership reasons have actionable value-free guidance." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_RBP_C1_001 a triage:Finding ;
  triage:id "RBP-C1-001" ;
  triage:severity "important" ;
  triage:reviewer "rust-best-practices-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-command/src/envelope.rs" ;
  triage:issue "Canonical public owner schemas express guaranteed-valid construction as fallible JSON conversions followed by expect." ;
  triage:action "Construct schemas through infallible native schema/map builders, preserving canonical wire and schema semantics; remove the corresponding public expect calls rather than add a panic-policy exception." ;
+ triage:disposition "Infallible native Schemars/Utoipa schemas in sc-command envelope/error and sc-cron-commands contract; six schema-enabled contract regressions, including exact arbitrary-JSON wire checks." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_RBP_C1_002 a triage:Finding ;
  triage:id "RBP-C1-002" ;
  triage:severity "important" ;
  triage:reviewer "rust-best-practices-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/src/consumer_contract.rs" ;
  triage:issue "New cancellation, deadline and unsupported-capability refusals prescribe database path/permissions/disk repair instead of reason-appropriate recovery." ;
  triage:action "Preserve stable classification and value-free diagnostics while retaining the refusal reason in structured form and selecting actionable recovery for cancellation, expired scope and unsupported provider capability." ;
+ triage:disposition "StoreError/CronError reason-specific recovery retains existing database kinds; cancellation/deadline/indeterminate and unsupported/nested/capacity/runtime ownership reasons have actionable value-free guidance." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_RBP_C1_003 a triage:Finding ;
  triage:id "RBP-C1-003" ;
  triage:severity "important" ;
  triage:reviewer "rust-best-practices-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/src/consumer_contract.rs" ;
  triage:issue "ShutdownBudget advertises checked absolute cutoffs with K>=G but exposes both fields publicly, allowing construction or mutation that bypasses its validator." ;
  triage:action "Keep the checked constructor as the invariant boundary and make cutoff fields private with read accessors, or otherwise ensure every public construction path preserves K>=G. Do not add redundant wrappers for Instant." ;
+ triage:disposition "ShutdownBudget fields pub(crate), checked new plus read-only accessors; invalid-order consumer check and compile-fail literal/mutation doctests prevent public bypass." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_RSH_C1_001 a triage:Finding ;
  triage:id "RSH-C1-001" ;
  triage:severity "important" ;
  triage:reviewer "rust-service-hardening-agent" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/src/consumer_contract.rs" ;
  triage:issue "Cancellation, deadline and unsupported-capability refusals receive database-repair recovery instead of lifecycle-appropriate guidance." ;
  triage:action "Freeze and provide reason-specific, value-free classification/recovery for the implemented context and legacy-safe refusal paths. Cancellation/expiry should direct callers to the stopped/expired scope and owned completion/reconciliation responsibilities; an unsupported provider should direct callers to the supported cooperative override. Do not recommend changing healthy database files, or imply uncertain mutations may be replayed." ;
+ triage:disposition "StoreError/CronError reason-specific recovery retains existing database kinds; cancellation/deadline/indeterminate and unsupported/nested/capacity/runtime ownership reasons have actionable value-free guidance." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_FTQ_C1_001 a triage:Finding ;
  triage:id "FTQ-C1-001" ;
  triage:severity "critical" ;
  triage:reviewer "flaky-test-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "examples/spike/phase-c-contract/probe.py" ;
  triage:issue "Retained executable qualification probes call subprocess.run with captured stdout/stderr and no execution deadline or owned-tree cleanup. Cargo can wait indefinitely on a registry/artifact lock or a stalled tool; a surviving descendant can retain a capture pipe. The probe then never fails or reclaims its command tree. selective_probe.py:32 and probe.py:55 repeat the same mechanism." ;
  triage:action "Complete the sprint's already-required temporary-probe retirement before merge. If any qualification executable is deliberately retained, route every command through the existing bounded owned-process helper with a hard failure guard and physical cleanup; do not add retries or a new evidence mechanism." ;
+ triage:disposition "Removed entire examples/spike/phase-c-contract tree. Concise current qualification closeout belongs in existing PR116 body; actual frozen ADR results retained. Durable consumer uses canonical bounded owned_process.run." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_FTQ_C1_002 a triage:Finding ;
  triage:id "FTQ-C1-002" ;
  triage:severity "critical" ;
  triage:reviewer "flaky-test-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/tests/hook_environment/owned_child_windows.rs" ;
  triage:issue "The normal-completion BEFORE observation still depends on the inner Python owner's weaker completion rule. For a nonexpired bridge, output invokes completed() before the strong outer Bridge::stop. The inner _terminate_windows_job returns as soon as ActiveProcesses is zero, which need not mean descendant process handles are signaled. A descendant can therefore remain unsignaled after the Python bridge exits and make the immediate BEFORE assertion fail, even though the outer retained-identity cleanup would subsequently finish it. The stronger outer owner at this revision does not protect that earlier observation boundary." ;
  triage:action "Promote the shared Python owned-process retained-identity completion repair to this branch, so the inner owner establishes physical signaling before returning. Keep the immediate BEFORE observation and its distinction from emergency cleanup; do not move it after outer cleanup or pad the observer wait. Add/retain a deterministic empty-job-before-unsignaled-identity negative and actual Windows proof for the resulting source." ;
+ triage:disposition "Promoted retained physical-process identity completion before canonical Python owner returns, plus deterministic active-empty/unsignaled negative and immediate witnesses. Shared helper source compared against C5 native-Windows validated source; macOS is not represented as Windows proof." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
 
 triage:C1_QA1_FTQ_C1_003 a triage:Finding ;
  triage:id "FTQ-C1-003" ;
  triage:severity "important" ;
  triage:reviewer "flaky-test-qa" ;
- triage:status "open" ;
+ triage:status "implemented-pending-reqa" ;
  triage:reviewed_commit "030f9ed16edf70a6f51e20905c5ab292c2d6389c" ;
  triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix.py" ;
  triage:issue "The new Unix bridge calls canonical _launch directly without the canonical Unix inspection preflight. If ps is unavailable, it can launch target/descendant work in separate process groups and only discover the missing cleanup capability when the stop inspector runs. That inspector fails; Session::stop returns an error and Drop falls back to killing only the leader's process group. Distinct-group descendants used by this fixture are then left alive. The error is reported, but ownership has already been lost." ;
  triage:action "Refuse launch before creating target work when required session inspection is unavailable, reusing the existing _check_session_inspection mechanism under the supervisor environment. Cover the unsupported-inspection path causally and ensure any cleanup-failure fallback does not discard already-known cross-group work; retain the bounded cleanup budget and physical ownership rather than silently claiming success." ;
+ triage:disposition "Canonical bridge performs session-inspection preflight before target launch; negative no-launch test retained. Canonical owned_process test suite passes10 tests on macOS." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6648238015" .
