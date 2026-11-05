@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
-from tests.integration.generation.owned_process import _launch, _stop_owned_session
+from tests.integration.generation.owned_process import _check_session_inspection, _launch, _stop_owned_session
 
 
 def launch(request_path):
@@ -22,6 +22,12 @@ def launch(request_path):
         else:
             os.environ[key] = decode(value)
     root = request_path.parent
+    try:
+        _check_session_inspection()
+    except RuntimeError as error:
+        print(str(error), file=sys.stderr)
+        (root / "status").write_text(json.dumps({"returncode": 127}))
+        return 127
     config = root / "launcher.json"
     config.write_text(json.dumps({"args": [decode(raw) for raw in request["args"]],
                                   "start": str(root / "start"), "status": str(root / "status")}))
