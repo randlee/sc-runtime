@@ -8,6 +8,8 @@ exclude = [
 # ignore removes the file from the generated project. The schema stays in
 # the template so generation tests can check config/default.json.
 ignore = [
+    # A local maintainer template lock is not a consumer resolution.
+    "Cargo.lock",
     "config/cron.schema.json",
 ]
 
