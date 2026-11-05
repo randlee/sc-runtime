@@ -313,12 +313,14 @@ impl schemars::JsonSchema for CronRequest {
         "CronRequest".into()
     }
     fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        serde_json::from_value(request_schema(
+        let mut value = request_schema(
             generator.subschema_for::<StartRequest>().to_value(),
             generator.subschema_for::<EndRequest>().to_value(),
             generator.subschema_for::<ListRequest>().to_value(),
-        ))
-        .expect("typed request schema is an object")
+        );
+        // MCP requires an object root; OpenAPI retains its native oneOf representation.
+        value["type"] = serde_json::json!("object");
+        serde_json::from_value(value).expect("typed request schema is an object")
     }
 }
 

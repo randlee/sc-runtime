@@ -100,3 +100,28 @@ fn canonical_envelope_schema_accepts_arbitrary_json_payload_types() {
     );
     assert_eq!(json["oneOf"][1]["properties"]["data"]["type"], "null");
 }
+
+#[cfg(feature = "schema")]
+#[test]
+fn canonical_request_schema_has_mcp_object_root_and_typed_openapi_variants() {
+    let json = schemars::schema_for!(CronRequest).to_value();
+    assert_eq!(json["type"], "object");
+    assert_eq!(json["oneOf"].as_array().expect("typed variants").len(), 3);
+    let openapi = serde_json::to_value(<CronRequest as utoipa::PartialSchema>::schema())
+        .expect("OpenAPI schema");
+    assert_eq!(
+        openapi["oneOf"].as_array().expect("typed variants").len(),
+        3
+    );
+    for (variant, command) in openapi["oneOf"].as_array().expect("variants").iter().zip([
+        "cron.start",
+        "cron.end",
+        "cron.list",
+    ]) {
+        assert_eq!(
+            variant["properties"]["command"]["enum"],
+            serde_json::json!([command])
+        );
+        assert!(variant["properties"]["request"]["$ref"].is_string());
+    }
+}
