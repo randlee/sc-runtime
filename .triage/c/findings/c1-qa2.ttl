@@ -1,0 +1,23 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:c1_qa2_QA_C1_008 a triage:Finding ;
+ triage:id "QA-C1-008" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "7032ec69c2700ca41614b8fb58597a0f68230a31" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix.rs" ;
+ triage:issue "Unix inspector failure releases the owned launcher without proving physical completion and reap." ;
+ triage:action "Consume the narrow common C5 41c9295 inspector-error cleanup correction: retain pinned identity and the original cleanup budget, perform bounded termination/reap before returning any inspector spawn/status/nonzero error, and retain the causal failure-injection regression. Do not add an unbounded wait or bare kill-and-forget." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6662748572" .
+
+triage:c1_qa2_FTQ_C1_003 a triage:Finding ;
+ triage:id "FTQ-C1-003" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "7032ec69c2700ca41614b8fb58597a0f68230a31" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix.rs" ;
+ triage:issue "The missing-inspection preflight is corrected, but inspection-error cleanup still returns before the owned launcher is physically reaped." ;
+ triage:action "Consume the narrow shared C5 41c9295 correction: retain the original cleanup deadline and pinned launcher through bounded direct/group termination and physical reap on inspector spawn/status/nonzero errors; retain its causal return-boundary failure regression. Do not replace reap with start_kill, an unbounded wait, retry or timeout padding." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6662748572" .
