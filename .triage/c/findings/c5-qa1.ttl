@@ -33,7 +33,7 @@ triage:C5_QA1_REQ_C5_003 a triage:Finding ;
  triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs:17; crates/sc-cron/src/sqlite_cooperative_tests.rs:39; crates/sc-cron/src/sqlite_cooperative_tests.rs:81; tests/integration/cron-consumer/tests/execution.rs:89; tests/integration/cron-consumer/tests/application_schema.rs:120" ;
  triage:issue "The Windows helper is repaired, but its non-Windows Drop still calls an unbounded wait. New proof fixtures also contain readiness waits outside failure guards and do not consistently retain physical joins on assertion failure: hold uses entered.recv(), most callers retain raw holder JoinHandles instead of the HeldConnection guard, the external execution test waits unbounded for ManualClock readiness, and the forwarding-provider test drops its physical JoinHandle if a preceding assertion fails. The new explicit no-hang/no-race ownership policy is not yet satisfied." ;
  triage:action "Complete the shared Unix ownership redesign; bound readiness as failure detection, retain cancellation/release and physical joins through every assertion/error path, and use causal negative witnesses that intentionally fail each handshake/cleanup stage. Reuse the proven ownership helper where suitable; no retry, skip, serialization, or timeout padding." ;
- triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
 
 triage:C5_QA1_REQ_C5_004 a triage:Finding ;
@@ -129,7 +129,7 @@ triage:C5_QA1_ARCH_C5_004 a triage:Finding ;
  triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
  triage:issue "" ;
  triage:action "Use an owned whole-session cleanup design with causal readiness and actual physical completion on success and failure. Bound and report failed cleanup honestly; no sleep/padding/retry or leader-only substitute." ;
- triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
 
 triage:C5_QA1_ARCH_C5_005 a triage:Finding ;
@@ -237,7 +237,7 @@ triage:C5_QA1_QA_C5_004 a triage:Finding ;
  triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
  triage:issue "The reviewed test harness still has an unbounded cleanup wait, and new cooperative fixtures do not consistently retain physical cleanup ownership on assertion failure." ;
  triage:action "Consume and independently verify the causal owned-process redesign, and give every held-thread/barrier fixture an unwind-safe release and physical completion owner. Do not replace this with retries, skipped tests, serialization, or longer timeouts." ;
- triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
 
 triage:C5_QA1_QA_C5_005 a triage:Finding ;
@@ -381,7 +381,7 @@ triage:C5_QA1_FTQ_C5_001 a triage:Finding ;
  triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
  triage:issue "The Unix destructor sends start_kill, discards any error, then calls ChildWrapper::wait without a deadline. When termination or wrapper completion does not occur, the test hangs during normal cleanup or assertion unwinding despite output() having an execution deadline. The outer execution timeout does not bound this destructor." ;
  triage:action "Consume the actual bounded Unix owner redesign from the shared parent, preserving raw OS arguments and whole-session physical cleanup. Prove timeout, panic, failed handshake and descendant cleanup through the real entry point. Do not add a larger test timeout or merely poll the leader." ;
- triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
 
 triage:C5_QA1_FTQ_C5_002 a triage:Finding ;
@@ -405,7 +405,7 @@ triage:C5_QA1_FTQ_C5_003 a triage:Finding ;
  triage:file "crates/sc-cron/src/sqlite_cooperative_tests.rs" ;
  triage:issue "The cancellation regression holds the real connection mutex in one thread, requests stop, then performs an unbounded physical.join before releasing that mutex. If a store path stops observing cancellation, the operation waits for the mutex while the test waits for its join, and release.send at521 is unreachable. This is a deterministic hang in exactly the regression the test is meant to report. Other new fixtures also await joins or drop raw JoinHandles on assertion failure without a bounded owning test envelope." ;
  triage:action "Redesign the deadlock-sensitive acceptance fixtures with explicit handshake/release ownership and a bounded supervisor that can reclaim the entire test process if native work cannot complete. Ensure every failure and unwinding path releases barriers, cancels work and physically reaps it. Do not rely on unbounded Drop joins or a Tokio timeout that leaves blocking work behind. Cover the ignored-cancellation and failed-assertion paths causally." ;
- triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness." ;
+ triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
 
 triage:C5_QA1_FTQ_C5_004 a triage:Finding ;
