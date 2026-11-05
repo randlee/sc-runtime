@@ -70,6 +70,17 @@
       "publish": true,
       "publish_order": 5,
       "preflight_check": "locked",
+      "wait_after_publish_seconds": 60,
+      "verify_install": false
+    },
+    {
+      "artifact": "sc-cron-commands",
+      "package": "sc-cron-commands",
+      "cargo_toml": "crates/sc-cron-commands/Cargo.toml",
+      "required": true,
+      "publish": true,
+      "publish_order": 6,
+      "preflight_check": "locked",
       "wait_after_publish_seconds": 0,
       "verify_install": false
     }

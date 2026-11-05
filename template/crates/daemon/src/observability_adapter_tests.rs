@@ -128,7 +128,8 @@ impl Drop for FixtureChild {
     }
 }
 
-fn run_fixture_child(name: &str, deadline: Duration) -> Result<(), String> {
+#[cfg(test)]
+async fn wait_fixture_child(name: &str, deadline: Duration) -> Result<(), String> {
     let marker = tempfile::tempdir().map_err(|_| "fixture marker directory failed")?;
     let done = marker.path().join("completed");
     let mut child = FixtureChild(
@@ -169,9 +170,18 @@ fn run_fixture_child(name: &str, deadline: Duration) -> Result<(), String> {
                     .map_err(|_| "fixture timeout: child reap failed")?;
                 return Err("fixture timed out; child killed and reaped".into());
             }
-            None => std::thread::sleep(Duration::from_millis(10)), // allow: test polls its owned child
+            None => tokio::time::sleep(Duration::from_millis(10)).await, // allow: test-only bounded owned-child watchdog
         }
     }
+}
+
+#[cfg(test)]
+fn run_fixture_child(name: &str, deadline: Duration) -> Result<(), String> {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_time()
+        .build()
+        .map_err(|error| error.to_string())?
+        .block_on(wait_fixture_child(name, deadline)) // allow: synchronous isolated fixture entry owns this test runtime
 }
 
 fn bounded_fixture(name: &str, scenario: fn()) {

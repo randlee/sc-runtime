@@ -37,8 +37,13 @@ fn rusqlite_0_39_resolves_one_libsqlite3_sys_with_sqlx_0_9_sqlite() {
     );
     let rusqlite = package_versions(&metadata, "rusqlite");
     assert!(
-        rusqlite.iter().any(|version| version.starts_with("0.39.")),
+        rusqlite.len() == 1 && rusqlite[0].starts_with("0.39."),
         "fixture did not resolve rusqlite 0.39, found {rusqlite:?}"
+    );
+    let sqlx = package_versions(&metadata, "sqlx");
+    assert!(
+        sqlx.len() == 1 && sqlx[0].starts_with("0.9."),
+        "fixture did not retain template SQLx 0.9 compatibility, found {sqlx:?}"
     );
 }
 

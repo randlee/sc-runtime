@@ -132,6 +132,8 @@ jobs:
           set -euo pipefail
           just setup
           just lint
+          just lint default
+          just lint full
           just test
           just build-cli
           just build-daemon

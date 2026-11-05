@@ -38,7 +38,13 @@ class PublishPreflightTests(unittest.TestCase):
         actual = {str(path.parent.relative_to(ROOT)) for path in (ROOT / "crates").glob("*/Cargo.toml")}
         self.assertEqual(set(workspace["members"]), actual)
         consumer = json.loads((ROOT / "release/sc-publish-consumer-input.json").read_text())
-        self.assertEqual(sum(crate["publish"] for crate in consumer["crates"]), 5)
+        public = {
+            tomllib.loads(path.read_text())["package"]["name"]
+            for path in (ROOT / "crates").glob("*/Cargo.toml")
+            if tomllib.loads(path.read_text())["package"].get("publish", True) is not False
+        }
+        selected = {crate["package"] for crate in consumer["crates"] if crate["publish"]}
+        self.assertEqual(selected, public, "every public workspace crate belongs to every release")
         self.assertIn("crates/sc-runtime-db-sqlite", workspace["members"])
 
     def test_absent_publish_member_is_rejected(self):
