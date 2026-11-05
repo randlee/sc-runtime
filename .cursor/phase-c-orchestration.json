@@ -357,6 +357,268 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
+    },
+    {
+      "qa_pass": "qa-pr116-sprint-2",
+      "commit": "7032ec69c2700ca41614b8fb58597a0f68230a31",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6662748572",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c1_req_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c1_arch_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/c1_ext_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/c1_boundary_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c1_rust_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/c1_rbp_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/c1_service_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c1_flaky_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c1-qa2.ttl"
+      ],
+      "finding_ids": [
+        "QA-C1-008",
+        "FTQ-C1-003"
+      ],
+      "coordinator_task_id": "/root/c1_manager_qa2",
+      "machine_status": {
+        "sprint": "c-1",
+        "task": "qa-pr116-sprint-2",
+        "branch": "sprint/c-1-consumer-runtime-contract",
+        "commit": "7032ec69c2700ca41614b8fb58597a0f68230a31",
+        "pr": 116,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 17,
+          "total": 17,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 2,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Two open Important finding IDs share one inspector-error physical-reap gap.17/17 deliverables and green CI do not replace the remaining cleanup acceptance.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c1_req_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c1_arch_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/c1_ext_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/c1_boundary_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c1_rust_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/c1_rbp_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/c1_service_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c1_flaky_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr116-sprint-2",
+          "commit": "7032ec69c2700ca41614b8fb58597a0f68230a31",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6662748572",
+          "coordinator_task_id": "/root/c1_manager_qa2",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c1-qa1.ttl"
+            ],
+            "owner": "prior QA1 triage correlated; parent records QA2 triage before fix dispatch"
+          },
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "central_screen": {
+            "findings": 2,
+            "keep": 0,
+            "not_applicable": 2,
+            "rejected": 0
+          },
+          "ci": {
+            "head_matches": true,
+            "required_checks": 17,
+            "successful_checks": 17,
+            "waited_for_ci": false
+          },
+          "model_execution": "Inherited available Codex fallback; configured Cursor models unavailable"
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
     }
   ]
 }
