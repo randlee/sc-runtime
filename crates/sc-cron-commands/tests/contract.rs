@@ -100,3 +100,33 @@ fn canonical_envelope_schema_accepts_arbitrary_json_payload_types() {
     );
     assert_eq!(json["oneOf"][1]["properties"]["data"]["type"], "null");
 }
+
+#[test]
+fn debug_redacts_nested_request_source_payload_environment_and_references() {
+    use sc_cron_commands::*;
+    let secret = "CONFIDENTIAL_CANARY";
+    let request: CronRequest = serde_json::from_value(serde_json::json!({
+        "version":"1","command":"cron.start","request":{
+            "name":"safe","cron":"* * * * *","timeout_ms":1000,
+            "target":{"kind":"monty","source":secret},"payload":{"secret":secret},
+            "environment":{"dotenv":[{"path":secret,"required":true}],
+            "variables":{"SET":{"set":secret},"REF":{"reference":secret}}}
+        }
+    }))
+    .unwrap();
+    let nested = format!("{request:?}");
+    assert!(!nested.contains(secret));
+    if let CronOperation::Start(start) = request.operation {
+        for debug in [
+            format!("{:?}", start.target),
+            format!("{:?}", start.environment),
+            format!("{:?}", start.environment.dotenv[0]),
+            format!("{:?}", start.environment.variables["SET"]),
+            format!("{:?}", start.environment.variables["REF"]),
+        ] {
+            assert!(!debug.contains(secret));
+        }
+    } else {
+        panic!("start request")
+    }
+}

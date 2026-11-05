@@ -217,17 +217,18 @@ where
 }
 
 #[cfg(feature = "schema")]
-fn envelope_schema(data: Value, error: Value) -> Value {
-    serde_json::json!({
-        "oneOf": [
+fn envelope_schema(data: Value, error: Value) -> serde_json::Map<String, Value> {
+    serde_json::Map::from_iter([(
+        "oneOf".into(),
+        serde_json::json!([
             {"type":"object", "additionalProperties":false,
              "required":["version","ok","data","error"],
              "properties":{"version":{"type":"string"},"ok":{"type":"boolean","enum":[true]},"data":data,"error":{"type":"null"}}},
             {"type":"object", "additionalProperties":false,
              "required":["version","ok","data","error"],
              "properties":{"version":{"type":"string"},"ok":{"type":"boolean","enum":[false]},"data":{"type":"null"},"error":error}}
-        ]
-    })
+        ]),
+    )])
 }
 
 #[cfg(feature = "schema")]
@@ -241,7 +242,7 @@ impl<T: schemars::JsonSchema> schemars::JsonSchema for Envelope<T> {
             generator.subschema_for::<T>().to_value(),
             generator.subschema_for::<OpError>().to_value(),
         );
-        serde_json::from_value(value).expect("canonical Envelope schema is an object")
+        schemars::Schema::from(value)
     }
 }
 
