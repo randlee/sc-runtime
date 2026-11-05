@@ -58,7 +58,10 @@ impl WorkerStopControl {
             }
         });
     }
-    /// Closes application intake and shortens absolute deadlines, from any thread.
+    /// Publishes stop intent and shortens absolute deadlines, from any thread.
+    ///
+    /// The application must close its own intake and physically join its own
+    /// work before calling [`Self::finish_application_shutdown`].
     ///
     /// # Errors
     /// Rejects cleanup before grace. The creating runtime must remain alive.
