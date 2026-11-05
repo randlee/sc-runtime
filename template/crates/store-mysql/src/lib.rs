@@ -185,7 +185,7 @@ impl Store {
         }
     }
 
-    /// Rejects an id or name the `widgets` columns cannot self.
+    /// Rejects an id or name the `widgets` columns cannot store.
     ///
     /// # Errors
     ///
@@ -321,9 +321,9 @@ impl Store {
     /// use store_mysql::{OpenConfig, open};
     ///
     /// # async fn demo() -> Result<(), store_mysql::StoreError> {
-    /// let self = open(&OpenConfig::mysql("mysql://localhost/widgets")).await?;
-    /// let row = store_mysql::insert_widget(&self, "bolt").await?;
-    /// let loaded = store_mysql::get_widget(&self, &row.id).await?;
+    /// let store = open(&OpenConfig::mysql("mysql://localhost/widgets")).await?;
+    /// let row = store_mysql::insert_widget(&store, "bolt").await?;
+    /// let loaded = store_mysql::get_widget(&store, &row.id).await?;
     /// assert!(loaded.is_some());
     /// # Ok(())
     /// # }
