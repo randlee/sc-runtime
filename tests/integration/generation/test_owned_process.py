@@ -35,34 +35,32 @@ class OwnedProcessTests(unittest.TestCase):
             launch.assert_not_called()
 
     def assert_exited(self, pid):
-        deadline = time.monotonic() + 5
-        while time.monotonic() < deadline:
-            if os.name == "nt":
-                import ctypes
-                from ctypes import wintypes
-                kernel = ctypes.WinDLL("kernel32", use_last_error=True)
-                kernel.OpenProcess.restype = wintypes.HANDLE
-                kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-                kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
-                kernel.CloseHandle.argtypes = [wintypes.HANDLE]
-                handle = kernel.OpenProcess(0x1000 | 0x100000, False, pid)
-                if not handle:
-                    return
-                kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
-                result = kernel.WaitForSingleObject(handle, 0)
-                kernel.CloseHandle(handle)
-                self.assertEqual(result, 0, f"owned process {pid} remained active when run returned")
+        if os.name == "nt":
+            import ctypes
+            from ctypes import wintypes
+            kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel.OpenProcess.restype = wintypes.HANDLE
+            kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+            kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+            kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+            handle = kernel.OpenProcess(0x1000 | 0x100000, False, pid)
+            if not handle:
                 return
-            else:
-                try:
-                    os.kill(pid, 0)
-                except ProcessLookupError:
-                    return
-                probe = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True, timeout=2)
-                if not probe.stdout.strip() or probe.stdout.strip().startswith("Z"):
-                    return
-            time.sleep(0.02)
+            kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+            result = kernel.WaitForSingleObject(handle, 0)
+            kernel.CloseHandle(handle)
+            self.assertEqual(result, 0, f"owned process {pid} remained active when run returned")
+            return
+        else:
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                return
+            probe = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True, timeout=2)
+            if not probe.stdout.strip() or probe.stdout.strip().startswith("Z"):
+                return
         self.fail(f"owned witness process {pid} survived cleanup")
+
 
     def witness(self, failure, new_group=False, runner=run):
         with tempfile.TemporaryDirectory(prefix="owned-witness-") as temp:
