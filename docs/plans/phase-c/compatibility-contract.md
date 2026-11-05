@@ -557,10 +557,11 @@ second copy or new CI-copy gate.
 #[path = "support/executor_double.rs"] mod executor;
 ```
 
-C-1 adds operation_context_probe(deadline: Instant) -> StoreOperationContext
-behind sc-cron's existing non-default test-utils feature, backed by real
-context/admission state with no worker or SQL task. Only the adapter dev edge
-enables test-utils. C-6 constructs StandardCronExecutor with that real probe,
+C-1 retains operation_context_probe(deadline: Instant) -> StoreOperationContext
+behind the existing non-default test-utils feature for focused test consumers.
+C-6 instead uses the ordinary public WorkerStopControl::new/operation_context
+factory inside a dev-only Tokio runtime, with no worker or SQL task.
+C-6 constructs StandardCronExecutor with that real shared context,
 RecordingOperations and fixture bindings; checks cover child context/deadline,
 exact native arguments, one operation per verb, refusal/no call, fences and
 errors. A separate normal-only consumer proves default graph restrictions;
