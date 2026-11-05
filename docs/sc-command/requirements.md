@@ -445,7 +445,7 @@ pub trait IntoMcp {
 }
 ```
 
-`CallToolResult` is `rmcp::model::CallToolResult` from rmcp 3.7. `McpError`
+`CallToolResult` is `rmcp::model::CallToolResult` from rmcp **3.8.0**, the frozen Phase C identity (ADR-RUN-0203). `McpError`
 is `rmcp::ErrorData`, which tool handlers import under that name and which
 `sc-command` re-exports as `sc_command::McpError`. The error flag is
 `is_error`. A tool declared `-> Result<CallToolResult, McpError>` can return
@@ -603,7 +603,7 @@ envelope object or of the error object is rejected by
 
 ## NFR-CMD-0001: `sc-command` links axum and rmcp only behind `server`
 
-**Phase C planned amendment, owned by c-1:** replace only the `~3.7` RMCP
+**Phase C frozen amendment:** use only the `~3.8` RMCP
 minor-series allowlist below with ADR-RUN-0203's exact probe-selected series,
 alongside REQ-CMD-0005's nominal identity amendment. C-3 consumes that frozen
 matrix. All optional/server/defaults-off gating and remaining dependency,
@@ -643,7 +643,7 @@ default features the crate's direct non-dev dependencies MUST be `serde`,
 `serde_json`, and `sc-observability-types` at temporary exact `=1.5.0` (ADR-RUN-0017).
 `serde_json` is required because `details` holds arbitrary JSON. With
 `--features server` the direct non-dev dependencies MUST be those plus
-`axum` 0.8.9 and `rmcp` `~3.7`, and nothing else. `axum` MUST be declared
+`axum` 0.8.9 and `rmcp` `~3.8` (frozen resolved identity 3.8.0), and nothing else. `axum` MUST be declared
 with `default-features = false`.
 
 This item is the owner of the list of third-party crates `sc-command` may

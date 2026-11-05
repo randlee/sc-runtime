@@ -172,17 +172,17 @@ must satisfy that amendment:
    composition: `rmcp`, `utoipa`, and `utoipa-axum`. Update source for the
    released API deltas while preserving the one Axum router, generated routes,
    OpenAPI document, and stateless MCP service behavior.
-3. Change public `sc-command` and `sc-runtime` packages to `0.2.0` and update
-   their runtime/template requirements, normal/dev edges and checkout-patched
-   fixtures together. Apply c-1's frozen affected closure to cron's command
-   requirement and package version if needed; prove a single shared logging
-   trait identity rather than forcing a stale registry command dependency.
-   Make package versions explicit where required to keep unaffected
-   config/transport at 0.1.1; do not bump them with workspace inheritance. `c-4`
-   exclusively owns release metadata, release workflows, the registry fixture,
-   and authorization evidence. Do not version-bump unaffected standalone crates.
+3. Migrate every public package and its runtime/template normal/dev path
+   requirement to the same 0.2.0 release version: sc-config, sc-transport,
+   sc-command, sc-runtime, sc-cron and sc-cron-commands. Preserve the internal
+   helper's publish=false status and all third-party SQLite pins. Prove one
+   shared logging trait identity, not a stale registry command dependency.
+   Apply the human's all-public-crates policy to canonical release input
+   (including the adapter) and regenerate with the existing pinned installer;
+   record this initial metadata ownership handoff to c-4. C-4 retains actual
+   publication, registry fixture, authorization and release qualification.
    Update the existing mandatory `scripts/check_observability_dependencies.py`
-   command-version/path alignment checks to c-1's frozen affected-package
+   command-version/path alignment checks to c-1's frozen all-public-package
    contract. Retain the exact defaults-off normal edge, no server/test-util
    activation, no alias/target/build bypass, and isolated default/Monty graph
    checks. Cover accepted new and rejected stale versions in this sprint's
@@ -201,8 +201,8 @@ must satisfy that amendment:
 6. Preserve and strengthen the SQLite resolver guard. It must fail if
    `rusqlite` leaves 0.39.x, if `libsqlite3-sys 0.38+` resolves, or if the
    template SQLx store ceases to resolve under its declared 0.9 range.
-7. Hand the verified prepublication release input to `c-4`: every affected
-   package version and dependency order, qualified selective-publish kit pin,
+7. Hand the verified prepublication release input to `c-4`: all six public
+   package versions at 0.2.0 and dependency order, existing canonical kit pin,
    no-patch fixture recipe, exact graph assertion, and registry
    visibility predicate. This sprint does not publish and does not claim a
    release-mode registry result. C-5 is the dedicated cron compatibility sprint;
@@ -268,7 +268,7 @@ REQ-RUN-0332/REQ-CRNC-0002, consuming c-1's compatibility contract:
   registration is c-4 after real c-5/c-6 artifacts exist; this sprint does not
   enable incomplete selected commands or claim their production acceptance.
   Core runtime gains no cron dependency and MCP remains independently selected.
-- C-3 alone owns shared affected package/version/template manifests and later
+- C-3 alone owns shared public package/version/template manifests and later
   Cargo.lock migration after c-1's skeleton baseline. Preserve c-1's optional
   adapter feature declarations and rusqlite 0.39 `bundled,hooks` prerequisite
   in the cron manifest/lock. This is a sequential c-1→c-3 handoff, not concurrent
@@ -292,8 +292,8 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`,
   closure fails; unrelated duplicates cannot waive this assertion.
 - Both `template/Cargo.toml` and `template/workspace.template.toml` require
   the frozen `sc-command 0.2.0` and `sc-runtime 0.2.0` lines and c-1's
-  affected cron version. Tests reject a stale affected-package requirement
-  while permitting unchanged config/transport 0.1.1. Source composition and
+  shared 0.2.0 version for all six public crates. Tests reject a stale public
+  package requirement, including config/transport. Source composition and
   packaged manifests preserve the same shared logging trait and RMCP types.
 - The migration preserves NFR-RUN-0007's RMCP minor pin, REQ-RT-0001/0004's
   public builder/router and `IntoMcp` composition, and REQ-CMD-0005 plus

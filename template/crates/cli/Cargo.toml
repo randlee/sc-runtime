@@ -21,6 +21,9 @@ general-db = ["daemon/general-db"]
 api-types = { path = "../api-types" }
 clap.workspace = true
 sc-command.workspace = true
+{% if cron_commands %}
+sc-cron-commands = { workspace = true }
+{% endif %}
 sc-config.workspace = true
 sc-transport.workspace = true
 serde.workspace = true

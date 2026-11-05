@@ -215,3 +215,88 @@ where
         Ok(Envelope::Failure { version, error })
     }
 }
+
+#[cfg(feature = "schema")]
+fn envelope_schema(data: Value, error: Value) -> serde_json::Map<String, Value> {
+    serde_json::Map::from_iter([(
+        "oneOf".into(),
+        serde_json::json!([
+            {"type":"object", "additionalProperties":false,
+             "required":["version","ok","data","error"],
+             "properties":{"version":{"type":"string"},"ok":{"type":"boolean","enum":[true]},"data":data,"error":{"type":"null"}}},
+            {"type":"object", "additionalProperties":false,
+             "required":["version","ok","data","error"],
+             "properties":{"version":{"type":"string"},"ok":{"type":"boolean","enum":[false]},"data":{"type":"null"},"error":error}}
+        ]),
+    )])
+}
+
+#[cfg(feature = "schema")]
+impl<T: schemars::JsonSchema> schemars::JsonSchema for Envelope<T> {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        format!("Envelope_{}", T::schema_name()).into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let value = envelope_schema(
+            generator.subschema_for::<T>().to_value(),
+            generator.subschema_for::<OpError>().to_value(),
+        );
+        schemars::Schema::from(value)
+    }
+}
+
+#[cfg(feature = "schema")]
+impl<T: utoipa::ToSchema> utoipa::__dev::ComposeSchema for Envelope<T> {
+    fn compose(
+        _: Vec<utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>>,
+    ) -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        use utoipa::openapi::schema::{AdditionalProperties, ObjectBuilder, OneOfBuilder, Type};
+        let object = || {
+            ObjectBuilder::new()
+                .schema_type(Type::Object)
+                .additional_properties(Some(AdditionalProperties::FreeForm(false)))
+                .required("version")
+                .required("ok")
+                .required("data")
+                .required("error")
+                .property("version", <String as utoipa::PartialSchema>::schema())
+        };
+        let success = object()
+            .property(
+                "ok",
+                ObjectBuilder::new()
+                    .schema_type(Type::Boolean)
+                    .enum_values(Some([true])),
+            )
+            .property("data", T::schema())
+            .property("error", ObjectBuilder::new().schema_type(Type::Null));
+        let failure = object()
+            .property(
+                "ok",
+                ObjectBuilder::new()
+                    .schema_type(Type::Boolean)
+                    .enum_values(Some([false])),
+            )
+            .property("data", ObjectBuilder::new().schema_type(Type::Null))
+            .property("error", <OpError as utoipa::PartialSchema>::schema());
+        OneOfBuilder::new().item(success).item(failure).into()
+    }
+}
+
+#[cfg(feature = "schema")]
+impl<T: utoipa::ToSchema> utoipa::ToSchema for Envelope<T> {
+    fn name() -> std::borrow::Cow<'static, str> {
+        format!("Envelope_{}", T::name()).into()
+    }
+
+    fn schemas(
+        schemas: &mut Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    ) {
+        schemas.push((T::name().into_owned(), T::schema()));
+        T::schemas(schemas);
+    }
+}

@@ -97,11 +97,9 @@ jobs:
 
       - name: Install just
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$HOME/.local/bin"
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
+        with:
+          just-version: '1.58.0'
 
       - name: Install generation test dependency
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
@@ -144,6 +142,19 @@ jobs:
         with:
           tool: cargo-audit@0.22.2
 
+      # All-targets checks include the cron command adapter's SQLite-backed
+      # dev dependency even when SQLite-owning workspace roots are excluded.
+      - name: Install LLVM archiver for Windows cross-builds
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        run: |
+          set -euo pipefail
+          sudo -n apt-get update
+          sudo -n apt-get install -y llvm
+          llvm_bin="$(llvm-config --bindir)"
+          test -x "$llvm_bin/llvm-lib"
+          echo "$llvm_bin" >> "$GITHUB_PATH"
+          "$llvm_bin/llvm-config" --version
+
       - name: Setup
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just setup
@@ -177,7 +188,9 @@ jobs:
         with:
           python-version: '3.13'
       - uses: dtolnay/rust-toolchain@1.94.1
-      - uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
+        with:
+          just-version: '1.58.0'
       - uses: ./.github/actions/rust-build-cache
         with:
           namespace: windows-hook-default-monty-debug

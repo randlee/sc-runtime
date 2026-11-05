@@ -22,6 +22,9 @@ api-types = { path = "../api-types", features = ["schema"] }
 service = { path = "../service" }
 clap.workspace = true
 sc-command = { workspace = true, features = ["server"] }
+{% if cron_commands %}
+sc-cron-commands = { workspace = true, features = ["schema"] }
+{% endif %}
 sc-config.workspace = true
 sc-cron = { workspace = true, optional = true }
 sc-observability-types.workspace = true

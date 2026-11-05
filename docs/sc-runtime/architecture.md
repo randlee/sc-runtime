@@ -199,7 +199,8 @@ by [REQ-RT-0001](requirements.md); the explicit-instance-root and
 endpoint-override tests of [REQ-RT-0008](requirements.md), and its check that
 `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
 line outside test code; `arch-qa` architecture review of the public surface
-of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `logger`, `run`).
+of `DaemonBuilder` (exactly `stores`, `routes`, `mcp`, `logger`, `run`,
+`run_with_cleanup`, `run_with_cleanup_and_bound`; terminal runs are Ready-only).
 
 ### Related Documents
 

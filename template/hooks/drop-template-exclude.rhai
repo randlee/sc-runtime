@@ -1,3 +1,7 @@
+// Parent-approved C1 declaration prerequisite; C3 owns later generator changes.
+if variable::get("cron_commands") && !variable::get("cron") {
+    throw "cron_commands requires cron=true";
+}
 // The template Cargo.toml excludes crates whose manifests are not valid
 // Cargo until this expansion finishes. Replace it with the expanded member
 // glob, prefix package names with the project name, then drop this hook so
