@@ -168,11 +168,13 @@ fn inspector_failure_reaps_pinned_launcher_before_returning_error() {
     for failure in ["spawn failed", "status failed", "nonzero status"] {
         let root = tempfile::tempdir().expect("launcher witness");
         let ready = root.path().join("ready");
+        // Only owner termination releases this launcher. An independent exit
+        // timer could otherwise hide a missing reap after parent descheduling.
         let mut command = Command::new(super::super::super::python_program());
         command
             .args([
                 "-c",
-                "import pathlib,sys,time; pathlib.Path(sys.argv[1]).touch(); time.sleep(30)",
+                "import pathlib,sys,threading; pathlib.Path(sys.argv[1]).touch(); threading.Event().wait()",
             ])
             .arg(&ready)
             .stdin(Stdio::null())
