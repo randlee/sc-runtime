@@ -1,7 +1,7 @@
 ---
 id: c-6
 phase: c
-status: in_progress
+status: complete
 closure_type: boundary
 target_boundary: sc-cron-commands
 track: cron-commands
