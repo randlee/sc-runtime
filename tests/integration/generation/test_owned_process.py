@@ -40,7 +40,7 @@ class OwnedProcessTests(unittest.TestCase):
                 kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
                 kernel.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
                 kernel.CloseHandle.argtypes = [wintypes.HANDLE]
-                handle = kernel.OpenProcess(0x1000, False, pid)
+                handle = kernel.OpenProcess(0x1000 | 0x100000, False, pid)
                 if not handle:
                     return
                 kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
@@ -59,7 +59,7 @@ class OwnedProcessTests(unittest.TestCase):
             time.sleep(0.02)
         self.fail(f"owned witness process {pid} survived cleanup")
 
-    def witness(self, failure, new_group=False):
+    def witness(self, failure, new_group=False, runner=run):
         with tempfile.TemporaryDirectory(prefix="owned-witness-") as temp:
             root = Path(temp)
             ready = root / "ready"
@@ -75,19 +75,25 @@ class OwnedProcessTests(unittest.TestCase):
                 " if time.monotonic()>deadline: raise RuntimeError('ready timeout')\n"
                 " time.sleep(.01)\n"
                 "pathlib.Path(sys.argv[3]).write_text(json.dumps([os.getpid(), p.pid]))\n"
-                + ("sys.exit(7)\n" if failure else "while True: time.sleep(1)\n")
+                + ("sys.exit(0)\n" if failure == "success" else "sys.exit(7)\n" if failure else "while True: time.sleep(1)\n")
             )
             args = [sys.executable, str(parent), str(ready), str(grandchild), str(pidfile), "1" if new_group else "0"]
-            if failure:
+            if failure == "success":
+                result = runner(args, timeout=8, check=True, capture_output=True)
+                self.assertEqual(result.returncode, 0)
+            elif failure:
                 with self.assertRaises(subprocess.CalledProcessError):
-                    run(args, timeout=8, check=True, capture_output=True)
+                    runner(args, timeout=8, check=True, capture_output=True)
             else:
                 with self.assertRaises(subprocess.TimeoutExpired):
-                    run(args, timeout=3, check=True, capture_output=True)
+                    runner(args, timeout=3, check=True, capture_output=True)
             self.assertTrue(ready.exists(), "grandchild never acknowledged readiness")
             direct, descendant = json.loads(pidfile.read_text())
             self.assert_exited(direct)
             self.assert_exited(descendant)
+
+    def test_success_cleans_ready_descendant(self):
+        self.witness("success")
 
     def test_timeout_cleans_ready_descendant(self):
         self.witness(False)
