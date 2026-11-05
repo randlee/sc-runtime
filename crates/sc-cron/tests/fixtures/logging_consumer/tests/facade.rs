@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use sc_cron::observability::types::{ErrorContext, Remediation, error_codes};
-use sc_cron::observability::{CanonicalLog, EventError, LogEvent, ServiceName, SharedCanonicalLog};
+use sc_cron::observability::{CanonicalLog, EventError, LogEvent, NoopCanonicalLog, ServiceName, SharedCanonicalLog};
 use sc_cron::{
     Job, ManualClock, RunOutcome, ScheduleLimits, ScheduleSpec, ScheduleStore, Scheduler,
     SeqJitter, SqliteScheduleStore, StopDecision,
@@ -119,4 +119,12 @@ async fn downstream_receiver_observes_real_events_and_rejection_does_not_change_
                 .contains("not-in-event")
         );
     }
+}
+
+#[test]
+fn downstream_default_receiver_is_available_through_the_facade() {
+    let receiver: SharedCanonicalLog = Arc::new(NoopCanonicalLog::new(
+        ServiceName::new("downstream-default").unwrap(),
+    ));
+    assert_eq!(receiver.service_name().as_str(), "downstream-default");
 }
