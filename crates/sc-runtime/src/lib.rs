@@ -54,6 +54,8 @@ pub use builder::{Daemon, DaemonBuilder};
 pub use config::DaemonConfig;
 #[doc(inline)]
 pub use error::RuntimeError;
+#[doc(inline)]
+pub use mcp_input::mcp_request_body;
 
 #[cfg(feature = "test-util")]
 pub mod testing;

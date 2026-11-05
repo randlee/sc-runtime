@@ -1,18 +1,29 @@
-//! Bounded JSON syntax validation before MCP normalizes request arguments.
+//! Retain bounded original HTTP bytes before RMCP normalizes tool arguments.
 
-use std::collections::HashSet;
-use std::fmt;
-
-use axum::body::Body;
+use axum::body::{Body, Bytes};
 use axum::extract::Request;
-use axum::http::{Method, StatusCode, header};
+use axum::http::{Method, StatusCode, header, request::Parts};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
-use serde::de::{self, MapAccess, SeqAccess, Visitor};
-use serde::{Deserialize, Deserializer};
 
-/// Keeps the ordinary MCP service's own body limit and original request data.
-pub(crate) async fn validate(request: Request, next: Next, limit: usize) -> Response {
+#[derive(Clone)]
+struct OriginalBody(Bytes);
+
+/// Reads original MCP HTTP JSON bytes retained before argument normalization.
+///
+/// Application adapters may deserialize their own canonical request from these
+/// bytes when duplicate struct fields matter. The application owns validation;
+/// opaque JSON values and unrelated tools receive no extra parsing policy.
+/// Returns `None` for requests outside the JSON POST path mounted by `.mcp`.
+/// The service's configured body limit and the original request deadline apply.
+pub fn mcp_request_body(parts: &Parts) -> Option<&[u8]> {
+    parts
+        .extensions
+        .get::<OriginalBody>()
+        .map(|body| body.0.as_ref())
+}
+
+pub(crate) async fn retain(request: Request, next: Next, limit: usize) -> Response {
     let json = request
         .headers()
         .get(header::CONTENT_TYPE)
@@ -26,114 +37,57 @@ pub(crate) async fn validate(request: Request, next: Next, limit: usize) -> Resp
     if request.method() != Method::POST || !json {
         return next.run(request).await;
     }
-    let (parts, body) = request.into_parts();
+    let (mut parts, body) = request.into_parts();
     let bytes = match axum::body::to_bytes(body, limit).await {
         Ok(bytes) => bytes,
         Err(_) => {
-            return reject(
-                StatusCode::PAYLOAD_TOO_LARGE,
-                -32600,
-                "MCP request body cannot be read within its configured limit",
-            );
+            return (StatusCode::PAYLOAD_TOO_LARGE, [(header::CONTENT_TYPE, "application/json")],
+                r#"{"jsonrpc":"2.0","id":null,"error":{"code":-32600,"message":"MCP request body cannot be read within its configured limit"}}"#).into_response();
         }
     };
-    if serde_json::from_slice::<UniqueJson>(&bytes).is_err() {
-        return reject(
-            StatusCode::BAD_REQUEST,
-            -32700,
-            "invalid JSON or duplicate object key",
-        );
-    }
-    // RMCP still owns protocol/DTO interpretation. Reusing Parts and the exact
-    // bytes preserves headers, caller extensions and the original deadline.
+    parts.extensions.insert(OriginalBody(bytes.clone()));
     next.run(Request::from_parts(parts, Body::from(bytes)))
         .await
 }
 
-fn reject(status: StatusCode, code: i32, message: &'static str) -> Response {
-    (
-        status,
-        axum::Json(serde_json::json!({
-            "jsonrpc":"2.0", "id":null, "error":{"code":code,"message":message}
-        })),
-    )
-        .into_response()
-}
-
-/// Syntax-only visitor: no second wire model and no retained payload values.
-struct UniqueJson;
-
-impl<'de> Deserialize<'de> for UniqueJson {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_any(Self)
-    }
-}
-
-impl<'de> Visitor<'de> for UniqueJson {
-    type Value = UniqueJson;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("JSON with unique keys in each object")
-    }
-
-    fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
-        let mut keys = HashSet::new();
-        while let Some(key) = map.next_key::<String>()? {
-            if !keys.insert(key) {
-                return Err(de::Error::custom("duplicate JSON object key"));
-            }
-            map.next_value::<UniqueJson>()?;
-        }
-        Ok(UniqueJson)
-    }
-
-    fn visit_seq<A: SeqAccess<'de>>(self, mut sequence: A) -> Result<Self::Value, A::Error> {
-        while sequence.next_element::<UniqueJson>()?.is_some() {}
-        Ok(UniqueJson)
-    }
-
-    fn visit_bool<E: de::Error>(self, _: bool) -> Result<Self::Value, E> {
-        Ok(UniqueJson)
-    }
-    fn visit_i64<E: de::Error>(self, _: i64) -> Result<Self::Value, E> {
-        Ok(UniqueJson)
-    }
-    fn visit_u64<E: de::Error>(self, _: u64) -> Result<Self::Value, E> {
-        Ok(UniqueJson)
-    }
-    fn visit_f64<E: de::Error>(self, _: f64) -> Result<Self::Value, E> {
-        Ok(UniqueJson)
-    }
-    fn visit_str<E: de::Error>(self, _: &str) -> Result<Self::Value, E> {
-        Ok(UniqueJson)
-    }
-    fn visit_unit<E: de::Error>(self) -> Result<Self::Value, E> {
-        Ok(UniqueJson)
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::UniqueJson;
+    use super::*;
+    use axum::{Router, routing::post};
+    use std::time::Instant;
 
-    #[test]
-    fn distinct_objects_and_quoted_json_preserve_valid_input() {
-        for input in [
-            r#"{"a":{"x":1},"b":{"x":2},"text":"{\"x\":1,\"x\":2}"}"#,
-            r#"[null,true,false,-1,1,1.25,"text",{},[]]"#,
-        ] {
-            assert!(serde_json::from_str::<UniqueJson>(input).is_ok());
-        }
-    }
-
-    #[test]
-    fn nested_array_and_unicode_equivalent_duplicate_keys_are_rejected() {
-        for input in [
-            r#"{"request":{"limit":1,"limit":2}}"#,
-            r#"[{"x":1,"x":2}]"#,
-            r#"{"name":1,"n\u0061me":2}"#,
-        ] {
-            assert!(serde_json::from_str::<UniqueJson>(input).is_err());
-        }
+    #[tokio::test]
+    async fn retained_bytes_headers_and_deadline_preserve_opaque_duplicate_keys() {
+        let deadline = Instant::now();
+        let body = r#"{"params":{"arguments":{"payload":{"x":1,"x":2}}}}"#;
+        let route = Router::new()
+            .route(
+                "/mcp",
+                post(move |request: Request| async move {
+                    let (parts, body_stream) = request.into_parts();
+                    assert_eq!(mcp_request_body(&parts), Some(body.as_bytes()));
+                    assert_eq!(parts.extensions.get::<Instant>(), Some(&deadline));
+                    assert_eq!(parts.headers["x-probe"], "kept");
+                    let bytes = axum::body::to_bytes(body_stream, 1024).await.unwrap();
+                    assert_eq!(bytes, body.as_bytes());
+                    StatusCode::OK
+                }),
+            )
+            .layer(axum::middleware::from_fn(|request, next| {
+                retain(request, next, 1024)
+            }));
+        let mut request = Request::builder()
+            .method("POST")
+            .uri("/mcp")
+            .header(header::CONTENT_TYPE, "application/json; charset=utf-8")
+            .header("x-probe", "kept")
+            .body(Body::from(body))
+            .unwrap();
+        request.extensions_mut().insert(deadline);
+        use tower::ServiceExt;
+        assert_eq!(
+            route.oneshot(request).await.unwrap().status(),
+            StatusCode::OK
+        );
     }
 }

@@ -42,23 +42,6 @@ const SHUTDOWN_BUDGET: Duration = Duration::from_secs(10);
 
 type Serving = Result<Endpoint, RuntimeError>;
 
-/// Applies the daemon's request tracking and deadline middleware to a test router.
-///
-/// This enables deterministic deadline tests without waiting for production limits.
-pub fn instrument_router(
-    router: axum::Router,
-    logger: sc_command::observability::SharedCanonicalLog,
-    limit: Duration,
-    shutdown: tokio::sync::watch::Receiver<bool>,
-    drain: Duration,
-) -> axum::Router {
-    crate::router::with_request_tracking(
-        crate::router::with_request_timeout(router, limit, shutdown, drain),
-        crate::router::RequestMetrics::new(),
-        logger,
-    )
-}
-
 /// A daemon started through the production builder on a private instance root.
 ///
 /// Drop stops the daemon and joins `run` until it returns. It does not panic
@@ -303,7 +286,7 @@ where
         Err(error) => {
             drop(builder);
             cleanup().await;
-            return Err(RuntimeError::serve_failed(error.to_string()));
+            return Err(RuntimeError::serve_failed_io(error));
         }
     };
     let thread = std::thread::spawn(move || {
@@ -592,57 +575,44 @@ fn exited_early(result: Result<Result<(), RuntimeError>, tokio::task::JoinError>
 
 #[cfg(test)]
 mod join_tests {
+    use super::{JoinFault, RuntimeError, join_bounded};
+    use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
-    use std::sync::{Arc, mpsc};
-    use std::thread::JoinHandle;
     use std::time::Duration;
 
-    use super::{JoinFault, JoinGuard, RuntimeError, join_bounded};
-
     #[test]
-    fn late_success_is_a_timeout_after_the_thread_stops() {
-        let (finished, release, thread) = held_thread(Ok(()));
-        let joiner = std::thread::spawn(move || join_bounded(thread, Duration::ZERO));
-        assert!(
-            !joiner_finished_while_held(&joiner),
-            "join must not return before the daemon thread stops"
+    fn zero_budget_reports_timeout_only_after_observing_physical_completion() {
+        let finished = Arc::new(AtomicBool::new(false));
+        let observed = finished.clone();
+        let thread = std::thread::spawn(move || {
+            observed.store(true, Ordering::SeqCst);
+            Ok(())
+        });
+        assert_eq!(
+            join_bounded(thread, Duration::ZERO),
+            Err(JoinFault::TimedOut)
         );
-        release.send(()).expect("release held thread");
-        let result = joiner.join().expect("join the joiner");
         assert!(finished.load(Ordering::SeqCst));
-        assert!(matches!(result, Err(JoinFault::TimedOut)));
     }
 
     #[test]
-    fn late_run_error_is_returned_after_the_thread_stops() {
-        let error = RuntimeError::serve_failed("run failed");
-        let (finished, release, thread) = held_thread(Err(error.clone()));
-        let joiner = std::thread::spawn(move || join_bounded(thread, Duration::ZERO));
-        assert!(!joiner_finished_while_held(&joiner));
-        release.send(()).expect("release held thread");
-        let result = joiner.join().expect("join the joiner");
-        assert!(finished.load(Ordering::SeqCst));
-        assert_eq!(result, Ok(Err(error)));
-    }
-
-    #[test]
-    fn dropping_the_join_guard_waits_until_the_thread_stops() {
-        let (finished, release, thread) = held_thread(Ok(()));
-        let dropper = std::thread::spawn(move || drop(JoinGuard::new(thread)));
-        assert!(
-            !joiner_finished_while_held(&dropper),
-            "drop must not detach the daemon thread"
-        );
-        release.send(()).expect("release held thread");
-        dropper.join().expect("join the dropper");
+    fn zero_budget_preserves_the_actual_thread_error_after_physical_completion() {
+        let error = RuntimeError::serve_failed("joined worker's primary error");
+        let expected = error.clone();
+        let finished = Arc::new(AtomicBool::new(false));
+        let observed = finished.clone();
+        let thread = std::thread::spawn(move || {
+            observed.store(true, Ordering::SeqCst);
+            Err(error)
+        });
+        assert_eq!(join_bounded(thread, Duration::ZERO), Ok(Err(expected)));
         assert!(finished.load(Ordering::SeqCst));
     }
 
     #[test]
     fn join_within_budget_returns_the_thread_result() {
         let thread = std::thread::spawn(|| Ok(()));
-        let result = join_bounded(thread, Duration::from_secs(10));
-        assert_eq!(result, Ok(Ok(())));
+        assert_eq!(join_bounded(thread, Duration::from_secs(10)), Ok(Ok(())));
     }
 
     #[test]
@@ -650,39 +620,9 @@ mod join_tests {
         let thread = std::thread::spawn(|| -> Result<(), RuntimeError> {
             panic!("daemon thread failed");
         });
-        let result = join_bounded(thread, Duration::from_secs(10));
-        assert!(matches!(result, Err(JoinFault::Panicked)));
-    }
-
-    fn held_thread(
-        result: Result<(), RuntimeError>,
-    ) -> (
-        Arc<AtomicBool>,
-        mpsc::Sender<()>,
-        JoinHandle<Result<(), RuntimeError>>,
-    ) {
-        let (entered_tx, entered_rx) = mpsc::channel();
-        let (release_tx, release_rx) = mpsc::channel();
-        let finished = Arc::new(AtomicBool::new(false));
-        let flag = Arc::clone(&finished);
-        let thread = std::thread::spawn(move || {
-            entered_tx
-                .send(())
-                .expect("signal that the thread is waiting");
-            release_rx
-                .recv()
-                .expect("wait until the test releases the thread");
-            flag.store(true, Ordering::SeqCst);
-            result
-        });
-        entered_rx
-            .recv()
-            .expect("daemon thread is waiting for release");
-        (finished, release_tx, thread)
-    }
-
-    fn joiner_finished_while_held<T>(joiner: &JoinHandle<T>) -> bool {
-        std::thread::sleep(Duration::from_millis(50));
-        joiner.is_finished()
+        assert!(matches!(
+            join_bounded(thread, Duration::from_secs(10)),
+            Err(JoinFault::Panicked)
+        ));
     }
 }

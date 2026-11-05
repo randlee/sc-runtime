@@ -114,7 +114,7 @@ signal.pause()
             dependencies = tomllib.loads((ROOT / "template" / name).read_text())["workspace"]["dependencies"]
             self.assertEqual({name for name in dependencies if name in INTERNAL}, INTERNAL)
             for name in INTERNAL:
-                self.assertEqual(dependencies[name]["version"], "0.2.0" if name in {"sc-command", "sc-runtime", "sc-cron", "sc-cron-commands"} else "0.1.1")
+                self.assertEqual(dependencies[name]["version"], "0.2.0")
             for name in ("sc-observability", "sc-observability-types"):
                 self.assertEqual(dependencies[name]["version"], "=1.5.0")
         generation = driver()

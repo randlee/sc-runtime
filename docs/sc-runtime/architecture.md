@@ -48,6 +48,7 @@ the application. Emission rejection never changes assembly or HTTP results.
 | `DaemonBuilder::logger / stores / routes / mcp / run / run_with_cleanup / run_with_cleanup_and_bound` | exactly seven methods; same-state logger, three project closures and three alternative Ready-state terminal runs; NFR-RT-0001, no new typestate or callback engine |
 | `DaemonConfig` | `#[non_exhaustive]` settings the project loads; `transport` is flattened `sc_transport::TransportConfig` (`endpoint`, `instance_root`, `tcp_port`); `endpoint_flag` is `Option<String>` for `--endpoint` ([ADR-RT-0001](#adr-rt-0001-daemonbuilder-run-is-assembly-only-in-a-fixed-order), [REQ-RT-0001](requirements.md), [REQ-RT-0008](requirements.md)) |
 | `RuntimeError` | typed error naming the failing step |
+| `mcp_request_body(&axum::http::request::Parts)` | read-only original bounded HTTP JSON bytes for application-owned canonical validation, NFR-RT-0001 |
 | `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
 
 Shape of use, from the design:
@@ -354,24 +355,17 @@ boundary manifest under `boundaries/sc-runtime/`, checked by
 
 ### Phase C MCP input clarification
 
-The ordinary project-supplied `StreamableHttpService` still enters through
-`.mcp(...)`; no framework wrapper type or copied command DTO is introduced.
-Before RMCP converts JSON arguments into `Value`, private input middleware
-rejects duplicate object keys, including nested/escaped-equivalent keys. It
-uses the service's own `max_request_body_bytes` rather than a hidden additional
-limit, forwards the exact bytes and existing extensions/deadline, and leaves
-GET/SSE handling unchanged. Errors carry fixed JSON-RPC transport messages,
-without request values. Strict DTO and semantic validation remain with the
-command/application owner.
-
-The implementation declares `serde_json` directly (already in the normal
-resolved graph) and permits that precise runtime boundary edge. RMCP's public
-JSON reexport is macro-gated; activating macros in core merely to obtain a
-parser would broaden the wrong feature surface. This input check adds no cron,
-schema, registry or application-store dependency. Applications intentionally
-owning a different protocol policy can mount their service as a project router
-route and omit the optional `.mcp` attachment; the ordinary template path keeps
-the documented strict default.
+The ordinary project-supplied StreamableHttpService enters through `.mcp(...)`.
+Private middleware retains original JSON POST bytes in an HTTP extension under
+the service's own max_request_body_bytes. The read-only `mcp_request_body` accessor
+reads those bytes from ordinary request Parts, preserving headers and the absolute
+deadline; GET/SSE are untouched. NFR-RT-0001 records this one minimal free function.
+Runtime owns no protocol DTO, duplicate-key policy or cron dependency. The generated
+cron tool reparses its sole canonical CronRequest from the original generic RPC
+envelope before executing. Duplicate struct fields remain rejected by the DTO,
+while arbitrary Value payloads and unrelated tools keep their own JSON semantics.
+Normal serde_json is removed; test-only parsing is a dev dependency. No extra
+public test middleware helper, RMCP wrapper or command registry is introduced.
 
 ## ADR-RT-0004: `DaemonFixture` runs the real daemon
 

@@ -413,6 +413,7 @@ fn error_is_a_std_error() {
 
 mod lifecycle;
 
+mod observability_http;
 mod phase_c_hooks;
 
 #[tokio::test]

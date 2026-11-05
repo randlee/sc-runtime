@@ -5,7 +5,7 @@ use serde_json::Value;
 use crate::ParseError;
 
 /// Cron management subcommands, each taking the complete versioned JSON request.
-#[derive(Debug, Subcommand)]
+#[derive(Subcommand)]
 pub enum CronAction {
     /// Start an application-authorized schedule.
     Start { #[arg(long)] request: String },
@@ -37,5 +37,12 @@ pub(crate) fn verb(request: &CronRequest) -> &'static str {
         CronOperation::Start(_) => "cron.start",
         CronOperation::End(_) => "cron.end",
         CronOperation::List(_) => "cron.list",
+    }
+}
+
+impl std::fmt::Debug for CronAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let verb = match self { Self::Start { .. } => "Start", Self::End { .. } => "End", Self::List { .. } => "List" };
+        f.debug_struct(verb).finish_non_exhaustive()
     }
 }

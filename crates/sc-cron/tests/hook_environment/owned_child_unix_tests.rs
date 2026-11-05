@@ -144,3 +144,74 @@ fn expired_inspector_is_physically_reaped_before_error_returns() {
         "deadline discarded an unreaped inspector"
     );
 }
+
+#[test]
+fn missing_session_inspection_refuses_before_actual_command_launch() {
+    let root = tempfile::tempdir().expect("preflight witness");
+    let launched = root.path().join("launched");
+    let mut command = Command::new("/bin/sh");
+    command
+        .args(["-c", "printf launched > \"$1\"", "inspection-witness"])
+        .arg(&launched)
+        .env("PATH", "");
+    let result = output(&mut command, super::super::super::common::WAIT, || false);
+    assert!(
+        !result.status.success(),
+        "preflight failure must refuse dispatch"
+    );
+    assert!(!launched.exists(), "uninspectable command was launched");
+    assert!(String::from_utf8_lossy(&result.stderr).contains("session inspection unavailable"));
+}
+
+#[test]
+fn inspector_failure_reaps_pinned_launcher_before_returning_error() {
+    for failure in ["spawn failed", "status failed", "nonzero status"] {
+        let root = tempfile::tempdir().expect("launcher witness");
+        let ready = root.path().join("ready");
+        let mut command = Command::new(super::super::super::python_program());
+        command
+            .args([
+                "-c",
+                "import pathlib,sys,time; pathlib.Path(sys.argv[1]).touch(); time.sleep(30)",
+            ])
+            .arg(&ready)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        let mut wrapped = CommandWrap::from(command);
+        wrapped.wrap(ProcessSession);
+        let mut owned = Session {
+            child: wrapped.spawn().expect("owned launcher"),
+            cleanup_deadline: None,
+            cleaned: false,
+        };
+        let ready_deadline = Instant::now() + CLEANUP;
+        while !ready.exists() {
+            assert!(
+                Instant::now() < ready_deadline,
+                "launcher readiness expired"
+            );
+            std::thread::park_timeout(POLL);
+        }
+        let failure = owned.stop_with(|_, _| Err(std::io::Error::other(failure)));
+        let reaped_at_return = owned
+            .child
+            .inner_mut()
+            .try_wait()
+            .expect("observe physical launcher completion")
+            .is_some();
+        // Also own the deliberately broken implementation's failure path, so
+        // the negative test cannot leak a child when its assertion fails.
+        if !reaped_at_return {
+            let _ = owned.child.inner_mut().kill();
+            owned
+                .reap(owned.cleanup_deadline.expect("existing cleanup deadline"))
+                .expect("negative witness physical cleanup");
+        }
+        assert!(failure.is_err(), "inspection failure was hidden");
+        assert!(
+            reaped_at_return,
+            "inspection error released a live launcher"
+        );
+    }
+}

@@ -369,8 +369,55 @@ async fn duplicate_mcp_fields_are_rejected_before_execution() {
         executor.calls.lock().expect("calls").is_empty(),
         "duplicate fields must not reach executor"
     );
-    assert!(
-        response.get("error").is_some(),
-        "duplicate input must return a protocol rejection"
-    );
+    assert_eq!(response["result"]["isError"], true);
+    assert_eq!(response["result"]["structuredContent"]["error"]["code"],
+        "CRON.COMMAND.INVALID_INPUT", "canonical DTO rejection survives the MCP wrapper");
+}
+
+
+#[tokio::test]
+async fn opaque_payload_duplicate_keys_have_identical_cli_http_mcp_semantics() {
+    let raw = r#"{"version":"1","command":"cron.start","request":{"name":"nightly","cron":"0 * * * *","timeout_ms":25000,"target":{"kind":"rust"},"payload":{"x":1,"x":2},"environment":{"dotenv":[],"variables":{}}}}"#;
+    let expected: CronRequest = serde_json::from_str(raw).expect("sole canonical parser accepts opaque payload");
+    let executor = Arc::new(RecordingExecutor::default());
+    let fixture = fixture(executor.clone()).await;
+    let endpoint = fixture.endpoint_str();
+    let base = format!("http://{}", endpoint.strip_prefix("tcp:").expect("tcp"));
+    let client = reqwest::Client::builder().timeout(Duration::from_secs(5)).build().unwrap();
+    for ui in ["http", "mcp", "cli"] {
+        executor.replies.lock().unwrap().push_back(reply(&expected));
+        let result = match ui {
+            "http" => client.post(format!("{base}/ops/cron.start")).header("content-type", "application/json")
+                .body(raw).send().await.unwrap().json::<Value>().await.unwrap(),
+            "mcp" => {
+                let call = format!(r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"cron.start","arguments":{raw}}}}}"#);
+                client.post(format!("{base}/mcp")).header("content-type", "application/json")
+                    .header("accept", "application/json, text/event-stream").body(call)
+                    .send().await.unwrap().json::<Value>().await.unwrap()["result"]["structuredContent"].clone()
+            }
+            _ => {
+                let command = cli::parse(&["cron".into(),"start".into(),"--request".into(),raw.into(),
+                    "--json".into(),"--endpoint".into(),endpoint.clone()]).unwrap();
+                let (status,text)=cli::execute(command).await;
+                assert_eq!(status,std::process::ExitCode::SUCCESS);
+                serde_json::from_str(&text).unwrap()
+            }
+        };
+        assert_eq!(result,serde_json::to_value(reply(&expected)).unwrap(),"{ui}");
+        let (seen,_)=executor.calls.lock().unwrap().pop().expect("one canonical dispatch");
+        assert_eq!(seen,expected,"{ui}");
+        assert!(executor.calls.lock().unwrap().is_empty());
+    }
+    fixture.shutdown().await.unwrap();
+}
+
+#[test]
+fn cli_debug_does_not_render_raw_cron_request_values() {
+    let request=r#"{"version":"1","command":"cron.list","request":{"state":"all","limit":1,"cursor":null}}"#;
+    let canary="CONFIDENTIAL_RAW_REQUEST";
+    let command=cli::parse(&["cron".into(),"start".into(),"--request".into(),canary.into()]);
+    // Invalid JSON remains a usage error whose Debug cannot retain raw input.
+    assert!(!format!("{command:?}").contains(canary));
+    let valid=cli::parse(&["cron".into(),"list".into(),"--request".into(),request.into()]).unwrap();
+    assert!(!format!("{valid:?}").contains(request));
 }

@@ -297,7 +297,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             self.assertEqual({p["name"] for p in packages}, expected)
             for item in packages:
                 self.assertTrue((item["source"] or "").startswith("registry+"), item)
-                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.1.1"
+                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.2.0"
                 self.assertEqual(item["version"], expected_version)
             for feature in ("cron", "monty"):
                 run_owned(["cargo", "+1.96.1", "test", "-p", package, "--features", feature],
@@ -341,7 +341,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         manifest = tomllib.loads((ROOT / "template/Cargo.toml").read_text())
         dependencies = manifest["workspace"]["dependencies"]
         for name in ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron"):
-            self.assertEqual(dependencies[name]["version"], "0.2.0" if name in {"sc-command", "sc-runtime", "sc-cron"} else "0.1.1")
+            self.assertEqual(dependencies[name]["version"], "0.2.0")
             self.assertNotIn("path", dependencies[name])
         for name in ("sc-observability", "sc-observability-types"):
             self.assertEqual(dependencies[name]["version"], "=1.5.0")
@@ -349,8 +349,8 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.assertNotIn("patch", manifest)
         consumer = json.loads((ROOT / "release/sc-publish-consumer-input.json").read_text())
         crates = sorted((c for c in consumer["crates"] if c["publish"]), key=lambda c: c["publish_order"])
-        self.assertEqual([c["package"] for c in crates], ["sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron"])
-        self.assertEqual([c["publish_order"] for c in crates], [1, 2, 3, 4, 5])
+        self.assertEqual([c["package"] for c in crates], ["sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron", "sc-cron-commands"])
+        self.assertEqual([c["publish_order"] for c in crates], [1, 2, 3, 4, 5, 6])
         checks = {c["id"]: c["run"] for c in consumer["preflight_checks"]}
         self.assertEqual(checks["observability-registry-only"], "python3 scripts/check_observability_release.py")
         self.assertEqual(checks["release-contract-sources"], "bash scripts/check_release_contract_sources.sh")

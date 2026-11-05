@@ -31,6 +31,7 @@ fn strict_request_preserves_the_versioned_wire_shape() {
 #[test]
 fn owner_schemas_cover_real_request_and_envelope_types() {
     let request = schemars::schema_for!(CronRequest);
+    assert_eq!(request.as_value()["type"], "object");
     let envelope = schemars::schema_for!(sc_command::Envelope<CronResponse>);
     let error = schemars::schema_for!(sc_command::OpError);
     assert!(request.as_value().to_string().contains("cron.start"));
@@ -99,6 +100,67 @@ fn canonical_envelope_schema_accepts_arbitrary_json_payload_types() {
         serde_json::json!({})
     );
     assert_eq!(json["oneOf"][1]["properties"]["data"]["type"], "null");
+}
+
+#[test]
+fn debug_redacts_nested_request_source_payload_environment_and_references() {
+    use sc_cron_commands::*;
+    let secret = "CONFIDENTIAL_CANARY";
+    let request: CronRequest = serde_json::from_value(serde_json::json!({
+        "version":"1","command":"cron.start","request":{
+            "name":"safe","cron":"* * * * *","timeout_ms":1000,
+            "target":{"kind":"monty","source":secret},"payload":{"secret":secret},
+            "environment":{"dotenv":[{"path":secret,"required":true}],
+            "variables":{"SET":{"set":secret},"REF":{"reference":secret}}}
+        }
+    }))
+    .unwrap();
+    let nested = format!("{request:?}");
+    assert!(!nested.contains(secret));
+    if let CronOperation::Start(start) = request.operation {
+        for debug in [
+            format!("{:?}", start.target),
+            format!("{:?}", start.environment),
+            format!("{:?}", start.environment.dotenv[0]),
+            format!("{:?}", start.environment.variables["SET"]),
+            format!("{:?}", start.environment.variables["REF"]),
+        ] {
+            assert!(!debug.contains(secret));
+        }
+    } else {
+        panic!("start request")
+    }
+}
+
+#[cfg(feature = "schema")]
+mod typed_projection {
+    #[utoipa::path(get,path="/envelope",responses((status=200,body=sc_command::Envelope<serde_json::Value>)))]
+    fn envelope() {}
+    #[utoipa::path(get,path="/error",responses((status=400,body=sc_command::OpError)))]
+    fn error() {}
+    #[utoipa::path(get,path="/kind",responses((status=200,body=sc_command::ErrorKind)))]
+    fn kind() {}
+    #[utoipa::path(post,path="/cron",request_body=sc_cron_commands::CronRequest,responses((status=200)))]
+    fn request() {}
+    #[derive(utoipa::OpenApi)]
+    #[openapi(paths(envelope, error, kind, request))]
+    struct Api;
+    #[test]
+    fn real_typed_paths_use_canonical_owner_schemas() {
+        use utoipa::OpenApi;
+        envelope();
+        error();
+        kind();
+        request();
+        let document = serde_json::to_value(Api::openapi()).unwrap();
+        let schemas = &document["components"]["schemas"];
+        let reference=document["paths"]["/envelope"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"].as_str().unwrap();
+        let name = reference.strip_prefix("#/components/schemas/").unwrap();
+        assert!(schemas[name]["oneOf"].is_array());
+        assert!(schemas["CronRequest"]["oneOf"].is_array());
+        assert_eq!(schemas["OpError"]["additionalProperties"], false);
+        assert!(schemas["ErrorKind"]["enum"].is_array());
+    }
 }
 
 #[cfg(feature = "schema")]

@@ -63,21 +63,12 @@ async fn bound_callback_reports_continuously_owned_listener_before_serving() {
     assert_eq!(calls.load(Ordering::SeqCst), 1);
 }
 
-#[test]
-fn reserve_drop_negative_allows_endpoint_takeover() {
-    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("reserve");
-    let address = listener.local_addr().expect("address");
-    drop(listener);
-    let takeover = std::net::TcpListener::bind(address).expect("reserve/drop permits takeover");
-    drop(takeover);
-}
-
 #[tokio::test]
 async fn prebind_failure_drops_unused_stores_before_once_only_cleanup() {
     let root = tempfile::tempdir().expect("root");
     let mut config = rooted_config(root.path());
     config.endpoint_flag = Some("invalid:endpoint".into());
-    let (unused, dropped) = oneshot::channel::<()>();
+    let (unused, mut dropped) = oneshot::channel::<()>();
     let bound = Arc::new(AtomicBool::new(false));
     let bound_observer = bound.clone();
     let cleanup = Arc::new(AtomicUsize::new(0));
@@ -95,7 +86,10 @@ async fn prebind_failure_drops_unused_stores_before_once_only_cleanup() {
             },
             move || async move {
                 assert!(
-                    dropped.await.is_err(),
+                    matches!(
+                        dropped.try_recv(),
+                        Err(oneshot::error::TryRecvError::Closed)
+                    ),
                     "unused closure dropped before cleanup"
                 );
                 observed.fetch_add(1, Ordering::SeqCst);

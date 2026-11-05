@@ -62,6 +62,10 @@ def metadata(root):
     return json.loads(process.stdout)
 
 
+def root_version():
+    return tomllib.loads((ROOT / "Cargo.toml").read_text())["workspace"]["package"]["version"]
+
+
 class RuntimeIdentityTests(unittest.TestCase):
     def test_actual_locked_workspace_uses_frozen_identities(self):
         verify_identities(metadata(ROOT), ["sc-runtime"])
@@ -87,14 +91,15 @@ class RuntimeIdentityTests(unittest.TestCase):
             verify_identities(document, ["sc-runtime"])
 
     def test_affected_versions_and_template_requirements_are_atomic(self):
-        for name in ["sc-command", "sc-runtime", "sc-cron", "sc-cron-commands"]:
+        for name in ["sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron", "sc-cron-commands"]:
             manifest = tomllib.loads((ROOT / "crates" / name / "Cargo.toml").read_text())
-            self.assertEqual(manifest["package"]["version"], "0.2.0")
+            version = manifest["package"]["version"]
+            self.assertEqual(root_version() if isinstance(version, dict) else version, "0.2.0")
             for template in ["Cargo.toml", "workspace.template.toml"]:
                 spec = tomllib.loads((ROOT / "template" / template).read_text())
                 self.assertEqual(spec["workspace"]["dependencies"][name]["version"], "0.2.0")
         root = tomllib.loads((ROOT / "Cargo.toml").read_text())
-        self.assertEqual(root["workspace"]["package"]["version"], "0.1.1")
+        self.assertEqual(root["workspace"]["package"]["version"], "0.2.0")
 
     def test_former_utoipa5_router_is_rejected_at_public_composition_seam(self):
         fixture = ROOT / "crates/sc-runtime/tests/fixtures/utoipa5-router/Cargo.toml"

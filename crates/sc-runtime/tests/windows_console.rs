@@ -116,11 +116,18 @@ fn console_child() {
     if std::env::var_os(CHILD).is_none() {
         return;
     }
-    assert_eq!(
-        std::env::var("SC_RUNTIME_EPHEMERAL_CI").as_deref(),
-        Ok("1"),
-        "console children require isolated CI"
-    );
+    for (name, expected) in [
+        ("SC_RUNTIME_EPHEMERAL_CI", "1"),
+        ("SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST", "1"),
+        ("GITHUB_ACTIONS", "true"),
+        ("RUNNER_ENVIRONMENT", "github-hosted"),
+    ] {
+        assert_eq!(
+            std::env::var(name).as_deref(),
+            Ok(expected),
+            "console children require the complete isolated-host guard: {name}"
+        );
+    }
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()

@@ -346,3 +346,14 @@ publication, preserving no-server behavior and deferred upstream logging
 cleanup. Initial 0.1.1 release observations remain historical. Rusqlite remains
 0.39.x with bundled+hooks; provider callback/interrupt details are frozen in
 [the compatibility contract](../plans/phase-c/compatibility-contract.md).
+
+### Application-owned context control (C1 QA1 correction)
+
+The existing WorkerStopControl type supplies the worker-independent factory
+and explicit application-completion acknowledgement frozen by ADR-RUN-0019
+and compatibility-contract.md. C1 owns the real ordinary-feature scope and
+notification construction; C5 owns its concrete framework-worker and native
+operation integration. No duplicate protocol, scheduler registry or dummy
+worker is needed. Applications close their own intake, request stop, join
+physical work and acknowledge it; the library cannot verify untracked custom
+work. Budget fields stay private and diagnostics remain value-free.

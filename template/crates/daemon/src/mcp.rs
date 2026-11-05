@@ -86,12 +86,18 @@ impl WidgetServer {
         server
     }
 
-    async fn execute_cron(&self, verb: &str, request: CronRequest, parts: axum::http::request::Parts)
+    async fn execute_cron(&self, verb: &str, parts: axum::http::request::Parts)
         -> Envelope<CronResponse> {
         let Some(deadline) = parts.extensions.get::<std::time::Instant>().copied() else {
             return Envelope::failure(OpError::from_code(ErrorKind::Unavailable,
                 "CRON.COMMAND.UNAVAILABLE", "request deadline context is unavailable")
                 .with_suggestion("mount the service on the sc-runtime request router"));
+        };
+        let Some(request) = sc_runtime::mcp_request_body(&parts)
+            .and_then(|bytes| serde_json::from_slice::<CronCall>(bytes).ok())
+            .filter(|call| call.params.name == verb)
+            .map(|call| call.params.arguments) else {
+            return service::cron_commands::invalid_request();
         };
         let Some(executor) = self.cron_executor.as_deref() else {
             return Envelope::failure(OpError::from_code(ErrorKind::Unavailable,
@@ -107,23 +113,23 @@ impl WidgetServer {
 impl WidgetServer {
     /// Starts an application-authorized Rust, Python or Monty schedule.
     #[tool(name = "cron.start", description = "Start an application-authorized schedule.")]
-    async fn cron_start(&self, Parameters(request): Parameters<CronRequest>,
+    async fn cron_start(&self, Parameters(_request): Parameters<CronRequest>,
         Extension(parts): Extension<axum::http::request::Parts>) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
-        self.execute_cron("cron.start", request, parts).await.into_result().into_mcp()
+        self.execute_cron("cron.start", parts).await.into_result().into_mcp()
     }
 
     /// Ends the specified schedule generation.
     #[tool(name = "cron.end", description = "End the specified schedule generation.")]
-    async fn cron_end(&self, Parameters(request): Parameters<CronRequest>,
+    async fn cron_end(&self, Parameters(_request): Parameters<CronRequest>,
         Extension(parts): Extension<axum::http::request::Parts>) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
-        self.execute_cron("cron.end", request, parts).await.into_result().into_mcp()
+        self.execute_cron("cron.end", parts).await.into_result().into_mcp()
     }
 
     /// Reads a bounded safe page of schedule views.
     #[tool(name = "cron.list", description = "Read a bounded page of schedule views.")]
-    async fn cron_list(&self, Parameters(request): Parameters<CronRequest>,
+    async fn cron_list(&self, Parameters(_request): Parameters<CronRequest>,
         Extension(parts): Extension<axum::http::request::Parts>) -> Result<rmcp::model::CallToolResult, sc_command::McpError> {
-        self.execute_cron("cron.list", request, parts).await.into_result().into_mcp()
+        self.execute_cron("cron.list", parts).await.into_result().into_mcp()
     }
 }
 
@@ -175,3 +181,11 @@ impl WidgetServer {
 
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for WidgetServer {}
+
+#[cfg(feature = "cron-commands")]
+#[derive(serde::Deserialize)]
+struct CronCall { params: CronCallParameters }
+
+#[cfg(feature = "cron-commands")]
+#[derive(serde::Deserialize)]
+struct CronCallParameters { name: String, arguments: CronRequest }

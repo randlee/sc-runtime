@@ -6,10 +6,13 @@ use std::os::unix::process::ExitStatusExt;
 use std::process::{Child, Command, ExitStatus, Output, Stdio};
 use std::time::{Duration, Instant};
 
-const BRIDGE: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/tests/hook_environment/owned_child_unix.py"
-);
+const BRIDGE: &str = match option_env!("SC_CRON_TEST_UNIX_BRIDGE") {
+    Some(path) => path,
+    None => concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/hook_environment/owned_child_unix.py"
+    ),
+};
 const CLEANUP: Duration = Duration::from_secs(10);
 const POLL: Duration = Duration::from_millis(10);
 
@@ -20,33 +23,46 @@ struct Session {
 }
 impl Session {
     fn stop(&mut self) -> std::io::Result<()> {
+        self.stop_with(inspect_session)
+    }
+
+    fn stop_with(
+        &mut self,
+        inspect: impl FnOnce(u32, Instant) -> std::io::Result<()>,
+    ) -> std::io::Result<()> {
         if self.cleaned {
             return Ok(());
         }
         let deadline = *self
             .cleanup_deadline
             .get_or_insert_with(|| Instant::now() + CLEANUP);
-        if Instant::now() >= deadline {
-            return Err(std::io::Error::other(
-                "owned session cleanup deadline exhausted",
-            ));
+        // An inspector gets only part of this one cleanup budget. A failed
+        // inspector must still leave time to terminate and reap our launcher.
+        let reserve = deadline
+            .saturating_duration_since(Instant::now())
+            .min(Duration::from_secs(1));
+        let inspection = inspect(self.child.id(), deadline - reserve);
+        if let Err(error) = inspection {
+            // The unreaped launcher pins its session/group identity here.
+            // Inspection failure leaves descendant completion unconfirmed, so
+            // retain that error even after the direct owner is physically reaped.
+            let _ = self.child.start_kill();
+            let _ = self.child.inner_mut().kill();
+            return match self.reap(deadline) {
+                Ok(()) => Err(error),
+                Err(cleanup) => Err(std::io::Error::other(format!(
+                    "{error}; launcher cleanup failed: {cleanup}"
+                ))),
+            };
         }
-        let mut inspector = Command::new(super::super::python_program())
-            .args([BRIDGE, "stop", &self.child.id().to_string()])
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-        let status = bounded_wait(&mut inspector, deadline)?;
-        if !status.success() {
-            return Err(std::io::Error::other(
-                "owned session inspection or descendant cleanup failed",
-            ));
-        }
-        // The inspector stops every live session member before killing the
-        // still-pinned leader. Only now may Rust reap and release that identity.
+        self.reap(deadline)
+    }
+
+    fn reap(&mut self, deadline: Instant) -> std::io::Result<()> {
         loop {
             if self.child.inner_mut().try_wait()?.is_some() {
+                // Never retry session signaling once this pinned identity has
+                // been reaped, even when descendant inspection returned an error.
                 self.cleaned = true;
                 return Ok(());
             }
@@ -59,11 +75,28 @@ impl Session {
 }
 impl Drop for Session {
     fn drop(&mut self) {
-        if self.stop().is_err() {
-            // Reported failures never become successful completion. A final
-            // group kill remains available if session inspection itself fails.
-            let _ = self.child.start_kill();
-        }
+        let _ = self.stop();
+    }
+}
+
+fn inspect_session(id: u32, deadline: Instant) -> std::io::Result<()> {
+    if Instant::now() >= deadline {
+        return Err(std::io::Error::other(
+            "owned session inspection deadline exhausted",
+        ));
+    }
+    let mut inspector = Command::new(super::super::python_program())
+        .args([BRIDGE, "stop", &id.to_string()])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()?;
+    if bounded_wait(&mut inspector, deadline)?.success() {
+        Ok(())
+    } else {
+        Err(std::io::Error::other(
+            "owned session inspection or descendant cleanup failed",
+        ))
     }
 }
 

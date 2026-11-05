@@ -82,7 +82,7 @@ def check_cron_manifest(manifest):
                 if global_dev and alias == "sc-cron" and spec == {"path": ".", "features": ["test-utils"]}:
                     continue
                 raise ValueError("cron workspace self edge must be exactly checkout-only dev test-utils")
-            expected_version = "0.2.0" if spec.get("package", alias) == "sc-command" else "0.1.1"
+            expected_version = "0.2.0"
             if spec.get("version") != expected_version:
                 raise ValueError(f"cron path dependency {alias} must match frozen package version {expected_version}")
     for kind in ("dependencies", "build-dependencies", "dev-dependencies"):

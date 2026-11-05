@@ -929,7 +929,6 @@ dependencies = [
  "sc-observability-types",
  "sc-transport",
  "serde",
- "serde_json",
  "tokio",
  "tracing",
  "utoipa 6.0.0",
@@ -938,7 +937,7 @@ dependencies = [
 
 [[package]]
 name = "sc-transport"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "axum",
  "reqwest",

@@ -19,8 +19,8 @@ publish = false
 rust-version = "1.94.1"
 
 [workspace.dependencies]
-sc-config = { version = "0.1.1" }
-sc-transport = { version = "0.1.1" }
+sc-config = { version = "0.2.0" }
+sc-transport = { version = "0.2.0" }
 sc-command = { version = "0.2.0" }
 sc-runtime = { version = "0.2.0" }
 sc-cron = { version = "0.2.0" }

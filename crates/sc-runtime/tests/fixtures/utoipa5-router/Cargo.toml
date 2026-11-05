@@ -9,4 +9,4 @@ publish = false
 [dependencies]
 sc-runtime = { path = "../../.." }
 utoipa-axum = "=0.2.0"
-sc-transport = { path = "../../../../sc-transport", version = "0.1.1" }
+sc-transport = { path = "../../../../sc-transport", version = "0.2.0" }
