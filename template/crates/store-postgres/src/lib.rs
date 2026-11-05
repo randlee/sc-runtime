@@ -260,9 +260,9 @@ impl Store {
     /// use store_postgres::{OpenConfig, open};
     ///
     /// # async fn demo() -> Result<(), store_postgres::StoreError> {
-    /// let self = open(&OpenConfig::postgres("postgres://localhost/widgets")).await?;
-    /// let row = store_postgres::insert_widget(&self, "bolt").await?;
-    /// let loaded = store_postgres::get_widget(&self, &row.id).await?;
+    /// let store = open(&OpenConfig::postgres("postgres://localhost/widgets")).await?;
+    /// let row = store_postgres::insert_widget(&store, "bolt").await?;
+    /// let loaded = store_postgres::get_widget(&store, &row.id).await?;
     /// assert!(loaded.is_some());
     /// # Ok(())
     /// # }
