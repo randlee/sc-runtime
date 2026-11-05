@@ -201,3 +201,59 @@ fn actual_stop_requires_empty_membership_and_rejects_omitted_proof() {
             .is_empty()
     );
 }
+
+#[test]
+fn empty_accounting_does_not_bypass_unsignaled_retained_identity() {
+    let mut command = Command::new(super::super::super::python_program());
+    command
+        .args(["-c", "import time; time.sleep(30)"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    let mut owned = Bridge::spawn(command).expect("owned signal witness");
+    owned.retain_members().expect("capture before termination");
+    assert!(
+        !owned.members.is_empty(),
+        "witness had no retained identity"
+    );
+    owned.child.start_kill().expect("terminate witness");
+    let deadline = Instant::now() + CLEANUP;
+    while owned
+        .child
+        .inner_mut()
+        .try_wait()
+        .expect("leader exit")
+        .is_none()
+    {
+        assert!(Instant::now() < deadline, "leader failed to exit");
+        std::thread::sleep(POLL); // allow: bounded test-only leader-exit handshake
+    }
+    assert!(
+        owned
+            .job
+            .query_process_id_list()
+            .expect("real empty job")
+            .is_empty()
+    );
+    let mut probes = 0;
+    owned
+        .stop_with_signals(
+            |job| job.query_process_id_list().map_err(std::io::Error::other),
+            |handles| {
+                probes += 1;
+                // Force precisely the failing order: accounting already empty and
+                // leader reaped, but one retained identity has not signaled yet.
+                if probes == 1 {
+                    Ok(false)
+                } else {
+                    Bridge::signaled(handles)
+                }
+            },
+        )
+        .expect("physical identity completion");
+    assert!(
+        probes >= 2,
+        "empty accounting bypassed physical signal proof"
+    );
+    assert!(Bridge::signaled(&mut owned.members).expect("actual retained signals"));
+}

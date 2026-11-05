@@ -1,5 +1,6 @@
 //! Windows bridge ownership; all waits inspect the std leader, never job ports.
 use process_wrap::std::{ChildWrapper, CommandWrap, CommandWrapper, JobObject};
+use std::collections::BTreeMap;
 use std::io::{Read, Seek, SeekFrom};
 use std::os::windows::ffi::OsStrExt;
 use std::os::windows::io::AsRawHandle;
@@ -8,6 +9,7 @@ use std::path::Path;
 use std::process::{Command, ExitStatus, Output, Stdio};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+use waitpid_any::WaitHandle;
 use win32job::{ExtendedLimitInfo, Job};
 
 pub(super) const BRIDGE: &str = concat!(
@@ -58,6 +60,7 @@ struct Bridge {
     job: Arc<Job>,
     cleaned: bool,
     cleanup_deadline: Option<Instant>,
+    members: BTreeMap<usize, WaitHandle>,
 }
 impl Bridge {
     fn spawn(command: Command) -> std::io::Result<Self> {
@@ -71,6 +74,7 @@ impl Bridge {
             job,
             cleaned: false,
             cleanup_deadline: None,
+            members: BTreeMap::new(),
         })
     }
 
@@ -80,9 +84,54 @@ impl Bridge {
 
     // The private query seam permits deterministic unavailable/nonempty-proof
     // fault injection. The actual stop path always queries the retained job.
+    fn retain_members(&mut self) -> std::io::Result<()> {
+        for pid in self
+            .job
+            .query_process_id_list()
+            .map_err(std::io::Error::other)?
+        {
+            if self.members.contains_key(&pid) {
+                continue;
+            }
+            let native_pid = i32::try_from(pid).map_err(std::io::Error::other)?;
+            match WaitHandle::open(native_pid) {
+                Ok(handle) => {
+                    self.members.insert(pid, handle);
+                }
+                // ERROR_INVALID_PARAMETER means the process object no longer
+                // exists. Access failures are never treated as proof of exit.
+                Err(error)
+                    if error.raw_os_error() == Some(87)
+                        && !self
+                            .job
+                            .query_process_id_list()
+                            .map_err(std::io::Error::other)?
+                            .contains(&pid) => {}
+                Err(error) => return Err(error),
+            }
+        }
+        Ok(())
+    }
+
+    fn signaled(members: &mut BTreeMap<usize, WaitHandle>) -> std::io::Result<bool> {
+        let mut complete = true;
+        for member in members.values_mut() {
+            complete &= member.wait_timeout(Duration::ZERO)?.is_some();
+        }
+        Ok(complete)
+    }
+
     fn stop_with(
         &mut self,
+        members: impl FnMut(&Job) -> std::io::Result<Vec<usize>>,
+    ) -> std::io::Result<()> {
+        self.stop_with_signals(members, Self::signaled)
+    }
+
+    fn stop_with_signals(
+        &mut self,
         mut members: impl FnMut(&Job) -> std::io::Result<Vec<usize>>,
+        mut signaled: impl FnMut(&mut BTreeMap<usize, WaitHandle>) -> std::io::Result<bool>,
     ) -> std::io::Result<()> {
         if self.cleaned {
             return Ok(());
@@ -90,19 +139,24 @@ impl Bridge {
         let deadline = *self
             .cleanup_deadline
             .get_or_insert_with(|| Instant::now() + CLEANUP);
+        // Open while membership still identifies the process, before kill can
+        // remove it from accounting. Retain identities until physical signals.
+        self.retain_members()?;
         self.child.start_kill()?;
         loop {
-            // Never consume completion-port messages. Empty membership is a
-            // genuine all-member job query, not a PID-absence heuristic.
+            // Capture newly observed members too; an empty membership query by
+            // itself does not mean every retained process object is signaled.
+            self.retain_members()?;
             let reaped = self.child.inner_mut().try_wait()?.is_some();
             let empty = members(&self.job)?.is_empty();
-            if reaped && empty {
+            let exited = signaled(&mut self.members)?;
+            if reaped && empty && exited {
                 self.cleaned = true;
                 return Ok(());
             }
             if Instant::now() >= deadline {
                 return Err(std::io::Error::other(
-                    "bridge job or leader did not physically exit before cleanup deadline",
+                    "bridge members did not physically signal exit before cleanup deadline",
                 ));
             }
             std::thread::sleep(POLL); // allow: bounded test-only physical job completion poll
@@ -157,8 +211,12 @@ pub(super) fn output(
         .stdout(Stdio::from(stdout.try_clone().expect("stdout clone")))
         .stderr(Stdio::from(stderr.try_clone().expect("stderr clone")));
     let mut owned = Bridge::spawn(launcher).expect("spawn owned bridge");
+    owned
+        .retain_members()
+        .expect("retain initial bridge identity");
     let mut expired = false;
     let mut status = loop {
+        owned.retain_members().expect("retain live bridge members");
         if let Some(status) = owned
             .child
             .inner_mut()
