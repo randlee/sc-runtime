@@ -19,6 +19,11 @@ run = owned_process.run
 
 
 class OwnedProcessTests(unittest.TestCase):
+    def test_empty_membership_does_not_complete_unsignaled_retained_identity(self):
+        self.assertFalse(owned_process._windows_physical_complete(0, [0, 258]))
+        self.assertFalse(owned_process._windows_physical_complete(1, [0]))
+        self.assertTrue(owned_process._windows_physical_complete(0, [0, 0]))
+
     @unittest.skipIf(os.name == "nt", "Unix session inspection only")
     def test_unavailable_session_inspection_refuses_before_launch(self):
         # Mock the ps inspection separately from the target launcher Popen.

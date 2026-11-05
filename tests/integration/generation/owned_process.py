@@ -60,7 +60,11 @@ def _windows_job(process):
         error = ctypes.get_last_error()
         kernel.CloseHandle(job)
         raise ctypes.WinError(error)
-    return kernel, job
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.IsProcessInJob.argtypes = [wintypes.HANDLE, wintypes.HANDLE, ctypes.POINTER(wintypes.BOOL)]
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    return kernel, job, {}
 
 
 def _session_listing():
@@ -118,7 +122,48 @@ def _stop_owned_session(leader):
             pass
 
 
-def _terminate_windows_job(kernel, handle):
+def _windows_physical_complete(active, signals):
+    # Empty membership may precede a retained process identity's exit signal.
+    return active == 0 and all(signal == 0 for signal in signals)
+
+
+def _retain_windows_identities(kernel, handle, identities):
+    import ctypes
+    from ctypes import wintypes
+    kernel.QueryInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
+                                                 wintypes.DWORD, ctypes.c_void_p]
+    capacity = 32
+    while True:
+        buffer = ctypes.create_string_buffer(8 + capacity * ctypes.sizeof(ctypes.c_size_t))
+        if kernel.QueryInformationJobObject(handle, 3, buffer, len(buffer), None):
+            break
+        error = ctypes.get_last_error()
+        if error != 234 or capacity >= 65536:
+            raise ctypes.WinError(error)
+        capacity *= 2
+    count = ctypes.c_uint32.from_buffer(buffer, 4).value
+    pids = (ctypes.c_size_t * count).from_buffer(buffer, 8)
+    for pid in pids:
+        if pid in identities:
+            continue
+        process = kernel.OpenProcess(0x100000 | 0x1000, False, pid)
+        if not process:
+            error = ctypes.get_last_error()
+            if error == 87:  # An identity which has already exited needs no live wait.
+                continue
+            raise ctypes.WinError(error)
+        member = wintypes.BOOL()
+        if not kernel.IsProcessInJob(process, handle, ctypes.byref(member)):
+            error = ctypes.get_last_error()
+            kernel.CloseHandle(process)
+            raise ctypes.WinError(error)
+        if member.value:
+            identities[pid] = process
+        else:
+            kernel.CloseHandle(process)
+
+
+def _terminate_windows_job(kernel, handle, identities):
     import ctypes
     from ctypes import wintypes
 
@@ -132,6 +177,7 @@ def _terminate_windows_job(kernel, handle):
     kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
     kernel.QueryInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
                                                  wintypes.DWORD, ctypes.c_void_p]
+    _retain_windows_identities(kernel, handle, identities)
     if not kernel.TerminateJobObject(handle, 1):
         raise ctypes.WinError(ctypes.get_last_error())
     deadline = time.monotonic() + 10
@@ -140,7 +186,11 @@ def _terminate_windows_job(kernel, handle):
         if not kernel.QueryInformationJobObject(handle, 1, ctypes.byref(accounting),
                                                 ctypes.sizeof(accounting), None):
             raise ctypes.WinError(ctypes.get_last_error())
-        if accounting.ActiveProcesses == 0:
+        _retain_windows_identities(kernel, handle, identities)
+        signals = [kernel.WaitForSingleObject(process, 0) for process in identities.values()]
+        if any(signal == 0xFFFFFFFF for signal in signals):
+            raise ctypes.WinError(ctypes.get_last_error())
+        if _windows_physical_complete(accounting.ActiveProcesses, signals):
             return
         if time.monotonic() >= deadline:
             raise TimeoutError("owned Windows job processes did not exit")
@@ -175,6 +225,8 @@ def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_ou
                 start.touch()
                 deadline = time.monotonic() + timeout
                 while not status.exists():
+                    if job is not None:
+                        _retain_windows_identities(*job)
                     if time.monotonic() >= deadline:
                         timed_out = True
                         break
@@ -185,10 +237,12 @@ def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_ou
                 # The launcher stays alive until cleanup, pinning the process-group ID.
                 try:
                     if job is not None:
-                        kernel, handle = job
+                        kernel, handle, identities = job
                         try:
-                            _terminate_windows_job(kernel, handle)
+                            _terminate_windows_job(kernel, handle, identities)
                         finally:
+                            for process in identities.values():
+                                kernel.CloseHandle(process)
                             kernel.CloseHandle(handle)
                     elif not nested and os.name != "nt":
                         _stop_owned_session(child.pid)
