@@ -24,4 +24,6 @@ schemars = { version = "=1.2.3", default-features = false, features = ["derive"]
 utoipa = { version = "=6.0.0", default-features = false, features = ["macros"], optional = true }
 
 [dev-dependencies]
-sc-cron = { path = "../sc-cron", version = "0.2.0", default-features = false, features = ["test-utils"] }
+sc-cron = { path = "../sc-cron", version = "0.2.0", default-features = false }
+
+tokio = { version = "1", features = ["macros", "rt", "time", "sync", "test-util"] }
