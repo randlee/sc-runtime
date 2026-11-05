@@ -223,8 +223,9 @@ fn cooperative_errors_preserve_private_causes_and_reasoned_recovery() {
     })
     .unwrap_err();
     assert!(
-        matches!(&error, CronError::Store(e) if e.kind() == StoreErrorKind::Cancelled
-        && e.transaction_outcome().unwrap().persistence == PersistenceOutcome::Committed)
+        matches!(&error, CronError::Store(e) if e.kind() == StoreErrorKind::DeadlineExceeded
+        && e.transaction_outcome().unwrap().persistence == PersistenceOutcome::Committed
+        && e.transaction_outcome().unwrap().completed_after_cutoff)
     );
     assert!(!format!("{error:?} {error}").contains("CANCELLED_PROVIDER_CAUSE_CANARY"));
     let mut cause = std::error::Error::source(&error).unwrap();
