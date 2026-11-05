@@ -327,3 +327,11 @@ its provider: close intake, request stop, physically join that work, then call
 cannot verify untracked custom work. Framework-worker controls refuse it and
 require `WorkerHandle::join_owned()`. Neither completion nor stop reopens
 intake. See the [ordinary-feature custom context example](../../tests/integration/cron-consumer/custom-context/src/main.rs).
+
+The isolated schema consumer validates the same canonical command request at
+RMCP's actual input-schema boundary without adding MCP to the cron-only
+consumer graph:
+
+```sh
+cargo run --manifest-path tests/integration/cron-consumer/schema/Cargo.toml
+```

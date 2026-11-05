@@ -1,0 +1,111 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:C5_QA2_REQ_C5_005 a triage:Finding ;
+ triage:id "REQ-C5-005" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "tests/integration/generation/test_observability.py:156; template/cargo-generate.toml:10; /tmp/c5-qa1-final4-validation.receipt.json; /tmp/c5-qa1-final4-validation.log:591" ;
+ triage:issue "Actual exact-head f676f94 full validation completed with lint_exit0/test_exit5. Its single failure is test_sqlite_mcp_no_edits_sequence: Cargo.lock byte hashes differ after the lint recipe. All isolated default/Monty/custom-context/graph results and scoped build/default/Monty are successful, but the required full validation gate is genuinely failed, not merely pending CI. The generated-template lock exclusion repair already prepared by the C2/C3 owner has not been consumed here." ;
+ triage:action "Consume the applicable narrow template Cargo.lock exclusion and its exact ignore-inventory/planted-lock regression repair from the owning C2/C3 checkpoint, preserving the no-edits byte assertion. Rerun the existing required full validation on the resulting source, retain source-bound isolated consumer/graph proof, and return directly to re-QA without waiting on remote CI. Do not weaken the no-edits check or fabricate a pass from focused receipts." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_ARCH_C5_006 a triage:Finding ;
+ triage:id "ARCH-C5-006" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs" ;
+ triage:issue "The promoted owner-schema repair preserves an input schema that the selected RMCP validator rejects. CronRequest::json_schema returns request_schema directly; that map contains only oneOf, with type:object present only inside each alternative, not at the root. RMCP3.8 schema_for_input requires the literal root type:object and rejects this shape. The explicit fix assignment required a canonical Schemars object root while preserving the typed Utoipa alternatives; naming Parameters<CronRequest> or asserting that oneOf exists does not prove actual input-schema construction." ;
+ triage:action "Apply the native-map root type:object correction in the canonical Schemars JsonSchema implementation only (the C1 owner is preparing the compatible narrow correction). Preserve typed Utoipa oneOf and exact serialized DTOs. Exercise actual RMCP3.8 schema_for_input<CronRequest> or ordinary tool construction as a durable regression rather than only a type-bound or schema-text check." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_RBQA_C5_001 a triage:Finding ;
+ triage:id "RBQA-C5-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "crates/sc-cron/src/observability.rs" ;
+ triage:issue "The nominal receiver facade is now usable, but its frozen required export inventory still omits NoopCanonicalLog." ;
+ triage:action "Reexport the existing sc_command::observability::NoopCanonicalLog alongside CanonicalLog and SharedCanonicalLog, and have the isolated cron-only fixture import it through sc_cron::observability. Preserve nominal identity; do not add another implementation." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_QA_C5_007 a triage:Finding ;
+ triage:id "QA-C5-007" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "tests/integration/generation/test_observability.py" ;
+ triage:issue "The requested full test gate fails because the generated Cargo.lock changes during the no-edits lint sequence." ;
+ triage:action "Correct generated lockfile inventory/copy behavior and rerun the failed generation sequence and required gate; preserve the no-edits assertion." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_QA_C5_004 a triage:Finding ;
+ triage:id "QA-C5-004" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix.rs" ;
+ triage:issue "The unbounded cleanup wait and unowned held-thread fixtures are corrected, but failed session inspection can still return without physically reaping the direct launcher." ;
+ triage:action "Retain the cleanup failure while completing bounded direct-leader kill/reap on every inspector failure before releasing ownership. Add a causal failed-inspector return-boundary assertion; keep descendant cleanup and the existing finite budget." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_QA_C5_008 a triage:Finding ;
+ triage:id "QA-C5-008" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "crates/sc-cron/src/sqlite_cooperative_lifecycle_tests.rs" ;
+ triage:issue "The ordinary-thread stop regression can falsely pass without any future notifier when the spawned thread starts after its precomputed 25ms grace cutoff." ;
+ triage:action "Use a causal future-notifier arm/branch witness or controlled clock/wake seam before advancing expiry, while retaining native work until notification is observed. Do not fix by increasing the timing window." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_RBP_C5_003 a triage:Finding ;
+ triage:id "RBP-C5-003" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "crates/sc-cron/src/sqlite_scope.rs" ;
+ triage:issue "Provider causes are still discarded when the operation also observes cancellation or expiry." ;
+ triage:action "Keep the context error for cancellation/deadline classification and actual transaction outcome, but retain the original provider failure in Error::source whenever operation() returned Err. Keep public diagnostics value-free. Add a causal case that cancels the context inside the operation before returning a provider error with a private canary, then verifies both classification and the deepest source." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_RSH_C5_001 a triage:Finding ;
+ triage:id "RSH-C5-001" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-service-hardening-agent" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "crates/sc-cron/src/sqlite_cooperative_lifecycle_tests.rs" ;
+ triage:issue "The ordinary-thread notifier production fix is present, but its required causal regression can pass without exercising the retained-runtime timer." ;
+ triage:action "Make the regression causally establish timer installation before the grace cutoff or use a controlled clock/explicit branch witness. Preserve a held admitted native operation and prove status changes before releasing it. Do not increase the timing window or use retries." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_FTQ_C5_001 a triage:Finding ;
+ triage:id "FTQ-C5-001" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix.rs" ;
+ triage:issue "The original indefinite wrapper wait is removed, but an inspector failure returns from stop before reaping the owned session leader. Drop retries stop and finally only sends start_kill, then drops the ChildWrapper. The owner can therefore return while its direct launcher is still alive/unreaped; the failure path has not retained ownership through physical completion." ;
+ triage:action "Keep the cleanup error, but complete bounded direct-leader kill/reap before releasing its owner on inspector spawn, exit-status and timeout failures. Preserve whole-session descendant handling and the original cleanup budget; do not restore an unbounded wait. Add a causal failed-inspector test which observes physical reaping at the actual return boundary." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .
+
+triage:C5_QA2_FTQ_C5_005 a triage:Finding ;
+ triage:id "FTQ-C5-005" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_qa" ;
+ triage:reviewed_commit "f676f940af81b09315366feb4ca644b86a3d2485" ;
+ triage:file "crates/sc-cron/src/sqlite_cooperative_lifecycle_tests.rs" ;
+ triage:issue "The regression computes G=now+25ms before spawning the ordinary stop thread. If thread startup or scheduling delays its request_stop past G, the old implementation publishes expiry synchronously in interrupt_if_expired and the test passes even though it installs no independent notifier. The test therefore does not deterministically distinguish the missing-notifier regression." ;
+ triage:action "Add a causal witness that the non-entered-runtime stop installs/owns the future notifier while native work remains held, independently of the thread-start timing; then verify deadline publication before release/join. Use an explicit timer-arm/branch handshake or a controlled clock/wake seam. Increasing the25ms window is not a fix." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6649234798" .

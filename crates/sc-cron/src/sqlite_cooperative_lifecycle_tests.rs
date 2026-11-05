@@ -1,6 +1,6 @@
 //! Causal lifecycle, private-cause and failure-cleanup regressions.
 use super::*;
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[tokio::test(start_paused = true)]
 async fn ordinary_thread_stop_notifies_while_admitted_native_commit_is_held() {
     if supervised("lifecycle::ordinary_thread_stop_notifies_while_admitted_native_commit_is_held") {
         return;
@@ -8,6 +8,7 @@ async fn ordinary_thread_stop_notifies_while_admitted_native_commit_is_held() {
     let control = crate::WorkerStopControl::new().unwrap();
     let context = control.operation_context();
     let controller = Arc::clone(&context.state);
+    let timer = Arc::clone(&controller);
     let store = Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).unwrap());
     let (entered, ready) = mpsc::channel();
     let (release, wait) = mpsc::channel();
@@ -35,28 +36,36 @@ async fn ordinary_thread_stop_notifies_while_admitted_native_commit_is_held() {
             })
             .await
     });
-    ready.recv_timeout(Duration::from_secs(5)).unwrap();
+    tokio::task::spawn_blocking(move || ready.recv_timeout(Duration::from_secs(5)))
+        .await
+        .unwrap()
+        .unwrap();
     let mut status = control.subscribe_status();
-    let now = Instant::now();
-    let cleanup = now + Duration::from_secs(1);
+    let now = tokio::time::Instant::now().into_std();
+    let grace = now + Duration::from_secs(10);
+    let cleanup = now + Duration::from_secs(20);
     let other = control.clone();
     physical_join(std::thread::spawn(move || {
-        other.request_stop(ShutdownBudget::new(now + Duration::from_millis(25), cleanup).unwrap())
+        other.request_stop(ShutdownBudget::new(grace, cleanup).unwrap())
     }))
     .unwrap()
     .unwrap();
-    let observed = tokio::time::timeout(
-        Duration::from_secs(2),
-        status.wait_for(|s| *s == ShutdownStatus::DeadlineExceeded),
-    )
+    let observed = tokio::time::timeout(Duration::from_secs(30), async {
+        // This witness belongs to the retained runtime timer, not synchronous
+        // request_stop. Controlled time cannot reach G before timer admission.
+        timer.timer_armed.notified().await;
+        assert_eq!(*status.borrow(), ShutdownStatus::Draining);
+        tokio::time::advance(Duration::from_secs(10)).await;
+        status
+            .wait_for(|s| *s == ShutdownStatus::DeadlineExceeded)
+            .await
+            .map(|_| ())
+    })
     .await;
-    // Release before asserting, including a missing-notifier regression.
-    let _ = release.send(());
-    let result = operation.await.unwrap();
-    observed.unwrap().unwrap();
-    assert!(result.is_err());
+    // A second stop occurs only after the timer observation is recorded; it
+    // cannot make a missing timer pass. Release native work on failure too.
     let other = control.clone();
-    physical_join(std::thread::spawn(move || {
+    let shortened = physical_join(std::thread::spawn(move || {
         other.request_stop(
             ShutdownBudget::new(
                 Instant::now() + Duration::from_secs(2),
@@ -64,9 +73,12 @@ async fn ordinary_thread_stop_notifies_while_admitted_native_commit_is_held() {
             )
             .unwrap(),
         )
-    }))
-    .unwrap()
-    .unwrap();
+    }));
+    let _ = release.send(());
+    let result = operation.await.unwrap();
+    observed.unwrap().unwrap();
+    shortened.unwrap().unwrap();
+    assert!(result.is_err());
     assert_eq!(
         control
             .operation_context()
@@ -199,6 +211,27 @@ fn cooperative_errors_preserve_private_causes_and_reasoned_recovery() {
         deepest = next;
     }
     assert_eq!(deepest.to_string(), "PRIVATE_CAUSE_CANARY");
+    let error = scope::with_scope(&context, || {
+        scope::attempted().unwrap();
+        scope::committed();
+        control.cancel_now();
+        Err::<(), _>(
+            StoreError::new(StoreErrorKind::Unavailable, "provider_failed")
+                .with_source(std::io::Error::other("CANCELLED_PROVIDER_CAUSE_CANARY"))
+                .into(),
+        )
+    })
+    .unwrap_err();
+    assert!(
+        matches!(&error, CronError::Store(e) if e.kind() == StoreErrorKind::Cancelled
+        && e.transaction_outcome().unwrap().persistence == PersistenceOutcome::Committed)
+    );
+    assert!(!format!("{error:?} {error}").contains("CANCELLED_PROVIDER_CAUSE_CANARY"));
+    let mut cause = std::error::Error::source(&error).unwrap();
+    while let Some(next) = cause.source() {
+        cause = next;
+    }
+    assert_eq!(cause.to_string(), "CANCELLED_PROVIDER_CAUSE_CANARY");
     for (reason, word) in [
         ("command_capacity_exhausted", "owned work"),
         ("operation_stopping", "lifecycle"),

@@ -91,7 +91,7 @@ triage:C5_QA1_ARCH_C5_001 a triage:Finding ;
  triage:status "fixed" ;
  triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
  triage:file "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md" ;
- triage:issue "" ;
+ triage:issue "The governing ADR list omits ADR-RUN-0019 although the sprint implements Scheduler as CronOperations and documents consumer replacement of that port. docs/sc-cron/architecture.md explicitly identifies ADR-RUN-0019 as the governing Phase C public-port decision." ;
  triage:action "List ADR-RUN-0019 in C5 governing ADRs and retain its native-port/no-reverse-adapter constraints; update coverage for any further genuinely applicable ADRs." ;
  triage:fix_disposition "Governing ADR-RUN-0019 and public panic ADR-RUN-0006 added to C5 frontmatter." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
@@ -103,7 +103,7 @@ triage:C5_QA1_ARCH_C5_002 a triage:Finding ;
  triage:status "fixed" ;
  triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
  triage:file "crates/sc-cron/src/operation.rs" ;
- triage:issue "" ;
+ triage:issue "Independent expiry ownership is conditional on the request_stop caller having an entered Tokio runtime. A public stop request from an ordinary synchronous thread records a future budget but skips the only future expiry-notification task. With a blocked native provider and no join, live cutoffs may be checked later but G/K status and interrupts are not independently scheduled. This violates the approved owned shutdown/typed expiry architecture; the stop API documents no caller-runtime precondition." ;
  triage:action "Capture/use the owning runtime or another lifecycle-owned notification mechanism independently of caller thread context. Prove an ordinary-thread stop while physical work is held publishes expiry without waiting for join; retain cancellation and notifier ownership." ;
  triage:fix_disposition "Retained owning runtime schedules stop expiry independently of ordinary caller thread; held admitted native COMMIT regression and original-behavior negative." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
@@ -115,7 +115,7 @@ triage:C5_QA1_ARCH_C5_003 a triage:Finding ;
  triage:status "fixed" ;
  triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
  triage:file "crates/sc-cron/src/lib.rs" ;
- triage:issue "" ;
+ triage:issue "The pinned core adds cooperative operation ports but still exposes no public sc_cron::observability facade. Its logger signature refers to the nominal sc-command receiver internally, so the required consumer-facing nominal logging port in ADR-RUN-0018 is absent on this branch. The separate PR115 source is not present in this reviewed commit." ;
  triage:action "Merge the qualified canonical logging-facade implementation and its complete export inventory into this branch; preserve the same nominal receiver and types without creating a second trait or making consumers depend directly on command." ;
  triage:fix_disposition "Canonical nominal facade consumed; isolated Rust/Python and Monty custom-host execution plus bounded normal graph guards." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
@@ -127,7 +127,7 @@ triage:C5_QA1_ARCH_C5_004 a triage:Finding ;
  triage:status "fixed" ;
  triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
  triage:file "crates/sc-cron/tests/hook_environment/owned_child.rs" ;
- triage:issue "" ;
+ triage:issue "The Unix test owner destructor calls ChildWrapper::wait without a bound after start_kill. A failed handshake or timeout therefore enters an unbounded cleanup wait instead of a failure path that retains and reclaims the whole process tree. The new project Validation Policy expressly prohibits this test design. Passing child-run deadlines do not bound its destructor." ;
  triage:action "Use an owned whole-session cleanup design with causal readiness and actual physical completion on success and failure. Bound and report failed cleanup honestly; no sleep/padding/retry or leader-only substitute." ;
  triage:fix_disposition "Canonical Unix/Windows process owners consumed; all C5 SQLite and isolated fixtures supervised, release guards retain bounded physical joins; ignored-cancellation assertion unwind witness. Unix bridge now requires canonical inspection before dispatch; missing-inspector real-entry regression fails original behavior." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .
@@ -139,7 +139,7 @@ triage:C5_QA1_ARCH_C5_005 a triage:Finding ;
  triage:status "fixed" ;
  triage:reviewed_commit "f7d58b1c8556b55fcff744cfa3e3c5775521b795" ;
  triage:file "crates/sc-command/src/envelope.rs" ;
- triage:issue "" ;
+ triage:issue "The full PR diff introduces reachable expect calls in public sc-command schema trait implementations. ADR-RUN-0006 point3 explicitly prohibits reachable expect in public functions and permits no invariant-comment exception; ADR-RUN-0017 only records the separate fixed-Noop exception. The same pattern appears in both Schemars and Utoipa canonical error schema implementations. Static generated JSON does not create an approved exception." ;
  triage:action "Have the schema owner replace the conversions with infallible native schema construction while preserving the exact wire/schema meaning, then merge forward. Do not add a panic-policy waiver or change public trait signatures." ;
  triage:fix_disposition "Owner schemas construct native infallible Schemars maps and Utoipa builders; real typed path macro regression and exact wire tests; no panic-policy exception." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6647574110" .

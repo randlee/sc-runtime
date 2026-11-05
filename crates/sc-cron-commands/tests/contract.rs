@@ -31,6 +31,7 @@ fn strict_request_preserves_the_versioned_wire_shape() {
 #[test]
 fn owner_schemas_cover_real_request_and_envelope_types() {
     let request = schemars::schema_for!(CronRequest);
+    assert_eq!(request.as_value()["type"], "object");
     let envelope = schemars::schema_for!(sc_command::Envelope<CronResponse>);
     let error = schemars::schema_for!(sc_command::OpError);
     assert!(request.as_value().to_string().contains("cron.start"));

@@ -134,6 +134,22 @@ signal.pause()
             if path.parent.name != "daemon":
                 self.assertNotRegex(path.read_text(), r"(?m)^sc-cron\s*(?:=|\.)", str(path))
 
+    def test_local_maintainer_lock_is_not_copied_into_generated_consumer(self):
+        generation = driver()
+        with tempfile.TemporaryDirectory(prefix="runtime-stale-template-lock-") as temporary:
+            base = Path(temporary)
+            source = base / "source"
+            source.mkdir()
+            shutil.copytree(ROOT / "template", source / "template",
+                            ignore=shutil.ignore_patterns("target", "__pycache__"))
+            (source / "template/Cargo.lock").write_text(
+                'version = 4\n[[package]]\nname = "stale-maintainer-identity"\nversion = "9.9.9"\n')
+            values = base / "values.toml"
+            values.write_text('[values]\ndb="none"\nmcp=false\ncron=false\ncron_commands=false\nlicence="MIT"\n')
+            app = base / "app"
+            generation.cargo_generate(source, app, "fresh-lock-probe", values)
+            self.assertFalse((app / "Cargo.lock").exists(), "local template lock must never become a consumer baseline")
+
     def test_checked_source_and_application_closure_documentation(self):
         source = (ROOT / "template/examples/monty/cron.py").read_text()
         tree = ast.parse(source)

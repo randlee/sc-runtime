@@ -24,6 +24,8 @@ pub(crate) struct Controller {
     tasks: Mutex<Vec<tokio::task::JoinHandle<()>>>,
     status: watch::Sender<ShutdownStatus>,
     runtime: Mutex<Option<tokio::runtime::Handle>>,
+    #[cfg(test)]
+    pub(crate) timer_armed: Notify,
 }
 impl std::fmt::Debug for Controller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -52,6 +54,8 @@ impl Controller {
             tasks: Mutex::new(Vec::new()),
             status: watch::channel(ShutdownStatus::Running).0,
             runtime: Mutex::new(None),
+            #[cfg(test)]
+            timer_armed: Notify::new(),
         }
     }
     fn lock(&self) -> MutexGuard<'_, State> {
@@ -148,8 +152,8 @@ impl Controller {
                     let Some(budget) = owner.budget() else {
                         return;
                     };
-                    let now = Instant::now();
-                    owner.interrupt_if_expired();
+                    let now = tokio::time::Instant::now().into_std();
+                    owner.interrupt_if_expired_at(now);
                     let cutoff = if now < budget.grace {
                         budget.grace
                     } else if now < budget.cleanup {
@@ -157,6 +161,8 @@ impl Controller {
                     } else {
                         return;
                     };
+                    #[cfg(test)]
+                    owner.timer_armed.notify_one();
                     tokio::select! {
                         _ = tokio::time::timeout_at(cutoff.into(), std::future::pending::<()>()) => {},
                         _ = lifecycle.changed() => {}
@@ -167,6 +173,9 @@ impl Controller {
         Ok(())
     }
     fn interrupt_if_expired(&self) {
+        self.interrupt_if_expired_at(Instant::now());
+    }
+    fn interrupt_if_expired_at(&self, now: Instant) {
         let handles = {
             let state = self.lock();
             if state.worker_finished && state.active == 0 {
@@ -185,7 +194,7 @@ impl Controller {
                 }
                 return;
             }
-            if !state.cancelled && state.budget.is_none_or(|b| Instant::now() < b.grace) {
+            if !state.cancelled && state.budget.is_none_or(|b| now < b.grace) {
                 return;
             }
             state
@@ -193,9 +202,9 @@ impl Controller {
                 .iter()
                 .filter(|(_, cleanup)| {
                     if *cleanup {
-                        state.budget.is_some_and(|b| Instant::now() >= b.cleanup)
+                        state.budget.is_some_and(|b| now >= b.cleanup)
                     } else {
-                        state.cancelled || state.budget.is_some_and(|b| Instant::now() >= b.grace)
+                        state.cancelled || state.budget.is_some_and(|b| now >= b.grace)
                     }
                 })
                 .map(|(handle, _)| Arc::clone(handle))

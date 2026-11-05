@@ -114,6 +114,9 @@ pub(super) fn with_scope<T>(
     if context.cleanup {
         context.state.record_cleanup(outcome);
     }
+    // Classification follows the live scope; the original provider failure
+    // remains the source even when cancellation/expiry wins classification.
+    let provider_failure = result.as_ref().err().cloned();
     let failure = match check {
         Err(error) => Some(error),
         Ok(()) => result.as_ref().err().cloned(),
@@ -149,7 +152,7 @@ pub(super) fn with_scope<T>(
         };
         return Err(StoreError::new(kind, reason)
             .with_transaction_outcome(outcome)
-            .with_source(error)
+            .with_source(provider_failure.unwrap_or(error))
             .into());
     }
     result

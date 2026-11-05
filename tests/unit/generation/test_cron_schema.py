@@ -54,7 +54,7 @@ class CronSchemaTests(unittest.TestCase):
         self.assertEqual(hits, [])
         cargo = tomllib.loads((ROOT / "template" / "cargo-generate.toml").read_text(encoding="utf-8"))
         self.assertEqual(cargo["template"]["exclude"], ["AGENTS.md.j2", "CLAUDE.md.j2"])
-        self.assertEqual(cargo["template"]["ignore"], ["config/cron.schema.json"])
+        self.assertEqual(cargo["template"]["ignore"], ["Cargo.lock", "config/cron.schema.json"])
         schema = self.schema()
         self.assertEqual(set(schema["properties"]), {"cron"})
         field = schema["properties"]["cron"]["properties"]["max_schedule_rows"]
