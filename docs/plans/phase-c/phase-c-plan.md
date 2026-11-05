@@ -156,15 +156,16 @@ input; actual consumer migration/QA remains external.
   its public RMCP `IntoMcp`/`McpError` types change with the same stack.
   `sc-cron` consumes the command-owned logging trait through a versioned
   path dependency; the new cron public compatibility contract and optional
-  adapter are both 0.2.0 in c-1's proven affected closure. Unaffected standalone
-  libraries retain `0.1.1`.
-- Selective publication is a contract to prove, not an assumed kit feature.
-  The current pin's release-tag version checks cover all declared crates and
-  its registry lookups use the tag version. `c-1` probes the canonical kit
-  with affected package versions and unchanged literal-base packages. If it
-  cannot validate and publish only the affected closure, the upstream kit
-  capability gap blocks release work until an enhancement is qualified;
-  do not bypass validation or bump unaffected packages to accommodate it.
+  adapter release at 0.2.0. The human's 2026-11-04 correction requires every
+  public crate in each release: sc-config, sc-transport, sc-command,
+  sc-runtime, sc-cron and sc-cron-commands all use the shared 0.2.0 version.
+  The internal publish=false SQLite helper stays private.
+- The existing canonical kit's shared tag/version model matches this policy.
+  The historical mixed-version selective probe remains a failed historical
+  observation; a selective-publishing enhancement is not required. C-3 owns
+  coherent manifests/lock/template and canonical-input regeneration; c-4
+  qualifies all-crate version validation, dependency order and registry proof
+  before authorized publication. No hand-edited workflow bypass is permitted.
 - `template/` remains consumer code. Fresh generation installs an appropriate
   default boundary policy derived from the selected project configuration;
   after setup the consumer owns that policy. It does not copy this
@@ -312,7 +313,8 @@ sc_runtime::Daemon::builder()
   RMCP 3.8 package identity and preserve the existing stateless streamable-HTTP
   composition.
 - The `sc-runtime` public crate version changes from `0.1.1` to `0.2.0`.
-  Command, cron and new cron-commands are `0.2.0` in the affected closure.
+  All six public crates, including config/transport and cron-commands, use
+  `0.2.0` in this shared-version release.
   Publication follows dependency order: command first, then cron and runtime,
   then cron-commands after cron visibility.
   Template registry requirements and release-mode tests use the frozen versions exactly;

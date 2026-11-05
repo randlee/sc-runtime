@@ -50,6 +50,8 @@ monty = { version = "1.4.0", optional = true }
 monty-types = { version = "1.4.0", optional = true }
 
 [dev-dependencies]
+# Test owners pin a Unix session until every live descendant has stopped.
+process-wrap = { version = "10", default-features = false, features = ["process-session"] }
 sc-command = { version = "0.1.1", path = "../sc-command", default-features = false, features = ["test-util"] }
 # Checkout-only self-reference makes plain tests enable their fixture helpers.
 # No version: Cargo omits this dev edge from the published manifest instead of
@@ -84,3 +86,9 @@ name = "sc_compose_hook"
 [[test]]
 name = "sc_compose_bench"
 required-features = ["monty"]
+
+[target.'cfg(windows)'.dev-dependencies]
+# Safe, test-only accounting of the complete bridge job and its nested jobs.
+win32job = "=2.0.3"
+# Retained identity handles prove exit signaling after job accounting drains.
+waitpid-any = "=0.3.0"

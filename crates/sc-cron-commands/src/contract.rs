@@ -73,7 +73,7 @@ pub enum CronOperation {
 }
 
 /// Start an application-authorized target on a cron schedule.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema, utoipa::ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct StartRequest {
@@ -92,7 +92,7 @@ pub struct StartRequest {
 }
 
 /// End one explicitly fenced schedule generation.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema, utoipa::ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct EndRequest {
@@ -131,7 +131,7 @@ pub enum ScheduleState {
 }
 
 /// Existing handler kinds; authorization remains application-owned.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema, utoipa::ToSchema))]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum ExecutionTarget {
@@ -157,7 +157,7 @@ pub enum TargetKind {
 }
 
 /// Ordered dotenv inputs followed by final per-name operations.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema, utoipa::ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct EnvironmentPolicy {
@@ -169,7 +169,7 @@ pub struct EnvironmentPolicy {
 }
 
 /// A persisted dotenv path with explicit absence policy.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema, utoipa::ToSchema))]
 #[serde(deny_unknown_fields)]
 pub struct DotenvSource {
@@ -180,7 +180,7 @@ pub struct DotenvSource {
 }
 
 /// Persisted environment intent using the existing core wire representation.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema, utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum EnvironmentOperation {
@@ -285,7 +285,7 @@ fn request_schema(
     start: serde_json::Value,
     end: serde_json::Value,
     list: serde_json::Value,
-) -> serde_json::Value {
+) -> serde_json::Map<String, serde_json::Value> {
     let variants = [
         ("cron.start", start),
         ("cron.end", end),
@@ -304,7 +304,7 @@ fn request_schema(
         })
     })
     .collect::<Vec<_>>();
-    serde_json::json!({"oneOf":variants})
+    serde_json::Map::from_iter([("oneOf".into(), serde_json::json!(variants))])
 }
 
 #[cfg(feature = "schema")]
@@ -313,26 +313,53 @@ impl schemars::JsonSchema for CronRequest {
         "CronRequest".into()
     }
     fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        let mut value = request_schema(
+        let mut schema = request_schema(
             generator.subschema_for::<StartRequest>().to_value(),
             generator.subschema_for::<EndRequest>().to_value(),
             generator.subschema_for::<ListRequest>().to_value(),
         );
-        // MCP requires an object root; OpenAPI retains its native oneOf representation.
-        value["type"] = serde_json::json!("object");
-        serde_json::from_value(value).expect("typed request schema is an object")
+        // MCP requires an explicit object root; keep OpenAPI's oneOf separate.
+        schema.insert("type".into(), serde_json::json!("object"));
+        schemars::Schema::from(schema)
     }
 }
 
 #[cfg(feature = "schema")]
 impl utoipa::PartialSchema for CronRequest {
     fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
-        serde_json::from_value(request_schema(
-            serde_json::json!({"$ref":"#/components/schemas/StartRequest"}),
-            serde_json::json!({"$ref":"#/components/schemas/EndRequest"}),
-            serde_json::json!({"$ref":"#/components/schemas/ListRequest"}),
-        ))
-        .expect("typed request schema is valid OpenAPI")
+        use utoipa::openapi::{
+            Ref,
+            schema::{AdditionalProperties, ObjectBuilder, OneOfBuilder, Type},
+        };
+        let mut variants = OneOfBuilder::new();
+        for (command, request) in [
+            ("cron.start", "StartRequest"),
+            ("cron.end", "EndRequest"),
+            ("cron.list", "ListRequest"),
+        ] {
+            variants = variants.item(
+                ObjectBuilder::new()
+                    .schema_type(Type::Object)
+                    .additional_properties(Some(AdditionalProperties::FreeForm(false)))
+                    .required("version")
+                    .required("command")
+                    .required("request")
+                    .property(
+                        "version",
+                        ObjectBuilder::new()
+                            .schema_type(Type::String)
+                            .enum_values(Some(["1"])),
+                    )
+                    .property(
+                        "command",
+                        ObjectBuilder::new()
+                            .schema_type(Type::String)
+                            .enum_values(Some([command])),
+                    )
+                    .property("request", Ref::from_schema_name(request)),
+            );
+        }
+        variants.into()
     }
 }
 
@@ -359,5 +386,42 @@ impl utoipa::ToSchema for CronRequest {
         <StartRequest as utoipa::ToSchema>::schemas(schemas);
         <EndRequest as utoipa::ToSchema>::schemas(schemas);
         <ListRequest as utoipa::ToSchema>::schemas(schemas);
+    }
+}
+
+impl std::fmt::Debug for StartRequest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("StartRequest").finish_non_exhaustive()
+    }
+}
+
+impl std::fmt::Debug for EndRequest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("EndRequest").finish_non_exhaustive()
+    }
+}
+
+impl std::fmt::Debug for ExecutionTarget {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ExecutionTarget").finish_non_exhaustive()
+    }
+}
+
+impl std::fmt::Debug for EnvironmentPolicy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("EnvironmentPolicy").finish_non_exhaustive()
+    }
+}
+
+impl std::fmt::Debug for DotenvSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DotenvSource").finish_non_exhaustive()
+    }
+}
+
+impl std::fmt::Debug for EnvironmentOperation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("EnvironmentOperation")
+            .finish_non_exhaustive()
     }
 }
