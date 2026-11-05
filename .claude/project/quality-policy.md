@@ -56,6 +56,14 @@ their own prompts.
 
 ## Validation Policy
 
+Tests must use causal synchronization and retain ownership of their processes,
+tasks, and cleanup until physical completion. Unbounded waits and correctness
+assertions based on scheduling races are prohibited. A test that can hang or
+race must be redesigned; retries, skips, serialization, or increased timeouts
+are not fixes. Bounded failure guards may detect a failed handshake or cleanup,
+but must report failure accurately and reclaim the owned work.
+
+
 **Phase B implementation (waves 1–3, `integrate/phase-b` → `develop`):**
 phase-end artifact command is `just lint && just test` on the integration PR
 head commit. `quality-mgr` treats GitHub Actions check **`just lint and just
