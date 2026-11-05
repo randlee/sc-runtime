@@ -313,13 +313,11 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn child_deadline_never_extends_shared_scope() {
+    #[tokio::test(flavor = "current_thread")]
+    async fn child_deadline_never_extends_shared_scope() {
         let deadline = Instant::now() + Duration::from_secs(60);
-        let parent = StoreOperationContext {
-            state: Arc::new(Mutex::new(OperationState::default())),
-            deadline: Some(deadline),
-        };
+        let control = crate::WorkerStopControl::new().expect("public control");
+        let parent = control.operation_context().with_deadline(deadline);
         assert_eq!(
             parent
                 .with_deadline(deadline + Duration::from_secs(60))
@@ -329,14 +327,19 @@ mod tests {
         let earlier = deadline - Duration::from_secs(30);
         assert_eq!(parent.with_deadline(earlier).deadline(), Some(earlier));
         let child = parent.with_deadline(earlier);
-        parent.state.lock().expect("state").stop_requested = true;
+        control
+            .request_stop(ShutdownBudget::new(deadline, deadline).expect("checked grace"))
+            .expect("stop intent");
         assert!(child.stop_requested());
         // The caller closes intake; admitted work retains its future cutoff.
         assert!(parent.check().is_ok());
         assert!(child.check().is_ok());
-        parent.state.lock().expect("state").cancelled = true;
+        control.cancel_now();
         assert!(parent.check().is_err());
         assert!(child.check().is_err());
+        control
+            .finish_application_shutdown()
+            .expect("no provider work remains");
     }
 
     #[test]
