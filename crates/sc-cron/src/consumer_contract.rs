@@ -51,7 +51,7 @@ impl StoreOperationContext {
     /// Checks live cancellation and the real monotonic deadline.
     ///
     /// # Errors
-    /// Returns a value-free unavailable error after cancellation or expiry.
+    /// Returns a value-free cancellation or deadline error after revocation.
     pub fn check(&self) -> Result<(), CronError> {
         if self
             .state
@@ -328,9 +328,15 @@ mod tests {
         );
         let earlier = deadline - Duration::from_secs(30);
         assert_eq!(parent.with_deadline(earlier).deadline(), Some(earlier));
+        let child = parent.with_deadline(earlier);
         parent.state.lock().expect("state").stop_requested = true;
-        assert!(parent.with_deadline(earlier).stop_requested());
+        assert!(child.stop_requested());
+        // Intent closes caller-owned intake; admitted work retains future G.
+        assert!(parent.check().is_ok());
+        assert!(child.check().is_ok());
+        parent.state.lock().expect("state").cancelled = true;
         assert!(parent.check().is_err());
+        assert!(child.check().is_err());
     }
 
     #[test]
