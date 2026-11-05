@@ -24,11 +24,12 @@ def driver():
 
 
 from tests.integration.generation.generate_owned import cargo_generate, run_generation
-from tests.integration.generation.test_owned_process import OwnedProcessTests
 
 
 class MontyExampleTests(unittest.TestCase):
     def test_failed_generation_reaps_ready_pipe_writer(self):
+        from tests.integration.generation.test_owned_process import OwnedProcessTests
+
         # The generator exits only after its child acknowledges readiness. That
         # child retains captured output, so pipe-only capture cannot finish.
         OwnedProcessTests().witness(True, runner=run_generation)
