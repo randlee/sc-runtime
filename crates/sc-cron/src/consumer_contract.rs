@@ -2,7 +2,7 @@
 
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::{
@@ -13,52 +13,40 @@ use crate::{
 /// Shared live operation state; child deadlines never extend the root scope.
 #[derive(Clone, Debug)]
 pub struct StoreOperationContext {
-    pub(crate) state: Arc<Mutex<OperationState>>,
-    pub(crate) deadline: Option<Instant>,
-}
-
-#[derive(Debug, Default)]
-pub(crate) struct OperationState {
-    pub(crate) stop_requested: bool,
-    pub(crate) cutoff: Option<Instant>,
-    pub(crate) cancelled: bool,
-    pub(crate) budget: Option<ShutdownBudget>,
+    pub(crate) state: Arc<crate::operation::Controller>,
+    deadline: Option<Instant>,
+    pub(crate) cleanup: bool,
+    parents: Vec<(Arc<crate::operation::Controller>, Option<Instant>)>,
 }
 
 impl StoreOperationContext {
     /// Returns the earliest local or shared operation cutoff.
     #[must_use]
     pub fn deadline(&self) -> Option<Instant> {
-        let state = self
-            .state
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        match (self.deadline, state.cutoff) {
-            (Some(a), Some(b)) => Some(a.min(b)),
-            (a, b) => a.or(b),
-        }
+        let shared = self.state.cutoff(self.cleanup);
+        self.parents
+            .iter()
+            .filter_map(|(state, deadline)| state.cutoff(false).into_iter().chain(*deadline).min())
+            .chain(self.deadline)
+            .chain(shared)
+            .min()
     }
 
     /// Reports the current shared stop request.
     #[must_use]
     pub fn stop_requested(&self) -> bool {
-        self.state
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .stop_requested
+        self.state.stopping() || self.parents.iter().any(|(state, _)| state.stopping())
     }
 
     /// Checks live cancellation and the real monotonic deadline.
     ///
     /// # Errors
-    /// Returns a value-free cancellation or deadline error after revocation.
+    /// Returns a value-free unavailable error after cancellation or expiry.
     pub fn check(&self) -> Result<(), CronError> {
-        if self
-            .state
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .cancelled
-        {
+        if self.state.cancelled(self.cleanup) {
+            return Err(StoreError::new(StoreErrorKind::Cancelled, "operation_cancelled").into());
+        }
+        if self.parents.iter().any(|(state, _)| state.cancelled(false)) {
             return Err(StoreError::new(StoreErrorKind::Cancelled, "operation_cancelled").into());
         }
         if self
@@ -79,10 +67,47 @@ impl StoreOperationContext {
     pub fn with_deadline(&self, deadline: Instant) -> Self {
         Self {
             state: Arc::clone(&self.state),
+            cleanup: self.cleanup,
+            parents: self.parents.clone(),
             deadline: Some(
                 self.deadline
                     .map_or(deadline, |current| current.min(deadline)),
             ),
+        }
+    }
+    pub(crate) fn external_deadline(&self) -> Option<Instant> {
+        self.parents
+            .iter()
+            .filter_map(|(state, deadline)| state.cutoff(false).into_iter().chain(*deadline).min())
+            .chain(self.deadline)
+            .min()
+    }
+
+    pub(crate) fn root(state: Arc<crate::operation::Controller>) -> Self {
+        Self {
+            state,
+            deadline: None,
+            cleanup: false,
+            parents: Vec::new(),
+        }
+    }
+
+    pub(crate) fn bind(&self, state: Arc<crate::operation::Controller>) -> Self {
+        let mut bound = Self::root(state);
+        bound.parents = self.parents.clone();
+        if !Arc::ptr_eq(&bound.state, &self.state) {
+            bound.parents.push((Arc::clone(&self.state), self.deadline));
+        }
+        bound.deadline = self.deadline;
+        bound
+    }
+
+    pub(crate) fn terminal(&self) -> Self {
+        Self {
+            cleanup: true,
+            deadline: None,
+            parents: Vec::new(),
+            ..self.clone()
         }
     }
 }
@@ -91,14 +116,18 @@ impl StoreOperationContext {
 #[cfg(feature = "test-utils")]
 #[must_use]
 pub fn operation_context_probe(deadline: Instant) -> StoreOperationContext {
-    StoreOperationContext {
-        state: Arc::new(Mutex::new(OperationState::default())),
-        deadline: Some(deadline),
-    }
+    StoreOperationContext::root(Arc::new(crate::operation::Controller::new()))
+        .with_deadline(deadline)
 }
 
 pub(crate) fn unavailable(reason: &'static str) -> CronError {
-    StoreError::new(StoreErrorKind::Unavailable, reason).into()
+    StoreError::new(StoreErrorKind::Unavailable, reason)
+        .with_transaction_outcome(TransactionOutcome {
+            admission: CommitAdmission::NotAttempted,
+            persistence: PersistenceOutcome::NoMutationAttempted,
+            completed_after_cutoff: false,
+        })
+        .into()
 }
 
 /// Cooperative store capability; legacy providers remain caller-owned.
@@ -110,19 +139,7 @@ pub enum StoreOperationSupport {
     Cooperative,
 }
 
-/// Absolute ordinary and terminal-cleanup cutoffs, checked by [`Self::new`].
-///
-/// Consumers cannot bypass the ordering check with literal construction:
-/// ```compile_fail
-/// let cutoff = std::time::Instant::now();
-/// let _ = sc_cron::ShutdownBudget { grace: cutoff, cleanup: cutoff };
-/// ```
-/// Checked fields also cannot be changed after construction:
-/// ```compile_fail
-/// let cutoff = std::time::Instant::now();
-/// let mut budget = sc_cron::ShutdownBudget::new(cutoff, cutoff).unwrap();
-/// budget.cleanup = cutoff - std::time::Duration::from_secs(1);
-/// ```
+/// Absolute ordinary and terminal-cleanup cutoffs.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ShutdownBudget {
     /// Ordinary operation commit-admission cutoff G.
@@ -132,12 +149,12 @@ pub struct ShutdownBudget {
 }
 
 impl ShutdownBudget {
-    /// Ordinary operation admission cutoff.
+    /// Returns the ordinary-operation commit cutoff G.
     #[must_use]
     pub const fn grace(&self) -> Instant {
         self.grace
     }
-    /// Restricted cleanup admission cutoff.
+    /// Returns the terminal-cleanup commit cutoff K.
     #[must_use]
     pub const fn cleanup(&self) -> Instant {
         self.cleanup
