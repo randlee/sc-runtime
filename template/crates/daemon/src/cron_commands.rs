@@ -1,4 +1,3 @@
-{% if cron_commands %}
 //! Injectable HTTP projections; the application owns selected root registration.
 //! Mount on sc-runtime's router so its absolute Instant extension is available.
 use std::{sync::Arc, time::Instant};
@@ -44,4 +43,3 @@ async fn list(State(executor): State<Executor>, Extension(deadline): Extension<I
               body: Result<Json<CronRequest>, JsonRejection>) -> Envelope<CronResponse> {
     dispatch(executor, deadline, "cron.list", body).await
 }
-{% endif %}

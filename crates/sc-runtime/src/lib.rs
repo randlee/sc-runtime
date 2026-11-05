@@ -44,6 +44,7 @@ mod builder;
 mod config;
 mod error;
 mod lock;
+mod mcp_input;
 mod router;
 mod shutdown;
 

@@ -1,5 +1,4 @@
 include!("layouts/{{db}}.rs");
 
-{% if cron_commands %}
+#[cfg(feature = "cron-commands")]
 pub mod cron_commands;
-{% endif %}

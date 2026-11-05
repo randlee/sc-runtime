@@ -51,7 +51,7 @@ class LiquidTests(unittest.TestCase):
         )
         self.assertEqual(
             cargo["template"]["ignore"],
-            ["config/cron.schema.json"],
+            ["Cargo.lock", "config/cron.schema.json"],
         )
 
 

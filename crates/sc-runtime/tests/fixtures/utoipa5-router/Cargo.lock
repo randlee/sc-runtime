@@ -929,6 +929,7 @@ dependencies = [
  "sc-observability-types",
  "sc-transport",
  "serde",
+ "serde_json",
  "tokio",
  "tracing",
  "utoipa 6.0.0",

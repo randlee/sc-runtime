@@ -114,25 +114,43 @@ signal.pause()
             dependencies = tomllib.loads((ROOT / "template" / name).read_text())["workspace"]["dependencies"]
             self.assertEqual({name for name in dependencies if name in INTERNAL}, INTERNAL)
             for name in INTERNAL:
-                self.assertEqual(dependencies[name]["version"], "0.2.0" if name == "sc-cron-commands" else "0.1.1")
+                self.assertEqual(dependencies[name]["version"], "0.2.0" if name in {"sc-command", "sc-runtime", "sc-cron", "sc-cron-commands"} else "0.1.1")
             for name in ("sc-observability", "sc-observability-types"):
                 self.assertEqual(dependencies[name]["version"], "=1.5.0")
-        text = (ROOT / "template/crates/daemon/Cargo.toml").read_text()
-        for db in ("none", "sqlite"):
-            # The only Liquid block in this manifest chooses the existing defaults.
-            rendered = text.replace('{% if db == "none" %}\ndefault = []\n{% else %}\ndefault = ["general-db"]\n{% endif %}', 'default = []' if db == "none" else 'default = ["general-db"]')
-            # Default-off cron commands omit only their selected dependency block.
-            rendered = re.sub(r"\{% if cron_commands %\}.*?\{% endif %\}\n", "", rendered, flags=re.S)
-            rendered = rendered.replace("{% if mcp %}\n", "").replace("{% endif %}\n", "")
-            manifest = tomllib.loads(rendered)
-            self.assertEqual(set(manifest["features"]["cron"]), {"dep:sc-cron", "dep:async-trait"})
-            self.assertEqual(manifest["features"]["monty"], ["cron", "sc-cron/monty"])
-            self.assertNotIn("cron", manifest["features"]["default"])
-            self.assertNotIn("monty", manifest["features"]["default"])
-            self.assertEqual(manifest["dependencies"]["sc-cron"], {"workspace": True, "optional": True})
+        generation = driver()
+        with tempfile.TemporaryDirectory(prefix="runtime-default-features-") as temporary:
+            base = Path(temporary)
+            for db in ("none", "sqlite"):
+                values = base / f"{db}.toml"
+                values.write_text(f'[values]\ndb="{db}"\nmcp=true\ncron=false\ncron_commands=false\nlicence="MIT"\n')
+                app = base / db
+                generation.cargo_generate(ROOT, app, "default-off-probe", values)
+                manifest = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())
+                self.assertEqual(set(manifest["features"]["cron"]), {"dep:sc-cron", "dep:async-trait"})
+                self.assertEqual(manifest["features"]["monty"], ["cron", "sc-cron/monty"])
+                self.assertNotIn("cron", manifest["features"]["default"])
+                self.assertNotIn("monty", manifest["features"]["default"])
+                self.assertNotIn("cron-commands", manifest["features"]["default"])
+                self.assertEqual(manifest["dependencies"]["sc-cron"], {"workspace": True, "optional": True})
         for path in (ROOT / "template/crates").glob("*/Cargo.toml"):
             if path.parent.name != "daemon":
                 self.assertNotRegex(path.read_text(), r"(?m)^sc-cron\s*(?:=|\.)", str(path))
+
+    def test_local_maintainer_lock_is_not_copied_into_generated_consumer(self):
+        generation = driver()
+        with tempfile.TemporaryDirectory(prefix="runtime-stale-template-lock-") as temporary:
+            base = Path(temporary)
+            source = base / "source"
+            source.mkdir()
+            shutil.copytree(ROOT / "template", source / "template",
+                            ignore=shutil.ignore_patterns("target", "__pycache__"))
+            (source / "template/Cargo.lock").write_text(
+                'version = 4\n[[package]]\nname = "stale-maintainer-identity"\nversion = "9.9.9"\n')
+            values = base / "values.toml"
+            values.write_text('[values]\ndb="none"\nmcp=false\ncron=false\ncron_commands=false\nlicence="MIT"\n')
+            app = base / "app"
+            generation.cargo_generate(source, app, "fresh-lock-probe", values)
+            self.assertFalse((app / "Cargo.lock").exists(), "local template lock must never become a consumer baseline")
 
     def test_checked_source_and_application_closure_documentation(self):
         source = (ROOT / "template/examples/monty/cron.py").read_text()

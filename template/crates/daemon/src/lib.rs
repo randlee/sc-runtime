@@ -10,9 +10,8 @@ pub mod mcp;
 pub mod agent_error;
 pub mod composition;
 pub mod cron;
-{% if cron_commands %}
+#[cfg(feature = "cron-commands")]
 pub mod cron_commands;
-{% endif %}
 pub mod observability;
 pub mod routes;
 

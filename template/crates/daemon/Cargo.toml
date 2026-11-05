@@ -11,11 +11,12 @@ rust-version.workspace = true
 
 [features]
 {% if db == "none" %}
-default = [{% if cron %}"cron"{% endif %}]
+default = [{% if cron %}"cron"{% endif %}{% if cron_commands %}, "cron-commands"{% endif %}]
 {% else %}
-default = ["general-db"{% if cron %}, "cron"{% endif %}]
+default = ["general-db"{% if cron %}, "cron"{% endif %}{% if cron_commands %}, "cron-commands"{% endif %}]
 {% endif %}
 general-db = []
+cron-commands = ["dep:sc-cron-commands", "service/cron-commands"]
 cron = ["dep:sc-cron", "dep:async-trait"]
 monty = ["cron", "sc-cron/monty"]
 
@@ -25,9 +26,7 @@ api-types = { path = "../api-types", version = "0.1.1", features = ["schema"] }
 service = { path = "../service", version = "0.1.1" }
 clap.workspace = true
 sc-command = { workspace = true, features = ["server"] }
-{% if cron_commands %}
-sc-cron-commands = { workspace = true, features = ["schema"] }
-{% endif %}
+sc-cron-commands = { workspace = true, features = ["schema"], optional = true }
 sc-config.workspace = true
 sc-cron = { workspace = true, optional = true }
 sc-observability-types.workspace = true

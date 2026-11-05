@@ -341,7 +341,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         manifest = tomllib.loads((ROOT / "template/Cargo.toml").read_text())
         dependencies = manifest["workspace"]["dependencies"]
         for name in ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron"):
-            self.assertEqual(dependencies[name]["version"], "0.1.1")
+            self.assertEqual(dependencies[name]["version"], "0.2.0" if name in {"sc-command", "sc-runtime", "sc-cron"} else "0.1.1")
             self.assertNotIn("path", dependencies[name])
         for name in ("sc-observability", "sc-observability-types"):
             self.assertEqual(dependencies[name]["version"], "=1.5.0")

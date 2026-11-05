@@ -32,6 +32,7 @@ allowed_dependencies = [
   "utoipa",
   "utoipa-axum",
   "serde",
+  "serde_json",
   "rmcp",
   "tracing",
 ]

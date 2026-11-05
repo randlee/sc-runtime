@@ -1,4 +1,3 @@
-{% if cron_commands %}
 //! Generic cron projections with an application-owned executor and deadline.
 use std::time::Instant;
 use sc_command::{Envelope, ErrorKind, OpError};
@@ -23,4 +22,3 @@ pub fn invalid_request() -> Envelope<CronResponse> {
         "CRON.COMMAND.INVALID_INPUT", "invalid versioned cron request or command verb")
         .with_suggestion("send one version-1 request matching the selected cron command"))
 }
-{% endif %}

@@ -14,11 +14,12 @@ use rmcp::transport::streamable_http_server::session::local::LocalSessionManager
 use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService};
 use rmcp::{tool, tool_handler, tool_router};
 use sc_command::IntoMcp;
-{% if cron_commands %}
+#[cfg(feature = "cron-commands")]
 use rmcp::handler::server::tool::Extension;
+#[cfg(feature = "cron-commands")]
 use sc_cron_commands::{CronExecutor, CronRequest, CronResponse};
+#[cfg(feature = "cron-commands")]
 use sc_command::{Envelope, ErrorKind, OpError};
-{% endif %}
 use service::Stores;
 
 /// Builds the stateless MCP service mounted at `/mcp`.
@@ -32,7 +33,7 @@ pub fn service(stores: Stores) -> StreamableHttpService<WidgetServer, LocalSessi
     )
 }
 
-{% if cron_commands %}
+#[cfg(feature = "cron-commands")]
 /// Builds the existing stateless MCP service with injected generic cron tools.
 /// The application owns the actual executor and selected production registration.
 pub fn service_with_cron_executor(stores: Stores, executor: Arc<dyn CronExecutor>)
@@ -43,15 +44,13 @@ pub fn service_with_cron_executor(stores: Stores, executor: Arc<dyn CronExecutor
         StreamableHttpServerConfig::default().with_legacy_session_mode(false).with_json_response(true),
     )
 }
-{% endif %}
 
 /// Tool host holding the shared stores value.
 #[derive(Clone)]
 pub struct WidgetServer {
     stores: Stores,
-    {% if cron_commands %}
+    #[cfg(feature = "cron-commands")]
     cron_executor: Option<Arc<dyn CronExecutor>>,
-    {% endif %}
     tool_router: ToolRouter<Self>,
 }
 
@@ -70,15 +69,14 @@ impl WidgetServer {
         let tool_router = Self::tool_router();
         Self {
             stores,
-            {% if cron_commands %}
+            #[cfg(feature = "cron-commands")]
             cron_executor: None,
-            {% endif %}
             tool_router,
         }
     }
 }
 
-{% if cron_commands %}
+#[cfg(feature = "cron-commands")]
 impl WidgetServer {
     /// Adds all three standard verbs using the same application-owned executor.
     pub fn with_cron_executor(stores: Stores, executor: Arc<dyn CronExecutor>) -> Self {
@@ -104,6 +102,7 @@ impl WidgetServer {
     }
 }
 
+#[cfg(feature = "cron-commands")]
 #[tool_router(router = cron_tools)]
 impl WidgetServer {
     /// Starts an application-authorized Rust, Python or Monty schedule.
@@ -127,7 +126,6 @@ impl WidgetServer {
         self.execute_cron("cron.list", request, parts).await.into_result().into_mcp()
     }
 }
-{% endif %}
 
 #[tool_router(router = tool_router)]
 impl WidgetServer {

@@ -470,6 +470,12 @@ where
     S: rmcp::ServerHandler + Send + 'static,
     M: rmcp::transport::streamable_http_server::SessionManager,
 {
+    let limit = service.config.max_request_body_bytes;
+    let service = axum::Router::new()
+        .fallback_service(service)
+        .layer(axum::middleware::from_fn(move |request, next| {
+            crate::mcp_input::validate(request, next, limit)
+        }));
     router.nest_service(MCP, service)
 }
 

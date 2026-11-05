@@ -11,22 +11,21 @@ rust-version.workspace = true
 
 [features]
 {% if db == "none" %}
-default = []
+default = [{% if cron_commands %}"cron-commands"{% endif %}]
 {% else %}
-default = ["general-db"]
+default = ["general-db"{% if cron_commands %}, "cron-commands"{% endif %}]
 {% endif %}
 # The daemon dev-dependency is feature-off unless this flag is on, so
 # `cargo test -p <cli> --no-default-features` drops delete row on all three
 # surfaces of a store layout.
 general-db = ["daemon/general-db"]
+cron-commands = ["dep:sc-cron-commands", "daemon/cron-commands"]
 
 [dependencies]
 api-types = { path = "../api-types", version = "0.1.1" }
 clap.workspace = true
 sc-command.workspace = true
-{% if cron_commands %}
-sc-cron-commands = { workspace = true }
-{% endif %}
+sc-cron-commands = { workspace = true, optional = true }
 sc-config.workspace = true
 sc-transport.workspace = true
 serde.workspace = true

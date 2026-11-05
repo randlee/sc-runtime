@@ -1,4 +1,3 @@
-{% if cron_commands %}
 //! Same management verbs for every canonical Rust/Python/Monty target kind.
 use clap::Subcommand;
 use sc_cron_commands::{CronOperation, CronRequest};
@@ -40,4 +39,3 @@ pub(crate) fn verb(request: &CronRequest) -> &'static str {
         CronOperation::List(_) => "cron.list",
     }
 }
-{% endif %}

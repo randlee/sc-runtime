@@ -352,6 +352,27 @@ boundary manifest under `boundaries/sc-runtime/`, checked by
 
 ---
 
+### Phase C MCP input clarification
+
+The ordinary project-supplied `StreamableHttpService` still enters through
+`.mcp(...)`; no framework wrapper type or copied command DTO is introduced.
+Before RMCP converts JSON arguments into `Value`, private input middleware
+rejects duplicate object keys, including nested/escaped-equivalent keys. It
+uses the service's own `max_request_body_bytes` rather than a hidden additional
+limit, forwards the exact bytes and existing extensions/deadline, and leaves
+GET/SSE handling unchanged. Errors carry fixed JSON-RPC transport messages,
+without request values. Strict DTO and semantic validation remain with the
+command/application owner.
+
+The implementation declares `serde_json` directly (already in the normal
+resolved graph) and permits that precise runtime boundary edge. RMCP's public
+JSON reexport is macro-gated; activating macros in core merely to obtain a
+parser would broaden the wrong feature surface. This input check adds no cron,
+schema, registry or application-store dependency. Applications intentionally
+owning a different protocol policy can mount their service as a project router
+route and omit the optional `.mcp` attachment; the ordinary template path keeps
+the documented strict default.
+
 ## ADR-RT-0004: `DaemonFixture` runs the real daemon
 
 **Status:** Active  

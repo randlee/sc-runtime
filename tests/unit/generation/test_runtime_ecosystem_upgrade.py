@@ -4,6 +4,7 @@ import argparse
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -100,9 +101,10 @@ class RuntimeIdentityTests(unittest.TestCase):
         process = OWNED.run(["cargo", "check", "--manifest-path", str(fixture), "--locked"],
             cwd=ROOT, timeout=180, capture_output=True, text=True, stdin=subprocess.DEVNULL)
         self.assertNotEqual(process.returncode, 0)
-        self.assertIn("error[E0308]: mismatched types", process.stderr)
-        self.assertIn("different versions of crate `utoipa_axum`", process.stderr)
-        self.assertEqual(process.stderr.count("error[E"), 1, process.stderr)
+        diagnostic = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", process.stderr)
+        self.assertIn("error[E0308]: mismatched types", diagnostic)
+        self.assertIn("different versions of crate `utoipa_axum`", diagnostic)
+        self.assertEqual(diagnostic.count("error[E"), 1, diagnostic)
 
     def test_sqlite_manifest_ranges_retain_compatible_native_family(self):
         store = tomllib.loads((ROOT / "template/crates/store-sqlite/Cargo.toml").read_text())
@@ -124,11 +126,12 @@ class GenericProjectionTests(unittest.TestCase):
             driver.cargo_generate(ROOT, app, "cron-projection-probe", values)
             driver.apply_checkout_patch(app, ROOT)
             cli = "cron-projection-probe-cli"
-            tree = OWNED.run(["cargo", "tree", "-p", cli, "--no-default-features", "-e", "normal", "--prefix", "none"],
-                cwd=app, timeout=120, check=True, capture_output=True, text=True, stdin=subprocess.DEVNULL)
-            names = {line.split()[0] for line in tree.stdout.splitlines() if line.split()}
             forbidden = {"axum", "rmcp", "sqlx", "sc-runtime", "sc-cron", "rusqlite", "monty", "utoipa", "utoipa-axum", "schemars"}
-            self.assertFalse(names & forbidden, tree.stdout)
+            for options in ([], ["--no-default-features"]):
+                tree = OWNED.run(["cargo", "tree", "-p", cli, *options, "-e", "normal", "--prefix", "none"],
+                    cwd=app, timeout=120, check=True, capture_output=True, text=True, stdin=subprocess.DEVNULL)
+                names = {line.split()[0] for line in tree.stdout.splitlines() if line.split()}
+                self.assertFalse(names & forbidden, tree.stdout)
             verify_identities(metadata(app), ["sc-runtime", "cron-projection-probe-daemon"])
             support = app / "tests/support"
             support.mkdir(parents=True)
