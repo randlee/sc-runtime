@@ -42,11 +42,25 @@ fn hold(store: Arc<SqliteScheduleStore>) -> (mpsc::Sender<()>, std::thread::Join
     let thread = std::thread::spawn(move || {
         let _connection = store.connection.lock().unwrap();
         held.send(()).unwrap();
-        wait.recv().unwrap();
+        let _ = wait.recv();
     });
     entered.recv().unwrap();
     (release, thread)
 }
+// Release and physically join even if an assertion/watchdog fails.
+struct HeldConnection(
+    Option<mpsc::Sender<()>>,
+    Option<std::thread::JoinHandle<()>>,
+);
+impl Drop for HeldConnection {
+    fn drop(&mut self) {
+        self.0.take();
+        if let Some(holder) = self.1.take() {
+            let _ = holder.join();
+        }
+    }
+}
+
 async fn commands(context: &StoreOperationContext, count: u32) {
     tokio::time::timeout(Duration::from_secs(5), async {
         while context.state.counts().1 != count {
@@ -178,6 +192,7 @@ async fn full_default64_is_shared_by_handles_and_configuration_latches() {
 async fn real_grace_expiry_is_published_without_join_or_releasing_connection() {
     let scheduler = make_scheduler(2);
     let (release, holder) = hold(Arc::clone(scheduler.store()));
+    let _held = HeldConnection(Some(release), Some(holder));
     let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
     let control = worker.stop_control();
     let mut status = control.subscribe_status();
@@ -212,8 +227,28 @@ async fn real_grace_expiry_is_published_without_join_or_releasing_connection() {
         .await
         .unwrap()
         .unwrap();
-    release.send(()).unwrap();
-    holder.join().unwrap();
+}
+
+#[tokio::test]
+async fn completed_work_retains_missed_deadline_status_before_timer_is_polled() {
+    for cleanup in [false, true] {
+        let controller = Arc::new(crate::operation::Controller::new());
+        // No spawned timer can run until the first await. The physical operation
+        // completes after the chosen cutoff, then the worker finishes before stop.
+        let cutoff = Instant::now();
+        let guard = controller.register(cleanup, None, false).unwrap();
+        drop(guard);
+        controller.worker_finished();
+        let mut status = controller.subscribe();
+        controller
+            .stop(ShutdownBudget::new(cutoff, cutoff).unwrap())
+            .unwrap();
+        assert_eq!(
+            *status.borrow_and_update(),
+            ShutdownStatus::DeadlineExceeded
+        );
+        controller.join().await;
+    }
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

@@ -157,6 +157,19 @@ impl Controller {
         let handles = {
             let state = self.lock();
             if state.worker_finished && state.active == 0 {
+                // A native completion can beat this timer after the cutoff. Preserve
+                // the physical evidence instead of making status depend on poll order.
+                let missed = state.budget.is_some_and(|budget| {
+                    state
+                        .ordinary_completed
+                        .is_some_and(|at| at >= budget.grace)
+                        || state
+                            .cleanup_completed
+                            .is_some_and(|at| at >= budget.cleanup)
+                });
+                if missed {
+                    self.status(ShutdownStatus::DeadlineExceeded);
+                }
                 return;
             }
             if !state.cancelled && state.budget.is_none_or(|b| Instant::now() < b.grace) {
