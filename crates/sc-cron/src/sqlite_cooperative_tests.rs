@@ -1,4 +1,33 @@
-//! Causal tests use held physical locks and commit-hook barriers, with watchdogs only for failure.
+mod common {
+    pub(super) const WAIT: std::time::Duration = std::time::Duration::from_secs(5);
+}
+#[path = "../tests/hook_environment/owned_child.rs"]
+mod owned_child;
+fn python_program() -> &'static str {
+    if cfg!(windows) { "python" } else { "python3" }
+}
+fn supervised(name: &str) -> bool {
+    if std::env::var("SC_C5_OWNED_TEST").as_deref() == Ok(name) {
+        return false;
+    }
+    let mut command = std::process::Command::new(std::env::current_exe().unwrap());
+    command
+        .args([
+            "--exact",
+            &format!("sqlite::cooperative_tests::{name}"),
+            "--nocapture",
+        ])
+        .env("SC_C5_OWNED_TEST", name);
+    let output = owned_child::output(&mut command, Duration::from_secs(20));
+    assert!(
+        output.status.success(),
+        "owned test failed: {}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    true
+}
+// Causal tests use held physical locks and commit-hook barriers, with watchdogs only for failure.
 use super::*;
 use crate::{
     CommitAdmission, PersistenceOutcome, ScheduleQuery, ScheduleSelection, Scheduler,
@@ -44,7 +73,7 @@ fn hold(store: Arc<SqliteScheduleStore>) -> (mpsc::Sender<()>, std::thread::Join
         held.send(()).unwrap();
         let _ = wait.recv();
     });
-    entered.recv().unwrap();
+    entered.recv_timeout(Duration::from_secs(5)).unwrap();
     (release, thread)
 }
 // Release and physically join even if an assertion/watchdog fails.
@@ -54,13 +83,49 @@ struct HeldConnection(
 );
 impl Drop for HeldConnection {
     fn drop(&mut self) {
-        self.0.take();
+        if let Some(release) = self.0.take() {
+            let _ = release.send(());
+        }
         if let Some(holder) = self.1.take() {
-            let _ = holder.join();
+            let _ = physical_join(holder);
         }
     }
 }
 
+fn physical_join<T>(thread: std::thread::JoinHandle<T>) -> std::thread::Result<T> {
+    let cutoff = Instant::now() + Duration::from_secs(5);
+    while !thread.is_finished() {
+        assert!(Instant::now() < cutoff, "physical thread cleanup failed");
+        std::thread::park_timeout(Duration::from_millis(1));
+    }
+    thread.join()
+}
+struct PhysicalThread<T> {
+    thread: Option<std::thread::JoinHandle<T>>,
+    release: mpsc::Sender<()>,
+}
+impl<T> PhysicalThread<T> {
+    fn new(thread: std::thread::JoinHandle<T>, release: mpsc::Sender<()>) -> Self {
+        Self {
+            thread: Some(thread),
+            release,
+        }
+    }
+    fn join(mut self) -> std::thread::Result<T> {
+        match self.thread.take() {
+            Some(thread) => physical_join(thread),
+            None => unreachable!("join owner consumed"),
+        }
+    }
+}
+impl<T> Drop for PhysicalThread<T> {
+    fn drop(&mut self) {
+        let _ = self.release.send(());
+        if let Some(thread) = self.thread.take() {
+            let _ = physical_join(thread);
+        }
+    }
+}
 async fn commands(context: &StoreOperationContext, count: u32) {
     tokio::time::timeout(Duration::from_secs(5), async {
         while context.state.counts().1 != count {
@@ -79,8 +144,14 @@ fn assert_reason(error: CronError, reason: &str) {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn held_initial_load_and_cancelled_waiters_retain_capacity_until_physical_completion() {
+    if supervised(
+        "held_initial_load_and_cancelled_waiters_retain_capacity_until_physical_completion",
+    ) {
+        return;
+    }
     let scheduler = Arc::new(make_scheduler(1));
     let (release, holder) = hold(Arc::clone(scheduler.store()));
+    let _holder = HeldConnection(Some(release.clone()), Some(holder));
     let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
     let control = worker.stop_control();
     let context = control.operation_context();
@@ -136,19 +207,22 @@ async fn held_initial_load_and_cancelled_waiters_retain_capacity_until_physical_
         .unwrap()
         .unwrap();
     assert!(report.grace_exceeded);
-    release.send(()).unwrap();
-    holder.join().unwrap();
+    let _ = release.send(());
     assert!(scheduler.store().list_active().unwrap().is_empty());
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn full_default64_is_shared_by_handles_and_configuration_latches() {
+    if supervised("full_default64_is_shared_by_handles_and_configuration_latches") {
+        return;
+    }
     let scheduler = Arc::new(Scheduler::new(
         Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).unwrap()),
         Arc::new(SystemClock),
         Arc::new(SystemJitter),
     ));
     let (release, holder) = hold(Arc::clone(scheduler.store()));
+    let _holder = HeldConnection(Some(release.clone()), Some(holder));
     let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
     let control = worker.stop_control();
     let context = control.operation_context();
@@ -180,8 +254,7 @@ async fn full_default64_is_shared_by_handles_and_configuration_latches() {
         .await
         .unwrap()
         .unwrap();
-    release.send(()).unwrap();
-    holder.join().unwrap();
+    let _ = release.send(());
     assert!(scheduler.store().list_active().unwrap().is_empty());
     for capacity in [0, 65537] {
         assert!(make_scheduler(1).with_command_capacity(capacity).is_err());
@@ -190,9 +263,12 @@ async fn full_default64_is_shared_by_handles_and_configuration_latches() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn real_grace_expiry_is_published_without_join_or_releasing_connection() {
+    if supervised("real_grace_expiry_is_published_without_join_or_releasing_connection") {
+        return;
+    }
     let scheduler = make_scheduler(2);
     let (release, holder) = hold(Arc::clone(scheduler.store()));
-    let _held = HeldConnection(Some(release), Some(holder));
+    let _holder = HeldConnection(Some(release.clone()), Some(holder));
     let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
     let control = worker.stop_control();
     let mut status = control.subscribe_status();
@@ -231,6 +307,9 @@ async fn real_grace_expiry_is_published_without_join_or_releasing_connection() {
 
 #[tokio::test]
 async fn completed_work_retains_missed_deadline_status_before_timer_is_polled() {
+    if supervised("completed_work_retains_missed_deadline_status_before_timer_is_polled") {
+        return;
+    }
     for cleanup in [false, true] {
         let controller = Arc::new(crate::operation::Controller::new());
         // No spawned timer can run until the first await. The physical operation
@@ -253,6 +332,9 @@ async fn completed_work_retains_missed_deadline_status_before_timer_is_polled() 
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn query_is_bounded_includes_ended_and_end_fences_replacement() {
+    if supervised("query_is_bounded_includes_ended_and_end_fences_replacement") {
+        return;
+    }
     let scheduler = make_scheduler(2);
     let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
     let control = worker.stop_control();
@@ -364,6 +446,9 @@ async fn query_is_bounded_includes_ended_and_end_fences_replacement() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn final_hook_stop_first_vetoes_and_admission_first_reports_committed_late() {
+    if supervised("final_hook_stop_first_vetoes_and_admission_first_reports_committed_late") {
+        return;
+    }
     for cleanup in [false, true] {
         for after_admission in [false, true] {
             let directory = tempfile::tempdir().unwrap();
@@ -382,7 +467,7 @@ async fn final_hook_stop_first_vetoes_and_admission_first_reports_committed_late
                     scope::set_commit_gate(move |after| {
                         if after == after_admission {
                             entered.send(()).unwrap();
-                            wait_release.recv().unwrap();
+                            let _ = wait_release.recv_timeout(Duration::from_secs(5));
                         }
                     });
                     store.with_operation_context(&context, |store| {
@@ -397,6 +482,7 @@ async fn final_hook_stop_first_vetoes_and_admission_first_reports_committed_late
                     })
                 })
             };
+            let physical = PhysicalThread::new(physical, release.clone());
             wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
             let now = Instant::now();
             // This must acknowledge while the real hook is paused, proving no controller lock spans COMMIT.
@@ -406,7 +492,7 @@ async fn final_hook_stop_first_vetoes_and_admission_first_reports_committed_late
             controller
                 .stop(ShutdownBudget::new(now, now).unwrap())
                 .unwrap();
-            release.send(()).unwrap();
+            let _ = release.send(());
             let error = physical.join().unwrap().unwrap_err();
             let CronError::Store(error) = error else {
                 panic!("typed transaction failure");
@@ -441,11 +527,15 @@ async fn final_hook_stop_first_vetoes_and_admission_first_reports_committed_late
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn every_store_path_observes_shortening_while_waiting_on_real_connection_mutex() {
+    if supervised("every_store_path_observes_shortening_while_waiting_on_real_connection_mutex") {
+        return;
+    }
     for operation in 0..12 {
         let scheduler = make_scheduler(2);
         let row = scheduler.start(spec("existing")).unwrap();
         let store = Arc::clone(scheduler.store());
         let (release, holder) = hold(Arc::clone(&store));
+        let _holder = HeldConnection(Some(release.clone()), Some(holder));
         let controller = Arc::new(crate::operation::Controller::new());
         let context = StoreOperationContext::root(Arc::clone(&controller));
         let (entered, wait_entered) = mpsc::channel();
@@ -507,6 +597,7 @@ async fn every_store_path_observes_shortening_while_waiting_on_real_connection_m
                 }
             })
         });
+        let physical = PhysicalThread::new(physical, release.clone());
         wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
         let now = Instant::now();
         controller
@@ -518,8 +609,7 @@ async fn every_store_path_observes_shortening_while_waiting_on_real_connection_m
             matches!(error, CronError::Store(ref error) if error.kind() == StoreErrorKind::DeadlineExceeded),
             "path {operation}: {error}"
         );
-        release.send(()).unwrap();
-        holder.join().unwrap();
+        let _ = release.send(());
         assert_eq!(
             scheduler.store().get(row.id).unwrap().unwrap().last_outcome,
             None
@@ -530,6 +620,9 @@ async fn every_store_path_observes_shortening_while_waiting_on_real_connection_m
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn sqlite_busy_progress_and_row_decode_observe_live_cutoff_and_restore_scope() {
+    if supervised("sqlite_busy_progress_and_row_decode_observe_live_cutoff_and_restore_scope") {
+        return;
+    }
     for stage in [
         scope::TestStage::Busy,
         scope::TestStage::Progress,
@@ -564,7 +657,7 @@ async fn sqlite_busy_progress_and_row_decode_observe_live_cutoff_and_restore_sco
                 scope::set_observer(move |observed| {
                     if observed == stage && !once.replace(true) {
                         entered.send(()).unwrap();
-                        wait_release.recv().unwrap();
+                        let _ = wait_release.recv_timeout(Duration::from_secs(5));
                     }
                 });
                 store.with_operation_context(&context, |store| {
@@ -579,12 +672,13 @@ async fn sqlite_busy_progress_and_row_decode_observe_live_cutoff_and_restore_sco
             })
             })
         };
+        let physical = PhysicalThread::new(physical, release.clone());
         wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
         let now = Instant::now();
         controller
             .stop(ShutdownBudget::new(now, now).unwrap())
             .unwrap();
-        release.send(()).unwrap();
+        let _ = release.send(());
         let error = physical.join().unwrap().unwrap_err();
         if stage == scope::TestStage::Busy {
             let CronError::Store(error) = error else {
@@ -618,6 +712,11 @@ async fn sqlite_busy_progress_and_row_decode_observe_live_cutoff_and_restore_sco
 
 #[tokio::test]
 async fn injected_lost_result_reports_indeterminate_without_claiming_a_physical_fsync_failure() {
+    if supervised(
+        "injected_lost_result_reports_indeterminate_without_claiming_a_physical_fsync_failure",
+    ) {
+        return;
+    }
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("lost-result.db");
     let store = SqliteScheduleStore::open(&path, ScheduleLimits::default()).unwrap();
@@ -662,6 +761,9 @@ async fn injected_lost_result_reports_indeterminate_without_claiming_a_physical_
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn implicit_update_commit_hook_races_preserve_generation_and_physical_outcome() {
+    if supervised("implicit_update_commit_hook_races_preserve_generation_and_physical_outcome") {
+        return;
+    }
     for cleanup in [false, true] {
         for after_admission in [false, true] {
             let directory = tempfile::tempdir().unwrap();
@@ -691,12 +793,13 @@ async fn implicit_update_commit_hook_races_preserve_generation_and_physical_outc
                     scope::set_commit_gate(move |after| {
                         if after == after_admission {
                             entered.send(()).unwrap();
-                            wait_release.recv().unwrap();
+                            let _ = wait_release.recv_timeout(Duration::from_secs(5));
                         }
                     });
                     store.with_operation_context(&context, |store| store.set_enabled(&name, false))
                 })
             };
+            let physical = PhysicalThread::new(physical, release.clone());
             wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
             let now = Instant::now();
             controller
@@ -705,7 +808,7 @@ async fn implicit_update_commit_hook_races_preserve_generation_and_physical_outc
             controller
                 .stop(ShutdownBudget::new(now, now).unwrap())
                 .unwrap();
-            release.send(()).unwrap();
+            let _ = release.send(());
             let error = physical.join().unwrap().unwrap_err();
             let CronError::Store(error) = error else {
                 panic!("transaction evidence");
@@ -739,6 +842,11 @@ async fn implicit_update_commit_hook_races_preserve_generation_and_physical_outc
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn generation_fenced_terminal_cleanup_has_independent_admission_while_command_intake_is_full()
 {
+    if supervised(
+        "generation_fenced_terminal_cleanup_has_independent_admission_while_command_intake_is_full",
+    ) {
+        return;
+    }
     struct GateJob {
         entered: tokio::sync::Notify,
         release: tokio::sync::Notify,
@@ -780,6 +888,7 @@ async fn generation_fenced_terminal_cleanup_has_independent_admission_while_comm
         .await
         .unwrap();
     let (release, holder) = hold(Arc::clone(scheduler.store()));
+    let _holder = HeldConnection(Some(release.clone()), Some(holder));
     let command = {
         let scheduler = Arc::clone(&scheduler);
         let context = context.clone();
@@ -813,8 +922,7 @@ async fn generation_fenced_terminal_cleanup_has_independent_admission_while_comm
         1,
         "cleanup neither consumes nor bypasses public command capacity"
     );
-    release.send(()).unwrap();
-    holder.join().unwrap();
+    let _ = release.send(());
     command.await.unwrap().unwrap();
     let report = worker.join_owned().await.unwrap();
     assert!(!report.grace_exceeded);
@@ -827,6 +935,9 @@ async fn generation_fenced_terminal_cleanup_has_independent_admission_while_comm
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn uncertain_worker_end_is_reported_once_without_automatic_mutation_replay() {
+    if supervised("uncertain_worker_end_is_reported_once_without_automatic_mutation_replay") {
+        return;
+    }
     struct DeleteJob(Arc<SqliteScheduleStore>);
     #[async_trait::async_trait]
     impl crate::Job for DeleteJob {
@@ -883,6 +994,9 @@ async fn uncertain_worker_end_is_reported_once_without_automatic_mutation_replay
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn delayed_join_poll_reports_physical_completion_before_shortened_cutoffs() {
+    if supervised("delayed_join_poll_reports_physical_completion_before_shortened_cutoffs") {
+        return;
+    }
     let scheduler = make_scheduler(1);
     let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
     let control = worker.stop_control();
@@ -921,6 +1035,10 @@ async fn delayed_join_poll_reports_physical_completion_before_shortened_cutoffs(
 #[cfg(test)]
 #[test]
 fn queued_closures_keep_permits_and_recheck_scope_before_first_physical_store_call() {
+    if supervised("queued_closures_keep_permits_and_recheck_scope_before_first_physical_store_call")
+    {
+        return;
+    }
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(2)
         .max_blocking_threads(1)
@@ -932,7 +1050,7 @@ fn queued_closures_keep_permits_and_recheck_scope_before_first_physical_store_ca
         let (release, wait_release) = mpsc::channel();
         let occupied = tokio::task::spawn_blocking(move || {
             entered.send(()).unwrap();
-            wait_release.recv().unwrap();
+            let _ = wait_release.recv_timeout(Duration::from_secs(5));
         });
         wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
         let scheduler = Arc::new(make_scheduler(1));
@@ -964,10 +1082,275 @@ fn queued_closures_keep_permits_and_recheck_scope_before_first_physical_store_ca
             1,
             "queued physical work still owns its permit after waiter cancellation"
         );
-        release.send(()).unwrap();
+        let _ = release.send(());
         occupied.await.unwrap();
         worker.join_owned().await.unwrap();
         assert_eq!(context.state.counts(), (0, 0));
         assert!(scheduler.store().list_active().unwrap().is_empty());
     });
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn ordinary_thread_stop_notifies_while_admitted_native_commit_is_held() {
+    if supervised("ordinary_thread_stop_notifies_while_admitted_native_commit_is_held") {
+        return;
+    }
+    let control = crate::WorkerStopControl::new().unwrap();
+    let context = control.operation_context();
+    let controller = Arc::clone(&context.state);
+    let store = Arc::new(SqliteScheduleStore::open_in_memory(ScheduleLimits::default()).unwrap());
+    let (entered, ready) = mpsc::channel();
+    let (release, wait) = mpsc::channel();
+    let guard = controller.register(false, None, true).unwrap();
+    let operation = tokio::spawn(async move {
+        controller
+            .run(guard, move || {
+                scope::set_commit_gate(move |after| {
+                    if after {
+                        let _ = entered.send(());
+                        let _ = wait.recv_timeout(Duration::from_secs(5));
+                    }
+                });
+                store.with_operation_context(&context, |store| {
+                    let now = Timestamp::from_datetime(chrono::Utc::now());
+                    store.create(
+                        &NewSchedule {
+                            spec: spec("held-native"),
+                            jitter: Duration::ZERO,
+                            next_run_at: now,
+                        },
+                        now,
+                    )
+                })
+            })
+            .await
+    });
+    ready.recv_timeout(Duration::from_secs(5)).unwrap();
+    let mut status = control.subscribe_status();
+    let now = Instant::now();
+    let cleanup = now + Duration::from_secs(1);
+    let other = control.clone();
+    physical_join(std::thread::spawn(move || {
+        other.request_stop(ShutdownBudget::new(now + Duration::from_millis(25), cleanup).unwrap())
+    }))
+    .unwrap()
+    .unwrap();
+    let observed = tokio::time::timeout(
+        Duration::from_secs(2),
+        status.wait_for(|s| *s == ShutdownStatus::DeadlineExceeded),
+    )
+    .await;
+    // Release before asserting, including a missing-notifier regression.
+    let _ = release.send(());
+    let result = operation.await.unwrap();
+    observed.unwrap().unwrap();
+    assert!(result.is_err());
+    let other = control.clone();
+    physical_join(std::thread::spawn(move || {
+        other.request_stop(
+            ShutdownBudget::new(
+                Instant::now() + Duration::from_secs(2),
+                cleanup + Duration::from_secs(3),
+            )
+            .unwrap(),
+        )
+    }))
+    .unwrap()
+    .unwrap();
+    assert_eq!(
+        control
+            .operation_context()
+            .state
+            .budget()
+            .unwrap()
+            .cleanup(),
+        cleanup
+    );
+}
+
+#[tokio::test]
+async fn cooperative_duplicate_start_is_typed_and_original_worker_still_joins() {
+    if supervised("cooperative_duplicate_start_is_typed_and_original_worker_still_joins") {
+        return;
+    }
+    let scheduler = make_scheduler(1);
+    let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
+    let refused = scheduler.spawn_worker_cooperative(Arc::new(Noop));
+    assert!(
+        matches!(refused, Err(CronError::Store(ref e)) if e.context()=="worker_already_running")
+    );
+    worker.stop_control().cancel_now();
+    tokio::time::timeout(Duration::from_secs(5), worker.join_owned())
+        .await
+        .unwrap()
+        .unwrap();
+}
+
+#[test]
+fn cooperative_start_without_runtime_returns_error_without_claiming_worker() {
+    if supervised("cooperative_start_without_runtime_returns_error_without_claiming_worker") {
+        return;
+    }
+    let scheduler = make_scheduler(1);
+    assert!(
+        matches!(scheduler.spawn_worker_cooperative(Arc::new(Noop)),Err(CronError::Store(ref e)) if e.context()=="worker_runtime_unavailable")
+    );
+    assert!(crate::WorkerStopControl::new().is_err());
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    runtime.block_on(async {
+        let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
+        worker.stop_control().cancel_now();
+        worker.join_owned().await.unwrap();
+    });
+}
+
+#[test]
+fn physical_permit_survives_shutdown_of_its_async_runtime() {
+    if supervised("physical_permit_survives_shutdown_of_its_async_runtime") {
+        return;
+    }
+    let (stopped, worker_stopped) = mpsc::channel();
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(1)
+        .on_thread_stop(move || {
+            let _ = stopped.send(());
+        })
+        .enable_all()
+        .build()
+        .unwrap();
+    let controller = Arc::new(crate::operation::Controller::new());
+    let guard = controller.register(false, None, true).unwrap();
+    let (entered, ready) = mpsc::channel();
+    let (release, wait) = mpsc::channel();
+    let cloned = Arc::clone(&controller);
+    let _owner = runtime.spawn(async move {
+        cloned
+            .run(guard, move || {
+                entered.send(()).unwrap();
+                let _ = wait.recv_timeout(Duration::from_secs(5));
+                Ok(())
+            })
+            .await
+    });
+    ready.recv_timeout(Duration::from_secs(5)).unwrap();
+    runtime.shutdown_background();
+    worker_stopped.recv_timeout(Duration::from_secs(5)).unwrap();
+    assert_eq!(controller.counts(), (1, 1));
+    let next = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    next.block_on(async {
+        assert!(
+            tokio::time::timeout(Duration::ZERO, controller.join())
+                .await
+                .is_err()
+        );
+        let _ = release.send(());
+        tokio::time::timeout(Duration::from_secs(5), controller.join())
+            .await
+            .unwrap();
+        assert_eq!(controller.counts(), (0, 0));
+    });
+}
+
+#[test]
+fn cooperative_errors_preserve_private_causes_and_reasoned_recovery() {
+    if supervised("cooperative_errors_preserve_private_causes_and_reasoned_recovery") {
+        return;
+    }
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    let _entered = runtime.enter();
+    let control = crate::WorkerStopControl::new().unwrap();
+    let context = control.operation_context();
+    let error = scope::with_scope(&context, || {
+        Err::<(), _>(
+            StoreError::new(StoreErrorKind::Unavailable, "provider_failed")
+                .with_source(std::io::Error::other("PRIVATE_CAUSE_CANARY"))
+                .into(),
+        )
+    })
+    .unwrap_err();
+    assert!(!format!("{error:?} {error}").contains("PRIVATE_CAUSE_CANARY"));
+    let cause = std::error::Error::source(&error).unwrap();
+    let mut deepest = cause;
+    while let Some(next) = deepest.source() {
+        deepest = next;
+    }
+    assert_eq!(deepest.to_string(), "PRIVATE_CAUSE_CANARY");
+    for (reason, word) in [
+        ("command_capacity_exhausted", "owned work"),
+        ("operation_stopping", "lifecycle"),
+        ("operation_context_unsupported", "provider"),
+        ("operation_context_nested", "scope"),
+    ] {
+        let error = crate::consumer_contract::unavailable(reason);
+        assert!(error.recovery().contains(word), "{reason}");
+        assert!(!error.recovery().contains("database path"));
+    }
+}
+
+#[tokio::test]
+async fn application_completion_refuses_pending_native_work_and_framework_join_bypass() {
+    if supervised("application_completion_refuses_pending_native_work_and_framework_join_bypass") {
+        return;
+    }
+    let app = crate::WorkerStopControl::new().unwrap();
+    assert!(app.finish_application_shutdown().is_err());
+    let context = app.operation_context();
+    let guard = context.state.register(false, None, true).unwrap();
+    app.cancel_now();
+    assert!(app.finish_application_shutdown().is_err());
+    drop(guard);
+    app.finish_application_shutdown().unwrap();
+    assert_eq!(*app.subscribe_status().borrow(), ShutdownStatus::Joined);
+    assert!(context.check().is_err());
+    assert!(context.state.register(false, None, true).is_err());
+    let scheduler = make_scheduler(1);
+    let worker = scheduler.spawn_worker_cooperative(Arc::new(Noop)).unwrap();
+    let framework = worker.stop_control();
+    framework.cancel_now();
+    assert!(framework.finish_application_shutdown().is_err());
+    worker.join_owned().await.unwrap();
+}
+
+#[tokio::test]
+async fn assertion_unwind_releases_and_joins_ignored_cancellation_fixture() {
+    if supervised("assertion_unwind_releases_and_joins_ignored_cancellation_fixture") {
+        return;
+    }
+    let scheduler = make_scheduler(1);
+    let store = Arc::clone(scheduler.store());
+    let (release, holder) = hold(Arc::clone(&store));
+    let holder = HeldConnection(Some(release.clone()), Some(holder));
+    let (entered, ready) = mpsc::channel();
+    let (done, finished) = mpsc::channel();
+    let physical = std::thread::spawn(move || {
+        entered.send(()).unwrap();
+        // This direct legacy call deliberately ignores cooperative cancellation.
+        let result = store.list_active();
+        done.send(()).unwrap();
+        result
+    });
+    let physical = PhysicalThread::new(physical, release);
+    ready.recv_timeout(Duration::from_secs(5)).unwrap();
+    let control = crate::WorkerStopControl::new().unwrap();
+    control.cancel_now();
+    assert!(matches!(
+        finished.try_recv(),
+        Err(mpsc::TryRecvError::Empty)
+    ));
+    let failure = std::panic::catch_unwind(std::panic::AssertUnwindSafe(move || {
+        let _physical = physical;
+        panic!("injected assertion after native readiness");
+    }));
+    assert!(failure.is_err());
+    finished.recv_timeout(Duration::from_secs(5)).unwrap();
+    drop(holder);
 }

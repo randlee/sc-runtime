@@ -149,6 +149,7 @@ pub(super) fn with_scope<T>(
         };
         return Err(StoreError::new(kind, reason)
             .with_transaction_outcome(outcome)
+            .with_source(error)
             .into());
     }
     result
@@ -304,8 +305,10 @@ fn install_callbacks(guard: &mut Guard<'_>, scope: Scope) -> Result<(), CronErro
     Ok(())
 }
 
-fn callback_error(_error: rusqlite::Error) -> CronError {
-    StoreError::new(StoreErrorKind::Unavailable, "operation_callback_failed").into()
+fn callback_error(error: rusqlite::Error) -> CronError {
+    StoreError::new(StoreErrorKind::Unavailable, "operation_callback_failed")
+        .with_source(error)
+        .into()
 }
 
 #[cfg(test)]

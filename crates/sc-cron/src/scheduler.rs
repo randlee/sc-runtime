@@ -599,15 +599,29 @@ where
     }
 
     fn spawn_worker_mode(&self, job: Arc<dyn Job>, cooperative: bool) -> WorkerHandle {
-        self.core.controller.mark_started();
-        let claimed = self
-            .worker_live
-            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
-            .is_ok();
+        let runtime = tokio::runtime::Handle::current();
         assert!(
-            claimed,
+            self.claim_worker().is_ok(),
             "sc-cron: a worker for this scheduler is already running"
         );
+        self.spawn_claimed_worker(job, cooperative, runtime)
+    }
+
+    fn claim_worker(&self) -> Result<(), CronError> {
+        self.worker_live
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .map_err(|_| crate::consumer_contract::unavailable("worker_already_running"))?;
+        self.core.controller.mark_started();
+        Ok(())
+    }
+
+    fn spawn_claimed_worker(
+        &self,
+        job: Arc<dyn Job>,
+        cooperative: bool,
+        runtime: tokio::runtime::Handle,
+    ) -> WorkerHandle {
+        self.core.controller.bind_runtime(runtime.clone());
         let live = LiveGuard(Arc::clone(&self.worker_live));
         let reload = self.core.reload.subscribe();
         let (shutdown, shutdown_rx) = oneshot::channel();
@@ -626,7 +640,7 @@ where
             .with_hook_environment(Arc::clone(&self.environment))
             .with_operation_controller(Arc::clone(&self.core.controller), cooperative);
         let controller = Arc::clone(&self.core.controller);
-        let task = tokio::spawn(async move {
+        let task = runtime.spawn(async move {
             let _live = live;
             worker.run(reload).await;
             controller.worker_finished();
@@ -927,9 +941,10 @@ impl WorkerHandle {
     pub async fn shutdown(mut self, deadline: tokio::time::Instant) -> bool {
         if self.cooperative {
             let cutoff = deadline.into_std();
-            let _ = self
-                .controller
-                .stop(crate::ShutdownBudget::new(cutoff, cutoff).expect("equal shutdown cutoffs"));
+            let _ = self.controller.stop(crate::ShutdownBudget {
+                grace: cutoff,
+                cleanup: cutoff,
+            });
         }
         if let Some(shutdown) = self.shutdown.take() {
             // The worker may already have exited; nothing to signal then.
@@ -991,6 +1006,7 @@ impl WorkerHandle {
 /// Cloneable lifecycle control without physical join ownership.
 #[derive(Clone, Debug)]
 pub struct WorkerStopControl {
+    application_owned: bool,
     controller: Arc<crate::operation::Controller>,
 }
 impl Drop for WorkerHandle {

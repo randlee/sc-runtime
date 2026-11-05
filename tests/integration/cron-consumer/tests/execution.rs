@@ -1,4 +1,5 @@
 //! External SDK consumer: only sc-cron provides scheduling and canonical receiver types.
+mod support;
 use sc_cron::observability::{CanonicalLog, EventError, LogEvent, ServiceName};
 use sc_cron::{
     HookTarget, Job, ManualClock, RunOutcome, ScheduleLimits, ScheduleSpec, ScheduleStore,
@@ -33,6 +34,9 @@ impl Job for RustJob {
 }
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn public_receiver_observes_actual_target_execution_and_owned_shutdown() {
+    if support::supervised("public_receiver_observes_actual_target_execution_and_owned_shutdown") {
+        return;
+    }
     let (events, mut observed) = tokio::sync::watch::channel(Vec::new());
     let receiver = Arc::new(Receiver {
         service: ServiceName::new("external-cron-consumer").unwrap(),
@@ -86,36 +90,46 @@ async fn public_receiver_observes_actual_target_execution_and_owned_shutdown() {
         .spawn_worker_cooperative(Arc::new(RustJob))
         .unwrap();
     let control = worker.stop_control();
-    clock.wait_parks_above(0).await;
-    clock.advance_settled(chrono::Duration::seconds(60)).await;
-    tokio::time::timeout(
-        Duration::from_secs(15),
-        observed.wait_for(|actions| {
+    let checks = tokio::spawn(async move {
+        tokio::time::timeout(Duration::from_secs(5), clock.wait_parks_above(0))
+            .await
+            .unwrap();
+        tokio::time::timeout(
+            Duration::from_secs(5),
+            clock.advance_settled(chrono::Duration::seconds(60)),
+        )
+        .await
+        .unwrap();
+        tokio::time::timeout(
+            Duration::from_secs(15),
+            observed.wait_for(|actions| {
+                actions
+                    .iter()
+                    .filter(|action| action.as_str() == "run.finished")
+                    .count()
+                    == hooks.len()
+            }),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+        let actions = observed.borrow().clone();
+        assert!(actions.iter().any(|action| action == "logger.attached"));
+        assert_eq!(
             actions
                 .iter()
-                .filter(|action| action.as_str() == "run.finished")
-                .count()
-                == hooks.len()
-        }),
-    )
-    .await
-    .unwrap()
-    .unwrap();
-    let actions = observed.borrow().clone();
-    assert!(actions.iter().any(|action| action == "logger.attached"));
-    assert_eq!(
-        actions
-            .iter()
-            .filter(|action| action.as_str() == "run.launched")
-            .count(),
-        hooks.len()
-    );
-    for row in rows {
-        assert_eq!(
-            scheduler.store().get(row.id).unwrap().unwrap().last_outcome,
-            Some(RunOutcome::Ok)
+                .filter(|action| action.as_str() == "run.launched")
+                .count(),
+            hooks.len()
         );
-    }
+        for row in rows {
+            assert_eq!(
+                scheduler.store().get(row.id).unwrap().unwrap().last_outcome,
+                Some(RunOutcome::Ok)
+            );
+        }
+    })
+    .await;
     let now = Instant::now();
     control
         .request_stop(
@@ -123,5 +137,9 @@ async fn public_receiver_observes_actual_target_execution_and_owned_shutdown() {
                 .unwrap(),
         )
         .unwrap();
-    worker.join_owned().await.unwrap();
+    tokio::time::timeout(Duration::from_secs(15), worker.join_owned())
+        .await
+        .unwrap()
+        .unwrap();
+    checks.unwrap();
 }

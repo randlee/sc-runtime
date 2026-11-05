@@ -56,6 +56,8 @@ impl ShutdownBudget {
 #[derive(Clone)]
 pub struct WorkerStopControl { /* independently callable; no join ownership */ }
 impl WorkerStopControl {
+    pub fn new() -> Result<Self,CronError>;
+    pub fn finish_application_shutdown(&self) -> Result<(),CronError>;
     pub fn request_stop(&self, budget: ShutdownBudget) -> Result<(), CronError>;
     pub fn cancel_now(&self);
     pub fn operation_context(&self) -> StoreOperationContext;
@@ -628,3 +630,25 @@ size and capability validation remain explicit executor checks. The strict
 deserializer rejects top-level and nested struct duplicate/unknown fields and
 unsupported versions without changing canonical Envelope serialization.
 Schema compilation does not certify these runtime-only semantic checks.
+
+### Application-owned native operation scope
+
+`WorkerStopControl::new() -> Result<Self, CronError>` is an ordinary-feature,
+worker-independent factory. Call it inside the owning Tokio runtime, which
+must outlive stop notifications. It captures that runtime so `request_stop`
+can be called from an ordinary synchronous thread. No Scheduler, framework
+worker or `test-utils` is required. The returned context retains live shared
+cancellation and earliest child deadlines. It can be passed to custom
+`CronOperations` and the separately owned standard adapter constructor.
+
+Factory-created controls do not admit, supervise or join arbitrary custom
+provider work. The application closes intake, requests stop, physically joins
+all provider tasks/native calls/cleanup, then calls
+`finish_application_shutdown(&self) -> Result<(), CronError>`. This explicit
+acknowledgement publishes `Joined`; it cannot verify untracked application
+work. It refuses a missing stop, pending registered native work, or a control
+obtained from `WorkerHandle::stop_control()`. Framework workers retain their
+single physical owner `WorkerHandle::join_owned`. Acknowledgement never reopens
+intake or revives a cancelled/expired context. Typed unavailable reasons are
+`worker_runtime_unavailable`, `worker_already_running`, and
+`operation_completion_owner_required`; stable top-level code remains STORE_FAILED.

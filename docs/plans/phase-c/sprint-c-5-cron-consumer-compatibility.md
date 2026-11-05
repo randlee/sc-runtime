@@ -22,6 +22,7 @@ requirements:
   - REQ-RUN-0005
   - NFR-RUN-0002
   - NFR-RUN-0005
+  - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
   - ADR-RUN-0003
@@ -32,6 +33,8 @@ adrs:
   - ADR-RUN-0017
   - ADR-RUN-0018
   - ADR-RUN-0011
+  - ADR-RUN-0019
+  - ADR-RUN-0006
 owned_paths:
   - crates/sc-cron/src/
   - crates/sc-cron/tests/

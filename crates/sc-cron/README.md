@@ -6,9 +6,10 @@ jitter and missed-tick handling.
 `sc-cron` runs a caller's `Job` on cron schedules kept in a `ScheduleStore`.
 It was extracted from an earlier in-house scheduler and carries no
 consumer-specific type: a schedule's input is an opaque JSON payload, and every
-failure is a `CronError` with a stable `code()`. Its sole workspace-crate
-dependency is `sc-observability-types`, used only for the injected canonical
-logger contract.
+failure is a `CronError` with a stable `code()`. Its temporary workspace edge is defaults-off `sc-command` for the nominal
+canonical logger contract. Supporting event values come from registry
+`sc-observability-types`; this does not activate command servers or the full
+observability implementation.
 
 - **Validated input.** `ScheduleName` (at most 128 bytes), `CronExpr` (in UTC:
   standard five-field crontab, minute first; or the `cron` crate's six or
@@ -314,3 +315,15 @@ cargo test --manifest-path tests/integration/cron-consumer/Cargo.toml
 cargo test --manifest-path tests/integration/cron-consumer/Cargo.toml --features monty
 python3 tests/integration/cron-consumer/graph_guard.py
 ```
+
+For a custom `CronOperations`, create `WorkerStopControl::new()?` inside the
+owning Tokio runtime and pass `control.operation_context()` to the adapter.
+This ordinary-feature factory does not spawn a framework worker. It shares
+live cancellation and earliest child deadlines. Stop can be requested from
+another ordinary thread while the creating runtime remains alive. The
+application owns command admission and every task/native call/cleanup/join in
+its provider: close intake, request stop, physically join that work, then call
+`control.finish_application_shutdown()?` to acknowledge `Joined`. This call
+cannot verify untracked custom work. Framework-worker controls refuse it and
+require `WorkerHandle::join_owned()`. Neither completion nor stop reopens
+intake. See the [ordinary-feature custom context example](../../tests/integration/cron-consumer/custom-context/src/main.rs).

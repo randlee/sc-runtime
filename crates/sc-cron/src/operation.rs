@@ -23,6 +23,7 @@ pub(crate) struct Controller {
     pub(crate) changed: Arc<Notify>,
     tasks: Mutex<Vec<tokio::task::JoinHandle<()>>>,
     status: watch::Sender<ShutdownStatus>,
+    runtime: Mutex<Option<tokio::runtime::Handle>>,
 }
 impl std::fmt::Debug for Controller {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -50,12 +51,19 @@ impl Controller {
             changed: Arc::new(Notify::new()),
             tasks: Mutex::new(Vec::new()),
             status: watch::channel(ShutdownStatus::Running).0,
+            runtime: Mutex::new(None),
         }
     }
     fn lock(&self) -> MutexGuard<'_, State> {
         self.state
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+    pub(crate) fn bind_runtime(&self, runtime: tokio::runtime::Handle) {
+        *self
+            .runtime
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(runtime);
     }
     pub(crate) fn configure(&self, capacity: u32) -> Result<(), CronError> {
         let mut state = self.lock();
@@ -125,7 +133,12 @@ impl Controller {
         self.changed.notify_waiters();
         self.interrupt_if_expired();
         let owner = Arc::clone(self);
-        if let Ok(runtime) = tokio::runtime::Handle::try_current() {
+        let runtime = self
+            .runtime
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone();
+        if let Some(runtime) = runtime {
             runtime.spawn(async move {
                 let mut lifecycle = owner.subscribe();
                 loop {
@@ -309,6 +322,9 @@ impl Controller {
             .interrupts
             .retain(|(item, _)| !Arc::ptr_eq(item, handle));
     }
+    pub(crate) fn has_active_work(&self) -> bool {
+        self.lock().active != 0
+    }
     #[cfg(test)]
     pub(crate) fn counts(&self) -> (usize, u32) {
         let state = self.lock();
@@ -320,7 +336,10 @@ impl Controller {
         operation: impl FnOnce() -> Result<T, CronError> + Send + 'static,
     ) -> Result<T, CronError> {
         let (send, receive) = tokio::sync::oneshot::channel();
-        let task = tokio::task::spawn_blocking(operation);
+        let task = tokio::task::spawn_blocking(move || {
+            let _physical = guard;
+            operation()
+        });
         let owner = tokio::spawn(async move {
             let result = task
                 .await
@@ -331,7 +350,6 @@ impl Controller {
                 })
                 .and_then(|result| result);
             let _ = send.send(result);
-            drop(guard);
         });
         {
             let mut tasks = self

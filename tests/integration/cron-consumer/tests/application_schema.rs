@@ -1,3 +1,4 @@
+mod support;
 use cron_consumer_proof::ApplicationStore;
 use sc_cron::{
     CronError, Generation, ScheduleQuery, ScheduleSelection, ScheduleSpec, ScheduleStore,
@@ -16,6 +17,11 @@ fn spec() -> ScheduleSpec {
 }
 #[tokio::test]
 async fn extra_field_survives_query_end_restart_and_reopen_with_generation_fencing() {
+    if support::supervised(
+        "extra_field_survives_query_end_restart_and_reopen_with_generation_fencing",
+    ) {
+        return;
+    }
     let dir = tempfile::tempdir().unwrap();
     let schedules = dir.path().join("cron.db");
     let app = dir.path().join("application.db");
@@ -53,8 +59,10 @@ async fn extra_field_survives_query_end_restart_and_reopen_with_generation_fenci
         scheduler.stop(row.id, row.generation, "stale"),
         Err(CronError::Fenced { .. })
     ));
-    let context =
-        sc_cron::operation_context_probe(std::time::Instant::now() + Duration::from_secs(60));
+    let context = sc_cron::WorkerStopControl::new()
+        .unwrap()
+        .operation_context()
+        .with_deadline(std::time::Instant::now() + Duration::from_secs(60));
     let refused = scheduler
         .start_with_context(
             ScheduleSpec::new(
@@ -92,27 +100,14 @@ async fn extra_field_survives_query_end_restart_and_reopen_with_generation_fenci
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn declared_cooperative_forwarder_retains_live_scope_after_admission() {
-    use cron_consumer_proof::CooperativeForwarder;
-    struct Job;
-    #[async_trait::async_trait]
-    impl sc_cron::Job for Job {
-        async fn run(&self, _: &serde_json::Value, _: std::time::Instant) -> sc_cron::RunOutcome {
-            sc_cron::RunOutcome::Ok
-        }
-        async fn should_stop(&self, _: &serde_json::Value) -> sc_cron::StopDecision {
-            sc_cron::StopDecision::Continue
-        }
+    if support::supervised("declared_cooperative_forwarder_retains_live_scope_after_admission") {
+        return;
     }
+    use cron_consumer_proof::CooperativeForwarder;
     let store = Arc::new(CooperativeForwarder(
         sc_cron::SqliteScheduleStore::open_in_memory(sc_cron::ScheduleLimits::default()).unwrap(),
     ));
-    let scheduler = Scheduler::new(
-        Arc::clone(&store),
-        Arc::new(SystemClock),
-        Arc::new(SystemJitter),
-    );
-    let worker = scheduler.spawn_worker_cooperative(Arc::new(Job)).unwrap();
-    let control = worker.stop_control();
+    let control = sc_cron::WorkerStopControl::new().unwrap();
     let context = control.operation_context();
     let (entered, wait_entered) = std::sync::mpsc::channel();
     let (release, wait_release) = std::sync::mpsc::channel();
@@ -122,7 +117,7 @@ async fn declared_cooperative_forwarder_retains_live_scope_after_admission() {
         std::thread::spawn(move || {
             store.with_operation_context(&context, |store| {
                 entered.send(()).unwrap();
-                wait_release.recv().unwrap();
+                let _ = wait_release.recv_timeout(Duration::from_secs(5));
                 let now = sc_cron::Timestamp::from_datetime(chrono::Utc::now());
                 store.create(
                     &sc_cron::NewSchedule {
@@ -135,10 +130,87 @@ async fn declared_cooperative_forwarder_retains_live_scope_after_admission() {
             })
         })
     };
-    wait_entered.recv_timeout(Duration::from_secs(5)).unwrap();
+    let ready = wait_entered.recv_timeout(Duration::from_secs(5));
     control.cancel_now();
-    release.send(()).unwrap();
-    assert!(physical.join().unwrap().is_err());
-    worker.join_owned().await.unwrap();
+    let _ = release.send(());
+    let cutoff = std::time::Instant::now() + Duration::from_secs(5);
+    while !physical.is_finished() {
+        assert!(
+            std::time::Instant::now() < cutoff,
+            "physical custom-provider cleanup failed"
+        );
+        std::thread::park_timeout(Duration::from_millis(1));
+    }
+    let result = physical.join().unwrap();
+    ready.unwrap();
+    assert!(result.is_err());
     assert!(store.list_active().unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn application_operations_use_normal_worker_free_control_and_earliest_deadline() {
+    if support::supervised(
+        "application_operations_use_normal_worker_free_control_and_earliest_deadline",
+    ) {
+        return;
+    }
+    struct ApplicationOperations;
+    impl sc_cron::CronOperations for ApplicationOperations {
+        fn start(
+            &self,
+            context: sc_cron::StoreOperationContext,
+            _: ScheduleSpec,
+        ) -> sc_cron::CronOperationFuture<'_, sc_cron::Schedule> {
+            Box::pin(async move {
+                context.check()?;
+                Err(CronError::InvalidSpec("application policy".into()))
+            })
+        }
+        fn end(
+            &self,
+            context: sc_cron::StoreOperationContext,
+            _: sc_cron::EndSchedule,
+        ) -> sc_cron::CronOperationFuture<'_, sc_cron::EndedSchedule> {
+            Box::pin(async move {
+                context.check()?;
+                Err(CronError::InvalidSpec("application policy".into()))
+            })
+        }
+        fn query(
+            &self,
+            context: sc_cron::StoreOperationContext,
+            _: ScheduleQuery,
+        ) -> sc_cron::CronOperationFuture<'_, sc_cron::SchedulePage> {
+            Box::pin(async move {
+                context.check()?;
+                Ok(sc_cron::SchedulePage {
+                    items: vec![],
+                    next_after_id: None,
+                })
+            })
+        }
+    }
+    let control = sc_cron::WorkerStopControl::new().unwrap();
+    let now = std::time::Instant::now();
+    let context = control
+        .operation_context()
+        .with_deadline(now + Duration::from_secs(5));
+    let child = context.with_deadline(now + Duration::from_secs(10));
+    assert_eq!(child.deadline(), context.deadline());
+    let operations: &dyn sc_cron::CronOperations = &ApplicationOperations;
+    assert!(
+        operations
+            .query(child.clone(), ScheduleQuery::default())
+            .await
+            .unwrap()
+            .items
+            .is_empty()
+    );
+    control.cancel_now();
+    assert!(
+        operations
+            .query(child, ScheduleQuery::default())
+            .await
+            .is_err()
+    );
 }

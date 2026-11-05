@@ -8,7 +8,9 @@ impl<S: ScheduleStore + 'static, C: Clock + 'static> Worker<S, C> {
     ) -> Result<T, CronError> {
         let store = Arc::clone(&self.store);
         let scoped = if self.cooperative {
-            let controller = self.controller.as_ref().expect("cooperative controller");
+            let controller = self.controller.as_ref().ok_or_else(|| {
+                crate::consumer_contract::unavailable("operation_controller_missing")
+            })?;
             let root = crate::StoreOperationContext::root(Arc::clone(controller));
             let context = if self.stopping { root.terminal() } else { root };
             if let Err(error) = context.check() {

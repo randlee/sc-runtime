@@ -108,7 +108,10 @@ impl<S: ScheduleStore + 'static, C: Clock + 'static, J: JitterSource + 'static> 
         if self.core.controller.stopping() {
             return Err(crate::consumer_contract::unavailable("operation_stopping"));
         }
-        Ok(self.spawn_worker_mode(job, true))
+        let runtime = tokio::runtime::Handle::try_current()
+            .map_err(|_| crate::consumer_contract::unavailable("worker_runtime_unavailable"))?;
+        self.claim_worker()?;
+        Ok(self.spawn_claimed_worker(job, true, runtime))
     }
 }
 
@@ -117,6 +120,7 @@ impl WorkerHandle {
     #[must_use]
     pub fn stop_control(&self) -> WorkerStopControl {
         WorkerStopControl {
+            application_owned: false,
             controller: Arc::clone(&self.controller),
         }
     }
@@ -155,6 +159,46 @@ impl WorkerHandle {
 }
 
 impl WorkerStopControl {
+    /// Creates application-owned live cancellation/deadline control without a worker.
+    ///
+    /// The application owns admission, physical work, cleanup and joins in its
+    /// custom CronOperations. This control only owns shared scope notification.
+    /// The creating runtime must outlive those operations and their stop timer.
+    ///
+    /// # Errors
+    /// Returns an unavailable error unless called inside the owning Tokio runtime.
+    pub fn new() -> Result<Self, CronError> {
+        let runtime = tokio::runtime::Handle::try_current()
+            .map_err(|_| crate::consumer_contract::unavailable("worker_runtime_unavailable"))?;
+        let controller = Arc::new(crate::operation::Controller::new());
+        controller.bind_runtime(runtime);
+        Ok(Self {
+            controller,
+            application_owned: true,
+        })
+    }
+
+    /// Acknowledges physical completion by an application-owned provider.
+    ///
+    /// Call only after closing intake and joining all custom tasks, native calls
+    /// and cleanup. Custom work is caller-owned; this method cannot join it.
+    /// Controls obtained from a framework WorkerHandle reject this operation.
+    ///
+    /// # Errors
+    /// Refuses framework-owned controls, live registered work or missing stop.
+    pub fn finish_application_shutdown(&self) -> Result<(), CronError> {
+        if !self.application_owned
+            || !self.controller.stopping()
+            || self.controller.has_active_work()
+        {
+            return Err(crate::consumer_contract::unavailable(
+                "operation_completion_owner_required",
+            ));
+        }
+        self.controller.worker_finished();
+        self.controller.status(crate::ShutdownStatus::Joined);
+        Ok(())
+    }
     /// Closes intake and shortens the live absolute shutdown cutoffs.
     ///
     /// # Errors
