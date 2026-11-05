@@ -164,6 +164,17 @@ jobs:
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just lint
 
+      - name: Validate standard cron adapter feature matrix
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        run: |
+          set -euo pipefail
+          for features in schema scheduler schema,scheduler; do
+            cargo +1.94.1 test -p sc-cron-commands --no-default-features --features "$features"
+          done
+          cargo +1.94.1 clippy -p sc-cron-commands --all-targets --no-default-features --features schema,scheduler -- -D warnings -D clippy::await_holding_lock
+          cargo +1.96.1 test -p sc-cron-commands --no-default-features --features schema,scheduler,monty
+          cargo +1.96.1 clippy -p sc-cron-commands --all-targets --no-default-features --features schema,scheduler,monty -- -D warnings -D clippy::await_holding_lock
+
       - name: Test
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just test
@@ -203,6 +214,8 @@ jobs:
         run: just test windows-hook-default
       - name: Execute runtime fixture ownership on Windows
         run: cargo test -p sc-runtime --features test-util --lib
+      - name: Execute standard cron adapter on Windows
+        run: cargo +1.94.1 test -p sc-cron-commands --no-default-features --features schema,scheduler
       - name: Execute isolated runtime Ctrl-C and Ctrl-Break lifecycle
         env:
           SC_RUNTIME_EPHEMERAL_CI: '1'
@@ -213,3 +226,5 @@ jobs:
         run: just test windows-hook-monty
       - name: Execute Monty host bridge root
         run: just test windows-host-monty
+      - name: Execute Monty cron adapter on Windows
+        run: cargo +1.96.1 test -p sc-cron-commands --no-default-features --features schema,scheduler,monty
