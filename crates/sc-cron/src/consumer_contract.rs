@@ -331,7 +331,7 @@ mod tests {
         let child = parent.with_deadline(earlier);
         parent.state.lock().expect("state").stop_requested = true;
         assert!(child.stop_requested());
-        // Intent closes caller-owned intake; admitted work retains future G.
+        // The caller closes intake; admitted work retains its future cutoff.
         assert!(parent.check().is_ok());
         assert!(child.check().is_ok());
         parent.state.lock().expect("state").cancelled = true;
