@@ -130,3 +130,34 @@ fn debug_redacts_nested_request_source_payload_environment_and_references() {
         panic!("start request")
     }
 }
+
+#[cfg(feature = "schema")]
+mod typed_projection {
+    #[utoipa::path(get,path="/envelope",responses((status=200,body=sc_command::Envelope<serde_json::Value>)))]
+    fn envelope() {}
+    #[utoipa::path(get,path="/error",responses((status=400,body=sc_command::OpError)))]
+    fn error() {}
+    #[utoipa::path(get,path="/kind",responses((status=200,body=sc_command::ErrorKind)))]
+    fn kind() {}
+    #[utoipa::path(post,path="/cron",request_body=sc_cron_commands::CronRequest,responses((status=200)))]
+    fn request() {}
+    #[derive(utoipa::OpenApi)]
+    #[openapi(paths(envelope, error, kind, request))]
+    struct Api;
+    #[test]
+    fn real_typed_paths_use_canonical_owner_schemas() {
+        use utoipa::OpenApi;
+        envelope();
+        error();
+        kind();
+        request();
+        let document = serde_json::to_value(Api::openapi()).unwrap();
+        let schemas = &document["components"]["schemas"];
+        let reference=document["paths"]["/envelope"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]["$ref"].as_str().unwrap();
+        let name = reference.strip_prefix("#/components/schemas/").unwrap();
+        assert!(schemas[name]["oneOf"].is_array());
+        assert!(schemas["CronRequest"]["oneOf"].is_array());
+        assert_eq!(schemas["OpError"]["additionalProperties"], false);
+        assert!(schemas["ErrorKind"]["enum"].is_array());
+    }
+}

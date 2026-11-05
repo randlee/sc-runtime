@@ -247,8 +247,10 @@ impl<T: schemars::JsonSchema> schemars::JsonSchema for Envelope<T> {
 }
 
 #[cfg(feature = "schema")]
-impl<T: utoipa::ToSchema> utoipa::PartialSchema for Envelope<T> {
-    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+impl<T: utoipa::ToSchema> utoipa::__dev::ComposeSchema for Envelope<T> {
+    fn compose(
+        _: Vec<utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>>,
+    ) -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
         use utoipa::openapi::schema::{AdditionalProperties, ObjectBuilder, OneOfBuilder, Type};
         let object = || {
             ObjectBuilder::new()
