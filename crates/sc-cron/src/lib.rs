@@ -93,6 +93,9 @@
 #![forbid(unsafe_code)]
 #![warn(unreachable_pub)]
 
+mod application_control;
+#[doc(inline)]
+pub use application_control::WorkerStopControl;
 mod clock;
 pub mod consumer_contract;
 mod coord;

@@ -12,10 +12,13 @@ use std::time::{Duration, Instant};
 use waitpid_any::WaitHandle;
 use win32job::{ExtendedLimitInfo, Job};
 
-pub(super) const BRIDGE: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/tests/hook_environment/owned_child.py"
-);
+pub(super) const BRIDGE: &str = match option_env!("SC_CRON_TEST_WINDOWS_BRIDGE") {
+    Some(path) => path,
+    None => concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/hook_environment/owned_child.py"
+    ),
+};
 // Same fixed cleanup budget as the existing Python owner; not target time.
 const CLEANUP: Duration = Duration::from_secs(10);
 const POLL: Duration = Duration::from_millis(10);

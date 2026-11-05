@@ -144,3 +144,21 @@ fn expired_inspector_is_physically_reaped_before_error_returns() {
         "deadline discarded an unreaped inspector"
     );
 }
+
+#[test]
+fn missing_session_inspection_refuses_before_actual_command_launch() {
+    let root = tempfile::tempdir().expect("preflight witness");
+    let launched = root.path().join("launched");
+    let mut command = Command::new("/bin/sh");
+    command
+        .args(["-c", "printf launched > \"$1\"", "inspection-witness"])
+        .arg(&launched)
+        .env("PATH", "");
+    let result = output(&mut command, super::super::super::common::WAIT, || false);
+    assert!(
+        !result.status.success(),
+        "preflight failure must refuse dispatch"
+    );
+    assert!(!launched.exists(), "uninspectable command was launched");
+    assert!(String::from_utf8_lossy(&result.stderr).contains("session inspection unavailable"));
+}

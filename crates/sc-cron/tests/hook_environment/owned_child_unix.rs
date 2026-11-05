@@ -6,10 +6,13 @@ use std::os::unix::process::ExitStatusExt;
 use std::process::{Child, Command, ExitStatus, Output, Stdio};
 use std::time::{Duration, Instant};
 
-const BRIDGE: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/tests/hook_environment/owned_child_unix.py"
-);
+const BRIDGE: &str = match option_env!("SC_CRON_TEST_UNIX_BRIDGE") {
+    Some(path) => path,
+    None => concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/hook_environment/owned_child_unix.py"
+    ),
+};
 const CLEANUP: Duration = Duration::from_secs(10);
 const POLL: Duration = Duration::from_millis(10);
 

@@ -61,7 +61,16 @@ requirements:
   - NFR-RUN-0002
   - NFR-RUN-0005
   - NFR-RUN-0001
+  - NFR-RUN-0003
+  - NFR-RUN-0004
+  - NFR-RUN-0008
 adrs:
+  - ADR-RUN-0001
+  - ADR-RUN-0004
+  - ADR-RUN-0006
+  - ADR-RUN-0007
+  - ADR-RUN-0008
+  - ADR-RUN-0011
   - ADR-RUN-0002
   - ADR-RUN-0005
   - ADR-RUN-0017
@@ -89,6 +98,7 @@ owned_paths:
   - wizard/pages/page-3-options.html
   - tests/unit/generation/test_schema.py
   - tests/unit/generation/test_monty_example.py
+  - tests/unit/generation/test_application_control_contract.py
   - template/hooks/drop-template-exclude.rhai
   - crates/sc-command/src/observability/tests.rs
   - docs/requirements.md
@@ -192,9 +202,10 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
    alongside `sc-runtime 0.2.0`: the command crate exposes the changed RMCP
    types. Include the command-dependent cron manifest and shared logging
    trait in the composition probe; freeze cron 0.2.0 for the new public
-   compatibility contract and adapter 0.2.0 as part of the closure. Leave
-   unrelated config/transport packages at 0.1.1. Record exact per-package
-   versions and command-before-cron/runtime publication order. Amend
+   compatibility contract and adapter 0.2.0 as part of the closure. Release all six public workspace crates at the shared 0.2.0 version:
+   sc-config, sc-transport, sc-command, sc-runtime, sc-cron and
+   sc-cron-commands. The internal publish=false SQLite helper stays private.
+   Record exact versions and dependency-ordered publication. Amend
    ADR-RUN-0017's temporary command dependency version and the cron
    requirements/architecture when that affected edge changes, preserving
    defaults-off/no-server semantics and deferred upstream logging cleanup.
@@ -207,18 +218,15 @@ adapter behavior. Its baseline permits c-2/c-3/c-5/c-6 parallel development.
 6. Define `c-4` as the named authorized release handoff: only after an
    authorized `sc-runtime 0.2.0` publication and registry visibility may its
    no-patch fixture report the registry-consumer acceptance result.
-7. Extend the temporary probe to qualify the canonical sc-publish selective
-   release contract for that affected closure (REQ-RUN-0702). Test actual
-   version verification, literal-base/publish=false handling, ordered publish
-   plan, and per-package registry lookups using the pinned kit's existing
-   dry-run/preflight facilities. Current code checks every declared crate
-   against the workspace/tag version, so disabling publication alone is not
-   proof. Record supported inputs, affected-package versions, unchanged
-   package treatment, and `v0.2.0` tag semantics in the release ADR amendment.
-   If the current pin cannot support it, own an upstream sc-publish change
-   request and qualify a released exact pin before freezing the contract.
-   A demonstrated upstream gap leaves c-1 incomplete; no hand-written
-   workflow bypass or blanket version bump is permitted.
+7. Freeze the human-corrected all-public-crates release contract under
+   REQ-RUN-0702. Every release publishes all six public crates at one shared
+   version; Phase C uses 0.2.0. C-3 owns the coherent manifest/lock/template
+   migration and existing-kit input regeneration; c-4 qualifies the pinned
+   canonical kit's uniform-version checks, dependency order, registry
+   visibility and no-patch consumer before authorized publication. The old
+   mixed-version selective probe failed and is historical evidence, not an
+   upstream enhancement prerequisite. Do not claim it passed, bypass existing
+   validation, hand-edit vendored workflows or infer publication authority.
 
 Additional contract deliverable under the framework charter, REQ-CRON-0020/0021
 and REQ-CRNC-0002: freeze the default/override guide in compatibility-contract.md.
@@ -326,9 +334,11 @@ REQ-CRNC-0001/0002, NFR-CRNC-0001, REQ-RUN-0332, REQ-RT-0005/0006):
   ecosystem version/path edits in the same manifest and must retain those
   features. Do not remove the manifest from c-3 wholesale. C-5 writes only
   source/tests and compiles against the committed c-1 feature baseline.
-- Freeze sc-cron and new sc-cron-commands at 0.2.0 in the affected package
-  matrix, order command→cron→adapter and command→runtime, qualify selective kit
-  treatment including the new crate, and preserve unrelated 0.1.1 packages.
+- Freeze all six public crates at the shared 0.2.0 release version, including
+  sc-config/sc-transport and the new adapter. Preserve dependency order:
+  command before cron/runtime and cron before adapter, with each prerequisite
+  registry-visible before its dependent. The internal publish=false helper
+  remains private. C-4 qualifies existing-kit all-crates publication.
   Later ecosystem version/lock migration remains exclusively c-3 because its
   dependency/API update must compile atomically; initial skeleton membership
   in c-1 is an earlier baseline handoff, not concurrent manifest ownership.
@@ -370,11 +380,10 @@ Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
 - The release handoff has a sole owner (`c-4`) and its required authorization,
   registry visibility, no-patch fixture, and exact package-identity proof are
   unambiguous.
-- The affected command/runtime/cron dependency closure and selective kit
-  contract are demonstrated by the temporary probe, including a negative
-  stale-command-version case. ADR-RUN-0203 names every affected release,
-  publication order, tag/version lookup semantics, and qualified exact kit
-  pin; unsupported selective publication blocks this contract's closure.
+- The current release matrix and C1/C3/C4 handoff consistently name all six
+  public crates at 0.2.0 and the canonical kit's shared tag/version semantics.
+  Historical mixed-version probe failure is not an active closure blocker.
+  C-4 retains actual kit/publication/registry qualification and authorization.
 - ADR-RUN-0005 states the default policy mapping for each selected crate and
   edge, identifies fresh generation as its consumer and the observed missing
   consumer boundary policy as its purpose, and defines the handoff: after
@@ -382,10 +391,13 @@ Root: `boundary:phase-c-consumer-runtime-contract`, `adr:ADR-RUN-0005`,
 
 ## Required validation
 
-- `python3 examples/spike/phase-c-contract/probe.py`, `just lint gates`, and
-  `just test` pass before the binding documents are merged. The probe may use
-  the registry only in this manually recorded pre-merge evidence run; it is
-  deleted before merge and is never a network-dependent CI test.
+- The recorded temporary qualification outcome remains in ADR-RUN-0005/0203.
+  The temporary executable tree is retired before merge; it is not a new CI
+  dependency. Durable schema/wire/typed-path and ordinary application-control
+  consumers (`test_application_control_contract.py` uses a separate ordinary
+  Cargo workspace), `just lint gates`, and `just test` qualify current source.
+  NFR-RUN-0003/0004 govern minimal standard-crate declarations, and the existing
+  released line-count gate enforces NFR-RUN-0008 without another local tool.
 - Documentation links and identifiers resolve; search confirms no remaining
   authoritative Phase C baseline says `0.8.0` or permits generic `0.8.x`.
 - Push the contract amendments for `c-2`/`c-3`/`c-5`/`c-6` to merge-forward before each
@@ -427,3 +439,13 @@ existing wizard option controls and the two exact schema/patch-inventory tests
 listed above, plus explicit false defaults in the existing eight fixtures.
 C3 owns later generator implementation after consuming this handoff. Test
 inventory assertions remain exact and existing default-off checks remain.
+
+C1 QA1 contract correction (2026-11-04): the human stated, "I expect we will
+release all crates every release". Current Phase C release authority therefore
+uses all six public crates at 0.2.0. Historical reviews and probe failures are
+retained as history; none is rewritten into a passing selective qualification.
+The missing normal custom-provider context hook is now the existing
+WorkerStopControl factory/application-completion API, frozen in the compatibility
+contract. C1 implements that worker-free control only; C5 retains concrete
+framework worker/native store behavior. Source and schema diagnostics are
+value-free and schema construction uses infallible owner-native builders.
