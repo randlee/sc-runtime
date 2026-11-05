@@ -34,7 +34,7 @@ const DAEMON_EXEC_RECOVERY: &str = "build the sibling daemon binary and run daem
 const DAEMON_EXEC_MESSAGE: &str = "the daemon binary could not be started";
 
 /// Parsed argv, excluding the program name.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Command {
     #[cfg(feature = "cron-commands")]
     /// Standard cron request sent unchanged through the daemon boundary.
@@ -91,6 +91,57 @@ pub enum Command {
         /// `--json` was present.
         json: bool,
     },
+}
+
+impl fmt::Debug for Command {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            #[cfg(feature = "cron-commands")]
+            Self::Cron { json, .. } => f
+                .debug_struct("Cron")
+                .field("json", json)
+                .finish_non_exhaustive(),
+            Self::DaemonStart { json } => {
+                f.debug_struct("DaemonStart").field("json", json).finish()
+            }
+            Self::WidgetCreate {
+                name,
+                endpoint,
+                json,
+            } => f
+                .debug_struct("WidgetCreate")
+                .field("name", name)
+                .field("endpoint", endpoint)
+                .field("json", json)
+                .finish(),
+            Self::WidgetGet { id, endpoint, json } => f
+                .debug_struct("WidgetGet")
+                .field("id", id)
+                .field("endpoint", endpoint)
+                .field("json", json)
+                .finish(),
+            #[cfg(feature = "general-db")]
+            Self::WidgetDelete { id, endpoint, json } => f
+                .debug_struct("WidgetDelete")
+                .field("id", id)
+                .field("endpoint", endpoint)
+                .field("json", json)
+                .finish(),
+            #[cfg(feature = "general-db")]
+            Self::DeleteRow {
+                table,
+                id,
+                endpoint,
+                json,
+            } => f
+                .debug_struct("DeleteRow")
+                .field("table", table)
+                .field("id", id)
+                .field("endpoint", endpoint)
+                .field("json", json)
+                .finish(),
+        }
+    }
 }
 
 /// Structured parse failure. `--help` carries clap's rendered text.
