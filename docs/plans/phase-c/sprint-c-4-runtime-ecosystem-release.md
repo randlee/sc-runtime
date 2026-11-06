@@ -71,6 +71,10 @@ adrs:
   - ADR-RT-0004
   - ADR-RT-0005
 owned_paths:
+  - docs/requirements.md
+  - template/scripts/consumer_checks.py
+  - template/scripts/dependency_policy.py
+  - tests/unit/generation/test_daemon_scratch_policy.py
   - docs/development/sc-publish.md
   - docs/consumer-preflight-and-docli.md
   - docs/getting-started.md
@@ -344,3 +348,22 @@ startup errors are not duplicated as cleanup failures. MCP feature dispatch live
 in Rust behind one Liquid registration, and Monty assertions retain optional
 forwarding/default-off semantics and the production-only dependency boundary.
 The tempfile guard and all required final release gates remain unchanged.
+
+
+### Approved Python scratch policy — 2026-11-06
+
+The human-approved clarification now permits only the qualified direct
+`sc-cron -> tempfile` dependency for private Python working directories.
+The daemon guard projects Cargo's active normal tree onto exact metadata
+package identities; workspace dev-feature unification cannot create a false
+normal edge. Direct daemon, alternate/transitive tempfile ancestry (including a
+second path to the same package) and every normal tempdir remain rejected.
+Script locations and daemon instance/database path rules are unchanged.
+
+All eighteen graph regressions and the real selected/default-off graph checks
+passed. The fresh untouched generated consumer completed `setup`, `lint`,
+`test`, `build-cli` and `build-daemon`; strict workspace Clippy and formatting
+also passed. These results supersede the earlier scratch-policy blocker;
+independent QA, final composed/source-qualified benchmark, publication and
+registry-only acceptance remain open. The approval is recorded in
+`reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json`.

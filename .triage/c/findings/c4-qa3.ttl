@@ -99,3 +99,11 @@ triage:c4_qa3_RBQA_C4_001 a triage:Finding ;
  triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
  triage:persistence_timing "after_source_fix_checkpoint" ;
  triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa3_REQ_QA_C4_002 triage:source_fix_status "implemented-pending-independent-review" ;
+ triage:approved_authority "docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json" ;
+ triage:source_fix_summary "Approved normal-ancestry policy implemented; exact resolved identities and active normal Cargo tree reject alternate tempfile paths and all tempdir. Eighteen deterministic graph tests, real selected/no-cron graphs, untouched five-recipe consumer sequence and strict workspace Clippy passed. No release or registry closure claimed." .
+
+triage:c4_qa3_RBQA_C4_001 triage:source_fix_status "implemented-pending-independent-review" ;
+ triage:approved_authority "docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json" ;
+ triage:source_fix_summary "Approved normal-ancestry policy implemented; exact resolved identities and active normal Cargo tree reject alternate tempfile paths and all tempdir. Eighteen deterministic graph tests, real selected/no-cron graphs, untouched five-recipe consumer sequence and strict workspace Clippy passed. No release or registry closure claimed." .
