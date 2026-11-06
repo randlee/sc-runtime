@@ -1,0 +1,101 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+# Historical findings snapshot persisted centrally after the source fixes.
+# This record does not establish before-fix triage persistence.
+
+triage:c4_qa3_REQ_QA_C4_001 a triage:Finding ;
+ triage:id "REQ-QA-C4-001" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" ;
+ triage:file "crates/sc-cron/tests/fixtures/logging_consumer/Cargo.toml:11; crates/sc-cron/tests/fixtures/logging_consumer/Cargo.toml:14; scripts/tests/test_observability_dependencies.py:35" ;
+ triage:issue "Source portion verified corrected: both isolated logging-consumer dependencies are 0.2.0 and the actual isolated offline metadata/test proof passed (one Python harness case). The required exact =0.2.0 registry-only public facade consumer has not been qualified. The source fixture still uses path dependencies; workspace/source facade success cannot close the registry portion. This remains an open release acceptance gate, not a prerequisite to conducting this source re-QA." ;
+ triage:action "After authorized publication and all-six visibility, preserve and execute a real isolated public logging-facade consumer using exact =0.2.0 with no public path/git/patch dependency, retain locked identity and actual facade results. Do not reopen the verified source-version fix or substitute its passing checkout proof for registry evidence." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa3_REQ_QA_C4_002 a triage:Finding ;
+ triage:id "REQ-QA-C4-002" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" ;
+ triage:file "template/Justfile; crates/sc-cron/src/process.rs:213; docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:290" ;
+ triage:issue "Selected cron makes production sc-cron->tempfile reachable, but binding REQ-RUN-0503 criterion6 and REQ-RUN-0701 command6 forbid tempfile anywhere in the daemon normal tree. The actual untouched sequence compiled the daemon then failed its guard. The proposed exception remains unapproved." ;
+ triage:action "Keep the guard and criteria open. Resolve the explicit authority conflict through an approved requirement decision, then implement only its exact reviewed scope and rerun the untouched sequence; alternatively implement a compliant approved design. Do not waive the guard or claim green." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa3_REQ_QA_C4_004 a triage:Finding ;
+ triage:id "REQ-QA-C4-004" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" ;
+ triage:file "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:300" ;
+ triage:issue "Parent completion/qualification, actual authorized all-six publication, exact visibility, and shared v0.2.0 main/tag/source provenance remain unproven. The new exact-head receipt explicitly records published=false and tagged=false; authoritative sprint remains in_progress. Canonical visibility source enforcement is now verified corrected, but is not evidence of actual publication." ;
+ triage:action "Complete source/parent qualification and applicable existing staging/merge gates. Obtain the required explicit authority before the normal publication step, then retain actual dependency-ordered publication and visibility records; keep sprint status in_progress meanwhile." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa3_REQ_QA_C4_005 a triage:Finding ;
+ triage:id "REQ-QA-C4-005" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" ;
+ triage:file "tests/integration/release/test_standard_cron_commands.py:837; tests/integration/release/test_published_runtime_ecosystem.py:9" ;
+ triage:issue "Registry-only unchanged standard consumer/facade execution and immutable package proof remain unexecuted. The exact crates.io source-identity guard is now corrected and its four recorded tests pass, but synthetic guard tests and checkout-patched real composition do not prove no-patch registry closure, all-six visibility, or registry UI/target/schema/capacity/lifecycle/customization acceptance." ;
+ triage:action "After lawful authorized publication and visibility, execute the named no-source-edit registry fixtures, including the public facade and all six visibility checks. Record exact main/tag/source/package identities and locked metadata. Do not substitute the current checkout or prospective patches." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa3_REQ_QA_C4_006 a triage:Finding ;
+ triage:id "REQ-QA-C4-006" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" ;
+ triage:file "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:300" ;
+ triage:issue "Final composed root just lint && just test, completed parent QA/CI and current controlled-source benchmark qualification remain OPEN. Exact-head focused startup/error precedence/redaction, strict generated Monty Clippy, eight real mixed-UI tests plus ten schema/native-ownership tests, Python contracts, publisher suite and size/fmt checks pass in retained scoped receipts. Fullsuite_claimed=false; these do not qualify the whole suite or Linux/Windows execution." ;
+ triage:action "Complete applicable parent qualifications and required final composed root just lint && just test on the final head, with the controlled-source benchmark qualification required for release. Retain real results; do not infer CI/native-platform success from focused macOS receipts. No CI wait or redundant execution is requested from this scoped reviewer." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa3_ARCH_003 a triage:Finding ;
+ triage:id "ARCH-003" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" ;
+ triage:file "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md" ;
+ triage:issue "The authoritative C4 structural release/registry gate remains open at this exact pin. Canonical positive exact-version publication-visibility enforcement is now adopted for all six public crates; that source correction closes the earlier kit-adoption portion. Actual authorized six-package 0.2.0 publication, visibility, tag/provenance and no-patch registry consumer/identity/UI/lifecycle/logging-facade proofs remain absent. The scoped receipt records published=false, tagged=false and fullsuite_claimed=false. Final composed lint/test and parent qualifications remain unproven, the tempfile requirement conflict remains unanswered, and every committed benchmark campaign source differs in production composition.rs. No staging or tempfile exception has become operative authority. Source fixes and scoped receipts do not close release acceptance." ;
+ triage:action "Retain ARCH-003 and full-sprint merge readiness as open. Finish required composed and parent qualification, obtain controlled-host evidence whose measured source is equivalent to the release source, and resolve the tempfile conflict through existing authority. Only after separate authorization and prerequisites, publish all six exact 0.2.0 packages with visibility/tag/provenance evidence, then execute unchanged registry-only consumer and public logging-facade proofs. Do not treat canonical-kit adoption or scoped checkout proof as sprint closure." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa3_RBQA_C4_001 a triage:Finding ;
+ triage:id "RBQA-C4-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" ;
+ triage:file "template/scripts/consumer_checks.py" ;
+ triage:issue "Selected cron production dependency closure violates the still-binding daemon tempfile exclusion; the required untouched consumer sequence remains red." ;
+ triage:action "Keep the old guard and acceptance open until the authorized owner resolves the exact requirement conflict. If the proposed narrow sc-cron private-scratch exception is adopted, implement and verify its ancestry-sensitive guard under that recorded authority; otherwise deliver a conforming approved design. Do not allowlist tempfile globally or remove private Python isolation as a local shortcut." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
