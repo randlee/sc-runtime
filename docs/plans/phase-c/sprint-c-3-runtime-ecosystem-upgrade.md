@@ -64,7 +64,20 @@ requirements:
   - NFR-RUN-0009
   - NFR-RUN-0002
   - NFR-RUN-0005
+  - NFR-RUN-0003
+  - NFR-RUN-0004
+  - NFR-RUN-0006
+  - NFR-RUN-0008
 adrs:
+  - ADR-CFG-0001
+  - ADR-CFG-0002
+  - ADR-CFG-0003
+  - ADR-TRN-0001
+  - ADR-TRN-0002
+  - ADR-TRN-0003
+  - ADR-TRN-0004
+  - ADR-TRN-0005
+  - ADR-TRN-0006
   - ADR-CMD-0001
   - ADR-CMD-0002
   - ADR-CMD-0003
@@ -81,6 +94,7 @@ adrs:
   - ADR-RUN-0011
   - ADR-RUN-0003
   - ADR-RUN-0012
+  - ADR-RUN-0013
   - ADR-RUN-0017
   - ADR-RUN-0202
   - ADR-RUN-0203
@@ -92,9 +106,19 @@ adrs:
   - ADR-RUN-0018
   - ADR-RUN-0019
   - ADR-CRNC-0001
+  - ADR-RUN-0004
+  - ADR-RUN-0005
+  - ADR-RUN-0008
+  - ADR-RUN-0016
+  - ADR-RUN-0305
+  - ADR-RUN-0307
 owned_paths:
   - Cargo.toml
   - Cargo.lock
+  - crates/sc-config/Cargo.toml
+  - crates/sc-transport/Cargo.toml
+  - release/sc-publish-consumer-input.json
+  - release/publish-artifacts.toml
   - crates/sc-command/Cargo.toml
   - crates/sc-command/src/
   - crates/sc-cron/Cargo.toml
@@ -103,7 +127,6 @@ owned_paths:
   - crates/sc-runtime/src/
   - crates/sc-runtime/tests/
   - crates/sc-runtime-db-sqlite/Cargo.toml
-  - crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs
   - template/Cargo.toml
   - template/workspace.template.toml
   - template/crates/daemon/Cargo.toml
@@ -251,7 +274,7 @@ REQ-RUN-0332/REQ-CRNC-0002, consuming c-1's compatibility contract:
   Existing run methods delegate no-op; no transport API/version edit is needed.
   Concurrent port-zero fixtures return distinct nonzero endpoints agreeing
   with client/accessors/health. Causal competing bind to the same owned endpoint
-  fails before readiness; planted reserve/drop handoff permits takeover. No
+  fails before readiness; a synchronous drop-state witness covers prebind failure. No
   pre-bind success receipt, weakened real-signal test or implicit endpoint change.
 - Implement public CLI/HTTP/enabled-MCP projection handlers, all using the same
   canonical versioned CronRequest JSON contract: `cron.start`, `cron.end`,
@@ -314,7 +337,8 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`,
   linked against the former Utoipa 5 type, demonstrating that the intentional
   0.2.0 minor bump carries the breaking public dependency change rather than
   hiding it in a patch release.
-- `crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs` and its companion tree
+- The bounded resolver regression in
+  `tests/unit/generation/test_runtime_ecosystem_upgrade.py` and companion tree
   assertions prove `rusqlite 0.39.x`, `libsqlite3-sys 0.37.x`, and template
   SQLx 0.9 compatibility; no 0.38+ native SQLite sys crate resolves.
 
@@ -364,3 +388,70 @@ results retain the analyzer's nonfatal trait-self-loop signals; no policy or
 severity was changed. Root formatting and strict all-target Clippy pass. Full
 consumer behavior and the remaining ecosystem/runtime deliverables are still
 in progress; this checkpoint does not claim sprint completion.
+
+### Original ecosystem and runtime checkpoint (superseded by QA1 fixes)
+
+The workspace now resolves RMCP 3.8.0, Utoipa 6.0.0 and Utoipa-Axum 0.3.0.
+Affected command, cron, runtime and adapter packages are 0.2.0; config,
+transport and db-sqlite remain 0.1.1. The isolated observability version/feature
+guard and its stale-version rejections pass. The SQLite resolver additionally
+requires one rusqlite 0.39.x, SQLx 0.9.x and native libsqlite3-sys 0.37.x.
+The former Utoipa5 router is intentionally rejected at the public routes seam.
+`tests/unit/generation/test_runtime_ecosystem_upgrade.py` supplies the actual
+locked normal-edge identity verifier for both workspace and daemon roots.
+
+The seven-method builder surface includes the frozen bound-endpoint callback;
+cleanup-capable fixtures use the existing runner and physically own their
+threads through startup/drop and queued joins. Native Windows CI at
+`5e81b533df32a5c35169fd2e4fabc847d726e5ca` passed 34 runtime tests and six real
+console scenarios: Ctrl-C and Ctrl-Break, each with an in-flight request,
+cleanup/instance-lock retention, same-root restart and an early store-setup
+signal. Mac runtime tests and strict Windows-target compilation also pass.
+
+Generic CLI/HTTP/MCP projections import the sole adapter DTOs, accept the
+application executor, and forward the runtime's original absolute request
+Instant through HTTP extensions/RMCP request parts. Schema activation stays on
+selected daemon/service edges. Utoipa's owner-local generic Envelope schema now
+supports actual typed path composition. Final selected root registration stays
+with C4; this checkpoint claims no real standard executor registration.
+
+Acceptance remains incomplete. `run-x8d.1.1` tracks the canonical Schemars root
+object missing from actual RMCP tools; C3 preserves the frozen adapter source
+and provides a tested owner patch separately. Apply the object marker only in
+the JsonSchema conversion: adding it to shared Utoipa input would discard its
+oneOf alternatives. `run-x8d.3.1` tracks duplicate raw MCP arguments collapsing
+into Value before DTO validation. The committed generated-projection regression
+keeps these failures visible. A temporary schema-only clone passed four initial
+UI projection checks; that diagnostic is not unmodified-source acceptance.
+
+C4's eventual publication order is command before cron/runtime, cron before
+cron-commands. Registry acceptance must verify all four exact 0.2.0 packages
+are visible, generate without SDK checkout patches, and rerun the same locked
+identity verifier from the runtime/daemon roots. The selective publish-kit
+qualification remains an open C1 requirement; no publication, qualified kit pin,
+registry-consumer success or sprint completion is claimed here.
+
+
+### QA1 correction contract
+
+The owner superseded selective publication with one shared 0.2.0 release of all
+six public crates: config, transport, command, runtime, cron and cron-commands.
+The db-sqlite helper remains private. C3 aligns all manifests, lockfiles, normal
+SDK requirements and version assertions, then regenerates the current pinned
+publish kit from the existing canonical input with the sixth package included.
+C4 still owns publication, registry visibility and the no-checkout consumer proof.
+No selective-publisher enhancement or new kit release is required.
+
+The ordinary MCP attachment retains bounded original JSON POST bytes in private
+HTTP extensions. The sole read-only `mcp_request_body` accessor lets an application
+parse its own canonical DTO before RMCP's normalized Value loses struct duplicate
+fields. Runtime neither interprets cron nor constrains opaque payloads or unrelated
+tools. Exact body limits, bytes, headers and absolute deadline remain unchanged.
+The generated cron projection uses the same owned CronRequest deserializer as the
+CLI/HTTP projections. The existing closed runtime public-surface authority records
+this accessor; no middleware helper is exported for tests.
+
+Timeout response or diagnostic text cannot authorize replay: admitted work may
+still complete. Consumers reconcile unknown outcomes before considering replay.
+Tests use causal state/ownership witnesses and bounded failure paths, with no
+reserve/drop/rebind or sleep/is_finished scheduling samples.

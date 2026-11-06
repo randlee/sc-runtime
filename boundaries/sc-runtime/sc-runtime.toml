@@ -4,7 +4,7 @@ owner_crate_path = "sc_runtime"
 name = "sc-runtime"
 
 [public]
-facade = "Daemon, DaemonBuilder, DaemonConfig, RuntimeError, testing"
+facade = "Daemon, DaemonBuilder, DaemonConfig, RuntimeError, mcp_request_body, testing"
 notes = "testing::DaemonFixture is behind the non-default test-util feature. There is no sc_runtime::AppName. NeedStores, NeedRoutes, and Ready are doc(hidden) typestate markers in the builder signature."
 
 [implementation]
@@ -14,7 +14,7 @@ visibility = "public"
 constructor = "public"
 
 [composition]
-roots = ["Daemon", "DaemonBuilder", "DaemonConfig", "RuntimeError", "testing"]
+roots = ["Daemon", "DaemonBuilder", "DaemonConfig", "RuntimeError", "mcp_request_body", "testing"]
 
 # Production tool-package/import exclusion (normal + build, all production
 # features) is checked by the production-tool-boundary companion. It resolves

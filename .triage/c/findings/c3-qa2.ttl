@@ -1,0 +1,34 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:c3_qa2_ARCH_C3_003 a triage:Finding ;
+ triage:id "ARCH-C3-003" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "4c9822673eb35002c6b931e05a7254e25be0d08e" ;
+ triage:file "template/crates/cli/src/lib.rs" ;
+ triage:issue "Canonical DTOs and CronAction now redact Debug, but the successful public Command::Cron wrapper still derives Debug over its serde_json::Value request and exposes source, payload and environment/reference values." ;
+ triage:action "Provide value-free Debug for the public Command::Cron diagnostic path while preserving its canonical request serialization and other command behavior. Add a successful cron.start/Command::Cron regression with distinct payload, Python/Monty source and environment Set/Reference canaries, checking each canary is absent rather than comparing the entire input JSON string." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6667032630" .
+
+triage:c3_qa2_RBQA_C3_001 a triage:Finding ;
+ triage:id "RBQA-C3-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "4c9822673eb35002c6b931e05a7254e25be0d08e" ;
+ triage:file "template/crates/cli/src/lib.rs" ;
+ triage:issue "Successful parsed Command::Cron Debug still prints sensitive canonical request values." ;
+ triage:action "Give the public parsed Command a value-free Debug implementation for Cron (retaining safe variant metadata), and verify a successfully parsed cron.start request with individual source, payload, environment value/path/reference canaries. Preserve serialization/schema and dispatch semantics." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6667032630" .
+
+triage:c3_qa2_QA_C3_002 a triage:Finding ;
+ triage:id "QA-C3-002" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "open" ;
+ triage:reviewed_commit "4c9822673eb35002c6b931e05a7254e25be0d08e" ;
+ triage:file "template/crates/cli/src/lib.rs" ;
+ triage:issue "Successful public CLI Command::Cron diagnostics still expose the raw canonical request Value, including payload, interpreter source and environment/reference values." ;
+ triage:action "Provide value-free Debug for the public Command cron variant while retaining legitimate command metadata and exact wire data. Test successfully parsed valid cron.start requests with distinct payload/source/environment/reference canaries, asserting absence of each value through the public Command formatter; preserve canonical DTO/CronAction redaction. Do not rely on absence of the entire compact input JSON string." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6667032630" .

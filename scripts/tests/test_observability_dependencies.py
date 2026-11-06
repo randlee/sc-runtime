@@ -66,10 +66,11 @@ class ObservabilityDependencies(unittest.TestCase):
 
     def test_cron_contract_edge_is_exact(self):
         import copy
-        edge = {"version": "0.1.1", "path": "../sc-command", "default-features": False}
+        edge = {"version": "0.2.0", "path": "../sc-command", "default-features": False}
         good = {"dependencies": {"sc-command": edge}}
         CHECK.check_cron_manifest(good)
         variants = [
+            {"dependencies": {"sc-command": {**edge, "version": "0.1.1"}}},
             {"dependencies": {"sc-command": {**edge, "features": ["server"]}}},
             {"dependencies": {"sc-command": {**edge, "default-features": True}}},
             {"dependencies": {"alias": {**edge, "package": "sc-command"}}},
@@ -81,9 +82,18 @@ class ObservabilityDependencies(unittest.TestCase):
             with self.subTest(variant=variant), self.assertRaises(ValueError):
                 CHECK.check_cron_manifest(variant)
 
+    def test_cron_dev_command_follows_affected_package_version(self):
+        edge = {"version": "0.2.0", "path": "../sc-command", "default-features": False}
+        good = {"dependencies": {"sc-command": edge},
+                "dev-dependencies": {"sc-command": {**edge, "features": ["test-util"]}}}
+        CHECK.check_cron_manifest(good)
+        good["dev-dependencies"]["sc-command"]["version"] = "0.1.1"
+        with self.assertRaisesRegex(ValueError, "frozen package version"):
+            CHECK.check_cron_manifest(good)
+
     def test_only_checkout_dev_self_may_omit_path_version(self):
         import copy
-        good = {"dependencies": {"sc-command": {"version": "0.1.1", "path": "../sc-command", "default-features": False}},
+        good = {"dependencies": {"sc-command": {"version": "0.2.0", "path": "../sc-command", "default-features": False}},
                 "dev-dependencies": {"sc-cron": {"path": ".", "features": ["test-utils"]}}}
         CHECK.check_cron_manifest(good)
         for spec in ({"path": "."}, {"path": ".", "features": ["test-utils", "monty"]},

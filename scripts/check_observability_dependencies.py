@@ -57,7 +57,7 @@ def check_command_manifest(manifest):
 
 def check_cron_manifest(manifest):
     """Enforce the single, defaults-off temporary command edge."""
-    expected = {"version": "0.1.1", "path": "../sc-command", "default-features": False}
+    expected = {"version": "0.2.0", "path": "../sc-command", "default-features": False}
     deps = manifest.get("dependencies", {})
     if deps.get("sc-command") != expected:
         raise ValueError("cron requires the exact defaults-off sc-command normal dependency")
@@ -82,8 +82,9 @@ def check_cron_manifest(manifest):
                 if global_dev and alias == "sc-cron" and spec == {"path": ".", "features": ["test-utils"]}:
                     continue
                 raise ValueError("cron workspace self edge must be exactly checkout-only dev test-utils")
-            if spec.get("version") != "0.1.1":
-                raise ValueError(f"cron path dependency {alias} must match workspace 0.1.1")
+            expected_version = "0.2.0"
+            if spec.get("version") != expected_version:
+                raise ValueError(f"cron path dependency {alias} must match frozen package version {expected_version}")
     for kind in ("dependencies", "build-dependencies", "dev-dependencies"):
         check_path_versions(manifest.get(kind, {}), global_dev=kind == "dev-dependencies")
     for tables in manifest.get("target", {}).values():

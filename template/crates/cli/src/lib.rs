@@ -1,5 +1,8 @@
 //! Report-only CLI. `daemon start` is the one command that execs the daemon.
 
+#[cfg(feature = "cron-commands")]
+pub mod cron_commands;
+
 use std::ffi::OsStr;
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -31,8 +34,18 @@ const DAEMON_EXEC_RECOVERY: &str = "build the sibling daemon binary and run daem
 const DAEMON_EXEC_MESSAGE: &str = "the daemon binary could not be started";
 
 /// Parsed argv, excluding the program name.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Command {
+    #[cfg(feature = "cron-commands")]
+    /// Standard cron request sent unchanged through the daemon boundary.
+    Cron {
+        /// Canonical version-1 JSON request.
+        request: Value,
+        /// Endpoint override.
+        endpoint: Option<String>,
+        /// Print the canonical JSON envelope.
+        json: bool,
+    },
     /// Exec the daemon binary. Report-only commands never produce this.
     DaemonStart {
         /// `--json` was present.
@@ -78,6 +91,57 @@ pub enum Command {
         /// `--json` was present.
         json: bool,
     },
+}
+
+impl fmt::Debug for Command {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            #[cfg(feature = "cron-commands")]
+            Self::Cron { json, .. } => f
+                .debug_struct("Cron")
+                .field("json", json)
+                .finish_non_exhaustive(),
+            Self::DaemonStart { json } => {
+                f.debug_struct("DaemonStart").field("json", json).finish()
+            }
+            Self::WidgetCreate {
+                name,
+                endpoint,
+                json,
+            } => f
+                .debug_struct("WidgetCreate")
+                .field("name", name)
+                .field("endpoint", endpoint)
+                .field("json", json)
+                .finish(),
+            Self::WidgetGet { id, endpoint, json } => f
+                .debug_struct("WidgetGet")
+                .field("id", id)
+                .field("endpoint", endpoint)
+                .field("json", json)
+                .finish(),
+            #[cfg(feature = "general-db")]
+            Self::WidgetDelete { id, endpoint, json } => f
+                .debug_struct("WidgetDelete")
+                .field("id", id)
+                .field("endpoint", endpoint)
+                .field("json", json)
+                .finish(),
+            #[cfg(feature = "general-db")]
+            Self::DeleteRow {
+                table,
+                id,
+                endpoint,
+                json,
+            } => f
+                .debug_struct("DeleteRow")
+                .field("table", table)
+                .field("id", id)
+                .field("endpoint", endpoint)
+                .field("json", json)
+                .finish(),
+        }
+    }
 }
 
 /// Structured parse failure. `--help` carries clap's rendered text.
@@ -158,6 +222,12 @@ struct CliArgs {
 
 #[derive(Subcommand, Debug)]
 enum CliCommand {
+    #[cfg(feature = "cron-commands")]
+    /// Optional standard cron management commands.
+    Cron {
+        #[command(subcommand)]
+        action: cron_commands::CronAction,
+    },
     /// Daemon process commands.
     Daemon {
         #[command(subcommand)]
@@ -238,6 +308,10 @@ pub fn parse(args: &[String]) -> Result<Command, ParseError> {
     let endpoint = parsed.endpoint;
     let json = parsed.json;
     let command = match parsed.command {
+        #[cfg(feature = "cron-commands")]
+        CliCommand::Cron { action } => Command::Cron {
+            request: cron_commands::parse(action)?, endpoint, json,
+        },
         CliCommand::Daemon {
             action: DaemonAction::Start,
         } => Command::DaemonStart { json },
@@ -294,6 +368,19 @@ pub fn map_transport(error: &TransportError) -> OpError {
 /// JSON envelope when `--json` is set.
 pub async fn execute(command: Command) -> (ExitCode, String) {
     let (endpoint_flag, json, path, body) = match command {
+        #[cfg(feature = "cron-commands")]
+        Command::Cron { request, endpoint, json } => {
+            let parsed: sc_cron_commands::CronRequest = match serde_json::from_value(request) {
+                Ok(parsed) => parsed,
+                Err(_) => return usage_result("invalid versioned cron request"),
+            };
+            let path = match cron_commands::verb(&parsed) {
+                "cron.start" => "/ops/cron.start",
+                "cron.end" => "/ops/cron.end",
+                _ => "/ops/cron.list",
+            };
+            (endpoint, json, path, WidgetBody::Cron(parsed))
+        },
         Command::DaemonStart { .. } => {
             return (
                 ExitCode::from(1),
@@ -545,6 +632,8 @@ fn exec_operation(error: &DaemonExecError) -> OpError {
 }
 
 enum WidgetBody {
+    #[cfg(feature = "cron-commands")]
+    Cron(sc_cron_commands::CronRequest),
     Create(CreateWidget),
     Get(GetWidget),
     #[cfg(feature = "general-db")]
@@ -559,6 +648,8 @@ impl Serialize for WidgetBody {
         S: serde::Serializer,
     {
         match self {
+            #[cfg(feature = "cron-commands")]
+            Self::Cron(body) => body.serialize(serializer),
             Self::Create(body) => body.serialize(serializer),
             Self::Get(body) => body.serialize(serializer),
             #[cfg(feature = "general-db")]
