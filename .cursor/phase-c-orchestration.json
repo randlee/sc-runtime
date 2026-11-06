@@ -6806,6 +6806,222 @@
         "source_fix_checkpoint": "e190e2c8d84b9235ac70b3e442691980e8b69a33",
         "establishes_before_fix_triage": false
       }
+    },
+    {
+      "qa_pass": "qa-pr120-sprint-6",
+      "commit": "57dc933315f18421130f744183bf63e6ec7106d2",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6680402933",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c3_req_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c3_arch_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c3_rust_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c3_flaky_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c3-qa6.ttl"
+      ],
+      "finding_ids": [
+        "FTQ-C5-QA10-001"
+      ],
+      "coordinator_task_id": "/root/c3_manager_qa6",
+      "machine_status": {
+        "sprint": "c-3",
+        "task": "qa-pr120-sprint-6",
+        "branch": "sprint/c-3-runtime-ecosystem-upgrade",
+        "commit": "57dc933315f18421130f744183bf63e6ec7106d2",
+        "pr": 120,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 19,
+          "total": 19,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 1,
+          "minor": 0
+        },
+        "blocking_ids": [
+          "FTQ-C5-QA10-001"
+        ],
+        "merge_readiness": "not ready",
+        "merge_reason": "The completed flaky reviewer confirmed1 Important unbounded-wait finding at this exact source. Spawn gate passes, but zero-finding merge gate fails regardless of CI.",
+        "next_action": "Install the prepared C3 QA6 triage record, fix both calls using the existing owned helper, push, and re-review the scoped fix with the owning reviewer and required roles.",
+        "owner": "parent-orchestrator / rust-developer",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c3_req_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c3_arch_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c3_rust_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c3_flaky_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr120-sprint-6",
+          "commit": "57dc933315f18421130f744183bf63e6ec7106d2",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6680402933",
+          "coordinator_task_id": "/root/c3_manager_qa6",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c3-qa1.ttl",
+              ".triage/c/findings/c3-qa2.ttl",
+              ".triage/c/findings/c3-qa6.ttl"
+            ],
+            "current_finding_record_prepared_before_fix": true,
+            "prepared_record_sha256": "a103021cdc4979208c1e97f48f2a22036fafea30b32a2ff75768fc182664bda5",
+            "canonical_installation": "Developer must install the prepared c3-qa6 record before source edits."
+          },
+          "ci": {
+            "headRefOid": "57dc933315f18421130f744183bf63e6ec7106d2",
+            "state": "OPEN",
+            "mergeStateStatus": "UNSTABLE",
+            "successful": 14,
+            "pending": 3,
+            "failed": 0,
+            "total": 17,
+            "observed_at": "2026-11-06T08:11:38Z",
+            "observation_source": "Actual gh pr view 120 --json number,state,headRefOid,headRefName,baseRefName,statusCheckRollup,mergeStateStatus,reviewDecision,url response in coordinator tool history; normalized counts retained without another CI query.",
+            "pending_checks": [
+              {
+                "name": "just lint and just test",
+                "url": "https://github.com/randlee/sc-runtime/actions/runs/42185171978/job/127783744402"
+              },
+              {
+                "name": "mysql.json",
+                "url": "https://github.com/randlee/sc-runtime/actions/runs/42185172113/job/127783749160"
+              },
+              {
+                "name": "sqlite-apache.json",
+                "url": "https://github.com/randlee/sc-runtime/actions/runs/42185172113/job/127783749172"
+              }
+            ],
+            "waited_for_ci": false
+          },
+          "development_anchor_gate": {
+            "status": "SCOPED_RETAINED_ACTIVE_GATE_PASS",
+            "run_id": "dev-20261106T050517Z-c-3",
+            "actual_judged_commit": "5840414909f2d720e815956fd5247b0e23f5a52a",
+            "current_source_commit": "57dc933315f18421130f744183bf63e6ec7106d2",
+            "satisfied": 8,
+            "excluded": 8,
+            "fresh_live_run": false,
+            "every_applicable_anchor_and_question_input_unchanged": true,
+            "whole_product_tree_equal": false,
+            "changed_authority_fields": "Only C2 exclusions/history for ANC-011/012; own C3 exclusions and all8 active anchor records remain unchanged.",
+            "no_shortening": true,
+            "paired_checks_returned": 4,
+            "paired_checks_reconciled": 4,
+            "current_scan_pass": 1,
+            "scoped_retained_checks": 3,
+            "model_requested": "jev-latest",
+            "model_answered": "jev-1.14.0",
+            "threshold": 0.6,
+            "reconciliation_receipt_sha256": "ed149efa64dd0153ebaac4889950b7c9640c59ce89cf5ed39c29e5b9ab4aa6af",
+            "historical_run_sha256": "b97f1f1fa787e36934ca9b417438e673023c8724922cb61d69cf971dd24bce74",
+            "retained_proof_scope": "Exact unchanged C3 runtime/projection/graph/resolver inputs only. C2 adds6 actual product/test paths, separately qualified at C2 source8c and two fresh composition tests over8configs. Historical broad generated setup/lint/test/build execution is not claimed at57dc933; all MSRV/native-platform/dirty-generation limits retained."
+          },
+          "model_execution": "Configured Cursor models unavailable; inherited Codex fallback.",
+          "reviewer_followup": {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c3_flaky_qa6",
+            "same_reviewed_commit": "57dc933315f18421130f744183bf63e6ec7106d2",
+            "supersedes_initial_pass": true,
+            "confirmed_finding": "FTQ-C5-QA10-001",
+            "attribution": "C3 pre-existing two-call defect inherited into C5; one shared finding, not duplicate."
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      }
     }
   ],
   "initial_plan_branch": "plan/phase-c",

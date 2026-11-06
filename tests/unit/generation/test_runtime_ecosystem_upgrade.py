@@ -13,6 +13,8 @@ import tempfile
 import tomllib
 import unittest
 
+from tests.integration.generation.generate_owned import cargo_generate
+
 ROOT = Path(__file__).resolve().parents[3]
 FROZEN = {"rmcp": "3.8.0", "utoipa": "6.0.0", "utoipa-axum": "0.3.0", "schemars": "1.2.3"}
 
@@ -128,7 +130,7 @@ class GenericProjectionTests(unittest.TestCase):
             values = base / "values.toml"
             values.write_text('[values]\ndb="none"\nmcp=true\ncron=true\ncron_commands=true\nlicence="MIT"\n')
             app = base / "app"
-            driver.cargo_generate(ROOT, app, "cron-projection-probe", values)
+            cargo_generate(ROOT, app, "cron-projection-probe", values)
             driver.apply_checkout_patch(app, ROOT)
             cli = "cron-projection-probe-cli"
             forbidden = {"axum", "rmcp", "sqlx", "sc-runtime", "sc-cron", "rusqlite", "monty", "utoipa", "utoipa-axum", "schemars"}
