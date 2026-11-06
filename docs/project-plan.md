@@ -107,8 +107,8 @@ cron core consumable through public logging, cooperative store/lifecycle and
 query contracts, with supported custom-store/behavior paths and documented
 consumer responsibilities. An optional standard cron command adapter supplies
 shared JSON across selected UIs; the release sprint proves the documented
-default recipe and actual packaged composition. These six sprints are planned,
-not claims of implemented or published behavior. See [Phase c
+default recipe and actual packaged composition. C6 is implemented on its sprint branch with QA and merge pending; the other
+entries retain their recorded statuses. No entry claims publication. See [Phase c
 plan](plans/phase-c/phase-c-plan.md).
 
 | Sprint | Plan | Status | Branch |
@@ -118,4 +118,4 @@ plan](plans/phase-c/phase-c-plan.md).
 | c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | planned | `sprint/c-3-runtime-ecosystem-upgrade` |
 | c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | planned | `sprint/c-4-runtime-ecosystem-release` |
 | c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | planned | `sprint/c-5-cron-consumer-compatibility` |
-| c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | planned | `sprint/c-6-standard-cron-commands` |
+| c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | implemented; QA and merge pending | `sprint/c-6-standard-cron-commands` |

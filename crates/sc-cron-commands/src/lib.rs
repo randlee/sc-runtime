@@ -2,6 +2,7 @@
 //!
 //! Defaults contain no scheduler, database, server or async runtime.
 #![forbid(unsafe_code)]
+#![cfg_attr(feature = "scheduler", doc = include_str!("../README.md"))]
 
 pub mod contract;
 #[doc(inline)]
@@ -37,3 +38,9 @@ mod bindings {
 #[cfg(feature = "scheduler")]
 #[doc(inline)]
 pub use bindings::{ApplicationTargetBindings, ResolvedTarget};
+
+#[cfg(feature = "scheduler")]
+mod executor;
+#[cfg(feature = "scheduler")]
+#[doc(inline)]
+pub use executor::StandardCronExecutor;

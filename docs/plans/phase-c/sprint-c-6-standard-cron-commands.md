@@ -1,7 +1,7 @@
 ---
 id: c-6
 phase: c
-status: planned
+status: complete
 closure_type: boundary
 target_boundary: sc-cron-commands
 track: cron-commands
@@ -9,6 +9,7 @@ wave: 2
 branch: sprint/c-6-standard-cron-commands
 worktree: sprint/c-6-standard-cron-commands
 requirements:
+  - REQ-RUN-0005
   - REQ-CRON-0005
   - REQ-CRON-0020
   - REQ-CRNC-0001
@@ -25,10 +26,22 @@ requirements:
   - NFR-RUN-0009
   - NFR-RUN-0002
   - NFR-RUN-0005
+  - NFR-RUN-0003
+  - NFR-RUN-0004
+  - NFR-RUN-0008
   - NFR-CMD-0003
   - NFR-CMD-0001
   - NFR-CMD-0002
 adrs:
+  - ADR-RUN-0001
+  - ADR-RUN-0002
+  - ADR-RUN-0005
+  - ADR-RUN-0006
+  - ADR-RUN-0007
+  - ADR-RUN-0008
+  - ADR-RUN-0011
+  - ADR-RUN-0013
+  - ADR-RUN-0016
   - ADR-RUN-0019
   - ADR-RUN-0018
   - ADR-RUN-0003
@@ -128,9 +141,9 @@ Root: `boundary:BOUNDARY-sc-cron-commands`, `adr:ADR-CRNC-0001`.
   forms above fail before scheduler/store work; no absent name means end-all.
 - Integration tests #[path]-import c-1's canonical
   crates/sc-cron-commands/tests/support/operation_double.rs and construct a real context
-  via sc-cron/test-utils operation_context_probe enabled only on the dev edge.
-  No c-5 Scheduler implementation or default/production test helper is needed.
-  The explicit non-default dev-only context probe is the sole setup seam. Tests prove
+  via the ordinary public WorkerStopControl::new/operation_context factory.
+  The dev-only Tokio runtime hosts this normal API; no c-5 Scheduler
+  implementation or default/production test helper is needed. Tests prove
   exact request conversion, context forwarding,
   generation conflict, bounded query continuation, app target binding and
   stable error mapping. Dropped waiter behavior follows c-1's owned-operation

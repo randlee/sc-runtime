@@ -1097,6 +1097,13 @@
           "item": "c-2",
           "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-06T05:10:11+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 implements standard cron commands rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1115,6 +1122,10 @@
         {
           "item": "c-2",
           "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 implements standard cron commands rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
         }
       ]
     },
@@ -1197,6 +1208,13 @@
           "item": "c-2",
           "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-06T05:10:11+00:00",
+          "event": "excluded",
+          "item": "c-6",
+          "reason": "C-6 implements standard cron commands rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1215,6 +1233,10 @@
         {
           "item": "c-2",
           "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
+        },
+        {
+          "item": "c-6",
+          "reason": "C-6 implements standard cron commands rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
         }
       ]
     },

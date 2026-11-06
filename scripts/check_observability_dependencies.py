@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enforce the five-SDK observability boundary on resolved normal and build package identities."""
+"""Enforce the public-SDK observability boundary on resolved normal and build package identities."""
 
 import json
 import importlib.util
@@ -16,7 +16,7 @@ _owned_spec = importlib.util.spec_from_file_location(
     "sc_runtime_owned_commands", ROOT / "tests/integration/generation/owned_process.py")
 _owned = importlib.util.module_from_spec(_owned_spec)
 _owned_spec.loader.exec_module(_owned)
-OWNERS = ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron")
+OWNERS = ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron", "sc-cron-commands")
 NO_TYPES = frozenset({"sc-config", "sc-transport"})
 FORBIDDEN = frozenset({
     "sc-observability", "sc-observability-otlp", "sc-observability-dev-adapter",
@@ -117,34 +117,46 @@ def resolved_metadata():
 
 
 def check_isolated_features():
-    """Resolve cron outside the workspace so runtime cannot unify server features."""
+    """Resolve cron and command adapter without workspace feature unification."""
+    probes = (
+        ("sc-cron", ((), ("monty",))),
+        ("sc-cron-commands", ((), ("schema",), ("scheduler",),
+                              ("schema", "scheduler"), ("monty",), ("schema", "monty"))),
+    )
     with tempfile.TemporaryDirectory(prefix="sc-runtime-cron-boundary-") as directory:
         root = Path(directory)
         (root / "src").mkdir()
         (root / "src/lib.rs").write_text("")
-        for features in ([], ["monty"]):
-            (root / "Cargo.toml").write_text(
-                '[package]\nname = "cron-boundary-probe"\nversion = "0.0.0"\nedition = "2024"\n'
-                '[workspace]\n[dependencies.sc-cron]\n'
-                f'path = {json.dumps(str(ROOT / "crates/sc-cron"))}\n'
-                f'default-features = false\nfeatures = {json.dumps(features)}\n'
-            )
-            context = "isolated cron Monty graph" if features else "isolated cron default graph"
-            metadata = run_metadata(["cargo", "metadata", "--offline", "--format-version", "1"], root, context)
-            check_isolated_graph(metadata)
+        for owner, configurations in probes:
+            for features in configurations:
+                (root / "Cargo.toml").write_text(
+                    '[package]\nname = "cron-boundary-probe"\nversion = "0.0.0"\nedition = "2024"\n'
+                    f'[workspace]\n[dependencies.{owner}]\n'
+                    f'path = {json.dumps(str(ROOT / "crates" / owner))}\n'
+                    f'default-features = false\nfeatures = {json.dumps(features)}\n'
+                )
+                label = "Monty" if features == ("monty",) else ",".join(features) or "default"
+                context = f"isolated {owner} {label} graph"
+                metadata = run_metadata(["cargo", "metadata", "--offline", "--format-version", "1"], root, context)
+                check_isolated_graph(metadata, owner, features)
 
 
-def check_isolated_graph(metadata):
-    visited = check_graph(metadata, "sc-cron")
+def check_isolated_graph(metadata, owner="sc-cron", features=()):
+    visited = check_graph(metadata, owner)
     packages = {package["id"]: package for package in metadata["packages"]}
+    adapter = owner == "sc-cron-commands"
+    scheduler = "scheduler" in features or "monty" in features
     for node in metadata["resolve"]["nodes"]:
         if node["id"] not in visited:
             continue
         name = packages[node["id"]]["name"]
-        if name in {"axum", "rmcp"}:
-            raise ValueError(f"isolated cron unexpectedly links {name}")
+        forbidden = name in {"axum", "rmcp"} or (adapter and name == "sc-runtime")
+        if adapter and not scheduler:
+            forbidden |= name in {"sc-cron", "rusqlite", "tokio", "monty"}
+        if forbidden:
+            raise ValueError(f"isolated {owner} unexpectedly links {name}")
         if name == "sc-command" and {"server", "test-util"}.intersection(node.get("features", [])):
-            raise ValueError("isolated cron activates command server/test-util")
+            raise ValueError(f"isolated {owner} activates command server/test-util")
 
 
 def main():
@@ -154,7 +166,7 @@ def main():
     for owner in OWNERS:
         check_graph(metadata, owner)
     check_isolated_features()
-    print("observability normal/build dependency boundary: PASS (five SDKs)")
+    print("observability normal/build dependency boundary: PASS (six SDKs)")
 
 
 if __name__ == "__main__":
