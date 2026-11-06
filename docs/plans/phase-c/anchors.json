@@ -1083,6 +1083,13 @@
           "item": "c-3",
           "reason": "C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-06T05:10:07+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1093,6 +1100,10 @@
         {
           "item": "c-3",
           "reason": "C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
+        },
+        {
+          "item": "c-2",
+          "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
         }
       ]
     },
@@ -1161,6 +1172,13 @@
           "item": "c-3",
           "reason": "C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-06T05:10:07+00:00",
+          "event": "excluded",
+          "item": "c-2",
+          "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
         }
       ],
       "exclude": [
@@ -1171,6 +1189,10 @@
         {
           "item": "c-3",
           "reason": "C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
+        },
+        {
+          "item": "c-2",
+          "reason": "C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
         }
       ]
     },
