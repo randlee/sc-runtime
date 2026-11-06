@@ -308,6 +308,12 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         pin = tomllib.loads((ROOT / "release/sc-publish-pin.toml").read_text())["sc-publish"]
         self.assertEqual(pin["repository"], "https://github.com/randlee/sc-publish")
         self.assertEqual(pin["revision"], "1a494e7adb067d93c57807f443ac136a8775c7d8")
+        declared = json.loads((ROOT / "release/sc-publish-consumer-input.json").read_text())["crates"]
+        rendered = tomllib.loads((ROOT / "release/publish-artifacts.toml").read_text())["crates"]
+        expected = {name: True for name in ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron", "sc-cron-commands")}
+        for crates in (declared, rendered):
+            self.assertEqual(len(crates), len(expected))
+            self.assertEqual({crate["package"]: crate.get("verify_registry_visibility") for crate in crates}, expected)
         temp = tempfile.TemporaryDirectory(prefix="sc-publish-inventory-")
         self.addCleanup(temp.cleanup)
         checkout = Path(temp.name)
