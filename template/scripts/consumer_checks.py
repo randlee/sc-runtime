@@ -149,7 +149,12 @@ def build_cli() -> None:
 
 
 def build_daemon() -> None:
-    from dependency_policy import daemon_scratch_errors
+    previous_bytecode_setting = sys.dont_write_bytecode
+    try:
+        sys.dont_write_bytecode = True
+        from dependency_policy import daemon_scratch_errors
+    finally:
+        sys.dont_write_bytecode = previous_bytecode_setting
 
     completed = subprocess.run(
         ["cargo", "metadata", "--format-version", "1", "--locked"],

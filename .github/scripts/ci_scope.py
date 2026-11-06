@@ -1,7 +1,7 @@
 """Classify whether changed paths require the runtime CI jobs.
 
-A documentation-only change keeps the required check names and skips crate
-tests and template generation. The same rule is used by atm-core CI.
+Documentation-only changes may skip additional runtime jobs. The required
+template fixture matrix runs on every pull request independently of this scope.
 """
 
 from __future__ import annotations

@@ -126,6 +126,36 @@ class DaemonScratchPolicy(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_helper_import_preserves_two_default_destination_trees(self):
+        env = dict(os.environ, CARGO_NET_OFFLINE="true")
+        env.pop("PYTHONDONTWRITEBYTECODE", None)
+        command = (
+            "import runpy, sys; sys.dont_write_bytecode = False; "
+            "sys.path.insert(0, 'scripts'); "
+            "sys.argv = ['scripts/consumer_checks.py', 'build-daemon']; "
+            "runpy.run_path(sys.argv[0], run_name='__main__'); "
+            "assert sys.dont_write_bytecode is False"
+        )
+        with tempfile.TemporaryDirectory(prefix="daemon-default-bytecode-") as temporary:
+            for destination in ("from-wizard", "from-file"):
+                root = Path(temporary) / destination
+                root.mkdir()
+                repeated_dependency_workspace(root)
+                scripts = root / "scripts"
+                scripts.mkdir()
+                original = {}
+                for name in ("consumer_checks.py", "dependency_policy.py"):
+                    original[name] = (ROOT / "template/scripts" / name).read_bytes()
+                    (scripts / name).write_bytes(original[name])
+                run(["cargo", "metadata", "--format-version", "1"], cwd=root,
+                    env=env, timeout=30, check=True, capture_output=True, text=True)
+                result = run([sys.executable, "-c", command], cwd=root, env=env,
+                             timeout=30, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertEqual(list(scripts.rglob("*.pyc")), [], destination)
+                self.assertEqual({name: (scripts / name).read_bytes() for name in original},
+                                 original)
+
     def test_unselected_cron_without_temporary_packages_passes(self):
         self.assertEqual(self.errors([("daemon", "service", "service", None)]), [])
 

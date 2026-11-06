@@ -58,7 +58,7 @@ jobs:
 
   generate:
     name: ${{ matrix.fixture }}
-    needs: [fixtures, ci-scope]
+    needs: fixtures
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -66,32 +66,23 @@ jobs:
       matrix:
         fixture: ${{ fromJson(needs.fixtures.outputs.names) }}
     steps:
-      - name: Documentation-only runtime skip
-        if: ${{ needs.ci-scope.outputs.runtime != 'true' }}
-        run: echo "Template generation is intentionally skipped for documentation-only changes."
-
       - name: Checkout
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: actions/checkout@v4
 
       - name: Install Rust
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: dtolnay/rust-toolchain@1.94.1
         with:
           components: rustfmt, clippy
 
       - name: Install just
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
         with:
           just-version: '1.58.0'
 
       - name: Install jsonschema
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: python3 -m pip install -r requirements-generation.txt
 
       - name: Install cargo-generate
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.local/bin"
@@ -108,7 +99,6 @@ jobs:
           cargo generate --version | grep -F '0.25.1'
 
       - name: Restore Rust builds and generation tool
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         uses: ./.github/actions/rust-build-cache
         with:
           namespace: template-${{ matrix.fixture }}-default-general-db-off-debug-release
@@ -116,7 +106,6 @@ jobs:
 
       # A tag selects the driver's release mode (no checkout path patch).
       - name: Generate
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         env:
           SC_RUNTIME_RELEASE: ${{ github.ref_type == 'tag' && '1' || '' }}
         run: just new "$RUNNER_TEMP/app" --var-file "wizard/fixtures/${{ matrix.fixture }}"
@@ -124,7 +113,6 @@ jobs:
       # ADR-RUN-0401 point 6 runs these recipes inside `just new`. Point 8
       # requires this job to run them again as an independent proof.
       - name: Consumer recipes
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         working-directory: ${{ runner.temp }}/app
         run: |
           set -euo pipefail
@@ -137,7 +125,6 @@ jobs:
           just build-daemon
 
       - name: Workspace check
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         env:
           SC_RUNTIME_GENERATED_DIR: ${{ runner.temp }}/app
           SQLX_OFFLINE: 'true'
@@ -146,7 +133,7 @@ jobs:
       # REQ-RUN-0331 success criterion 2. Store layouts default the flag on, so
       # this sqlite-mcp job is the one that compiles CLI, MCP, and HTTP with it off.
       - name: Store layout general-db disable
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' && matrix.fixture == 'sqlite-mcp.json' }}
+        if: ${{ matrix.fixture == 'sqlite-mcp.json' }}
         env:
           SC_RUNTIME_GENERATED_DIR: ${{ runner.temp }}/app
           SQLX_OFFLINE: 'true'

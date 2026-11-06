@@ -3,11 +3,12 @@
 import json
 import jsonschema
 import shutil
-import subprocess
 import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+
+from tests.integration.generation.generate_owned import run_generation
 
 ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_PATH = ROOT / "template" / "config" / "cron.schema.json"
@@ -97,7 +98,7 @@ class CronSchemaTests(unittest.TestCase):
                 '[values]\ndb = "sqlite"\nmcp = true\nlicence = "MIT"\n',
                 encoding="utf-8",
             )
-            result = subprocess.run(
+            result = run_generation(
                 [
                     "cargo",
                     "generate",
