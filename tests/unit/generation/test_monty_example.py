@@ -47,14 +47,13 @@ class MontyExampleTests(unittest.TestCase):
                 self.assertEqual(dependencies[name]["version"], "0.2.0")
             for name in ("sc-observability", "sc-observability-types"):
                 self.assertEqual(dependencies[name]["version"], "=1.5.0")
-        generation = driver()
         with tempfile.TemporaryDirectory(prefix="runtime-default-features-") as temporary:
             base = Path(temporary)
             for db in ("none", "sqlite"):
                 values = base / f"{db}.toml"
                 values.write_text(f'[values]\ndb="{db}"\nmcp=true\ncron=false\ncron_commands=false\nlicence="MIT"\n')
                 app = base / db
-                generation.cargo_generate(ROOT, app, "default-off-probe", values)
+                cargo_generate(ROOT, app, "default-off-probe", values)
                 manifest = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())
                 self.assertEqual(set(manifest["features"]["cron"]), {"dep:sc-cron", "dep:async-trait"})
                 self.assertEqual(set(manifest["features"]["monty"]), {"cron", "sc-cron/monty", "sc-cron-commands?/monty"})

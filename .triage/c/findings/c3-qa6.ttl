@@ -1,0 +1,12 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:c3_qa6_FTQ_C5_QA10_001 a triage:Finding ;
+ triage:id "FTQ-C5-QA10-001" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "57dc933315f18421130f744183bf63e6ec7106d2" ;
+ triage:file "tests/unit/generation/test_monty_example.py" ;
+ triage:issue "Two inherited C3 tests invoke the production generation driver directly, leaving cargo version checks, cargo-generate/hooks and formatting subprocesses without a hard test deadline or owned process-tree cleanup. Under the canonical direct unittest runner, a stalled child or a descendant retaining captured pipes can block the test indefinitely." ;
+ triage:action "Replace generation.cargo_generate at test_monty_example.py:52 and driver.cargo_generate at test_runtime_ecosystem_upgrade.py:131 with the existing tests.integration.generation.generate_owned.cargo_generate helper, which bounds the complete driver including version checks and hooks with the existing120-second deadline and owned session/Windows Job cleanup. Preserve actual generation assertions and production driver behavior; no timeout widening, retries, skips or extra whole-suite owned wrapper." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6680402933" .
