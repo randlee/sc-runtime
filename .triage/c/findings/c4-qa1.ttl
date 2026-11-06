@@ -27,11 +27,12 @@ triage:c4_qa1_REQ_QA_C4_003 a triage:Finding ;
  triage:id "REQ-QA-C4-003" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file ".github/workflows/crates-publish.yml:98; .github/workflows/release.yml:325; release/sc-publish-consumer-input.json:31" ;
  triage:issue "Both installed publication paths check whether the current crate exists before upload, then perform cargo publish and a fixed sleep before proceeding. They do not positively recheck each newly published exact version before a dependent publication. Cargo upload/timeout completion plus fixed sleep is not the explicit visibility evidence required by C4." ;
  triage:action "Qualify a canonical kit input/pin/regeneration route that enforces positive exact-version visibility before each dependent, including first upload and channel retry. Do not hand-edit vendored workflows or publish early; retain the actual future visibility evidence." ;
+ triage:source_fix "Canonical merged sc-publish1a494e7 reviewed from full old-pin delta, all-six visibility opt-in rendered by installer. Main/retry positive and absent/indeterminate causal tests pass; exact89-destination inventory and repeat dry-run pass. Actual publication/visibility evidence remains a separate required final gate." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_REQ_QA_C4_004 a triage:Finding ;
@@ -141,11 +142,12 @@ triage:c4_qa1_RBQA_C4_002 a triage:Finding ;
  triage:id "RBQA-C4-002" ;
  triage:severity "important" ;
  triage:reviewer "ruthless-boundary-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file ".github/workflows/release.yml" ;
  triage:issue "The installed publication loops do not positively establish predecessor registry visibility before advancing to dependent crates." ;
  triage:action "Resolve this through the canonical sc-publish input/pin and regeneration route before authorized publication. Require exact-version visible state after each newly published predecessor and before advancing; indeterminate/absent state must block. Cover the main release and the channel retry using the existing registry inquiry owner, without handwritten vendored workflow edits or a second publication framework." ;
+ triage:source_fix "Canonical merged sc-publish1a494e7 reviewed from full old-pin delta, all-six visibility opt-in rendered by installer. Main/retry positive and absent/indeterminate causal tests pass; exact89-destination inventory and repeat dry-run pass. Actual publication/visibility evidence remains a separate required final gate." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_REQ_C5_008 a triage:Finding ;
@@ -224,8 +226,9 @@ triage:c4_qa1_FTQ_002 a triage:Finding ;
 triage:c4_f3_ci_followup a triage:Finding ;
  triage:id "C4-CI-F3" ;
  triage:severity "Blocking" ;
- triage:status "diagnosed_independent_source_fixes_in_progress" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
- triage:issue "Exact CI reports stale Monty feature contracts in test_cron_environment/test_monty_example, multiline Liquid MCP registration boundary drift, and an opaque generated cron-startup test exit101. Existing tempfile guard failure remains separate and unapproved." ;
+ triage:issue "Exact CI reports stale Monty feature contracts in test_cron_environment/test_monty_example, multiline Liquid MCP registration boundary drift, and an opaque generated cron-startup test exit101. Focused rerun also exposes the same Monty inventory test applying its production-only cron prohibition to authorized CLI dev-dependencies. Existing tempfile guard failure remains separate and unapproved." ;
  triage:action "Preserve optional/default-off feature assertions and minimal Liquid body invariance. Surface captured generated diagnostics and fix the actually reproduced cause. Adopt reviewed canonical publisher visibility source through caller input/pin/installer. Do not waive tempfile guard or infer publication authority." ;
+ triage:source_fix "Focused CI contracts pass. Rust-only MCP helper retains minimal Liquid registration, complete optional Monty forwarding/default-off and production dependency boundaries. Captured diagnostics revealed stale startup error expectation; native safe error plus no duplicate startup-as-cleanup event passes actual generated ignored target. Known tempfile gate remains open." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/actions/runs/42165294394/job/127720855691" .

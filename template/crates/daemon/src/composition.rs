@@ -159,12 +159,7 @@ pub async fn run(
             let router = router.merge(crate::cron_commands::router(state.executor));
             router
         })
-        {% if mcp %}.mcp(|state: RuntimeStores| {
-            #[cfg(feature = "cron-commands")]
-            { crate::mcp::service_with_cron_executor(state.stores, state.executor) }
-            #[cfg(not(feature = "cron-commands"))]
-            { crate::mcp::service(state.stores) }
-        }){% endif %}
+        {% if mcp %}.mcp(crate::mcp::runtime_service){% endif %}
         ;
     #[cfg(feature = "cron")]
     let result = result.run_with_cleanup(|| async {
@@ -174,7 +169,9 @@ pub async fn run(
                     cron_failure = Some(error);
                 }
             }
-            Ok(Err(error)) => cron_failure = Some(error),
+            // Startup already returned the native, redacted RuntimeError. It
+            // is not a second cleanup failure and no worker was constructed.
+            Ok(Err(_)) => {}
             // The SDK drops unused startup closures before early-error cleanup.
             Err(_) => {}
         }
@@ -280,10 +277,10 @@ pub struct CronRuntime<
 
 // The SDK receives one cloneable root, shared by all selected UI projections.
 #[derive(Clone)]
-struct RuntimeStores {
-    stores: service::Stores,
+pub(crate) struct RuntimeStores {
+    pub(crate) stores: service::Stores,
     #[cfg(feature = "cron-commands")]
-    executor: Arc<dyn sc_cron_commands::CronExecutor>,
+    pub(crate) executor: Arc<dyn sc_cron_commands::CronExecutor>,
 }
 
 #[cfg(feature = "cron")]

@@ -3917,5 +3917,18 @@
     "fullsuite_current_head_claimed": false,
     "published": false,
     "ci_waited": false
+  },
+  "c4_ci_f3_followup": {
+    "status": "author_corrected_pending_independent_review",
+    "reviewed_commit": "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4",
+    "canonical_publisher_pin": "1a494e7adb067d93c57807f443ac136a8775c7d8",
+    "positive_visibility_opt_in_public_crates": 6,
+    "canonical_destinations": 89,
+    "triage_paths": [
+      ".triage/c/findings/c4-qa1.ttl"
+    ],
+    "fullsuite_current_head_claimed": false,
+    "published": false,
+    "ci_waited": false
   }
 }

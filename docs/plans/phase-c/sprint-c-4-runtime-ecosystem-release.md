@@ -71,6 +71,13 @@ adrs:
   - ADR-RT-0004
   - ADR-RT-0005
 owned_paths:
+  - docs/development/sc-publish.md
+  - docs/consumer-preflight-and-docli.md
+  - docs/getting-started.md
+  - tests/integration/generation/test_observability.py
+  - tests/unit/generation/test_cron_environment.py
+  - tests/unit/generation/test_monty_example.py
+  - tests/unit/generation/test_liquid.py
   - template/crates/cli/Cargo.toml
   - scripts/run_generation_tests.py
   - template/crates/daemon/Cargo.toml
@@ -324,3 +331,16 @@ owner/error corrections are consumed. Independent review remains required.
 The tempfile decision, upstream publication-visibility adoption, final composed
 gates, controlled-source benchmark qualification, publication and registry-only
 proofs remain open; no release authority or closure is inferred.
+
+The CI follow-up adopts merged sc-publish PR163 at exact source
+`1a494e7adb067d93c57807f443ac136a8775c7d8` through the canonical installer.
+All six public crate declarations require positive exact-version visibility
+before dependent publication in both normal and retry paths. The full old-pin
+delta was reviewed; all 89 unique installer destinations match canonical source
+and repeat installation reports no drift. Installed visibility tests cover
+positive predecessor checks and stopping on absent or indeterminate results.
+The native startup regression now checks the safe native INVALID_SPEC contract;
+startup errors are not duplicated as cleanup failures. MCP feature dispatch lives
+in Rust behind one Liquid registration, and Monty assertions retain optional
+forwarding/default-off semantics and the production-only dependency boundary.
+The tempfile guard and all required final release gates remain unchanged.

@@ -57,14 +57,17 @@ class MontyExampleTests(unittest.TestCase):
                 generation.cargo_generate(ROOT, app, "default-off-probe", values)
                 manifest = tomllib.loads((app / "crates/daemon/Cargo.toml").read_text())
                 self.assertEqual(set(manifest["features"]["cron"]), {"dep:sc-cron", "dep:async-trait"})
-                self.assertEqual(manifest["features"]["monty"], ["cron", "sc-cron/monty"])
+                self.assertEqual(set(manifest["features"]["monty"]), {"cron", "sc-cron/monty", "sc-cron-commands?/monty"})
                 self.assertNotIn("cron", manifest["features"]["default"])
                 self.assertNotIn("monty", manifest["features"]["default"])
                 self.assertNotIn("cron-commands", manifest["features"]["default"])
                 self.assertEqual(manifest["dependencies"]["sc-cron"], {"workspace": True, "optional": True})
         for path in (ROOT / "template/crates").glob("*/Cargo.toml"):
             if path.parent.name != "daemon":
-                self.assertNotRegex(path.read_text(), r"(?m)^sc-cron\s*(?:=|\.)", str(path))
+                sections = re.findall(r"(?ms)^\[([^]\n]+)\]\n(.*?)(?=^\[|\Z)", path.read_text())
+                for section, body in sections:
+                    if section in {"dependencies", "build-dependencies"} or section.endswith((".dependencies", ".build-dependencies")):
+                        self.assertNotRegex(body, r"(?m)^sc-cron\s*(?:=|\.)", f"{path}: {section}")
 
     def test_local_maintainer_lock_is_not_copied_into_generated_consumer(self):
         with tempfile.TemporaryDirectory(prefix="runtime-stale-template-lock-") as temporary:
