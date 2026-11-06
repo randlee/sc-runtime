@@ -289,6 +289,7 @@ Deterministic check to pair with the development gate: Git worktree metadata ide
 Excluded from (not judged; the cell passes as `excluded`):
 - `c-1`: C-1 implements the runtime contract rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
 - `c-3`: C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
+- `c-2`: C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
 
 Beads: anchor `run-alr`, plan questions `run-alr.1`, dev questions `run-alr.2`
 
@@ -313,6 +314,7 @@ Deterministic check to pair with the development gate: GitHub PR114 head plan/ph
 Excluded from (not judged; the cell passes as `excluded`):
 - `c-1`: C-1 implements the runtime contract rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
 - `c-3`: C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
+- `c-2`: C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
 
 Beads: anchor `run-mwv`, plan questions `run-mwv.1`, dev questions `run-mwv.2`
 

@@ -3,6 +3,9 @@ name = "cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
@@ -18,7 +21,7 @@ default = ["general-db"]
 general-db = ["daemon/general-db"]
 
 [dependencies]
-api-types = { path = "../api-types" }
+api-types = { path = "../api-types", version = "0.1.1" }
 clap.workspace = true
 sc-command.workspace = true
 {% if cron_commands %}
@@ -31,12 +34,12 @@ serde_json.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
-daemon = { path = "../daemon", default-features = false }
+daemon = { path = "../daemon", version = "0.1.1", default-features = false }
 sc-runtime = { workspace = true, features = ["test-util"] }
 sc-transport = { workspace = true, features = ["server"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
-service = { path = "../service" }
+service = { path = "../service", version = "0.1.1" }
 tempfile = "3"
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "time", "net", "io-util"] }
 reqwest = { version = "0.13", default-features = false, features = ["json"] }

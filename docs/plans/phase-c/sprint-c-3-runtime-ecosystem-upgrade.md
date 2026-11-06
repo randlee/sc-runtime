@@ -1,13 +1,13 @@
 ---
 id: c-3
 phase: c
-status: planned
+status: in_progress
 closure_type: integration
 target_boundary: runtime-template-ecosystem-integration
 track: ecosystem
 wave: 2
 branch: sprint/c-3-runtime-ecosystem-upgrade
-worktree: sprint/c-3-runtime-ecosystem-upgrade
+worktree: ../sc-runtime-worktrees/sprint/c-3-runtime-ecosystem-upgrade
 requirements:
   - NFR-RT-0001
   - REQ-CRON-0001
@@ -343,3 +343,24 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`,
   binding/registration and real shared-command integration.
 - Consumer lint-profile work; `c-2` owns the sc-lint configuration and its
   installation proof.
+
+## Development checkpoint
+
+Consumed C1 `dede889b11dcbe1495e2fe4ccdbe30d57b84bec9` and integration
+`9ec54e6fec76d756bab2671e4abf3deaa88aa122`. The first checkpoint repairs
+existing generated-source findings exposed by C2's full consumer profiles.
+The coordinator authorized the narrow additional ownership of generated schema,
+store and adaptor manifests and the three SQL store implementations for these
+repairs. Package metadata inherits application workspace values and direct
+application path dependencies retain their matching 0.1.1 application version.
+Store implementations own their helpers; existing public free-function APIs,
+SQL statements and engine behavior remain unchanged. The Unix extension import
+has an explicit item gate and the isolated logger fixture polls with an async
+timer. Template CI exercises ordinary, default and full consumer lint profiles.
+
+Eight actual generated configurations passed released sc-lint 0.8.4 boundary,
+portability and runtime analyzers with C2's selected consumer policies. Boundary
+results retain the analyzer's nonfatal trait-self-loop signals; no policy or
+severity was changed. Root formatting and strict all-target Clippy pass. Full
+consumer behavior and the remaining ecosystem/runtime deliverables are still
+in progress; this checkpoint does not claim sprint completion.

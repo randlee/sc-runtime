@@ -54,14 +54,14 @@ impl EngineStore for Store {
     fn open(
         cfg: &OpenConfig,
     ) -> impl std::future::Future<Output = Result<Self, StoreError>> + Send {
-        crate::open(cfg)
+        Self::connect(cfg)
     }
 
     fn read_rows(
         &self,
         table: &TableName,
     ) -> impl std::future::Future<Output = Result<Vec<RowRecord>, StoreError>> + Send {
-        read_table_rows(self, table)
+        self.read_table_rows(table)
     }
 
     fn write_rows(
@@ -69,106 +69,8 @@ impl EngineStore for Store {
         table: &TableName,
         rows: &[RowRecord],
     ) -> impl std::future::Future<Output = Result<(), StoreError>> + Send {
-        write_table_rows(self, table, rows)
+        self.write_table_rows(table, rows)
     }
-}
-
-// The table check and RowRecord codec match store-sqlite. They stay in this
-// crate until sprint b-6, the pairing owner, can move them into the schema
-// crate. This sprint's owned path is template/crates/store-postgres/ only.
-/// The one table-name decision for read and write.
-fn known_table(table: &TableName) -> Result<(), StoreError> {
-    if table.as_str() == WIDGETS {
-        Ok(())
-    } else {
-        Err(StoreError::new(
-            StoreCode::NotFound,
-            format!("unknown table {table}"),
-        ))
-    }
-}
-
-fn require_postgres_url(url: &str) -> Result<(), StoreError> {
-    if url.starts_with("postgres://") || url.starts_with("postgresql://") {
-        Ok(())
-    } else {
-        Err(StoreError::new(
-            StoreCode::Connection,
-            "postgres OpenConfig.url must be a postgres:// or postgresql:// database URL",
-        ))
-    }
-}
-
-/// SQLSTATE values that can succeed later with the same inputs.
-///
-/// `40001` is serialization_failure, `40P01` is deadlock_detected, and
-/// `57P03` is cannot_connect_now.
-const TRANSIENT_SQLSTATES: &[&str] = &["40001", "40P01", "57P03"];
-
-fn transient_driver(err: &sqlx::Error) -> bool {
-    matches!(
-        err,
-        sqlx::Error::PoolTimedOut | sqlx::Error::PoolClosed | sqlx::Error::Io(_)
-    ) || err
-        .as_database_error()
-        .and_then(sqlx::error::DatabaseError::code)
-        .is_some_and(|code| TRANSIENT_SQLSTATES.contains(&code.as_ref()))
-}
-
-fn constraint_violation(err: &sqlx::Error) -> bool {
-    err.as_database_error().is_some_and(|db| {
-        db.is_unique_violation() || db.is_foreign_key_violation() || db.is_check_violation()
-    })
-}
-
-fn driver_message(err: &sqlx::Error) -> String {
-    redact_credentials(&err.to_string())
-}
-
-/// Replaces a URL password so a driver message cannot echo credentials.
-fn redact_credentials(message: &str) -> String {
-    let mut rest = message;
-    let mut out = String::new();
-    while let Some(scheme) = rest.find("://") {
-        let split = scheme + 3;
-        out.push_str(&rest[..split]);
-        rest = &rest[split..];
-        let end = rest
-            .find(['/', ' ', '\n', '\r', '\t'])
-            .unwrap_or(rest.len());
-        out.push_str(&redact_authority(&rest[..end]));
-        rest = &rest[end..];
-    }
-    out.push_str(rest);
-    out
-}
-
-fn redact_authority(authority: &str) -> String {
-    let Some(at) = authority.rfind('@') else {
-        return authority.to_owned();
-    };
-    let userinfo = &authority[..at];
-    let Some(colon) = userinfo.find(':') else {
-        return authority.to_owned();
-    };
-    let mut redacted = String::with_capacity(authority.len());
-    redacted.push_str(&userinfo[..colon]);
-    redacted.push_str(":***@");
-    redacted.push_str(&authority[at + 1..]);
-    redacted
-}
-
-fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
-    if matches!(err, sqlx::Error::PoolTimedOut) {
-        return StoreError::new(StoreCode::Unavailable, "postgres pool acquire timed out");
-    }
-    if transient_driver(&err) {
-        return StoreError::new(StoreCode::Unavailable, driver_message(&err));
-    }
-    if constraint_violation(&err) {
-        return StoreError::new(StoreCode::Conflict, driver_message(&err));
-    }
-    StoreError::new(fallback, driver_message(&err))
 }
 
 /// Opens the database at `config.url` and runs migrations.
@@ -200,24 +102,7 @@ fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
 /// Postgres returns SQLSTATE `40001`, `40P01`, or `57P03`, and
 /// [`StoreCode::Migration`] when a migration fails.
 pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
-    let StoreTarget::PostgresUrl(url) = &config.target else {
-        return Err(StoreError::new(
-            StoreCode::Connection,
-            "postgres OpenConfig must be a postgres:// or postgresql:// database URL",
-        ));
-    };
-    require_postgres_url(url)?;
-    let pool = PgPoolOptions::new()
-        .max_connections(POOL_SIZE)
-        .acquire_timeout(ACQUIRE_TIMEOUT)
-        .connect(url)
-        .await
-        .map_err(|err| from_driver(StoreCode::Connection, err))?;
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await
-        .map_err(|err| from_driver(StoreCode::Migration, err.into()))?;
-    Ok(Store { pool })
+    Store::connect(config).await
 }
 
 /// Inserts one widget and returns the stored row.
@@ -232,17 +117,7 @@ pub async fn open(config: &OpenConfig) -> Result<Store, StoreError> {
 /// times out, the pool is closed, the driver reports an I/O failure, or
 /// Postgres returns SQLSTATE `40001`, `40P01`, or `57P03`.
 pub async fn insert_widget(store: &Store, name: &str) -> Result<WidgetRow, StoreError> {
-    let row = sqlx::query!(
-        "INSERT INTO widgets (id, name) VALUES (gen_random_uuid()::text, $1) RETURNING id, name",
-        name,
-    )
-    .fetch_one(&store.pool)
-    .await
-    .map_err(|err| from_driver(StoreCode::Query, err))?;
-    Ok(WidgetRow {
-        id: WidgetId::from_column(row.id),
-        name: row.name,
-    })
+    store.insert_widget(name).await
 }
 
 /// Reads one widget by id.
@@ -260,101 +135,7 @@ pub async fn get_widget(
     store: &Store,
     id: impl AsRef<str>,
 ) -> Result<Option<WidgetRow>, StoreError> {
-    let id = id.as_ref();
-    let row = sqlx::query!("SELECT id, name FROM widgets WHERE id = $1", id)
-        .fetch_optional(&store.pool)
-        .await
-        .map_err(|err| from_driver(StoreCode::Query, err))?;
-    Ok(row.map(|row| WidgetRow {
-        id: WidgetId::from_column(row.id),
-        name: row.name,
-    }))
-}
-
-async fn read_table_rows(store: &Store, table: &TableName) -> Result<Vec<RowRecord>, StoreError> {
-    known_table(table)?;
-    read_widget_rows(store).await
-}
-
-async fn read_widget_rows(store: &Store) -> Result<Vec<RowRecord>, StoreError> {
-    let mut fetched = sqlx::query!("SELECT id, name FROM widgets").fetch(&store.pool);
-    let mut rows = Vec::new();
-    while let Some(row) = fetched
-        .try_next()
-        .await
-        .map_err(|err| from_driver(StoreCode::Query, err))?
-    {
-        check_read_limit(&TableName::widgets(), rows.len() + 1)?;
-        rows.push(record_from_columns(row.id, row.name)?);
-    }
-    Ok(rows)
-}
-
-async fn write_table_rows(
-    store: &Store,
-    table: &TableName,
-    rows: &[RowRecord],
-) -> Result<(), StoreError> {
-    known_table(table)?;
-    check_write_limit(rows)?;
-    write_widget_rows(store, rows).await
-}
-
-async fn write_widget_rows(store: &Store, rows: &[RowRecord]) -> Result<(), StoreError> {
-    let mut tx = store
-        .pool
-        .begin()
-        .await
-        .map_err(|err| from_driver(StoreCode::Connection, err))?;
-    for row in rows {
-        if row.table != WIDGETS {
-            return Err(StoreError::new(
-                StoreCode::Query,
-                "row table does not match the destination table",
-            ));
-        }
-        let widget = widget_from_payload(&row.payload)?;
-        let id = widget.id.as_str();
-        let name = widget.name.as_str();
-        // ADR-RUN-0307: upsert this identity only. Deleting the table would drop
-        // a distinct id such as `abc` when a later call writes `ABC`. The same
-        // id still replaces, so a second copy does not conflict on insert.
-        sqlx::query(
-            "INSERT INTO widgets (id, name) VALUES ($1, $2) \
-             ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name",
-        )
-        .bind(id)
-        .bind(name)
-        .execute(&mut *tx)
-        .await
-        .map_err(|err| from_driver(StoreCode::Query, err))?;
-    }
-    tx.commit()
-        .await
-        .map_err(|err| from_driver(StoreCode::Query, err))?;
-    Ok(())
-}
-
-fn record_from_columns(id: String, name: String) -> Result<RowRecord, StoreError> {
-    let payload = serde_json::to_vec(&WidgetRow {
-        id: WidgetId::from_column(id),
-        name,
-    })
-    .map_err(|err| StoreError::new(StoreCode::Query, err.to_string()))?;
-    // REQ-RUN-0308 / ADR-RUN-0301: read_rows rejects a payload over 1 MiB.
-    if payload.len() > MAX_ROW_PAYLOAD_BYTES {
-        return Err(StoreError::new(
-            StoreCode::Query,
-            format!(
-                "row payload of {} bytes exceeds the limit of {MAX_ROW_PAYLOAD_BYTES}",
-                payload.len()
-            ),
-        ));
-    }
-    Ok(RowRecord {
-        table: TableName::widgets(),
-        payload,
-    })
+    store.get_widget(id).await
 }
 
 /// Checks that the pool can run a statement.
@@ -364,30 +145,323 @@ fn record_from_columns(id: String, name: String) -> Result<RowRecord, StoreError
 /// Returns [`StoreCode::Query`] when the probe statement fails, and
 /// [`StoreCode::Unavailable`] when the pool times out.
 pub async fn probe(store: &Store) -> Result<(), StoreError> {
-    sqlx::query("SELECT 1")
-        .fetch_optional(&store.pool)
-        .await
-        .map_err(|err| from_driver(StoreCode::Query, err))?;
-    Ok(())
+    store.probe().await
 }
 
-fn widget_from_payload(payload: &[u8]) -> Result<WidgetRow, StoreError> {
-    serde_json::from_slice(payload)
-        .map_err(|err| StoreError::new(StoreCode::Query, err.to_string()))
-}
+impl Store {
+    // The table check and RowRecord codec match self-sqlite. They stay in this
+    // crate until sprint b-6, the pairing owner, can move them into the schema
+    // crate. This sprint's owned path is template/crates/self-postgres/ only.
+    /// The one table-name decision for read and write.
+    fn known_table(table: &TableName) -> Result<(), StoreError> {
+        if table.as_str() == WIDGETS {
+            Ok(())
+        } else {
+            Err(StoreError::new(
+                StoreCode::NotFound,
+                format!("unknown table {table}"),
+            ))
+        }
+    }
 
-/// Counts widgets.
-///
-/// # Errors
-///
-/// Returns [`StoreCode::Query`] when the query fails.
-#[cfg(test)]
-async fn count_widgets(store: &Store) -> Result<i64, StoreError> {
-    let count = sqlx::query_scalar!(r#"SELECT COUNT(*) as "count!: i64" FROM widgets"#)
-        .fetch_one(&store.pool)
-        .await
-        .map_err(|err| from_driver(StoreCode::Query, err))?;
-    Ok(count)
+    fn require_postgres_url(url: &str) -> Result<(), StoreError> {
+        if url.starts_with("postgres://") || url.starts_with("postgresql://") {
+            Ok(())
+        } else {
+            Err(StoreError::new(
+                StoreCode::Connection,
+                "postgres OpenConfig.url must be a postgres:// or postgresql:// database URL",
+            ))
+        }
+    }
+
+    /// SQLSTATE values that can succeed later with the same inputs.
+    ///
+    /// `40001` is serialization_failure, `40P01` is deadlock_detected, and
+    /// `57P03` is cannot_connect_now.
+    const TRANSIENT_SQLSTATES: &[&str] = &["40001", "40P01", "57P03"];
+
+    fn transient_driver(err: &sqlx::Error) -> bool {
+        matches!(
+            err,
+            sqlx::Error::PoolTimedOut | sqlx::Error::PoolClosed | sqlx::Error::Io(_)
+        ) || err
+            .as_database_error()
+            .and_then(sqlx::error::DatabaseError::code)
+            .is_some_and(|code| Self::TRANSIENT_SQLSTATES.contains(&code.as_ref()))
+    }
+
+    fn constraint_violation(err: &sqlx::Error) -> bool {
+        err.as_database_error().is_some_and(|db| {
+            db.is_unique_violation() || db.is_foreign_key_violation() || db.is_check_violation()
+        })
+    }
+
+    fn driver_message(err: &sqlx::Error) -> String {
+        Self::redact_credentials(&err.to_string())
+    }
+
+    /// Replaces a URL password so a driver message cannot echo credentials.
+    fn redact_credentials(message: &str) -> String {
+        let mut rest = message;
+        let mut out = String::new();
+        while let Some(scheme) = rest.find("://") {
+            let split = scheme + 3;
+            out.push_str(&rest[..split]);
+            rest = &rest[split..];
+            let end = rest
+                .find(['/', ' ', '\n', '\r', '\t'])
+                .unwrap_or(rest.len());
+            out.push_str(&Self::redact_authority(&rest[..end]));
+            rest = &rest[end..];
+        }
+        out.push_str(rest);
+        out
+    }
+
+    fn redact_authority(authority: &str) -> String {
+        let Some(at) = authority.rfind('@') else {
+            return authority.to_owned();
+        };
+        let userinfo = &authority[..at];
+        let Some(colon) = userinfo.find(':') else {
+            return authority.to_owned();
+        };
+        let mut redacted = String::with_capacity(authority.len());
+        redacted.push_str(&userinfo[..colon]);
+        redacted.push_str(":***@");
+        redacted.push_str(&authority[at + 1..]);
+        redacted
+    }
+
+    fn from_driver(fallback: StoreCode, err: sqlx::Error) -> StoreError {
+        if matches!(err, sqlx::Error::PoolTimedOut) {
+            return StoreError::new(StoreCode::Unavailable, "postgres pool acquire timed out");
+        }
+        if Self::transient_driver(&err) {
+            return StoreError::new(StoreCode::Unavailable, Self::driver_message(&err));
+        }
+        if Self::constraint_violation(&err) {
+            return StoreError::new(StoreCode::Conflict, Self::driver_message(&err));
+        }
+        StoreError::new(fallback, Self::driver_message(&err))
+    }
+
+    /// Opens the database at `config.url` and runs migrations.
+    ///
+    /// `url` is a `postgres://` or `postgresql://` database URL. TLS settings such
+    /// as `sslmode` belong in that URL's query. Pool size ([`POOL_SIZE`]) and the
+    /// acquire timeout ([`ACQUIRE_TIMEOUT`]) are constants in this consumer-owned
+    /// crate, not URL parameters. A filesystem path is rejected.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use store_postgres::{OpenConfig, open};
+    ///
+    /// # async fn demo() -> Result<(), store_postgres::StoreError> {
+    /// let store = open(&OpenConfig::postgres("postgres://localhost/widgets")).await?;
+    /// let row = store_postgres::insert_widget(&store, "bolt").await?;
+    /// let loaded = store_postgres::get_widget(&store, &row.id).await?;
+    /// assert!(loaded.is_some());
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreCode::Connection`] when `url` is not a Postgres URL or a
+    /// pool cannot be opened, [`StoreCode::Unavailable`] when a pool acquire
+    /// times out, the pool is closed, the driver reports an I/O failure, or
+    /// Postgres returns SQLSTATE `40001`, `40P01`, or `57P03`, and
+    /// [`StoreCode::Migration`] when a migration fails.
+    async fn connect(config: &OpenConfig) -> Result<Store, StoreError> {
+        let StoreTarget::PostgresUrl(url) = &config.target else {
+            return Err(StoreError::new(
+                StoreCode::Connection,
+                "postgres OpenConfig must be a postgres:// or postgresql:// database URL",
+            ));
+        };
+        Self::require_postgres_url(url)?;
+        let pool = PgPoolOptions::new()
+            .max_connections(POOL_SIZE)
+            .acquire_timeout(ACQUIRE_TIMEOUT)
+            .connect(url)
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Connection, err))?;
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Migration, err.into()))?;
+        Ok(Store { pool })
+    }
+
+    /// Inserts one widget and returns the stored row.
+    ///
+    /// Duplicate names are allowed. The identifier comes from Postgres
+    /// `gen_random_uuid()`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreCode::Query`] when the insert fails, [`StoreCode::Conflict`]
+    /// when a constraint rejects it, and [`StoreCode::Unavailable`] when the pool
+    /// times out, the pool is closed, the driver reports an I/O failure, or
+    /// Postgres returns SQLSTATE `40001`, `40P01`, or `57P03`.
+    async fn insert_widget(&self, name: &str) -> Result<WidgetRow, StoreError> {
+        let row = sqlx::query!(
+        "INSERT INTO widgets (id, name) VALUES (gen_random_uuid()::text, $1) RETURNING id, name",
+        name,
+    )
+    .fetch_one(&self.pool)
+    .await
+    .map_err(|err| Self::from_driver(StoreCode::Query, err))?;
+        Ok(WidgetRow {
+            id: WidgetId::from_column(row.id),
+            name: row.name,
+        })
+    }
+
+    /// Reads one widget by id.
+    ///
+    /// `id` is a [`WidgetId`] or any other column text, including a value the
+    /// application newtype already validated.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreCode::Query`] when the query fails, and
+    /// [`StoreCode::Unavailable`] when the pool times out, the pool is closed,
+    /// the driver reports an I/O failure, or Postgres returns SQLSTATE `40001`,
+    /// `40P01`, or `57P03`.
+    async fn get_widget(&self, id: impl AsRef<str>) -> Result<Option<WidgetRow>, StoreError> {
+        let id = id.as_ref();
+        let row = sqlx::query!("SELECT id, name FROM widgets WHERE id = $1", id)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Query, err))?;
+        Ok(row.map(|row| WidgetRow {
+            id: WidgetId::from_column(row.id),
+            name: row.name,
+        }))
+    }
+
+    async fn read_table_rows(&self, table: &TableName) -> Result<Vec<RowRecord>, StoreError> {
+        Self::known_table(table)?;
+        self.read_widget_rows().await
+    }
+
+    async fn read_widget_rows(&self) -> Result<Vec<RowRecord>, StoreError> {
+        let mut fetched = sqlx::query!("SELECT id, name FROM widgets").fetch(&self.pool);
+        let mut rows = Vec::new();
+        while let Some(row) = fetched
+            .try_next()
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Query, err))?
+        {
+            check_read_limit(&TableName::widgets(), rows.len() + 1)?;
+            rows.push(Self::record_from_columns(row.id, row.name)?);
+        }
+        Ok(rows)
+    }
+
+    async fn write_table_rows(
+        &self,
+        table: &TableName,
+        rows: &[RowRecord],
+    ) -> Result<(), StoreError> {
+        Self::known_table(table)?;
+        check_write_limit(rows)?;
+        self.write_widget_rows(rows).await
+    }
+
+    async fn write_widget_rows(&self, rows: &[RowRecord]) -> Result<(), StoreError> {
+        let mut tx = self
+            .pool
+            .begin()
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Connection, err))?;
+        for row in rows {
+            if row.table != WIDGETS {
+                return Err(StoreError::new(
+                    StoreCode::Query,
+                    "row table does not match the destination table",
+                ));
+            }
+            let widget = Self::widget_from_payload(&row.payload)?;
+            let id = widget.id.as_str();
+            let name = widget.name.as_str();
+            // ADR-RUN-0307: upsert this identity only. Deleting the table would drop
+            // a distinct id such as `abc` when a later call writes `ABC`. The same
+            // id still replaces, so a second copy does not conflict on insert.
+            sqlx::query(
+                "INSERT INTO widgets (id, name) VALUES ($1, $2) \
+             ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name",
+            )
+            .bind(id)
+            .bind(name)
+            .execute(&mut *tx)
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Query, err))?;
+        }
+        tx.commit()
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Query, err))?;
+        Ok(())
+    }
+
+    fn record_from_columns(id: String, name: String) -> Result<RowRecord, StoreError> {
+        let payload = serde_json::to_vec(&WidgetRow {
+            id: WidgetId::from_column(id),
+            name,
+        })
+        .map_err(|err| StoreError::new(StoreCode::Query, err.to_string()))?;
+        // REQ-RUN-0308 / ADR-RUN-0301: read_rows rejects a payload over 1 MiB.
+        if payload.len() > MAX_ROW_PAYLOAD_BYTES {
+            return Err(StoreError::new(
+                StoreCode::Query,
+                format!(
+                    "row payload of {} bytes exceeds the limit of {MAX_ROW_PAYLOAD_BYTES}",
+                    payload.len()
+                ),
+            ));
+        }
+        Ok(RowRecord {
+            table: TableName::widgets(),
+            payload,
+        })
+    }
+
+    /// Checks that the pool can run a statement.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreCode::Query`] when the probe statement fails, and
+    /// [`StoreCode::Unavailable`] when the pool times out.
+    async fn probe(&self) -> Result<(), StoreError> {
+        sqlx::query("SELECT 1")
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Query, err))?;
+        Ok(())
+    }
+
+    fn widget_from_payload(payload: &[u8]) -> Result<WidgetRow, StoreError> {
+        serde_json::from_slice(payload)
+            .map_err(|err| StoreError::new(StoreCode::Query, err.to_string()))
+    }
+
+    /// Counts widgets.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StoreCode::Query`] when the query fails.
+    #[cfg(test)]
+    async fn count_widgets(&self) -> Result<i64, StoreError> {
+        let count = sqlx::query_scalar!(r#"SELECT COUNT(*) as "count!: i64" FROM widgets"#)
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|err| Self::from_driver(StoreCode::Query, err))?;
+        Ok(count)
+    }
 }
 
 #[cfg(test)]
@@ -576,12 +650,13 @@ mod tests {
     #[test]
     fn read_rows_rejects_payload_over_one_mib() {
         let name = "n".repeat(MAX_ROW_PAYLOAD_BYTES);
-        let err = record_from_columns("id".to_owned(), name).expect_err("payload");
+        let err = Store::record_from_columns("id".to_owned(), name).expect_err("payload");
         assert_eq!(err.code, StoreCode::Query);
         assert!(!err.is_retryable());
         assert!(err.message.contains("exceeds the limit"));
 
-        let record = record_from_columns("abc".to_owned(), "bolt".to_owned()).expect("record");
+        let record =
+            Store::record_from_columns("abc".to_owned(), "bolt".to_owned()).expect("record");
         assert!(record.payload.len() <= MAX_ROW_PAYLOAD_BYTES);
         assert_eq!(record.table, WIDGETS);
     }
@@ -599,13 +674,13 @@ mod tests {
             ("57P03", sqlx::Error::from(SqlStateError("57P03"))),
         ];
         for (label, err) in cases {
-            let mapped = from_driver(StoreCode::Query, err);
+            let mapped = Store::from_driver(StoreCode::Query, err);
             assert_eq!(mapped.code, StoreCode::Unavailable, "{label}");
             assert!(mapped.is_retryable(), "{label}");
             assert!(std::error::Error::source(&mapped).is_none(), "{label}");
         }
 
-        let timed_out = from_driver(StoreCode::Query, sqlx::Error::PoolTimedOut);
+        let timed_out = Store::from_driver(StoreCode::Query, sqlx::Error::PoolTimedOut);
         assert_eq!(timed_out.code, StoreCode::Unavailable);
         assert!(timed_out.is_retryable());
         assert_eq!(timed_out.message, "postgres pool acquire timed out");
@@ -616,7 +691,7 @@ mod tests {
         let err = sqlx::Error::Io(std::io::Error::other(
             "connect postgres://widget_user:super-secret-password@127.0.0.1:5432/widgets failed",
         ));
-        let mapped = from_driver(StoreCode::Connection, err);
+        let mapped = Store::from_driver(StoreCode::Connection, err);
         assert!(!mapped.message.contains("super-secret-password"));
         assert!(mapped.message.contains("widget_user"));
         assert!(mapped.message.contains("127.0.0.1"));
@@ -692,9 +767,9 @@ mod tests {
         .await
         .expect("pgcrypto");
         assert!(installed, "migration installs pgcrypto");
-        let row = insert_widget(&store, "bolt").await.expect("insert");
+        let row = store.insert_widget("bolt").await.expect("insert");
         assert!(is_uuid(row.id.as_str()), "{}", row.id.as_str());
-        let loaded = get_widget(&store, &row.id).await.expect("get");
+        let loaded = store.get_widget(&row.id).await.expect("get");
         assert_eq!(loaded.expect("row").name, "bolt");
         drop(store);
         db.close().await;
@@ -708,7 +783,7 @@ mod tests {
         let store = open(&OpenConfig::postgres(db.url.clone()))
             .await
             .expect("open");
-        assert_eq!(count_widgets(&store).await.expect("count"), 0);
+        assert_eq!(store.count_widgets().await.expect("count"), 0);
         drop(store);
         db.close().await;
     }
@@ -725,14 +800,14 @@ mod tests {
         for index in 0..100 {
             let store = store.clone();
             tasks.push(tokio::spawn(async move {
-                insert_widget(&store, &format!("widget-{index}")).await
+                store.insert_widget(&format!("widget-{index}")).await
             }));
         }
         for task in tasks {
             let row = task.await.expect("join").expect("insert");
             assert!(!row.id.is_empty());
         }
-        assert_eq!(count_widgets(&store).await.expect("count"), 100);
+        assert_eq!(store.count_widgets().await.expect("count"), 100);
         drop(store);
         db.close().await;
     }
@@ -760,7 +835,8 @@ mod tests {
             serde_json::from_slice(&rows[0].payload).expect("json object");
         assert_eq!(payload["id"], "abc");
         assert_eq!(payload["name"], "bolt");
-        let loaded = get_widget(&store, WidgetId::from_column("abc"))
+        let loaded = store
+            .get_widget(WidgetId::from_column("abc"))
             .await
             .expect("get");
         assert_eq!(loaded.expect("row").id.as_str(), "abc");
@@ -772,8 +848,9 @@ mod tests {
             .write_rows(&TableName::widgets(), &[upper])
             .await
             .expect("case-distinct id");
-        assert_eq!(count_widgets(&store).await.expect("count"), 2);
-        let loaded = get_widget(&store, WidgetId::from_column("abc"))
+        assert_eq!(store.count_widgets().await.expect("count"), 2);
+        let loaded = store
+            .get_widget(WidgetId::from_column("abc"))
             .await
             .expect("get");
         assert_eq!(loaded.expect("row").id.as_str(), "abc");
@@ -885,7 +962,7 @@ mod tests {
             .await
             .expect_err("batch");
         assert_eq!(err.code, StoreCode::Query);
-        assert_eq!(count_widgets(&store).await.expect("count"), 0);
+        assert_eq!(store.count_widgets().await.expect("count"), 0);
 
         let huge = RowRecord {
             table: TableName::widgets(),
@@ -896,7 +973,7 @@ mod tests {
             .await
             .expect_err("payload");
         assert_eq!(err.code, StoreCode::Query);
-        assert_eq!(count_widgets(&store).await.expect("count"), 0);
+        assert_eq!(store.count_widgets().await.expect("count"), 0);
         drop(store);
         db.close().await;
     }

@@ -202,8 +202,7 @@ async fn file_instance_root_is_not_lock_held() {
     let dir = tempfile::tempdir().expect("temp dir");
     let file = dir.path().join("not-a-directory");
     std::fs::write(&file, b"x").expect("file");
-    let mut config = DaemonConfig::default();
-    config.transport.instance_root = Some(file);
+    let config = rooted_config(&file);
     let called = Arc::new(Mutex::new(false));
     let flag = Arc::clone(&called);
     let err = Daemon::builder(&app(), &config)

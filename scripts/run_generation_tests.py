@@ -8,6 +8,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# Script-mode execution otherwise exposes scripts/ rather than the repository
+# package root; every per-suite discovery below must share the local tests package.
+sys.path.insert(0, str(ROOT))
+
 # `just test` discovers these suites. Generation stays byte-identical to a-6;
 # wizard tests are the a-8 contract and entry-mode checks. The CI scope
 # classifier is not part of that frozen generation suite.

@@ -1,7 +1,7 @@
 ---
 id: c-2
 phase: c
-status: planned
+status: in_progress
 closure_type: integration
 target_boundary: generated-consumer-lint
 track: lint
@@ -16,6 +16,9 @@ requirements:
   - REQ-RUN-0701
   - NFR-RUN-0006
   - NFR-RUN-0005
+  - NFR-RUN-0003
+  - NFR-RUN-0004
+  - NFR-RUN-0008
 adrs:
   - ADR-RUN-0005
   - ADR-RUN-0303
