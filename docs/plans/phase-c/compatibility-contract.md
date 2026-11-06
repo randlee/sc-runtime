@@ -654,8 +654,9 @@ all provider tasks/native calls/cleanup, then calls
 acknowledgement publishes `Joined`; it cannot verify untracked application
 work. The C1 factory refuses acknowledgement before stop and revokes all
 existing and future contexts when acknowledged, including a future grace cutoff.
-C5 framework controls must additionally refuse pending registered native work
-and acknowledgement through `WorkerHandle::stop_control()`. Framework workers retain their
+C5 owned controls additionally refuse acknowledgement while registered native
+work remains or through a control obtained from `WorkerHandle::stop_control()`.
+Framework workers retain their
 single physical owner `WorkerHandle::join_owned`. Acknowledgement never reopens
 intake or revives a cancelled/expired context. Typed unavailable reasons are
 `worker_runtime_unavailable`, `worker_already_running`, and
