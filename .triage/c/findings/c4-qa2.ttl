@@ -1,0 +1,129 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+# Historical findings snapshot persisted centrally after the source fixes.
+# This record does not establish before-fix triage persistence.
+
+triage:c4_qa2_REQ_QA_C4_001 a triage:Finding ;
+ triage:id "REQ-QA-C4-001" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file "crates/sc-cron/tests/fixtures/logging_consumer/Cargo.toml:11; crates/sc-cron/tests/fixtures/logging_consumer/Cargo.toml:14; scripts/tests/test_observability_dependencies.py:35" ;
+ triage:issue "Source portion verified corrected: both isolated logging-consumer dependencies are 0.2.0 and the actual isolated offline metadata/test proof passed (one Python harness case). The required exact =0.2.0 registry-only public facade consumer has not been qualified. The source fixture still uses path dependencies; workspace/source facade success cannot close the registry portion. This remains an open release acceptance gate, not a prerequisite to conducting this source re-QA." ;
+ triage:action "After authorized publication and all-six visibility, preserve and execute a real isolated public logging-facade consumer using exact =0.2.0 with no public path/git/patch dependency, retain locked identity and actual facade results. Do not reopen the verified source-version fix or substitute its passing checkout proof for registry evidence." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa2_REQ_QA_C4_002 a triage:Finding ;
+ triage:id "REQ-QA-C4-002" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file "template/Justfile; crates/sc-cron/src/process.rs:213; docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:290" ;
+ triage:issue "Selected cron makes production sc-cron->tempfile reachable, but binding REQ-RUN-0503 criterion6 and REQ-RUN-0701 command6 forbid tempfile anywhere in the daemon normal tree. The actual untouched sequence compiled the daemon then failed its guard. The proposed exception remains unapproved." ;
+ triage:action "Keep the guard and criteria open. Resolve the explicit authority conflict through an approved requirement decision, then implement only its exact reviewed scope and rerun the untouched sequence; alternatively implement a compliant approved design. Do not waive the guard or claim green." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa2_REQ_QA_C4_003 a triage:Finding ;
+ triage:id "REQ-QA-C4-003" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file ".github/workflows/crates-publish.yml:98; .github/workflows/release.yml:325; release/sc-publish-consumer-input.json:31" ;
+ triage:issue "Both installed publication paths check whether the current crate exists before upload, then perform cargo publish and a fixed sleep before proceeding. They do not positively recheck each newly published exact version before a dependent publication. Cargo upload/timeout completion plus fixed sleep is not the explicit visibility evidence required by C4." ;
+ triage:action "Qualify a canonical kit input/pin/regeneration route that enforces positive exact-version visibility before each dependent, including first upload and channel retry. Do not hand-edit vendored workflows or publish early; retain the actual future visibility evidence." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa2_REQ_QA_C4_004 a triage:Finding ;
+ triage:id "REQ-QA-C4-004" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:300" ;
+ triage:issue "Required completed parent qualification, authorized all-six publication, exact-version visibility and shared-version tag/main/source provenance remain unevidenced. The exact-head fix receipt explicitly has published=false and bead_status=in_progress; sprint retains in_progress. This final gate is OPEN, without demanding early publication or inventing a merge-stage waiver." ;
+ triage:action "Complete source/parent qualification and applicable existing staging/merge gates. Obtain the required explicit authority before the normal publication step, then retain actual dependency-ordered publication and visibility records; keep sprint status in_progress meanwhile." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa2_REQ_QA_C4_005 a triage:Finding ;
+ triage:id "REQ-QA-C4-005" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file "tests/integration/release/test_standard_cron_commands.py:837; tests/integration/release/test_published_runtime_ecosystem.py:9" ;
+ triage:issue "Registry-only unchanged standard consumer/facade execution and immutable package proof remain unexecuted. The exact crates.io source-identity guard is now corrected and its four recorded tests pass, but synthetic guard tests and checkout-patched real composition do not prove no-patch registry closure, all-six visibility, or registry UI/target/schema/capacity/lifecycle/customization acceptance." ;
+ triage:action "After lawful authorized publication and visibility, execute the named no-source-edit registry fixtures, including the public facade and all six visibility checks. Record exact main/tag/source/package identities and locked metadata. Do not substitute the current checkout or prospective patches." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa2_REQ_QA_C4_006 a triage:Finding ;
+ triage:id "REQ-QA-C4-006" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:300" ;
+ triage:issue "Final composed root just lint && just test, controlled-source benchmark qualification and required completed parent QA/CI qualification remain open. Exact-head-equivalent focused receipts verify registry guard4, generated failure contracts2, owner/generation20, isolated facade1, real selected composition8 plus schema/native-owner10, strict Clippy, fmt and sc-lint0.8.4 size gates. Receipt explicitly full_lint_test_claimed=false; none is whole-suite/native-all-platform or full C4 acceptance." ;
+ triage:action "Complete applicable parent qualifications and required final composed root just lint && just test on the final head, with the controlled-source benchmark qualification required for release. Retain real results; do not infer CI/native-platform success from focused macOS receipts. No CI wait or redundant execution is requested from this scoped reviewer." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa2_ARCH_003 a triage:Finding ;
+ triage:id "ARCH-003" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md" ;
+ triage:issue "The authoritative C4 structural release/registry gate remains open at this pin. Exact shared-0.2.0 six-package authorization/publication/visibility/tag provenance and actual no-patch registry consumer/identity/UI/lifecycle/facade proof are absent; the current receipt expressly records published=false, full_lint_test_claimed=false and in_progress. Final composed qualification, parent qualification, the unanswered tempfile authority conflict and canonical publication-visibility adoption remain open. Controlled-host source equivalence is also unfulfilled: every committed campaign measured source differs in production composition.rs, beyond report/index changes. No staging or tempfile proposal has become operative authority. Real production composition and focused source fixes are credited; they do not close release acceptance." ;
+ triage:action "Keep C4 and full-sprint merge readiness open. Finish prepublication qualification and source-matched controlled-host evidence; resolve the requirement conflict through the existing authority path. Perform publication only after its separate authorization and prerequisites, then capture exact registry-only acceptance. Any staging exception must first become operative authority; do not mark the current full sprint PASS based on a proposal or checkout proof." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa2_RBQA_C4_001 a triage:Finding ;
+ triage:id "RBQA-C4-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file "template/scripts/consumer_checks.py" ;
+ triage:issue "Selected cron production dependency closure violates the still-binding daemon tempfile exclusion; the required untouched consumer sequence remains red." ;
+ triage:action "Keep the old guard and acceptance open until the authorized owner resolves the exact requirement conflict. If the proposed narrow sc-cron private-scratch exception is adopted, implement and verify its ancestry-sensitive guard under that recorded authority; otherwise deliver a conforming approved design. Do not allowlist tempfile globally or remove private Python isolation as a local shortcut." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
+
+triage:c4_qa2_RBQA_C4_002 a triage:Finding ;
+ triage:id "RBQA-C4-002" ;
+ triage:severity "important" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:file ".github/workflows/release.yml" ;
+ triage:issue "The installed publication loops do not positively establish predecessor registry visibility before advancing to dependent crates." ;
+ triage:action "Resolve this through the canonical sc-publish input/pin and regeneration route before authorized publication. Require exact-version visible state after each newly published predecessor and before advancing; indeterminate/absent state must block. Cover the main release and the channel retry using the existing registry inquiry owner, without handwritten vendored workflow edits or a second publication framework." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636" ;
+ triage:recorded_at "2026-11-06T06:04:26.977644+00:00" ;
+ triage:persistence_timing "after_source_fix_checkpoint" ;
+ triage:recorded_after_source_fix_commit "e190e2c8d84b9235ac70b3e442691980e8b69a33" .
