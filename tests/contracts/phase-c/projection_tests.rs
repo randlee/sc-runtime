@@ -421,3 +421,70 @@ fn cli_debug_does_not_render_raw_cron_request_values() {
     let valid=cli::parse(&["cron".into(),"list".into(),"--request".into(),request.into()]).unwrap();
     assert!(!format!("{valid:?}").contains(request));
 }
+
+#[test]
+fn successful_cli_cron_debug_redacts_each_sensitive_value_without_changing_request() {
+    let targets = [
+        serde_json::json!({"kind":"rust"}),
+        serde_json::json!({"kind":"python", "module":"CONFIDENTIAL_PYTHON_MODULE"}),
+        serde_json::json!({"kind":"monty", "source":"CONFIDENTIAL_MONTY_SOURCE"}),
+    ];
+    for target in targets {
+        let request = serde_json::json!({
+            "version":"1", "command":"cron.start", "request":{
+                "name":"CONFIDENTIAL_SCHEDULE_NAME", "cron":"0 * * * *", "timeout_ms":25000,
+                "target":target, "payload":{"token":"CONFIDENTIAL_PAYLOAD"},
+                "environment":{
+                    "dotenv":[{"path":"/CONFIDENTIAL_DOTENV_PATH", "required":true}],
+                    "variables":{
+                        "SECRET_VALUE":{"set":"CONFIDENTIAL_ENV_VALUE"},
+                        "SECRET_REFERENCE":{"reference":"CONFIDENTIAL_ENV_REFERENCE"}
+                    }
+                }
+            }
+        });
+        let command = cli::parse(&[
+            "cron".into(),
+            "start".into(),
+            "--request".into(),
+            request.to_string(),
+            "--endpoint".into(),
+            "tcp:CONFIDENTIAL_ENDPOINT".into(),
+            "--json".into(),
+        ])
+        .expect("valid canonical cron.start");
+        for diagnostic in [format!("{command:?}"), format!("{command:#?}")] {
+            assert!(diagnostic.contains("Cron"));
+            for canary in [
+                "CONFIDENTIAL_SCHEDULE_NAME",
+                "CONFIDENTIAL_PAYLOAD",
+                "CONFIDENTIAL_PYTHON_MODULE",
+                "CONFIDENTIAL_MONTY_SOURCE",
+                "CONFIDENTIAL_DOTENV_PATH",
+                "CONFIDENTIAL_ENV_VALUE",
+                "CONFIDENTIAL_ENV_REFERENCE",
+                "CONFIDENTIAL_ENDPOINT",
+            ] {
+                assert!(
+                    !diagnostic.contains(canary),
+                    "public Command Debug exposed {canary}"
+                );
+            }
+        }
+        match command {
+            cli::Command::Cron {
+                request: parsed,
+                endpoint,
+                json,
+            } => {
+                assert_eq!(
+                    parsed, request,
+                    "diagnostic redaction must preserve dispatch data"
+                );
+                assert_eq!(endpoint.as_deref(), Some("tcp:CONFIDENTIAL_ENDPOINT"));
+                assert!(json);
+            }
+            _ => panic!("expected parsed cron request"),
+        }
+    }
+}
