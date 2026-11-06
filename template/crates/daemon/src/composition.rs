@@ -136,10 +136,11 @@ pub async fn run(
                 let runtime = match cron_services.start(&cron_config, &instance_root, cron_logger) {
                     Ok(runtime) => runtime,
                     Err(error) => {
+                        let failure = sc_runtime::RuntimeError::stores_failed(
+                            error.code(), cron_message(&error), error.recovery(), None,
+                        );
                         let _ = worker_tx.send(Err(error));
-                        return Err(sc_runtime::RuntimeError::stores_failed(
-                            "DAEMON.CRON_START", "cron startup failed", "check cron configuration and retry", None,
-                        ));
+                        return Err(failure);
                     }
                 };
                 #[cfg(feature = "cron-commands")]
@@ -179,17 +180,87 @@ pub async fn run(
         }
     }).await;
     #[cfg(feature = "cron")]
-    if let Some(error) = cron_failure {
-        return Err(cron_error(error));
-    }
+    return finish_cron_runtime(result, cron_failure, |error| {
+        report_cron_failure(&observability.logger(), error);
+    });
     #[cfg(not(feature = "cron"))]
-    let result = result.run().await;
-    result.map_err(|error| crate::agent_error::runtime_error(&error))
+    {
+        result.run().await.map_err(|error| crate::agent_error::runtime_error(&error))
+    }
 }
 
 #[cfg(feature = "cron")]
-fn cron_error(error: sc_cron::CronError) -> String {
-    crate::agent_error::format_agent_error("DAEMON.CRON_OPEN", error, "fix cron configuration or database path and retry")
+fn cron_error(error: &sc_cron::CronError) -> String {
+    crate::agent_error::format_agent_error(error.code(), cron_message(error), error.recovery())
+}
+
+#[cfg(feature = "cron")]
+fn cron_message(error: &sc_cron::CronError) -> String {
+    use sc_cron::CronError;
+    match error {
+        CronError::BadExpression(_) => "invalid cron expression".to_owned(),
+        CronError::InvalidSpec(_) => "invalid cron specification".to_owned(),
+        CronError::AlreadyActive(_) => "cron schedule is already active".to_owned(),
+        CronError::NotFound(_) => "cron schedule was not found".to_owned(),
+        CronError::HookFailed(_) => "cron hook failed".to_owned(),
+        CronError::Fenced { .. } => "cron schedule generation is stale".to_owned(),
+        CronError::Store(error) => {
+            let mut message = format!("cron store operation failed ({})", error.kind().as_str());
+            if let Some(outcome) = error.transaction_outcome() {
+                // Typed enum/bool facts only; never the provider context or source.
+                message.push_str(&format!("; {outcome:?}"));
+            }
+            message
+        }
+        _ => "cron operation failed".to_owned(),
+    }
+}
+
+#[cfg(feature = "cron")]
+fn finish_cron_runtime(
+    primary: Result<(), sc_runtime::RuntimeError>,
+    cleanup: Option<sc_cron::CronError>,
+    report_secondary: impl FnOnce(&sc_cron::CronError),
+) -> Result<(), String> {
+    match (primary, cleanup) {
+        (Err(primary), Some(secondary)) => {
+            report_secondary(&secondary);
+            Err(crate::agent_error::runtime_error(&primary))
+        }
+        (Err(primary), None) => Err(crate::agent_error::runtime_error(&primary)),
+        (Ok(()), Some(error)) => Err(cron_error(&error)),
+        (Ok(()), None) => Ok(()),
+    }
+}
+
+#[cfg(feature = "cron")]
+fn report_cron_failure(logger: &sc_command::observability::SharedCanonicalLog, error: &sc_cron::CronError) {
+    use sc_observability_types::{ActionName, Level, LogEvent, OBSERVATION_SCHEMA_VERSION,
+        ProcessIdentity, TargetCategory, Timestamp};
+    let (Ok(target), Ok(action)) = (TargetCategory::new("cron.lifecycle"), ActionName::new("cleanup.error")) else {
+        return;
+    };
+    let event = LogEvent {
+        version: (*OBSERVATION_SCHEMA_VERSION).clone(),
+        timestamp: Timestamp::now_utc(),
+        level: Level::Error,
+        service: logger.service_name().clone(),
+        target,
+        action,
+        message: Some(cron_error(error)),
+        identity: ProcessIdentity::default(),
+        trace: None,
+        request_id: None,
+        correlation_id: None,
+        outcome: None,
+        diagnostic: None,
+        state_transition: None,
+        fields: Default::default(),
+    };
+    // Diagnostic admission must not replace the primary runtime failure.
+    if logger.emit(event).is_err() {
+        eprintln!("{}", cron_error(error));
+    }
 }
 
 /// Application-owned worker lifetime transferred from stores startup to awaited cleanup.
@@ -333,3 +404,73 @@ where S: sc_cron::ScheduleStore + 'static, C: sc_cron::Clock + 'static,
 type ApplicationCleanup = Box<dyn FnOnce() -> std::pin::Pin<Box<
     dyn std::future::Future<Output = Result<(), sc_cron::CronError>> + Send,
 >> + Send>;
+
+#[cfg(all(test, feature = "cron"))]
+mod failure_tests {
+    use super::{cron_error, finish_cron_runtime, report_cron_failure};
+    use sc_command::observability::{CanonicalLog, SharedCanonicalLog};
+    use sc_observability_types::{LogEvent, ServiceName, v2::EventError};
+    use std::sync::{Arc, Mutex};
+
+    struct Capture {
+        service: ServiceName,
+        events: Mutex<Vec<LogEvent>>,
+    }
+
+    impl CanonicalLog for Capture {
+        fn service_name(&self) -> &ServiceName { &self.service }
+        fn emit(&self, event: LogEvent) -> Result<(), EventError> {
+            self.events.lock().unwrap().push(event);
+            Ok(())
+        }
+    }
+
+    fn primary() -> sc_runtime::RuntimeError {
+        sc_runtime::RuntimeError::stores_failed(
+            "STORE.OPEN", "application startup failed", "repair application stores", None,
+        )
+    }
+
+    fn secondary() -> sc_cron::CronError {
+        sc_cron::StoreError::new(sc_cron::StoreErrorKind::Indeterminate, "PRIVATE_PROVIDER_CONTEXT")
+            .with_source(std::io::Error::other("PRIVATE_SOURCE_PAYLOAD")).into()
+    }
+
+    #[test]
+    fn cleanup_keeps_primary_runtime_failure_and_emits_safe_secondary() {
+        let capture = Arc::new(Capture {
+            service: ServiceName::new("test-cron").unwrap(), events: Mutex::default(),
+        });
+        let logger: SharedCanonicalLog = capture.clone();
+        let expected = crate::agent_error::runtime_error(&primary());
+        let finish = |primary, cleanup| finish_cron_runtime(primary, cleanup,
+            |error| report_cron_failure(&logger, error));
+        assert_eq!(finish(Err(primary()), None), Err(expected.clone()));
+        assert!(capture.events.lock().unwrap().is_empty());
+        assert_eq!(finish(Err(primary()), Some(secondary())), Err(expected));
+        let events = capture.events.lock().unwrap();
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].action.as_str(), "cleanup.error");
+        assert_eq!(events[0].message.as_deref(), Some(cron_error(&secondary()).as_str()));
+        drop(events);
+        assert_eq!(finish(Ok(()), Some(secondary())), Err(cron_error(&secondary())));
+        assert_eq!(finish(Ok(()), None), Ok(()));
+        assert_eq!(capture.events.lock().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn native_cron_failure_preserves_reconciliation_and_redacts_provider_text() {
+        let error = secondary();
+        let rendered = cron_error(&error);
+        assert!(rendered.starts_with("STORE_FAILED cron store operation failed (indeterminate)"));
+        assert!(rendered.ends_with(error.recovery()));
+        assert!(rendered.contains("separately authorized operation"));
+        assert!(rendered.contains("never replay automatically"));
+        assert!(!rendered.contains("PRIVATE_"));
+        let error = sc_cron::CronError::InvalidSpec("PRIVATE_ENVIRONMENT".into());
+        let rendered = cron_error(&error);
+        assert!(rendered.starts_with("INVALID_SPEC "));
+        assert!(rendered.ends_with(error.recovery()));
+        assert!(!rendered.contains("PRIVATE_"));
+    }
+}
