@@ -1440,5 +1440,31 @@
       }
     }
   ],
-  "execution_branch": "integrate/phase-c"
+  "execution_branch": "integrate/phase-c",
+  "c5_qa3_fix": {
+    "finding_ids": [
+      "REQ-C5-008"
+    ],
+    "reviewer_occurrences": 2,
+    "highest_severity": "Blocking",
+    "implementation_commit": "c0c6cb4a9f84b74f0824fdab1337f74036f21687",
+    "status": "corrected_pending_independent_reqa",
+    "triage_ttl_paths": [
+      ".triage/c/findings/c5-qa3.ttl"
+    ],
+    "checks": {
+      "focused_tests": 17,
+      "format": "PASS",
+      "lint_gates": "PASS",
+      "ordinary_discovery": {
+        "tests": 151,
+        "executed": false,
+        "PYTHONPATH": null
+      }
+    },
+    "fullsuite_current_head_claimed": false,
+    "ci_waited": false,
+    "receipt": "/tmp/c5-qa3-validation.receipt.json",
+    "shared_source": "c6b4bc11f29e6e2d0baf8e2cd2da7f9070e7bf9f"
+  }
 }
