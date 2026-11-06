@@ -1,0 +1,27 @@
+[package]
+name = "sc-cron-commands"
+version = "0.2.0"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Optional versioned cron command DTOs and injectable execution contracts."
+
+[features]
+default = []
+schema = ["dep:schemars", "dep:utoipa", "sc-command/schema"]
+scheduler = ["dep:sc-cron"]
+monty = ["scheduler", "sc-cron/monty"]
+
+[dependencies]
+sc-command = { path = "../sc-command", version = "0.1.1", default-features = false }
+sc-cron = { path = "../sc-cron", version = "0.1.1", default-features = false, optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value"] }
+schemars = { version = "=1.2.3", default-features = false, features = ["derive"], optional = true }
+utoipa = { version = "=6.0.0", default-features = false, features = ["macros"], optional = true }
+
+[dev-dependencies]
+sc-cron = { path = "../sc-cron", version = "0.1.1", default-features = false, features = ["test-utils"] }

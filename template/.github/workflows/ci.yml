@@ -21,11 +21,9 @@ jobs:
           components: rustfmt, clippy
 
       - name: Install just
-        run: |
-          set -euo pipefail
-          mkdir -p "$HOME/.local/bin"
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin" --tag 1.58.0
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
+        with:
+          just-version: '1.58.0'
 
       - name: Setup
         run: just setup

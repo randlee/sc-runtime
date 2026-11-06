@@ -32,7 +32,7 @@ class SchemaTests(unittest.TestCase):
         )
         self.assertEqual(
             sorted(schema["properties"]),
-            ["db", "licence", "mcp", "project_name"],
+            ["cron", "cron_commands", "db", "licence", "mcp", "project_name"],
         )
         self.assertNotIn("x-v01-reserved", json.dumps(schema))
 
