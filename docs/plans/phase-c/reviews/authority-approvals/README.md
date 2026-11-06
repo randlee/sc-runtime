@@ -30,3 +30,5 @@ clarification. Its question is assistant-authored; its answer and preceding
 clarity approval are direct human words. This authorizes that statement
 clarification, not question tuning, fabricated rubric results or locking before
 successful required checks. Records therefore remain proposed.
+
+The [November 6 stage, policy and calibration approval](phase-c-stage-policy-and-calibration-approved-2026-11-06.json) preserves the direct human decisions for additional C1 contract-stage fixtures, the narrow sc-cron Python scratch dependency exception, and persistent Phase C calibration export/recheck scope. Live verification and release acceptance remain separate.

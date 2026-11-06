@@ -577,20 +577,22 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-02",
-      "context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat.",
+      "context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat. Approved C1 contract-stage clarification (2026-11-06): C1 fulfills its contract-stage obligation by delivering a checkable contract that defines how selected configuration determines boundary owners and permitted dependency edges, omits disabled components, and qualifies the contract with the representative consumer-shaped configuration required by C1. C1 need not ship C2's bootstrap or claim C2's full matrix. C2 still must implement real fresh-install policy generation from settings and pass the approved supported-configuration/edge matrix and real analyzer checks. A future promise without the specified contract and qualification does not fulfill C1. Approval record: docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json.",
       "summary": "Configuration-selected default boundaries",
       "scope": "c-1 consumer policy contract and c-2 fresh-install implementation",
       "deterministic_check": "Generate supported consumer configurations and verify their emitted policy matches selected crates and edges.",
       "fixtures": {
         "pass": [
-          "Fresh consumer installation reads the selected configuration and generates the matching default boundaries policy before running sc-boundary."
+          "Fresh consumer installation reads the selected configuration and generates the matching default boundaries policy before running sc-boundary.",
+          "C1 delivers the selected-crate/edge mapping contract and a representative qualification showing the selected consumer policy; the shipped generator and full installation matrix remain explicitly owned by C2."
         ],
         "fail": [
-          "Fresh consumer installation emits no boundaries policy and runs sc-boundary only in no-manifest mode, regardless of configuration."
+          "Fresh consumer installation emits no boundaries policy and runs sc-boundary only in no-manifest mode, regardless of configuration.",
+          "C1's contract merely promises appropriate boundaries later and neither defines the configuration-to-owner/edge mapping nor supplies its required representative qualification."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -647,6 +649,25 @@
           "item": "c-6",
           "reason": "C-6 does not implement fresh-install boundaries-policy generation.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-06T06:29:25+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-06T06:29:25+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json",
+          "approval": "Approve C1 clarification and fixtures",
+          "verification_status": "fresh fixture and live verification pending for this version",
+          "maintenance_note": "Installed CLI update has no context option; context uses the installed script record writer within the same approved fixture version."
         }
       ],
       "exclude": [
@@ -677,20 +698,22 @@
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-02",
-      "context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat.",
+      "context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat. Approved C1 contract-stage clarification (2026-11-06): C1 fulfills its contract-stage obligation by explicitly defining the initial policy handoff and the consumer's authority over all subsequent boundary-policy decisions, with checkable contract/probe evidence required by C1. C1 need not ship the C2 handoff implementation. C2 still must write the policy into the consumer repository and verify the approved preservation/ownership behaviors. The narrow existing successful-customized-native-init waiver remains unchanged; it does not waive consumer control or silently permit overwriting policy. Approval record: docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json.",
       "summary": "Consumer-owned boundaries policy",
       "scope": "c-1 consumer policy ownership contract and c-2 generated policy handoff",
       "deterministic_check": "Generated policy lives in the consumer repository and documented setup identifies the consumer as owner.",
       "fixtures": {
         "pass": [
-          "Fresh setup writes the initial boundaries policy into the consumer repository and documents that the consumer owns subsequent policy decisions."
+          "Fresh setup writes the initial boundaries policy into the consumer repository and documents that the consumer owns subsequent policy decisions.",
+          "C1's contract makes the consumer the decision owner after initial setup and supplies its required ownership qualification, while explicitly assigning the shipped policy handoff/preservation implementation to C2."
         ],
         "fail": [
-          "The generated consumer's boundaries policy remains centrally owned by sc-runtime, which decides all subsequent consumer boundary changes."
+          "The generated consumer's boundaries policy remains centrally owned by sc-runtime, which decides all subsequent consumer boundary changes.",
+          "C1's contract leaves subsequent consumer boundary decisions with sc-runtime, or only promises to decide ownership in a later sprint without defining the handoff."
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -755,6 +778,25 @@
           "item": "c-6",
           "reason": "C-6 does not own consumer boundaries-policy handoff or later policy decisions.",
           "replaced": false
+        },
+        {
+          "at": "2026-11-06T06:29:25+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        },
+        {
+          "at": "2026-11-06T06:29:25+00:00",
+          "event": "updated",
+          "fields": [
+            "context"
+          ],
+          "previous_context": "User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat.",
+          "approval_record": "docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json",
+          "approval": "Approve C1 clarification and fixtures",
+          "verification_status": "fresh fixture and live verification pending for this version",
+          "maintenance_note": "Installed CLI update has no context option; context uses the installed script record writer within the same approved fixture version."
         }
       ],
       "exclude": [
