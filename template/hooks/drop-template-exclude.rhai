@@ -12,6 +12,9 @@ let project = variable::get("project-name");
 let db = variable::get("db");
 // Success with empty stdout returns (), and a non-zero exit throws.
 system::command("python3", ["hooks/prefix_packages.py", project, ".", db]);
+// C2 initial policy handoff; C3 owns subsequent generator evolution.
+system::command("python3", ["boundaries/render.py", "."]);
+file::delete("boundaries/render.py");
 file::delete("hooks/prefix_packages.py");
 file::delete("hooks/drop-template-exclude.rhai");
 file::delete("hooks");
