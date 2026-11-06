@@ -76,7 +76,9 @@ SCRATCH = ("cron", "tempfile", "tempfile", None)
 
 def repeated_dependency_workspace(root):
     """Repeat a registry package using the repository's already-locked version."""
-    lock = tomllib.loads((ROOT / "Cargo.lock").read_text(encoding="utf-8"))
+    lock_text = (ROOT / "Cargo.lock").read_text(encoding="utf-8")
+    (root / "Cargo.lock").write_text(lock_text, encoding="utf-8")
+    lock = tomllib.loads(lock_text)
     version = next(package["version"] for package in lock["package"]
                    if package["name"] == "tracing")
     (root / "Cargo.toml").write_text(
@@ -105,7 +107,8 @@ class DaemonScratchPolicy(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="daemon-normal-color-") as temporary:
             root = Path(temporary)
             repeated_dependency_workspace(root)
-            env = dict(os.environ, CARGO_TERM_COLOR="always", CARGO_NET_OFFLINE="true")
+            env = dict(os.environ, CARGO_TERM_COLOR="always", CARGO_NET_OFFLINE="true",
+                       PYTHONDONTWRITEBYTECODE="1")
             run(
                 ["cargo", "metadata", "--format-version", "1"], cwd=root,
                 env=env, timeout=30, check=True, capture_output=True, text=True,
