@@ -204,7 +204,9 @@ last so no request is accepted before it can be served.
    startup fails safely, the first daemon remains reachable through `S`, and
    the failed startup and cleanup do not remove `S`.
 6. Inspection of the public API of `crates/sc-runtime`: `DaemonBuilder` has no
-   public method other than `logger`, `stores`, `routes`, `mcp` and `run`.
+   public method other than `logger`, `stores`, `routes`, `mcp`, `run`,
+   `run_with_cleanup` and `run_with_cleanup_and_bound`. The three terminal
+   run alternatives are implemented only on Ready.
 7. A test deserialises a `DaemonConfig` from a JSON document with
    `serde_json` (a dev-dependency) and passes it to `Daemon::builder`; it
    compiles, which shows `DaemonConfig: serde::Deserialize`.
@@ -861,9 +863,10 @@ machine, never on a developer's host
 | Configuration struct implementing `serde::Deserialize` | one | `DaemonConfig` |
 | Error enum | one | `RuntimeError` |
 | Public module for tests, containing one fixture type, behind `test-util` | one | `testing` (`testing::DaemonFixture`) |
+| Read-only original MCP request body accessor | one | `mcp_request_body(&axum::http::request::Parts) -> Option<&[u8]>` |
 
 - The crate MUST NOT have any other public item: no public trait, no public
-  free function, no public macro, and no `pub use` of an item from another
+  free function beyond `mcp_request_body`, no public macro, and no `pub use` of an item from another
   crate.
 
 The generated `daemon` and `service` crates take `sc-command` directly as
@@ -884,9 +887,9 @@ libraries, and would be code every project has to learn.
 1. `crates/sc-runtime/Cargo.toml` has no `proc-macro = true` and the crate
    source contains no `macro_rules!` exported with `#[macro_export]`.
 2. The `[public] facade` list of `boundaries/sc-runtime/sc-runtime.toml` is
-   `Daemon, DaemonBuilder, DaemonConfig, RuntimeError, testing`. It does not
+   `Daemon, DaemonBuilder, DaemonConfig, RuntimeError, mcp_request_body, testing`. It does not
    list `AppName`. It contains exactly one entry type, one builder type, one
-   configuration struct, one error enum and one test module, and nothing else.
+   configuration struct, one error enum, the one read-only raw-body accessor and one test module, and nothing else.
    `just lint` (which runs `sc-lint lint sc-boundary`) is clean. A default
    build does not expose `testing`.
 3. Inspection of the crate's rustdoc index (`cargo doc -p sc-runtime
@@ -1097,3 +1100,13 @@ decision [ADR-RUN-0006](../architecture.md) is that every library API returns
    `sc-runtime`, including the constructor of `testing::DaemonFixture`,
    returns `Result<_, RuntimeError>`, and no public signature names
    `anyhow::Error` or `Box<dyn Error>`.
+
+
+Phase C raw-input clarification: `mcp_request_body` only reads privately retained
+original JSON POST bytes from ordinary RMCP HTTP Parts. The attachment retains
+the service's configured byte cap, original headers, bytes and absolute deadline.
+The application owns canonical DTO validation and arbitrary JSON payload semantics;
+runtime adds no global duplicate-key rule or command registry. Requests outside
+that path return None. This accessor is the sole free-function exception in
+NFR-RT-0001. Normal serde_json is unnecessary and remains outside NFR-RT-0003's
+exact dependency budget; JSON parsers used only in runtime tests are dev edges.

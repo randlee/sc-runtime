@@ -1,0 +1,12 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:c5_qa4_REQ_C5_008 a triage:Finding ;
+ triage:id "REQ-C5-008" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "84e901d4270ef20529eb2c0ce7ccf709e3fa1255" ;
+ triage:file "tests/integration/generation/owned_process.py" ;
+ triage:issue "The bounded generation wrapper still releases process ownership without physical descendant cleanup if session inspection fails after launch. A ready descendant may create its own process group (explicitly supported and covered on the normal cleanup path). If the cleanup ps command raises OSError, CalledProcessError or its two-second TimeoutExpired, _stop_owned_session exits immediately and its finally kills only the launcher process group. The descendant in another group is neither killed nor waited for, and run can raise while it remains active. The preflight inspection cannot guarantee the later inspection succeeds." ;
+ triage:action "Retain a cleanup-capable owned identity/containment mechanism through all post-launch inspection failures and verify physical descendant exit before releasing ownership. Add a causal fault witness with an acknowledged descendant in another process group and injected cleanup-inspection failure after successful preflight; assert bounded error reporting and physical cleanup. Do not retry, skip, pad timeouts or serialize." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6676712827" .

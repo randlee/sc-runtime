@@ -3,6 +3,9 @@ name = "store-adaptor"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 description = "Moves rows between the SQLite store and the Postgres store."
@@ -11,9 +14,9 @@ description = "Moves rows between the SQLite store and the Postgres store."
 name = "store_adaptor"
 
 [dependencies]
-schema = { path = "../schema" }
-store-sqlite = { path = "../store-sqlite" }
-store-postgres = { path = "../store-postgres" }
+schema = { path = "../schema", version = "0.1.1" }
+store-sqlite = { path = "../store-sqlite", version = "0.1.1" }
+store-postgres = { path = "../store-postgres", version = "0.1.1" }
 serde = { workspace = true }
 toml = { workspace = true }
 

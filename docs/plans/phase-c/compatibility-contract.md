@@ -48,14 +48,18 @@ pub trait ScheduleStore: Send + Sync {
     fn query(&self, query: &ScheduleQuery) -> Result<SchedulePage, CronError>;
     // Both new methods have fixed unsupported default bodies, not required methods.
 }
-pub struct ShutdownBudget { /* checked absolute G/K, K >= G */ }
+pub struct ShutdownBudget { /* private checked absolute G/K, K >= G */ }
 impl ShutdownBudget {
     pub fn new(grace: std::time::Instant, cleanup: std::time::Instant)
         -> Result<Self, CronError>;
+    pub fn grace(&self) -> std::time::Instant;
+    pub fn cleanup(&self) -> std::time::Instant;
 }
 #[derive(Clone)]
 pub struct WorkerStopControl { /* independently callable; no join ownership */ }
 impl WorkerStopControl {
+    pub fn new() -> Result<Self,CronError>;
+    pub fn finish_application_shutdown(&self) -> Result<(),CronError>;
     pub fn request_stop(&self, budget: ShutdownBudget) -> Result<(), CronError>;
     pub fn cancel_now(&self);
     pub fn operation_context(&self) -> StoreOperationContext;
@@ -324,8 +328,11 @@ panicking; callers retain/await the owning run future. Port-zero is explicit
 configuration, preserving endpoint precedence and ordinary private UDS fixtures.
 C-3 tests concurrent port-zero fixtures with distinct nonzero actual endpoints
 and agreeing client/accessors, and a causal competing bind to that exact owned
-endpoint fails between receipt and readiness. A reserve/drop negative must
-permit takeover. Pre-bind failure emits no receipt and still preserves cleanup.
+endpoint fails between receipt and readiness. Do not retain a naked-port
+reserve/drop takeover test: its unowned interval can race any local binder.
+The continuously owned listener and immediate prebind closure-drop witnesses
+prove the required ownership/order without that race. Pre-bind failure emits
+no receipt and still preserves cleanup.
 
 ```rust
 pub async fn start_with_cleanup<S,FStores,Fut,FRoutes,FCleanup,Cleanup>(
@@ -550,10 +557,11 @@ second copy or new CI-copy gate.
 #[path = "support/executor_double.rs"] mod executor;
 ```
 
-C-1 adds operation_context_probe(deadline: Instant) -> StoreOperationContext
-behind sc-cron's existing non-default test-utils feature, backed by real
-context/admission state with no worker or SQL task. Only the adapter dev edge
-enables test-utils. C-6 constructs StandardCronExecutor with that real probe,
+C-1 retains operation_context_probe(deadline: Instant) -> StoreOperationContext
+behind the existing non-default test-utils feature for focused test consumers.
+C-6 instead uses the ordinary public WorkerStopControl::new/operation_context
+factory inside a dev-only Tokio runtime, with no worker or SQL task.
+C-6 constructs StandardCronExecutor with that real shared context,
 RecordingOperations and fixture bindings; checks cover child context/deadline,
 exact native arguments, one operation per verb, refusal/no call, fences and
 errors. A separate normal-only consumer proves default graph restrictions;
@@ -614,3 +622,42 @@ CLI/HTTP/MCP interfaces, minimal/default-off/Monty graphs and exact registry
 artifacts. Command→cron→cron-commands order and command→runtime dependency
 order are visible before each dependent. Unrelated crates stay unchanged,
 rusqlite stays 0.39.x; no publication without existing authorization.
+
+### Declaration baseline wire inventory (C1)
+
+The compileable sole DTO declarations live in sc-cron-commands::contract.
+CronResponse uses `{result:"started"|"ended"|"listed",data:...}`. Started
+contains ScheduleView; ended contains `{id,generation}`; listed contains
+`{items,next_cursor}`. Safe ScheduleView fields are id, generation, name,
+cron, target (kind only), enabled, state and nullable next_run_ms. Aggregate
+request JSON is limited to 2MiB; core field/environment/source limits remain
+binding. Semantic expression, positive generation/cursor, 1..=1000 page limit,
+size and capability validation remain explicit executor checks. The strict
+deserializer rejects top-level and nested struct duplicate/unknown fields and
+unsupported versions without changing canonical Envelope serialization.
+Schema compilation does not certify these runtime-only semantic checks.
+
+### Application-owned native operation scope
+
+`WorkerStopControl::new() -> Result<Self, CronError>` is an ordinary-feature,
+worker-independent factory. Call it inside the owning Tokio runtime, which
+must outlive stop notifications. It captures that runtime so `request_stop`
+can be called from an ordinary synchronous thread. No Scheduler, framework
+worker or `test-utils` is required. The returned context retains live shared
+cancellation and earliest child deadlines. It can be passed to custom
+`CronOperations` and the separately owned standard adapter constructor.
+
+Factory-created controls do not admit, supervise or join arbitrary custom
+provider work. The application closes intake, requests stop, physically joins
+all provider tasks/native calls/cleanup, then calls
+`finish_application_shutdown(&self) -> Result<(), CronError>`. This explicit
+acknowledgement publishes `Joined`; it cannot verify untracked application
+work. The C1 factory refuses acknowledgement before stop and revokes all
+existing and future contexts when acknowledged, including a future grace cutoff.
+C5 owned controls additionally refuse acknowledgement while registered native
+work remains or through a control obtained from `WorkerHandle::stop_control()`.
+Framework workers retain their
+single physical owner `WorkerHandle::join_owned`. Acknowledgement never reopens
+intake or revives a cancelled/expired context. Typed unavailable reasons are
+`worker_runtime_unavailable`, `worker_already_running`, and
+`operation_completion_owner_required`; stable top-level code remains STORE_FAILED.

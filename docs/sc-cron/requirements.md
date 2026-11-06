@@ -6,7 +6,8 @@
 
 `crates/sc-cron` is a workspace member, ported from beads-cache
 `crates/sc-cron` at `develop`. For the initial release ADR-RUN-0017 permits
-only a temporary normal `sc-command` 0.1.1 dependency with
+only a temporary normal `sc-command` 0.2.0 Phase C dependency (initial
+release 0.1.1) with
 `default-features = false` and no features for the canonical port. Canonical
 event values remain direct registry `sc-observability-types` imports.
 `sc-runtime` does not name it. The generated daemon may name it only as the
@@ -310,3 +311,15 @@ Scheduler's real implementation belongs to c-5. with_deadline derives a child
 sharing stop/admission state and the earliest deadline; no independent registry.
 No new job kind, job registry, second database or arbitrary hard-delete command
 is implied. Ordinary registration continues through REQ-CRON-0003 APIs.
+
+### C1 application-owned control construction
+
+The ordinary-feature `WorkerStopControl::new()` factory creates a live
+operation scope inside its owning Tokio runtime, without a Scheduler,
+framework worker or test-utils. Applications implementing CronOperations own
+intake, physical work and joins. After requesting stop and physically joining
+that work, `finish_application_shutdown()` acknowledges completion and
+revokes existing and newly obtained scopes even when G was in the future.
+The runtime must remain alive for independent status notifications. A checked
+ShutdownBudget has private fields and read-only grace()/cleanup() accessors;
+K cannot precede G. Existing framework workers retain WorkerHandle-owned joins.

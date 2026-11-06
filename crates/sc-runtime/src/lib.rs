@@ -9,10 +9,11 @@
 //! ready state. An optional all-phase `.logger(handle)` replaces the fixed
 //! `sc-runtime` Noop; the application owns flushing and shutdown. Endpoint text is resolved before the lock so an invalid
 //! endpoint does not open stores. Signal listeners are registered, and on
-//! Windows Ctrl-C is polled, before the lock and before bind. The order after
+//! Windows Ctrl-C and Ctrl-Break are polled, before the lock and before bind. The order after
 //! a valid endpoint is signals, lock, stores, routes and optional MCP, then
 //! bind. The assembled router limits handler time. Shutdown drains in-flight
-//! requests up to a bound. [`DaemonBuilder::run_with_cleanup`] then awaits
+//! requests up to a bound. Project adapters can read the same absolute request
+//! deadline as a `std::time::Instant` HTTP extension (also in RMCP HTTP parts). [`DaemonBuilder::run_with_cleanup`] then awaits
 //! application background drain while retaining successful stores, the instance
 //! lock, and the runtime logger, including on startup errors. Await its future
 //! to completion; ordinary future drop cannot perform asynchronous cleanup.
@@ -43,6 +44,7 @@ mod builder;
 mod config;
 mod error;
 mod lock;
+mod mcp_input;
 mod router;
 mod shutdown;
 
@@ -52,6 +54,8 @@ pub use builder::{Daemon, DaemonBuilder};
 pub use config::DaemonConfig;
 #[doc(inline)]
 pub use error::RuntimeError;
+#[doc(inline)]
+pub use mcp_input::mcp_request_body;
 
 #[cfg(feature = "test-util")]
 pub mod testing;

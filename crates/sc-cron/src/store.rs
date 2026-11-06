@@ -33,6 +33,38 @@ use crate::{
 /// either gets a default body that keeps the contract, or ships in a breaking
 /// release.
 pub trait ScheduleStore: Send + Sync {
+    /// Reports support for live operation scopes; legacy providers opt in explicitly.
+    fn operation_support(&self) -> crate::StoreOperationSupport {
+        crate::StoreOperationSupport::Legacy
+    }
+
+    /// Executes work under a provider-owned cooperative scope.
+    ///
+    /// # Errors
+    /// The legacy default refuses before invoking the closure.
+    fn with_operation_context<T>(
+        &self,
+        _context: &crate::StoreOperationContext,
+        _operation: impl FnOnce(&Self) -> Result<T, CronError>,
+    ) -> Result<T, CronError>
+    where
+        Self: Sized,
+    {
+        Err(crate::consumer_contract::unavailable(
+            "operation_context_unsupported",
+        ))
+    }
+
+    /// Queries a bounded ascending-id page without fabricating legacy history.
+    ///
+    /// # Errors
+    /// The legacy default reports unsupported without querying storage.
+    fn query(&self, _query: &crate::ScheduleQuery) -> Result<crate::SchedulePage, CronError> {
+        Err(crate::consumer_contract::unavailable(
+            "schedule_query_unsupported",
+        ))
+    }
+
     /// Returns the row ceiling this store enforces.
     ///
     /// The store is the authority. [`Scheduler::limits`](crate::Scheduler::limits)

@@ -90,7 +90,7 @@ impl CronError {
             Self::HookFailed(_) => {
                 "fix the hook source, enable feature monty, or use another target"
             }
-            Self::Store(error) => error.kind().recovery(),
+            Self::Store(error) => error.recovery(),
             Self::Fenced { .. } => "re-read the schedule and act on its current generation",
         }
     }
@@ -140,6 +140,12 @@ pub enum StoreErrorKind {
     SchemaMismatch,
     /// The file cannot be opened, read or written (I/O, permissions, full disk).
     Unavailable,
+    /// The live scope was explicitly cancelled.
+    Cancelled,
+    /// The real operation cutoff elapsed, possibly after commit admission.
+    DeadlineExceeded,
+    /// Persistence could not be established; mutation replay is unsafe.
+    Indeterminate,
     /// Any other failure.
     Other,
 }
@@ -153,6 +159,9 @@ impl StoreErrorKind {
             Self::Corrupt => "corrupt",
             Self::SchemaMismatch => "schema_mismatch",
             Self::Unavailable => "unavailable",
+            Self::Cancelled => "cancelled",
+            Self::DeadlineExceeded => "deadline_exceeded",
+            Self::Indeterminate => "indeterminate",
             Self::Other => "other",
         }
     }
@@ -167,6 +176,13 @@ impl StoreErrorKind {
                 "recreate an incompatible development schedule database using the first-release schema; preserve or export needed data first"
             }
             Self::Unavailable => "check the database path, permissions and free disk space",
+            Self::Cancelled => "operation cancelled; reconcile admitted mutations before retrying",
+            Self::DeadlineExceeded => {
+                "deadline exceeded; reconcile admitted mutations before retrying"
+            }
+            Self::Indeterminate => {
+                "reconcile persistence through a separately authorized operation; never replay automatically"
+            }
             Self::Other => "see the source error",
         }
     }
@@ -182,11 +198,12 @@ impl fmt::Display for StoreErrorKind {
 ///
 /// Store implementations outside this crate build one with
 /// [`StoreError::new`] and [`StoreError::with_source`].
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct StoreError {
     kind: StoreErrorKind,
     context: String,
     source: Option<Arc<dyn Error + Send + Sync>>,
+    outcome: Option<crate::TransactionOutcome>,
 }
 
 impl StoreError {
@@ -197,6 +214,39 @@ impl StoreError {
             kind,
             context: context.into(),
             source: None,
+            outcome: None,
+        }
+    }
+
+    /// Recovery guidance for the structured operation reason or store kind.
+    #[must_use]
+    pub fn recovery(&self) -> &'static str {
+        match self.context.as_str() {
+            "command_capacity_exhausted" => {
+                "wait for owned work to finish before submitting a new command; do not replay admitted mutations"
+            }
+            "operation_stopping" => {
+                "use a new lifecycle after the current owner physically joins; do not replay admitted mutations"
+            }
+            "operation_context_unsupported" | "schedule_query_unsupported" => {
+                "use the caller-owned legacy path or a provider implementing the cooperative contract"
+            }
+            "operation_context_nested" => {
+                "end the current store scope before entering another scope on this thread"
+            }
+            "worker_already_running" => {
+                "reuse the active worker control or physically join it before starting another worker"
+            }
+            "worker_runtime_unavailable" => {
+                "create cooperative lifecycle control inside the owning Tokio runtime"
+            }
+            "operation_completion_owner_required" => {
+                "stop and physically join application-owned work before acknowledging completion; framework workers require their WorkerHandle join"
+            }
+            "operation_controller_missing" => {
+                "configure a cooperative lifecycle controller before submitting store work"
+            }
+            _ => self.kind.recovery(),
         }
     }
 
@@ -205,6 +255,19 @@ impl StoreError {
     pub fn with_source(mut self, source: impl Error + Send + Sync + 'static) -> Self {
         self.source = Some(Arc::new(source));
         self
+    }
+
+    /// Attaches observed physical transaction evidence.
+    #[must_use]
+    pub fn with_transaction_outcome(mut self, outcome: crate::TransactionOutcome) -> Self {
+        self.outcome = Some(outcome);
+        self
+    }
+
+    /// Returns actual physical transaction evidence, when available.
+    #[must_use]
+    pub const fn transaction_outcome(&self) -> Option<&crate::TransactionOutcome> {
+        self.outcome.as_ref()
     }
 
     /// Returns the failure kind.
@@ -223,7 +286,10 @@ impl StoreError {
 impl fmt::Display for StoreError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} ({})", self.context, self.kind)?;
-        if let Some(source) = &self.source {
+        if self.outcome.is_none()
+            && !self.context.starts_with("operation_")
+            && let Some(source) = &self.source
+        {
             write!(f, ": {source}")?;
         }
         Ok(())
@@ -235,6 +301,16 @@ impl Error for StoreError {
         self.source
             .as_deref()
             .map(|source| source as &(dyn Error + 'static))
+    }
+}
+
+impl fmt::Debug for StoreError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("StoreError")
+            .field("kind", &self.kind)
+            .field("has_source", &self.source.is_some())
+            .field("outcome", &self.outcome)
+            .finish_non_exhaustive()
     }
 }
 

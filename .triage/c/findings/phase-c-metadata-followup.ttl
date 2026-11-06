@@ -1,0 +1,19 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+qa:ARCH-C3-QA8-001 qa:id "ARCH-C3-QA8-001" ;
+ qa:severity "BLOCKING" ;
+ qa:sourceCommit "863622417ee773d0d50ac3690fad5c78e2fa106e" ;
+ qa:recordedBeforeFix true ;
+ qa:status "open" ;
+ qa:findingJson "{\"adr\": \"ADR-RUN-0013\", \"description\": \"The nine CFG/TRN omissions are corrected and all42 listed ADRs resolve, but the same owned-crate coverage check still omits Active ADR-RUN-0013. C3 owns crates/sc-cron/Cargo.toml at line123; docs/sc-cron/architecture.md:3 explicitly identifies ADR-RUN-0013 as binding for that crate. ADR-RUN-0017 permits the narrow temporary command logging edge and does not supersede the base optional cron/SQLite crate contract. No implementation violation is identified; this is one remaining existing-reference omission.\", \"evidence_refs\": [\"docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:71\", \"docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md:123\", \"docs/sc-cron/architecture.md:3\", \"docs/architecture.md:2693\", \"docs/architecture.md:213\"], \"file\": \"docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md\", \"id\": \"ARCH-C3-QA8-001\", \"line\": 71, \"remediation\": \"Add the existing ADR-RUN-0013 to C3's single adrs list; preserve all ownership, source behavior and the42 current references. Recheck unique binding-reference resolution and owned-crate coverage. No new ADR, product change or scope recut is required.\", \"reviewer\": \"arch-qa\", \"rule\": \"RULE-ADR-PLAN\", \"severity\": \"BLOCKING\", \"source_commit\": \"863622417ee773d0d50ac3690fad5c78e2fa106e\"}" .
+qa:RUST-QA-C3-QA8-001 qa:id "RUST-QA-C3-QA8-001" ;
+ qa:severity "minor" ;
+ qa:sourceCommit "863622417ee773d0d50ac3690fad5c78e2fa106e" ;
+ qa:recordedBeforeFix true ;
+ qa:status "open" ;
+ qa:findingJson "{\"category\": \"fmt\", \"evidence\": \".triage/c/findings/phase-c-source-end-qa1.ttl:75: new blank line at EOF.\", \"file\": \".triage/c/findings/phase-c-source-end-qa1.ttl\", \"id\": \"RUST-QA-C3-QA8-001\", \"issue\": \"The new triage file ends with an extra blank line; git diff --check exits2 on the exact current change.\", \"line\": 75, \"recommendation\": \"Remove the redundant blank line at EOF, preserving every Turtle statement and triage fact, then rerun git diff --check.\", \"reviewer\": \"rust-qa-agent\", \"severity\": \"minor\", \"source_commit\": \"863622417ee773d0d50ac3690fad5c78e2fa106e\"}" .
+qa:REQ-C6-QA6-001 qa:id "REQ-C6-QA6-001" ;
+ qa:severity "Blocking" ;
+ qa:sourceCommit "62531676155934aa5b6bd9341114d1ec74fcb3ee" ;
+ qa:recordedBeforeFix true ;
+ qa:status "open" ;
+ qa:findingJson "{\"category\": \"requirement-not-listed\", \"compliance_result\": \"partially-compliant\", \"id\": \"REQ-C6-QA6-001\", \"issue\": \"C6 now owns the actual production-tool and observability guard correction that implements REQ-RUN-0005 for sc-cron-commands, but the authoritative C6 requirements list omits REQ-RUN-0005. The corrected code enforces the requirement; its direct governing requirement is missing from sprint traceability.\", \"required_correction\": \"Add REQ-RUN-0005 to the existing C6 requirements list, preserving existing IDs, scope, source and all validation. No product or new enforcement mechanism is requested.\", \"reviewer\": \"req-qa\", \"severity\": \"Blocking\", \"source_commit\": \"62531676155934aa5b6bd9341114d1ec74fcb3ee\", \"source_refs\": [\".claude/agents/req-qa.md:88\", \"docs/requirements.md:447\", \"docs/requirements.md:488\"], \"target_refs\": [\"docs/plans/phase-c/sprint-c-6-standard-cron-commands.md:11\"]}" .

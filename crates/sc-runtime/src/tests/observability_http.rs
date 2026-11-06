@@ -4,10 +4,60 @@ use axum::{Router, extract::Path, http::StatusCode, routing::get};
 use sc_command::observability::{RecordingCanonicalLog, RejectingCanonicalLog};
 use sc_observability_types::ServiceName;
 
-// Shared transport helpers also contain process-signal helpers used by other tests.
-#[allow(dead_code)]
-mod common;
-use sc_runtime::testing::instrument_router;
+mod common {
+    use crate::DaemonConfig;
+    use sc_transport::{AppName, Endpoint};
+
+    #[allow(dead_code)]
+    pub fn app() -> AppName {
+        AppName::new("sc-runtime-test").expect("app name")
+    }
+
+    #[allow(dead_code)]
+    pub fn config() -> DaemonConfig {
+        #[cfg(windows)]
+        {
+            let mut config = DaemonConfig::default();
+            config.endpoint_flag = Some(format!("tcp:{}", ephemeral_tcp()));
+            config
+        }
+        #[cfg(not(windows))]
+        {
+            DaemonConfig::default()
+        }
+    }
+
+    #[cfg(windows)]
+    fn ephemeral_tcp() -> std::net::SocketAddr {
+        std::net::SocketAddr::from((std::net::Ipv4Addr::LOCALHOST, 0))
+    }
+
+    #[allow(dead_code)]
+    pub fn http(endpoint: &Endpoint) -> reqwest::Client {
+        let builder = reqwest::Client::builder().timeout(std::time::Duration::from_secs(5));
+        #[cfg(unix)]
+        let builder = if let Endpoint::Uds(path) = endpoint {
+            builder.unix_socket(path.clone())
+        } else {
+            builder
+        };
+        #[cfg(not(unix))]
+        let builder = {
+            let _ = endpoint;
+            builder
+        };
+        builder.build().expect("client")
+    }
+
+    #[allow(dead_code)]
+    pub fn url(endpoint: &Endpoint, path: &str) -> String {
+        match endpoint {
+            Endpoint::Tcp(addr) => format!("http://{addr}{path}"),
+            Endpoint::Uds(_) => format!("http://localhost{path}"),
+            _ => format!("http://localhost{path}"),
+        }
+    }
+}
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -227,8 +277,8 @@ async fn deadline_codes_and_rejection_are_best_effort() {
 
 #[tokio::test]
 async fn real_daemon_preserves_injected_handle_and_records_http_events() {
+    use crate::testing::DaemonFixture;
     use sc_command::observability::SharedCanonicalLog;
-    use sc_runtime::testing::DaemonFixture;
     use utoipa_axum::router::OpenApiRouter;
 
     let recorder = recorder();
@@ -328,7 +378,7 @@ impl sc_command::observability::CanonicalLog for RejectedQueue {
 
 #[tokio::test]
 async fn queue_full_and_disconnected_preserve_responses_headers_and_metrics() {
-    use sc_runtime::testing::DaemonFixture;
+    use crate::testing::DaemonFixture;
     use utoipa_axum::router::OpenApiRouter;
 
     for disconnected in [false, true] {
@@ -451,4 +501,105 @@ async fn queue_rejection_preserves_deadlines_and_handler_cancellation() {
             task.abort();
         }
     }
+}
+
+/// Applies the daemon's request tracking and deadline middleware to a test router.
+///
+/// This enables deterministic deadline tests without waiting for production limits.
+fn instrument_router(
+    router: axum::Router,
+    logger: sc_command::observability::SharedCanonicalLog,
+    limit: Duration,
+    shutdown: tokio::sync::watch::Receiver<bool>,
+    drain: Duration,
+) -> axum::Router {
+    crate::router::with_request_tracking(
+        crate::router::with_request_timeout(router, limit, shutdown, drain),
+        crate::router::RequestMetrics::new(),
+        logger,
+    )
+}
+
+#[tokio::test]
+async fn timeout_requires_reconciliation_while_owned_work_can_still_commit() {
+    use std::sync::{
+        Mutex,
+        atomic::{AtomicBool, Ordering},
+    };
+    use tokio::sync::oneshot;
+    let committed = Arc::new(AtomicBool::new(false));
+    let written = committed.clone();
+    let (started, admitted) = oneshot::channel();
+    let (release, released) = oneshot::channel();
+    let (handle, owned) = oneshot::channel();
+    let state = Arc::new(Mutex::new(Some((started, released, handle))));
+    let router = Router::new().route(
+        "/mutation",
+        get(move || {
+            let (started, released, handle) = state.lock().unwrap().take().expect("one request");
+            let written = written.clone();
+            async move {
+                let task = tokio::spawn(async move {
+                    let _ = started.send(());
+                    if released.await.is_ok() {
+                        written.store(true, Ordering::SeqCst);
+                    }
+                });
+                let _ = handle.send(task);
+                std::future::pending::<&'static str>().await
+            }
+        }),
+    );
+    let (_stop, rx) = tokio::sync::watch::channel(false);
+    let router = instrument_router(
+        router,
+        recorder(),
+        Duration::from_millis(30),
+        rx,
+        Duration::from_secs(1),
+    );
+    let (url, server) = start(router).await;
+    let request = tokio::spawn(async move {
+        reqwest::Client::builder()
+            .timeout(Duration::from_secs(3))
+            .build()
+            .unwrap()
+            .get(format!("{url}/mutation"))
+            .send()
+            .await
+            .unwrap()
+    });
+    tokio::time::timeout(Duration::from_secs(5), admitted)
+        .await
+        .unwrap()
+        .unwrap();
+    let task = tokio::time::timeout(Duration::from_secs(5), owned)
+        .await
+        .unwrap()
+        .unwrap();
+    let response = tokio::time::timeout(Duration::from_secs(5), request)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+    let envelope: serde_json::Value = response.json().await.unwrap();
+    assert_eq!(envelope["error"]["code"], "RUNTIME.REQUEST_TIMEOUT");
+    let recovery = envelope["error"]["suggested_action"].as_str().unwrap();
+    assert!(recovery.contains("unknown") && recovery.contains("reconcile"));
+    assert!(!recovery.contains("retry"));
+    assert!(
+        !committed.load(Ordering::SeqCst),
+        "response cannot know a held operation's outcome"
+    );
+    release.send(()).unwrap();
+    tokio::time::timeout(Duration::from_secs(5), task)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(
+        committed.load(Ordering::SeqCst),
+        "admitted work can commit after timeout response"
+    );
+    server.abort();
+    let _ = server.await;
 }

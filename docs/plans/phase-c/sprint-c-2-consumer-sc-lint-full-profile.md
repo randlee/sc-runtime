@@ -1,7 +1,7 @@
 ---
 id: c-2
 phase: c
-status: planned
+status: in_progress
 closure_type: integration
 target_boundary: generated-consumer-lint
 track: lint
@@ -16,6 +16,9 @@ requirements:
   - REQ-RUN-0701
   - NFR-RUN-0006
   - NFR-RUN-0005
+  - NFR-RUN-0003
+  - NFR-RUN-0004
+  - NFR-RUN-0008
 adrs:
   - ADR-RUN-0005
   - ADR-RUN-0303
@@ -149,3 +152,18 @@ and evidence; they do not create additional requirement roots or change the DAG.
   repository's boundary manifests. Those remain root policy.
 - New analyzer behavior or rule implementation in sc-lint itself.
 - RMCP, Utoipa, or package-version changes; `c-3` owns them.
+
+
+Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
+[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
+after SDK/consumer customization. Released0.8.4 returns exit3
+`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
+Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
+result explicitly; never report init PASS, hide its error, force overwrite,
+delete consumer edits or add a workaround wrapper. This known result does not
+block current C1/C2 acceptance. Issue117 owns restoration of the successful
+repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
+all three real analyzers in ordinary/default/full profiles, causal failure
+proofs, configuration-derived fresh boundary policy and consumer ownership/
+preservation, and usable public setup/lint/test/upgrade remain binding. No
+upstream source fix, release or new pin is authorized by this waiver.

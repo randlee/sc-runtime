@@ -42,23 +42,6 @@ const SHUTDOWN_BUDGET: Duration = Duration::from_secs(10);
 
 type Serving = Result<Endpoint, RuntimeError>;
 
-/// Applies the daemon's request tracking and deadline middleware to a test router.
-///
-/// This enables deterministic deadline tests without waiting for production limits.
-pub fn instrument_router(
-    router: axum::Router,
-    logger: sc_command::observability::SharedCanonicalLog,
-    limit: Duration,
-    shutdown: tokio::sync::watch::Receiver<bool>,
-    drain: Duration,
-) -> axum::Router {
-    crate::router::with_request_tracking(
-        crate::router::with_request_timeout(router, limit, shutdown, drain),
-        crate::router::RequestMetrics::new(),
-        logger,
-    )
-}
-
 /// A daemon started through the production builder on a private instance root.
 ///
 /// Drop stops the daemon and joins `run` until it returns. It does not panic
@@ -102,7 +85,47 @@ impl DaemonFixture {
         let builder = crate::Daemon::builder(app, &config)
             .stores(stores)
             .routes(routes);
-        spawn(builder, temp).await
+        spawn(builder, temp, || async {}).await
+    }
+
+    /// Starts a daemon with application cleanup on the existing isolated runner.
+    ///
+    /// Cleanup runs once after serving or a startup failure. Stores, logger
+    /// and any acquired instance lock remain owned through cleanup. The endpoint
+    /// stays continuously bound from its receipt through health confirmation.
+    /// Dropping the fixture or its startup future stops and physically joins
+    /// the owning thread; cleanup must eventually finish for that join to return.
+    ///
+    /// # Errors
+    /// Returns the primary startup/serving error after cleanup, or a join fault.
+    pub async fn start_with_cleanup<S, FStores, Fut, FRoutes, FCleanup, Cleanup>(
+        app: &AppName,
+        config: DaemonConfig,
+        stores: FStores,
+        routes: FRoutes,
+        cleanup: FCleanup,
+    ) -> Result<Self, RuntimeError>
+    where
+        S: Clone + Send + Sync + 'static,
+        FStores: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
+        FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+        FCleanup: FnOnce() -> Cleanup + Send + 'static,
+        Cleanup: Future<Output = ()> + Send + 'static,
+    {
+        let (config, temp) = match prepare_config(config) {
+            Ok(prepared) => prepared,
+            Err(error) => {
+                drop(stores);
+                drop(routes);
+                cleanup().await;
+                return Err(error);
+            }
+        };
+        let builder = crate::Daemon::builder(app, &config)
+            .stores(stores)
+            .routes(routes);
+        spawn(builder, temp, cleanup).await
     }
 
     /// Starts a daemon with an injected canonical logger on an isolated root.
@@ -127,7 +150,7 @@ impl DaemonFixture {
             .logger(logger)
             .stores(stores)
             .routes(routes);
-        spawn(builder, temp).await
+        spawn(builder, temp, || async {}).await
     }
 
     /// Starts a daemon that also mounts an rmcp service.
@@ -157,7 +180,7 @@ impl DaemonFixture {
             .stores(stores)
             .routes(routes)
             .mcp(mcp);
-        spawn(builder, temp).await
+        spawn(builder, temp, || async {}).await
     }
 
     /// Connected client for this daemon's bound endpoint.
@@ -239,34 +262,54 @@ fn prepare_config(
     Ok((config, dir))
 }
 
-async fn spawn<S, FStores, Fut, FRoutes>(
+async fn spawn<S, FStores, Fut, FRoutes, FCleanup, Cleanup>(
     builder: DaemonBuilder<Ready, S, FStores, FRoutes>,
     temp: tempfile::TempDir,
+    cleanup: FCleanup,
 ) -> Result<DaemonFixture, RuntimeError>
 where
     S: Clone + Send + Sync + 'static,
     FStores: FnOnce() -> Fut + Send + 'static,
     Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+    FCleanup: FnOnce() -> Cleanup + Send + 'static,
+    Cleanup: Future<Output = ()> + Send + 'static,
 {
     let root = temp.path().to_path_buf();
     let (serving_tx, serving_rx) = oneshot::channel();
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
-    let thread = std::thread::spawn(move || drive_on_thread(builder, shutdown_rx, serving_tx));
+    let runtime = match tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+    {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            drop(builder);
+            cleanup().await;
+            return Err(RuntimeError::serve_failed_io(error));
+        }
+    };
+    let thread = std::thread::spawn(move || {
+        drive_on_thread(builder, shutdown_rx, serving_tx, cleanup, runtime)
+    });
+    let mut owner = StartupOwner {
+        shutdown: Some(shutdown_tx),
+        thread: Some(thread),
+    };
     let endpoint = match tokio::time::timeout(STARTUP_BUDGET, serving_rx).await {
         Ok(Ok(Ok(endpoint))) => endpoint,
         Ok(Ok(Err(err))) => {
-            let _ = stop_and_join(shutdown_tx, thread).await;
+            let _ = owner.stop_and_join().await;
             return Err(err);
         }
         Ok(Err(_)) => {
-            return Err(match stop_and_join(shutdown_tx, thread).await {
+            return Err(match owner.stop_and_join().await {
                 Err(err) => err,
                 Ok(()) => RuntimeError::serve_failed("daemon exited before it was ready"),
             });
         }
         Err(_) => {
-            let _ = stop_and_join(shutdown_tx, thread).await;
+            let _ = owner.stop_and_join().await;
             return Err(RuntimeError::serve_failed(format!(
                 "daemon did not become ready within {STARTUP_BUDGET:?}"
             )));
@@ -275,7 +318,7 @@ where
     let client = match Client::new(endpoint.clone()) {
         Ok(client) => client,
         Err(err) => {
-            let _ = stop_and_join(shutdown_tx, thread).await;
+            let _ = owner.stop_and_join().await;
             return Err(RuntimeError::from_transport(TransportStep::Bind, err));
         }
     };
@@ -283,20 +326,37 @@ where
         client,
         endpoint,
         instance_root: root,
-        shutdown_tx: Some(shutdown_tx),
-        thread: Some(thread),
+        shutdown_tx: owner.shutdown.take(),
+        thread: owner.thread.take(),
         _temp: temp,
     })
 }
 
-async fn stop_and_join(
-    shutdown_tx: oneshot::Sender<()>,
-    thread: JoinHandle<Result<(), RuntimeError>>,
-) -> Result<(), RuntimeError> {
-    drop(shutdown_tx);
-    match join_bounded_async(thread).await {
-        Ok(result) => result,
-        Err(fault) => Err(fault.into_error()),
+/// Owns startup until the complete fixture is transferred to the caller.
+struct StartupOwner {
+    shutdown: Option<oneshot::Sender<()>>,
+    thread: Option<JoinHandle<Result<(), RuntimeError>>>,
+}
+
+impl StartupOwner {
+    async fn stop_and_join(&mut self) -> Result<(), RuntimeError> {
+        drop(self.shutdown.take());
+        let Some(thread) = self.thread.take() else {
+            return Ok(());
+        };
+        match join_bounded_async(thread).await {
+            Ok(result) => result,
+            Err(fault) => Err(fault.into_error()),
+        }
+    }
+}
+
+impl Drop for StartupOwner {
+    fn drop(&mut self) {
+        drop(self.shutdown.take());
+        if let Some(thread) = self.thread.take() {
+            join_quietly(thread);
+        }
     }
 }
 
@@ -362,6 +422,7 @@ fn join_quietly(thread: JoinHandle<Result<(), RuntimeError>>) {
     let _ = thread.join();
 }
 
+#[cfg(test)]
 fn join_bounded(
     thread: JoinHandle<Result<(), RuntimeError>>,
     budget: Duration,
@@ -372,7 +433,10 @@ fn join_bounded(
 async fn join_bounded_async(
     thread: JoinHandle<Result<(), RuntimeError>>,
 ) -> Result<Result<(), RuntimeError>, JoinFault> {
-    match tokio::task::spawn_blocking(move || join_bounded(thread, SHUTDOWN_BUDGET)).await {
+    // Construct before queuing: cancellation of a queued blocking task must
+    // drop the owner, which physically joins rather than detaching its thread.
+    let guard = JoinGuard::new(thread);
+    match tokio::task::spawn_blocking(move || guard.join_within(SHUTDOWN_BUDGET)).await {
         Ok(result) => result,
         Err(_) => Err(JoinFault::Panicked),
     }
@@ -390,45 +454,41 @@ enum ProbeFailure {
     ServeFinished(RuntimeError),
 }
 
-fn drive_on_thread<S, FStores, Fut, FRoutes>(
+fn drive_on_thread<S, FStores, Fut, FRoutes, FCleanup, Cleanup>(
     builder: DaemonBuilder<Ready, S, FStores, FRoutes>,
     shutdown_rx: oneshot::Receiver<()>,
     serving_tx: oneshot::Sender<Serving>,
+    cleanup: FCleanup,
+    runtime: tokio::runtime::Runtime,
 ) -> Result<(), RuntimeError>
 where
     S: Clone + Send + Sync + 'static,
     FStores: FnOnce() -> Fut + Send + 'static,
     Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+    FCleanup: FnOnce() -> Cleanup + Send + 'static,
+    Cleanup: Future<Output = ()> + Send + 'static,
 {
-    let runtime = match tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-    {
-        Ok(runtime) => runtime,
-        Err(err) => {
-            let err = RuntimeError::serve_failed(err.to_string());
-            let _ = serving_tx.send(Err(err.clone()));
-            return Err(err);
-        }
-    };
-    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx)) // allow: NFR-RUN-0002 fixture thread
+    runtime.block_on(run_until_stopped(builder, shutdown_rx, serving_tx, cleanup)) // allow: NFR-RUN-0002 fixture thread
 }
 
-async fn run_until_stopped<S, FStores, Fut, FRoutes>(
+async fn run_until_stopped<S, FStores, Fut, FRoutes, FCleanup, Cleanup>(
     builder: DaemonBuilder<Ready, S, FStores, FRoutes>,
     shutdown_rx: oneshot::Receiver<()>,
     serving_tx: oneshot::Sender<Serving>,
+    cleanup: FCleanup,
 ) -> Result<(), RuntimeError>
 where
     S: Clone + Send + Sync + 'static,
     FStores: FnOnce() -> Fut + Send + 'static,
     Fut: Future<Output = Result<S, RuntimeError>> + Send + 'static,
     FRoutes: FnOnce(S) -> OpenApiRouter + Send + 'static,
+    FCleanup: FnOnce() -> Cleanup + Send + 'static,
+    Cleanup: Future<Output = ()> + Send + 'static,
 {
     let (bound_tx, bound_rx) = oneshot::channel();
     let builder = builder.with_control(RunControl::detached(Some(bound_tx), Some(shutdown_rx)));
-    let mut serve = tokio::spawn(builder.run());
+    let mut serve = tokio::spawn(builder.run_with_cleanup(cleanup));
     let endpoint = match bound_rx.await {
         Ok(endpoint) => endpoint,
         Err(_) => {
@@ -515,57 +575,44 @@ fn exited_early(result: Result<Result<(), RuntimeError>, tokio::task::JoinError>
 
 #[cfg(test)]
 mod join_tests {
+    use super::{JoinFault, RuntimeError, join_bounded};
+    use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
-    use std::sync::{Arc, mpsc};
-    use std::thread::JoinHandle;
     use std::time::Duration;
 
-    use super::{JoinFault, JoinGuard, RuntimeError, join_bounded};
-
     #[test]
-    fn late_success_is_a_timeout_after_the_thread_stops() {
-        let (finished, release, thread) = held_thread(Ok(()));
-        let joiner = std::thread::spawn(move || join_bounded(thread, Duration::ZERO));
-        assert!(
-            !joiner_finished_while_held(&joiner),
-            "join must not return before the daemon thread stops"
+    fn zero_budget_reports_timeout_only_after_observing_physical_completion() {
+        let finished = Arc::new(AtomicBool::new(false));
+        let observed = finished.clone();
+        let thread = std::thread::spawn(move || {
+            observed.store(true, Ordering::SeqCst);
+            Ok(())
+        });
+        assert_eq!(
+            join_bounded(thread, Duration::ZERO),
+            Err(JoinFault::TimedOut)
         );
-        release.send(()).expect("release held thread");
-        let result = joiner.join().expect("join the joiner");
         assert!(finished.load(Ordering::SeqCst));
-        assert!(matches!(result, Err(JoinFault::TimedOut)));
     }
 
     #[test]
-    fn late_run_error_is_returned_after_the_thread_stops() {
-        let error = RuntimeError::serve_failed("run failed");
-        let (finished, release, thread) = held_thread(Err(error.clone()));
-        let joiner = std::thread::spawn(move || join_bounded(thread, Duration::ZERO));
-        assert!(!joiner_finished_while_held(&joiner));
-        release.send(()).expect("release held thread");
-        let result = joiner.join().expect("join the joiner");
-        assert!(finished.load(Ordering::SeqCst));
-        assert_eq!(result, Ok(Err(error)));
-    }
-
-    #[test]
-    fn dropping_the_join_guard_waits_until_the_thread_stops() {
-        let (finished, release, thread) = held_thread(Ok(()));
-        let dropper = std::thread::spawn(move || drop(JoinGuard::new(thread)));
-        assert!(
-            !joiner_finished_while_held(&dropper),
-            "drop must not detach the daemon thread"
-        );
-        release.send(()).expect("release held thread");
-        dropper.join().expect("join the dropper");
+    fn zero_budget_preserves_the_actual_thread_error_after_physical_completion() {
+        let error = RuntimeError::serve_failed("joined worker's primary error");
+        let expected = error.clone();
+        let finished = Arc::new(AtomicBool::new(false));
+        let observed = finished.clone();
+        let thread = std::thread::spawn(move || {
+            observed.store(true, Ordering::SeqCst);
+            Err(error)
+        });
+        assert_eq!(join_bounded(thread, Duration::ZERO), Ok(Err(expected)));
         assert!(finished.load(Ordering::SeqCst));
     }
 
     #[test]
     fn join_within_budget_returns_the_thread_result() {
         let thread = std::thread::spawn(|| Ok(()));
-        let result = join_bounded(thread, Duration::from_secs(10));
-        assert_eq!(result, Ok(Ok(())));
+        assert_eq!(join_bounded(thread, Duration::from_secs(10)), Ok(Ok(())));
     }
 
     #[test]
@@ -573,39 +620,9 @@ mod join_tests {
         let thread = std::thread::spawn(|| -> Result<(), RuntimeError> {
             panic!("daemon thread failed");
         });
-        let result = join_bounded(thread, Duration::from_secs(10));
-        assert!(matches!(result, Err(JoinFault::Panicked)));
-    }
-
-    fn held_thread(
-        result: Result<(), RuntimeError>,
-    ) -> (
-        Arc<AtomicBool>,
-        mpsc::Sender<()>,
-        JoinHandle<Result<(), RuntimeError>>,
-    ) {
-        let (entered_tx, entered_rx) = mpsc::channel();
-        let (release_tx, release_rx) = mpsc::channel();
-        let finished = Arc::new(AtomicBool::new(false));
-        let flag = Arc::clone(&finished);
-        let thread = std::thread::spawn(move || {
-            entered_tx
-                .send(())
-                .expect("signal that the thread is waiting");
-            release_rx
-                .recv()
-                .expect("wait until the test releases the thread");
-            flag.store(true, Ordering::SeqCst);
-            result
-        });
-        entered_rx
-            .recv()
-            .expect("daemon thread is waiting for release");
-        (finished, release_tx, thread)
-    }
-
-    fn joiner_finished_while_held<T>(joiner: &JoinHandle<T>) -> bool {
-        std::thread::sleep(Duration::from_millis(50));
-        joiner.is_finished()
+        assert!(matches!(
+            join_bounded(thread, Duration::from_secs(10)),
+            Err(JoinFault::Panicked)
+        ));
     }
 }

@@ -3,25 +3,30 @@ name = "daemon"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
 [features]
 {% if db == "none" %}
-default = []
+default = [{% if cron %}"cron"{% endif %}{% if cron_commands %}, "cron-commands"{% endif %}]
 {% else %}
-default = ["general-db"]
+default = ["general-db"{% if cron %}, "cron"{% endif %}{% if cron_commands %}, "cron-commands"{% endif %}]
 {% endif %}
 general-db = []
+cron-commands = ["dep:sc-cron-commands", "service/cron-commands", "sc-cron-commands/scheduler", "cron"]
 cron = ["dep:sc-cron", "dep:async-trait"]
-monty = ["cron", "sc-cron/monty"]
+monty = ["cron", "sc-cron/monty", "sc-cron-commands?/monty"]
 
 [dependencies]
 async-trait = { version = "0.1", optional = true }
-api-types = { path = "../api-types", features = ["schema"] }
-service = { path = "../service" }
+api-types = { path = "../api-types", version = "0.1.1", features = ["schema"] }
+service = { path = "../service", version = "0.1.1" }
 clap.workspace = true
 sc-command = { workspace = true, features = ["server"] }
+sc-cron-commands = { workspace = true, features = ["schema"], optional = true }
 sc-config.workspace = true
 sc-cron = { workspace = true, optional = true }
 sc-observability-types.workspace = true
@@ -30,7 +35,7 @@ sc-runtime.workspace = true
 sc-transport.workspace = true
 axum = { version = "0.8.9", features = ["http1", "json", "tokio"] }
 {% if mcp %}
-rmcp = { version = "~3.7", default-features = false, features = [
+rmcp = { version = "~3.8", default-features = false, features = [
     "macros",
     "server",
     "transport-streamable-http-server",
@@ -41,7 +46,7 @@ serde_json.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 utoipa.workspace = true
-utoipa-axum = "0.2.0"
+utoipa-axum = "=0.3.0"
 
 [[bin]]
 name = "{{project-name}}-daemon"

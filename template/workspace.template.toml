@@ -3,6 +3,10 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.package]
+# Fill in application authors and URLs when creating its repository.
+authors = []
+homepage = ""
+repository = ""
 version = "0.1.1"
 edition = "2024"
 license = "{{licence}}"
@@ -10,11 +14,12 @@ publish = false
 rust-version = "1.94.1"
 
 [workspace.dependencies]
-sc-config = { version = "0.1.1" }
-sc-transport = { version = "0.1.1" }
-sc-command = { version = "0.1.1" }
-sc-runtime = { version = "0.1.1" }
-sc-cron = { version = "0.1.1" }
+sc-config = { version = "0.2.0" }
+sc-transport = { version = "0.2.0" }
+sc-command = { version = "0.2.0" }
+sc-runtime = { version = "0.2.0" }
+sc-cron = { version = "0.2.0" }
+sc-cron-commands = { version = "0.2.0", default-features = false }
 sc-observability = { version = "=1.5.0" }
 sc-observability-types = { version = "=1.5.0" }
 serde = { version = "1", features = ["derive"] }
@@ -24,4 +29,4 @@ toml = "0.8"
 clap = { version = "4.5", features = ["derive"] }
 tracing = "0.1"
 schemars = "1"
-utoipa = "5"
+utoipa = "=6.0.0"

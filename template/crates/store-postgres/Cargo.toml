@@ -3,11 +3,14 @@ name = "store-postgres"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
 publish.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-schema = { path = "../schema" }
+schema = { path = "../schema", version = "0.1.1" }
 futures-util = "0.3.31"
 serde_json.workspace = true
 # Direct pin. Engine features differ per store crate, and this sprint does not

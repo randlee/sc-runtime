@@ -66,9 +66,10 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         cargo = ["cargo", "+1.96.1"] if monty else ["cargo"]
         result = run_owned(
             [*cargo, "test", "-p", package, "--features", "monty" if monty else "cron", *target, name, "--", "--exact", *(["--ignored"] if ignored else [])],
-            cwd=app, check=True, timeout=900, stdin=subprocess.DEVNULL,
+            cwd=app, check=False, timeout=900, stdin=subprocess.DEVNULL,
             text=True, capture_output=True,
         )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("running 1 test", result.stdout, result.stdout + result.stderr)
         self.assertIn("test result: ok. 1 passed", result.stdout, result.stdout + result.stderr)
 
@@ -297,7 +298,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
             self.assertEqual({p["name"] for p in packages}, expected)
             for item in packages:
                 self.assertTrue((item["source"] or "").startswith("registry+"), item)
-                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.1.1"
+                expected_version = "1.5.0" if item["name"].startswith("sc-observability") else "0.2.0"
                 self.assertEqual(item["version"], expected_version)
             for feature in ("cron", "monty"):
                 run_owned(["cargo", "+1.96.1", "test", "-p", package, "--features", feature],
@@ -306,7 +307,13 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
     def test_pinned_publish_kit_inventory(self):
         pin = tomllib.loads((ROOT / "release/sc-publish-pin.toml").read_text())["sc-publish"]
         self.assertEqual(pin["repository"], "https://github.com/randlee/sc-publish")
-        self.assertEqual(pin["revision"], "b6947ab2e495398a58123c60c0b86b5421f89979")
+        self.assertEqual(pin["revision"], "1a494e7adb067d93c57807f443ac136a8775c7d8")
+        declared = json.loads((ROOT / "release/sc-publish-consumer-input.json").read_text())["crates"]
+        rendered = tomllib.loads((ROOT / "release/publish-artifacts.toml").read_text())["crates"]
+        expected = {name: True for name in ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron", "sc-cron-commands")}
+        for crates in (declared, rendered):
+            self.assertEqual(len(crates), len(expected))
+            self.assertEqual({crate["package"]: crate.get("verify_registry_visibility") for crate in crates}, expected)
         temp = tempfile.TemporaryDirectory(prefix="sc-publish-inventory-")
         self.addCleanup(temp.cleanup)
         checkout = Path(temp.name)
@@ -322,7 +329,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         spec.loader.exec_module(module)
         copies = module.install_inventory(ROOT)
         paths = [relative for _, relative in copies] + list(module.TEMPLATES.values())
-        self.assertEqual(len(paths), 85)
+        self.assertEqual(len(paths), 89)
         self.assertEqual(len(paths), len(set(paths)))
         for path in paths:
             self.assertFalse(path.is_absolute() or ".." in path.parts or "\\" in str(path))
@@ -341,7 +348,7 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         manifest = tomllib.loads((ROOT / "template/Cargo.toml").read_text())
         dependencies = manifest["workspace"]["dependencies"]
         for name in ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron"):
-            self.assertEqual(dependencies[name]["version"], "0.1.1")
+            self.assertEqual(dependencies[name]["version"], "0.2.0")
             self.assertNotIn("path", dependencies[name])
         for name in ("sc-observability", "sc-observability-types"):
             self.assertEqual(dependencies[name]["version"], "=1.5.0")
@@ -349,8 +356,8 @@ class GeneratedObservabilityIntegration(unittest.TestCase):
         self.assertNotIn("patch", manifest)
         consumer = json.loads((ROOT / "release/sc-publish-consumer-input.json").read_text())
         crates = sorted((c for c in consumer["crates"] if c["publish"]), key=lambda c: c["publish_order"])
-        self.assertEqual([c["package"] for c in crates], ["sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron"])
-        self.assertEqual([c["publish_order"] for c in crates], [1, 2, 3, 4, 5])
+        self.assertEqual([c["package"] for c in crates], ["sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron", "sc-cron-commands"])
+        self.assertEqual([c["publish_order"] for c in crates], [1, 2, 3, 4, 5, 6])
         checks = {c["id"]: c["run"] for c in consumer["preflight_checks"]}
         self.assertEqual(checks["observability-registry-only"], "python3 scripts/check_observability_release.py")
         self.assertEqual(checks["release-contract-sources"], "bash scripts/check_release_contract_sources.sh")

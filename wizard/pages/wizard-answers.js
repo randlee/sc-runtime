@@ -14,6 +14,8 @@
   var DEFAULTS = {
     db: "sqlite",
     mcp: true,
+    cron: false,
+    cron_commands: false,
     licence: "MIT",
   };
 

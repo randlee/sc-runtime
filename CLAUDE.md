@@ -68,3 +68,15 @@ _Add a brief overview of your project architecture_
 ## Conventions & Patterns
 
 _Add your project-specific conventions here_
+
+## Plan Anchor authorization
+
+Read [.sc/plan-anchor/authorization.md](.sc/plan-anchor/authorization.md) before
+invoking or delegating Jev reviews. The committed `allow_remote_judge: true`
+setting and the recorded human approval cover Phase C plan and development
+reviews, including normal PR and concise validation evidence and routine
+rechecks. Pass the record's commit and approved payload scope to every leaf
+agent; do not ask again for the same authorization across sessions or worktrees.
+Only a materially new destination or payload outside that scope, or revocation,
+requires a new decision. Respect automatic approval review and report any actual
+rejection with the existing authorization reference; never bypass it.

@@ -1,7 +1,7 @@
 ---
 id: c-4
 phase: c
-status: planned
+status: in_progress
 closure_type: integration
 target_boundary: published-runtime-template-consumer
 track: release
@@ -17,6 +17,7 @@ requirements:
   - REQ-RUN-0003
   - REQ-RUN-0301
   - REQ-RUN-0503
+  - REQ-RUN-0701
   - REQ-RUN-0702
   - REQ-CRON-0003
   - REQ-CRON-0019
@@ -31,7 +32,20 @@ requirements:
   - NFR-RUN-0002
   - NFR-RUN-0005
   - NFR-RUN-0009
+  - NFR-RUN-0003
+  - NFR-RUN-0004
+  - NFR-RUN-0006
+  - NFR-RUN-0007
+  - NFR-RUN-0008
 adrs:
+  - ADR-RUN-0004
+  - ADR-RUN-0005
+  - ADR-RUN-0006
+  - ADR-RUN-0007
+  - ADR-RUN-0011
+  - ADR-RUN-0015
+  - ADR-RUN-0201
+  - ADR-RUN-0302
   - ADR-RUN-0002
   - ADR-RUN-0017
   - ADR-RUN-0203
@@ -46,6 +60,7 @@ adrs:
   - ADR-RUN-0001
   - ADR-RUN-0003
   - ADR-RUN-0009
+  - ADR-RUN-0008
   - ADR-RUN-0303
   - ADR-CMD-0001
   - ADR-CMD-0002
@@ -56,6 +71,21 @@ adrs:
   - ADR-RT-0004
   - ADR-RT-0005
 owned_paths:
+  - docs/requirements.md
+  - template/scripts/consumer_checks.py
+  - template/scripts/dependency_policy.py
+  - tests/unit/generation/test_daemon_scratch_policy.py
+  - tests/contracts/phase-c/application-control/Cargo.toml
+  - docs/development/sc-publish.md
+  - docs/consumer-preflight-and-docli.md
+  - docs/getting-started.md
+  - tests/integration/generation/test_observability.py
+  - tests/unit/generation/test_cron_environment.py
+  - tests/unit/generation/test_monty_example.py
+  - tests/unit/generation/test_liquid.py
+  - template/crates/cli/Cargo.toml
+  - scripts/run_generation_tests.py
+  - template/crates/daemon/Cargo.toml
   - install.py
   - README.sc-publish.md
   - .github/workflows/*release*.yml
@@ -81,7 +111,7 @@ owned_paths:
   - template/crates/cli/src/main.rs
   - template/crates/service/src/cron_commands.rs
   - template/crates/service/src/lib.rs
-must_follow: [c-3, c-5, c-6]
+must_follow: [c-2, c-3, c-5, c-6]
 parallel_safe: []
 recommended_agent: solar
 recommended_model: sol
@@ -89,6 +119,11 @@ vertical_rationale: Final selected template binding consumes c-3 generic UI proj
 ---
 
 # Sprint c-4 — runtime ecosystem authorized release
+
+The final generated fixture consumes c-2’s full bootstrap profile; c-2 is
+therefore a named dependency before fixture execution. Parent-authorized daemon
+manifest ownership is limited to forwarding scheduler/cron and optional Monty
+features, with no dependency or version changes.
 
 Dependency execution: consume c-3's ecosystem/template implementation, c-5's
 real tracked query/lifecycle and c-6's concrete shared command handler by
@@ -103,6 +138,53 @@ Publish `sc-runtime 0.2.0` only after c-5's dedicated compatibility sprint
 and c-3/c-6 implementation are complete and release is authorized. Then prove
 a newly generated consumer resolves it from crates.io without a checkout patch.
 
+## Execution stages and QA closure
+
+C4 remains one `integration` sprint. The deliverables and acceptance criteria
+below are authoritative and unchanged; their ordered execution does not create
+separately closed sprints or waive any final result.
+
+| Stage | Existing scope | Result permitted |
+|---|---|---|
+| A — prepublication source | Deliverable 1; the complete source implementation of deliverables 2–3; every acceptance and validation obligation executable before publication, including the composed consumer proofs and source-qualified benchmark required by existing release policy. | Source qualification only. |
+| B — authorized publication | Deliverable 2's actual all-six exact `0.2.0` publication and positive predecessor-version visibility in the canonical dependency order. | Publication result only. |
+| C — registry acceptance | Deliverable 3 and every criterion requiring the actual published artifacts, including the unchanged consumer recipes and repeated real UI/target/schema/lifecycle/ownership/custom-store/override/capacity/graph/logging proofs. | Full-sprint qualification only after B and C actually pass. |
+
+Stage A reviews the entire composed source, including the publication and
+registry-test implementations, against this full sprint plan. `req-qa`
+enumerates every Stage A obligation, reports its complete/total count, and
+separately reports the full-sprint complete/total count with unperformed B/C
+results explicitly pending. A source defect needed by a later stage blocks A;
+pending publication or registry execution never counts as completed work.
+Stage A requires 100% of its exhaustive scope, every required reviewer PASS
+(or contract-permitted SKIPPED) with actual parent spawn proof and fenced
+results, clean required scans, applicable anchor and benchmark evidence, and
+zero open Blocking, Important or Minor findings. Start QA without waiting for
+CI; source merge additionally requires all required checks green at the
+reviewed source and all prerequisite PRs merged in the existing dependency
+order. Preserve previous full-sprint FAIL reports as historical full-sprint
+results rather than relabeling them as full PASS.
+
+The existing QA report must label this result `source_stage_verdict` and retain
+`full_sprint_verdict: IN_PROGRESS`; source PASS applies only to the source PR
+and necessary reviewed source promotions. It does not close C4, its bead,
+Phase C or the release goal. Keep the normal integration → develop → immutable
+candidate → release-readiness → main sequence, each with its applicable QA and
+CI gates. Run branch-specific preflights at their required promotion point;
+the final main-only preflight and publication run from the exact qualified
+main source after main promotion, never from an alternate ref. Preserve
+candidate/tag/build provenance and requalify material changes. Finish tracked
+non-report edits before the controlled benchmark campaign; preserve measured
+whole-tree equivalence under the existing canonical report-file exceptions.
+
+Only actual Stage B publication/visibility and Stage C registry acceptance
+permit full C4 QA at 100% of the unchanged full-sprint scope, zero open findings
+and all required checks/evidence. Complete phase-ending QA before phase closure.
+A missing or failed registry proof leaves C4 open for remediation. A retry may
+complete missing uploads only when already published immutable artifacts are
+correct; a defective published version requires the existing explicit recovery
+decision, never a patched-checkout or substituted-version success claim.
+
 ## Deliverables
 
 1. **Before any publication**, require completed c-3 runtime/ecosystem and
@@ -112,17 +194,18 @@ a newly generated consumer resolves it from crates.io without a checkout patch.
    proofs specified below. All must pass before publication; completed parent
    work alone does not replace c-4's own prepublication proofs.
 2. **Authorized publication:** after stage 1, use the existing authorization
-   and publication workflow for `sc-runtime 0.2.0` and every affected package
-   frozen by c-1. Change only canonical
+   and publication workflow for `sc-runtime 0.2.0` and every public package
+   frozen by c-1, all six at the shared 0.2.0 version. Change only canonical
    `release/sc-publish-consumer-input.json` and the qualified exact
    `release/sc-publish-pin.toml`, then rerun its installer. Include its actual
    destination inventory in this sprint's release-owned paths; any additional
    generated destination requires an explicit ownership update before writing.
-   Do not hand-edit vendored workflows/scripts. Use the c-1 proven selective
-   contract to publish sc-command 0.2.0 before dependent cron/runtime packages,
-   checking each exact version's registry visibility before its dependent.
-   Unaffected packages stay at 0.1.1 and are not republished. `v0.2.0` names
-   the qualified affected-package release according to c-1's tag contract;
+   Do not hand-edit vendored workflows/scripts. Use the existing pinned kit
+   to publish all six public crates at 0.2.0 in dependency order, including
+   config/transport and the adapter; command precedes cron/runtime and cron
+   precedes adapter. Check each exact version's registry visibility before its
+   dependent. The internal publish=false helper stays private. `v0.2.0` names
+   the shared-version public release according to c-1's tag contract;
    do not infer credentials or publish authority from this plan.
 3. **Registry-only rerun:** after authorized dependency-ordered publication
    and registry visibility, generate the `sqlite-mcp` release-mode
@@ -133,10 +216,9 @@ a newly generated consumer resolves it from crates.io without a checkout patch.
    no-patch generated fixture**. Starting at the rendered `daemon` resolve ID,
    follow normal dependency edges and enforce exactly one reachable
    `(name, version, source)` tuple each for `rmcp`, `utoipa`, and
-   `utoipa-axum`. Record sc-command and sc-runtime at exactly 0.2.0 and any
-   affected cron version frozen by c-1, all from crates.io rather than path,
-   git or patch sources. Assert unaffected packages retain their approved
-   0.1.1 versions and no stale command RMCP type reaches the daemon.
+   `utoipa-axum`. Record all reachable public workspace packages at exactly 0.2.0, all from
+   crates.io rather than path, git or patch sources. Check visibility of all
+   six public packages and ensure no stale command RMCP type reaches the daemon.
 
 Store the authorization reference, publication reference, visibility evidence,
 no-patch assertion and package-identity receipt in the existing release PR/check
@@ -209,10 +291,10 @@ at REQ-RUN-0332, REQ-CRNC-0001/0002 and REQ-CRON-0003/0020/0021:
   success. Preserve independent stop/physical ownership, no replay of uncertain
   mutations and no effects after actual release. Registry proof repeats this
   public contract; it does not claim a universal fsync/physical-2T guarantee.
-- Publish the exact frozen affected closure including cron and new adapter:
+- Publish all six public packages at the exact shared 0.2.0 version:
   command first, then cron, then cron-commands; runtime after command. Check
   each version's registry visibility before dependent publication. Extend the
-  qualified selective kit input/pin, not hand-edited vendored outputs.
+  qualified canonical all-crates kit input/pin, not hand-edited vendored outputs.
 - After visibility, repeat the same no-source-edit opt-in UI/target/graph
   suite and public logging-facade consumer against exact registry artifacts
   with no path/git/patch sources. Earlier prepublication proof is not this
@@ -227,17 +309,17 @@ Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0702`,
 `adr:ADR-RUN-0203`.
 
 - An authorized release record identifies `sc-runtime 0.2.0`; the release
-  workflow and per-affected-package registry visibility checks succeed in
+  workflow and per-public-package registry visibility checks succeed in
   dependency order. Canonical installer repeat dry-run is clean, version
-  checks accept the proven mixed package set, and unchanged packages are
-  excluded from publication without bypassing validation.
+  checks accept the shared version of all six public crates; only the internal
+  publish=false helper is excluded, without bypassing validation.
 - The generated no-patch fixture resolves that crates.io package and completes
   the full standard command sequence without a generated-source edit.
 - The release fixture’s locked metadata closure has one identity each for
   `rmcp`, `utoipa`, and `utoipa-axum`; any duplicate reaching the rendered
   daemon fails the test. Both `sc-command` and `sc-runtime` are exactly 0.2.0
-  from crates.io, plus the affected cron version fixed by c-1 when required;
-  no local checkout supplies an affected package.
+  from crates.io, along with every other reachable public workspace package
+  at the same 0.2.0 version; no checkout supplies a public release package.
 - The fixture uses ADR-RUN-0401/0402's established noninteractive generation
   driver and values-file contract; it introduces no alternate renderer.
 
@@ -253,3 +335,106 @@ Root: `req:REQ-RUN-0002`, `req:REQ-RUN-0702`,
   or adapter boundary (`c-6`) implementation. This sprint owns their real
   command/release composition and the explicitly listed final template binding
   paths, not the cron/adapter implementation source.
+
+## Prepublication development checkpoint — 2026-11-05
+
+The selected application root now shares one native Scheduler and
+StandardCronExecutor across HTTP, MCP and CLI. Public hooks cover registered
+Python/Monty targets, Rust jobs, a consumer-owned Scheduler/store/clock,
+command policy, finite capacity, independent stop, custom physical cleanup and
+checked consumer shutdown budgets. Python registration stores a live script
+path; its private working directory is separate from the script location.
+Monty registration persists source. These hooks do not schedule jobs by
+construction or transfer custom persistence/cleanup obligations to the core.
+
+The official generated consumer proof passed eight real Rust tests: all three
+command projections across all three target kinds; real deterministic target
+execution; typed schemas and pagination; native default64 shared capacity and
+retained slots after dropped waiters; committed-before-cutoff persistence truth;
+finite override validation; consumer executor/physical cleanup; and the default
+file-opening factory. The existing C5 application-schema example also passed
+its ten macOS tests inside that generated consumer. Exact package closure,
+DTO-only CLI and default-off/core-runtime graphs passed. The exact pinned
+publishing kit's installer repeat dry-run was clean.
+
+The untouched-consumer sequence passed setup with sc-lint0.8.4, full lint,
+workspace tests and release CLI build. Its daemon compiled, but the existing
+whole-tree tempfile guard failed because production Python cron uses tempfile.
+REQ-RUN-0503 criterion6 and REQ-RUN-0701 command6/criterion1 explicitly forbid
+that transitive package; a requirement decision remains pending. The guard and
+requirements remain unchanged. The resumed generated proof also passed the
+consumer-budget API with finite cutoffs and expired cutoffs while admitted work
+remained held; all eight generated Rust tests and ten unchanged application-schema
+tests passed. C3's diagnostic-redaction fix was merge-forwarded without product
+conflicts, and its real generated projection regression passed on this composition.
+Final composed `just lint && just test`, remaining parent fixes/QA/CI,
+publication and registry-only acceptance remain open. This is a development
+checkpoint, not full sprint qualification or closure.
+
+C4 QA1 source corrections preserve the SDK's primary startup/serve failure
+when cron cleanup also fails, emit safe secondary canonical diagnostics, and
+retain native cron codes, reconciliation advice and typed persistence facts.
+The isolated logging consumer now targets 0.2.0, and registry qualification
+rejects every noncanonical crates.io source. Focused generated regressions,
+strict selected-daemon Clippy, the existing eight composition tests and ten
+unchanged C5 schema/ownership tests passed. Reintroducing cleanup-first
+precedence caused the intended regression assertion to fail. Canonical C5/C6
+owner/error corrections are consumed. Independent review remains required.
+The tempfile decision, upstream publication-visibility adoption, final composed
+gates, controlled-source benchmark qualification, publication and registry-only
+proofs remain open; no release authority or closure is inferred.
+
+The CI follow-up adopts merged sc-publish PR163 at exact source
+`1a494e7adb067d93c57807f443ac136a8775c7d8` through the canonical installer.
+All six public crate declarations require positive exact-version visibility
+before dependent publication in both normal and retry paths. The full old-pin
+delta was reviewed; all 89 unique installer destinations match canonical source
+and repeat installation reports no drift. Installed visibility tests cover
+positive predecessor checks and stopping on absent or indeterminate results.
+The native startup regression now checks the safe native INVALID_SPEC contract;
+startup errors are not duplicated as cleanup failures. MCP feature dispatch lives
+in Rust behind one Liquid registration, and Monty assertions retain optional
+forwarding/default-off semantics and the production-only dependency boundary.
+The tempfile guard and all required final release gates remain unchanged.
+
+
+### Approved Python scratch policy — 2026-11-06
+
+The human-approved clarification now permits only the qualified direct
+`sc-cron -> tempfile` dependency for private Python working directories.
+The daemon guard projects Cargo's active normal tree onto exact metadata
+package identities; workspace dev-feature unification cannot create a false
+normal edge. Direct daemon, alternate/transitive tempfile ancestry (including a
+second path to the same package) and every normal tempdir remain rejected.
+Script locations and daemon instance/database path rules are unchanged.
+
+All eighteen graph regressions and the real selected/default-off graph checks
+passed. The fresh untouched generated consumer completed `setup`, `lint`,
+`test`, `build-cli` and `build-daemon`; strict workspace Clippy and formatting
+also passed. These results supersede the earlier scratch-policy blocker;
+independent QA, final composed/source-qualified benchmark, publication and
+registry-only acceptance remain open. The approval is recorded in
+`reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json`.
+
+
+### Latest prerequisite composition — 2026-11-06
+
+This checkpoint consumes the pushed C2 `8c96a6c`, C3 `a8ce3ab`, C5 `5bb7f41`
+and C6 `647ea09` prerequisites, including their current C1 ancestry. Contract
+wording retains both C1 live-context revocation and C5 registered-native-work
+ownership. Anchor records preserve both parent histories and item exclusions;
+no statement, fixture, scope or version was discarded. C5's private-budget
+compile-fail documentation is retained exactly. The external application-control
+fixture now explicitly selects SDK `=0.2.0`; its existing lockfile already
+contains the composed 0.2.0 identities. The isolated logging fixture remains
+0.2.0 as well.
+
+Focused composed qualification passed 97 cron library tests, 15 documentation
+tests, the public application-control executable and 14 logging boundary tests.
+The actual mixed CLI/HTTP/MCP consumer passed eight Rust composition tests plus
+ten unchanged schema/ownership tests. Generated native startup and error
+precedence checks, approved scratch-policy tests and selected/default-off normal
+graphs passed. The untouched five-recipe consumer sequence, root formatting and
+all-target strict Clippy passed again on these composed inputs. These are scoped
+prepublication proofs; controlled-source measurement, independent final QA,
+authorized publication and registry-only acceptance remain required.

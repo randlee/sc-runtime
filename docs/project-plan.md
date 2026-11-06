@@ -14,7 +14,7 @@ attribute-generated CLI tests (`REQ-RUN-0312`, `ADR-RUN-0304`, `REQ-RUN-0311`),
 and framework-generated responses for unknown routes, Axum body rejection, and
 rmcp protocol errors (`REQ-RUN-0203` OPEN) stay deferred. Postgres/both,
 prototype-repository handoff, and other post-core layers stay outside Phase A.
-sc-lint 0.8.0 is in Phase A: a-5 installs it for this repository, and a-6
+sc-lint 0.8.4 is in Phase A: a-5 installs it for this repository, and a-6
 installs the consumer contract into generated projects.
 
 `REQ-RUN-0702` stays open. Git tag `v0.1.0`, crates.io publication of the four
@@ -107,8 +107,8 @@ cron core consumable through public logging, cooperative store/lifecycle and
 query contracts, with supported custom-store/behavior paths and documented
 consumer responsibilities. An optional standard cron command adapter supplies
 shared JSON across selected UIs; the release sprint proves the documented
-default recipe and actual packaged composition. These six sprints are planned,
-not claims of implemented or published behavior. See [Phase c
+default recipe and actual packaged composition. C6 is implemented on its sprint branch with QA and merge pending; the other
+entries retain their recorded statuses. No entry claims publication. See [Phase c
 plan](plans/phase-c/phase-c-plan.md).
 
 | Sprint | Plan | Status | Branch |
@@ -118,4 +118,4 @@ plan](plans/phase-c/phase-c-plan.md).
 | c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | planned | `sprint/c-3-runtime-ecosystem-upgrade` |
 | c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | planned | `sprint/c-4-runtime-ecosystem-release` |
 | c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | planned | `sprint/c-5-cron-consumer-compatibility` |
-| c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | planned | `sprint/c-6-standard-cron-commands` |
+| c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | implemented; QA and merge pending | `sprint/c-6-standard-cron-commands` |

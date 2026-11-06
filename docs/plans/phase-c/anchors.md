@@ -44,6 +44,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `c-4`: C-4 verifies runtime composition/publication; it does not install the consumer lint toolchain owned by C-2.
 - `c-5`: C-5 implements cron behavior and consumer examples; it does not install lint tools.
 - `c-6`: C-6 is the command-adapter boundary, not consumer lint installation.
+- `c-1`: C-1 qualifies the released lint tool in an internal temporary probe but does not ship consumer installation, which is owned by C-2.
 
 Beads: anchor `run-32b`, plan questions `run-32b.1`, dev questions `run-32b.2`
 
@@ -169,7 +170,7 @@ Anchor: Fresh consumer installation must generate a default boundaries policy se
 > and you will need to determine the 'appropriate' default policy to install on consumer repos
 based on configuration settings
 
-Said by randlee, User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat., 2026-11-02. Status: locked. Version 2.
+Said by randlee, User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat. Approved C1 contract-stage clarification (2026-11-06): C1 fulfills its contract-stage obligation by delivering a checkable contract that defines how selected configuration determines boundary owners and permitted dependency edges, omits disabled components, and qualifies the contract with the representative consumer-shaped configuration required by C1. C1 need not ship C2's bootstrap or claim C2's full matrix. C2 still must implement real fresh-install policy generation from settings and pass the approved supported-configuration/edge matrix and real analyzer checks. A future promise without the specified contract and qualification does not fulfill C1. Approval record: docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json., 2026-11-02. Status: locked. Version 3.
 
 Summary: Configuration-selected default boundaries
 
@@ -187,7 +188,9 @@ Beads: anchor `run-a7e`, plan questions `run-a7e.1`, dev questions `run-a7e.2`
 
 Fixtures:
 - pass: Fresh consumer installation reads the selected configuration and generates the matching default boundaries policy before running sc-boundary.
+- pass: C1 delivers the selected-crate/edge mapping contract and a representative qualification showing the selected consumer policy; the shipped generator and full installation matrix remain explicitly owned by C2.
 - fail: Fresh consumer installation emits no boundaries policy and runs sc-boundary only in no-manifest mode, regardless of configuration.
+- fail: C1's contract merely promises appropriate boundaries later and neither defines the configuration-to-owner/edge mapping nor supplies its required representative qualification.
 
 ## ANC-008
 
@@ -195,7 +198,7 @@ Anchor: After fresh setup, the consumer repository must control subsequent bound
 
 > you will need to generate a boundaries policy for a 'fresh install' once a consumer is set up, they will have their own boundaries policy
 
-Said by randlee, User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat., 2026-11-02. Status: locked. Version 3.
+Said by randlee, User-approved packet; ANC-007 quote contains two consecutive verbatim user messages separated by a newline. Statements and fixtures approved in this chat. Approved C1 contract-stage clarification (2026-11-06): C1 fulfills its contract-stage obligation by explicitly defining the initial policy handoff and the consumer's authority over all subsequent boundary-policy decisions, with checkable contract/probe evidence required by C1. C1 need not ship the C2 handoff implementation. C2 still must write the policy into the consumer repository and verify the approved preservation/ownership behaviors. The narrow existing successful-customized-native-init waiver remains unchanged; it does not waive consumer control or silently permit overwriting policy. Approval record: docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json., 2026-11-02. Status: locked. Version 4.
 
 Summary: Consumer-owned boundaries policy
 
@@ -213,7 +216,9 @@ Beads: anchor `run-81q`, plan questions `run-81q.1`, dev questions `run-81q.2`
 
 Fixtures:
 - pass: Fresh setup writes the initial boundaries policy into the consumer repository and documents that the consumer owns subsequent policy decisions.
+- pass: C1's contract makes the consumer the decision owner after initial setup and supplies its required ownership qualification, while explicitly assigning the shipped policy handoff/preservation implementation to C2.
 - fail: The generated consumer's boundaries policy remains centrally owned by sc-runtime, which decides all subsequent consumer boundary changes.
+- fail: C1's contract leaves subsequent consumer boundary decisions with sc-runtime, or only promises to decide ownership in a later sprint without defining the handoff.
 
 ## ANC-009
 
@@ -281,6 +286,13 @@ Scope: the Phase C planning branch and Git worktree metadata
 
 Deterministic check to pair with the development gate: Git worktree metadata identifies the separate plan/phase-c checkout.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-5`: C-5 implements cron consumer compatibility rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
+- `c-1`: C-1 implements the runtime contract rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
+- `c-3`: C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
+- `c-2`: C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
+- `c-6`: C-6 implements standard cron commands rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
+
 Beads: anchor `run-alr`, plan questions `run-alr.1`, dev questions `run-alr.2`
 
 Fixtures:
@@ -300,6 +312,13 @@ Summary: have a separate pull request targeting develop.
 Scope: the Phase C planning pull request metadata
 
 Deterministic check to pair with the development gate: GitHub PR114 head plan/phase-c targets develop and is separate from dependency PR109.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-5`: C-5 implements cron consumer compatibility rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
+- `c-1`: C-1 implements the runtime contract rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
+- `c-3`: C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
+- `c-2`: C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
+- `c-6`: C-6 implements standard cron commands rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
 
 Beads: anchor `run-mwv`, plan questions `run-mwv.1`, dev questions `run-mwv.2`
 
@@ -322,6 +341,8 @@ Scope: Phase C compatibility completion and the 0.2.0 publication handoff
 Excluded from (not judged; the cell passes as `excluded`):
 - `c-2`: C-2 owns the independent lint profile, not the dedicated C-5 compatibility completion or C-4 publication handoff.
 - `c-6`: C-6 closes the adapter boundary and explicitly excludes publication; C-5 owns dedicated compatibility completion and C-4 enforces its publication precedence.
+- `c-1`: C-1 defines the future release contract but performs neither C-5 compatibility completion nor the actual C-4 publication handoff governed by this anchor.
+- `c-3`: C-3 prepares versions and prepublication inputs without performing C-5 compatibility completion or the actual C-4 publication handoff, and retains its required C-5-before-publication dependency guard.
 
 Beads: anchor `run-299`, plan questions `run-299.1`, dev questions `run-299.2`
 

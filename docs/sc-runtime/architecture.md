@@ -48,6 +48,7 @@ the application. Emission rejection never changes assembly or HTTP results.
 | `DaemonBuilder::logger / stores / routes / mcp / run / run_with_cleanup / run_with_cleanup_and_bound` | exactly seven methods; same-state logger, three project closures and three alternative Ready-state terminal runs; NFR-RT-0001, no new typestate or callback engine |
 | `DaemonConfig` | `#[non_exhaustive]` settings the project loads; `transport` is flattened `sc_transport::TransportConfig` (`endpoint`, `instance_root`, `tcp_port`); `endpoint_flag` is `Option<String>` for `--endpoint` ([ADR-RT-0001](#adr-rt-0001-daemonbuilder-run-is-assembly-only-in-a-fixed-order), [REQ-RT-0001](requirements.md), [REQ-RT-0008](requirements.md)) |
 | `RuntimeError` | typed error naming the failing step |
+| `mcp_request_body(&axum::http::request::Parts)` | read-only original bounded HTTP JSON bytes for application-owned canonical validation, NFR-RT-0001 |
 | `testing::DaemonFixture` | an isolated daemon per test; exposes a connected client, its endpoint string and its instance-root path |
 
 Shape of use, from the design:
@@ -199,7 +200,8 @@ by [REQ-RT-0001](requirements.md); the explicit-instance-root and
 endpoint-override tests of [REQ-RT-0008](requirements.md), and its check that
 `grep -rn "daemon\.sock\|127\.0\.0\.1" crates/sc-runtime/src` prints no
 line outside test code; `arch-qa` architecture review of the public surface
-of `DaemonBuilder` (only `stores`, `routes`, `mcp`, `logger`, `run`).
+of `DaemonBuilder` (exactly `stores`, `routes`, `mcp`, `logger`, `run`,
+`run_with_cleanup`, `run_with_cleanup_and_bound`; terminal runs are Ready-only).
 
 ### Related Documents
 
@@ -350,6 +352,20 @@ boundary manifest under `boundaries/sc-runtime/`, checked by
 - [NFR-RT-0002](requirements.md)
 
 ---
+
+### Phase C MCP input clarification
+
+The ordinary project-supplied StreamableHttpService enters through `.mcp(...)`.
+Private middleware retains original JSON POST bytes in an HTTP extension under
+the service's own max_request_body_bytes. The read-only `mcp_request_body` accessor
+reads those bytes from ordinary request Parts, preserving headers and the absolute
+deadline; GET/SSE are untouched. NFR-RT-0001 records this one minimal free function.
+Runtime owns no protocol DTO, duplicate-key policy or cron dependency. The generated
+cron tool reparses its sole canonical CronRequest from the original generic RPC
+envelope before executing. Duplicate struct fields remain rejected by the DTO,
+while arbitrary Value payloads and unrelated tools keep their own JSON semantics.
+Normal serde_json is removed; test-only parsing is a dev dependency. No extra
+public test middleware helper, RMCP wrapper or command registry is introduced.
 
 ## ADR-RT-0004: `DaemonFixture` runs the real daemon
 
