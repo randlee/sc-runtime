@@ -1,0 +1,28 @@
+{
+  "source_commit": "1477693453c5d4e1f7f1ee02960daf49e1eda677",
+  "qa_state": "QA1 FAIL retained; developer corrections implemented, independent QA and merge pending",
+  "triage": ".triage/c/findings/c6-qa1.ttl",
+  "dispositions": {
+    "REQ-C6-001, ARCH-C6-001": "Existing governing NFR and ADR IDs added to the existing sprint lists.",
+    "REQ-C6-003": "Existing phase index records C6 implementation with QA and merge pending.",
+    "REQ-C6-002, QA-C6-001, FTQ-001": "Exact common C2 bounded logger-reap correction consumed; byte-identical rendered fixture tests 7/7 pass.",
+    "QA-C6-002": "Exact common C2 repository import root consumed in ordinary configured generation runner. Exact current CI job 127367795167 confirmed ModuleNotFoundError tests.integration; ordinary runner progressed past unit discovery without PYTHONPATH override. Full run active; no full-suite pass claimed.",
+    "QA-C6-003, FTQ-002": "Both ready Python witnesses remain alive until explicit owner termination, with bounded Session ownership; seven positive tests pass and original early-return mutant fails at the return-boundary assertion.",
+    "RBP-F001": "Canonical OpError details.reason and static recovery distinguish invalid expression/specification and local generation/cursor/limit/version/request-size errors. CRON.INVALID_INPUT, kind, envelope and persistence outcomes preserved; private canary tests pass."
+  },
+  "validation": {
+    "features": "default 4; schema 8; scheduler 15; schema+scheduler 19; schema+scheduler+Monty 19 tests including doctests: PASS",
+    "strict": "cargo fmt --all --check; root cargo clippy --all-targets -D warnings; scheduler and Monty strict Clippy including await_holding_lock: PASS",
+    "build_and_boundaries": "cargo build --workspace; just lint gates with exact sc-lint0.8.4 and supply-chain checks: PASS",
+    "graphs": "four isolated normal graphs/default/schema/scheduler/Monty: PASS",
+    "generation": "ordinary scripts/run_generation_tests.py running without PYTHONPATH; exact outcome pending",
+    "environment": "CARGO_BUILD_JOBS=2, separate root/generated/logger targets, SSL_CERT_FILE=/etc/ssl/cert.pem; exact0.8.4 bin prefix for strict/boundary/logger checks. Generation initial prefix omitted /bin; bootstrap uses its installed0.8.4; no corrected-prefix full-run claim."
+  },
+  "local_evidence": "/tmp/c6-qa1-validation",
+  "limitations": [
+    "No CI wait, independent QA, merge, publication or finding closure performed.",
+    "Configured Grok/Composer unavailable; inherited available Codex fallback.",
+    "Parent reports new common owned_process.py inspection-failure cleanup gap; helper untouched while generation is live; canonical C5 follow-up owned by parent.",
+    "Beads storage unavailable during initial prime; no task closure."
+  ]
+}
