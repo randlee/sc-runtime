@@ -48,12 +48,12 @@ composition, shared logger, HTTP+cron JSONL, shutdown precedence, and isolated-C
 signal lifecycle using the approved real registry `1.5.0` adapter.
 
 The former inventory-unsafe kit pin was rejected because its actual installer destination
-inventory included `docs/sprints/**`. The current pin is the qualified exact
-revision `b6947ab2e495398a58123c60c0b86b5421f89979`, from unmerged upstream
+inventory included `docs/sprints/**`. Phase B qualified exact
+revision `b6947ab2e495398a58123c60c0b86b5421f89979`, from upstream
 [PR 138](https://github.com/randlee/sc-publish/pull/138). It extends the previously
 qualified PR 137 revision `9677ab083e7dd3feb258235a342e321ca1b45d8d` with only
-the shared release workflow and its existing regression test file. The 85
-installer destinations are unchanged. SDK-only releases stage assets outside
+the shared release workflow and its existing regression test file. Its 85
+installer destinations were unchanged. SDK-only releases stage assets outside
 tracked `release/`, tolerate absent downloads, and emit a nonempty comment-only
 checksum manifest with zero hash entries when no archives exist; a
 retry with `already_published_channels=crates_io` preserves completed crates
@@ -205,8 +205,17 @@ The owner requires all public workspace crates on every release. Phase C uses
 one shared0.2.0 for sc-config, sc-transport, sc-command, sc-runtime, sc-cron and
 sc-cron-commands; the SQLite helper remains publish=false. The existing canonical
 consumer input orders those six packages, with command before cron/runtime and
-cron before cron-commands. C3 regenerates release metadata with the unchanged
-qualified b6947ab kit pin. There is no selective-publishing-kit prerequisite.
+cron before cron-commands. C3 initially regenerated release metadata with the
+qualified b6947ab kit pin. C4 adopts merged
+[sc-publish PR163](https://github.com/randlee/sc-publish/pull/163), exact revision
+`1a494e7adb067d93c57807f443ac136a8775c7d8`, through its canonical installer.
+All six caller-owned crate declarations set `verify_registry_visibility=true`;
+normal and retry publication stop unless an uploaded predecessor's exact version
+is positively visible. The 89 unique installer destinations are verified against
+that source and repeat dry-run is clean. The reviewed old-pin delta also updates
+the shared sc-lint default to the existing 0.8.4 pin, validates declared preflight
+checks and preserves deterministic empty-asset staging. There is no
+selective-publishing-kit prerequisite.
 C4 owns publication and the registry-only generated consumer acceptance after
 all six exact versions are visible. The earlier Phase B five-package statements
 above are historical release context and do not define current Phase C input.

@@ -652,9 +652,11 @@ provider work. The application closes intake, requests stop, physically joins
 all provider tasks/native calls/cleanup, then calls
 `finish_application_shutdown(&self) -> Result<(), CronError>`. This explicit
 acknowledgement publishes `Joined`; it cannot verify untracked application
-work. It refuses a missing stop, pending registered native work, or a control
-obtained from `WorkerHandle::stop_control()`. Application acknowledgement revokes
-existing and future contexts even before a future grace cutoff. Framework workers retain their
+work. The C1 factory refuses acknowledgement before stop and revokes all
+existing and future contexts when acknowledged, including a future grace cutoff.
+C5 owned controls additionally refuse acknowledgement while registered native
+work remains or through a control obtained from `WorkerHandle::stop_control()`.
+Framework workers retain their
 single physical owner `WorkerHandle::join_owned`. Acknowledgement never reopens
 intake or revives a cancelled/expired context. Typed unavailable reasons are
 `worker_runtime_unavailable`, `worker_already_running`, and

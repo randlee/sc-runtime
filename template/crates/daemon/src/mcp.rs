@@ -22,6 +22,15 @@ use sc_cron_commands::{CronExecutor, CronRequest, CronResponse};
 use sc_command::{Envelope, ErrorKind, OpError};
 use service::Stores;
 
+/// Binds the existing MCP service to the application-owned composition root.
+pub(crate) fn runtime_service(state: crate::composition::RuntimeStores)
+    -> StreamableHttpService<WidgetServer, LocalSessionManager> {
+    #[cfg(feature = "cron-commands")]
+    { service_with_cron_executor(state.stores, state.executor) }
+    #[cfg(not(feature = "cron-commands"))]
+    { service(state.stores) }
+}
+
 /// Builds the stateless MCP service mounted at `/mcp`.
 pub fn service(stores: Stores) -> StreamableHttpService<WidgetServer, LocalSessionManager> {
     StreamableHttpService::new(

@@ -310,7 +310,9 @@ pub fn parse(args: &[String]) -> Result<Command, ParseError> {
     let command = match parsed.command {
         #[cfg(feature = "cron-commands")]
         CliCommand::Cron { action } => Command::Cron {
-            request: cron_commands::parse(action)?, endpoint, json,
+            request: cron_commands::parse(action)?,
+            endpoint,
+            json,
         },
         CliCommand::Daemon {
             action: DaemonAction::Start,
@@ -344,9 +346,9 @@ pub fn parse(args: &[String]) -> Result<Command, ParseError> {
 
 /// Maps one transport failure into the CLI envelope error.
 ///
-/// This function owns `suggested_action` for every [`TransportError`].
 /// `DAEMON.NOT_RUNNING` uses `run <app> daemon start` from this application's
-/// name. Transport does not carry that string.
+/// name. Transport does not carry that string. This mapping has no operation
+/// context; [`execute`] adds reconciliation guidance for uncertain cron mutations.
 #[must_use]
 pub fn map_transport(error: &TransportError) -> OpError {
     let code = error.code();
@@ -369,7 +371,11 @@ pub fn map_transport(error: &TransportError) -> OpError {
 pub async fn execute(command: Command) -> (ExitCode, String) {
     let (endpoint_flag, json, path, body) = match command {
         #[cfg(feature = "cron-commands")]
-        Command::Cron { request, endpoint, json } => {
+        Command::Cron {
+            request,
+            endpoint,
+            json,
+        } => {
             let parsed: sc_cron_commands::CronRequest = match serde_json::from_value(request) {
                 Ok(parsed) => parsed,
                 Err(_) => return usage_result("invalid versioned cron request"),
@@ -380,7 +386,7 @@ pub async fn execute(command: Command) -> (ExitCode, String) {
                 _ => "/ops/cron.list",
             };
             (endpoint, json, path, WidgetBody::Cron(parsed))
-        },
+        }
         Command::DaemonStart { .. } => {
             return (
                 ExitCode::from(1),
@@ -457,16 +463,34 @@ pub async fn execute(command: Command) -> (ExitCode, String) {
             };
             (code, text)
         }
-        Err(error) => {
-            let envelope: Envelope<Value> = Envelope::failure(map_transport(&error));
-            let text = if json {
-                serde_json::to_string(&envelope).unwrap_or_else(|_| "{}".to_owned())
-            } else {
-                error.to_string()
-            };
-            (ExitCode::from(1), text)
-        }
+        Err(error) => transport_report(&error, path, json),
     }
+}
+
+const CRON_UNCERTAIN_RECOVERY: &str = "Completion is unknown. Do not replay this mutation. Use a separately authorized cron.list request and application persistence evidence to reconcile the schedule name and generation before deciding what to do next.";
+
+fn transport_report(error: &TransportError, path: &str, json: bool) -> (ExitCode, String) {
+    let uncertain = matches!(path, "/ops/cron.start" | "/ops/cron.end")
+        && matches!(
+            error,
+            TransportError::TimedOut { .. }
+                | TransportError::Request { .. }
+                | TransportError::ResponseDecode { .. }
+        );
+    let mapped = if uncertain {
+        map_transport(error).with_suggestion(CRON_UNCERTAIN_RECOVERY)
+    } else {
+        map_transport(error)
+    };
+    let text = if json {
+        let envelope: Envelope<Value> = Envelope::failure(mapped);
+        serde_json::to_string(&envelope).unwrap_or_else(|_| "{}".to_owned())
+    } else if uncertain {
+        format!("{mapped} — {CRON_UNCERTAIN_RECOVERY}")
+    } else {
+        error.to_string()
+    };
+    (ExitCode::from(1), text)
 }
 
 /// Example choice: the daemon binary is `{app}-daemon` beside this executable.
@@ -733,6 +757,91 @@ fn endpoint_and_cause(error: &TransportError) -> (String, String) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(feature = "cron-commands")]
+    fn cron_timeout_request(verb: &str) -> Value {
+        let request = match verb {
+            "cron.start" => serde_json::json!({"name":"daily", "cron":"0 * * * *",
+                "timeout_ms":1000, "target":{"kind":"rust"}, "payload":null,
+                "environment":{"dotenv":[], "variables":{}}}),
+            "cron.end" => serde_json::json!({"name":"daily", "generation":1, "reason":"test"}),
+            _ => serde_json::json!({"state":"active", "limit":10, "cursor":null}),
+        };
+        serde_json::json!({"version":"1", "command":verb, "request":request})
+    }
+
+    #[cfg(feature = "cron-commands")]
+    #[tokio::test]
+    async fn uncertain_cron_mutations_reconcile_in_human_and_json_outputs() {
+        let cases = [
+            ("cron.start", false),
+            ("cron.start", true),
+            ("cron.end", false),
+            ("cron.end", true),
+            ("cron.list", false),
+        ];
+        let listener = tokio::net::TcpListener::bind((std::net::Ipv4Addr::LOCALHOST, 0))
+            .await
+            .expect("bind");
+        let address = listener.local_addr().expect("address");
+        let server = tokio::spawn(async move {
+            let mut streams = Vec::new();
+            for _ in 0..cases.len() {
+                streams.push(listener.accept().await.expect("accept").0);
+            }
+            std::future::pending::<()>().await;
+            drop(streams);
+        });
+        let mut reports = Vec::new();
+        for (verb, json) in cases {
+            reports.push(
+                execute(Command::Cron {
+                    request: cron_timeout_request(verb),
+                    endpoint: Some(format!("tcp:{address}")),
+                    json,
+                })
+                .await,
+            );
+        }
+        server.abort();
+        assert!(server.await.expect_err("aborted server").is_cancelled());
+        for ((verb, json), (code, text)) in cases.into_iter().zip(reports) {
+            assert_eq!(code, ExitCode::from(1));
+            if verb == "cron.list" {
+                assert!(text.contains("TRANSPORT.TIMED_OUT"), "{text}");
+                assert!(text.contains("Retry the call"), "{text}");
+                assert!(!text.contains("Completion is unknown"));
+                continue;
+            }
+            if json {
+                let envelope: Value = serde_json::from_str(&text).expect("envelope");
+                assert_eq!(envelope["version"], "1");
+                assert_eq!(envelope["ok"], false);
+                assert_eq!(envelope["error"]["code"], "TRANSPORT.TIMED_OUT");
+                assert_eq!(
+                    envelope["error"]["details"]["endpoint"],
+                    format!("tcp:{address}")
+                );
+                assert!(
+                    !envelope["error"]["details"]["cause"]
+                        .as_str()
+                        .expect("cause")
+                        .is_empty()
+                );
+                assert_eq!(
+                    envelope["error"]["suggested_action"],
+                    CRON_UNCERTAIN_RECOVERY
+                );
+            } else {
+                assert!(text.contains("TRANSPORT.TIMED_OUT"), "{text}");
+                assert!(text.contains(&address.to_string()), "{text}");
+            }
+            assert!(text.contains("Completion is unknown"), "{text}");
+            assert!(text.contains("Do not replay"), "{text}");
+            assert!(text.contains("separately authorized cron.list"), "{text}");
+            assert!(!text.contains("Retry the call"), "{text}");
+        }
+    }
 
     #[test]
     fn unknown_flag_uses_the_usage_code() {

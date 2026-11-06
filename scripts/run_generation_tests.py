@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT))
 SUITES = (
     ("unit", "generation"),
     ("integration", "generation"),
+    ("integration", "release"),
     ("unit", "wizard"),
     ("integration", "wizard"),
     ("unit", "ci"),

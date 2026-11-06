@@ -16,9 +16,9 @@ default = [{% if cron %}"cron"{% endif %}{% if cron_commands %}, "cron-commands"
 default = ["general-db"{% if cron %}, "cron"{% endif %}{% if cron_commands %}, "cron-commands"{% endif %}]
 {% endif %}
 general-db = []
-cron-commands = ["dep:sc-cron-commands", "service/cron-commands"]
+cron-commands = ["dep:sc-cron-commands", "service/cron-commands", "sc-cron-commands/scheduler", "cron"]
 cron = ["dep:sc-cron", "dep:async-trait"]
-monty = ["cron", "sc-cron/monty"]
+monty = ["cron", "sc-cron/monty", "sc-cron-commands?/monty"]
 
 [dependencies]
 async-trait = { version = "0.1", optional = true }

@@ -3354,7 +3354,14 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
    Amended 2026-10-25.
 6. The same job then runs `just build-daemon` in `$RUNNER_TEMP/app`, and it
    exits 0. That recipe includes `cargo tree -p <project>-daemon -e normal --prefix none`
-   and that output contains no `tempfile` or `tempdir` line.
+   and an automated normal-dependency ancestry check. `tempdir` is forbidden.
+   `tempfile` is allowed only as the existing direct normal dependency of the
+   qualified `sc-cron` package for private Python-hook scratch directories;
+   every normal path from the daemon to that package must pass through `sc-cron`.
+   A direct daemon dependency or any other direct/transitive ancestry fails.
+   Daemon instance roots, endpoints, locks and application database paths must
+   still never use a temporary-directory API in production.
+   Amended by the approved selected-cron clarification of 2026-11-06.
 7. The `just test` output lists the example operation test as run and passed,
    not skipped or filtered out.
 
@@ -3592,8 +3599,12 @@ this order and MUST fail when any of them exits non-zero:
 5. `just build-cli` inside the generated project at `<dest>`. It includes
    `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
 6. `just build-daemon` inside the generated project at `<dest>`. It includes
-   `cargo tree -p <project>-daemon -e normal --prefix none` and fails when that output
-   contains a `tempfile` or `tempdir` line. Amended 2026-10-25.
+   `cargo tree -p <project>-daemon -e normal --prefix none` and the same
+   normal-dependency ancestry check required by REQ-RUN-0503 criterion 6.
+   It fails for any `tempdir`, any direct daemon `tempfile` edge, or any
+   `tempfile` ancestry outside the qualified `sc-cron` private Python scratch
+   path. Amended by the explicitly approved selected-cron clarification of
+   2026-11-06.
 7. Once the selection question of [NFR-RUN-0010](requirements.md) is
    decided: the generated project's daemon-process tests (the tests that
    start the generated `daemon` binary),
@@ -3668,9 +3679,9 @@ would be tested against the old crate code.
    generated directory. `just build-cli` includes
    `cargo tree -p <project>-cli -e normal --prefix none`. `just test` includes the
    observability grep from the command list above. `just build-daemon`
-   includes `cargo tree -p <project>-daemon -e normal --prefix none` and that output
-   contains no `tempfile` or `tempdir` line. Those checks run because the
-   job runs the recipes. They are not a separate manual step.
+   includes `cargo tree -p <project>-daemon -e normal --prefix none` and the
+   normal-dependency ancestry check from REQ-RUN-0503 criterion 6. Those checks
+   run because the job runs the recipes; they are not a separate manual step.
 2. A run of that workflow shows one matrix entry per file in
    `wizard/fixtures/*.json`, each labelled with its fixture name, all green.
 3. A pull request that adds a new valid fixture file and changes nothing else
