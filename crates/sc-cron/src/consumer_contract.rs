@@ -41,7 +41,7 @@ impl StoreOperationContext {
     /// Checks live cancellation and the real monotonic deadline.
     ///
     /// # Errors
-    /// Returns a value-free unavailable error after cancellation or expiry.
+    /// Returns a value-free cancellation or deadline error after revocation.
     pub fn check(&self) -> Result<(), CronError> {
         if self.state.cancelled(self.cleanup) {
             return Err(StoreError::new(StoreErrorKind::Cancelled, "operation_cancelled").into());
@@ -139,7 +139,19 @@ pub enum StoreOperationSupport {
     Cooperative,
 }
 
-/// Absolute ordinary and terminal-cleanup cutoffs.
+/// Absolute ordinary and terminal-cleanup cutoffs, checked by [`Self::new`].
+///
+/// Consumers cannot bypass the ordering check with literal construction:
+/// ```compile_fail
+/// let cutoff = std::time::Instant::now();
+/// let _ = sc_cron::ShutdownBudget { grace: cutoff, cleanup: cutoff };
+/// ```
+/// Checked fields also cannot be changed after construction:
+/// ```compile_fail
+/// let cutoff = std::time::Instant::now();
+/// let mut budget = sc_cron::ShutdownBudget::new(cutoff, cutoff).unwrap();
+/// budget.cleanup = cutoff - std::time::Duration::from_secs(1);
+/// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ShutdownBudget {
     /// Ordinary operation commit-admission cutoff G.

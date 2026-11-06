@@ -75,6 +75,7 @@ owned_paths:
   - template/scripts/consumer_checks.py
   - template/scripts/dependency_policy.py
   - tests/unit/generation/test_daemon_scratch_policy.py
+  - tests/contracts/phase-c/application-control/Cargo.toml
   - docs/development/sc-publish.md
   - docs/consumer-preflight-and-docli.md
   - docs/getting-started.md
@@ -367,3 +368,26 @@ also passed. These results supersede the earlier scratch-policy blocker;
 independent QA, final composed/source-qualified benchmark, publication and
 registry-only acceptance remain open. The approval is recorded in
 `reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json`.
+
+
+### Latest prerequisite composition — 2026-11-06
+
+This checkpoint consumes the pushed C2 `8c96a6c`, C3 `a8ce3ab`, C5 `5bb7f41`
+and C6 `647ea09` prerequisites, including their current C1 ancestry. Contract
+wording retains both C1 live-context revocation and C5 registered-native-work
+ownership. Anchor records preserve both parent histories and item exclusions;
+no statement, fixture, scope or version was discarded. C5's private-budget
+compile-fail documentation is retained exactly. The external application-control
+fixture now explicitly selects SDK `=0.2.0`; its existing lockfile already
+contains the composed 0.2.0 identities. The isolated logging fixture remains
+0.2.0 as well.
+
+Focused composed qualification passed 97 cron library tests, 15 documentation
+tests, the public application-control executable and 14 logging boundary tests.
+The actual mixed CLI/HTTP/MCP consumer passed eight Rust composition tests plus
+ten unchanged schema/ownership tests. Generated native startup and error
+precedence checks, approved scratch-policy tests and selected/default-off normal
+graphs passed. The untouched five-recipe consumer sequence, root formatting and
+all-target strict Clippy passed again on these composed inputs. These are scoped
+prepublication proofs; controlled-source measurement, independent final QA,
+authorized publication and registry-only acceptance remain required.

@@ -9,7 +9,7 @@ publish = false
 resolver = "3"
 
 [dependencies]
-sc-cron = { path = "../../../../crates/sc-cron", default-features = false }
+sc-cron = { version = "=0.2.0", path = "../../../../crates/sc-cron", default-features = false }
 tokio = { version = "1", features = ["macros", "rt", "time"] }
-sc-cron-commands = { path = "../../../../crates/sc-cron-commands", default-features = false, features = ["schema"] }
+sc-cron-commands = { version = "=0.2.0", path = "../../../../crates/sc-cron-commands", default-features = false, features = ["schema"] }
 rmcp = { version = "=3.8.0", default-features = false, features = ["server"] }
