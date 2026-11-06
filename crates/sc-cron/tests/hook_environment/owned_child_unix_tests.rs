@@ -124,23 +124,43 @@ fn caller_panic_reclaims_ready_descendants_in_distinct_groups() {
 fn expired_inspector_is_physically_reaped_before_error_returns() {
     let root = tempfile::tempdir().expect("inspector witness");
     let ready = root.path().join("ready");
-    let mut child = Command::new(super::super::super::python_program())
-        .args([
+    let mut command = Command::new(super::super::super::python_program());
+    command.args([
             "-c",
-            "import pathlib,sys,time; pathlib.Path(sys.argv[1]).touch(); time.sleep(30)",
+            "import pathlib,sys,threading; pathlib.Path(sys.argv[1]).touch(); threading.Event().wait()",
         ])
         .arg(&ready)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
-        .expect("inspector");
-    let deadline = Instant::now() + CLEANUP;
-    let result = bounded_wait_with(&mut child, deadline, || ready.exists());
+        .stderr(Stdio::null());
+    // The owner, including assertion unwinding, controls this ready child's lifetime.
+    let mut wrapped = CommandWrap::from(command);
+    wrapped.wrap(ProcessSession);
+    let mut owned = Session {
+        child: wrapped.spawn().expect("inspector"),
+        cleanup_deadline: Some(Instant::now() + CLEANUP),
+        cleaned: false,
+    };
+    let deadline = owned.cleanup_deadline.expect("existing cleanup deadline");
+    let inspector = (owned.child.inner_mut() as &mut dyn std::any::Any)
+        .downcast_mut::<std::process::Child>()
+        .expect("ProcessSession directly wraps the native inspector");
+    let result = bounded_wait_with(inspector, deadline, || ready.exists());
+    owned.cleaned = owned
+        .child
+        .inner_mut()
+        .try_wait()
+        .expect("observe inspector")
+        .is_some();
     assert!(ready.exists(), "expiry preceded readiness");
     assert!(result.is_err(), "stalled inspector reported success");
     assert!(
-        child.try_wait().expect("inspect actual exit").is_some(),
+        owned
+            .child
+            .inner_mut()
+            .try_wait()
+            .expect("inspect actual exit")
+            .is_some(),
         "deadline discarded an unreaped inspector"
     );
 }

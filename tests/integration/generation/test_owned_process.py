@@ -34,6 +34,117 @@ class OwnedProcessTests(unittest.TestCase):
                 run([sys.executable, "-c", "pass"], timeout=5)
             launch.assert_not_called()
 
+    @unittest.skipIf(os.name == "nt", "Unix session inspection only")
+    def test_unavailable_native_inspection_refuses_before_launch(self):
+        listed = subprocess.CompletedProcess([], 0, stdout=f"{os.getpid()} R\n")
+        with mock.patch.object(owned_process, "_is_nested", return_value=False), \
+             mock.patch.object(owned_process, "_session_listing", return_value=listed), \
+             mock.patch.object(owned_process, "_native_session_processes", side_effect=OSError("native unavailable")), \
+             mock.patch.object(owned_process.subprocess, "Popen") as launch:
+            with self.assertRaisesRegex(RuntimeError, "Unix session inspection unavailable"):
+                run([sys.executable, "-c", "pass"], timeout=5)
+            launch.assert_not_called()
+
+    def test_linux_native_inspection_reads_session_and_physical_state(self):
+        def entry(pid, stat):
+            item = mock.MagicMock()
+            item.name = str(pid)
+            if isinstance(stat, Exception):
+                (item / "stat").read_text.side_effect = stat
+            else:
+                (item / "stat").read_text.return_value = stat
+            return item
+
+        entries = [entry(123, "123 (name with ) parentheses) S 1 123 77 0"),
+                   entry(124, "124 (dead) Z 1 124 77 0"),
+                   entry(125, "125 (other) R 1 125 78 0"),
+                   entry(126, FileNotFoundError())]
+        with mock.patch.object(owned_process.sys, "platform", "linux"), \
+             mock.patch.object(owned_process, "Path") as proc:
+            proc.return_value.iterdir.return_value = entries
+            self.assertEqual(owned_process._native_session_processes(77), [(123, "S"), (124, "Z")])
+
+    def postlaunch_inspection_failure(self, failure):
+        with tempfile.TemporaryDirectory(prefix="owned-inspection-fault-") as temp:
+            root = Path(temp)
+            ready, identities = root / "ready", root / "identities"
+            target = root / "target.py"
+            target.write_text(
+                "import json,os,pathlib,subprocess,sys,time\n"
+                "ready=pathlib.Path(sys.argv[1])\n"
+                "code='import os,pathlib,sys,threading; pathlib.Path(sys.argv[1]).write_text(str(os.getpid())); threading.Event().wait()'\n"
+                "child=subprocess.Popen([sys.executable,'-c',code,str(ready)],process_group=0)\n"
+                "deadline=time.monotonic()+5\n"
+                "while not ready.exists():\n"
+                " if time.monotonic()>=deadline: raise RuntimeError('descendant readiness failed')\n"
+                " time.sleep(.01)\n"
+                "pathlib.Path(sys.argv[2]).write_text(json.dumps([child.pid,os.getsid(0)]))\n"
+            )
+            original = owned_process._session_listing
+            calls = 0
+
+            def inspection():
+                nonlocal calls
+                calls += 1
+                if calls == 1:
+                    return original()
+                if isinstance(failure, str):
+                    return subprocess.CompletedProcess([], 0, stdout=failure)
+                raise failure
+
+            try:
+                with mock.patch.object(owned_process, "_is_nested", return_value=False), \
+                     mock.patch.object(owned_process, "_session_listing", side_effect=inspection):
+                    expected = ValueError if isinstance(failure, str) else type(failure)
+                    with self.assertRaises(expected) as caught:
+                        run([sys.executable, str(target), str(ready), str(identities)],
+                            timeout=8, check=True, capture_output=True)
+                if not isinstance(failure, str):
+                    self.assertIs(caught.exception, failure, "cleanup must retain the actual inspection failure")
+                self.assertEqual(calls, 2, "failed external inspection must not be retried")
+                self.assertTrue(ready.exists(), "inspection fault preceded acknowledged descendant")
+                descendant, _session = json.loads(identities.read_text())
+                self.assert_exited(descendant)
+            finally:
+                # This separate native owner also reclaims the deliberately
+                # broken implementation used by the negative control.
+                if identities.exists():
+                    _descendant, session = json.loads(identities.read_text())
+                    self.reclaim_witness_session(session)
+
+    def reclaim_witness_session(self, session):
+        deadline = time.monotonic() + 10
+        while True:
+            active = [(pid, state) for pid, state in owned_process._native_session_processes(session)
+                      if not state.startswith("Z")]
+            if not active:
+                return
+            for pid, _state in active:
+                try:
+                    if os.getsid(pid) == session:
+                        os.kill(pid, 9)
+                except ProcessLookupError:
+                    pass
+            if time.monotonic() >= deadline:
+                raise TimeoutError("negative witness did not physically exit")
+            time.sleep(.02)
+
+    @unittest.skipIf(os.name == "nt", "Unix session inspection only")
+    def test_postlaunch_inspector_spawn_failure_reaps_other_group(self):
+        self.postlaunch_inspection_failure(OSError("postlaunch ps unavailable"))
+
+    @unittest.skipIf(os.name == "nt", "Unix session inspection only")
+    def test_postlaunch_inspector_nonzero_reaps_other_group(self):
+        self.postlaunch_inspection_failure(subprocess.CalledProcessError(7, ["ps"]))
+
+    @unittest.skipIf(os.name == "nt", "Unix session inspection only")
+    def test_postlaunch_inspector_timeout_reaps_other_group(self):
+        self.postlaunch_inspection_failure(subprocess.TimeoutExpired(["ps"], 2))
+
+    @unittest.skipIf(os.name == "nt", "Unix session inspection only")
+    def test_postlaunch_inspector_malformed_output_reaps_other_group(self):
+        self.postlaunch_inspection_failure("not-a-pid R\n")
+
     def assert_exited(self, pid):
         if os.name == "nt":
             import ctypes
@@ -152,6 +263,49 @@ class OwnedProcessTests(unittest.TestCase):
                     cwd=Path(__file__).resolve().parents[3], timeout=10, check=True, capture_output=True)
             self.assertTrue(ready.exists(), "nested grandchild never acknowledged readiness")
             self.assert_exited(int(ready.read_text()))
+
+    @unittest.skipIf(os.name == "nt", "Unix session identity only")
+    def test_nested_detection_uses_session_in_distinct_process_group(self):
+        with mock.patch.dict(os.environ, {owned_process._MARKER: "71"}), \
+             mock.patch.object(owned_process.os, "getsid", return_value=71), \
+             mock.patch.object(owned_process.os, "getpgrp", return_value=99):
+            self.assertTrue(owned_process._is_nested())
+
+    @unittest.skipIf(os.name == "nt", "Unix session identity only")
+    def test_nested_other_group_keeps_owned_session_and_reaps_descendant(self):
+        with tempfile.TemporaryDirectory(prefix="owned-nested-other-group-") as temp:
+            root = Path(temp)
+            ready, expected = root / "ready", root / "expected-session"
+            target = root / "target.py"
+            target.write_text(
+                "import os,pathlib,subprocess,sys,time\n"
+                "ready=pathlib.Path(sys.argv[1])\n"
+                "code='import json,os,pathlib,sys,threading; pathlib.Path(sys.argv[1]).write_text(json.dumps([os.getpid(),os.getsid(0)])); threading.Event().wait()'\n"
+                "child=subprocess.Popen([sys.executable,'-c',code,str(ready)],process_group=0)\n"
+                "deadline=time.monotonic()+5\n"
+                "while not ready.exists():\n"
+                " if time.monotonic()>=deadline: raise RuntimeError('nested descendant readiness failed')\n"
+                " time.sleep(.01)\n"
+                "sys.exit(7)\n"
+            )
+            code = (
+                "import os,pathlib,sys; pathlib.Path(sys.argv[3]).write_text(str(os.getsid(0))); "
+                "os.setpgid(0,0); from tests.integration.generation.owned_process import run; "
+                "run([sys.executable,sys.argv[1],sys.argv[2]],timeout=8,check=True)"
+            )
+            try:
+                with self.assertRaises(subprocess.CalledProcessError):
+                    run([sys.executable, "-c", code, str(target), str(ready), str(expected)],
+                        cwd=Path(__file__).resolve().parents[3], timeout=10,
+                        check=True, capture_output=True)
+                self.assertTrue(ready.exists(), "nested descendant never acknowledged readiness")
+                descendant, session = json.loads(ready.read_text())
+                self.assert_exited(descendant)
+                self.assertEqual(session, int(expected.read_text()), "nested helper escaped its owned session")
+            finally:
+                if ready.exists():
+                    _descendant, session = json.loads(ready.read_text())
+                    self.reclaim_witness_session(session)
 
     def test_success_preserves_output(self):
         result = run([sys.executable, "-c", "print('ok')"], timeout=5, check=True, capture_output=True, text=True)
