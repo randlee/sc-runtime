@@ -292,7 +292,11 @@ workspace tests and release CLI build. Its daemon compiled, but the existing
 whole-tree tempfile guard failed because production Python cron uses tempfile.
 REQ-RUN-0503 criterion6 and REQ-RUN-0701 command6/criterion1 explicitly forbid
 that transitive package; a requirement decision remains pending. The guard and
-requirements remain unchanged. The final small consumer-budget API/doc addition
-still needs its next generated validation, and final composed `just lint &&
-just test`, parent fixes/QA/CI, publication and registry-only acceptance remain
-open. This is a development checkpoint, not full sprint qualification or closure.
+requirements remain unchanged. The resumed generated proof also passed the
+consumer-budget API with finite cutoffs and expired cutoffs while admitted work
+remained held; all eight generated Rust tests and ten unchanged application-schema
+tests passed. C3's diagnostic-redaction fix was merge-forwarded without product
+conflicts, and its real generated projection regression passed on this composition.
+Final composed `just lint && just test`, remaining parent fixes/QA/CI,
+publication and registry-only acceptance remain open. This is a development
+checkpoint, not full sprint qualification or closure.

@@ -562,7 +562,10 @@ async fn shared64_is_physical_across_mixed_uis_executors_and_dropped_waiters() {
         .stop_control()
         .request_stop(ShutdownBudget::new(now, now).unwrap())
         .unwrap();
-    let mut physical_join = Box::pin(runtime.shutdown());
+    // The consumer budget API must preserve physical ownership after both cutoffs.
+    let mut physical_join = Box::pin(
+        runtime.shutdown_with_budget(ShutdownBudget::new(now, now).unwrap()),
+    );
     let pending = std::future::poll_fn(|cx| {
         std::task::Poll::Ready(physical_join.as_mut().poll(cx).is_pending())
     })
@@ -716,7 +719,10 @@ async fn finite_override_validation_precedes_worker_startup() {
     );
     drop(release);
     admitted.await.unwrap().into_result().unwrap();
-    runtime.shutdown().await.unwrap();
+    let now = std::time::Instant::now();
+    runtime.shutdown_with_budget(sc_cron::ShutdownBudget::new(
+        now + Duration::from_secs(1), now + Duration::from_secs(2),
+    ).unwrap()).await.unwrap();
 }
 
 struct ConsumerPolicy;
