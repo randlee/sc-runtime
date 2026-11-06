@@ -2,13 +2,14 @@
 use sc_command::{ErrorKind, OpError};
 use sc_cron::{CommitAdmission, CronError, PersistenceOutcome, StoreErrorKind};
 
-pub(super) fn invalid() -> OpError {
+pub(super) fn invalid(reason: &'static str, recovery: &'static str) -> OpError {
     OpError::from_code(
         ErrorKind::InvalidInput,
         "CRON.INVALID_INPUT",
         "invalid cron request",
     )
-    .with_suggestion("correct the request using the documented cron field and size limits")
+    .with_details(serde_json::json!({"reason": reason}))
+    .with_suggestion(recovery)
 }
 
 pub(super) fn unsupported() -> OpError {
@@ -31,7 +32,14 @@ pub(super) fn internal() -> OpError {
 
 pub(super) fn native(error: CronError) -> OpError {
     match error {
-        CronError::BadExpression(_) | CronError::InvalidSpec(_) => invalid(),
+        CronError::BadExpression(_) => invalid(
+            "invalid_expression",
+            "set cron to a valid supported cron expression",
+        ),
+        CronError::InvalidSpec(_) => invalid(
+            "invalid_specification",
+            "correct name, timeout, payload, target or environment using the documented schedule limits",
+        ),
         CronError::AlreadyActive(_) | CronError::Fenced { .. } => OpError::from_code(
             ErrorKind::Conflict,
             "CRON.CONFLICT",

@@ -570,3 +570,80 @@ async fn all_persistence_states_are_retained_without_retry_or_rollback_claims() 
     }
     assert_eq!(operations.calls.lock().unwrap().len(), 4);
 }
+
+#[tokio::test(flavor = "current_thread")]
+async fn invalid_causes_are_static_actionable_and_redacted() {
+    let (operations, bindings, _, executor) = fixture();
+    for (error, reason, recovery) in [
+        (
+            CronError::BadExpression("PRIVATE_PROVIDER_CANARY".into()),
+            "invalid_expression",
+            "cron expression",
+        ),
+        (
+            CronError::InvalidSpec("PRIVATE_PROVIDER_CANARY".into()),
+            "invalid_specification",
+            "schedule limits",
+        ),
+    ] {
+        operations.starts.lock().unwrap().push_back(Err(error));
+        let response = executor.execute(start(), deadline()).await;
+        let error = response.error().unwrap();
+        assert_eq!(error.kind, ErrorKind::InvalidInput);
+        assert_eq!(error.code.as_str(), "CRON.INVALID_INPUT");
+        assert_eq!(error.details, Some(json!({"reason": reason})));
+        assert!(error.suggested_action().unwrap().contains(recovery));
+        let wire = serde_json::to_value(&response).unwrap();
+        assert_eq!(wire["version"], "1");
+        assert_eq!(wire["ok"], false);
+        assert!(wire["data"].is_null());
+        assert!(!wire.to_string().contains("PRIVATE_PROVIDER_CANARY"));
+    }
+    assert_eq!(operations.calls.lock().unwrap().len(), 2);
+    assert_eq!(bindings.calls.load(Ordering::SeqCst), 2);
+
+    let (operations, bindings, _, executor) = fixture();
+    let mut version = start();
+    version.version = "PRIVATE_REQUEST_CANARY".into();
+    let mut huge = start();
+    let CronOperation::Start(body) = &mut huge.operation else {
+        unreachable!()
+    };
+    body.payload = json!("PRIVATE_REQUEST_CANARY".repeat(contract::MAX_REQUEST_BYTES / 10));
+    for (request, reason, recovery) in [
+        (version, "unsupported_version", "version to 1"),
+        (huge, "request_size", "2 MiB"),
+        (
+            request(
+                "cron.end",
+                json!({"name":"PRIVATE_REQUEST_CANARY", "generation":0,"reason":"private"}),
+            ),
+            "generation",
+            "generation from list",
+        ),
+        (
+            request("cron.list", json!({"state":"all","limit":0,"cursor":null})),
+            "limit",
+            "1 through 1000",
+        ),
+        (
+            request("cron.list", json!({"state":"all","limit":100,"cursor":0})),
+            "cursor",
+            "next_cursor",
+        ),
+    ] {
+        let response = executor.execute(request, deadline()).await;
+        let error = response.error().unwrap();
+        assert_eq!(error.kind, ErrorKind::InvalidInput);
+        assert_eq!(error.code.as_str(), "CRON.INVALID_INPUT");
+        assert_eq!(error.details, Some(json!({"reason": reason})));
+        assert!(error.suggested_action().unwrap().contains(recovery));
+        assert!(
+            !serde_json::to_string(&response)
+                .unwrap()
+                .contains("PRIVATE_REQUEST_CANARY")
+        );
+    }
+    assert!(operations.calls.lock().unwrap().is_empty());
+    assert_eq!(bindings.calls.load(Ordering::SeqCst), 0);
+}
