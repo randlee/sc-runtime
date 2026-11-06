@@ -1190,6 +1190,254 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
+    },
+    {
+      "qa_pass": "qa-pr118-sprint-3",
+      "commit": "05e4c8cf0c2c7740f4f0a3ff71a7ee1f98e5c2ba",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6676408599",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c5_req_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c5_arch_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/c5_boundary_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c5_rust_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/c5_rbp_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/c5_service_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c5_flaky_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FINDINGS",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c5-qa3.ttl"
+      ],
+      "finding_ids": [
+        "REQ-C5-008",
+        "REQ-C5-008"
+      ],
+      "coordinator_task_id": "/root/c5_manager_qa3",
+      "machine_status": {
+        "sprint": "c-5",
+        "task": "qa-pr118-sprint-3",
+        "branch": "sprint/c-5-cron-consumer-compatibility",
+        "commit": "05e4c8cf0c2c7740f4f0a3ff71a7ee1f98e5c2ba",
+        "pr": 118,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 14,
+          "total": 15,
+          "percent": 93.33
+        },
+        "findings": {
+          "blocking": 1,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [
+          "REQ-C5-008"
+        ],
+        "merge_readiness": "not ready",
+        "merge_reason": "REQ-C5-008 remains open; deliverables14/15 (93.33%). CI currently all17 SUCCESS.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c5_req_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c5_arch_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/c5_boundary_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c5_rust_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/c5_rbp_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/c5_service_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c5_flaky_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FINDINGS",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-3",
+          "commit": "05e4c8cf0c2c7740f4f0a3ff71a7ee1f98e5c2ba",
+          "pr_number": 118,
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6676408599",
+          "coordinator_task_id": "/root/c5_manager_qa3",
+          "triage": {
+            "phase_id": "c",
+            "ttl_paths": [
+              ".triage/c/findings/c5-qa2.ttl"
+            ],
+            "new_round_record_owner": "parent-orchestrator"
+          },
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "ceremony_screen": "/tmp/sc-runtime-phase-c-execution/pr118-sprint-qa3/ceremony-screen-result.json",
+          "ci_snapshot": {
+            "headRefOid": "05e4c8cf0c2c7740f4f0a3ff71a7ee1f98e5c2ba",
+            "mergeStateStatus": "CLEAN",
+            "reviewDecision": "",
+            "checks_total": 17,
+            "checks_success": 17,
+            "checks_pending": 0,
+            "checks_failure": 0,
+            "waited": false,
+            "snapshot_commands": [
+              "gh pr checks 118 --json name,state,bucket,link",
+              "gh pr view 118 --json headRefOid,mergeStateStatus,reviewDecision,url"
+            ],
+            "observed_utc": "2026-11-06T03:52:55.448863+00:00",
+            "note": "Current one-shot ambient gh snapshot; initial sandbox network unavailable, authorized escalation succeeded."
+          },
+          "parent_correlation_required": true,
+          "model_execution": "Inherited available Codex fallback; configured Composer unavailable, no configured-model execution claimed."
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
     }
   ],
   "execution_branch": "integrate/phase-c"

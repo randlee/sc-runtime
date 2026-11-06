@@ -40,6 +40,10 @@ owned_paths:
   - crates/sc-cron/tests/
   - crates/sc-cron/README.md
   - tests/integration/cron-consumer/
+  # QA3 REQ-C5-008 consumes C2's shared test owner; no product-driver change.
+  - tests/integration/generation/generate_owned.py
+  - tests/unit/generation/test_monty_example.py
+  - scripts/run_generation_tests.py
 must_follow: [c-1]
 parallel_safe: [c-2, c-3, c-6]
 recommended_agent: arch-ctm
