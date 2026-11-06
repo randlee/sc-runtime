@@ -1,0 +1,10 @@
+@prefix qa: <urn:sc-runtime:qa:> .
+qa:REL-C4-VERSION-LOCKSTEP-001 qa:id "REL-C4-VERSION-LOCKSTEP-001" ;
+ qa:severity "blocking" ;
+ qa:sourceCommit "1726425f2b76e9c7eb3b69e59795e7c9dc57f15f" ;
+ qa:status "open" ;
+ qa:recordedBeforeFix true ;
+ qa:sprint "c-4" ;
+ qa:source "crates/sc-command/Cargo.toml:3, crates/sc-runtime/Cargo.toml:3, crates/sc-cron/Cargo.toml:4, crates/sc-cron-commands/Cargo.toml:3" ;
+ qa:evidence "Canonical verify-version-lockstep rejects literal package.version on four published workspace members. All numeric versions are correctly 0.2.0; pinned publisher requires workspace inheritance. Both readiness and final release gates invoke this check." ;
+ qa:requiredCorrection "Use version.workspace = true for the four published members while preserving shared workspace 0.2.0, dependencies, features and private helper. Do not weaken the pinned validator. Requalify source and benchmark after correction." .
