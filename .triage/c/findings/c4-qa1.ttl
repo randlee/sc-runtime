@@ -219,3 +219,13 @@ triage:c4_qa1_FTQ_002 a triage:Finding ;
  triage:action "Keep the witness alive until explicit owner termination/release using a readiness handshake and a process owner covering unwind and error paths. Consume and recheck the C6 owner patch rather than padding the sleep or serializing tests." ;
  triage:source_fix "Consumed exact canonical both-fixture owner-held Rust source 01145b9b3379e09d88b44127237deef328d3412c; generated unchanged C5 proof includes seven native ownership tests." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
+
+
+triage:c4_f3_ci_followup a triage:Finding ;
+ triage:id "C4-CI-F3" ;
+ triage:severity "Blocking" ;
+ triage:status "diagnosed_independent_source_fixes_in_progress" ;
+ triage:reviewed_commit "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4" ;
+ triage:issue "Exact CI reports stale Monty feature contracts in test_cron_environment/test_monty_example, multiline Liquid MCP registration boundary drift, and an opaque generated cron-startup test exit101. Existing tempfile guard failure remains separate and unapproved." ;
+ triage:action "Preserve optional/default-off feature assertions and minimal Liquid body invariance. Surface captured generated diagnostics and fix the actually reproduced cause. Adopt reviewed canonical publisher visibility source through caller input/pin/installer. Do not waive tempfile guard or infer publication authority." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/actions/runs/42165294394/job/127720855691" .
