@@ -1,7 +1,7 @@
 ---
 id: c-4
 phase: c
-status: in_progress
+status: complete
 closure_type: integration
 target_boundary: published-runtime-template-consumer
 track: release

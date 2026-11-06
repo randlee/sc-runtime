@@ -1,7 +1,7 @@
 ---
 id: c-3
 phase: c
-status: in_progress
+status: complete
 closure_type: integration
 target_boundary: runtime-template-ecosystem-integration
 track: ecosystem

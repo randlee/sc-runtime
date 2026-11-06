@@ -1,7 +1,7 @@
 ---
 id: c-1
 phase: c
-status: in_progress
+status: complete
 closure_type: contract
 target_boundary: phase-c-consumer-runtime-contract
 track: contract

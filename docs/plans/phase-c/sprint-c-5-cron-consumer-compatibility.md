@@ -1,7 +1,7 @@
 ---
 id: c-5
 phase: c
-status: in_progress
+status: complete
 closure_type: integration
 target_boundary: sc-cron-consumer-compatibility
 track: cron
