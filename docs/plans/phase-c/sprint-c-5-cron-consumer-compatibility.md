@@ -42,6 +42,9 @@ owned_paths:
   - tests/integration/cron-consumer/
   # QA3 REQ-C5-008 consumes C2's shared test owner; no product-driver change.
   - tests/integration/generation/generate_owned.py
+  # QA4: canonical ownership fallback and causal failure witnesses.
+  - tests/integration/generation/owned_process.py
+  - tests/integration/generation/test_owned_process.py
   - tests/unit/generation/test_monty_example.py
   - scripts/run_generation_tests.py
 must_follow: [c-1]

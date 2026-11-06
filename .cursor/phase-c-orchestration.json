@@ -1438,6 +1438,168 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
+    },
+    {
+      "qa_pass": "qa-pr118-sprint-4",
+      "commit": "84e901d4270ef20529eb2c0ce7ccf709e3fa1255",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6676712827",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c5_req_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c5_arch_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c5_rust_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c5_flaky_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FINDINGS",
+          "findings": {
+            "blocking": 0,
+            "important": 1,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c5-qa4.ttl"
+      ],
+      "finding_ids": [
+        "REQ-C5-008"
+      ],
+      "coordinator_task_id": "/root/c5_manager_qa4",
+      "machine_status": {
+        "sprint": "c-5",
+        "task": "qa-pr118-sprint-4",
+        "branch": "sprint/c-5-cron-consumer-compatibility",
+        "commit": "84e901d4270ef20529eb2c0ce7ccf709e3fa1255",
+        "pr": 118,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 15,
+          "total": 15,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 1,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "REQ-C5-008 Important remains open; current CI is pending.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c5_req_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c5_arch_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c5_rust_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c5_flaky_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FINDINGS",
+            "findings": {
+              "blocking": 0,
+              "important": 1,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr118-sprint-4",
+          "commit": "84e901d4270ef20529eb2c0ce7ccf709e3fa1255",
+          "pr_number": 118,
+          "coordinator_task_id": "/root/c5_manager_qa4",
+          "triage": {
+            "phase_id": "c",
+            "ttl_paths": [
+              ".triage/c/findings/c5-qa3.ttl"
+            ]
+          },
+          "parent_correlation_required": true,
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6676712827",
+          "ci_snapshot": {
+            "state": "pending",
+            "waited": false
+          },
+          "validation": "Retained scoped validation receipts; no new full-suite execution claimed."
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+        "finding_ids": [
+          "REQ-C5-008"
+        ]
+      }
     }
   ],
   "execution_branch": "integrate/phase-c",
