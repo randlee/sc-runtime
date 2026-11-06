@@ -1,7 +1,7 @@
 # Managed by sc-lint; regenerate with `sc-lint init --just`, then re-apply
 # sc-runtime maintainer profiles below (REQ-RUN-0004 / REQ-RUN-0005).
 [tool.sc-lint]
-minimum_version = "0.8.4"
+minimum_version = "0.8.6"
 
 # Source-maintainer checks (this repository). Generated applications use the
 # consumer template from sprint a-6 with the same minimum_version floor.
@@ -78,7 +78,7 @@ gates = ["boundary", "production-tool-boundary", "observability-boundary", "line
 full = ["boundary", "production-tool-boundary", "observability-boundary", "line-counts", "fmt", "clippy", "clippy-sc-cron", "sc-portability", "sc-runtime", "function-length", "identity-literals", "compatibility", "adr-run-0011", "xwin-check", "xwin-clippy"]
 
 # Cargo removes the versionless checkout-only cron dev-self edge at packaging.
-# sc-lint 0.8.4 requires a version on that edge. The mandatory observability
+# sc-lint 0.8.6 requires a version on that edge. The mandatory observability
 # guard checks every other cron path version and the exact self-test exception.
 [tool.sc-lint.analyzers.boundary.exclude_paths_by_rule]
 "SCB-MANIFEST-002" = ["crates/sc-cron/Cargo.toml"]
@@ -94,7 +94,7 @@ fail_rules = ["SCB-RUNTIME-001", "SCB-RUNTIME-002"]
 [identities]
 forbidden_literals = []
 
-# Non-test lines under crates/*/src. Key from sc-lint 0.8.4 line-counts.
+# Non-test lines under crates/*/src. Key from sc-lint 0.8.6 line-counts.
 [line_counts]
 max_production_lines = 1000
 paths = ["crates/*/src/**/*.rs", "template/**/*.rs"]

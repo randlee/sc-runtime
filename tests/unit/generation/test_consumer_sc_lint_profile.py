@@ -66,7 +66,7 @@ class ConsumerProfileTests(unittest.TestCase):
                      'LOCALAPPDATA', 'APPDATA', 'UV_CACHE_DIR', 'PIP_CACHE_DIR', 'CARGO_HOME'):
             Path(env[name]).mkdir(parents=True, exist_ok=True)
         # A deliberate incompatible PATH installation makes setup prove a fresh
-        # managed install even on hosts already running0.8.4. It is never used
+        # managed install even on hosts already running 0.8.6. It is never used
         # for analyzer acceptance and must remain byte-for-byte unchanged.
         ambient = state / 'ambient'
         ambient.mkdir()
@@ -165,7 +165,7 @@ class ConsumerProfileTests(unittest.TestCase):
         self.assertTrue(binary.is_file())
         self.assertTrue(binary.is_relative_to(self.state / 'install'))
         version = json.loads(self.command(root, str(binary), 'version', '--json'))
-        self.assertEqual(version['data']['version'], '0.8.4')
+        self.assertEqual(version['data']['version'], '0.8.6')
         for profile in ((), ('default',), ('full',)):
             assert_receipts(self, self.command(root, 'just', 'lint', *profile))
         listed = self.command(root, 'just', '--list')
@@ -210,14 +210,28 @@ class ConsumerProfileTests(unittest.TestCase):
         store_manifest.write_text(store_before)
         print('consumer proof: adding a forbidden dependency failed the actual boundary analyzer', flush=True)
         policy.write_text(before + '\n# Consumer-owned policy customization.\n')
+        justfile = root / 'Justfile'
+        justfile.write_text(justfile.read_text() + '\nextra-db-prepare:\n    @echo SDK-owned preparation\n')
+        custom_config = config.read_text()
+        self.assertIn('full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]', custom_config)
+        config.write_text(custom_config.replace(
+            'full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]',
+            'full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]\n'
+            'sdk = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]'))
         preserved = {p: p.read_bytes() for p in (config, policy, root / 'Justfile')}
         self.command(root, 'just', 'setup')
         self.command(root, 'just', 'upgrade')
-        init = self.command(root, str(binary), 'init', '--just', expected=3)
-        self.assertIn('CLI.SC_LINT_INTEGRATION_CONFLICT', init)
-        print('repeat-init exit 3: temporarily waived by sc-runtime#117; bytes preserved', flush=True)
+        self.command(root, str(binary), 'init', '--just')
+        self.command(root, str(binary), 'init', '--just')
         for path, contents in preserved.items():
             self.assertEqual(path.read_bytes(), contents, str(path))
+        sdk_profiles = self.command(root, 'just', 'lint', 'sdk')
+        assert_receipts(self, sdk_profiles)
+        listed = self.command(root, 'just', '--list')
+        self.assertIn('extra-db-prepare', listed)
+        self.assertIn('SDK-owned preparation', self.command(root, 'just', 'extra-db-prepare'))
+        self.assertTrue((root / 'boundaries').is_dir())
+        self.assertIn('Consumer-owned policy customization', policy.read_text())
         for path, contents in ambient_before.items():
             self.assertEqual(path.read_bytes(), contents, str(path))
         other = self.environment(self.state / 'second-instance')

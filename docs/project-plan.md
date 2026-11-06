@@ -26,6 +26,7 @@ authorization and registry credentials. Merging the release kit onto
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
+| sc-lint 0.8.6 repeat-init maintenance | [sprint](plans/maintenance/sc-lint-0-8-6.md) | planned | `codex/upgrade-sc-lint-0.8.6` |
 | a-1 compatibility spike | [sprint-a-1](plans/phase-a/sprint-a-1-compatibility-spike.md) | complete | `sprint/a-1-compatibility-spike` |
 | a-2 sc-config | [sprint-a-2](plans/phase-a/sprint-a-2-config.md) | complete | `sprint/a-2-config` |
 | a-3 sc-transport | [sprint-a-3](plans/phase-a/sprint-a-3-transport.md) | complete | `sprint/a-3-transport` |
