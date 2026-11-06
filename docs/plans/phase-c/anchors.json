@@ -1016,6 +1016,19 @@
             "plan_questions": "run-alr.1",
             "dev_questions": "run-alr.2"
           }
+        },
+        {
+          "at": "2026-11-06T05:10:09+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
         }
       ]
     },
@@ -1070,6 +1083,19 @@
             "plan_questions": "run-mwv.1",
             "dev_questions": "run-mwv.2"
           }
+        },
+        {
+          "at": "2026-11-06T05:10:09+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
         }
       ]
     },
