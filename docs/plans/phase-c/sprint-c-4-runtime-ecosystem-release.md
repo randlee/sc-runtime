@@ -311,3 +311,16 @@ conflicts, and its real generated projection regression passed on this compositi
 Final composed `just lint && just test`, remaining parent fixes/QA/CI,
 publication and registry-only acceptance remain open. This is a development
 checkpoint, not full sprint qualification or closure.
+
+C4 QA1 source corrections preserve the SDK's primary startup/serve failure
+when cron cleanup also fails, emit safe secondary canonical diagnostics, and
+retain native cron codes, reconciliation advice and typed persistence facts.
+The isolated logging consumer now targets 0.2.0, and registry qualification
+rejects every noncanonical crates.io source. Focused generated regressions,
+strict selected-daemon Clippy, the existing eight composition tests and ten
+unchanged C5 schema/ownership tests passed. Reintroducing cleanup-first
+precedence caused the intended regression assertion to fail. Canonical C5/C6
+owner/error corrections are consumed. Independent review remains required.
+The tempfile decision, upstream publication-visibility adoption, final composed
+gates, controlled-source benchmark qualification, publication and registry-only
+proofs remain open; no release authority or closure is inferred.

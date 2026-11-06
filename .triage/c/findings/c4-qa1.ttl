@@ -4,11 +4,12 @@ triage:c4_qa1_REQ_QA_C4_001 a triage:Finding ;
  triage:id "REQ-QA-C4-001" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "source_corrected_registry_qualification_open" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "crates/sc-cron/tests/fixtures/logging_consumer/Cargo.toml:11; crates/sc-cron/tests/fixtures/logging_consumer/Cargo.toml:14; scripts/tests/test_observability_dependencies.py:35" ;
  triage:issue "The isolated public logging-facade consumer retains sc-cron version0.1.1 in both normal and dev path dependencies. Its test copies this version unchanged against the0.2.0 checkout. A focused offline cargo metadata reproduction exited101: requirement ^0.1.1 rejects candidate0.2.0. This is a source defect, independent of deferred publication." ;
  triage:action "Update both fixture requirements to the frozen0.2.0 baseline and qualify the existing isolated facade test. Preserve a real registry-mode facade consumer using exact0.2.0 without path/git/patch sources; do not treat workspace facade identity tests as that registry result." ;
+ triage:source_fix "Both isolated logging-consumer requirements now match0.2.0; actual isolated metadata/build/test passes. Required registry-only facade proof remains open until authorized publication." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_REQ_QA_C4_002 a triage:Finding ;
@@ -70,44 +71,48 @@ triage:c4_qa1_REQ_QA_C4_007 a triage:Finding ;
  triage:id "REQ-QA-C4-007" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md:10" ;
  triage:issue "The C4 requirements frontmatter omits REQ-RUN-0701, NFR-RUN-0006 and NFR-RUN-0007 although its untouched fixture/required CI sequence, template consumer infrastructure and frozen ecosystem manifests are directly constrained by them. REQ-RUN-0701 is even named in the checkpoint but absent from the requirements list." ;
  triage:action "Add these governing IDs to the C4 requirements list while retaining their existing phase owners; this is constraint traceability, not transfer of requirement-root ownership or a waiver of any criterion." ;
+ triage:source_fix "Added the specifically applicable existing requirement and NFR IDs to the authoritative C4 frontmatter; acceptance remains unchanged." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_REQ_C5_008 a triage:Finding ;
  triage:id "REQ-C5-008" ;
  triage:severity "Blocking" ;
  triage:reviewer "req-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "tests/integration/generation/owned_process.py:90; tests/integration/generation/owned_process.py:105" ;
  triage:issue "Carry-forward correlation only: postlaunch session inspection can fail after commands spawn descendants in distinct groups. _stop_owned_session then finally kills only the launcher group, without proving all descendant physical completion; PermissionError is also swallowed during membership inspection. The prelaunch refusal check does not close this postlaunch failure path. This is the existing C5-owned REQ-C5-008 on the same helper blob, not a new framework or independent duplicate fix request." ;
  triage:action "Consume the C5 owner correction and causal failure-path proof; preserve physical ownership and accurate failure under postlaunch inspector failure, with no retries/skips/serialization. Do not certify a future patch as reviewed here." ;
+ triage:source_fix "Consumed canonical C5 f969608 shared owner fallback and session identity correction. Composed Python owner/generation tests and unchanged generated C5 schema/native-owner proofs pass." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_ARCH_001 a triage:Finding ;
  triage:id "ARCH-001" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md" ;
  triage:issue "C4 omits governing Active ADRs from its sole adrs list: ADR-RUN-0004 (generated logging composition), 0005 (untouched sc-lint bootstrap/lint sequence), 0006 (typed public failures), 0007 (async request path), 0011 (new async ownership/lock lifetimes), 0015 (controlled-source benchmark publication preflight), 0201 (daemon-only persistence and CLI HTTP), and 0302 (same shared wire identity across projections). The list includes their adjacent decisions but none of these IDs. These govern explicit C4 composition, consumer, or publication deliverables; consuming parent implementations does not remove the sprint-plan coverage rule." ;
  triage:action "Add the eight governing ADR IDs to the C4 adrs list and retain their actual checks; no new ADR or relaxation is required." ;
+ triage:source_fix "Added the eight specifically applicable existing ADR IDs to authoritative C4 frontmatter; no new architecture decision or release exception." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_ARCH_002 a triage:Finding ;
  triage:id "ARCH-002" ;
  triage:severity "BLOCKING" ;
  triage:reviewer "arch-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "template/crates/daemon/src/composition.rs" ;
  triage:issue "The selected generated root returns cron_failure before inspecting the result of run_with_cleanup. If scheduler startup succeeds, the daemon later fails to bind/serve, and consumer-provided command cleanup returns Err, the cleanup error replaces the original RuntimeError. ADR-RT-0005 decision4 requires return of the original startup/serving result after cleanup; the builder contract also explicitly permits retaining the application cleanup result separately without replacing the primary error. The SDK correctly preserves that result, but this final root discards it. This is a source ordering defect, separate from release-proof gaps; all physical joins are still awaited." ;
  triage:action "After awaited cleanup, preserve an existing daemon startup/serving error as primary. Surface cleanup failure only when the runtime result succeeded, or attach it as secondary diagnostics without losing the original error/code. Preserve the specific cron-start cause when enriching a stores failure. Verify the combined primary-error plus cleanup-error path with deterministic injection." ;
+ triage:source_fix "Preserved primary SDK RuntimeError after awaited native cleanup; secondary cron failure emits safe canonical event. Four-way generated regression passes; original cleanup-first behavior causally fails." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_ARCH_003 a triage:Finding ;
@@ -147,64 +152,70 @@ triage:c4_qa1_REQ_C5_008 a triage:Finding ;
  triage:id "REQ-C5-008" ;
  triage:severity "important" ;
  triage:reviewer "ruthless-boundary-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "tests/integration/generation/owned_process.py" ;
  triage:issue "The shared test-command owner can abandon descendants in other process groups when session inspection fails after launch." ;
  triage:action "Correlate with existing C5 QA4 REQ-C5-008 and consume its actual owner fix. Preserve one shared helper; retain enough ownership to reclaim and physically observe the whole launched session on inspection failure, with bounded failure reporting and safe fault-injection verification. Do not claim an unmerged patch is fixed or add a competing test framework." ;
+ triage:source_fix "Consumed canonical C5 f969608 shared owner fallback and session identity correction. Composed Python owner/generation tests and unchanged generated C5 schema/native-owner proofs pass." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_QA_C4_RUST_001 a triage:Finding ;
  triage:id "QA-C4-RUST-001" ;
  triage:severity "important" ;
  triage:reviewer "rust-qa-agent" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "tests/integration/release/test_published_runtime_ecosystem.py" ;
  triage:issue "The registry-only identity guard accepts SDK packages from any registry, so it cannot enforce the required exact crates.io artifacts. The same guard supplies C4 selected registry qualification." ;
  triage:action "Validate each reachable public SDK source against the canonical crates.io registry identity supported by Cargo metadata, rejecting alternate registries, and add a focused alternate-registry rejection case. Keep publication and registry execution pending until authorized and actually run." ;
+ triage:source_fix "Registry qualification requires exact Cargo crates.io source identity; focused positive, alternate/lookalike/path/git/missing and one-package mismatch negatives pass." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_RBP_F001 a triage:Finding ;
  triage:id "RBP-F001" ;
  triage:severity "important" ;
  triage:reviewer "rust-best-practices-agent" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "template/crates/daemon/src/composition.rs" ;
  triage:issue "A cron cleanup failure replaces an existing primary startup/serve error at the production composition boundary. After run_with_cleanup returns, any cron_failure is returned before examining result. For example, an occupied endpoint plus a failing application command-cleanup callback reports only the cleanup error and loses the endpoint bind code, cause and recovery." ;
  triage:action "Retain the SDK startup/serve failure as primary when both it and cron shutdown fail, and report the cron cleanup failure as a secondary diagnostic after physical join. Preserve the original cron startup cause when it is the cause of the deliberately synthesized DAEMON.CRON_START stores failure. Add focused deterministic assertions for simultaneous primary/cleanup failure and cleanup-only failure." ;
+ triage:source_fix "Shared production completion seam preserves primary failure, reports secondary safely and returns cleanup failure only after runtime success; focused generated regression passes." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_RBP_F002 a triage:Finding ;
  triage:id "RBP-F002" ;
  triage:severity "important" ;
  triage:reviewer "rust-best-practices-agent" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "template/crates/daemon/src/composition.rs" ;
  triage:issue "The same production error formatter labels all cron failures DAEMON.CRON_OPEN and discards the native stable code and recovery. It is used for both opening failures and shutdown/custom-cleanup failures. A StoreErrorKind::Indeterminate therefore ends with generic advice to fix configuration or the database path and retry, losing the native explicit prohibition on automatic replay and separately authorized reconciliation guidance." ;
  triage:action "Format cron failures using their actual stable classification and applicable native recovery, with startup/shutdown context where helpful. Preserve the no-replay/reconciliation guidance for uncertain persistence and the lifecycle-owner guidance for shutdown failures; keep sensitive provider prose out of public diagnostics. Assert the emitted code and recovery for configuration, runtime-unavailable and indeterminate cleanup failures." ;
+ triage:source_fix "Cron errors retain native code and static recovery with value-free causes and typed transaction facts. Indeterminate keeps separately authorized reconciliation/no automatic replay; provider source/context redacted." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_FTQ_001 a triage:Finding ;
  triage:id "FTQ-001" ;
  triage:severity "important" ;
  triage:reviewer "flaky-test-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "tests/integration/generation/owned_process.py" ;
  triage:issue "Carry-forward correlation REQ-C5-008, not a new tracker request: after actual command launch, ps inspection failure in _session_listing raises before enumerating descendants. finally kills only the launcher process group. A ready descendant in another process group of the same session survives; child.wait confirms only the launcher, and TemporaryDirectory exits without physical descendant completion. Preflight inspection does not prevent later inspection failures." ;
  triage:action "Consume the C5 owner repair with a causal postlaunch inspection-failure witness retaining descendant identity and ownership through physical exit; fail accurately without assuming leader/group termination proves session completion." ;
+ triage:source_fix "Canonical shared owner source consumed; composed Python owner tests include physically cleaned postlaunch inspection and distinct-group descendants." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .
 
 triage:c4_qa1_FTQ_002 a triage:Finding ;
  triage:id "FTQ-002" ;
  triage:severity "important" ;
  triage:reviewer "flaky-test-qa" ;
- triage:status "open" ;
+ triage:status "author_corrected_pending_independent_review" ;
  triage:reviewed_commit "53820927ccbcf174199c3042f0a07784d7fc9f0e" ;
  triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix_tests.rs" ;
  triage:issue "The inspector writes ready then independently exits after time.sleep(30). If the parent is descheduled after spawn until this natural exit, bounded_wait_with observes try_wait success before consulting the causal expiry closure, returns Ok, and result.is_err fails despite correct cleanup. This also weakens the intended proof that owner termination caused exit. Pending C6 stronger fixture-lifetime changes are absent from the reviewed pin." ;
  triage:action "Keep the witness alive until explicit owner termination/release using a readiness handshake and a process owner covering unwind and error paths. Consume and recheck the C6 owner patch rather than padding the sleep or serializing tests." ;
+ triage:source_fix "Consumed exact canonical both-fixture owner-held Rust source 01145b9b3379e09d88b44127237deef328d3412c; generated unchanged C5 proof includes seven native ownership tests." ;
  triage:verification_source "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677040574" .

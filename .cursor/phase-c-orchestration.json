@@ -3883,5 +3883,39 @@
     "ci_waited": false,
     "receipt": "/tmp/c5-qa3-validation.receipt.json",
     "shared_source": "c6b4bc11f29e6e2d0baf8e2cd2da7f9070e7bf9f"
+  },
+  "c4_qa1_source_fix": {
+    "status": "author_corrected_pending_independent_review",
+    "source_commit": "b98cfd5",
+    "triage_paths": [
+      ".triage/c/findings/c4-qa1.ttl"
+    ],
+    "source_corrected_ids": [
+      "REQ-QA-C4-007",
+      "ARCH-001",
+      "ARCH-002",
+      "RBP-F001",
+      "RBP-F002",
+      "QA-C4-RUST-001",
+      "REQ-C5-008",
+      "FTQ-001",
+      "FTQ-002"
+    ],
+    "partial_ids": [
+      "REQ-QA-C4-001"
+    ],
+    "open_ids": [
+      "REQ-QA-C4-002",
+      "REQ-QA-C4-003",
+      "REQ-QA-C4-004",
+      "REQ-QA-C4-005",
+      "REQ-QA-C4-006",
+      "ARCH-003",
+      "RBQA-C4-001",
+      "RBQA-C4-002"
+    ],
+    "fullsuite_current_head_claimed": false,
+    "published": false,
+    "ci_waited": false
   }
 }
