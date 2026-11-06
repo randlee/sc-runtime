@@ -2,11 +2,16 @@
 
 import copy
 import importlib.util
+import os
 import sys
+import tempfile
+import tomllib
 from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "tests/integration/generation"))
+from owned_process import run
 SPEC = importlib.util.spec_from_file_location(
     "dependency_policy", ROOT / "template/scripts/dependency_policy.py"
 )
@@ -69,10 +74,54 @@ SDK = ("daemon", "cron", "sc_cron", None)
 SCRATCH = ("cron", "tempfile", "tempfile", None)
 
 
+def repeated_dependency_workspace(root):
+    """Repeat a registry package using the repository's already-locked version."""
+    lock = tomllib.loads((ROOT / "Cargo.lock").read_text(encoding="utf-8"))
+    version = next(package["version"] for package in lock["package"]
+                   if package["name"] == "tracing")
+    (root / "Cargo.toml").write_text(
+        '[workspace]\nmembers=["crates/daemon", "crates/helper"]\nresolver="2"\n'
+        f'[workspace.dependencies]\ntracing="={version}"\n', encoding="utf-8"
+    )
+    for name, dependencies in (
+        ("daemon", 'helper={path="../helper"}\ntracing.workspace=true\n'),
+        ("helper", 'tracing.workspace=true\n'),
+    ):
+        crate = root / "crates" / name
+        (crate / "src").mkdir(parents=True)
+        (crate / "Cargo.toml").write_text(
+            f'[package]\nname="{name}"\nversion="0.1.0"\nedition="2021"\n'
+            f'[dependencies]\n{dependencies}', encoding="utf-8"
+        )
+        (crate / "src/lib.rs").write_text("", encoding="utf-8")
+
+
 class DaemonScratchPolicy(unittest.TestCase):
     def errors(self, edges):
         data = graph(edges)
         return POLICY.daemon_scratch_errors(data, DAEMON_MANIFEST, normal_tree(data))
+
+    def test_machine_tree_ignores_forced_cargo_color(self):
+        with tempfile.TemporaryDirectory(prefix="daemon-normal-color-") as temporary:
+            root = Path(temporary)
+            repeated_dependency_workspace(root)
+            env = dict(os.environ, CARGO_TERM_COLOR="always", CARGO_NET_OFFLINE="true")
+            run(
+                ["cargo", "metadata", "--format-version", "1"], cwd=root,
+                env=env, timeout=30, check=True, capture_output=True, text=True,
+            )
+            colored = run(
+                ["cargo", "tree", "-p", "daemon", "-e", "normal", "--locked",
+                 "--prefix", "depth", "--format", "|{p}"], cwd=root,
+                env=env, timeout=30, check=True, capture_output=True, text=True,
+            )
+            self.assertIn("\x1b[", colored.stdout)
+            result = run(
+                [sys.executable, str(ROOT / "template/scripts/consumer_checks.py"),
+                 "build-daemon"], cwd=root, env=env, timeout=30,
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_unselected_cron_without_temporary_packages_passes(self):
         self.assertEqual(self.errors([("daemon", "service", "service", None)]), [])

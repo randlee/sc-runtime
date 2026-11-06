@@ -157,9 +157,10 @@ def build_daemon() -> None:
     )
     if completed.returncode != 0:
         fail(completed.stderr.strip() or "cargo metadata failed")
+    # CI may force ANSI colors on repeated nodes; this output is a data format.
     tree = subprocess.run(
-        ["cargo", "tree", "-p", daemon_package(), "-e", "normal", "--locked",
-         "--prefix", "depth", "--format", "|{p}"],
+        ["cargo", "tree", "--color", "never", "-p", daemon_package(),
+         "-e", "normal", "--locked", "--prefix", "depth", "--format", "|{p}"],
         check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
     if tree.returncode != 0:
