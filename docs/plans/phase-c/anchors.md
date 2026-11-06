@@ -44,6 +44,7 @@ Excluded from (not judged; the cell passes as `excluded`):
 - `c-4`: C-4 verifies runtime composition/publication; it does not install the consumer lint toolchain owned by C-2.
 - `c-5`: C-5 implements cron behavior and consumer examples; it does not install lint tools.
 - `c-6`: C-6 is the command-adapter boundary, not consumer lint installation.
+- `c-1`: C-1 qualifies the released lint tool in an internal temporary probe but does not ship consumer installation, which is owned by C-2.
 
 Beads: anchor `run-32b`, plan questions `run-32b.1`, dev questions `run-32b.2`
 
@@ -281,6 +282,10 @@ Scope: the Phase C planning branch and Git worktree metadata
 
 Deterministic check to pair with the development gate: Git worktree metadata identifies the separate plan/phase-c checkout.
 
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-1`: C-1 implements the runtime contract rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
+- `c-3`: C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
+
 Beads: anchor `run-alr`, plan questions `run-alr.1`, dev questions `run-alr.2`
 
 Fixtures:
@@ -300,6 +305,10 @@ Summary: have a separate pull request targeting develop.
 Scope: the Phase C planning pull request metadata
 
 Deterministic check to pair with the development gate: GitHub PR114 head plan/phase-c targets develop and is separate from dependency PR109.
+
+Excluded from (not judged; the cell passes as `excluded`):
+- `c-1`: C-1 implements the runtime contract rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
+- `c-3`: C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
 
 Beads: anchor `run-mwv`, plan questions `run-mwv.1`, dev questions `run-mwv.2`
 
@@ -322,6 +331,8 @@ Scope: Phase C compatibility completion and the 0.2.0 publication handoff
 Excluded from (not judged; the cell passes as `excluded`):
 - `c-2`: C-2 owns the independent lint profile, not the dedicated C-5 compatibility completion or C-4 publication handoff.
 - `c-6`: C-6 closes the adapter boundary and explicitly excludes publication; C-5 owns dedicated compatibility completion and C-4 enforces its publication precedence.
+- `c-1`: C-1 defines the future release contract but performs neither C-5 compatibility completion nor the actual C-4 publication handoff governed by this anchor.
+- `c-3`: C-3 prepares versions and prepublication inputs without performing C-5 compatibility completion or the actual C-4 publication handoff, and retains its required C-5-before-publication dependency guard.
 
 Beads: anchor `run-299`, plan questions `run-299.1`, dev questions `run-299.2`
 
