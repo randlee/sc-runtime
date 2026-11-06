@@ -107,15 +107,15 @@ cron core consumable through public logging, cooperative store/lifecycle and
 query contracts, with supported custom-store/behavior paths and documented
 consumer responsibilities. An optional standard cron command adapter supplies
 shared JSON across selected UIs; the release sprint proves the documented
-default recipe and actual packaged composition. C6 is implemented on its sprint branch with QA and merge pending; the other
-entries retain their recorded statuses. No entry claims publication. See [Phase c
-plan](plans/phase-c/phase-c-plan.md).
+default recipe and actual packaged composition. All six sprints are delivered and their parent Beads normally closed. [Final full-release QA5](https://github.com/randlee/sc-runtime/pull/124#issuecomment-6686113168) accepted109/109 phase delivery,26/26 C4 and retained111/111 source qualification, separately. All six public crates shipped at0.2.0; immutable `v0.2.0` remains at `118ee72d831f79778f3584f57a48706111754673`. See [Phase c plan](plans/phase-c/phase-c-plan.md) and [normal QA reports](plans/phase-c/reviews/sprint-qa/README.md).
+
+Historical Windows/Monty diagnostic `run-x8d.1.3` remains OPEN/unresolved under maintenance parent `run-8qs`, with original contract/evidence and a nonblocking C1 origin link. Current shipping Windows success does not fix its historical cause. Normal report task `run-x8d.10` and the parent closure audit remain open pending review/merge of this separate documentation closeout; its HEAD is not the shipping or measured source.
 
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
-| c-1 consumer/runtime compatibility contract | [sprint-c-1](plans/phase-c/sprint-c-1-consumer-runtime-contract.md) | planned | `sprint/c-1-consumer-runtime-contract` |
-| c-2 consumer sc-lint full profile | [sprint-c-2](plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md) | planned | `sprint/c-2-consumer-sc-lint-full-profile` |
-| c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | planned | `sprint/c-3-runtime-ecosystem-upgrade` |
-| c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | planned | `sprint/c-4-runtime-ecosystem-release` |
-| c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | planned | `sprint/c-5-cron-consumer-compatibility` |
-| c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | implemented; QA and merge pending | `sprint/c-6-standard-cron-commands` |
+| c-1 consumer/runtime compatibility contract | [sprint-c-1](plans/phase-c/sprint-c-1-consumer-runtime-contract.md) | complete | `sprint/c-1-consumer-runtime-contract` |
+| c-2 consumer sc-lint full profile | [sprint-c-2](plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md) | complete | `sprint/c-2-consumer-sc-lint-full-profile` |
+| c-3 runtime ecosystem upgrade | [sprint-c-3](plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md) | complete | `sprint/c-3-runtime-ecosystem-upgrade` |
+| c-4 runtime ecosystem authorized release | [sprint-c-4](plans/phase-c/sprint-c-4-runtime-ecosystem-release.md) | complete | `sprint/c-4-runtime-ecosystem-release` |
+| c-5 cron consumer compatibility | [sprint-c-5](plans/phase-c/sprint-c-5-cron-consumer-compatibility.md) | complete | `sprint/c-5-cron-consumer-compatibility` |
+| c-6 standard cron commands | [sprint-c-6](plans/phase-c/sprint-c-6-standard-cron-commands.md) | complete | `sprint/c-6-standard-cron-commands` |

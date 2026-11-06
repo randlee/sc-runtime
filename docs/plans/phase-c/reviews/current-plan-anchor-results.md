@@ -53,3 +53,11 @@ The final manager verdict and exact-head CI verification on
 [PR114](https://github.com/randlee/sc-runtime/pull/114) remain pending; this
 report does not preempt them. Sprint implementation and its runtime/development
 proofs remain planned, not claimed complete. Raw working evidence stays local.
+
+## Completed development and published-delivery gates — 2026-11-06
+
+The preceding plan-gate account remains unchanged as historical evidence at its original observation time. Source-stage run `dev-20261106T105650Z-c-4` judged `faa7a28ec28864b8ec23b46d64ce5739f0141f67`: PASS, nine satisfied/seven excluded, no errors or shortening; its three returned checks passed. [Source QA4](https://github.com/randlee/sc-runtime/pull/122#issuecomment-6683431902) retained those results through the allowed report-only delta at `3fdda84c1d0f8180d65a8c1ae49e4754a2e41e87`.
+
+[The final published-delivery report](https://github.com/randlee/sc-runtime/pull/124#issuecomment-6685942704) preserves the failed v4 iteration and the single-paragraph provenance/naming clarification: +1,076 characters traced to prelocked ANC-004v3, ANC-011v2 and ANC-012v2. Original statements, quotes, fixtures, scopes, seals, questions and thresholds were unchanged. Actual v5 run `dev-20261106T132402Z-c-4` passed: **nine satisfied, seven excluded, all three returned paired checks PASS**, zero errors/instability and no shortening/truncation; Jev1.14.0, production threshold0.6. This is published-delivery evidence rather than substitution of source-stage PASS.
+
+[Final full-release QA5](https://github.com/randlee/sc-runtime/pull/124#issuecomment-6686113168) accepted109/109 phase delivery,26/26 C4 and retained111/111 source qualification with zero findings. Review/execution source `f3250153e101198508276b75dd4b390ab84d96e5` and immutable shipping `118ee72d831f79778f3584f57a48706111754673` have the same qualified tree, with their distinct commit identities preserved. This documentation closeout changes no anchor authority or released source; historical QA and calibration records remain intact.
