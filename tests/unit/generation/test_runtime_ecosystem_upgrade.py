@@ -29,7 +29,7 @@ def load_file(name, path):
 OWNED = load_file("ecosystem_owned", ROOT / "tests/integration/generation/owned_process.py")
 
 
-def verify_identities(metadata, roots):
+def verify_identities(metadata, roots, expected_versions=FROZEN):
     """Follow resolved normal edges from actual roots; reject a second package identity."""
     packages = {item["id"]: item for item in metadata["packages"]}
     nodes = {item["id"]: item for item in metadata["resolve"]["nodes"]}
@@ -49,7 +49,7 @@ def verify_identities(metadata, roots):
             if any(kind["kind"] is None for kind in edge["dep_kinds"]):
                 pending.append(edge["pkg"])
     identities = {}
-    for name, expected in FROZEN.items():
+    for name, expected in expected_versions.items():
         found = {(packages[pid]["name"], packages[pid]["version"], packages[pid]["source"])
                  for pid in visited if packages[pid]["name"] == name}
         if len(found) != 1 or next(iter(found))[1] != expected:
@@ -71,6 +71,27 @@ def root_version():
 class RuntimeIdentityTests(unittest.TestCase):
     def test_actual_locked_workspace_uses_frozen_identities(self):
         verify_identities(metadata(ROOT), ["sc-runtime"])
+
+    def test_rusqlite_0_39_resolves_one_libsqlite3_sys_with_sqlx_0_9_sqlite(self):
+        # The existing portable owner bounds Cargo lock/fetch waits and reaps
+        # the complete process tree, including descendants holding output open.
+        manifest = ROOT / "crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/Cargo.toml"
+        process = OWNED.run(
+            ["cargo", "metadata", "--format-version", "1", "--locked", "--manifest-path", str(manifest)],
+            cwd=ROOT, timeout=120, check=True, capture_output=True, text=True,
+            stdin=subprocess.DEVNULL,
+        )
+        document = json.loads(process.stdout)
+        expected = {}
+        for name, family in (("libsqlite3-sys", "0.37."), ("rusqlite", "0.39."), ("sqlx", "0.9.")):
+            versions = {package["version"] for package in document["packages"] if package["name"] == name}
+            self.assertEqual(len(versions), 1, f"expected one {name}, found {versions}")
+            version = next(iter(versions))
+            self.assertTrue(version.startswith(family), f"{name}: expected {family}x, found {version}")
+            expected[name] = version
+        # Retain the real version-family checks and additionally require those
+        # exact identities to be unique and reachable through normal edges.
+        verify_identities(document, ["sc-runtime-db-sqlite-sqlx-resolve"], expected)
 
     def test_second_reachable_identity_fails_even_in_same_major(self):
         document = {"packages": [{"id":"root", "name":"sc-runtime", "version":"0.2.0", "source":None}],
