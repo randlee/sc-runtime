@@ -30,10 +30,14 @@ impl Write for Limit {
 
 pub(super) fn request(request: &CronRequest) -> Result<(), OpError> {
     if request.version != "1" {
-        return Err(errors::invalid());
+        return Err(errors::invalid("unsupported_version", "set version to 1"));
     }
-    serde_json::to_writer(Limit(crate::contract::MAX_REQUEST_BYTES), request)
-        .map_err(|_| errors::invalid())
+    serde_json::to_writer(Limit(crate::contract::MAX_REQUEST_BYTES), request).map_err(|_| {
+        errors::invalid(
+            "request_size",
+            "reduce the serialized request to at most 2 MiB",
+        )
+    })
 }
 
 pub(super) fn start(
@@ -51,7 +55,10 @@ pub(super) fn start(
     )
     .map_err(errors::native)?;
     if matches!(request.target, ExecutionTarget::Rust) && !environment.is_empty() {
-        return Err(errors::invalid());
+        return Err(errors::invalid(
+            "rust_environment",
+            "remove environment entries for a Rust target",
+        ));
     }
     let resolved = bindings.resolve(&request.target, request.payload)?;
     validate_native_target(&resolved.hook)?;
@@ -113,7 +120,12 @@ fn environment(policy: EnvironmentPolicy) -> Result<HookEnvironment, OpError> {
             EnvironmentOperation::Set(value) => environment.set(name, value),
             EnvironmentOperation::Reference(reference) => environment.reference(name, reference),
             EnvironmentOperation::Clear(true) => environment.clear(name),
-            EnvironmentOperation::Clear(false) => return Err(errors::invalid()),
+            EnvironmentOperation::Clear(false) => {
+                return Err(errors::invalid(
+                    "environment_clear",
+                    "set clear to true or omit the environment operation",
+                ));
+            }
         }
         .map_err(errors::native)?;
     }
@@ -121,12 +133,20 @@ fn environment(policy: EnvironmentPolicy) -> Result<HookEnvironment, OpError> {
 }
 
 pub(super) fn end(request: EndRequest) -> Result<EndSchedule, OpError> {
-    let generation = Generation::new(request.generation).ok_or_else(errors::invalid)?;
+    let generation = Generation::new(request.generation).ok_or_else(|| {
+        errors::invalid(
+            "generation",
+            "supply the positive current schedule generation from list",
+        )
+    })?;
     if request.reason.is_empty()
         || request.reason.len() > sc_cron::MAX_PAYLOAD_BYTES
         || request.reason.contains('\0')
     {
-        return Err(errors::invalid());
+        return Err(errors::invalid(
+            "end_reason",
+            "supply a nonempty NUL-free reason within the documented payload size limit",
+        ));
     }
     Ok(EndSchedule {
         name: ScheduleName::new(request.name).map_err(errors::native)?,
@@ -136,8 +156,17 @@ pub(super) fn end(request: EndRequest) -> Result<EndSchedule, OpError> {
 }
 
 pub(super) fn query(request: ListRequest) -> Result<ScheduleQuery, OpError> {
-    if !(1..=1000).contains(&request.limit) || request.cursor == Some(0) {
-        return Err(errors::invalid());
+    if !(1..=1000).contains(&request.limit) {
+        return Err(errors::invalid(
+            "limit",
+            "set limit to an integer from 1 through 1000",
+        ));
+    }
+    if request.cursor == Some(0) {
+        return Err(errors::invalid(
+            "cursor",
+            "omit cursor or use a positive next_cursor returned by list",
+        ));
     }
     let selection = match request.state {
         ScheduleState::Active => ScheduleSelection::Active,

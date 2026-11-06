@@ -117,14 +117,59 @@ impl LogSink for BlockingSink {
 
 // Each adversarial fixture owns only Rust threads, so killing its process
 // bounds every admission, sink callback, shutdown and thread join together.
-struct FixtureChild(Child);
+trait FixtureProcess {
+    fn exited(&mut self) -> std::io::Result<bool>;
+    fn terminate(&mut self) -> std::io::Result<()>;
+}
+
+impl FixtureProcess for Child {
+    fn exited(&mut self) -> std::io::Result<bool> {
+        self.try_wait().map(|status| status.is_some())
+    }
+
+    fn terminate(&mut self) -> std::io::Result<()> {
+        self.kill()
+    }
+}
+
+// The original fixture deadline bounds termination AND physical reaping.
+// A kill/status failure is retained even if subsequent observation proves exit.
+#[cfg(test)]
+fn stop_fixture(process: &mut impl FixtureProcess, until: Instant) -> Result<(), String> {
+    let mut failure = None;
+    match process.exited() {
+        Ok(true) => return Ok(()),
+        Ok(false) => {}
+        Err(_) => failure = Some("fixture cleanup: status inspection failed"),
+    }
+    if process.terminate().is_err() {
+        failure.get_or_insert("fixture cleanup: child kill failed");
+    }
+    loop {
+        match process.exited() {
+            Ok(true) => return failure.map_or(Ok(()), |message| Err(message.into())),
+            Ok(false) => {}
+            Err(_) => {
+                failure.get_or_insert("fixture cleanup: status inspection failed");
+            }
+        }
+        if Instant::now() >= until {
+            return Err("fixture cleanup: physical reap deadline exceeded".into());
+        }
+        std::thread::sleep(Duration::from_millis(1)); // allow: test-only bounded isolated fixture cleanup
+    }
+}
+
+struct FixtureChild {
+    child: Child,
+    until: Instant,
+}
 
 impl Drop for FixtureChild {
     fn drop(&mut self) {
-        if !matches!(self.0.try_wait(), Ok(Some(_))) {
-            let _ = self.0.kill();
+        if let Err(error) = stop_fixture(&mut self.child, self.until) {
+            eprintln!("{error}");
         }
-        let _ = self.0.wait();
     }
 }
 
@@ -132,8 +177,11 @@ impl Drop for FixtureChild {
 async fn wait_fixture_child(name: &str, deadline: Duration) -> Result<(), String> {
     let marker = tempfile::tempdir().map_err(|_| "fixture marker directory failed")?;
     let done = marker.path().join("completed");
-    let mut child = FixtureChild(
-        Command::new(std::env::current_exe().map_err(|_| "test executable unavailable")?)
+    let until = Instant::now() + deadline;
+    let run_until = until - deadline.min(Duration::from_secs(1)) / 2;
+    let mut child = FixtureChild {
+        until,
+        child: Command::new(std::env::current_exe().map_err(|_| "test executable unavailable")?)
             .args(["--exact", name, "--nocapture"])
             .env("SC_ADAPTER_FIXTURE", name)
             .env("SC_ADAPTER_FIXTURE_DONE", &done)
@@ -142,11 +190,10 @@ async fn wait_fixture_child(name: &str, deadline: Duration) -> Result<(), String
             .stderr(Stdio::inherit())
             .spawn()
             .map_err(|_| "fixture child could not start")?,
-    );
-    let until = Instant::now() + deadline;
+    };
     loop {
         match child
-            .0
+            .child
             .try_wait()
             .map_err(|_| "fixture status inspection failed")?
         {
@@ -159,15 +206,8 @@ async fn wait_fixture_child(name: &str, deadline: Duration) -> Result<(), String
                 }
                 return Ok(());
             }
-            None if Instant::now() >= until => {
-                child
-                    .0
-                    .kill()
-                    .map_err(|_| "fixture timeout: child kill failed")?;
-                child
-                    .0
-                    .wait()
-                    .map_err(|_| "fixture timeout: child reap failed")?;
+            None if Instant::now() >= run_until => {
+                stop_fixture(&mut child.child, child.until)?;
                 return Err("fixture timed out; child killed and reaped".into());
             }
             None => tokio::time::sleep(Duration::from_millis(10)).await, // allow: test-only bounded owned-child watchdog
@@ -204,6 +244,64 @@ fn fixture_timeout_kills_and_reaps_child() {
     }
     let error = run_fixture_child(NAME, Duration::from_millis(100)).unwrap_err();
     assert_eq!(error, "fixture timed out; child killed and reaped");
+}
+
+#[test]
+fn cleanup_preserves_inspection_and_kill_failure_after_observed_exit() {
+    struct FaultProcess {
+        observations: std::collections::VecDeque<std::io::Result<bool>>,
+        kill_failed: bool,
+        terminated: bool,
+    }
+    impl FixtureProcess for FaultProcess {
+        fn exited(&mut self) -> std::io::Result<bool> {
+            self.observations
+                .pop_front()
+                .expect("finite causal observation")
+        }
+        fn terminate(&mut self) -> std::io::Result<()> {
+            self.terminated = true;
+            if self.kill_failed {
+                Err(std::io::Error::other("injected kill failure"))
+            } else {
+                Ok(())
+            }
+        }
+    }
+    for (initial, kill_failed, expected) in [
+        (
+            Err(std::io::Error::other("injected status failure")),
+            false,
+            "fixture cleanup: status inspection failed",
+        ),
+        (Ok(false), true, "fixture cleanup: child kill failed"),
+    ] {
+        let mut process = FaultProcess {
+            observations: [initial, Ok(false), Ok(true)].into(),
+            kill_failed,
+            terminated: false,
+        };
+        assert_eq!(
+            stop_fixture(&mut process, Instant::now() + WAIT).unwrap_err(),
+            expected
+        );
+        assert!(process.terminated);
+        assert!(
+            process.observations.is_empty(),
+            "cleanup observed physical completion"
+        );
+    }
+    let mut incomplete = FaultProcess {
+        observations: [Ok(false), Ok(false)].into(),
+        kill_failed: false,
+        terminated: false,
+    };
+    assert_eq!(
+        stop_fixture(&mut incomplete, Instant::now() - Duration::from_secs(1)).unwrap_err(),
+        "fixture cleanup: physical reap deadline exceeded"
+    );
+    assert!(incomplete.terminated);
+    assert!(incomplete.observations.is_empty());
 }
 
 #[test]

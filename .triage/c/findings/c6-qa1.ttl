@@ -1,0 +1,111 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:c6_qa1_REQ_C6_001 a triage:Finding ;
+ triage:id "REQ-C6-001" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md:11; crates/sc-cron-commands/src/executor.rs:1; crates/sc-cron-commands/src/executor/inputs.rs:1" ;
+ triage:issue "C6 requirements frontmatter omits applicable NFR-RUN-0003, NFR-RUN-0004 and NFR-RUN-0008 while adding reusable adapter/validation code and source files." ;
+ triage:action "Add those three existing governing NFR IDs to the existing C6 requirements list. Their implementation is upheld by canonical core reuse and actual lint; the missing declaration is the gap, not a request for a new matrix or gate." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_REQ_C6_002 a triage:Finding ;
+ triage:id "REQ-C6-002" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "template/crates/daemon/src/observability_adapter_tests.rs:127; template/crates/daemon/src/observability_adapter_tests.rs:169" ;
+ triage:issue "A changed generated logger fixture still performs unbounded physical child waits in Drop and timeout cleanup, so it can hang despite successful current executions." ;
+ triage:action "Consume the narrow common C2 generated-logger reap correction or equivalent canonical bounded ownership: retain original cleanup deadline, terminate and physically reap on every timeout/error/panic path, with causal failure regression. Do not add retries, skip assertions, enlarge correctness windows or serialize tests. This is the observed inherited source occurrence in this PR, not a demand for future C4 composition." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_REQ_C6_003 a triage:Finding ;
+ triage:id "REQ-C6-003" ;
+ triage:severity "Important" ;
+ triage:reviewer "req-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "docs/project-plan.md:110; docs/project-plan.md:121" ;
+ triage:issue "C6 frontmatter now records complete implementation, but the existing phase index still describes all six sprints as unimplemented planned work and lists C6 as planned." ;
+ triage:action "Update the existing C6 index entry/prose to record implemented, QA/merge pending without claiming QA approval or publication. Keep unrelated sprint statuses accurate; no new report or tracking inventory is needed." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_ARCH_C6_001 a triage:Finding ;
+ triage:id "ARCH-C6-001" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md" ;
+ triage:issue "The governing ADR list omits applicable existing decisions for the implemented standard adapter, its target/environment conversion, async/locking/error behavior and CI qualification. At minimum ADR-RUN-0001,0002,0005,0006,0007,0008,0011,0013 and0016 are absent. The list currently contains only eight entries." ;
+ triage:action "Add the specifically applicable existing ADR IDs to the same sprint adrs list, with existing authoritative sources retained. Use the code/source references in adr_checks to bound applicability; do not create a new ADR, registry, coverage matrix or broaden C6 into C4 composition." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_QA_C6_001 a triage:Finding ;
+ triage:id "QA-C6-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "template/crates/daemon/src/observability_adapter_tests.rs" ;
+ triage:issue "The changed generated logger fixture retains unbounded physical-reap waits in both Drop and timeout cleanup." ;
+ triage:action "Consume the narrow C2 bounded logger-reap correction, preserving original cleanup budgets, physical ownership and causal failure-path tests. Do not replace these waits with bare kill-and-forget, retries or longer correctness windows." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_QA_C6_002 a triage:Finding ;
+ triage:id "QA-C6-002" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "tests/unit/generation/test_monty_example.py" ;
+ triage:issue "The newly shared generation regression cannot be imported through the ordinary configured script-mode discovery path." ;
+ triage:action "Consume the canonical configured-discovery import-root correction from C2 and prove the ordinary scripts/run_generation_tests.py entry point without PYTHONPATH overrides or skipped tests. Preserve bounded generator ownership and planted-lock assertions." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_QA_C6_003 a triage:Finding ;
+ triage:id "QA-C6-003" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix_tests.rs" ;
+ triage:issue "The new cleanup regression can falsely pass the original early-return bug after its ready launcher exits naturally after 30 seconds." ;
+ triage:action "Consume the narrow C1 owner-held launcher correction, retaining bounded Session/readiness/physical cleanup and an original-behavior negative that fails at the actual return-boundary assertion. Do not extend the sleep, retry or serialize tests." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_RBP_F001 a triage:Finding ;
+ triage:id "RBP-F001" ;
+ triage:severity "minor" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "crates/sc-cron-commands/src/executor/errors.rs" ;
+ triage:issue "All invalid expressions and invalid schedule specifications lose their safe failure category at the command boundary. The response only says 'invalid cron request' and asks callers to correct unspecified fields/limits, so callers cannot distinguish an invalid cron expression from timeout, name, payload, or environment validation failures." ;
+ triage:action "Keep CRON.INVALID_INPUT and value-free messages, but attach a bounded static reason or field identifier and specific recovery guidance where the adapter knows the cause. At minimum distinguish BadExpression from InvalidSpec; local generation, cursor, limit, and aggregate-size checks can identify their own static reason without forwarding request values or provider prose." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_FTQ_001 a triage:Finding ;
+ triage:id "FTQ-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "template/crates/daemon/src/observability_adapter_tests.rs" ;
+ triage:issue "The subprocess watchdog does not bound physical cleanup. Drop ignores the kill result and calls Child::wait without a deadline; the timeout branch also calls unbounded wait after kill. On a failed termination or stalled physical exit, the supposedly bounded fixture can hang indefinitely, including while unwinding an earlier status-inspection error." ;
+ triage:action "Consume the C2 bounded physical-reap correction: retain the owned child through bounded termination and observed physical completion on timeout, status failure and Drop paths, with explicit failure diagnostics. Preserve existing budgets and add causal cleanup failure witnesses; do not retry, pad, serialize, skip or kill-and-forget." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
+
+triage:c6_qa1_FTQ_002 a triage:Finding ;
+ triage:id "FTQ-002" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "open" ;
+ triage:reviewed_commit "b72712ff3a060e97a8229e48f0b29c6536020e54" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix_tests.rs" ;
+ triage:issue "The supposedly pinned launcher exits naturally after time.sleep(30). If the parent is descheduled after the ready marker long enough for that exit, the original early-return-on-inspection-error bug can satisfy reaped_at_return and falsely pass. The related inspector expiry witness at line130 can instead fail spuriously: bounded_wait_with checks try_wait before the forced expiry callback, so an already naturally exited child returns success rather than the expected expiry error." ;
+ triage:action "Hold each ready child until explicit owner termination or owner release, using a causal readiness/lifetime handshake. Keep a bounded owning Session on every path, including assertion failure, and retain a negative implementation check that fails at the return-boundary assertion. Do not extend the 30-second sleep, retry or serialize." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6676426858" .
