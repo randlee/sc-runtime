@@ -1,6 +1,6 @@
 [package]
 name = "sc-runtime"
-version.workspace = true
+version = "0.2.0"
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
@@ -18,15 +18,15 @@ test-util = ["dep:tempfile"]
 
 [dependencies]
 sc-observability-types.workspace = true
-sc-transport = { path = "../sc-transport", version = "0.1.1", features = ["server"] }
-sc-command = { path = "../sc-command", version = "0.1.1", features = ["server"] }
+sc-transport = { path = "../sc-transport", version = "0.2.0", features = ["server"] }
+sc-command = { path = "../sc-command", version = "0.2.0", features = ["server"] }
 axum = { version = "0.8.9", features = ["http1", "json", "macros", "tokio"] }
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "signal", "sync", "time"] }
 fd-lock = "4"
-utoipa = "5"
-utoipa-axum = "0.2.0"
+utoipa = "=6.0.0"
+utoipa-axum = "=0.3.0"
 serde = { version = "1", features = ["derive"] }
-rmcp = { version = "~3.7", default-features = false, features = [
+rmcp = { version = "~3.8", default-features = false, features = [
     "server",
     "transport-streamable-http-server",
 ] }
@@ -34,17 +34,18 @@ tracing = "0.1"
 tempfile = { version = "3", optional = true }
 
 [dev-dependencies]
-sc-command = { version = "0.1.1", path = "../sc-command", default-features = false, features = ["test-util"] }
+serde_json = "1"
+tower = { version = "0.5", features = ["util"] }
+sc-command = { version = "0.2.0", path = "../sc-command", default-features = false, features = ["test-util"] }
 axum = { version = "0.8.9", features = ["http1", "json", "macros", "tokio"] }
 reqwest = { version = "0.13", default-features = false, features = ["json"] }
-rmcp = { version = "~3.7", default-features = false, features = [
+rmcp = { version = "~3.8", default-features = false, features = [
     "server",
     "transport-streamable-http-server",
 ] }
-serde_json = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "time"] }
-utoipa = "5"
-utoipa-axum = "0.2.0"
+utoipa = "=6.0.0"
+utoipa-axum = "=0.3.0"
 
 [[test]]
 name = "assembly"
@@ -54,4 +55,9 @@ required-features = ["test-util"]
 [[test]]
 name = "signals"
 path = "tests/signals.rs"
+required-features = ["test-util"]
+
+[[test]]
+name = "windows_console"
+path = "tests/windows_console.rs"
 required-features = ["test-util"]

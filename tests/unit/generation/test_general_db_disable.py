@@ -38,7 +38,7 @@ class GeneralDbDisableTests(unittest.TestCase):
         manifest = (ROOT / "template/crates/cli/Cargo.toml").read_text(encoding="utf-8")
         self.assertIn('general-db = ["daemon/general-db"]', manifest)
         self.assertIn(
-            'daemon = { path = "../daemon", default-features = false }',
+            'daemon = { path = "../daemon", version = "0.1.1", default-features = false }',
             manifest,
         )
         cli = (ROOT / "template/crates/cli/src/lib.rs").read_text(encoding="utf-8")

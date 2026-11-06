@@ -197,3 +197,16 @@ teammate when using codex-orchestration. Both read the same manifests.
 
 Human release authorization still applies for production `release.yml` dispatch
 and crates.io credentials in GitHub environments.
+
+
+## Phase C all-crates 0.2.0 handoff
+
+The owner requires all public workspace crates on every release. Phase C uses
+one shared0.2.0 for sc-config, sc-transport, sc-command, sc-runtime, sc-cron and
+sc-cron-commands; the SQLite helper remains publish=false. The existing canonical
+consumer input orders those six packages, with command before cron/runtime and
+cron before cron-commands. C3 regenerates release metadata with the unchanged
+qualified b6947ab kit pin. There is no selective-publishing-kit prerequisite.
+C4 owns publication and the registry-only generated consumer acceptance after
+all six exact versions are visible. The earlier Phase B five-package statements
+above are historical release context and do not define current Phase C input.

@@ -3,6 +3,327 @@
   "branch": "integrate/phase-c",
   "qa_rounds": [
     {
+      "qa_pass": "qa-pr116-sprint-6",
+      "commit": "8a34950ed5f6701d355fd12bae129e36723b206d",
+      "verdict": "PASS",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6680052851",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c1_req_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c1_arch_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c1_rust_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c1-qa1.ttl",
+        ".triage/c/findings/c1-qa2.ttl",
+        ".triage/c/findings/c1-qa3.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c1_manager_qa6",
+      "machine_status": {
+        "sprint": "c-1",
+        "task": "qa-pr116-sprint-6",
+        "branch": "sprint/c-1-consumer-runtime-contract",
+        "commit": "8a34950ed5f6701d355fd12bae129e36723b206d",
+        "pr": 116,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "ready",
+        "merge_reason": "All required QA6 reviewers PASS;17/17 deliverables;0B+0I+0M;clean TODO scan;current live and paired gates pass;all17 exact-head CI checks SUCCESS.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Merge PR116 into integrate/phase-c first in the approved sprint landing order.",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c1_req_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c1_arch_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c1_rust_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr116-sprint-6",
+          "commit": "8a34950ed5f6701d355fd12bae129e36723b206d",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6680052851",
+          "coordinator_task_id": "/root/c1_manager_qa6",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c1-qa1.ttl",
+              ".triage/c/findings/c1-qa2.ttl",
+              ".triage/c/findings/c1-qa3.ttl"
+            ]
+          },
+          "ci": {
+            "head_matches": true,
+            "required_checks": 17,
+            "successful_checks": 17,
+            "pending_checks": 0,
+            "failed_checks": 0,
+            "waited_for_ci": false,
+            "snapshot_at": "2026-11-06T07:53:54.460558+00:00"
+          },
+          "development_anchor_gate": {
+            "status": "PASS",
+            "run_id": "dev-20261106T072527Z-c-1",
+            "satisfied": 12,
+            "excluded": 4,
+            "errors": 0,
+            "paired_checks_complete": true,
+            "paired_checks_count": 7,
+            "authority_fixture_versions": {
+              "ANC-007": 3,
+              "ANC-008": 4
+            },
+            "live_model": "jev-1.14.0",
+            "threshold": 0.6,
+            "no_shortening": true,
+            "paired_receipt_sha256": "355e3aa720446ead2f72f6f850929c4c1bb9d3ad579484af0f8851b7b4dc63eb",
+            "retained_proof_scope": "Exact-input resolver/composition and historical profile proofs retain original execution/platform limits; current representative native boundary/preservation qualified only the approved C1 contract stage."
+          },
+          "model_execution": "Inherited Codex fallback; configured Cursor models unavailable"
+        },
+        "deliverables": {
+          "complete": 17,
+          "total": 17,
+          "percent": 100.0
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      }
+    },
+    {
+      "qa_pass": "qa-pr119-sprint-5",
+      "commit": "8c96a6c45c14f6509a380e714bd5f638cbb1d0a1",
+      "verdict": "PASS",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6680053655",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c2_req_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c2_arch_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c2_rust_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c2-qa1.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c2_manager_qa5",
+      "machine_status": {
+        "sprint": "c-2",
+        "task": "qa-pr119-sprint-5",
+        "branch": "sprint/c-2-consumer-sc-lint-full-profile",
+        "commit": "8c96a6c45c14f6509a380e714bd5f638cbb1d0a1",
+        "pr": 119,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "ready",
+        "merge_reason": "All three required reviewers PASS;14/14 deliverables;0B+0I+0m;TODO scan clean; actual current live gate PASS and all five returned checks reconciled;17/17 exact-head CI successful. Qualified for parent-managed ordered merge after C1.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Merge after C1 in the approved integration order.",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c2_req_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c2_arch_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c2_rust_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-5",
+          "commit": "8c96a6c45c14f6509a380e714bd5f638cbb1d0a1",
+          "coordinator_task_id": "/root/c2_manager_qa5",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6680053655",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c2-qa1.ttl"
+            ]
+          },
+          "source_qa": "accepted",
+          "metadata_delta": "Approved C1 contract-stage ANC-007v3/008v4 and durable authority/evidence records; actual C1 parent incorporated. All product, test and build inputs unchanged from the qualified C2 product proof. C2 full installer and policy matrix duties preserved.",
+          "development_anchor_gate": {
+            "run_id": "dev-20261106T072602Z-c-2",
+            "pass": true,
+            "satisfied": 5,
+            "excluded": 11,
+            "errors": 0,
+            "shortened": 0,
+            "strict_owner_result": "validated",
+            "paired_current_reconciliation": "complete",
+            "paired_checks": {
+              "matched_returned_ids": [
+                "ANC-001",
+                "ANC-003",
+                "ANC-004",
+                "ANC-007",
+                "ANC-008"
+              ],
+              "fresh_pass": 2,
+              "scoped_retained": 3,
+              "failed": 0
+            },
+            "anchor_sha256": "4244ce8ecc747762be48cb06df23fed37fff8b8b791f9e9c5e892a1821354e88",
+            "model_requested": "jev-1.14.0",
+            "model_answered": "jev-1.14.0",
+            "threshold": 0.6
+          },
+          "ci": {
+            "successful": 17,
+            "pending": 0,
+            "failed": 0,
+            "total": 17,
+            "waited_for_ci": false
+          },
+          "model_execution": "Configured Cursor model unavailable; inherited Codex fallback.",
+          "ordered_integration": "Parent must merge C1 before C2."
+        },
+        "deliverables": {
+          "complete": 14,
+          "total": 14,
+          "percent": 100
+        },
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
+      }
+    },
+    {
       "qa_pass": "qa-1",
       "reviewed_commit": "83cbc5c",
       "reviewer_spawn_gate": "pass",
@@ -6490,24 +6811,24 @@
   "initial_plan_branch": "plan/phase-c",
   "latest_sprint_qa": {
     "c-1": {
-      "qa_pass": "qa-pr116-sprint-5",
-      "reviewed_commit": "78cc2efef995a8780b1f7fdba99707bdb3a10a42",
-      "coordinator_task_id": "/root/c1_manager_qa5",
-      "verdict": "IN-FLIGHT",
+      "qa_pass": "qa-pr116-sprint-6",
+      "reviewed_commit": "8a34950ed5f6701d355fd12bae129e36723b206d",
+      "coordinator_task_id": "/root/c1_manager_qa6",
+      "verdict": "PASS",
       "report_path": "docs/plans/phase-c/reviews/sprint-qa/c-1-latest.md",
-      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6677302309",
-      "published_report_sha256": "f0b53765f4b21dca8fbd4ad42a37623207e8a7dcfc0f2d0b9729c849f17bbfcf",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6680052851",
+      "published_report_sha256": "14bd8e7a3d84e9437109b6fcf36bc12075cc647fed087d706ba43270ff6b1066",
       "source_branch": "sprint/c-1-consumer-runtime-contract",
       "integration_merge_performed": false
     },
     "c-2": {
-      "qa_pass": "qa-pr119-sprint-4",
-      "reviewed_commit": "b3e0b065d7d0d694b84e553abc393f9c0ad3e470",
-      "coordinator_task_id": "/root/c2_manager_qa4",
+      "qa_pass": "qa-pr119-sprint-5",
+      "reviewed_commit": "8c96a6c45c14f6509a380e714bd5f638cbb1d0a1",
+      "coordinator_task_id": "/root/c2_manager_qa5",
       "verdict": "PASS",
       "report_path": "docs/plans/phase-c/reviews/sprint-qa/c-2-latest.md",
-      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6677559353",
-      "published_report_sha256": "f44ee6267272a7dba78b86432e2e65d52131692240505b56b6df825f34113f15",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6680053655",
+      "published_report_sha256": "e8d79cc4c55972410c3792a8611fee96447633bb22245570331f797bca3d4349",
       "source_branch": "sprint/c-2-consumer-sc-lint-full-profile",
       "integration_merge_performed": false
     },

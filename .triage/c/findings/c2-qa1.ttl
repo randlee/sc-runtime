@@ -1,0 +1,430 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:C2_QA1_REQ_C2_001 a triage:Finding ;
+ triage:id "REQ-C2-001" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md:11" ;
+ triage:issue "The sprint requirements list omits applicable NFR-RUN-0003, NFR-RUN-0004 and NFR-RUN-0008. Its custom generation/bootstrap integration and changed generated Rust are constrained by the standard-tool, less-code and source-length requirements even though the template must not vendor maintainer line-count policy." ;
+ triage:action "Add the applicable constraints to this sprint's requirements list and retain the current narrow native-tool/policy exception. This does not make C2 the acceptance owner of root maintainer line-count checks." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_REQ_C2_002 a triage:Finding ;
+ triage:id "REQ-C2-002" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py:40; tests/unit/generation/test_consumer_sc_lint_profile.py:95; tests/unit/generation/test_consumer_sc_lint_profile.py:125; tests/unit/generation/test_consumer_sc_lint_profile.py:140; tests/unit/generation/test_consumer_sc_lint_profile.py:151" ;
+ triage:issue "The new required generation regression launches external setup/lint/upgrade/init/analyzer processes with subprocess.run and captured pipes, without an absolute failure budget or owned process-tree cleanup. A stalled tool, blocked build, or descendant retaining a captured pipe can keep the generation suite waiting indefinitely. Passing executions do not make these waits bounded." ;
+ triage:action "Use the repository's bounded owned-process facility (or an equivalent demonstrated ownership design) for every new subprocess test path. Add a causal stalled/descendant-held-output negative proving failure is bounded and the whole owned tree is reclaimed. Do not fix this by retries, skips, serialization or simply enlarging a timeout." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_REQ_C2_003 a triage:Finding ;
+ triage:id "REQ-C2-003" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py:33; tests/unit/generation/test_consumer_sc_lint_profile.py:38; tests/unit/generation/test_consumer_sc_lint_profile.py:104; tests/unit/generation/test_consumer_sc_lint_profile.py:160; template/.sc-lint/bootstrap.py:81; template/.sc-lint/bootstrap.py:184" ;
+ triage:issue "The new install/upgrade test inherits ambient tool installation settings and does not put SC_LINT_INSTALL_DIR under its TemporaryDirectory. With no reusable installation, the bootstrap installs to the user's XDG_DATA_HOME/LOCALAPPDATA/default home sc-lint location; the test also runs upgrade there. The test therefore does not guarantee filesystem isolation or independent installation state for two simultaneous suites. Current cached-tool success is not proof of the fresh-install path's isolation." ;
+ triage:action "Give this test an owned installation directory and any other writable tool/cache state beneath its temporary root, handling ambient SC_LINT_BIN deliberately. Prove the fresh-install and upgrade paths cannot write outside that root and independent suite instances do not share mutable installation state." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_REQ_C2_004 a triage:Finding ;
+ triage:id "REQ-C2-004" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-command/src/envelope.rs:244; crates/sc-command/src/error.rs:436; crates/sc-command/src/error.rs:441; crates/sc-cron-commands/src/contract.rs:321; crates/sc-cron-commands/src/contract.rs:333" ;
+ triage:issue "The full PR imports C1 public schema trait implementations containing prohibited expect calls. The constant-schema rationale does not satisfy the explicit non-test construct prohibition, and the Noop service-name exception does not apply. These implementations are present at the reviewed C2 pin." ;
+ triage:action "Resolve in the shared owner baseline using infallible native schema construction, then merge the corrected baseline into C2 and retain exact serialized/schema semantics. Do not add a panic-policy waiver." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_REQ_C2_005 a triage:Finding ;
+ triage:id "REQ-C2-005" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs:9; crates/sc-cron-commands/src/contract.rs:76; crates/sc-cron-commands/src/contract.rs:134; crates/sc-cron-commands/src/contract.rs:160; crates/sc-cron-commands/src/contract.rs:183" ;
+ triage:issue "The inherited canonical request family derives Debug over StartRequest.payload, Python module/Monty source, dotenv paths and Set/Reference strings. Debug on a CronRequest recursively exposes these fields, violating the value-free diagnostics requirement for the public DTOs." ;
+ triage:action "Have the canonical DTO owner provide redacted Debug implementations exposing safe kinds/names/counts only, with secret/source/payload canary regressions; preserve the wire data and schema. Consume that shared correction in C2." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_REQ_C2_006 a triage:Finding ;
+ triage:id "REQ-C2-006" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron/src/consumer_contract.rs:15; crates/sc-cron/src/consumer_contract.rs:79" ;
+ triage:issue "The inherited normal-feature public contract requires StoreOperationContext when composing an application-owned CronOperations provider, but its fields are private and the only worker-free constructor in this baseline is cfg(test-utils). A production custom provider cannot construct the required context through the supported ordinary-build API. Future C5 worker-based construction does not supply the promised independent override path." ;
+ triage:action "Freeze and provide the minimal production context/ownership composition seam for application-owned operations without requiring a dummy framework worker or test-utils; document cancellation, earliest-deadline and physical-ownership duties and prove an ordinary-feature external consumer. Merge the corrected contract baseline into C2." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_REQ_C2_007 a triage:Finding ;
+ triage:id "REQ-C2-007" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs:307; crates/sc-cron-commands/src/contract.rs:315" ;
+ triage:issue "The inherited Schemars CronRequest root contains oneOf but no explicit type:object. Real RMCP construction rejects this exact owner schema (the earlier C3 runtime receipt reports the missing root type), so compile-only Parameters<T> evidence does not establish the canonical typed MCP contract. The narrow C6 a952ed2 correction is not present at this C2 pin." ;
+ triage:action "Consume the canonical Schemars-only root-object correction and its real tool-construction/typed-variant regression through the shared owner. Preserve Utoipa's typed oneOf; adding type to the shared JSON helper would erase that Utoipa structure." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_REQ_C2_008 a triage:Finding ;
+ triage:id "REQ-C2-008" ;
+ triage:severity "Blocking" ;
+ triage:reviewer "req-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:198; docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md:210" ;
+ triage:issue "The inherited authoritative C1 release contract still requires selective publication and an affected-only version closure, contrary to the user's superseding all-public-crates release policy. This is a shared contract-document conflict, not a request for C2 to perform C3 version changes or publication." ;
+ triage:action "Align the shared authoritative release contract with releasing all six public crates together at0.2.0, retire the obsolete selective-kit prerequisite/probe truthfully, and consume the corrected documents in C2. Do not claim the prior selective probe passed or require a selective-publishing enhancement." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_ARCH_C2_001 a triage:Finding ;
+ triage:id "ARCH-C2-001" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md" ;
+ triage:issue "The imported C1 authority still omits governing ADR-RUN-0001/0004/0006/0007/0008/0011 from its ADR list, despite its new public schema/API, observability, future and mutex contracts. C1 doc and affected owner files are byte-identical to reviewed030f9ed. This finding concerns the imported C1 contract, not a demand to copy every parent ADR into C2." ;
+ triage:action "Correct the shared C1 governing ADR list and merge that authoritative correction forward; retain C2 own lint/generation ADR coverage." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_ARCH_C2_002 a triage:Finding ;
+ triage:id "ARCH-C2-002" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-command/src/envelope.rs" ;
+ triage:issue "Public schema trait methods reach expect at envelope.rs244 and error.rs436/441. They are the same owner implementations as C1030. Constant schema conversion is not a permitted panic-policy exception; ADR0017 only names the Noop invariant exception." ;
+ triage:action "Replace fallible JSON conversion plus expect with infallible native owner-schema construction in the shared owner, preserve exact schema/wire semantics, and merge the fix into C2." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_ARCH_C2_003 a triage:Finding ;
+ triage:id "ARCH-C2-003" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs" ;
+ triage:issue "Inherited EnvironmentOperation Set/Reference, EnvironmentPolicy/DotenvSource, ExecutionTarget and StartRequest/CronRequest derive value-bearing Debug. Formatting exposes environment values/locators, dotenv paths, Python/Monty source and payload, contrary to value-free environment diagnostic models." ;
+ triage:action "Have the canonical DTO owner implement redacted diagnostics with sensitive-value/source/path/payload canaries, preserving serde/schema behavior; merge the correction forward." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_ARCH_C2_004 a triage:Finding ;
+ triage:id "ARCH-C2-004" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron/src/consumer_contract.rs" ;
+ triage:issue "StoreOperationContext fields are private and its only worker-free construction function is test-utils-gated. The frozen StandardCronExecutor constructor requires this context while compatibility-contract.md116-125 and ADR0019/CRNC0001 promise ordinary custom CronOperations and lifecycle replacement without private wiring. C2 imports that same unusable narrower production composition seam." ;
+ triage:action "Freeze and provide a minimal normal-feature context construction/ownership/cancellation path for application-owned operations without a dummy Scheduler worker or test-utils. Add a normal external composition proof and consume the shared owner fix." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_ARCH_C2_005 a triage:Finding ;
+ triage:id "ARCH-C2-005" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "docs/architecture.md" ;
+ triage:issue "The inherited active release matrix retains config/transport0.1.1 and makes selective publication a C1 closure prerequisite, contradicting the superseding human all-public-crates release policy. Planned future alignment is absent from this pinned source." ;
+ triage:action "Amend the shared active release contract and checks to release all six public crates together at0.2.0; retire the selective capability gate without claiming its earlier failed probe passed. C3 owns version changes; C2 consumes the corrected authority." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_ARCH_C2_006 a triage:Finding ;
+ triage:id "ARCH-C2-006" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py" ;
+ triage:issue "The new command helper runs setup/lint/upgrade/init with subprocess.run and captured pipes but no deadline or owned-process-tree cleanup. Equivalent direct calls occur at95,125,140,151. A stalled tool or descendant retaining stdout can hold the required generation suite indefinitely; TemporaryDirectory cleanup does not own or reclaim those processes. This violates quality-policy.md59-64 test ownership/no-hang policy. The promoted template logger fixture has the same unbounded cleanup pattern at template/crates/daemon/src/observability_adapter_tests.rs126 and166: both Drop and the timeout branch call Child::wait after kill, outside their polling deadline." ;
+ triage:action "Use the existing bounded owned-tree execution mechanism for every new external command/probe, retain causal failure observations and physical cleanup on errors/assertions, and add an owned stalled/pipe-holding negative proof. Do not fix with retries, skips or larger timeouts. Cover the generated logger fixture destructor/timeout paths as well as the Python regression command helper." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_ARCH_C2_007 a triage:Finding ;
+ triage:id "ARCH-C2-007" ;
+ triage:severity "BLOCKING" ;
+ triage:reviewer "arch-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md" ;
+ triage:issue "The imported C1 structural gate explicitly requires removal of examples/spike/phase-c-contract before merge, but this temporary probe/composition/lock/selective-probe tree remains in the full C2 PR. Parent completion is a required C2 closure condition." ;
+ triage:action "Have the shared owner retain concise authoritative conclusions and durable regressions, remove the temporary probe tree, then merge that closeout into C2. Do not add raw diagnostic archives." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_EXT_C2_001 a triage:Finding ;
+ triage:id "EXT-C2-001" ;
+ triage:severity "important" ;
+ triage:reviewer "extensibility-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "See reviewer source and target references in the published QA report." ;
+ triage:issue "The inherited supported custom-operation seam lacks normal worker-independent context construction." ;
+ triage:action "Promote the shared-owner correction providing a minimal ordinary-feature context/control construction and ownership contract, without a dummy Scheduler worker or test-utils. Preserve cancellation and earliest deadlines, document consumer responsibilities, and prove the custom provider/executor path in a normal external consumer." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_EXT_C2_002 a triage:Finding ;
+ triage:id "EXT-C2-002" ;
+ triage:severity "important" ;
+ triage:reviewer "extensibility-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "See reviewer source and target references in the published QA report." ;
+ triage:issue "Inherited cancellation and capability errors direct consumers to repair database files rather than resolve the real refusal." ;
+ triage:action "Promote the shared-owner reason-appropriate cause/recovery correction for cancellation, expiry and unsupported capability failures. Retain accurate database recovery for genuine I/O errors and value-free diagnostics; consumers should not need to parse provider prose or alter database files to handle a control-plane refusal." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RBQA_C2_001 a triage:Finding ;
+ triage:id "RBQA-C2-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs" ;
+ triage:issue "Inherited canonical DTO Debug exposes payload, interpreter source and environment values/references across the diagnostic boundary." ;
+ triage:action "Consume the canonical owner repair providing value-free Debug throughout the sensitive DTO chain and canary regressions in existing contract tests, preserving serde/schema semantics. No new lint framework is needed." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RBQA_C2_002 a triage:Finding ;
+ triage:id "RBQA-C2-002" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron/src/consumer_contract.rs" ;
+ triage:issue "The custom CronOperations port requires an operation context that ordinary consumers cannot construct without framework/test ownership." ;
+ triage:action "Consume a minimal normal-feature context/control construction and ownership seam for application-owned operations without a dummy Scheduler worker or test-utils. Preserve shared cancellation and earliest deadlines, document provider responsibilities, and prove ordinary external construction." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RBQA_C2_003 a triage:Finding ;
+ triage:id "RBQA-C2-003" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs" ;
+ triage:issue "The canonical Schemars request schema lacks the object root required by the selected real MCP input-schema boundary." ;
+ triage:action "Consume the owner fix adding type:object only to the canonical Schemars root while retaining typed OpenAPI oneOf. Verify actual RMCP input-schema construction/validation in the existing contract venue, not just naming Parameters<CronRequest>." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RBQA_C2_004 a triage:Finding ;
+ triage:id "RBQA-C2-004" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py" ;
+ triage:issue "New external-command tests and the promoted logger fixture do not retain bounded cleanup ownership for their subprocesses." ;
+ triage:action "Use the existing owned, bounded process execution mechanism for all new test commands/probes and redesign logger-fixture destructor/timeout cleanup to avoid unbounded waits. Preserve causal observations and physical cleanup on assertion/error paths; prove stalled or pipe-holding failures without retries, skips or larger timeouts." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RBQA_C2_005 a triage:Finding ;
+ triage:id "RBQA-C2-005" ;
+ triage:severity "critical" ;
+ triage:reviewer "ruthless-boundary-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py" ;
+ triage:issue "The installation regression inherits ambient launcher/install state and can write outside its temporary test boundary." ;
+ triage:action "Select a supported private sc-lint installation directory beneath the test temporary root and clear/replace inherited launcher overrides as needed. Verify the actual installed launcher and preserve deliberately seeded ambient installation bytes; do not duplicate upstream installer logic or modify global configuration." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_QA_C2_001 a triage:Finding ;
+ triage:id "QA-C2-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py" ;
+ triage:issue "The new consumer profile regression can hang indefinitely while owning external setup, Cargo and analyzer processes." ;
+ triage:action "Use the canonical bounded owned-process runner with regular-file capture and physical descendant cleanup on timeout, error and assertion failure; apply it to every subprocess path in this module. Add a causal adversarial child proving failure and cleanup, without retries or larger correctness windows." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_QA_C2_002 a triage:Finding ;
+ triage:id "QA-C2-002" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py" ;
+ triage:issue "Install and upgrade tests share mutable ambient sc-lint installation state outside their TemporaryDirectory." ;
+ triage:action "Set SC_LINT_INSTALL_DIR and all writable installer/cache state to test-owned temporary paths, deliberately handle SC_LINT_BIN, and prove fresh setup and upgrade preserve external sentinel files and do not share mutable state across instances." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_QA_C2_003 a triage:Finding ;
+ triage:id "QA-C2-003" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "template/crates/daemon/src/observability_adapter_tests.rs" ;
+ triage:issue "The generated adversarial logger fixture has unbounded child waits in its timeout and Drop cleanup paths." ;
+ triage:action "Replace blocking Child::wait calls with a bounded physical-reap loop that retains ownership and reports cleanup failure, using the original cleanup deadline. Exercise status-inspection and kill/reap failure paths causally." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_QA_C2_004 a triage:Finding ;
+ triage:id "QA-C2-004" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix.rs" ;
+ triage:issue "A failed Unix session inspector releases the owned launcher without proving it has been reaped." ;
+ triage:action "On every inspector spawn/status/nonzero error, keep the pinned launcher identity, perform bounded group/direct termination and reap within the original cleanup budget, and retain an adversarial inspector-failure regression proving launcher completion." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_QA_C2_005 a triage:Finding ;
+ triage:id "QA-C2-005" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs" ;
+ triage:issue "The canonical Schemars request root lacks type:object, so the current schema proof does not establish usable real RMCP tool construction." ;
+ triage:action "Consume the canonical Schemars-only root object correction and a real RMCP tool/schema validator regression. Preserve the typed Utoipa oneOf representation; do not modify the shared helper so that Utoipa silently loses its alternatives." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_QA_C2_006 a triage:Finding ;
+ triage:id "QA-C2-006" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-command/src/envelope.rs" ;
+ triage:issue "New public schema implementations contain expect-based panic paths prohibited by the repository non-test API contract." ;
+ triage:action "Consume the shared owner infallible schema construction changes, preserving exact serialized shapes and nested typed components. Do not add a panic-policy waiver for constant inputs." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_QA_C2_007 a triage:Finding ;
+ triage:id "QA-C2-007" ;
+ triage:severity "critical" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron-commands/src/contract.rs" ;
+ triage:issue "Public Debug recursively reveals opaque payload, source, environment values and secret references." ;
+ triage:action "Consume redacted Debug implementations from the canonical DTO owner, retaining wire data unchanged and covering direct/nested payload/source/Set/Reference/path canaries." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RBP_C2_001 a triage:Finding ;
+ triage:id "RBP-C2-001" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron/src/consumer_contract.rs" ;
+ triage:issue "Cancellation, operation deadline expiry and unsupported provider capabilities are reported with unrelated database-repair guidance." ;
+ triage:action "Consume the shared reason-specific recovery correction while preserving the existing public error classification and value-free diagnostics. Explain cancellation/deadline reconciliation and selecting a cooperative provider for unsupported capabilities; do not recommend changing database permissions for these reasons." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RBP_C2_002 a triage:Finding ;
+ triage:id "RBP-C2-002" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron/src/consumer_contract.rs" ;
+ triage:issue "ShutdownBudget advertises checked K>=G construction but exposes both fields for unchecked literals and mutation." ;
+ triage:action "Consume the shared checked-budget correction: keep fields private, retain the existing fallible constructor and expose read-only cutoff accessors. This protects the explicitly promised cutoff invariant without adding another policy layer." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RBP_C2_003 a triage:Finding ;
+ triage:id "RBP-C2-003" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-best-practices-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-command/src/envelope.rs" ;
+ triage:issue "Public owner-schema construction treats canonical structural conversions as fallible JSON parsing and resolves the supposed impossible error through expect." ;
+ triage:action "Consume the existing shared native infallible schema construction repair for command and adapter owners, preserving typed nested schemas and wire representations; do not add a constant-schema panic waiver." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_RSH_C2_001 a triage:Finding ;
+ triage:id "RSH-C2-001" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-service-hardening-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-runtime/src/router.rs" ;
+ triage:issue "Generic request and drain timeout recovery instructs callers to replay mutations whose persistence can remain unknown." ;
+ triage:action "Replace unconditional retry advice in both wire suggestions and matching diagnostic recovery with outcome-aware reconciliation guidance before replay of mutations. Preserve existing 503/status codes and consumer override seams; consume the narrow shared runtime correction without importing the C3 dependency migration or adding an idempotency framework." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_FTQ_C2_001 a triage:Finding ;
+ triage:id "FTQ-C2-001" ;
+ triage:severity "critical" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py" ;
+ triage:issue "Consumer profile tests wait indefinitely for command completion and captured pipe EOF, and their direct cargo_generate calls also enter an unbounded captured subprocess path. A hung analyzer/Cargo/plugin or surviving inherited pipe writer can stall the whole unit suite." ;
+ triage:action "Run every externally executing test path, including generation, through the existing bounded owned-process runner with regular-file capture and physical descendant cleanup on timeout/error/assertion failure. Cover causal adversarial stall and cleanup without retries or longer correctness windows." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_FTQ_C2_002 a triage:Finding ;
+ triage:id "FTQ-C2-002" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/unit/generation/test_consumer_sc_lint_profile.py" ;
+ triage:issue "The public setup/upgrade test copies ambient installation environment and can mutate or race the user/global sc-lint installation outside its TemporaryDirectory. It can also select an ambient binary instead of exercising an isolated fresh installation." ;
+ triage:action "Put managed installation and writable cache/config state under the test-owned temporary root, handle SC_LINT_BIN deliberately, and prove independent instances plus external sentinels remain untouched. Do not serialize tests to hide the shared state." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_FTQ_C2_003 a triage:Finding ;
+ triage:id "FTQ-C2-003" ;
+ triage:severity "critical" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "template/crates/daemon/src/observability_adapter_tests.rs" ;
+ triage:issue "The generated logger fixture bounds its initial poll but can hang indefinitely while trying to reap on timeout or Drop. A kill request is not physical-completion proof." ;
+ triage:action "Keep ownership and use a bounded physical-reap loop within the original cleanup budget on success/error/timeout/panic. Add causal status-inspection/kill/reap failure coverage; no bare unbounded wait, retry or timeout padding." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_FTQ_C2_004 a triage:Finding ;
+ triage:id "FTQ-C2-004" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix.rs" ;
+ triage:issue "Inspector spawn, wait or nonzero-status failure returns before the owned direct launcher is physically reaped. Drop retries the same failing stop and only sends start_kill, so returning a cleanup error can leave the child alive or unreaped." ;
+ triage:action "Retain launcher identity and the original cleanup deadline on every inspector failure; perform bounded termination and physical reap before releasing ownership, with a causal injected inspector-failure assertion at the return boundary. Consume the common C5 repair when available." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_FTQ_C2_005 a triage:Finding ;
+ triage:id "FTQ-C2-005" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "tests/integration/generation/owned_process.py" ;
+ triage:issue "The inner Python Windows owner equates empty Job Object accounting with physical termination of all descendant process objects. That can return before a retained descendant handle is signaled and make the immediate completion witness fail intermittently. The outer Rust emergency cleanup cannot retroactively qualify the inner return boundary." ;
+ triage:action "Consume the shared retained-process-identity Windows owner correction and observe physical completion for each owned identity plus direct launcher before reporting return. Keep the existing zero-wait BEFORE witness; do not compensate with observer waits." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
+
+triage:C2_QA1_FTQ_C2_006 a triage:Finding ;
+ triage:id "FTQ-C2-006" ;
+ triage:severity "important" ;
+ triage:reviewer "flaky-test-qa" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "e4f01c5d160be7025ad1a6e22dd97676940b1be1" ;
+ triage:file "examples/spike/phase-c-contract/probe.py" ;
+ triage:issue "Retained executable qualification probes run captured subprocesses without deadlines or process-tree ownership, so manual qualification can hang forever on a command or inherited pipe writer. Being outside CI does not supply bounded ownership." ;
+ triage:action "Retire these already-temporary probes under the existing plan cleanup rule, preserving frozen conclusions and durable regressions in normal venues. If any command remains executable, use the canonical bounded owner rather than a new supervisor or retries." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6662398454" .
