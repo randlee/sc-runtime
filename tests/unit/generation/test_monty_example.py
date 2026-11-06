@@ -34,6 +34,11 @@ class MontyExampleTests(unittest.TestCase):
         # child retains captured output, so pipe-only capture cannot finish.
         OwnedProcessTests().witness(True, runner=run_generation)
 
+    def test_stalled_generation_times_out_and_reaps_ready_pipe_writer(self):
+        from tests.integration.generation.test_owned_process import OwnedProcessTests
+
+        OwnedProcessTests().witness(False, runner=run_generation)
+
     def test_manifest_inventory_and_default_off_features(self):
         for name in ("Cargo.toml", "workspace.template.toml"):
             dependencies = tomllib.loads((ROOT / "template" / name).read_text())["workspace"]["dependencies"]
@@ -61,7 +66,6 @@ class MontyExampleTests(unittest.TestCase):
                 self.assertNotRegex(path.read_text(), r"(?m)^sc-cron\s*(?:=|\.)", str(path))
 
     def test_local_maintainer_lock_is_not_copied_into_generated_consumer(self):
-        generation = driver()
         with tempfile.TemporaryDirectory(prefix="runtime-stale-template-lock-") as temporary:
             base = Path(temporary)
             source = base / "source"

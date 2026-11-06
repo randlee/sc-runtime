@@ -93,12 +93,10 @@
 #![forbid(unsafe_code)]
 #![warn(unreachable_pub)]
 
-mod application_control;
-#[doc(inline)]
-pub use application_control::WorkerStopControl;
 mod clock;
 pub mod consumer_contract;
 mod coord;
+mod operation;
 #[cfg(feature = "test-utils")]
 #[doc(inline)]
 pub use consumer_contract::operation_context_probe;
@@ -132,6 +130,7 @@ mod monty_host;
 mod monty_run;
 #[cfg(feature = "monty-test-handshake")]
 mod monty_test_os;
+pub mod observability;
 pub mod process;
 mod run_failure;
 mod scheduler;
@@ -176,7 +175,7 @@ pub use monty_host::{
 #[doc(inline)]
 pub use run_failure::RunFailureParts;
 #[doc(inline)]
-pub use scheduler::{DueRun, MissedTickPolicy, Scheduler, WorkerHandle};
+pub use scheduler::{DueRun, MissedTickPolicy, Scheduler, WorkerHandle, WorkerStopControl};
 #[doc(inline)]
 pub use sqlite::{SCHEMA_VERSION, SqliteScheduleStore};
 #[doc(inline)]

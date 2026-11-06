@@ -1,13 +1,13 @@
 ---
 id: c-5
 phase: c
-status: planned
+status: in_progress
 closure_type: integration
 target_boundary: sc-cron-consumer-compatibility
 track: cron
 wave: 2
 branch: sprint/c-5-cron-consumer-compatibility
-worktree: sprint/c-5-cron-consumer-compatibility
+worktree: /Users/randlee/github/sc-runtime-worktrees/sprint/c-5-cron-consumer-compatibility
 requirements:
   - REQ-CRON-0001
   - REQ-CRON-0002
@@ -22,19 +22,31 @@ requirements:
   - REQ-RUN-0005
   - NFR-RUN-0002
   - NFR-RUN-0005
+  - NFR-RUN-0008
   - NFR-RUN-0009
 adrs:
+  - ADR-RUN-0003
+  - ADR-RUN-0004
   - ADR-RUN-0013
   - ADR-RUN-0014
   - ADR-RUN-0016
   - ADR-RUN-0017
   - ADR-RUN-0018
   - ADR-RUN-0011
+  - ADR-RUN-0019
+  - ADR-RUN-0006
 owned_paths:
   - crates/sc-cron/src/
   - crates/sc-cron/tests/
   - crates/sc-cron/README.md
   - tests/integration/cron-consumer/
+  # QA3 REQ-C5-008 consumes C2's shared test owner; no product-driver change.
+  - tests/integration/generation/generate_owned.py
+  # QA4: canonical ownership fallback and causal failure witnesses.
+  - tests/integration/generation/owned_process.py
+  - tests/integration/generation/test_owned_process.py
+  - tests/unit/generation/test_monty_example.py
+  - scripts/run_generation_tests.py
 must_follow: [c-1]
 parallel_safe: [c-2, c-3, c-6]
 recommended_agent: arch-ctm

@@ -5,6 +5,10 @@ from pathlib import Path
 import unittest
 from unittest import mock
 import subprocess
+import json
+import os
+import shutil
+import tempfile
 
 SPEC = importlib.util.spec_from_file_location(
     "observability_dependencies", Path(__file__).resolve().parents[1] / "check_observability_dependencies.py",
@@ -28,6 +32,27 @@ def graph(owner, package, transitive=False, kind=None):
 
 
 class ObservabilityDependencies(unittest.TestCase):
+    def test_isolated_cron_logging_consumer(self):
+        fixture = CHECK.ROOT / "crates/sc-cron/tests/fixtures/logging_consumer"
+        with tempfile.TemporaryDirectory(prefix="cron-logging-consumer-") as directory:
+            root = Path(directory)
+            shutil.copytree(fixture / "tests", root / "tests")
+            manifest = (fixture / "Cargo.toml").read_text().replace(
+                '"../../.."', json.dumps(str(CHECK.ROOT / "crates/sc-cron")))
+            (root / "Cargo.toml").write_text(manifest)
+            metadata = CHECK.run_metadata(
+                ["cargo", "metadata", "--offline", "--format-version", "1"],
+                root, "isolated logging consumer")
+            CHECK.check_isolated_graph(metadata)
+            consumer = next(p for p in metadata["packages"] if p["name"] == "cron-logging-consumer")
+            self.assertNotIn("sc-command", [d["name"] for d in consumer["dependencies"]])
+            env = os.environ.copy()
+            env.setdefault("CARGO_TARGET_DIR", str(CHECK.ROOT / "target/cron-logging-consumer"))
+            result = CHECK._owned.run(
+                ["cargo", "test", "--offline"], cwd=root, env=env, timeout=300,
+                stdin=subprocess.DEVNULL, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_actual_workspace_normal_and_build_graph_for_all_libraries(self):
         metadata = CHECK.resolved_metadata()
         for owner in CHECK.OWNERS:

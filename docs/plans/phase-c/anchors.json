@@ -1071,6 +1071,13 @@
           }
         },
         {
+          "at": "2026-11-06T05:10:09+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.",
+          "replaced": false
+        },
+        {
           "at": "2026-11-06T04:26:23+00:00",
           "event": "excluded",
           "item": "c-1",
@@ -1093,6 +1100,10 @@
         }
       ],
       "exclude": [
+        {
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
+        },
         {
           "item": "c-1",
           "reason": "C-1 implements the runtime contract rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout."
@@ -1160,6 +1171,13 @@
           }
         },
         {
+          "at": "2026-11-06T05:10:09+00:00",
+          "event": "excluded",
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.",
+          "replaced": false
+        },
+        {
           "at": "2026-11-06T04:26:23+00:00",
           "event": "excluded",
           "item": "c-1",
@@ -1182,6 +1200,10 @@
         }
       ],
       "exclude": [
+        {
+          "item": "c-5",
+          "reason": "C-5 implements cron consumer compatibility rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."
+        },
         {
           "item": "c-1",
           "reason": "C-1 implements the runtime contract rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop."

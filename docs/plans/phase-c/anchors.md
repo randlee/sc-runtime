@@ -287,6 +287,7 @@ Scope: the Phase C planning branch and Git worktree metadata
 Deterministic check to pair with the development gate: Git worktree metadata identifies the separate plan/phase-c checkout.
 
 Excluded from (not judged; the cell passes as `excluded`):
+- `c-5`: C-5 implements cron consumer compatibility rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
 - `c-1`: C-1 implements the runtime contract rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
 - `c-3`: C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
 - `c-2`: C-2 installs the consumer lint profile rather than creating the initial Phase C planning worktree, already completed in the dedicated plan/phase-c checkout.
@@ -312,6 +313,7 @@ Scope: the Phase C planning pull request metadata
 Deterministic check to pair with the development gate: GitHub PR114 head plan/phase-c targets develop and is separate from dependency PR109.
 
 Excluded from (not judged; the cell passes as `excluded`):
+- `c-5`: C-5 implements cron consumer compatibility rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
 - `c-1`: C-1 implements the runtime contract rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
 - `c-3`: C-3 upgrades the runtime ecosystem rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
 - `c-2`: C-2 installs the consumer lint profile rather than creating the initial Phase C planning pull request, already completed separately as PR114 to develop.
