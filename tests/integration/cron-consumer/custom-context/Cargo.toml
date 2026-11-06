@@ -1,0 +1,9 @@
+[package]
+name = "cron-custom-context-proof"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[workspace]
+[dependencies]
+sc-cron = { path = "../../../../crates/sc-cron", default-features = false }
+tokio = { version = "1", features = ["macros", "rt", "time"] }

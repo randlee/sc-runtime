@@ -3,7 +3,7 @@ set windows-shell := ["cmd.exe", "/c"]
 python := if os_family() == "windows" { "python" } else { "python3" }
 
 # sc-lint managed recipes: default, setup, lint, test, upgrade.
-# Consumer-owned recipes, kept across `sc-lint init --just`: db-prepare,
+# Consumer-owned recipes (repeat-init currently conflicts; sc-runtime#117): db-prepare,
 # build-cli, build-daemon.
 
 default: lint
@@ -21,7 +21,7 @@ test *layer:
 upgrade:
     {% raw %}{{python}}{% endraw %} .sc-lint/bootstrap.py upgrade --config sc-lint.toml
 
-# Consumer-owned. A later `sc-lint init --just` must keep these recipes.
+# Consumer-owned. Setup and upgrade preserve these recipes.
 db-prepare:
     {% raw %}{{python}}{% endraw %} scripts/consumer_checks.py db-prepare
 
