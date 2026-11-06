@@ -138,6 +138,53 @@ Publish `sc-runtime 0.2.0` only after c-5's dedicated compatibility sprint
 and c-3/c-6 implementation are complete and release is authorized. Then prove
 a newly generated consumer resolves it from crates.io without a checkout patch.
 
+## Execution stages and QA closure
+
+C4 remains one `integration` sprint. The deliverables and acceptance criteria
+below are authoritative and unchanged; their ordered execution does not create
+separately closed sprints or waive any final result.
+
+| Stage | Existing scope | Result permitted |
+|---|---|---|
+| A — prepublication source | Deliverable 1; the complete source implementation of deliverables 2–3; every acceptance and validation obligation executable before publication, including the composed consumer proofs and source-qualified benchmark required by existing release policy. | Source qualification only. |
+| B — authorized publication | Deliverable 2's actual all-six exact `0.2.0` publication and positive predecessor-version visibility in the canonical dependency order. | Publication result only. |
+| C — registry acceptance | Deliverable 3 and every criterion requiring the actual published artifacts, including the unchanged consumer recipes and repeated real UI/target/schema/lifecycle/ownership/custom-store/override/capacity/graph/logging proofs. | Full-sprint qualification only after B and C actually pass. |
+
+Stage A reviews the entire composed source, including the publication and
+registry-test implementations, against this full sprint plan. `req-qa`
+enumerates every Stage A obligation, reports its complete/total count, and
+separately reports the full-sprint complete/total count with unperformed B/C
+results explicitly pending. A source defect needed by a later stage blocks A;
+pending publication or registry execution never counts as completed work.
+Stage A requires 100% of its exhaustive scope, every required reviewer PASS
+(or contract-permitted SKIPPED) with actual parent spawn proof and fenced
+results, clean required scans, applicable anchor and benchmark evidence, and
+zero open Blocking, Important or Minor findings. Start QA without waiting for
+CI; source merge additionally requires all required checks green at the
+reviewed source and all prerequisite PRs merged in the existing dependency
+order. Preserve previous full-sprint FAIL reports as historical full-sprint
+results rather than relabeling them as full PASS.
+
+The existing QA report must label this result `source_stage_verdict` and retain
+`full_sprint_verdict: IN_PROGRESS`; source PASS applies only to the source PR
+and necessary reviewed source promotions. It does not close C4, its bead,
+Phase C or the release goal. Keep the normal integration → develop → immutable
+candidate → release-readiness → main sequence, each with its applicable QA and
+CI gates. Run branch-specific preflights at their required promotion point;
+the final main-only preflight and publication run from the exact qualified
+main source after main promotion, never from an alternate ref. Preserve
+candidate/tag/build provenance and requalify material changes. Finish tracked
+non-report edits before the controlled benchmark campaign; preserve measured
+whole-tree equivalence under the existing canonical report-file exceptions.
+
+Only actual Stage B publication/visibility and Stage C registry acceptance
+permit full C4 QA at 100% of the unchanged full-sprint scope, zero open findings
+and all required checks/evidence. Complete phase-ending QA before phase closure.
+A missing or failed registry proof leaves C4 open for remediation. A retry may
+complete missing uploads only when already published immutable artifacts are
+correct; a defective published version requires the existing explicit recovery
+decision, never a patched-checkout or substituted-version success claim.
+
 ## Deliverables
 
 1. **Before any publication**, require completed c-3 runtime/ecosystem and
