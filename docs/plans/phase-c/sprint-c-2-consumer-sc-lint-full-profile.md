@@ -1,7 +1,7 @@
 ---
 id: c-2
 phase: c
-status: in_progress
+status: complete
 closure_type: integration
 target_boundary: generated-consumer-lint
 track: lint
