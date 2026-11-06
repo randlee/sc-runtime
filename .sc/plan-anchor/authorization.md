@@ -64,3 +64,34 @@ Respect automatic approval review: if an action is rejected, report the exact
 action and reason with this authorization reference so the parent can resolve
 the context. Do not bypass a rejection through another route or indirect
 execution.
+
+## Phase C calibration approval — November 6, 2026
+
+The user additionally approves Phase C question calibration and subsequent tuning
+and rechecks for C1–C6 through the same endpoint,
+`POST https://api.typesafe.ai/v1/systemone`. This extends the approved payload
+class to approved anchor text, candidate questions, and fictional pass/fail,
+boundary and evidence cases. The prepared C5 batch contains 90 requests pinned
+to Jev 1.14.0. The approval covers subsequent Phase C batches and rechecks of
+this same payload class; it is not limited to that first batch and must not
+be requested again per batch, session, worktree or delegated agent.
+
+Source files, full diffs, raw logs, credentials and private Beads data remain
+outside this approval. Existing ordinary plan and development-review consent
+above remains in force. Authentication stays in the existing credential provider.
+This export approval does not adopt a question bundle, alter approved fixture
+meanings, certify a gate or authorize publication. Independent tuning, frozen
+expectations and all normal verification remain required.
+
+Direct human provenance is `request_user_input_async`,
+`call_xkFLs3bj2zJVxVUjG6u9Lo1o`, item 2. The user answered:
+
+> Approve Phase C calibration exports and rechecks
+
+The exact question and all three approved decisions, including the C1 stage
+fixtures and narrow Python scratch dependency exception, are recorded in
+[the approval receipt](../../docs/plans/phase-c/reviews/authority-approvals/phase-c-stage-policy-and-calibration-approved-2026-11-06.json).
+The receipt preserves proposal digests and scope. Delegate with this committed
+record and the actual human approval provenance. Respect automatic approval
+review; this approval resolves the earlier expanded-payload scope gap without
+changing destination or bypassing review.

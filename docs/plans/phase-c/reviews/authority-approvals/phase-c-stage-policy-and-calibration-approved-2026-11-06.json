@@ -1,0 +1,86 @@
+{
+  "schema": "sc-runtime/authority-approval/1",
+  "recorded_at": "2026-11-06T06:29:25.356084+00:00",
+  "approved_by": "randlee",
+  "provenance": {
+    "source": "direct human send_user_message_question_reply in Codex chat",
+    "thread_id": "01a16ea1-6444-76c3-90fc-eca18f70f658",
+    "tool": "request_user_input_async",
+    "call_id": "call_xkFLs3bj2zJVxVUjG6u9Lo1o"
+  },
+  "decisions": [
+    {
+      "item": 0,
+      "question_item_id": "[\"request_user_input_async\",\"call_xkFLs3bj2zJVxVUjG6u9Lo1o\",0]",
+      "question": "Approve the C1 contract-stage clarification and additional fixtures in /tmp/sc-runtime-phase-c-execution/dev-gates/c1-contract-stage-clarification.md? C1 must deliver and qualify configuration-selected boundaries and consumer-ownership contracts; C2 must still ship and test the full installer. Original statements, scopes, quotes and fixtures remain intact.",
+      "answer": "Approve C1 clarification and fixtures",
+      "approved": true
+    },
+    {
+      "item": 1,
+      "question_item_id": "[\"request_user_input_async\",\"call_xkFLs3bj2zJVxVUjG6u9Lo1o\",1]",
+      "question": "Approve the narrow exception in /tmp/c4-tempfile-policy-clarification.md allowing sc-cron → tempfile for private Python working directories? Direct daemon tempfile use and temporary instance/database paths remain forbidden. Python scripts still run from their actual repository or caller-owned file paths.",
+      "answer": "Approve narrow Python scratch exception",
+      "approved": true
+    },
+    {
+      "item": 2,
+      "question_item_id": "[\"request_user_input_async\",\"call_xkFLs3bj2zJVxVUjG6u9Lo1o\",2]",
+      "question": "Approve Phase C question calibration and subsequent tuning/rechecks via POST https://api.typesafe.ai/v1/systemone, including approved anchor text, candidate questions and fictional pass/fail/boundary/evidence cases? The prepared C5 batch has 90 requests pinned to Jev 1.14.0; no source files, diffs, raw logs, credentials or private Beads data. This covers the same payload class throughout Phase C so approval need not repeat.",
+      "answer": "Approve Phase C calibration exports and rechecks",
+      "approved": true
+    }
+  ],
+  "proposal_digests": {
+    "c1_contract_stage_clarification_sha256": "a7685fe5ac0aa6629be9a9c47cd2836ad26a2d8bd3681a8055740c4fa174c337",
+    "c4_tempfile_policy_sha256": "bad8c0affde42484c594489ce7c1f995ca0b91d15265348d3a353033ac6592ac",
+    "prepared_c5_model_pinned_jev_1_14_0_90_request_inventory_sha256": "9c420e30e409980613805a6b42527589a5786f9c4ed2969334049ce46715c38f"
+  },
+  "approved_c1_changes": {
+    "ANC-007": {
+      "stage_context": "C1 fulfills its contract-stage obligation by delivering a checkable contract that defines how selected configuration determines boundary owners and permitted dependency edges, omits disabled components, and qualifies the contract with the representative consumer-shaped configuration required by C1. C1 need not ship C2's bootstrap or claim C2's full matrix. C2 still must implement real fresh-install policy generation from settings and pass the approved supported-configuration/edge matrix and real analyzer checks. A future promise without the specified contract and qualification does not fulfill C1.",
+      "additional_fixture_pass": "C1 delivers the selected-crate/edge mapping contract and a representative qualification showing the selected consumer policy; the shipped generator and full installation matrix remain explicitly owned by C2.",
+      "additional_fixture_fail": "C1's contract merely promises appropriate boundaries later and neither defines the configuration-to-owner/edge mapping nor supplies its required representative qualification."
+    },
+    "ANC-008": {
+      "stage_context": "C1 fulfills its contract-stage obligation by explicitly defining the initial policy handoff and the consumer's authority over all subsequent boundary-policy decisions, with checkable contract/probe evidence required by C1. C1 need not ship the C2 handoff implementation. C2 still must write the policy into the consumer repository and verify the approved preservation/ownership behaviors. The narrow existing successful-customized-native-init waiver remains unchanged; it does not waive consumer control or silently permit overwriting policy.",
+      "additional_fixture_pass": "C1's contract makes the consumer the decision owner after initial setup and supplies its required ownership qualification, while explicitly assigning the shipped policy handoff/preservation implementation to C2.",
+      "additional_fixture_fail": "C1's contract leaves subsequent consumer boundary decisions with sc-runtime, or only promises to decide ownership in a later sprint without defining the handoff."
+    }
+  },
+  "approved_python_scratch_proposal": "# Blocking requirement decision: selected cron's private Python scratch directory\n\nExisting authority conflicts: REQ-RUN-0503 criterion6 (docs/requirements.md:3357), REQ-RUN-0701 obligation6 (3595–3596), and its criterion1 (3672) forbid every tempfile/tempdir package in the daemon normal dependency tree. Separately, docs/sc-cron/requirements.md:151 permits tempfile as a normal sc-cron dependency; actual production `sc_cron::process::TempCwd` uses `tempfile::TempDir` (crates/sc-cron/src/process.rs:213–222) to isolate Python hooks. The C4 selected default now makes that already implemented path reachable. The full no-edit sequence compiles both binaries and fails the old graph guard. No guard, requirement, dependency or temporary-directory implementation has been changed to bypass it.\n\nProposed exact replacements (approval required):\n\n1. REQ-RUN-0503 success criterion6: “The same job then runs `just build-daemon` in `$RUNNER_TEMP/app`, and it exits0. That recipe includes `cargo tree -p <project>-daemon -e normal --prefix none` and an automated normal-dependency ancestry check. `tempdir` is forbidden. `tempfile` is allowed only as the existing direct normal dependency of the qualified `sc-cron` package for private Python-hook scratch directories; every normal path from the daemon to that package must pass through `sc-cron`. A direct daemon dependency or any other direct/transitive ancestry fails. Daemon instance roots, endpoints, locks and application database paths must still never use a temporary-directory API in production.”\n2. REQ-RUN-0701 command-list obligation6: “`just build-daemon` inside the generated project at `<dest>`. It includes `cargo tree -p <project>-daemon -e normal --prefix none` and the same normal-dependency ancestry check required by REQ-RUN-0503 criterion6. It fails for any `tempdir`, any direct daemon `tempfile` edge, or any `tempfile` ancestry outside the qualified `sc-cron` private Python scratch path. Amended by this explicitly approved selected-cron clarification.”\n3. REQ-RUN-0701 success criterion1, final daemon sentence only: “`just build-daemon` includes `cargo tree -p <project>-daemon -e normal --prefix none` and the normal-dependency ancestry check from REQ-RUN-0503 criterion6. Those checks run because the job runs the recipes; they are not a separate manual step.” Preserve the rest of that criterion verbatim.\n\nGuard acceptance cases:\n\n- PASS: no tempfile/tempdir normal dependency (unselected cron).\n- PASS: selected qualified sc-cron→tempfile direct normal edge, and all normal daemon-to-tempfile paths pass through that sc-cron identity; private scratch remains owned/cleaned by core Python runner.\n- FAIL: daemon→tempfile, even if selected cron also legitimately uses the same resolved tempfile identity.\n- FAIL: daemon→other-package→tempfile, including a second ancestry into the same tempfile identity.\n- FAIL: sc-cron→other-package→tempfile without the qualified direct edge; do not allow arbitrary subtrees by name.\n- FAIL: any normal tempdir dependency, including beneath sc-cron.\n- Retain existing production scans preventing temporary daemon instance-root paths. Keep CLI normal graph's server/cron/SQLite/Monty exclusions unchanged. Dev/build-only paths are outside the normal graph check and must not create a false exemption.\n\nImplementation after approval would inspect real normal resolve edges/package identities and reject alternate ancestry; it would not blanket allowlist the package name, turn off build-daemon, remove real Python isolation, or replace safe tempfile with hand-rolled temporary directories.\n",
+  "calibration_export_scope": {
+    "phase": "C",
+    "sprints": [
+      "C1",
+      "C2",
+      "C3",
+      "C4",
+      "C5",
+      "C6"
+    ],
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "content": [
+      "approved anchor text",
+      "candidate questions",
+      "fictional pass/fail/boundary/evidence cases"
+    ],
+    "includes": "subsequent Phase C tuning and rechecks of the same payload class",
+    "excludes": [
+      "source files",
+      "full diffs",
+      "raw logs",
+      "credentials",
+      "private Beads data"
+    ],
+    "prepared_c5_requests": 90,
+    "prepared_c5_model": "jev-1.14.0"
+  },
+  "acceptance_limits": [
+    "Approval authorizes the stated changes and export scope, not a passing gate, selected question bundle, release, or completed sprint.",
+    "Original C1 anchor statements, quotes, scopes and fixtures remain intact; C2 retains the full installer obligation.",
+    "The scratch exception does not permit direct daemon tempfile use, other tempfile ancestry, temporary instance roots or temporary database paths.",
+    "All prior runs and frozen calibration evidence remain historical; affected C1 anchor versions need fresh fixture and live verification."
+  ],
+  "recorded_date_utc": "2026-11-06"
+}
