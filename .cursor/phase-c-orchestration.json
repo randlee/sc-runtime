@@ -1,6 +1,6 @@
 {
   "phase": "c",
-  "branch": "plan/phase-c",
+  "branch": "integrate/phase-c",
   "qa_rounds": [
     {
       "qa_pass": "qa-1",
@@ -3855,80 +3855,2717 @@
         "missing_reviewers": [],
         "unparsed_reviewers": []
       }
-    }
-  ],
-  "execution_branch": "integrate/phase-c",
-  "c5_qa3_fix": {
-    "finding_ids": [
-      "REQ-C5-008"
-    ],
-    "reviewer_occurrences": 2,
-    "highest_severity": "Blocking",
-    "implementation_commit": "c0c6cb4a9f84b74f0824fdab1337f74036f21687",
-    "status": "corrected_pending_independent_reqa",
-    "triage_ttl_paths": [
-      ".triage/c/findings/c5-qa3.ttl"
-    ],
-    "checks": {
-      "focused_tests": 17,
-      "format": "PASS",
-      "lint_gates": "PASS",
-      "ordinary_discovery": {
-        "tests": 151,
-        "executed": false,
-        "PYTHONPATH": null
+    },
+    {
+      "qa_pass": "qa-pr116-sprint-4",
+      "commit": "c59ef7b6d2365841901f988142041eca5cddcff4",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6663839776",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c1_req_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c1_arch_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c1_rust_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c1_flaky_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c1-qa1.ttl",
+        ".triage/c/findings/c1-qa2.ttl",
+        ".triage/c/findings/c1-qa3.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c1_manager_qa4",
+      "machine_status": {
+        "sprint": "c-1",
+        "task": "qa-pr116-sprint-4",
+        "branch": "sprint/c-1-consumer-runtime-contract",
+        "commit": "c59ef7b6d2365841901f988142041eca5cddcff4",
+        "pr": 116,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 17,
+          "total": 17,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source QA is complete with zero findings, but the mandatory live development-anchor gate has not run; explicit development-evidence export approval is pending.",
+        "next_action": "finish_live_development_anchor_gate_then_confirm_ci",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c1_req_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c1_arch_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c1_rust_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c1_flaky_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr116-sprint-4",
+          "commit": "c59ef7b6d2365841901f988142041eca5cddcff4",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6663839776",
+          "coordinator_task_id": "/root/c1_manager_qa4",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c1-qa1.ttl",
+              ".triage/c/findings/c1-qa2.ttl",
+              ".triage/c/findings/c1-qa3.ttl"
+            ],
+            "owner": "prior finding history correlated; all source findings resolved by required reviewers"
+          },
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "central_screen": {
+            "findings": 0,
+            "required": false,
+            "reason": "zero actual reviewer/TODO findings"
+          },
+          "ci": {
+            "head_matches": true,
+            "required_checks": 17,
+            "successful_checks": 17,
+            "pending_checks": 0,
+            "failed_checks": 0,
+            "waited_for_ci": false
+          },
+          "development_anchor_gate": {
+            "status": "not_run",
+            "judge_request_sent": false,
+            "authorization": "pending explicit human approval for development evidence export",
+            "error_code": "AUTO_REVIEW.REJECTED",
+            "owner": "parent-orchestrator",
+            "packet": "/tmp/sc-runtime-phase-c-execution/dev-gates/development-gate-approval-packet.md"
+          },
+          "model_execution": "Inherited available Codex fallback; configured Cursor models unavailable"
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": []
       }
     },
-    "fullsuite_current_head_claimed": false,
-    "ci_waited": false,
-    "receipt": "/tmp/c5-qa3-validation.receipt.json",
-    "shared_source": "c6b4bc11f29e6e2d0baf8e2cd2da7f9070e7bf9f"
+    {
+      "qa_pass": "qa-pr116-sprint-5",
+      "commit": "78cc2efef995a8780b1f7fdba99707bdb3a10a42",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6677302309",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c1_req_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c1_arch_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c1_rust_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c1_flaky_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c1-qa1.ttl",
+        ".triage/c/findings/c1-qa2.ttl",
+        ".triage/c/findings/c1-qa3.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c1_manager_qa5",
+      "machine_status": {
+        "sprint": "c-1",
+        "task": "qa-pr116-sprint-5",
+        "branch": "sprint/c-1-consumer-runtime-contract",
+        "commit": "78cc2efef995a8780b1f7fdba99707bdb3a10a42",
+        "pr": 116,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 17,
+          "total": 17,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source QA and all 17 exact-head CI checks pass. C1 ANC-007/008 contract-stage fixture clarification requires actual user approval and successful live development-anchor/paired qualification before merge.",
+        "next_action": "resolve_contract_stage_authority_then_live_anchor_and_paired_checks_and_confirm_ci",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c1_req_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c1_arch_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c1_rust_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c1_flaky_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr116-sprint-5",
+          "commit": "78cc2efef995a8780b1f7fdba99707bdb3a10a42",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6677302309",
+          "coordinator_task_id": "/root/c1_manager_qa5",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c1-qa1.ttl",
+              ".triage/c/findings/c1-qa2.ttl",
+              ".triage/c/findings/c1-qa3.ttl"
+            ]
+          },
+          "ci": {
+            "head_matches": true,
+            "required_checks": 17,
+            "successful_checks": 17,
+            "pending_checks": 0,
+            "failed_checks": 0,
+            "waited_for_ci": false,
+            "snapshot_at": "2026-11-06T05:34:32.785451+00:00"
+          },
+          "development_anchor_gate": {
+            "status": "pending_contract_stage_authority_and_live_recheck",
+            "ordinary_development_evidence_export": "approved; committed authorization retained",
+            "affected_anchors": [
+              "ANC-007",
+              "ANC-008"
+            ],
+            "previous_gate_not_passed": true,
+            "paired_checks_complete": false
+          },
+          "model_execution": "Inherited Codex fallback; configured Cursor models unavailable"
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      }
+    },
+    {
+      "qa_pass": "qa-pr118-sprint-5",
+      "commit": "f96960818b88ecf42f45892006d53573be7209c6",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6677280734",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c5_req_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c5_arch_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c5_rust_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c5_flaky_qa5",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c5-qa4.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c5_manager_qa5",
+      "machine_status": {
+        "sprint": "c-5",
+        "task": "qa-pr118-sprint-5",
+        "branch": "sprint/c-5-cron-consumer-compatibility",
+        "commit": "f96960818b88ecf42f45892006d53573be7209c6",
+        "pr": 118,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 15,
+          "total": 15,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "All four source reviewers PASS and all 17 current checks are green; live development-anchor review and paired checks remain pending.",
+        "next_action": "complete_development_anchor_and_paired_checks",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c5_req_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c5_arch_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c5_rust_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c5_flaky_qa5",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr118-sprint-5",
+          "commit": "f96960818b88ecf42f45892006d53573be7209c6",
+          "coordinator_task_id": "/root/c5_manager_qa5",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6677280734",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c5-qa4.ttl"
+            ]
+          },
+          "ci_snapshot": {
+            "state": "success",
+            "total": 17,
+            "success": 17,
+            "pending": 0,
+            "failure": 0,
+            "waited": false,
+            "source": "GitHub statusCheckRollup at exact assigned head",
+            "captured_at": "2026-11-06T04:55:59.086501+00:00"
+          },
+          "development_anchor_gate": "pending",
+          "paired_checks": "pending"
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+        "finding_ids": []
+      }
+    },
+    {
+      "qa_pass": "qa-pr118-sprint-6",
+      "commit": "dac804b648e52ab35e17e738dd7ba6921084afd0",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6677554820",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c5_req_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c5_arch_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c5_rust_qa6",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c5-qa1.ttl",
+        ".triage/c/findings/c5-qa2.ttl",
+        ".triage/c/findings/c5-qa3.ttl",
+        ".triage/c/findings/c5-qa4.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c5_manager_qa6",
+      "machine_status": {
+        "sprint": "c-5",
+        "task": "qa-pr118-sprint-6",
+        "branch": "sprint/c-5-cron-consumer-compatibility",
+        "commit": "dac804b648e52ab35e17e738dd7ba6921084afd0",
+        "pr": 118,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 15,
+          "total": 15,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source QA6 is accepted: three required reviewers PASS, 15/15 deliverables, zero findings and TODO scan empty. Current-head hosted checks are not yet reported (empty check rollup), and GitHub reports a merge conflict. The current v2 development-anchor review and its paired-check reconciliation remain pending. Earlier f969608 CI17/17 success is historical evidence only.",
+        "next_action": "none",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c5_req_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c5_arch_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c5_rust_qa6",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr118-sprint-6",
+          "commit": "dac804b648e52ab35e17e738dd7ba6921084afd0",
+          "coordinator_task_id": "/root/c5_manager_qa6",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6677554820",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c5-qa1.ttl",
+              ".triage/c/findings/c5-qa2.ttl",
+              ".triage/c/findings/c5-qa3.ttl",
+              ".triage/c/findings/c5-qa4.ttl"
+            ]
+          },
+          "source_qa": "accepted",
+          "development_anchor_gate": "current_v2_pending",
+          "paired_deterministic_checks": "current_v2_reconciliation_pending",
+          "ci": {
+            "head_matches": true,
+            "reported_checks": 0,
+            "all_green": false,
+            "merge_state": "DIRTY",
+            "waited_for_ci": false
+          },
+          "model_execution": "Configured Cursor models unavailable; inherited Codex fallback."
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+        "pending_gates": [
+          "current_v2_development_anchor_and_paired_checks",
+          "green_current_head_ci",
+          "resolve_integration_merge_conflict",
+          "ordered_parent_integration"
+        ]
+      }
+    },
+    {
+      "qa_pass": "qa-pr118-sprint-7",
+      "commit": "a44ab2069bc85c5cba0f0db234c5b37d4ca213a2",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6677651149",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c5_req_qa7",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c5_arch_qa7",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c5_rust_qa7",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c5-qa1.ttl",
+        ".triage/c/findings/c5-qa2.ttl",
+        ".triage/c/findings/c5-qa3.ttl",
+        ".triage/c/findings/c5-qa4.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c5_manager_qa7",
+      "machine_status": {
+        "sprint": "c-5",
+        "task": "qa-pr118-sprint-7",
+        "branch": "sprint/c-5-cron-consumer-compatibility",
+        "commit": "a44ab2069bc85c5cba0f0db234c5b37d4ca213a2",
+        "pr": 118,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 15,
+          "total": 15,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source QA7 remains accepted: three required reviewers PASS, 15/15 deliverables, zero source findings and TODO scan clean. Both returned paired checks pass (2/2,9/9 command outcomes verified), and all 17 current-head CI checks are green. The actual v3 development-anchor run remains pass=false solely for ANC-013 (4 satisfied,1 underspecified,11 excluded,no errors or shortening). C5 is not fully qualified; ANC-013 calibration/qualification and ordered parent integration remain open.",
+        "next_action": "none",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c5_req_qa7",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c5_arch_qa7",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c5_rust_qa7",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-7",
+          "commit": "a44ab2069bc85c5cba0f0db234c5b37d4ca213a2",
+          "coordinator_task_id": "/root/c5_manager_qa7",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6677651149",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c5-qa1.ttl",
+              ".triage/c/findings/c5-qa2.ttl",
+              ".triage/c/findings/c5-qa3.ttl",
+              ".triage/c/findings/c5-qa4.ttl"
+            ]
+          },
+          "source_qa": "accepted_metadata_merge_requalification",
+          "metadata_delta": "Semantic union of integration674 and C5dac804b6 anchor exclusions/history and faithful Markdown render only; all 3419 nonmetadata tracked files unchanged",
+          "development_anchor_gate": {
+            "status": "not_qualified",
+            "pass": false,
+            "run_id": "dev-20261106T052123Z-c-5",
+            "correlation_id": "c-5-dev-a44ab206-v3",
+            "counts": {
+              "underspecified": 1,
+              "satisfied": 4,
+              "excluded": 11
+            },
+            "failing": [
+              "ANC-013"
+            ],
+            "errors": [],
+            "shortened": [],
+            "strict_result_valid": true,
+            "actual_http_executor": "/root/authorized_gate_transport_current"
+          },
+          "paired_deterministic_checks": {
+            "status": "pass",
+            "returned": 2,
+            "passed": 2,
+            "anchor_ids": [
+              "ANC-004",
+              "ANC-006"
+            ],
+            "current_commands": 9,
+            "verified_commands": 9,
+            "run_id": "dev-20261106T052123Z-c-5",
+            "anchors_sha256": "b79df416c889dd1b92effed049e99194124eedb6873fbeceab6f4ec69182a156",
+            "resolver_proof": "Fresh root and isolated SQLite consumer metadata plus resolver data assertions; rusqlite0.39.x/libsqlite3-sys0.37 singleton and no0.38. No Rust harness execution or C3 historical test retention claimed."
+          },
+          "ci": {
+            "head_matches": true,
+            "reported_checks": 17,
+            "successful": 17,
+            "pending": 0,
+            "failed": [],
+            "all_green": true,
+            "merge_state": "CLEAN",
+            "waited_for_ci": false
+          },
+          "model_execution": "Configured Cursor models unavailable; inherited Codex fallback."
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+        "pending_gates": [
+          "resolve_ANC013_development_anchor",
+          "ordered_parent_integration"
+        ]
+      }
+    },
+    {
+      "qa_pass": "qa-pr119-sprint-2",
+      "commit": "c6b4bc11f29e6e2d0baf8e2cd2da7f9070e7bf9f",
+      "verdict": "PASS",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6676437413",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c2_req_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c2_arch_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "extensibility-qa",
+          "task_id": "/root/c2_ext_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/c2_boundary_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c2_rust_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/c2_rbp_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-service-hardening-agent",
+          "task_id": "/root/c2_service_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c2_flaky_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c2-qa1.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c2_manager_qa2",
+      "machine_status": {
+        "sprint": "c-2",
+        "task": "qa-pr119-sprint-2",
+        "branch": "sprint/c-2-consumer-sc-lint-full-profile",
+        "commit": "c6b4bc11f29e6e2d0baf8e2cd2da7f9070e7bf9f",
+        "pr": 119,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "ready",
+        "merge_reason": "All eight source reviewers PASS,14/14 deliverables complete, zero findings/TODOs, live C2 development-anchor gate and7/7 paired checks PASS, and all17 exact-head CI checks green.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Approve C-2 for ordered integration by the parent orchestrator.",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c2_req_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c2_arch_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "extensibility-qa",
+            "task_id": "/root/c2_ext_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/c2_boundary_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c2_rust_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/c2_rbp_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-service-hardening-agent",
+            "task_id": "/root/c2_service_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c2_flaky_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr119-sprint-2",
+          "commit": "c6b4bc11f29e6e2d0baf8e2cd2da7f9070e7bf9f",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6676437413",
+          "coordinator_task_id": "/root/c2_manager_qa2",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c2-qa1.ttl"
+            ],
+            "owner": "prior39 findings plus supplementalREQ-C2-010 independently resolved"
+          },
+          "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+          "central_screen": {
+            "findings": 0,
+            "required": false,
+            "reason": "zero actual reviewer/TODO findings"
+          },
+          "ci": {
+            "head_matches": true,
+            "required_checks": 17,
+            "successful_checks": 17,
+            "pending_checks": 0,
+            "failed_checks": 0,
+            "waited_for_ci": false
+          },
+          "development_anchor_gate": {
+            "status": "PASS",
+            "authorization": "approved and durably committed",
+            "authorization_commit": "ab9dea1d13bd9812fbfeea775fb98bca8ba715d2",
+            "authorization_path": ".sc/plan-anchor/authorization.md",
+            "owner": "parent-orchestrator",
+            "paired_deterministic_checks": "PASS 7/7",
+            "run_id": "dev-20261105T192526Z-c-2",
+            "satisfied": 7,
+            "excluded": 9,
+            "failing": 0,
+            "item_truncated": false,
+            "validation_path": "/tmp/sc-runtime-phase-c-execution/dev-gates/c2-format-repaired-validation.json",
+            "paired_receipt": "/tmp/sc-runtime-phase-c-execution/dev-gates/c2-paired-checks/receipt.json",
+            "paired_actor": "/root/c2_anchor_paired_checks"
+          },
+          "model_execution": "Inherited available Codex fallback; configured Cursor Composer unavailable",
+          "previous_inflight_report_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6666567741",
+          "deliverables": {
+            "complete": 14,
+            "total": 14,
+            "percent": 100.0
+          }
+        }
+      }
+    },
+    {
+      "qa_pass": "qa-pr119-sprint-3",
+      "commit": "e674d6c1feae6fb154b45f906fb2d906c824f4d1",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6677297499",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c2_req_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c2_arch_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c2_rust_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c2_flaky_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c2-qa1.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c2_manager_qa3",
+      "machine_status": {
+        "sprint": "c-2",
+        "task": "qa-pr119-sprint-3",
+        "branch": "sprint/c-2-consumer-sc-lint-full-profile",
+        "commit": "e674d6c1feae6fb154b45f906fb2d906c824f4d1",
+        "pr": 119,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 14,
+          "total": 14,
+          "percent": 100.0
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source QA3 is accepted with zero findings. Current CI: 14 successful, 3 pending, 0 failed checks. Current-head development-anchor/paired-check reconciliation remains pending; the earlier seven-anchor/seven-paired PASS belongs to c6b4bc11, not this head. Ordered integration follows C1 acceptance.",
+        "next_action": "none",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c2_req_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c2_arch_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c2_rust_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c2_flaky_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr119-sprint-3",
+          "commit": "e674d6c1feae6fb154b45f906fb2d906c824f4d1",
+          "coordinator_task_id": "/root/c2_manager_qa3",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6677297499",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c2-qa1.ttl"
+            ]
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+        "pending_gates": [
+          "current_head_development_anchor_and_paired_check_reconciliation",
+          "green_current_head_ci",
+          "ordered_integration_after_c1"
+        ]
+      }
+    },
+    {
+      "qa_pass": "qa-pr119-sprint-4",
+      "commit": "b3e0b065d7d0d694b84e553abc393f9c0ad3e470",
+      "verdict": "PASS",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6677559353",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c2_req_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c2_arch_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c2_rust_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c2-qa1.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c2_manager_qa4",
+      "machine_status": {
+        "sprint": "c-2",
+        "task": "qa-pr119-sprint-4",
+        "branch": "sprint/c-2-consumer-sc-lint-full-profile",
+        "commit": "b3e0b065d7d0d694b84e553abc393f9c0ad3e470",
+        "pr": 119,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "ready",
+        "merge_reason": "All three required reviewers PASS,14/14 deliverables,0B+0I+0m,TODO scan clean; validated current live gate PASS(5 satisfied,11 excluded),all five returned checks reconciled,17/17 exact-head CI successful. Qualified for parent-managed ordered merge after C1.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Merge after C1 in the approved integration order.",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c2_req_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c2_arch_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c2_rust_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-4",
+          "commit": "b3e0b065d7d0d694b84e553abc393f9c0ad3e470",
+          "coordinator_task_id": "/root/c2_manager_qa4",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6677559353",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c2-qa1.ttl"
+            ]
+          },
+          "source_qa": "accepted",
+          "metadata_delta": "Only ANC-011/012 item exclusions and matching history; all other authority and product/test inputs unchanged.",
+          "development_anchor_gate": {
+            "run_id": "dev-20261106T051436Z-c-2",
+            "raw_summary_pass": true,
+            "satisfied": 5,
+            "excluded": 11,
+            "strict_owner_result": "validated",
+            "paired_current_reconciliation": "complete",
+            "paired_checks": {
+              "matched_returned_ids": [
+                "ANC-001",
+                "ANC-003",
+                "ANC-004",
+                "ANC-007",
+                "ANC-008"
+              ],
+              "fresh_pass": 2,
+              "scoped_retained": 3,
+              "failed": 0
+            },
+            "anchor_sha256": "5b63c70c4214d6e962dd6a5a5625518395cbc6a13f875f109efe1a69399e99e3",
+            "pass": true
+          },
+          "ci": {
+            "successful": 17,
+            "pending": 0,
+            "failed": 0,
+            "total": 17,
+            "snapshot_at": "2026-11-06T05:34:32.785451+00:00",
+            "waited_for_ci": false
+          },
+          "model_execution": "Configured Cursor model unavailable; inherited Codex fallback.",
+          "ordered_integration": "Merge only after C1; parent owns integration order."
+        },
+        "deliverables": {
+          "complete": 14,
+          "total": 14,
+          "percent": 100.0
+        },
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "pending_gates": [],
+        "merge_order_constraint": "after c-1"
+      }
+    },
+    {
+      "qa_pass": "qa-pr120-sprint-3",
+      "commit": "7adcda88d089682707b2c71722d73a63bcfe4981",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6676363594",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c3_req_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c3_arch_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/c3_boundary_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c3_rust_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c3_flaky_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c3-qa2.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c3_manager_qa3",
+      "machine_status": {
+        "sprint": "c-3",
+        "task": "qa-pr120-sprint-3",
+        "branch": "sprint/c-3-runtime-ecosystem-upgrade",
+        "commit": "7adcda88d089682707b2c71722d73a63bcfe4981",
+        "pr": 120,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 17,
+          "total": 17,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source QA accepted: all five required reviewers PASS,17/17 deliverables,0B+0I+0M,TODO clean,current exact-head CI all17 SUCCESS. Overall completion awaits live c-3 development-anchor gate and its paired deterministic checks; no corresponding receipts were supplied or found.",
+        "next_action": "parent_complete_development_anchor_and_paired_checks",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c3_req_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c3_arch_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/c3_boundary_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c3_rust_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c3_flaky_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-3",
+          "commit": "7adcda88d089682707b2c71722d73a63bcfe4981",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6676363594",
+          "coordinator_task_id": "/root/c3_manager_qa3",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c3-qa2.ttl"
+            ]
+          },
+          "source_qa": "accepted",
+          "development_anchor_gate": "not_evidenced",
+          "paired_deterministic_checks": "not_evidenced",
+          "remaining_checks": [
+            "Live anchor-sprint-review development gate for c-3 against the approved unchanged anchors and exact delivered 7adcda88 evidence; publish the real Jev report/run correlation.",
+            "Execute and record the deterministic checks paired with each satisfied/asserted_only anchor returned by that live run; verify exact-source receipts, then re-enforce the hard gate."
+          ],
+          "ci": "all17_success_at_exact_head",
+          "model_note": "Configured Composer unavailable; inherited Codex fallback."
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      }
+    },
+    {
+      "qa_pass": "qa-pr120-sprint-4",
+      "commit": "5840414909f2d720e815956fd5247b0e23f5a52a",
+      "verdict": "PASS",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6677300948",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c3_req_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c3_arch_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c3_rust_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c3_flaky_qa4",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c3-qa1.ttl",
+        ".triage/c/findings/c3-qa2.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c3_manager_qa4",
+      "machine_status": {
+        "sprint": "c-3",
+        "task": "qa-pr120-sprint-4",
+        "branch": "sprint/c-3-runtime-ecosystem-upgrade",
+        "commit": "5840414909f2d720e815956fd5247b0e23f5a52a",
+        "pr": 120,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "ready",
+        "merge_reason": "Four required reviewers PASS, 19/19 deliverables, 0B+0I+0M, TODO scan clean. Current live development gate dev-20261106T050517Z-c-3 passes with 8 satisfied and 8 recorded exclusions, no failures/errors/shortening. All four returned deterministic checks reconciled against exact HEAD and anchor hash; 11 fresh commands plus two narrowly retained source-equivalent qualification types. Exact-head CI: 17 successful, 0 pending, 0 failed.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Eligible for ordered parent integration after prerequisite C1; no merge performed.",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c3_req_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c3_arch_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c3_rust_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c3_flaky_qa4",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-4",
+          "commit": "5840414909f2d720e815956fd5247b0e23f5a52a",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6677300948",
+          "coordinator_task_id": "/root/c3_manager_qa4",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c3-qa1.ttl",
+              ".triage/c/findings/c3-qa2.ttl"
+            ]
+          },
+          "source_qa": "accepted",
+          "development_anchor_gate": {
+            "status": "pass",
+            "run_id": "dev-20261106T050517Z-c-3",
+            "correlation_id": "c-3-dev-584-current",
+            "satisfied": 8,
+            "excluded": 8,
+            "failed": 0,
+            "errors": 0,
+            "shortened": false,
+            "transport_actor": "/root/authorized_gate_transport_current"
+          },
+          "paired_deterministic_checks": {
+            "status": "pass",
+            "anchor_ids": [
+              "ANC-004",
+              "ANC-006",
+              "ANC-009",
+              "ANC-010"
+            ],
+            "anchors_sha256": "1bbf4db10942ccd2e8a2f4fb97bdaa50f3554517dc76b9e8150917ad38eaa232",
+            "current_commands": 11,
+            "retained_qualification_types": 2,
+            "reconciled_to_current_run": true
+          },
+          "ci": {
+            "successful": 17,
+            "pending": 0,
+            "failed": []
+          },
+          "model_note": "Configured Cursor model unavailable; inherited Codex fallback."
+        },
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan",
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "deliverables": {
+          "complete": 19,
+          "total": 19,
+          "percent": 100
+        }
+      }
+    },
+    {
+      "qa_pass": "qa-pr121-sprint-2",
+      "commit": "da18f7ebb4875cb0fa9db64665aac325d49ecc66",
+      "verdict": "IN-FLIGHT",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6677311271",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c6_req_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c6_arch_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c6_rust_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/c6_rbp_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c6_flaky_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c6-qa1.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c6_manager_qa2",
+      "machine_status": {
+        "sprint": "c-6",
+        "task": "qa-pr121-sprint-2",
+        "branch": "sprint/c-6-standard-cron-commands",
+        "commit": "da18f7ebb4875cb0fa9db64665aac325d49ecc66",
+        "pr": 121,
+        "verdict": "IN-FLIGHT",
+        "deliverables": {
+          "complete": 14,
+          "total": 14,
+          "percent": 100
+        },
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "not ready",
+        "merge_reason": "Source QA is clean; development-anchor review and paired deterministic checks remain pending. CI snapshot: 8/17 successful, 9 pending, 0 failed. No CI wait performed.",
+        "next_action": "none",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c6_req_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c6_arch_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c6_rust_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/c6_rbp_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c6_flaky_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr121-sprint-2",
+          "commit": "da18f7ebb4875cb0fa9db64665aac325d49ecc66",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6677311271",
+          "coordinator_task_id": "/root/c6_manager_qa2",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c6-qa1.ttl"
+            ]
+          }
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      }
+    },
+    {
+      "qa_pass": "qa-pr121-sprint-3",
+      "commit": "b9216c955f43b08e9e5e5905868bbb323fcb363e",
+      "verdict": "PASS",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6677554379",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c6_req_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c6_arch_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c6_rust_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c6-qa1.ttl"
+      ],
+      "finding_ids": [],
+      "coordinator_task_id": "/root/c6_manager_qa3",
+      "machine_status": {
+        "sprint": "c-6",
+        "task": "qa-pr121-sprint-3",
+        "branch": "sprint/c-6-standard-cron-commands",
+        "commit": "b9216c955f43b08e9e5e5905868bbb323fcb363e",
+        "pr": 121,
+        "verdict": "PASS",
+        "findings": {
+          "blocking": 0,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [],
+        "merge_readiness": "ready",
+        "merge_reason": "All C6 QA3 gates pass at exact b9216c955f43b08e9e5e5905868bbb323fcb363e:14/14 deliverables,three required reviewer fences PASS,0B+0I+0m,TODO scan clean,current live gate6 satisfied/10 excluded with all returned checks paired1/1,and all17 current CI checks successful. Qualified for ordered integration after C1,C2,C3 and C5.",
+        "next_action": "none",
+        "owner": "none",
+        "recommendation": "Merge PR121 into integrate/phase-c after C1,C2,C3 and C5 have landed in the required order. No merge performed by this coordinator.",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c6_req_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c6_arch_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c6_rust_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-3",
+          "commit": "b9216c955f43b08e9e5e5905868bbb323fcb363e",
+          "coordinator_task_id": "/root/c6_manager_qa3",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6677554379",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c6-qa1.ttl"
+            ]
+          },
+          "source_qa": "accepted_metadata_only_requalification",
+          "metadata_delta": "ANC-011/012 C6 activity exclusions and corresponding CLI history only; all other authority and product/test/build inputs unchanged",
+          "development_anchor_gate": {
+            "status": "pass",
+            "run_id": "dev-20261106T051447Z-c-6",
+            "correlation_id": "c-6-dev-b9216c95-v2",
+            "satisfied": 6,
+            "excluded": 10,
+            "failing": [],
+            "errors": [],
+            "shortened": [],
+            "actual_executor": "/root/authorized_gate_transport_current",
+            "strict_fence_valid": true
+          },
+          "paired_deterministic_checks": {
+            "status": "pass",
+            "actual_returned": 1,
+            "paired": 1,
+            "remaining": [],
+            "checked_anchor_ids": [
+              "ANC-004"
+            ],
+            "head_and_anchor_hash_reconciled": true
+          },
+          "ci": {
+            "head": "b9216c955f43b08e9e5e5905868bbb323fcb363e",
+            "successful": 17,
+            "pending": 0,
+            "failed": 0,
+            "pending_names": [],
+            "source": "fresh actual gh pr view 121 --json headRefOid,statusCheckRollup,url snapshot",
+            "waited_for_ci": false
+          },
+          "model_execution": "Configured Cursor models unavailable; inherited Codex fallback.",
+          "anchor_sha256": "cffe02489652b0eae1c34ee093f2467469a5cc7bbd3a8a330598b913135ecd83",
+          "integration_order": [
+            "c-1",
+            "c-2",
+            "c-3",
+            "c-5",
+            "c-6",
+            "c-4"
+          ],
+          "qualification_scope": "C6 source sprint; C4 actual generated composition and release/registry acceptance remain separately owned."
+        },
+        "deliverables": {
+          "complete": 14,
+          "total": 14,
+          "percent": 100
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      }
+    },
+    {
+      "qa_pass": "qa-pr122-sprint-2",
+      "commit": "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c4_req_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 6,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c4_arch_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/c4_boundary_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 1,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c4_rust_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/c4_rbp_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c4_flaky_qa2",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c4-qa1.ttl"
+      ],
+      "finding_ids": [
+        "REQ-QA-C4-001",
+        "REQ-QA-C4-002",
+        "REQ-QA-C4-003",
+        "REQ-QA-C4-004",
+        "REQ-QA-C4-005",
+        "REQ-QA-C4-006",
+        "ARCH-003",
+        "RBQA-C4-001"
+      ],
+      "coordinator_task_id": "/root/c4_manager_qa2",
+      "machine_status": {
+        "sprint": "c-4",
+        "task": "qa-pr122-sprint-2",
+        "branch": "sprint/c-4-runtime-ecosystem-release",
+        "commit": "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4",
+        "pr": 122,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 16,
+          "total": 24,
+          "percent": 66.7
+        },
+        "findings": {
+          "blocking": 8,
+          "important": 1,
+          "minor": 0
+        },
+        "blocking_ids": [
+          "REQ-QA-C4-001",
+          "REQ-QA-C4-002",
+          "REQ-QA-C4-003",
+          "REQ-QA-C4-004",
+          "REQ-QA-C4-005",
+          "REQ-QA-C4-006",
+          "ARCH-003",
+          "RBQA-C4-001"
+        ],
+        "merge_readiness": "not ready",
+        "merge_reason": "8 Blocking and 1 Important findings remain across existing policy, canonical publication visibility, composed/benchmark and release/registry acceptance obligations. Deliverables are 16/24, not full qualification. Current exact-head CI snapshot: 8 successful, 9 pending, 0 failed; no CI wait. No tempfile or release-staging proposal is operative.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c4_req_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 6,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c4_arch_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/c4_boundary_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 1,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c4_rust_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/c4_rbp_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c4_flaky_qa2",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-pr122-sprint-2",
+          "commit": "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4",
+          "coordinator_task_id": "/root/c4_manager_qa2",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6677433636",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c4-qa1.ttl"
+            ]
+          },
+          "finding_occurrences": 9,
+          "unique_finding_ids": 9,
+          "central_screen": {
+            "keep": 5,
+            "not_applicable_to_ceremony_screen": 4,
+            "ceremony": 0,
+            "genuine_findings_dismissed": 0
+          },
+          "todo_scan": {
+            "rust_source_hits": 0
+          },
+          "ci_snapshot": {
+            "head_matches_review": true,
+            "success": 8,
+            "pending": 9,
+            "failed": 0,
+            "waited_for_ci": false
+          },
+          "model_execution": "Inherited Codex fallback; configured Cursor model unavailable",
+          "release_acceptance": "open; no policy or staging exception adopted"
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      },
+      "central_triage_snapshot_paths": [
+        ".triage/c/findings/c4-qa2.ttl"
+      ],
+      "history_persistence": {
+        "recorded_at": "2026-11-06T06:04:26.977644+00:00",
+        "timing": "after_source_fix_checkpoint",
+        "source_fix_checkpoint": "e190e2c8d84b9235ac70b3e442691980e8b69a33",
+        "establishes_before_fix_triage": false
+      }
+    },
+    {
+      "qa_pass": "qa-pr122-sprint-3",
+      "commit": "e190e2c8d84b9235ac70b3e442691980e8b69a33",
+      "verdict": "FAIL",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749",
+      "reviewer_manifest": [
+        {
+          "agent": "req-qa",
+          "task_id": "/root/c4_req_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 5,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "arch-qa",
+          "task_id": "/root/c4_arch_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "ruthless-boundary-qa",
+          "task_id": "/root/c4_boundary_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "FAIL",
+          "findings": {
+            "blocking": 1,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-qa-agent",
+          "task_id": "/root/c4_rust_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "rust-best-practices-agent",
+          "task_id": "/root/c4_rbp_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        },
+        {
+          "agent": "flaky-test-qa",
+          "task_id": "/root/c4_flaky_qa3",
+          "spawn_actor": "parent-orchestrator",
+          "fenced_json_received": true,
+          "verdict": "PASS",
+          "findings": {
+            "blocking": 0,
+            "important": 0,
+            "minor": 0
+          }
+        }
+      ],
+      "triage_ttl_paths": [
+        ".triage/c/findings/c4-qa1.ttl"
+      ],
+      "finding_ids": [
+        "REQ-QA-C4-001",
+        "REQ-QA-C4-002",
+        "REQ-QA-C4-004",
+        "REQ-QA-C4-005",
+        "REQ-QA-C4-006",
+        "ARCH-003",
+        "RBQA-C4-001"
+      ],
+      "coordinator_task_id": "/root/c4_manager_qa3",
+      "machine_status": {
+        "sprint": "c-4",
+        "task": "qa-pr122-sprint-3",
+        "branch": "sprint/c-4-runtime-ecosystem-release",
+        "commit": "e190e2c8d84b9235ac70b3e442691980e8b69a33",
+        "pr": 122,
+        "verdict": "FAIL",
+        "deliverables": {
+          "complete": 18,
+          "total": 26,
+          "percent": 69.23
+        },
+        "findings": {
+          "blocking": 7,
+          "important": 0,
+          "minor": 0
+        },
+        "blocking_ids": [
+          "REQ-QA-C4-001",
+          "REQ-QA-C4-002",
+          "REQ-QA-C4-004",
+          "REQ-QA-C4-005",
+          "REQ-QA-C4-006",
+          "ARCH-003",
+          "RBQA-C4-001"
+        ],
+        "merge_readiness": "not ready",
+        "merge_reason": "Seven Blocking findings remain across the unanswered tempfile-policy conflict, final composed/parent/benchmark qualification, and actual authorized release/registry proof. Source fixes are credited; full sprint acceptance is not proven. Current exact-head CI: 16 successful, 1 pending, 0 failed; no waiting.",
+        "next_action": "triage_and_fix",
+        "owner": "parent-orchestrator",
+        "reviewer_spawn_gate": "pass",
+        "reviewer_manifest": [
+          {
+            "agent": "req-qa",
+            "task_id": "/root/c4_req_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 5,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "arch-qa",
+            "task_id": "/root/c4_arch_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "ruthless-boundary-qa",
+            "task_id": "/root/c4_boundary_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "FAIL",
+            "findings": {
+              "blocking": 1,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-qa-agent",
+            "task_id": "/root/c4_rust_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "rust-best-practices-agent",
+            "task_id": "/root/c4_rbp_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          },
+          {
+            "agent": "flaky-test-qa",
+            "task_id": "/root/c4_flaky_qa3",
+            "spawn_actor": "parent-orchestrator",
+            "fenced_json_received": true,
+            "verdict": "PASS",
+            "findings": {
+              "blocking": 0,
+              "important": 0,
+              "minor": 0
+            }
+          }
+        ],
+        "evidence_chain": {
+          "qa_pass": "qa-3",
+          "commit": "e190e2c8d84b9235ac70b3e442691980e8b69a33",
+          "coordinator_task_id": "/root/c4_manager_qa3",
+          "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749",
+          "triage": {
+            "ttl_paths": [
+              ".triage/c/findings/c4-qa1.ttl"
+            ]
+          },
+          "finding_occurrences": 7,
+          "unique_finding_ids": 7,
+          "todo_scan": {
+            "rust_source_hits": 0
+          },
+          "central_screen": {
+            "keep": 5,
+            "not_applicable": 2,
+            "ceremony": 0,
+            "genuine_findings_dismissed": 0
+          },
+          "ci_snapshot": {
+            "head": "e190e2c8d84b9235ac70b3e442691980e8b69a33",
+            "success": 16,
+            "pending": 1,
+            "failed": 0,
+            "pending_names": [
+              "just lint and just test"
+            ],
+            "pending_job_url": "https://github.com/randlee/sc-runtime/actions/runs/42170117713/job/127736085505",
+            "source": "Actual one-shot gh pr view 122 --json headRefOid,statusCheckRollup,mergeStateStatus,url during this coordinator turn",
+            "waited_for_ci": false
+          },
+          "model_execution": "Inherited Codex fallback; configured Cursor models unavailable.",
+          "release_acceptance": "Open; no tempfile or staging exception adopted; benchmark measurements not yet supplied."
+        },
+        "missing_reviewers": [],
+        "unparsed_reviewers": [],
+        "aggregation_source": "reviewer_fenced_json_union_todo_scan"
+      },
+      "central_triage_snapshot_paths": [
+        ".triage/c/findings/c4-qa3.ttl"
+      ],
+      "history_persistence": {
+        "recorded_at": "2026-11-06T06:04:26.977644+00:00",
+        "timing": "after_source_fix_checkpoint",
+        "source_fix_checkpoint": "e190e2c8d84b9235ac70b3e442691980e8b69a33",
+        "establishes_before_fix_triage": false
+      }
+    }
+  ],
+  "initial_plan_branch": "plan/phase-c",
+  "latest_sprint_qa": {
+    "c-1": {
+      "qa_pass": "qa-pr116-sprint-5",
+      "reviewed_commit": "78cc2efef995a8780b1f7fdba99707bdb3a10a42",
+      "coordinator_task_id": "/root/c1_manager_qa5",
+      "verdict": "IN-FLIGHT",
+      "report_path": "docs/plans/phase-c/reviews/sprint-qa/c-1-latest.md",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6677302309",
+      "published_report_sha256": "f0b53765f4b21dca8fbd4ad42a37623207e8a7dcfc0f2d0b9729c849f17bbfcf",
+      "source_branch": "sprint/c-1-consumer-runtime-contract",
+      "integration_merge_performed": false
+    },
+    "c-2": {
+      "qa_pass": "qa-pr119-sprint-4",
+      "reviewed_commit": "b3e0b065d7d0d694b84e553abc393f9c0ad3e470",
+      "coordinator_task_id": "/root/c2_manager_qa4",
+      "verdict": "PASS",
+      "report_path": "docs/plans/phase-c/reviews/sprint-qa/c-2-latest.md",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/119#issuecomment-6677559353",
+      "published_report_sha256": "f44ee6267272a7dba78b86432e2e65d52131692240505b56b6df825f34113f15",
+      "source_branch": "sprint/c-2-consumer-sc-lint-full-profile",
+      "integration_merge_performed": false
+    },
+    "c-3": {
+      "qa_pass": "qa-pr120-sprint-4",
+      "reviewed_commit": "5840414909f2d720e815956fd5247b0e23f5a52a",
+      "coordinator_task_id": "/root/c3_manager_qa4",
+      "verdict": "PASS",
+      "report_path": "docs/plans/phase-c/reviews/sprint-qa/c-3-latest.md",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/120#issuecomment-6677300948",
+      "published_report_sha256": "f70ef7f8a90d7b742b53d855e3cce836b001529cde2306d338fffe03cedc9af3",
+      "source_branch": "sprint/c-3-runtime-ecosystem-upgrade",
+      "integration_merge_performed": false
+    },
+    "c-5": {
+      "qa_pass": "qa-pr118-sprint-7",
+      "reviewed_commit": "a44ab2069bc85c5cba0f0db234c5b37d4ca213a2",
+      "coordinator_task_id": "/root/c5_manager_qa7",
+      "verdict": "IN-FLIGHT",
+      "report_path": "docs/plans/phase-c/reviews/sprint-qa/c-5-latest.md",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/118#issuecomment-6677651149",
+      "published_report_sha256": "0f1328309cb2ac67d167dc9dc3e6c2e1f676f520d36d247099d95b67e69b4ac0",
+      "source_branch": "sprint/c-5-cron-consumer-compatibility",
+      "integration_merge_performed": false
+    },
+    "c-6": {
+      "qa_pass": "qa-pr121-sprint-3",
+      "reviewed_commit": "b9216c955f43b08e9e5e5905868bbb323fcb363e",
+      "coordinator_task_id": "/root/c6_manager_qa3",
+      "verdict": "PASS",
+      "report_path": "docs/plans/phase-c/reviews/sprint-qa/c-6-latest.md",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/121#issuecomment-6677554379",
+      "published_report_sha256": "dd0318c486bcd4e4374dd6317818415ddeb7ca73e3b10960696807a308fccbaf",
+      "source_branch": "sprint/c-6-standard-cron-commands",
+      "integration_merge_performed": false
+    },
+    "c-4": {
+      "qa_pass": "qa-pr122-sprint-3",
+      "reviewed_commit": "e190e2c8d84b9235ac70b3e442691980e8b69a33",
+      "coordinator_task_id": "/root/c4_manager_qa3",
+      "verdict": "FAIL",
+      "report_path": "docs/plans/phase-c/reviews/sprint-qa/c-4-latest.md",
+      "pr_comment_url": "https://github.com/randlee/sc-runtime/pull/122#issuecomment-6678094749",
+      "published_report_sha256": "669142ead1427c228c82c6e1985113db2c4c620827d3e157b9055f38c347cbb7",
+      "source_branch": "sprint/c-4-runtime-ecosystem-release",
+      "integration_merge_performed": false
+    }
   },
-  "c4_qa1_source_fix": {
-    "status": "author_corrected_pending_independent_review",
-    "source_commit": "b98cfd5",
-    "triage_paths": [
-      ".triage/c/findings/c4-qa1.ttl"
-    ],
-    "source_corrected_ids": [
-      "REQ-QA-C4-007",
-      "ARCH-001",
-      "ARCH-002",
-      "RBP-F001",
-      "RBP-F002",
-      "QA-C4-RUST-001",
-      "REQ-C5-008",
-      "FTQ-001",
-      "FTQ-002"
-    ],
-    "partial_ids": [
-      "REQ-QA-C4-001"
-    ],
-    "open_ids": [
-      "REQ-QA-C4-002",
-      "REQ-QA-C4-003",
-      "REQ-QA-C4-004",
-      "REQ-QA-C4-005",
-      "REQ-QA-C4-006",
-      "ARCH-003",
-      "RBQA-C4-001",
-      "RBQA-C4-002"
-    ],
-    "fullsuite_current_head_claimed": false,
-    "published": false,
-    "ci_waited": false
-  },
-  "c4_ci_f3_followup": {
-    "status": "author_corrected_pending_independent_review",
-    "reviewed_commit": "f3ab7f6fa18eb1e9d0beaf0e8057e0aa9be8cbe4",
-    "canonical_publisher_pin": "1a494e7adb067d93c57807f443ac136a8775c7d8",
-    "positive_visibility_opt_in_public_crates": 6,
-    "canonical_destinations": 89,
-    "triage_paths": [
-      ".triage/c/findings/c4-qa1.ttl"
-    ],
-    "fullsuite_current_head_claimed": false,
-    "published": false,
-    "ci_waited": false
-  }
+  "evidence_persistence_events": [
+    {
+      "at": "2026-11-06T06:04:26.977644+00:00",
+      "branch": "integrate/phase-c",
+      "source_base": "674a8dda9bbc7c2090b6c715a1db3b26d592ae36",
+      "kind": "normal_reports_and_required_qa_history",
+      "historical_c4_qa2_persistence": "Recorded after source fix e190e2c; the direct fix handoff preceded the fix, while the formal fix template and this central record were produced later. No before-code triage claim is made.",
+      "qa_source_refs_are_feature_branches": true,
+      "product_branches_merged": false,
+      "diagnostic_or_test_result_archive_added": false
+    }
+  ]
 }
