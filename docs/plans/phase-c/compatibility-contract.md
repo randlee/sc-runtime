@@ -48,10 +48,12 @@ pub trait ScheduleStore: Send + Sync {
     fn query(&self, query: &ScheduleQuery) -> Result<SchedulePage, CronError>;
     // Both new methods have fixed unsupported default bodies, not required methods.
 }
-pub struct ShutdownBudget { /* checked absolute G/K, K >= G */ }
+pub struct ShutdownBudget { /* private checked absolute G/K, K >= G */ }
 impl ShutdownBudget {
     pub fn new(grace: std::time::Instant, cleanup: std::time::Instant)
         -> Result<Self, CronError>;
+    pub fn grace(&self) -> std::time::Instant;
+    pub fn cleanup(&self) -> std::time::Instant;
 }
 #[derive(Clone)]
 pub struct WorkerStopControl { /* independently callable; no join ownership */ }
@@ -647,7 +649,8 @@ all provider tasks/native calls/cleanup, then calls
 `finish_application_shutdown(&self) -> Result<(), CronError>`. This explicit
 acknowledgement publishes `Joined`; it cannot verify untracked application
 work. It refuses a missing stop, pending registered native work, or a control
-obtained from `WorkerHandle::stop_control()`. Framework workers retain their
+obtained from `WorkerHandle::stop_control()`. Application acknowledgement revokes
+existing and future contexts even before a future grace cutoff. Framework workers retain their
 single physical owner `WorkerHandle::join_owned`. Acknowledgement never reopens
 intake or revives a cancelled/expired context. Typed unavailable reasons are
 `worker_runtime_unavailable`, `worker_already_running`, and

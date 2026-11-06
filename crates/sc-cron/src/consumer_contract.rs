@@ -41,7 +41,7 @@ impl StoreOperationContext {
     /// Checks live cancellation and the real monotonic deadline.
     ///
     /// # Errors
-    /// Returns a value-free unavailable error after cancellation or expiry.
+    /// Returns a value-free cancellation or deadline error after revocation.
     pub fn check(&self) -> Result<(), CronError> {
         if self.state.cancelled(self.cleanup) {
             return Err(StoreError::new(StoreErrorKind::Cancelled, "operation_cancelled").into());
@@ -139,7 +139,19 @@ pub enum StoreOperationSupport {
     Cooperative,
 }
 
-/// Absolute ordinary and terminal-cleanup cutoffs.
+/// Absolute ordinary and terminal-cleanup cutoffs, checked by [`Self::new`].
+///
+/// Consumers cannot bypass the ordering check with literal construction:
+/// ```compile_fail
+/// let cutoff = std::time::Instant::now();
+/// let _ = sc_cron::ShutdownBudget { grace: cutoff, cleanup: cutoff };
+/// ```
+/// Checked fields also cannot be changed after construction:
+/// ```compile_fail
+/// let cutoff = std::time::Instant::now();
+/// let mut budget = sc_cron::ShutdownBudget::new(cutoff, cutoff).unwrap();
+/// budget.cleanup = cutoff - std::time::Duration::from_secs(1);
+/// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ShutdownBudget {
     /// Ordinary operation commit-admission cutoff G.
@@ -330,11 +342,11 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn child_deadline_never_extends_shared_scope() {
+    #[tokio::test(flavor = "current_thread")]
+    async fn child_deadline_never_extends_shared_scope() {
         let deadline = Instant::now() + Duration::from_secs(60);
-        let parent = StoreOperationContext::root(Arc::new(crate::operation::Controller::new()))
-            .with_deadline(deadline);
+        let control = crate::WorkerStopControl::new().expect("public control");
+        let parent = control.operation_context().with_deadline(deadline);
         assert_eq!(
             parent
                 .with_deadline(deadline + Duration::from_secs(60))
@@ -343,9 +355,20 @@ mod tests {
         );
         let earlier = deadline - Duration::from_secs(30);
         assert_eq!(parent.with_deadline(earlier).deadline(), Some(earlier));
-        parent.state.cancel();
-        assert!(parent.with_deadline(earlier).stop_requested());
+        let child = parent.with_deadline(earlier);
+        control
+            .request_stop(ShutdownBudget::new(deadline, deadline).expect("checked grace"))
+            .expect("stop intent");
+        assert!(child.stop_requested());
+        // The caller closes intake; admitted work retains its future cutoff.
+        assert!(parent.check().is_ok());
+        assert!(child.check().is_ok());
+        control.cancel_now();
         assert!(parent.check().is_err());
+        assert!(child.check().is_err());
+        control
+            .finish_application_shutdown()
+            .expect("no provider work remains");
     }
 
     #[test]

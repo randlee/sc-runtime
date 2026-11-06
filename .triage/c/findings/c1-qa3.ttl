@@ -1,0 +1,12 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+triage:c1_qa3_QA_C1_009 a triage:Finding ;
+ triage:id "QA-C1-009" ;
+ triage:severity "important" ;
+ triage:reviewer "rust-qa-agent" ;
+ triage:status "implemented_pending_reqa" ;
+ triage:reviewed_commit "ba70e69982f730f108ff6cb734c31b6908605cd1" ;
+ triage:file "crates/sc-cron/tests/hook_environment/owned_child_unix_tests.rs" ;
+ triage:issue "The new inspector-error regression can falsely pass the original bug because its ready launcher terminates on an independent 30-second timer." ;
+ triage:action "Keep the ready launcher held until explicit owner release or termination, within the existing bounded Session owner and failure cleanup. Remove the natural-exit correctness window and retain an original-behavior negative that fails on the immediate physical-completion assertion while still reclaiming the child; do not enlarge the sleep or retry." ;
+ triage:verification_source "https://github.com/randlee/sc-runtime/pull/116#issuecomment-6663225322" .

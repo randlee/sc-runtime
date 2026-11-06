@@ -228,7 +228,7 @@ impl StoreError {
             "operation_stopping" => {
                 "use a new lifecycle after the current owner physically joins; do not replay admitted mutations"
             }
-            "operation_context_unsupported" => {
+            "operation_context_unsupported" | "schedule_query_unsupported" => {
                 "use the caller-owned legacy path or a provider implementing the cooperative contract"
             }
             "operation_context_nested" => {

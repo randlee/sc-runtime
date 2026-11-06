@@ -519,26 +519,23 @@ linux `release_targets` row in `release/sc-publish-consumer-input.json`.
 
 ---
 
-### Selective release toolkit qualification gap (2026-11-04)
+### Phase C shared-version release policy (owner correction, 2026-11-04)
 
-The exact canonical kit pin b6947ab2e495398a58123c60c0b86b5421f89979 was
-fetched from upstream and executed in a disposable fixture with workspace/tag
-version0.2.0, affected command/cron/runtime/adapter0.2.0 and literal unchanged
-config/transport0.1.1 with publish=false. Its existing `list-publish-plan`
-includes even disabled config/transport packages, then command, cron, runtime
-and cron-commands; it does not filter publish=false. Its actual `verify-version --version 0.2.0` fails:
-`sc-config: version mismatch: expected 0.2.0, got 0.1.1` (exit1). Source
-cmd_verify_version iterates every declared crate, including publish=false;
-`public-registry-check-plan` likewise passes one global args.version for all
-crate names. Thus publish=false and literal-base support in another preflight
-are insufficient to qualify selective publication. This is a demonstrated
-upstream capability gap and leaves C1 incomplete. No local workflow bypass,
-blanket version bump, unqualified newer pin or publication has been performed.
-An upstream released exact pin must qualify selective per-package versions,
-unchanged-package treatment, stale-command negative, per-package registry
-lookups and v0.2.0 tag semantics before release contract closure. Parent owns
-any authorization to undertake that upstream change; passing ordered output
-alone cannot establish the complete release capability.
+The owner stated: "I expect we will release all crates every release". Every
+public crate therefore participates in the same versioned release. Phase C
+publishes sc-config, sc-transport, sc-command, sc-runtime, sc-cron and
+sc-cron-commands at 0.2.0; the internal publish=false SQLite helper stays
+private. C-3 owns the coherent source/template manifest and lock migration and
+canonical kit-input regeneration; c-4 owns actual authorized publication,
+existing-kit qualification and registry-only consumer proof.
+
+Historical observation, superseded as a requirement: the pinned canonical kit
+b6947ab2e495398a58123c60c0b86b5421f89979 rejected a disposable mixed-version
+fixture (config/transport0.1.1 versus tag0.2.0), including disabled publication
+rows. That selective probe did not pass. The corrected policy uses the kit's
+existing uniform-version model, so selective-publishing enhancement is not a
+C1 or release prerequisite. Existing version/visibility checks and publication
+authorization remain binding; no hand-written workflow bypass is allowed.
 
 
 ## ADR-RUN-0003: Crate dependency graph and the `server` cargo feature
@@ -920,8 +917,9 @@ extensions conflict. No public extension marker was found. This fails the
 original successful two-init criterion. The explicit user waiver below
 supersedes only that success condition; the passing profiles alone did not
 authorize a waiver. Never remove consumer edits or suppress analyzers
-to obtain a passing receipt. The temporary probe retains this failure until
-a supported released mechanism is qualified.
+to obtain a passing receipt. The historical qualification records this failure; the temporary executable
+is retired before C1 merge. Issue117 retains the restoration criterion until a
+supported released mechanism is qualified.
 
 
 Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
@@ -1620,19 +1618,22 @@ latest registry selections. The composition probe passed on this matrix.
 C-3 repeats this algorithm for the actual migrated runtime and generated
 daemon graphs; this probe does not claim their later migration is complete.
 
-Affected release versions: sc-command **0.2.0**, sc-cron **0.2.0**,
-sc-runtime **0.2.0**, sc-cron-commands **0.2.0**. Unrelated sc-config,
-sc-transport and sc-runtime-db-sqlite remain **0.1.1**. Command publishes
-before cron and runtime; cron publishes before cron-commands. Preserve
-sc-cron's defaults-off temporary command edge and the same nominal logging
-trait (ADR-RUN-0017), without server activation or an upstream cleanup claim.
-C-3 owns the atomic existing-package manifest/version migration; C1's additive
-adapter declaration currently points at the checkout's existing 0.1.1 native
-packages until that handoff. C-4 alone owns the authorized runtime0.2.0 release
-handoff, registry visibility and no-patch registry-consumer acceptance. Existing
-publication authorization gates remain. The selective sc-publish exact pin
-qualification remains required and unproven; the matrix is not publication
-approval and C1 cannot close while that capability gap is unresolved.
+Shared release versions: sc-config, sc-transport, sc-command, sc-runtime,
+sc-cron and sc-cron-commands are all **0.2.0** in the Phase C release. Every
+public crate participates in each release. The internal sc-runtime-db-sqlite
+helper remains publish=false. Command publishes before cron/runtime and cron
+before cron-commands; every declared normal prerequisite is registry-visible
+before its dependent. Preserve cron's defaults-off temporary command edge and
+nominal logging trait (ADR-RUN-0017), without server activation or an upstream
+cleanup claim.
+
+C-3 owns the atomic normal manifest/version/lock/template migration; C1's
+additive declarations retain the current checkout's baseline packages until
+that handoff. C-4 alone qualifies existing-kit all-crates publication and owns
+its authorized release/visibility/no-patch registry-consumer proof. This
+matrix is not publication approval. The historical mixed-version selective
+probe failed, but no selective-publishing feature is required by the corrected
+all-public-crates contract.
 
 
 ### Context
