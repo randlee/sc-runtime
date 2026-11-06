@@ -9,6 +9,7 @@ wave: 2
 branch: sprint/c-6-standard-cron-commands
 worktree: sprint/c-6-standard-cron-commands
 requirements:
+  - REQ-RUN-0005
   - REQ-CRON-0005
   - REQ-CRON-0020
   - REQ-CRNC-0001
