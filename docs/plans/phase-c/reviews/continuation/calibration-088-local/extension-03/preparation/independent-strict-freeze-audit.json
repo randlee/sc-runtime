@@ -1,0 +1,15 @@
+{
+  "status": "PASS_OFFLINE_STRICT_FREEZE",
+  "schema_contract_runner_render": true,
+  "input_runtime_hashes": true,
+  "pool_digest": "4907bfdfad8f1e0395d54e9ca6db3e7a285b843323ec688c3218dbbf91435314",
+  "request_shapes_digest": "32d35ec768b3ba136f6af8b8298cdd54c2b64b2405dc729d9986dcf7ca5b09fe",
+  "unchanged21cases_states_labels": true,
+  "separate_frozen2positive_boundary_cases": true,
+  "observable_only_experiment": true,
+  "other4questions_match_unaccepted02baseline": true,
+  "production_seal_unchanged": true,
+  "source_neutral_history_sidecar_chain": true,
+  "no_per_anchor_history2_claim": true,
+  "no_actual_phase_c_anchor_oracle": true
+}

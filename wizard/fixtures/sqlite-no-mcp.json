@@ -2,5 +2,7 @@
   "project_name": "widget-plain",
   "db": "sqlite",
   "mcp": false,
-  "licence": "MIT"
+  "licence": "MIT",
+  "cron": false,
+  "cron_commands": false
 }

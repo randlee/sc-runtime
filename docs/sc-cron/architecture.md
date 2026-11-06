@@ -200,6 +200,14 @@ pub enum StopDecision {
 
 `ScheduleStore` stays an open seam. The landed scheduler is generic:
 
+The framework charter leaves consumer schemas and stores application-owned.
+Phase C preserves the bundled schema while proving a custom-store example with
+an extra application field. REQ-CRON-0020 separates supported cooperative
+providers from the existing caller-owned legacy path; SQLite hooks are specific
+to the bundled provider. The cron README documents the advertised mode and its
+scope forwarding, generation/query and lifecycle responsibilities. No arbitrary
+application fields or portable query framework enter the shared core DTOs.
+
 ```rust
 pub struct Scheduler<S: ScheduleStore, C: Clock, J: JitterSource>;
 ```
@@ -305,3 +313,47 @@ source. The complete first-release SQLite schema is version 1 with canonical
 reject incompatible unreleased development tables without migrating/overwriting.
 The library remains general purpose, with open application host registrations,
 no signing/approval gates, and no production dependency on sc-compose or ATM.
+
+## Phase C target extension (planned)
+
+ADR-RUN-0018 adds cooperative owned operation/shutdown and bounded query;
+ADR-RUN-0019 permits a separate optional command adapter while preserving this
+core's no-product-API boundary. The exact planned callable and budget contract
+is [compatibility-contract.md](../plans/phase-c/compatibility-contract.md).
+REQ-CRON-0020/0021 preserve the existing schema, three hook targets,
+environment policy and generation fencing. No new port or job registry is
+required. These are target contracts, not claims of current implementation.
+
+C-1 establishes native CronOperations boxed-future signatures, real child
+operation context and non-default test-utils context probe. C-5 implements
+the port for Scheduler; no adapter DTO/Envelope enters core. C-1 also enables
+rusqlite 0.39 bundled+hooks and lock baseline, then c-3 retains those features
+while migrating ecosystem versions. C-5 has no shared manifest ownership.
+Known-baseline RAII/TLS busy callback, capturing progress callback and independent
+interrupt handle follow the source-supported strategy in the Phase C contract.
+
+The approved admission/outcome decision adds a final commit_hook fence for
+ordinary G and cleanup K. A short controller-state decision precedes COMMIT;
+never hold that lock during SQLite/native I/O. An admitted commit may physically
+finish late and keeps owned joins. Typed persistence outcomes distinguish
+confirmed late commit, rollback and indeterminate; no blind replay or false
+not-persisted report. G/K is not a universal fsync/physical-2T guarantee.
+Actual state after physical join and no-effects-after-release are required.
+
+Phase C contract amendment (2026-11-04): the temporary nominal logging
+contract edge is defaults-off `sc-command 0.2.0`, before `sc-cron 0.2.0`
+publication, preserving no-server behavior and deferred upstream logging
+cleanup. Initial 0.1.1 release observations remain historical. Rusqlite remains
+0.39.x with bundled+hooks; provider callback/interrupt details are frozen in
+[the compatibility contract](../plans/phase-c/compatibility-contract.md).
+
+### Application-owned context control (C1 QA1 correction)
+
+The existing WorkerStopControl type supplies the worker-independent factory
+and explicit application-completion acknowledgement frozen by ADR-RUN-0019
+and compatibility-contract.md. C1 owns the real ordinary-feature scope and
+notification construction; C5 owns its concrete framework-worker and native
+operation integration. No duplicate protocol, scheduler registry or dummy
+worker is needed. Applications close their own intake, request stop, join
+physical work and acknowledge it; the library cannot verify untracked custom
+work. Budget fields stay private and diagnostics remain value-free.

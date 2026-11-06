@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "runtime": {
+    "agent": "anchor-tuning",
+    "harness": "codex",
+    "model": "sol",
+    "path": ".codex/agents/anchor-tuning.md",
+    "sha256": "60cf04b170a95c00bd2be5bf46107985af6685da8d69b6cc4898fccd1e27d798",
+    "version": "0.8.7"
+  },
+  "operation": "triage",
+  "correlation_id": "sc-runtime-phase-c-anc-003-testability-triage-087-r1",
+  "started_at_ms": 1793679243115,
+  "finished_at_ms": 1793679303757,
+  "duration_ms": 60642,
+  "outcome": "failure",
+  "source_sha256": "b0a1b4167089de9ea0c501719e74c4909650db7625bc70b926959861d5f64fb7",
+  "error_code": "EVIDENCE.INCOMPLETE"
+}

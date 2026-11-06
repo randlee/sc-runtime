@@ -1,0 +1,11 @@
+[package]
+name = "cron-input-schema-proof"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+sc-cron-commands = { path = "../../../../crates/sc-cron-commands", default-features = false, features = ["schema"] }
+rmcp = { version = "=3.8.0", default-features = false, features = ["server"] }

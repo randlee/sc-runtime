@@ -12,15 +12,19 @@ import sys
 import tempfile
 import tomllib
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 import adr_run_0011_grep as module_context
+from tests.integration.generation.owned_process import run as run_owned
 
-RELEASE = ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron")
+RELEASE = ("sc-config", "sc-transport", "sc-command", "sc-runtime", "sc-cron", "sc-cron-commands")
 FEATURES = {"sc-config": (None,), "sc-transport": (None, "server"),
             "sc-command": (None, "server"), "sc-runtime": (None,),
-            "sc-cron": (None, "monty")}
+            "sc-cron": (None, "monty"),
+            "sc-cron-commands": (None, "schema", "scheduler", "schema,scheduler", "monty", "schema,monty")}
 
 
 def tool_package(name):
@@ -194,11 +198,16 @@ def check_trees(root):
     violations = []
     for package, features in FEATURES.items():
         for feature in features:
-            cmd = ["cargo"] + (["+1.96.1"] if feature == "monty" else [])
-            cmd += ["tree", "-p", package, "-e", "normal,build", "--prefix", "none"]
+            cmd = ["cargo"] + (["+1.96.1"] if feature and "monty" in feature.split(",") else [])
+            cmd += ["tree", "-p", package, "-e", "normal,build", "--prefix", "none", "--color", "never"]
             if feature:
                 cmd += ["--features", feature]
-            result = subprocess.run(cmd, cwd=root, capture_output=True, text=True, check=False)
+            try:
+                result = run_owned(cmd, cwd=root, capture_output=True, text=True,
+                                   stdin=subprocess.DEVNULL, timeout=120)
+            except (OSError, RuntimeError, TimeoutError, subprocess.SubprocessError) as error:
+                violations.append(f"{package}/{feature or 'default'} tree failed: {error}")
+                continue
             if result.returncode:
                 violations.append(f"{package}/{feature or 'default'} tree failed: {result.stderr.strip()}")
             violations.extend(f"{package}/{feature or 'default'} links {name}" for name in tree_violations(result.stdout))
@@ -259,6 +268,57 @@ class ProductionToolBoundaryTests(unittest.TestCase):
             source.write_text('use atm_core::X;\n')
             self.assertTrue(any("production Rust tool reference atm_core" in error for error in scan(root)))
 
+    def test_adapter_real_graph_rejects_transitive_tools_but_allows_dev_only(self):
+        with tempfile.TemporaryDirectory(prefix="adapter-tool-guard-") as tmp:
+            root = Path(tmp)
+            (root / "Cargo.toml").write_text(
+                '[workspace]\nmembers=["crates/sc-cron-commands", "bridge", "forbidden"]\nresolver="2"\n')
+            for path, name in (("crates/sc-cron-commands", "sc-cron-commands"),
+                               ("bridge", "bridge"), ("forbidden", "sc-compose-render")):
+                crate = root / path
+                (crate / "src").mkdir(parents=True)
+                (crate / "src/lib.rs").write_text("pub fn marker() {}\n")
+                (crate / "Cargo.toml").write_text(
+                    f'[package]\nname="{name}"\nversion="0.0.0"\nedition="2021"\n')
+            bridge = root / "bridge/Cargo.toml"
+            bridge.write_text(bridge.read_text() +
+                              '[dependencies]\ninnocent={package="sc-compose-render", path="../forbidden"}\n')
+            manifest = root / "crates/sc-cron-commands/Cargo.toml"
+            base = manifest.read_text()
+            feature_table = '[features]\ndefault=[]\nschema=[]\nmonty=["scheduler"]\n'
+            manifest.write_text(base + feature_table + 'scheduler=["dep:bridge"]\n'
+                                '[dependencies]\nbridge={path="../../bridge", optional=true}\n')
+            profiles = {"sc-cron-commands": FEATURES["sc-cron-commands"]}
+            with mock.patch.dict(FEATURES, profiles, clear=True):
+                errors = check_trees(root)
+                self.assertTrue(any("/scheduler links sc-compose-render" in error for error in errors), errors)
+                self.assertFalse(any("/default " in error or "/schema " in error for error in errors), errors)
+                self.assertTrue(any("/schema,monty links sc-compose-render" in error for error in errors), errors)
+                manifest.write_text(base + feature_table + 'scheduler=[]\n'
+                                    '[dev-dependencies]\nbridge={path="../../bridge"}\n')
+                self.assertEqual(check_trees(root), [])
+
+    def test_adapter_scan_rejects_aliased_normal_edges_and_allows_test_only(self):
+        with tempfile.TemporaryDirectory(prefix="adapter-source-guard-") as tmp:
+            root = Path(tmp)
+            (root / "Cargo.toml").write_text('[workspace]\nmembers=["crates/*"]\n')
+            for name in sorted(set(RELEASE) | {"sc-cron-commands"}):
+                crate = root / "crates" / name
+                (crate / "src").mkdir(parents=True)
+                (crate / "Cargo.toml").write_text(f'[package]\nname="{name}"\nversion="0.0.0"\n')
+                (crate / "src/lib.rs").write_text("pub fn marker() {}\n")
+            adapter = root / "crates/sc-cron-commands"
+            manifest = adapter / "Cargo.toml"
+            base = manifest.read_text()
+            for kind in ("dependencies", "build-dependencies"):
+                manifest.write_text(base + f'[{kind}]\n'
+                                    'innocent={package="agent-team-mail-core", version="1"}\n')
+                self.assertTrue(any("sc-cron-commands: production dependency" in error for error in scan(root)))
+            manifest.write_text(base + '[dev-dependencies]\n'
+                                'innocent={package="agent-team-mail-core", version="1"}\n')
+            (adapter / "src/lib.rs").write_text('#[cfg(test)] mod test { use atm_core::X; }\n')
+            self.assertEqual(scan(root), [])
+
     def test_out_of_line_test_module_and_production_reachability(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -312,6 +372,6 @@ if __name__ == "__main__":
         if errors:
             print("\n".join(errors), file=sys.stderr)
             raise SystemExit(1)
-        print("production tool boundary: PASS (all five release crates)")
+        print("production tool boundary: PASS (all six release crates)")
     else:
         unittest.main()

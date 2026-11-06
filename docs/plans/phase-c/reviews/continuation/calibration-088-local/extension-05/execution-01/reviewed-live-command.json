@@ -1,0 +1,24 @@
+{
+  "script": "/tmp/sc-runtime-phase-c-review/continuation/calibration/run_extension_05.py",
+  "script_sha256": "93cdda3fa8cc661324d06ae6629e13ecc4d6115e65a693d0d178ae588a645374",
+  "argv": [
+    "python3",
+    "/tmp/sc-runtime-phase-c-review/continuation/calibration/run_extension_05.py",
+    "--allow-redacted-presentation",
+    "--live"
+  ],
+  "explicit_environment": {
+    "SSL_CERT_FILE": "/etc/ssl/cert.pem"
+  },
+  "stdout_stderr_log": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-05-execution-01/live-execution.log",
+  "exact_invocation": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-05-prepared/invocation-fence.md",
+  "export_proof": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-05-execution-01/export-lineage-and-policy-proof.json",
+  "dry_run_checks": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-05-execution-01/dry-run-verification.json",
+  "input_hashes": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-extension-05-execution-01/materialization-verification.json",
+  "expected_cli_commands": 138,
+  "expected_initial_confirmations": 276,
+  "candidate_evaluators_maximum": 3,
+  "question_generation_in_runner": false,
+  "case_or_question_mutation_in_runner": false,
+  "fork_live_execution_attempted": false
+}

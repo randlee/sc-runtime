@@ -1,0 +1,9 @@
+{
+  "live_calls": 0,
+  "frozen_request_sha256": "1d8e103d841276ea9a298a17890aa596df7e6628eb2d0f45092dc7ea9665ed4a",
+  "cli_inputs_request_sha256": "1d8e103d841276ea9a298a17890aa596df7e6628eb2d0f45092dc7ea9665ed4a",
+  "hashes_match": true,
+  "emitted_requests_redacted": true,
+  "source_function": "emit -> redact_sensitive; BEARER_RE applies to all string values",
+  "installed_source_unmodified": true
+}

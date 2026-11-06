@@ -659,8 +659,15 @@ async fn a_stop_answer_other_than_continue_disable_or_delete_fails_without_a_tic
     let schedule = fixture.start(spec("sync", BAD_ACTION, Duration::from_secs(5)));
     let worker = fixture.worker(idle_job()).await;
     fixture.step(60).await;
-    wait_failed(&fixture, &schedule, "nope").await;
+    // Unknown provider values are redacted by the shared Python/Monty reply parser.
+    wait_failed(
+        &fixture,
+        &schedule,
+        "unknown action; expected continue, disable or delete",
+    )
+    .await;
     shutdown(worker).await;
+    assert_eq!(runs_containing(&fixture, &schedule, "nope"), 0);
     assert_eq!(runs_containing(&fixture, &schedule, "tick-ran"), 0);
 }
 

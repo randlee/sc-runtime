@@ -248,7 +248,7 @@ mod tests {
         let error = tokio::time::timeout(
             std::time::Duration::from_secs(5), daemon::composition::run(&config, &app, &observability, daemon::composition::CronServices::default()),
         ).await.expect("failed startup cleanup is bounded").expect_err("invalid cron path");
-        assert_eq!(error, "DAEMON.CRON_OPEN invalid schedule: cron.database_path must be a relative path without parent traversal — fix cron configuration or database path and retry");
+        assert_eq!(error, "INVALID_SPEC invalid cron specification — correct the named field; see the limits in sc_cron's docs");
         assert_eq!(weak.strong_count(), 1, "failed cron open releases all injected handles");
         observability.shutdown().expect("logger shutdown");
         assert_no_cron_events(root.path());

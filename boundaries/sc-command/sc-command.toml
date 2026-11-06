@@ -4,7 +4,8 @@ owner_crate_path = "sc_command"
 name = "sc-command"
 
 [public]
-facade = "Envelope, observability"
+# IntoMcp and McpError require `server`; the remaining exports are default.
+facade = "Envelope, OpError, ErrorKind, observability, ENVELOPE_VERSION, DISCRIMINANT_CODE, SERIALIZATION_CODE, IntoMcp, McpError"
 
 [implementation]
 type = "marker"
@@ -22,7 +23,7 @@ roots = ["Envelope", "observability"]
 [dependencies]
 # Temporary neutral-port dependent; restore runtime-only after upstream proof.
 # https://github.com/randlee/sc-runtime/issues/97
-allowed_dependents = ["sc-runtime", "sc-cron"]
+allowed_dependents = ["sc-cron-commands", "sc-runtime", "sc-cron"]
 allowed_dependencies = ["serde", "serde_json", "sc-observability-types"]
 # `sc-observability` and `sc-observability-otlp` are not workspace members.
 # sc-lint 0.8.0 rejects a forbidden edge whose target is absent, so cargo tree
@@ -30,6 +31,7 @@ allowed_dependencies = ["serde", "serde_json", "sc-observability-types"]
 # `axum` and `rmcp` stay out of this table; cargo tree checks the `server` feature.
 # `sc-cron` is a workspace member; the forbidden edge below keeps this crate off it.
 forbidden_edges = [
+  "sc-command -> sc-cron-commands",
   "sc-command -> sc-config",
   "sc-command -> sc-transport",
   "sc-command -> sc-runtime",

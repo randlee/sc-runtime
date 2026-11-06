@@ -13,6 +13,7 @@ file-backed engine can prepare without a server.
 
 """
 
+import json
 import os
 import re
 import subprocess
@@ -148,10 +149,35 @@ def build_cli() -> None:
 
 
 def build_daemon() -> None:
-    names = package_names(cargo_tree(daemon_package()))
-    found = [name for name in names if name in {"tempfile", "tempdir"}]
-    if found:
-        fail("tempfile or tempdir in the daemon normal tree: " + ", ".join(found))
+    previous_bytecode_setting = sys.dont_write_bytecode
+    try:
+        sys.dont_write_bytecode = True
+        from dependency_policy import daemon_scratch_errors
+    finally:
+        sys.dont_write_bytecode = previous_bytecode_setting
+
+    completed = subprocess.run(
+        ["cargo", "metadata", "--format-version", "1", "--locked"],
+        check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    if completed.returncode != 0:
+        fail(completed.stderr.strip() or "cargo metadata failed")
+    # CI may force ANSI colors on repeated nodes; this output is a data format.
+    tree = subprocess.run(
+        ["cargo", "tree", "--color", "never", "-p", daemon_package(),
+         "-e", "normal", "--locked", "--prefix", "depth", "--format", "|{p}"],
+        check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    if tree.returncode != 0:
+        fail(tree.stderr.strip() or "cargo tree failed")
+    try:
+        errors = daemon_scratch_errors(
+            json.loads(completed.stdout), Path("crates/daemon/Cargo.toml"), tree.stdout
+        )
+    except (KeyError, TypeError, ValueError) as error:
+        fail(f"invalid daemon dependency metadata: {error}")
+    if errors:
+        fail("; ".join(errors))
 
 
 def run(command: list[str], env: dict[str, str], cwd: Path | None = None) -> None:

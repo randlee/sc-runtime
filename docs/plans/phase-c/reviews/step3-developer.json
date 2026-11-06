@@ -1,0 +1,159 @@
+{
+  "status": "PASS",
+  "mode": "plan-hardening-sprint-scope",
+  "round_id": "STEP3-R1",
+  "round_index": 1,
+  "reviewed_commit": "37b2f8ac69cc57b7e77678dc3597d25908322967",
+  "previous_reviewed_commit": "37b2f8ac69cc57b7e77678dc3597d25908322967",
+  "iterations": 1,
+  "findings_resolved": 0,
+  "final_finding_count": 0,
+  "sprint_splits_added": 0,
+  "docs_modified": [],
+  "docs_created": [],
+  "ready_for_next_step": true,
+  "errors": [],
+  "previous_step_json": {
+    "status": "PASS",
+    "mode": "plan-scope-review",
+    "reviewer": "plan-scope-reviewer",
+    "round_id": "SCOPE-R2",
+    "round_index": 2,
+    "reviewed_commit": "37b2f8ac69cc57b7e77678dc3597d25908322967",
+    "previous_reviewed_commit": "5d8480586617de1397a77e6a4c47ec7f1f9e8227",
+    "findings_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "scope": {
+      "phase": "c",
+      "sprint": null
+    },
+    "parallelism": {
+      "waves": 3,
+      "critical_path": 3,
+      "width": 2,
+      "sprint_count": 4,
+      "tracks": 4,
+      "must_follow_edges": 3,
+      "parallel_safe_edges": 1
+    },
+    "sprint_scores": [
+      {
+        "sprint": "c-1",
+        "closure_type": "contract",
+        "target_boundary": "phase-c-consumer-runtime-contract",
+        "status": "PASS",
+        "blocking_count": 0,
+        "important_count": 0,
+        "minor_count": 0
+      },
+      {
+        "sprint": "c-2",
+        "closure_type": "integration",
+        "target_boundary": "generated-consumer-lint",
+        "status": "PASS",
+        "blocking_count": 0,
+        "important_count": 0,
+        "minor_count": 0
+      },
+      {
+        "sprint": "c-3",
+        "closure_type": "integration",
+        "target_boundary": "runtime-template-ecosystem-integration",
+        "status": "PASS",
+        "blocking_count": 0,
+        "important_count": 0,
+        "minor_count": 0
+      },
+      {
+        "sprint": "c-4",
+        "closure_type": "integration",
+        "target_boundary": "published-runtime-template-consumer",
+        "status": "PASS",
+        "blocking_count": 0,
+        "important_count": 0,
+        "minor_count": 0
+      }
+    ],
+    "docs_read": [
+      ".claude/agents/plan-scope-reviewer.md",
+      ".claude/skills/plan-hardening/sprint-planning-guidelines.md",
+      ".claude/project/quality-policy.md",
+      "docs/project-plan.md",
+      "docs/plans/phase-c/phase-c-plan.md",
+      "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+      "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+      "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+      "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+      ".sprints/c/structure.ttl",
+      "boundaries/sc-runtime/sc-runtime.toml",
+      "boundaries/sc-command/sc-command.toml"
+    ],
+    "findings": [],
+    "minor_wording": [],
+    "resolved_findings": [
+      {
+        "id": "PLAN-SCOPE-001",
+        "evidence": "Phase and child sprint text now state parent-development-push merge-forward before every child development/fix round, parent QA is not a start barrier, and parent PR merges before child PR completion. c-1 no longer requires reviewed completion before c-2/c-3 start."
+      },
+      {
+        "id": "PLAN-SCOPE-002",
+        "evidence": "ADR-RUN-0303 is included in phase, c-1, and c-2 authoritative ADR lists; its selected application graph remains the sole policy graph authority."
+      }
+    ],
+    "ready_for_next_step": true,
+    "errors": [],
+    "review_notes": [
+      "Genuine STEP1-R2 developer handoff has PASS and expected mode; its five plan document SHA256 values match blobs in the reviewed commit.",
+      "All changed plan text was read as the diff from the fully reviewed prior baseline. No new ownership, scope, checklist, naming or closure defect was introduced.",
+      "Same-wave ownership prefix intersection remains empty. c-2/c-3 remain independent implementation tracks; no extra sprint is warranted. Shared c-1 authority documents do not introduce a QA wait now that pushed contracts can be consumed during parent QA.",
+      "Critical path3, width2, four sprints unchanged. Three parent dependency edges identify concrete contracts or prepared runtime source, with required start and completion semantics.",
+      "Anchor capture/fixture changes are ongoing separately; this PASS covers the five phase/sprint plan documents at reviewed commit and does not assert a Plan Anchor gate PASS.",
+      "Inherited Codex model execution; no Sonnet execution claim."
+    ],
+    "previous_step_json_file": "/tmp/sc-runtime-phase-c-review/step1-r2-developer.json",
+    "previous_step_json": {
+      "status": "PASS",
+      "mode": "plan-hardening-guidelines-pass",
+      "round_id": "STEP1-R2",
+      "round_index": 2,
+      "reviewed_commit": "37b2f8ac69cc57b7e77678dc3597d25908322967",
+      "previous_reviewed_commit": "5d8480586617de1397a77e6a4c47ec7f1f9e8227",
+      "iterations": 1,
+      "findings_resolved_ids": [
+        "PLAN-SCOPE-001",
+        "PLAN-SCOPE-002"
+      ],
+      "findings_hash": "c2500353e73d25c04aa67ed8b7090cf57b0b2a3d0910dde7cc4ef443939c59d7",
+      "docs_modified": [
+        "docs/plans/phase-c/phase-c-plan.md",
+        "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+        "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+        "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+        "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md"
+      ],
+      "docs_created": [],
+      "ready_for_next_step": true,
+      "errors": []
+    }
+  },
+  "document_sha256": {
+    "docs/plans/phase-c/phase-c-plan.md": "9182cb2734777dd246007937152303bdd21db26d42610ad2359b97d211eb1d53",
+    "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md": "440c6a880d26f068292ec83e69ad3b4534b09299148b0e18cc455cc169debbcb",
+    "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md": "0e593d0c1cd3b5dfdd2754b430c7ceb18e88f1e32c8cad4f266d5ac148ac1adf",
+    "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md": "c8812b98d10cde7a537c487bc3a5bfad507ea79207a6ee9629937c95506b575f",
+    "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md": "0da2644ad969f8c5107787746dfac7bb275a6d14aacd8e298f183ef715f371c5"
+  },
+  "parallelism": {
+    "critical_path": 3,
+    "width": 2,
+    "sprint_count": 4
+  },
+  "audit_checks": [
+    "Genuine scope R2 PASS read and five document digests match source commit.",
+    "All four directly consumable sprint docs and project index exist; c1 closes authoritative contract, c2 consumer lint/default policy integration, c3 runtime/template public API integration, c4 registry integration.",
+    "No new scope or sprint split needed; disjoint c2/c3 ownership and concrete three parent artifacts preserved.",
+    "Fresh policy is derived from ADR-RUN-0303, consumer-owned after setup; runtime/command boundaries preserved; SQLite graph held at 0.39/0.37.",
+    "Consumer behavior closes at c2/c3/c4; no feature closure is claimed by c1; publication and registry visibility ordering is explicit.",
+    "Parent-editing anchors are outside this developer handoff; this handoff pins only the five phase/sprint docs and makes no anchor gate claim.",
+    "git diff --check PASS; no source or plan changes in this pass."
+  ]
+}

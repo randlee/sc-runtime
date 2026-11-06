@@ -1,0 +1,8 @@
+{
+  "agent": "anchor-tuning",
+  "harness": "codex",
+  "model": "sol",
+  "path": ".codex/agents/anchor-tuning.md",
+  "sha256": "60cf04b170a95c00bd2be5bf46107985af6685da8d69b6cc4898fccd1e27d798",
+  "version": "0.8.7"
+}

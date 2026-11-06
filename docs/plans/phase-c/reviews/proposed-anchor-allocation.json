@@ -1,0 +1,57 @@
+{
+  "schema": "phase-c/proposed-anchor-allocation/1",
+  "approval": "pending",
+  "all_original_records_unchanged": true,
+  "no_live_calls": true,
+  "no_question_beads_created": true,
+  "mapping": [
+    {
+      "packet_reference": "ANC-013",
+      "allocated_id": "ANC-013",
+      "status": "proposed",
+      "fixture_approval": "pending",
+      "rubric": "not_run_unaccepted_calibration",
+      "source_intent_file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-013.json"
+    },
+    {
+      "packet_reference": "ANC-014",
+      "allocated_id": "ANC-014",
+      "status": "proposed",
+      "fixture_approval": "pending",
+      "rubric": "not_run_unaccepted_calibration",
+      "source_intent_file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-014.json"
+    },
+    {
+      "packet_reference": "ANC-015",
+      "allocated_id": "ANC-015",
+      "status": "proposed",
+      "fixture_approval": "pending",
+      "rubric": "not_run_unaccepted_calibration",
+      "source_intent_file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-015.json"
+    },
+    {
+      "packet_reference": "ANC-016",
+      "allocated_id": "ANC-016",
+      "status": "proposed",
+      "fixture_approval": "pending",
+      "rubric": "not_run_unaccepted_calibration",
+      "source_intent_file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-016.json"
+    },
+    {
+      "packet_reference": "ANC-018",
+      "allocated_id": "ANC-017",
+      "status": "proposed",
+      "fixture_approval": "pending",
+      "rubric": "not_run_unaccepted_calibration",
+      "source_intent_file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-018.json"
+    },
+    {
+      "packet_reference": "ANC-019",
+      "allocated_id": "ANC-018",
+      "status": "proposed",
+      "fixture_approval": "pending",
+      "rubric": "not_run_unaccepted_calibration",
+      "source_intent_file": "docs/plans/phase-c/reviews/internal-unapproved/actual-candidate-intent/ANC-019.json"
+    }
+  ]
+}

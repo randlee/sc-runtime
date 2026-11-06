@@ -1,0 +1,6 @@
+{
+  "id": "sc-runtime-phase-c-candidate-anc-015-source-intent",
+  "version": 1,
+  "sha256": "8358a5f06b45541797d0bb41da62afe93df097d3bb7af7f540923a035de6b151",
+  "content": "{\n  \"source_records\": [\n    {\n      \"speaker\": \"human\",\n      \"text\": \"it would be optional set of standard cron commands to set up cron schedule so all ui have similar json interface.\"\n    }\n  ]\n}"
+}

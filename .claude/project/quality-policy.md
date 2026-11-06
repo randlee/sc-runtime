@@ -56,6 +56,13 @@ their own prompts.
 
 ## Validation Policy
 
+Tests must use causal synchronization and retain ownership of their processes,
+tasks, and cleanup until physical completion. Unbounded waits and correctness
+assertions based on scheduling races are prohibited. A test that can hang or
+race must be redesigned; retries, skips, serialization, or increased timeouts
+are not fixes. Bounded failure guards may detect a failed handshake or cleanup,
+but must report failure accurately and reclaim the owned work.
+
 **Phase B implementation (waves 1–3, `integrate/phase-b` → `develop`):**
 phase-end artifact command is `just lint && just test` on the integration PR
 head commit. `quality-mgr` treats GitHub Actions check **`just lint and just
@@ -86,7 +93,7 @@ in `doc_review` or pre-implementation sprints.
 
 ## Boundary Enforcement
 
-**Product:** sc-lint **0.8.0** (`minimum_version` in root `sc-lint.toml`).
+**Product:** sc-lint **0.8.4** (`minimum_version` in root `sc-lint.toml`).
 
 **Local integration:** `sc-lint init --just` manages `justfile`, `sc-lint.toml`,
 and `.sc-lint/bootstrap.py`. First use on a clean checkout: `just setup`.
@@ -112,17 +119,17 @@ One convention for every phase. Everything is lower case.
 
 | Thing | Form | Example |
 |---|---|---|
-| Phase id | next unused letter pair, lower case | `bc` |
-| Sprint id | `<phase>-<n>`, `n` from 1 | `bc-4` |
-| Plan directory | `docs/plans/phase-<phase>/` | `docs/plans/phase-bc/` |
-| Phase plan | `docs/plans/phase-<phase>/phase-<phase>-plan.md` | `phase-bc-plan.md` |
-| Sprint doc | `docs/plans/phase-<phase>/sprint-<phase>-<n>-<slug>.md` | `sprint-bc-4-task-ledger-writer.md` |
-| Plan branch | `plan/phase-<phase>`, PR to `develop` | `plan/phase-bc` |
+| Phase id | next unused single letter, lower case | `c` |
+| Sprint id | `<phase>-<n>`, `n` from 1 | `c-4` |
+| Plan directory | `docs/plans/phase-<phase>/` | `docs/plans/phase-c/` |
+| Phase plan | `docs/plans/phase-<phase>/phase-<phase>-plan.md` | `phase-c-plan.md` |
+| Sprint doc | `docs/plans/phase-<phase>/sprint-<phase>-<n>-<slug>.md` | `sprint-c-4-runtime-ecosystem-release.md` |
+| Plan branch | `plan/phase-<phase>`, PR to `develop` | `plan/phase-c` |
 | Plan amendment branch | `plan/phase-<phase>-<slug>`, PR to `develop` | `plan/phase-b-monty-extension` |
-| Phase branch | `integrate/phase-<phase>`, cut from `develop` | `integrate/phase-bc` |
+| Phase branch | `integrate/phase-<phase>`, cut from `develop` | `integrate/phase-c` |
 | Phase track branch | `integrate/phase-<phase>-<track>`, cut from the phase branch; sprint PRs target it | `integrate/phase-b-monty` |
-| Sprint branch | `sprint/<phase>-<n>-<slug>` | `sprint/bc-4-task-ledger-writer` |
-| Fix layer | `fix/<phase>-<n>-<slug>`; phase-level: `fix/<phase>-<slug>` | `fix/bc-4-qa1` |
+| Sprint branch | `sprint/<phase>-<n>-<slug>` | `sprint/c-4-runtime-ecosystem-release` |
+| Fix layer | `fix/<phase>-<n>-<slug>`; phase-level: `fix/<phase>-<slug>` | `fix/c-4-qa1` |
 
 - Phase plans never live outside `docs/plans/phase-<phase>/`.
 - Every sprint declares its branch in `.sprints/` (`triage:branch`). Tools
@@ -136,4 +143,17 @@ an interface, its compatibility rule, evidence paths, and approval authority,
 
 ## Repository Exceptions
 
-Phase ids `a` and `b` are single letters. Later phases use the letter-pair form in Plan Naming.
+Phase ids progress as sequential single letters: `a`, `b`, `c`, then the next
+unused letter. A phase uses its declared identifier consistently across its
+plan paths, branch names, sprint identifiers, triage records, and QA evidence.
+
+The sole generated-policy exception is ADR-RUN-0005/REQ-RUN-0307: fresh
+configuration-derived selected application crate/edge inventory, consumer-owned
+after setup. No copied maintainer manifests or lint rules. Execution receipts
+prove all three analyzers ran; a configured TOML row alone is insufficient.
+
+Successful repeated init after customized SDK files is temporarily waived
+only by [the user decision in #117](https://github.com/randlee/sc-runtime/issues/117),
+tracking [upstream #849](https://github.com/randlee/sc-lint/issues/849).
+Record actual exit3 and unchanged consumer bytes; keep exact0.8.4 and all
+three analyzer/profile proofs. All other quality gates remain binding.

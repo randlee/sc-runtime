@@ -1,5 +1,5 @@
 [tool.sc-lint]
-minimum_version = "0.8.0"
+minimum_version = "0.8.4"
 
 [[tool.sc-lint.lint]]
 name = "fmt"
@@ -13,6 +13,19 @@ command = ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warni
 name = "workspace"
 command = ["cargo", "test", "--workspace"]
 
+
+[[tool.sc-lint.lint]]
+name = "sc-boundary"
+command = ["sc-lint", "lint", "sc-boundary", "--root", ".", "--config", "sc-lint.toml"]
+
+[[tool.sc-lint.lint]]
+name = "sc-portability"
+command = ["sc-lint", "lint", "sc-portability", "--root", ".", "--config", "sc-lint.toml"]
+
+[[tool.sc-lint.lint]]
+name = "sc-runtime"
+command = ["sc-lint", "lint", "sc-runtime", "--root", ".", "--config", "sc-lint.toml"]
+
 [tool.sc-lint.lint_profiles]
-full = ["fmt", "clippy"]
-default = ["fmt", "clippy"]
+full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
+default = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]

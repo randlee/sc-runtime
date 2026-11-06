@@ -51,6 +51,12 @@ typestate, [ADR-RT-0001](architecture.md)).
 | `.mcp(closure)` | a closure that receives the `Stores` value and returns an rmcp Streamable HTTP service | no |
 | `.logger(handle)` | a `sc_command::observability::SharedCanonicalLog` (ADR-RUN-0017 initial bridge); optional in every builder state and replaces the fixed `sc-runtime` Noop | no |
 | `.run().await` | none; returns `Result<(), RuntimeError>` | yes |
+| `.run_with_cleanup(cleanup).await` | ready-state alternative terminal run with once-only asynchronous application cleanup | no |
+| `.run_with_cleanup_and_bound(on_bound, cleanup).await` | Phase C ready-state alternative terminal run; reports the actual owned bound Endpoint, then preserves the same cleanup sequence | no |
+
+Choose exactly one ready-state terminal run method. These alternatives add no
+typestate, operation registry, library wrapper or new callback engine; all use
+the same fixed startup/teardown runner. NFR-RT-0001 limits this exact surface.
 
 The optional logger is a `SharedCanonicalLog` retained through `stores`,
 `routes`, and `run` without adding a typestate. Repeated `.logger()` calls
@@ -198,7 +204,9 @@ last so no request is accepted before it can be served.
    startup fails safely, the first daemon remains reachable through `S`, and
    the failed startup and cleanup do not remove `S`.
 6. Inspection of the public API of `crates/sc-runtime`: `DaemonBuilder` has no
-   public method other than `logger`, `stores`, `routes`, `mcp` and `run`.
+   public method other than `logger`, `stores`, `routes`, `mcp`, `run`,
+   `run_with_cleanup` and `run_with_cleanup_and_bound`. The three terminal
+   run alternatives are implemented only on Ready.
 7. A test deserialises a `DaemonConfig` from a JSON document with
    `serde_json` (a dev-dependency) and passes it to `Daemon::builder`; it
    compiles, which shows `DaemonConfig: serde::Deserialize`.
@@ -412,8 +420,9 @@ versions change and this shape does not.
 ### Requirement Statement
 
 While serving (step 5 of `run()`), `sc-runtime` MUST begin graceful shutdown
-when the process receives SIGINT or SIGTERM. On Windows the trigger is Ctrl-C
-(decided in this document; the design names only SIGINT and SIGTERM).
+when the process receives SIGINT or SIGTERM. Phase C target amendment: on
+Windows Ctrl-C and Ctrl-Break trigger the same sequence. Register and poll
+both listeners before instance lock/store setup/bind, retaining observed state.
 
 On shutdown `run()` MUST:
 
@@ -458,8 +467,8 @@ shutdown sequence continues, and a signal-initiated `run()` still returns
 wire outcomes are existing runtime behavior; Phase B observability reports
 them but does not change them.
 
-**OPEN:** Windows signal handling beyond Ctrl-C (Ctrl-Break, console close,
-service stop) and the API used to receive it are not stated by the design.
+**OPEN:** Windows console close and service stop remain outside this signal
+contract. Ctrl-Break is selected for Phase C; implementation is planned.
 
 ### Rationale
 
@@ -484,12 +493,10 @@ machine, never on a developer's host
    successfully, proving the lock was released.
 5. A test asserts `run()` returns `Ok(())` after a signal-initiated shutdown
    (the child's exit code is the success code).
-6. Windows. Until the OPEN on the Windows signal API is decided: inspection of
-   the signal-handling code in `crates/sc-runtime/src` confirms that, under
-   `#[cfg(windows)]`, Ctrl-C starts the same shutdown sequence as SIGINT. Once
-   it is decided: a `#[cfg(windows)]` test sends `CTRL_C_EVENT` to a child
-   daemon while a request is in flight and asserts the client receives the
-   complete successful response and the child exits with the success code.
+6. Windows native isolated child tests send CTRL_C_EVENT and CTRL_BREAK_EVENT
+   through real process-group console events, proving early registration,
+   in-flight drain/cancel, cleanup, clean exit and restart. Keep existing
+   private in-process fixture trigger private; do not signal the test host.
 7. An in-process coordinated test proves a handler exceeding 30 seconds gets
    the 503 `RUNTIME.REQUEST_TIMEOUT` envelope and that no later terminal
    response is emitted for that request.
@@ -604,6 +611,31 @@ spawns a test helper, never the generated CLI binary
    passes when two such runs execute at the same time.
 
 ---
+
+### Phase C fixture cleanup target amendment
+
+An additive `DaemonFixture::start_with_cleanup` accepts the existing fixture
+setup/routes plus a once-only asynchronous application cleanup closure and
+runs production `run_with_cleanup` through the same internal runner. Ordinary
+start delegates with empty cleanup. On normal stop and startup errors, preserve
+primary runtime error, drop unused setup closures before cleanup, retain
+successful stores/logger/instance lock until cleanup finishes, release endpoint
+in existing order, and physically join the fixture thread on shutdown/drop.
+Tests coordinate blocked cleanup, lock contention, startup failure, parallel
+fixtures, endpoint closure and startup-timeout no-detachment. No new public
+shutdown trigger or alternate lifecycle is introduced. Implementation is c-3.
+
+The existing transport/runtime binds port zero once and reports the actual
+bound endpoint while retaining its listener. Cleanup fixtures preserve that
+continuous ownership and public endpoint accessor; reserve/drop/rebind is
+forbidden, as are retry/sleep/timeout workarounds for the port race. Add
+ready-state `run_with_cleanup_and_bound(on_bound,cleanup)` for production
+real-signal child tests: one callback after successful bind reports the actual
+Endpoint while the listener remains owned; no callback on pre-bind failure.
+The recipient confirms health before signaling. Ordinary run/run_with_cleanup
+delegate with a no-op callback; existing error/cleanup/ownership order remains.
+This extends REQ-RT-0001's public ready-state surface without a transport API
+change or exposing the private fixture shutdown trigger.
 
 ## REQ-RT-0007: `run()` returns the typed error `RuntimeError`
 
@@ -827,13 +859,14 @@ machine, never on a developer's host
 | Kind of public item | How many | Name |
 |---|---|---|
 | Entry type whose only public function is the constructor that returns the builder | one | `Daemon` (`Daemon::builder`) |
-| Builder type with exactly five public methods: three that each take one project closure (stores, routes, optional MCP service), one optional all-phase logger setter, and one that runs the daemon | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`) |
+| Builder type with exactly seven public methods: three project closure setters, one optional all-phase logger setter, and three alternative ready-state terminal run methods | one | `DaemonBuilder` (`stores`, `routes`, `mcp`, `logger`, `run`, `run_with_cleanup`, `run_with_cleanup_and_bound`) |
 | Configuration struct implementing `serde::Deserialize` | one | `DaemonConfig` |
 | Error enum | one | `RuntimeError` |
 | Public module for tests, containing one fixture type, behind `test-util` | one | `testing` (`testing::DaemonFixture`) |
+| Read-only original MCP request body accessor | one | `mcp_request_body(&axum::http::request::Parts) -> Option<&[u8]>` |
 
 - The crate MUST NOT have any other public item: no public trait, no public
-  free function, no public macro, and no `pub use` of an item from another
+  free function beyond `mcp_request_body`, no public macro, and no `pub use` of an item from another
   crate.
 
 The generated `daemon` and `service` crates take `sc-command` directly as
@@ -854,16 +887,20 @@ libraries, and would be code every project has to learn.
 1. `crates/sc-runtime/Cargo.toml` has no `proc-macro = true` and the crate
    source contains no `macro_rules!` exported with `#[macro_export]`.
 2. The `[public] facade` list of `boundaries/sc-runtime/sc-runtime.toml` is
-   `Daemon, DaemonBuilder, DaemonConfig, RuntimeError, testing`. It does not
+   `Daemon, DaemonBuilder, DaemonConfig, RuntimeError, mcp_request_body, testing`. It does not
    list `AppName`. It contains exactly one entry type, one builder type, one
-   configuration struct, one error enum and one test module, and nothing else.
+   configuration struct, one error enum, the one read-only raw-body accessor and one test module, and nothing else.
    `just lint` (which runs `sc-lint lint sc-boundary`) is clean. A default
    build does not expose `testing`.
 3. Inspection of the crate's rustdoc index (`cargo doc -p sc-runtime
    --no-deps`, and again with `--features test-util`): the builder type has
-   exactly five public methods (`stores`, `routes`, `mcp`, `logger`, `run`), the entry
+   exactly seven public methods (`stores`, `routes`, `mcp`, `logger`, `run`,
+   `run_with_cleanup`, `run_with_cleanup_and_bound`), the entry
    type has exactly one public function (`builder`), and the index does not
    list `sc_runtime::AppName`. `testing` appears only when `test-util` is on.
+   The terminal run methods exist only in Ready; logger remains same-phase.
+   Cleanup and bound receipt reuse the fixed runner; no additional public
+   setter, registry, macro, wrapper, typestate or callback mechanism is allowed.
 4. The `arch-qa` architecture review confirms no public type has a field or
    newtype payload of an `axum`, `rmcp` or `sqlx` type, and no registry
    structure exists.
@@ -1063,3 +1100,13 @@ decision [ADR-RUN-0006](../architecture.md) is that every library API returns
    `sc-runtime`, including the constructor of `testing::DaemonFixture`,
    returns `Result<_, RuntimeError>`, and no public signature names
    `anyhow::Error` or `Box<dyn Error>`.
+
+
+Phase C raw-input clarification: `mcp_request_body` only reads privately retained
+original JSON POST bytes from ordinary RMCP HTTP Parts. The attachment retains
+the service's configured byte cap, original headers, bytes and absolute deadline.
+The application owns canonical DTO validation and arbitrary JSON payload semantics;
+runtime adds no global duplicate-key rule or command registry. Requests outside
+that path return None. This accessor is the sole free-function exception in
+NFR-RT-0001. Normal serde_json is unnecessary and remains outside NFR-RT-0003's
+exact dependency budget; JSON parsers used only in runtime tests are dev edges.

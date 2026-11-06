@@ -1,0 +1,56 @@
+def rubric_entries(args, candidates: list, threshold: float, dry_run: bool, fixture, what: str) -> Result[tuple, JudgeError]:
+    """Lint, then one Jev request per candidate {id, statement, quote, scope, source_type}. Returns Ok((entries, requests_out)).
+
+    An entry is testable when every rubric question has two confident yes
+    confirmations and deterministic requirement-form lint has no error. A
+    third call is made only when the first two choices disagree. Nothing is
+    written to disk.
+    """
+    loaded = load_simple_question_set("testability", RUBRIC_QUESTIONS)
+    if isinstance(loaded, Err):
+        return loaded
+    qs = loaded.value
+    api_key = ""
+    if candidates and not dry_run and fixture is None:
+        cleared = remote_preflight(args, what)
+        if isinstance(cleared, Err):
+            return cleared
+        api_key = cleared.value
+    entries, requests_out, failures = [], [], []
+    for c in candidates:
+        warnings = lint_statement(c["statement"], c["quote"], c.get("source_type") or "ANC")
+        lint_errors = [w for w in warnings if w == LINT_VERBATIM or w in REQUIREMENT_FORM_WARNINGS]
+        entry = {"id": c["id"], "statement": c["statement"], "quote": c["quote"], "scope": c.get("scope") or "",
+                 "verdict": None, "failing": list(lint_errors), "answers": None, "lint": {"warnings": warnings, "errors": lint_errors}}
+        body = {"model": args.model, "questions": qs["questions"],
+                "state": {"anchor": {"statement": c["statement"], "quote": c["quote"], "scope": c.get("scope") or ""}}}
+        if dry_run:
+            fitted = fit_request(body, DEFAULT_MAX_REQUEST_BYTES, DEFAULT_MIN_ITEM_CHARS, {})
+            if isinstance(fitted, Err):
+                entry["error"] = fitted.error.to_json()["error"]
+            requests_out.extend((body, json.loads(json.dumps(body))))
+            entries.append(entry)
+            continue
+        judged = _rubric_judgement(args, api_key, body, qs, fixture, c["id"], threshold, lint_errors)
+        if isinstance(judged, Ok):
+            responses, attempts, outcome = judged.value
+            entry["answers"] = responses[0]["answers"]
+            entry["answers_second"] = responses[1]["answers"]
+            if len(responses) == 3:
+                entry["answers_third"] = responses[2]["answers"]
+            entry["attempts"] = attempts
+            entry["confirmations"] = outcome
+            entry["failing"] = outcome["failing"]
+            entry["verdict"] = outcome["verdict"]
+        else:
+            exc = judged.error
+            if exc.code in ABORT_CODES:
+                return judged
+            entry["verdict"] = "error"
+            entry["failing"] = [f"error: {exc.code}"] + lint_errors
+            entry["error"] = exc.to_json()["error"]
+            failures.append((str(c["id"]), exc))
+        entries.append(entry)
+    if failures:  # a rubric that could not run is never needs_work, and `add --rubric` never records on it
+        return jev_failure("rubric candidates", failures, len(candidates), {"anchors": entries})
+    return Ok((entries, requests_out))

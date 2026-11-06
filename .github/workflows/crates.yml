@@ -97,11 +97,9 @@ jobs:
 
       - name: Install just
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$HOME/.local/bin"
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to "$HOME/.local/bin"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
+        with:
+          just-version: '1.58.0'
 
       - name: Install generation test dependency
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
@@ -144,6 +142,19 @@ jobs:
         with:
           tool: cargo-audit@0.22.2
 
+      # All-targets checks include the cron command adapter's SQLite-backed
+      # dev dependency even when SQLite-owning workspace roots are excluded.
+      - name: Install LLVM archiver for Windows cross-builds
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        run: |
+          set -euo pipefail
+          sudo -n apt-get update
+          sudo -n apt-get install -y llvm
+          llvm_bin="$(llvm-config --bindir)"
+          test -x "$llvm_bin/llvm-lib"
+          echo "$llvm_bin" >> "$GITHUB_PATH"
+          "$llvm_bin/llvm-config" --version
+
       - name: Setup
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just setup
@@ -152,6 +163,17 @@ jobs:
       - name: Lint
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: just lint
+
+      - name: Validate standard cron adapter feature matrix
+        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
+        run: |
+          set -euo pipefail
+          for features in schema scheduler schema,scheduler; do
+            cargo +1.94.1 test -p sc-cron-commands --no-default-features --features "$features"
+          done
+          cargo +1.94.1 clippy -p sc-cron-commands --all-targets --no-default-features --features schema,scheduler -- -D warnings -D clippy::await_holding_lock
+          cargo +1.96.1 test -p sc-cron-commands --no-default-features --features schema,scheduler,monty
+          cargo +1.96.1 clippy -p sc-cron-commands --all-targets --no-default-features --features schema,scheduler,monty -- -D warnings -D clippy::await_holding_lock
 
       - name: Test
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
@@ -177,7 +199,9 @@ jobs:
         with:
           python-version: '3.13'
       - uses: dtolnay/rust-toolchain@1.94.1
-      - uses: extractions/setup-just@v2
+      - uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6 # v2
+        with:
+          just-version: '1.58.0'
       - uses: ./.github/actions/rust-build-cache
         with:
           namespace: windows-hook-default-monty-debug
@@ -188,8 +212,19 @@ jobs:
         run: just test owned-process-windows
       - name: Execute default shared hook environment root
         run: just test windows-hook-default
+      - name: Execute runtime fixture ownership on Windows
+        run: cargo test -p sc-runtime --features test-util --lib
+      - name: Execute standard cron adapter on Windows
+        run: cargo +1.94.1 test -p sc-cron-commands --no-default-features --features schema,scheduler
+      - name: Execute isolated runtime Ctrl-C and Ctrl-Break lifecycle
+        env:
+          SC_RUNTIME_EPHEMERAL_CI: '1'
+          SC_RUNTIME_GHA_EPHEMERAL_SIGNAL_TEST: '1'
+        run: python crates/sc-runtime/tests/windows_console_driver.py
       - uses: dtolnay/rust-toolchain@1.96.1
       - name: Execute Monty shared hook environment root
         run: just test windows-hook-monty
       - name: Execute Monty host bridge root
         run: just test windows-host-monty
+      - name: Execute Monty cron adapter on Windows
+        run: cargo +1.96.1 test -p sc-cron-commands --no-default-features --features schema,scheduler,monty

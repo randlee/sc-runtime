@@ -83,10 +83,10 @@ const CODE_DRAIN_TIMEOUT: &str = "RUNTIME.DRAIN_TIMEOUT";
 
 /// Wire `suggested_action` for [`CODE_REQUEST_TIMEOUT`].
 const REQUEST_TIMEOUT_RECOVERY: &str =
-    "retry the request; if it persists, shorten the handler or raise the request time limit";
+    "completion may be unknown; reconcile the operation outcome before considering a replay";
 
 /// Wire `suggested_action` for [`CODE_DRAIN_TIMEOUT`].
-const DRAIN_TIMEOUT_RECOVERY: &str = "retry after the daemon is serving again";
+const DRAIN_TIMEOUT_RECOVERY: &str = "completion may be unknown; after serving resumes, reconcile the operation outcome before considering a replay";
 
 /// Body of the liveness probe `GET /health`.
 ///
@@ -217,7 +217,7 @@ fn request_event(
         let context = ErrorContext::new(
             ErrorCode::new_static(code),
             "request deadline elapsed",
-            Remediation::recoverable("Retry the request.", [] as [&str; 0]),
+            Remediation::recoverable(REQUEST_TIMEOUT_RECOVERY, [] as [&str; 0]),
         );
         let mut diagnostic = context.diagnostic().clone();
         diagnostic.timestamp = timestamp;
@@ -345,15 +345,18 @@ pub(crate) fn with_request_timeout(
 }
 
 async fn enforce_deadlines(
-    request: Request,
+    mut request: Request,
     next: Next,
     limit: Duration,
     shutdown: &mut tokio::sync::watch::Receiver<bool>,
     drain: Duration,
 ) -> Response {
+    let deadline = tokio::time::Instant::now() + limit;
+    // Project HTTP/MCP adapters forward this same absolute deadline to their
+    // owned executor. Do not restart the request budget inside an operation.
+    request.extensions_mut().insert(deadline.into_std());
     let handler = next.run(request);
     tokio::pin!(handler);
-    let deadline = tokio::time::Instant::now() + limit;
     match tokio::time::timeout_at(
         deadline,
         race_handler_or_shutdown(handler.as_mut(), shutdown),
@@ -467,6 +470,12 @@ where
     S: rmcp::ServerHandler + Send + 'static,
     M: rmcp::transport::streamable_http_server::SessionManager,
 {
+    let limit = service.config.max_request_body_bytes;
+    let service = axum::Router::new()
+        .fallback_service(service)
+        .layer(axum::middleware::from_fn(move |request, next| {
+            crate::mcp_input::retain(request, next, limit)
+        }));
     router.nest_service(MCP, service)
 }
 

@@ -1,0 +1,29 @@
+@prefix triage: <urn:sc-runtime:qa-triage:> .
+
+# Manual pre-gate baseline, NOT a failed Jev sprint gate. Direct human approval:
+# docs/plans/phase-c/reviews/authority-approvals/new-anchor-approval-with-anc016-clarification.json
+# ANC-017/018 statements/fixtures approved; records still proposed, not locked.
+# Each author correction awaits fresh independent scope/critical/QA and live checks.
+triage:CONSUMER_EXTENSION_001 a triage:Finding ;
+ triage:status "to_fix" ; triage:author_state "corrected-pending-independent-review" ;
+ triage:origin "manual-pre-gate-baseline" ; triage:sprints "c-1,c-5" ;
+ triage:authority "framework-charter; REQ-CRON-0004/0020/0021; ADR-RUN-0018; approved ANC-017/018 intent" ;
+ triage:correction "Qualify bundled schema restrictions; c5 existing README and external consumer prove an application-owned field plus public scheduling/query/end and generation fencing, declaring legacy/cooperative mode." .
+
+triage:CONSUMER_EXTENSION_002 a triage:Finding ;
+ triage:status "to_fix" ; triage:author_state "corrected-pending-independent-review" ;
+ triage:origin "manual-pre-gate-baseline" ; triage:sprints "c-1,c-5" ;
+ triage:authority "framework-charter; REQ-CRON-0020; ADR-RUN-0018; approved ANC-017 intent" ;
+ triage:correction "Scope SQLite hooks/TLS/interrupt to bundled provider; custom cooperative support must be truthful with live scope, fencing, outcomes and ownership; caller-owned legacy/custom alternatives retain explicitly different guarantees." .
+
+triage:CONSUMER_EXTENSION_003 a triage:Finding ;
+ triage:status "to_fix" ; triage:author_state "corrected-pending-independent-review" ;
+ triage:origin "manual-pre-gate-baseline" ; triage:sprints "c-1,c-5,c-6" ;
+ triage:authority "framework-charter; REQ-CRON-0020/0021; REQ-CRNC-0002; ADR-RUN-0018/0019; ADR-CRNC-0001; approved ANC-017/018 intent" ;
+ triage:correction "Document existing ScheduleStore/CronOperations/CronExecutor replacement seams and transferred lifecycle/authorization/error duties; focused public executor composition proof, no new framework/API or weakened standard defaults." .
+
+triage:CONSUMER_EXTENSION_004 a triage:Finding ;
+ triage:status "to_fix" ; triage:author_state "corrected-pending-independent-review" ;
+ triage:origin "manual-pre-gate-baseline" ; triage:sprints "c-1,c-4,c-5,c-6" ;
+ triage:authority "framework-charter; REQ-CRNC-0002; ADR-RUN-0019; ADR-CRNC-0001; approved ANC-018 intent" ;
+ triage:correction "Existing adapter README selected-default recipe links core custom-store example; c4 consumes documented selection/public wiring/startup/commands/stop/join in real generated and registry proofs, no auto-start or consumer-product migration." .

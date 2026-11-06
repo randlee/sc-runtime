@@ -1,0 +1,6 @@
+{
+  "id": "sc-runtime-phase-c-candidate-anc-016-source-intent",
+  "version": 1,
+  "sha256": "7c0300f4e3c326c187b1e8f882faf416bc2550b4a565367b91248ceea3bdb9a8",
+  "content": "{\n  \"source_records\": [\n    {\n      \"speaker\": \"human\",\n      \"text\": \"yes, we will want to register monty, python and rust jobs w/ cron.\"\n    },\n    {\n      \"speaker\": \"human\",\n      \"text\": \"yes, we have a few more options i.e. python, monty, rust handler. but the general subcommands should be standard\"\n    }\n  ]\n}"
+}

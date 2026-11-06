@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "mode": "plan-hardening-guidelines-pass",
+  "round_id": "STEP1-R1",
+  "round_index": 1,
+  "reviewed_commit": "5d8480586617de1397a77e6a4c47ec7f1f9e8227",
+  "previous_reviewed_commit": "76d6cfea54e1347d954a712d18a0824e8b24b695",
+  "iterations": 1,
+  "docs_modified": [
+    "docs/plans/phase-c/phase-c-plan.md",
+    "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+    "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md"
+  ],
+  "docs_created": [],
+  "ready_for_next_step": true,
+  "errors": [],
+  "branch": "plan/phase-c",
+  "worktree_path": "/Users/randlee/github/sc-runtime-worktrees/plan/phase-c",
+  "repository": "https://github.com/randlee/sc-runtime",
+  "source_of_truth": "docs/plans/phase-c/phase-c-plan.md",
+  "references": [
+    "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md",
+    "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md",
+    "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md",
+    "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md",
+    "docs/plans/phase-c/anchors.json",
+    "docs/requirements.md",
+    "docs/architecture.md",
+    ".claude/project/quality-policy.md",
+    ".claude/skills/plan-hardening/sprint-planning-guidelines.md",
+    ".sprints/c/structure.ttl"
+  ],
+  "parallelism": {"critical_path": 3, "width": 2, "sprint_count": 4},
+  "changes": [
+    "Apply owner's explicit fresh-install boundary policy direction: select the policy from generated project configuration, hand ownership to consumer, preserve consumer edits on later setup/init/upgrade.",
+    "Assign consumer boundary templates and bootstrap/Just integration paths to c-2 with configuration and policy-preservation acceptance tests.",
+    "Record actual runtime and command boundary directions without changing their authoritative manifests.",
+    "Root c-1 acceptance at its contract and governing ADRs rather than feature-level requirements.",
+    "Correct release sequence: authorization and prepublication checks precede publication; registry visibility and no-patch consumption precede release closure."
+  ],
+  "validation": [
+    "All four sprint YAML frontmatter parses; status planned; requirements and ADR lists present; branch/worktree/doc names match.",
+    "c-2 and c-3 owned path prefix sets are disjoint; graph remains c1 -> c2/c3, c3 -> c4, critical path 3, width 2, four sprints.",
+    "git diff --check passed; branch clean and synchronized after successful push.",
+    "origin/develop is an ancestor of reviewed HEAD; no update required."
+  ],
+  "limits": [
+    "This is the developer Step1 handoff only; independent scope, critical, live anchor, and manager QA gates are not claimed.",
+    "Existing anchors remain untouched for parent-managed fixtures, lock, and live gate work."
+  ],
+  "document_sha256": {
+    "docs/plans/phase-c/phase-c-plan.md": "9012a39ed4a01f471ab9999accf2295aa4dda402538000e325eeb823816f41ea",
+    "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md": "b1c40a5f53c1ef14eda113b1f8aa055a00ab862a09318b33bad469f9ea9b02e1",
+    "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md": "a87d4c07d00995281e99b1a0045719ddca983f64a5f4f21f3ec40fdae2b33d67",
+    "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md": "5c1b5bd50fc12ee917710480943de7ec3f56254aadedd3cc80fe90a66c866d2e",
+    "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md": "a3ee18c86c3f6c2ebdcd4868f063308a42d4c923635a65b71d31d016718db93a",
+    "docs/plans/phase-c/anchors.json": "198002014724fb3c816173a6c8c984fbd96d0f0047af8dda36d5a3ee856584d2"
+  }
+}

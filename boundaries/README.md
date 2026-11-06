@@ -13,6 +13,7 @@ by `sc-lint lint sc-boundary` ([REQ-RUN-0005](../docs/requirements.md)).
 | `sc-runtime` | a-5 |
 | `sc-runtime-db-sqlite` | b-1 |
 | `sc-cron` | b-3 |
+| `sc-cron-commands` | c-1 |
 
 Manifest format and forbidden edges are normative in `docs/requirements.md`
 (REQ-RUN-0005) and `docs/architecture.md`.
@@ -43,3 +44,11 @@ and `extra` while the manifest names only `facade_mismatch::present`.
 `sc-lint lint sc-boundary` on a copy of that tree exits 0. The sc-config
 test `facade_lists_every_export` is the check that the manifest lists every
 export.
+
+Phase C adds `sc-cron-commands` with lean DTO-only defaults. Its independent
+`schema` feature enables only owner schema dependencies and command/schema;
+`scheduler` enables the native cron edge. Core/adapter manifests declare the
+canonical dev-only doubles in `crates/sc-cron-commands/tests/support/` and
+`tests/contracts/phase-c/`; these paths never enter production module graphs.
+Command and runtime retain forbidden outgoing cron/adapter edges, while the
+adapter is an allowed incoming dependent of command and optional cron.

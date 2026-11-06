@@ -1,0 +1,47 @@
+{
+  "status": "corrected-wrapper-only-staging-required",
+  "preserves_r1": true,
+  "questions_unchanged": true,
+  "files": [
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/r2/inputs/future-intent-01-rubric.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/r2/inputs/future-intent-01-rubric.json",
+      "file_bytes_sha256": "b0893f3f5729f42af80334ef9f0df302b1fd8eaeac666143dc20961ef11a8f8c",
+      "canonical_json_sha256": "22b4f92d8963cbd7e0efb409e34e59477841a5d1372e88baa2b1f6f1402205dd",
+      "rubric_digest": "256a300b06168dd457a7f2b591a8cc92abce9189e418246aaf82ff9f789a61a0",
+      "intent_content_sha256": null
+    },
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/r2/inputs/future-intent-02-rubric.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/r2/inputs/future-intent-02-rubric.json",
+      "file_bytes_sha256": "97473529c2ee93eb822cced499ad0bdbfca8231d1e0dfe45e9507c577c51002c",
+      "canonical_json_sha256": "1d9e53b695c0193b82ff7576c112c67ea07ae0f921583e33611710b83a311971",
+      "rubric_digest": "cc8fc2477a2994c6099aeb918c6a158a796ad9e0542f46c593a2837f7cd06321",
+      "intent_content_sha256": null
+    },
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/r2/inputs/future-intent-03-rubric.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/r2/inputs/future-intent-03-rubric.json",
+      "file_bytes_sha256": "b0ec2490755c15a862ecbf45a1114b1693b6c2478c746f7da138719d38f95adc",
+      "canonical_json_sha256": "ce72a48468cd8ae8d8c85b9000342fb058de69631fa8858f1ca377e18bc54e07",
+      "rubric_digest": "79edf334503e0795fe47189d24c7fd518781b9076e1bc397f4097330e87f9648",
+      "intent_content_sha256": null
+    },
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/r2/inputs/generic-authorized-algorithm-intent.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/r2/inputs/generic-authorized-algorithm-intent.json",
+      "file_bytes_sha256": "6da1c2b95600f7dbff0704553104eb31390d4fcedcc5355975b48a51c7fc947f",
+      "canonical_json_sha256": "af560520e5b13046e8d3cff480d800ee48b093c244e06b8c6695ec2ee6635319",
+      "rubric_digest": null,
+      "intent_content_sha256": "91d3cd2dca9db76703f9ba9e6a923669af46df1d39876c4910b18a09f36597f2"
+    },
+    {
+      "scratch": "/tmp/sc-runtime-phase-c-review/continuation/calibration/088-local-request/r2/inputs/generic-unauthorized-algorithm-intent.json",
+      "repo_relative": "docs/plans/phase-c/reviews/continuation/calibration-088-local/r2/inputs/generic-unauthorized-algorithm-intent.json",
+      "file_bytes_sha256": "ef64a5e338bd5c9a588f72a0a7e7ba020e9215a26fa4b3be538678b1918d9232",
+      "canonical_json_sha256": "11c9aaae07ef258dd328a2b7ce48f93e33d75ae470ff297cc4924ab25377e8cb",
+      "rubric_digest": null,
+      "intent_content_sha256": "ce021492bbd3c5808ab1fc7175e90139327d64f56e399f972a01fc536e9e2985"
+    }
+  ]
+}

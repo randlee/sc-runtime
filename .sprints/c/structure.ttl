@@ -1,0 +1,43 @@
+@prefix triage: <urn:atm:triage:> .
+
+# c-1 owns the shared contract documents. Wave 2 contains four independent
+# implementation sprints; c-4 is the authorized registry-release closure.
+
+triage:PhaseC a triage:Phase .
+
+triage:c-1 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 1 ;
+  triage:branch "sprint/c-1-consumer-runtime-contract" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-1-consumer-runtime-contract.md" .
+
+triage:c-2 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 2 ;
+  triage:branch "sprint/c-2-consumer-sc-lint-full-profile" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-2-consumer-sc-lint-full-profile.md" .
+
+triage:c-3 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 2 ;
+  triage:branch "sprint/c-3-runtime-ecosystem-upgrade" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-3-runtime-ecosystem-upgrade.md" .
+
+triage:c-4 a triage:Sprint ;
+  triage:dependsOn triage:c-2, triage:c-3, triage:c-5, triage:c-6 ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 3 ;
+  triage:branch "sprint/c-4-runtime-ecosystem-release" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-4-runtime-ecosystem-release.md" .
+
+triage:c-5 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 2 ;
+  triage:branch "sprint/c-5-cron-consumer-compatibility" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-5-cron-consumer-compatibility.md" .
+
+triage:c-6 a triage:Sprint ;
+  triage:inPhase triage:PhaseC ;
+  triage:order 2 ;
+  triage:branch "sprint/c-6-standard-cron-commands" ;
+  triage:criteria "docs/plans/phase-c/sprint-c-6-standard-cron-commands.md" .

@@ -1,0 +1,77 @@
+{
+  "schema": "phase-c-anchor-candidate-packet/1",
+  "status": "candidate-preparation-only",
+  "source": {
+    "preceding_human_message_verbatim": "What we need to do at sc-runtime level is make sure the hooks are in place that the consumers can make changes they must AND. have full control to override behaviors so they don't get stuck.  \n\nsc-runtime goal is to provide a fast ramp up w/ appropriate hook points for extending.  i.e. atm-core MAY choose to extend the schems for each cron entry on their database, provide their own guarantees for shutdown.  A new customer should have enough in place, cron would work for them out of the box.  Does this make sense?  it is not sc-runtime job to guarantee a customer can not misuse the core libraries.  it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries.",
+    "latest_human_anchor_request_verbatim": "these statements:  `it is not sc-runtime job to guarantee a customer can not misuse the core libraries.  it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries.` look like good anchor statements to me",
+    "provenance": "Direct human messages relayed verbatim in parent task; statements and fixtures below are agent-authored proposals."
+  },
+  "id_check": {
+    "highest_record_id": "ANC-012",
+    "existing_provisional_candidate_ids": [
+      "ANC-013",
+      "ANC-014",
+      "ANC-015",
+      "ANC-016",
+      "ANC-017"
+    ],
+    "proposed_ids_are_provisional": true,
+    "allocated_in_anchors_json": false
+  },
+  "tracking": [
+    "run-x8d.5",
+    "run-x8d.6"
+  ],
+  "boundaries": {
+    "consumer_control": "Supported application-specific store/schema and shutdown-policy integration; no blanket removal of defensive validation or security/integrity checks.",
+    "documentation": "Explain default and extension responsibilities; no absolute guarantee that consumers never err.",
+    "out_of_box_cron": "Already stated context; not an extra bundled obligation in these two candidates.",
+    "not_generic_oracle": true
+  },
+  "candidates": [
+    {
+      "id": "ANC-018",
+      "kind": "directive",
+      "summary": "Consumer control through supported extension points",
+      "quote": "it is not sc-runtime job to guarantee a customer can not misuse the core libraries.",
+      "statement": "sc-runtime must expose supported extension points that let consumers replace default core-library behavior with application-specific behavior.",
+      "scope": "Changes public integration hooks or default coupling for consumer-owned store/schema and shutdown-policy choices.",
+      "source_context": "The preceding verbatim human message expressly requires hooks and full control to override behavior; the prohibition quote is read with that context.",
+      "draft_fixtures": {
+        "pass": "The cron integration accepts an application-provided store with an extended row schema and a consumer shutdown policy through supported extension points instead of requiring its bundled defaults.",
+        "fail": "Every consumer must use the bundled cron store and default shutdown policy; custom row schemas and application-specific lifecycle behavior have no supported integration seam."
+      },
+      "fixture_approval": "pending",
+      "rubric_status": "not-run",
+      "lock_status": "not-locked"
+    },
+    {
+      "id": "ANC-019",
+      "kind": "directive",
+      "summary": "Document correct integration and override responsibilities",
+      "quote": "it is sc-runtime job to provide an easy documented path that consumers will not accidently misuse the core libraries.",
+      "statement": "sc-runtime must document a supported integration path that explains correct use of the core libraries and the responsibilities of consumer overrides.",
+      "scope": "Changes public integration documentation, default examples or extension guidance for core-library consumers.",
+      "draft_fixtures": {
+        "pass": "The integration guide shows the default cron setup and a supported custom store or shutdown policy example, including the consumer's validation, lifecycle and ownership responsibilities.",
+        "fail": "Consumers must inspect private scheduler internals to discover override wiring; the documentation explains neither supported hooks nor consumer responsibilities."
+      },
+      "fixture_approval": "pending",
+      "rubric_status": "not-run",
+      "lock_status": "not-locked"
+    }
+  ],
+  "deduplication": {
+    "existing_locked_ANC008": "Consumer ownership of generated boundary policy only; does not establish replaceable core behavior or integration guidance.",
+    "existing_REQ_CRON0003": "Existing Rust/Python/Monty job registration only; does not imply replaceable store/shutdown-policy integration or its documentation.",
+    "framework_charter": "Related multi-consumer/composition authority; these candidates preserve the newly explicit consumer-control and documented-use obligations without adding another engine.",
+    "candidate_pair": "Replaceability may exist without documentation; documentation may exist while an implementation still requires defaults. Distinct obligations."
+  },
+  "pending_gates": [
+    "Independent generic rubric acceptance before actual live testability",
+    "Actual candidate testability, deduplication and statement/fixture approval",
+    "Explicit record/capture and question linkage only after required approval and checks",
+    "Follow-up plan revision and fresh review for this new clarification",
+    "No current planning or development gate PASS"
+  ]
+}

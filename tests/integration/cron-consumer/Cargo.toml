@@ -1,0 +1,29 @@
+[package]
+name = "cron-consumer-proof"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[features]
+default = []
+monty = ["sc-cron/monty"]
+
+[dependencies]
+sc-cron = { path = "../../../crates/sc-cron", default-features = false }
+# Application persistence utility, pinned to the qualified provider family.
+rusqlite = { version = "0.39", default-features = false, features = ["bundled", "hooks"] }
+
+[dev-dependencies]
+process-wrap = { version = "10", default-features = false, features = ["std", "job-object", "process-group", "process-session"] }
+sc-cron = { path = "../../../crates/sc-cron", default-features = false, features = ["test-utils"] }
+async-trait = "0.1"
+chrono = "0.4"
+serde_json = "1"
+tempfile = "3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
+
+[target.'cfg(windows)'.dev-dependencies]
+win32job = "=2.0.3"
+waitpid-any = "=0.3.0"

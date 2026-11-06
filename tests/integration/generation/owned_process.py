@@ -1,5 +1,6 @@
 """Bounded ownership for test command trees, including nested recipe wrappers."""
 
+import errno
 import json
 import os
 import signal
@@ -18,7 +19,7 @@ def _is_nested():
     if not marker:
         return False
     if os.name != "nt":
-        return marker == str(os.getpgrp())
+        return marker == str(os.getsid(0))
     import ctypes
     from ctypes import wintypes
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
@@ -60,12 +61,81 @@ def _windows_job(process):
         error = ctypes.get_last_error()
         kernel.CloseHandle(job)
         raise ctypes.WinError(error)
-    return kernel, job
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.IsProcessInJob.argtypes = [wintypes.HANDLE, wintypes.HANDLE, ctypes.POINTER(wintypes.BOOL)]
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    return kernel, job, {}
 
 
 def _session_listing():
     return subprocess.run(["ps", "-axo", "pid=,stat="], capture_output=True,
                           text=True, check=True, timeout=2)
+
+
+
+def _native_session_processes(session):
+    """Enumerate a pinned session without depending on an inspector subprocess."""
+    if sys.platform == "darwin":
+        return _mac_session_processes(session)
+    if sys.platform.startswith("linux"):
+        result = []
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdecimal():
+                continue
+            try:
+                fields = (entry / "stat").read_text().rsplit(")", 1)[1].split()
+                if int(fields[3]) == session:
+                    result.append((int(entry.name), fields[0]))
+            except (FileNotFoundError, ProcessLookupError):
+                pass
+        return result
+    raise OSError("native owned-session inspection supports Linux and macOS")
+
+
+def _mac_session_processes(session):
+    # Public libproc APIs: proc_bsdshortinfo is four uint32s, a 16-byte
+    # command and eight uint32s (Darwin sys/proc_info.h). SZOMB is 5.
+    import ctypes
+
+    class ShortInfo(ctypes.Structure):
+        _fields_ = [("pid", ctypes.c_uint32), ("ppid", ctypes.c_uint32),
+                    ("pgid", ctypes.c_uint32), ("status", ctypes.c_uint32),
+                    ("command", ctypes.c_char * 16), ("rest", ctypes.c_uint32 * 8)]
+
+    lib = ctypes.CDLL("/usr/lib/libproc.dylib", use_errno=True)
+    lib.proc_listallpids.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    lib.proc_listallpids.restype = ctypes.c_int
+    lib.proc_pidinfo.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_uint64,
+                                ctypes.c_void_p, ctypes.c_int]
+    lib.proc_pidinfo.restype = ctypes.c_int
+    capacity = max(128, lib.proc_listallpids(None, 0) + 128)
+    while True:
+        pids = (ctypes.c_int * capacity)()
+        count = lib.proc_listallpids(pids, ctypes.sizeof(pids))
+        if count <= 0:
+            raise OSError(ctypes.get_errno(), "native process enumeration failed")
+        if count < capacity:
+            break
+        if capacity >= 65536:
+            raise OSError("native process enumeration exceeded its bounded capacity")
+        capacity = min(capacity * 2, 65536)
+    result = []
+    for pid in pids[:count]:
+        try:
+            if os.getsid(pid) != session:
+                continue
+        except (ProcessLookupError, PermissionError):
+            continue
+        info = ShortInfo()
+        size = lib.proc_pidinfo(pid, 13, 0, ctypes.byref(info), ctypes.sizeof(info))
+        if size != ctypes.sizeof(info):
+            error = ctypes.get_errno()
+            if error == errno.ESRCH:
+                continue
+            raise OSError(error, "native owned-process status unavailable")
+        result.append((pid, "Z" if info.status == 5 else "R"))
+    return result
 
 
 def _check_session_inspection():
@@ -75,25 +145,37 @@ def _check_session_inspection():
         if not any(line.split() and line.split()[0] == str(own_pid)
                    for line in listing.stdout.splitlines()):
             raise RuntimeError("ps did not list the current process")
-        os.getsid(own_pid)
+        session = os.getsid(own_pid)
+        if not any(pid == own_pid for pid, _state in _native_session_processes(session)):
+            raise RuntimeError("native inspector did not list the current process")
     except (OSError, subprocess.SubprocessError, RuntimeError) as error:
         raise RuntimeError("owned command refused: Unix session inspection unavailable") from error
 
 
 def _stop_owned_session(leader):
     """Stop all ordinary process groups in our pinned Unix session."""
+    inspection_error = None
     try:
         os.killpg(leader, signal.SIGSTOP)
         deadline = time.monotonic() + 10
         while True:
-            listing = _session_listing()
+            processes = None
+            if inspection_error is None:
+                try:
+                    listing = _session_listing()
+                    processes = [(int(fields[0]), fields[1])
+                                 for line in listing.stdout.splitlines()
+                                 if len(fields := line.split()) >= 2]
+                except (OSError, subprocess.SubprocessError, ValueError) as error:
+                    # Preflight is not a promise that a later ps process can
+                    # start/finish. Keep the session identity pinned and use
+                    # the already qualified kernel inspector, without retrying ps.
+                    inspection_error = error
+            if processes is None:
+                processes = _native_session_processes(leader)
             active = []
-            for line in listing.stdout.splitlines():
-                fields = line.split()
-                if len(fields) < 2 or fields[1].startswith("Z"):
-                    continue
-                pid = int(fields[0])
-                if pid == leader:
+            for pid, state in processes:
+                if pid == leader or state.startswith("Z"):
                     continue
                 try:
                     if os.getsid(pid) == leader:
@@ -116,9 +198,53 @@ def _stop_owned_session(leader):
             os.killpg(leader, signal.SIGKILL)
         except ProcessLookupError:
             pass
+    if inspection_error is not None:
+        # run's finally reaps the pinned launcher before this error escapes.
+        raise inspection_error
 
 
-def _terminate_windows_job(kernel, handle):
+def _windows_physical_complete(active, signals):
+    # Empty membership may precede a retained process identity's exit signal.
+    return active == 0 and all(signal == 0 for signal in signals)
+
+
+def _retain_windows_identities(kernel, handle, identities):
+    import ctypes
+    from ctypes import wintypes
+    kernel.QueryInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
+                                                 wintypes.DWORD, ctypes.c_void_p]
+    capacity = 32
+    while True:
+        buffer = ctypes.create_string_buffer(8 + capacity * ctypes.sizeof(ctypes.c_size_t))
+        if kernel.QueryInformationJobObject(handle, 3, buffer, len(buffer), None):
+            break
+        error = ctypes.get_last_error()
+        if error != 234 or capacity >= 65536:
+            raise ctypes.WinError(error)
+        capacity *= 2
+    count = ctypes.c_uint32.from_buffer(buffer, 4).value
+    pids = (ctypes.c_size_t * count).from_buffer(buffer, 8)
+    for pid in pids:
+        if pid in identities:
+            continue
+        process = kernel.OpenProcess(0x100000 | 0x1000, False, pid)
+        if not process:
+            error = ctypes.get_last_error()
+            if error == 87:  # An identity which has already exited needs no live wait.
+                continue
+            raise ctypes.WinError(error)
+        member = wintypes.BOOL()
+        if not kernel.IsProcessInJob(process, handle, ctypes.byref(member)):
+            error = ctypes.get_last_error()
+            kernel.CloseHandle(process)
+            raise ctypes.WinError(error)
+        if member.value:
+            identities[pid] = process
+        else:
+            kernel.CloseHandle(process)
+
+
+def _terminate_windows_job(kernel, handle, identities):
     import ctypes
     from ctypes import wintypes
 
@@ -132,6 +258,7 @@ def _terminate_windows_job(kernel, handle):
     kernel.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
     kernel.QueryInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
                                                  wintypes.DWORD, ctypes.c_void_p]
+    _retain_windows_identities(kernel, handle, identities)
     if not kernel.TerminateJobObject(handle, 1):
         raise ctypes.WinError(ctypes.get_last_error())
     deadline = time.monotonic() + 10
@@ -140,7 +267,11 @@ def _terminate_windows_job(kernel, handle):
         if not kernel.QueryInformationJobObject(handle, 1, ctypes.byref(accounting),
                                                 ctypes.sizeof(accounting), None):
             raise ctypes.WinError(ctypes.get_last_error())
-        if accounting.ActiveProcesses == 0:
+        _retain_windows_identities(kernel, handle, identities)
+        signals = [kernel.WaitForSingleObject(process, 0) for process in identities.values()]
+        if any(signal == 0xFFFFFFFF for signal in signals):
+            raise ctypes.WinError(ctypes.get_last_error())
+        if _windows_physical_complete(accounting.ActiveProcesses, signals):
             return
         if time.monotonic() >= deadline:
             raise TimeoutError("owned Windows job processes did not exit")
@@ -175,6 +306,8 @@ def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_ou
                 start.touch()
                 deadline = time.monotonic() + timeout
                 while not status.exists():
+                    if job is not None:
+                        _retain_windows_identities(*job)
                     if time.monotonic() >= deadline:
                         timed_out = True
                         break
@@ -185,10 +318,12 @@ def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_ou
                 # The launcher stays alive until cleanup, pinning the process-group ID.
                 try:
                     if job is not None:
-                        kernel, handle = job
+                        kernel, handle, identities = job
                         try:
-                            _terminate_windows_job(kernel, handle)
+                            _terminate_windows_job(kernel, handle, identities)
                         finally:
+                            for process in identities.values():
+                                kernel.CloseHandle(process)
                             kernel.CloseHandle(handle)
                     elif not nested and os.name != "nt":
                         _stop_owned_session(child.pid)
@@ -202,7 +337,7 @@ def run(args, *, timeout, cwd=None, env=None, stdin=None, text=False, capture_ou
                 if nested and os.name != "nt" and (timed_out or result != 0):
                     # Abort the enclosing owned tree as well: descendants may
                     # still hold the driver's captured output pipes open.
-                    os.killpg(os.getpgrp(), signal.SIGTERM)
+                    os.killpg(int(os.environ[_MARKER]), signal.SIGTERM)
             out.seek(0)
             err.seek(0)
             stdout = out.read(32 * 1024 * 1024 + 1) if capture_output else None
@@ -228,7 +363,7 @@ def _launch(config_path):
         if time.monotonic() >= deadline:
             return 1
         time.sleep(0.02)
-    os.environ[_MARKER] = "job" if os.name == "nt" else str(os.getpgrp())
+    os.environ[_MARKER] = "job" if os.name == "nt" else str(os.getsid(0))
     if os.name != "nt":
         def abort(_signum, _frame):
             temporary = status.with_suffix(".tmp")

@@ -22,7 +22,7 @@
   <main id="dialog" class="dialog dialog--frame" data-testid="page-3-options">
     <h1 data-testid="page-3-heading">Generation options</h1>
     <p class="lead">
-      Database and MCP choices. The list is the schema enum. sqlite is the
+      Database, MCP and cron choices. The list is the schema enum. sqlite is the
       default. A project contains one layout.
     </p>
 
@@ -45,6 +45,15 @@
         <label for="mcp">mcp</label>
       </div>
       <p class="hint">Schema default is enabled. Clear it to leave MCP out of the generated project.</p>
+      <div class="checkbox-row">
+        <input id="cron" type="checkbox" data-testid="cron" data-answer="cron" />
+        <label for="cron">Cron scheduler</label>
+      </div>
+      <div class="checkbox-row">
+        <input id="cron_commands" type="checkbox" data-testid="cron_commands" data-answer="cron_commands" />
+        <label for="cron_commands">Standard cron commands</label>
+      </div>
+      <p class="hint">Both default off. Standard commands require the cron scheduler; MCP remains an independent choice.</p>
     </div>
 
     <nav class="wizard-chrome" data-wizard-nav aria-label="Wizard navigation">
@@ -59,7 +68,7 @@
   </main>
 
   <script>
-    // Uniform-schema mode: overwrite only db and mcp. The rest of ANSWERS,
+    // Uniform-schema mode: overwrite only this page's database and option fields. The rest of ANSWERS,
     // including project_name and licence from the previous page, is carried
     // through untouched.
     var ANSWERS = window.WizardAnswers.DEFAULTS;
@@ -75,12 +84,16 @@
       if (db && typeof ANSWERS.db === "string") db.value = ANSWERS.db;
       var mcp = document.getElementById("mcp");
       if (mcp) mcp.checked = !!ANSWERS.mcp;
+      document.getElementById("cron").checked = !!ANSWERS.cron;
+      document.getElementById("cron_commands").checked = !!ANSWERS.cron_commands;
     });
 
     window.collectCurrentPageData = function () {
       var out = Object.assign({}, ANSWERS);
       out.db = document.getElementById("db").value;
       out.mcp = checked("mcp");
+      out.cron = checked("cron");
+      out.cron_commands = checked("cron_commands");
       return out;
     };
 

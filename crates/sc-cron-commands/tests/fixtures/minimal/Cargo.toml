@@ -1,0 +1,16 @@
+[package]
+name = "cron-command-minimal-consumer"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[features]
+default = []
+schema = ["sc-cron-commands/schema"]
+scheduler = ["sc-cron-commands/scheduler"]
+monty = ["sc-cron-commands/monty"]
+
+[dependencies]
+sc-cron-commands = { path = "../../..", default-features = false }

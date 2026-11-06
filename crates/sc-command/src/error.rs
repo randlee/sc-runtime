@@ -404,3 +404,97 @@ where
 {
     T::deserialize(value).map_err(|error| format!("{DISCRIMINANT_CODE}: {error}"))
 }
+
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for ErrorKind {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "ErrorKind".into()
+    }
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        serde_json::Map::from_iter([
+            ("type".into(), serde_json::json!("string")),
+            (
+                "enum".into(),
+                serde_json::json!([
+                    "invalid_input",
+                    "not_found",
+                    "conflict",
+                    "unavailable",
+                    "internal"
+                ]),
+            ),
+        ])
+        .into()
+    }
+}
+#[cfg(feature = "schema")]
+impl utoipa::PartialSchema for ErrorKind {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        use utoipa::openapi::schema::{ObjectBuilder, Type};
+        ObjectBuilder::new()
+            .schema_type(Type::String)
+            .enum_values(Some([
+                "invalid_input",
+                "not_found",
+                "conflict",
+                "unavailable",
+                "internal",
+            ]))
+            .into()
+    }
+}
+#[cfg(feature = "schema")]
+impl utoipa::ToSchema for ErrorKind {}
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for OpError {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "OpError".into()
+    }
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        serde_json::Map::from_iter([
+            ("type".into(), serde_json::json!("object")),
+            ("additionalProperties".into(), serde_json::json!(false)),
+            ("required".into(), serde_json::json!(["kind","code","message","details","suggested_action"])),
+            ("properties".into(), serde_json::json!({
+                "kind":ErrorKind::json_schema(generator),"code":{"type":"string"},"message":{"type":"string"},
+                "details":{"type":["object","array","string","number","boolean","null"]},
+                "suggested_action":{"type":["string","null"]}
+            }))
+        ]).into()
+    }
+}
+#[cfg(feature = "schema")]
+impl utoipa::PartialSchema for OpError {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
+        use utoipa::openapi::schema::{AdditionalProperties, ObjectBuilder, SchemaType, Type};
+        ObjectBuilder::new()
+            .schema_type(Type::Object)
+            .additional_properties(Some(AdditionalProperties::FreeForm(false)))
+            .required("kind")
+            .required("code")
+            .required("message")
+            .required("details")
+            .required("suggested_action")
+            .property("kind", ErrorKind::schema())
+            .property("code", ObjectBuilder::new().schema_type(Type::String))
+            .property("message", ObjectBuilder::new().schema_type(Type::String))
+            .property(
+                "details",
+                ObjectBuilder::new().schema_type(SchemaType::Array(vec![
+                    Type::Object,
+                    Type::Array,
+                    Type::String,
+                    Type::Number,
+                    Type::Boolean,
+                    Type::Null,
+                ])),
+            )
+            .property(
+                "suggested_action",
+                ObjectBuilder::new().schema_type(SchemaType::Array(vec![Type::String, Type::Null])),
+            )
+            .into()
+    }
+}
+#[cfg(feature = "schema")]
+impl utoipa::ToSchema for OpError {}

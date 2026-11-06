@@ -21,6 +21,8 @@ Crate-level requirements live beside each crate's architecture:
 | `sc-transport` | [requirements](sc-transport/requirements.md) | [architecture](sc-transport/architecture.md) |
 | `sc-command` | [requirements](sc-command/requirements.md) | [architecture](sc-command/architecture.md) |
 | `sc-runtime` | [requirements](sc-runtime/requirements.md) | [architecture](sc-runtime/architecture.md) |
+| `sc-cron` | [requirements](sc-cron/requirements.md) | [architecture](sc-cron/architecture.md) |
+| `sc-cron-commands` (Phase C planned) | [requirements](sc-cron-commands/requirements.md) | [architecture](sc-cron-commands/architecture.md) |
 
 ## Product purpose
 
@@ -107,6 +109,11 @@ The workspace members MUST be exactly these library crates. Amended 2026-10-25 (
 | `crates/sc-runtime` | `sc-runtime` | daemon assembly: `Daemon::builder()`, `daemon.lock`, `DaemonFixture` |
 | `crates/sc-runtime-db-sqlite` | `sc-runtime-db-sqlite` | rusqlite write actor; one connection, one thread |
 | `crates/sc-cron` | `sc-cron` | SQLite-backed cron; the app registers the job |
+| `crates/sc-cron-commands` (Phase C target) | `sc-cron-commands` | optional standard cron DTOs and scheduler adapter; ADR-RUN-0019 |
+
+Phase C amendment: the new adapter member is planned, not yet implemented.
+Its default DTO graph and optional scheduler edge are defined by
+REQ-RUN-0332 and NFR-CRNC-0001; no reverse core command/runtime edge is allowed.
 
 The repository root MUST also contain these directories and files, none of
 which is a workspace member:
@@ -394,7 +401,7 @@ that plain `cargo generate` works without the driver, and therefore runs
 A workflow file under `.github/workflows/` (the crate CI workflow) MUST run
 `just lint` and `just test` at the repository root on every pull request.
 
-`just lint` with no profile runs the sc-lint 0.8.0 full profile through
+`just lint` with no profile runs the sc-lint 0.8.4 full profile through
 `.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the
 `boundary` lint), line-counts, `cargo fmt --all -- --check`,
 `cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and
@@ -478,6 +485,12 @@ state it.
    | `sc-runtime` | MUST: `sc-transport` with its `server` cargo feature, `sc-command` with its `server` cargo feature, and `sc-observability-types` for the injected canonical logger contract. The edge `sc-runtime` -> `sc-config` is absent | `sc-runtime-db-sqlite`, `sc-cron`, `sqlx` (cargo tree; not a workspace member), `sc-observability`, `sc-observability-otlp` |
 | `sc-runtime-db-sqlite` | none | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime`, `sc-cron`. `sqlx` is absent and is checked with `cargo tree`, because it is not a workspace member |
 | `sc-cron` | MUST: registry `sc-observability-types`; TEMPORARY `sc-command` 0.1.1, defaults off/no features, for the contract (ADR-RUN-0017) | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, `sc-observability`, `sc-observability-otlp`. `sqlx` is absent and is checked with `cargo tree` |
+| `sc-cron-commands` (Phase C target) | defaults-off `sc-command`; optional `sc-cron` under non-default scheduler feature | `sc-config`, `sc-transport`, `sc-runtime`, `sc-runtime-db-sqlite`, full observability/OTLP and production tool crates |
+
+Phase C also forbids sc-command→sc-cron-commands and
+sc-runtime→sc-cron-commands. The adapter is an allowed dependent of command
+and, only with scheduler enabled, cron. These planned edges are implemented
+by c-1 boundary manifests and checked by c-6/c-4 isolated graph tests.
 
 `sc-observability-types` is an allowed dependency of `sc-command`,
 `sc-runtime`, and `sc-cron`; the latter two import the temporary command
@@ -1971,20 +1984,20 @@ use and the path CI tests cannot drift apart.
 
 ---
 
-## REQ-RUN-0307: sc-lint 0.8.0 consumer install
+## REQ-RUN-0307: sc-lint 0.8.4 consumer install
 
 **Status:** Active  
 
 ### Requirement Statement
 
-Every SC repository exposes the same base `just` commands. sc-lint 0.8.0
+Every SC repository exposes the same base `just` commands. sc-lint 0.8.4
 installs them. The placeholder `Justfile` and the prototype-handoff order are
 retired.
 
 1. The install command is `sc-lint init --just`.
-2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.0
+2. The template commits `template/sc-lint.toml` with `minimum_version` 0.8.4
    and `template/.sc-lint/bootstrap.py`. `sc-lint.toml` is the consumer pin.
-   It is not a hand-written clippy, rustfmt, deny, or `boundaries/` policy.
+   The only additional invocation wiring is the three analyzer entries below.
 3. The public recipes are `setup`, `lint`, `test`, and `upgrade`.
 4. The consumer-owned recipe `db-prepare` regenerates the checked-in `sqlx`
    offline query data in `crates/store-sqlite/.sqlx/`. It MUST survive a
@@ -2012,7 +2025,7 @@ remain after a later init.
 
 ### Success Criteria
 
-1. `template/sc-lint.toml` sets `minimum_version` to `0.8.0`, and
+1. `template/sc-lint.toml` sets `minimum_version` to `0.8.4`, and
    `template/.sc-lint/bootstrap.py` exists. `template/` contains no
    placeholder `Justfile` that stands in for this install.
 2. In a project generated from `wizard/fixtures/sqlite-mcp.json`,
@@ -2027,9 +2040,51 @@ remain after a later init.
    is `just lint` and at least one that is `just test`; every `run:` step
    that lints or tests is one of those two; the file contains no direct
    `cargo test`, `cargo clippy` or `cargo fmt` invocation.
-6. `template/` contains no hand-written `clippy.toml`, `rustfmt.toml`,
-   `deny.toml`, or `boundaries/` policy. The consumer pin is
-   `template/sc-lint.toml`.
+6. No maintainer boundary manifests, clippy, rustfmt, deny, custom rules or
+   `just` modules are copied. The sole fresh-install policy exception is
+   configuration-derived application crate/edge inventory (ADR-RUN-0005).
+
+
+Phase C invocation contract (sc-lint **0.8.4** for repository and consumer):
+
+```toml
+[[tool.sc-lint.lint]]
+name = "sc-boundary"
+command = ["sc-lint", "lint", "sc-boundary", "--root", ".", "--config", "sc-lint.toml"]
+[[tool.sc-lint.lint]]
+name = "sc-portability"
+command = ["sc-lint", "lint", "sc-portability", "--root", ".", "--config", "sc-lint.toml"]
+[[tool.sc-lint.lint]]
+name = "sc-runtime"
+command = ["sc-lint", "lint", "sc-runtime", "--root", ".", "--config", "sc-lint.toml"]
+[tool.sc-lint.lint_profiles]
+default = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
+full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]
+```
+
+Fresh generation derives inventory only from selected application crates and
+allowed direct edges (ADR-RUN-0303), omitting disabled store/MCP components.
+After setup it is consumer-owned: later setup/upgrade and repeated
+`sc-lint init --just` must preserve policy edits, analyzer declarations, both
+profiles and `db-prepare`. Bootstrap execution receipts must identify all three
+exact analyzer commands and zero statuses; TOML inspection alone is insufficient.
+ADR-RUN-0005 records the released-product result and the narrow temporary
+user waiver below; byte preservation and real analyzer execution stay binding.
+
+
+Temporary user-approved waiver (2026-11-04, [sc-runtime#117](https://github.com/randlee/sc-runtime/issues/117), upstream
+[sc-lint#849](https://github.com/randlee/sc-lint/issues/849)): waive only successful repeated `sc-lint init --just`
+after SDK/consumer customization. Released0.8.4 returns exit3
+`CLI.SC_LINT_INTEGRATION_CONFLICT` and preserves the customized configuration,
+Justfile, `db-prepare` and boundary policy byte-for-byte. Record that actual
+result explicitly; never report init PASS, hide its error, force overwrite,
+delete consumer edits or add a workaround wrapper. This known result does not
+block current C1/C2 acceptance. Issue117 owns restoration of the successful
+repeat-init criterion after an approved upstream solution. Shared exact0.8.4,
+all three real analyzers in ordinary/default/full profiles, causal failure
+proofs, configuration-derived fresh boundary policy and consumer ownership/
+preservation, and usable public setup/lint/test/upgrade remain binding. No
+upstream source fix, release or new pin is authorized by this waiver.
 
 ---
 
@@ -2797,6 +2852,19 @@ A layout with no database renders none of these commands.
 2. A flag removes those three commands.
 3. An application command calls the same delete operation through its own CLI command, MCP tool, and HTTP route.
 
+## REQ-RUN-0332: Optional shared cron command projections
+
+Phase C target, planned: generation defaults `cron_commands` to false. When
+explicitly selected with cron enabled, the generated application wires the
+same standard start/end/list DTO/handler into its CLI and HTTP and, only when
+MCP is selected, MCP. REQ-CRNC-0001/0002 governs JSON, errors and existing
+Rust/Python/Monty options. Feature-off core and generated builds gain no
+scheduler/server dependency from DTO use. This amends REQ-RUN-0301's optional
+cron composition and REQ-RUN-0401/0402/0403's schema/fixture key set; a docs-only
+example or DTO library does not satisfy selected generation. REQ-RUN-0702's
+shared public release includes the optional new adapter. CLI clients remain
+free of cron/server implementation under NFR-RUN-0001.
+
 ## REQ-RUN-0401: Options contract `wizard/answers.schema.json`
 
 **Status:** Active  
@@ -3237,7 +3305,7 @@ with `db = sqlite` and `mcp = true`.
 In that project, with no file added, changed or deleted after generation,
 the next commands MUST exit 0 in this order: `just setup`, then `just lint`,
 then `just test`, then `just build-cli`, then `just build-daemon`. `just setup`
-installs the sc-lint 0.8.0 consumer and is not a source edit. This sequence
+installs the sc-lint 0.8.4 consumer and is not a source edit. This sequence
 (`just new` with `--var-file`, then `just setup`, then `just lint`, then
 `just test`, then `just build-cli`, then `just build-daemon`, with nothing
 written to the project in between) is what "green with no edits" means.
@@ -3286,7 +3354,14 @@ workflow of [REQ-RUN-0701](requirements.md); no separate CI job is required.
    Amended 2026-10-25.
 6. The same job then runs `just build-daemon` in `$RUNNER_TEMP/app`, and it
    exits 0. That recipe includes `cargo tree -p <project>-daemon -e normal --prefix none`
-   and that output contains no `tempfile` or `tempdir` line.
+   and an automated normal-dependency ancestry check. `tempdir` is forbidden.
+   `tempfile` is allowed only as the existing direct normal dependency of the
+   qualified `sc-cron` package for private Python-hook scratch directories;
+   every normal path from the daemon to that package must pass through `sc-cron`.
+   A direct daemon dependency or any other direct/transitive ancestry fails.
+   Daemon instance roots, endpoints, locks and application database paths must
+   still never use a temporary-directory API in production.
+   Amended by the approved selected-cron clarification of 2026-11-06.
 7. The `just test` output lists the example operation test as run and passed,
    not skipped or filtered out.
 
@@ -3515,7 +3590,7 @@ this order and MUST fail when any of them exits non-zero:
 1. `just new <dest> --var-file <fixture>` from the repository root, which
    runs the generation driver `scripts/new_project.py` without the wizard.
 2. `just setup` inside the generated project at `<dest>`. It installs the
-   sc-lint 0.8.0 consumer and is not a source edit.
+   sc-lint 0.8.4 consumer and is not a source edit.
 3. `just lint` inside the generated project at `<dest>`.
 4. `just test` inside the generated project at `<dest>`. It includes the
    observability grep: rendered `crates/daemon` requires `sc-observability`
@@ -3524,8 +3599,12 @@ this order and MUST fail when any of them exits non-zero:
 5. `just build-cli` inside the generated project at `<dest>`. It includes
    `cargo tree -p <project>-cli -e normal --prefix none`. Amended 2026-10-25.
 6. `just build-daemon` inside the generated project at `<dest>`. It includes
-   `cargo tree -p <project>-daemon -e normal --prefix none` and fails when that output
-   contains a `tempfile` or `tempdir` line. Amended 2026-10-25.
+   `cargo tree -p <project>-daemon -e normal --prefix none` and the same
+   normal-dependency ancestry check required by REQ-RUN-0503 criterion 6.
+   It fails for any `tempdir`, any direct daemon `tempfile` edge, or any
+   `tempfile` ancestry outside the qualified `sc-cron` private Python scratch
+   path. Amended by the explicitly approved selected-cron clarification of
+   2026-11-06.
 7. Once the selection question of [NFR-RUN-0010](requirements.md) is
    decided: the generated project's daemon-process tests (the tests that
    start the generated `daemon` binary),
@@ -3600,9 +3679,9 @@ would be tested against the old crate code.
    generated directory. `just build-cli` includes
    `cargo tree -p <project>-cli -e normal --prefix none`. `just test` includes the
    observability grep from the command list above. `just build-daemon`
-   includes `cargo tree -p <project>-daemon -e normal --prefix none` and that output
-   contains no `tempfile` or `tempdir` line. Those checks run because the
-   job runs the recipes. They are not a separate manual step.
+   includes `cargo tree -p <project>-daemon -e normal --prefix none` and the
+   normal-dependency ancestry check from REQ-RUN-0503 criterion 6. Those checks
+   run because the job runs the recipes; they are not a separate manual step.
 2. A run of that workflow shows one matrix entry per file in
    `wizard/fixtures/*.json`, each labelled with its fixture name, all green.
 3. A pull request that adds a new valid fixture file and changes nothing else
@@ -3740,9 +3819,42 @@ the point at which generated projects become upgradeable by a normal
    readiness reports the outstanding release conditions rather than claiming
    criteria 6–7 passed.
 
+
+### Phase C authorized 0.2.0 continuation
+
+The owner clarified on 2026-11-04: "I expect we will release all crates every
+release". C-4 is the sole authorized release handoff for all six public crates
+at the shared 0.2.0 version: sc-config, sc-transport, sc-command, sc-runtime,
+sc-cron and sc-cron-commands. The internal publish=false SQLite helper stays
+private. Publish in dependency order, including command before cron/runtime
+and cron before adapter, after each prerequisite's exact registry visibility.
+The tag v0.2.0 identifies that shared-version release only after the existing
+human authorization and real consumer-proof conditions hold.
+
+C-3 owns coherent normal manifests/lock/template and canonical kit-input
+regeneration; C-4 qualifies the existing pinned kit's all-crates version
+checks, ordered publication and exact registry visibility. It then runs the
+no-patch registry fixture. Checkout-patched tests cannot establish registry
+acceptance. ADR-RUN-0203 retains the frozen third-party package/schema matrix
+and rusqlite0.39/libsqlite3-sys0.37 constraint. Historical selective-probe
+failure is not a current capability prerequisite; do not claim it passed or
+add an unnecessary selective publisher enhancement. No hand-edited vendored
+workflow bypass or publication authority follows from these declarations.
+
 ---
 
 ## NFR-RUN-0001: A CLI never links server-side dependencies
+
+**Phase C planned amendment, owned by c-1:** the closed generated-CLI allowlist
+below additionally permits defaults-only sc-cron-commands DTOs when standard
+cron commands are explicitly selected, directly or through api-types. This is
+the sole shared CronRequest identity, not a copied wire DTO. The exception
+introduces no scheduler/server/SQLite/Tokio/Monty dependency through the adapter
+edge and changes
+none of the existing forbidden normal edges. C-3's isolated CLI graph proof
+and c-4's registry repetition verify the amended rule; default-off generation
+is unchanged. REQ-CRNC-0002/NFR-CRNC-0001 and ADR-RUN-0019 govern that narrow
+optional adapter edge.
 
 **Status:** Active  
 
@@ -3792,7 +3904,7 @@ crates is rejected for v0.1. a-5 does not run that command. The measurement
 is the sprint a-1 evidence record in `docs/architecture.md`.  
 **OPEN:** the recipe or command by which a generated project builds and
 releases its `cli` binary (so that it is built with `-p`) is not decided. The
-public recipes of the sc-lint 0.8.0 install do not include a build recipe.
+public recipes of the sc-lint 0.8.4 install do not include a build recipe.
 
 ### Rationale
 
@@ -3825,6 +3937,15 @@ the only process that opens the local database.
 5. Workspace-wide builds are exempt, as stated in the Requirement Statement.
    No criterion inspects the `cli` binary produced by `cargo build --workspace`.
    a-6 owns `cargo tree -p <cli package> -e normal`. a-5 does not run it.
+
+
+Selected `cron_commands` consumers may depend on defaults-only
+sc-cron-commands DTOs directly or through api-types. That edge must introduce
+no scheduler, SQLite, Tokio, Monty or server dependency; isolated CLI graph
+proofs and all other forbidden edges remain binding. `cron_commands=false`
+is the generation default; true requires cron and preserves independently
+disabled MCP. Schema activation belongs only on selected daemon/service
+projection edges, never shared CLI defaults.
 
 ---
 
@@ -4086,15 +4207,15 @@ the easy path and test suites stay parallel and fast.
 
 The `cargo-generate` template under `template/` MUST NOT contain:
 
-- lint configuration of its own;
-- crate-boundary rules or boundary manifests;
+- lint configuration beyond the three REQ-RUN-0307 invocation declarations;
+- copied maintainer crate-boundary rules or manifests;
 - `just` modules or imported `just` files;
 - tooling that checks that the REST, MCP and CLI surfaces stay in step, such
   as snapshots of `openapi.json`, of the MCP `tools/list` result or of the
   clap command model.
 
-The template commits the sc-lint 0.8.0 consumer install:
-`template/sc-lint.toml` (`minimum_version` 0.8.0) and
+The template commits the sc-lint 0.8.4 consumer install:
+`template/sc-lint.toml` (`minimum_version` 0.8.4) and
 `template/.sc-lint/bootstrap.py`, installed with `sc-lint init --just`.
 Public recipes are `setup`, `lint`, `test`, and `upgrade`. The
 consumer-owned recipe `db-prepare` survives a later init. Those files and
@@ -4102,7 +4223,13 @@ recipes are owned by [REQ-RUN-0307](requirements.md). The template does not
 ship a placeholder `Justfile` and does not hand the install to a later
 prototype-handoff.
 
-All of the excluded infrastructure is owned by the sc-lint project. The
+The narrow fresh-install exception permits configuration-derived application
+crate/edge inventory only, as defined in ADR-RUN-0005/0303. It includes only
+selected crates and allowed edges, omits disabled store/MCP components, and
+becomes consumer-owned after setup. No maintainer manifests, clippy, rustfmt,
+deny, custom rules or `just` modules may be copied.
+
+All other excluded infrastructure is owned by the sc-lint project. The
 consumer pin is `sc-lint.toml`, not a hand-written clippy, rustfmt, deny,
 or `boundaries/` policy.
 
@@ -4123,10 +4250,10 @@ rule changes from sc-lint and nothing in this repository changes.
 ### Success Criteria
 
 1. `find template` lists none of: `clippy.toml`, `.clippy.toml`,
-   `rustfmt.toml`, `.rustfmt.toml`, `deny.toml`, a `boundaries` directory,
+   `rustfmt.toml`, `.rustfmt.toml`, `deny.toml`, copied maintainer manifests,
    any `*.just` file.
 2. `grep -rn "^\[lints\|^\[workspace.lints" template` prints nothing.
-3. `template/sc-lint.toml` sets `minimum_version` to `0.8.0`, and
+3. `template/sc-lint.toml` sets `minimum_version` to `0.8.4`, and
    `template/.sc-lint/bootstrap.py` exists. `template/` contains no
    placeholder `Justfile`. Recipe names are checked by REQ-RUN-0307.
 4. `template/` contains no snapshot file of `openapi.json`, of MCP
@@ -4205,7 +4332,7 @@ exceeds the limit. This repository MUST NOT carry a line-counting script or
 program of its own for this rule
 ([NFR-RUN-0004](requirements.md), [ADR-RUN-0008](architecture.md)).
 
-The sc-lint 0.8.0 key is `[line_counts] max_production_lines = 1000` in
+The sc-lint 0.8.4 key is `[line_counts] max_production_lines = 1000` in
 `sc-lint.toml`. `just lint` runs `sc-lint lint line-counts --config sc-lint.toml`.
 The `template/**/*.rs` half of this limit stays with a later sprint.  
 **OPEN:** whether the limit also applies to non-Rust source (for example
