@@ -152,6 +152,53 @@ class ObservabilityDependencies(unittest.TestCase):
             with self.subTest(name=name), self.assertRaisesRegex(ValueError, name):
                 CHECK.check_isolated_graph(graph("sc-cron", name, transitive=True))
 
+    def test_adapter_is_enforced_by_main_owner_loop(self):
+        for kind in (None, "build", "dev"):
+            metadata = graph("sc-cron-commands", "sc-observability-otlp", True, kind)
+            for owner in CHECK.OWNERS:
+                if owner != "sc-cron-commands":
+                    metadata["packages"].append({"id": owner, "name": owner})
+                    metadata["resolve"]["nodes"].append({"id": owner, "deps": []})
+            with self.subTest(kind=kind), mock.patch.object(CHECK, "resolved_metadata", return_value=metadata), \
+                 mock.patch.object(CHECK, "check_isolated_features"), mock.patch("builtins.print"):
+                if kind == "dev":
+                    CHECK.main()
+                else:
+                    with self.assertRaisesRegex(ValueError, "sc-cron-commands.*sc-observability-otlp"):
+                        CHECK.main()
+
+    def test_isolated_adapter_preserves_optional_scheduler_and_lean_defaults(self):
+        owner = "sc-cron-commands"
+        for name in ("sc-cron", "rusqlite", "tokio", "monty"):
+            for features in ((), ("schema",)):
+                with self.subTest(name=name, features=features), self.assertRaisesRegex(ValueError, name):
+                    CHECK.check_isolated_graph(graph(owner, name, True), owner, features)
+            CHECK.check_isolated_graph(graph(owner, name, True), owner, ("scheduler",))
+        for features in ((), ("scheduler",), ("schema", "monty")):
+            for name in ("axum", "rmcp", "sc-runtime"):
+                with self.subTest(name=name, features=features), self.assertRaisesRegex(ValueError, name):
+                    CHECK.check_isolated_graph(graph(owner, name, True), owner, features)
+            metadata = graph(owner, "sc-command")
+            metadata["resolve"]["nodes"][2]["features"] = ["server"]
+            with self.assertRaisesRegex(ValueError, "activates command"):
+                CHECK.check_isolated_graph(metadata, owner, features)
+
+    def test_isolated_feature_runner_covers_adapter_configurations(self):
+        seen = []
+        def resolve(_command, root, _context):
+            import tomllib
+            manifest = tomllib.loads((root / "Cargo.toml").read_text())
+            owner, spec = next(iter(manifest["dependencies"].items()))
+            seen.append((owner, tuple(spec["features"])))
+            return graph(owner, "sc-command")
+        with mock.patch.object(CHECK, "run_metadata", side_effect=resolve):
+            CHECK.check_isolated_features()
+        adapter = {features for owner, features in seen if owner == "sc-cron-commands"}
+        self.assertEqual(adapter, {(), ("schema",), ("scheduler",), ("schema", "scheduler"),
+                                   ("monty",), ("schema", "monty")})
+        self.assertIn(("sc-cron", ()), seen)
+        self.assertIn(("sc-cron", ("monty",)), seen)
+
     def test_metadata_timeout_uses_validated_tree_owner(self):
         with mock.patch.object(CHECK._owned, "run", side_effect=subprocess.TimeoutExpired("cargo", 1)) as run:
             with self.assertRaisesRegex(RuntimeError, "workspace.*timed out.*terminated and reaped"):

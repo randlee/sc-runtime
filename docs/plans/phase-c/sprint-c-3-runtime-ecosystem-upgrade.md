@@ -69,6 +69,15 @@ requirements:
   - NFR-RUN-0006
   - NFR-RUN-0008
 adrs:
+  - ADR-CFG-0001
+  - ADR-CFG-0002
+  - ADR-CFG-0003
+  - ADR-TRN-0001
+  - ADR-TRN-0002
+  - ADR-TRN-0003
+  - ADR-TRN-0004
+  - ADR-TRN-0005
+  - ADR-TRN-0006
   - ADR-CMD-0001
   - ADR-CMD-0002
   - ADR-CMD-0003
@@ -117,7 +126,6 @@ owned_paths:
   - crates/sc-runtime/src/
   - crates/sc-runtime/tests/
   - crates/sc-runtime-db-sqlite/Cargo.toml
-  - crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs
   - template/Cargo.toml
   - template/workspace.template.toml
   - template/crates/daemon/Cargo.toml
@@ -328,7 +336,8 @@ Root: `req:REQ-RUN-0301`, `req:REQ-RUN-0302`,
   linked against the former Utoipa 5 type, demonstrating that the intentional
   0.2.0 minor bump carries the breaking public dependency change rather than
   hiding it in a patch release.
-- `crates/sc-runtime-db-sqlite/tests/sqlx_resolve.rs` and its companion tree
+- The bounded resolver regression in
+  `tests/unit/generation/test_runtime_ecosystem_upgrade.py` and companion tree
   assertions prove `rusqlite 0.39.x`, `libsqlite3-sys 0.37.x`, and template
   SQLx 0.9 compatibility; no 0.38+ native SQLite sys crate resolves.
 
