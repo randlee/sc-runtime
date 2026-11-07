@@ -89,8 +89,8 @@ class ConsumerProfileTests(unittest.TestCase):
                               timeout=600)
 
 
-    def command(self, root, *argv, expected=0):
-        result = self.execute(root, argv)
+    def command(self, root, *argv, expected=0, env=None):
+        result = self.execute(root, argv, env=env)
         output = result.stdout + result.stderr
         print(f'consumer proof: {" ".join(argv)}\n{output}', flush=True)
         self.assertEqual(result.returncode, expected, output)
@@ -168,11 +168,13 @@ class ConsumerProfileTests(unittest.TestCase):
         self.assertTrue(binary.is_relative_to(self.state / 'install'))
         version = json.loads(self.command(root, str(binary), 'version', '--json'))
         self.assertEqual(version['data']['version'], '0.8.6')
+        receipt_env = dict(self.env)
+        receipt_env['PATH'] = str(binary.parent) + os.pathsep + receipt_env['PATH']
         for profile in ((), ('default',), ('full',)):
             assert_receipts(self, self.command(root, 'just', 'lint', *profile))
         receipt = json.loads(self.command(
             root, str(binary), '--json', 'lint', '--consumer', '--config',
-            'sc-lint.toml', 'ci', '--profile', 'full'))
+            'sc-lint.toml', 'ci', '--profile', 'full', env=receipt_env))
         self.assertEqual(receipt['data']['status'], 'pass')
         self.assertEqual(
             [step['name'] for step in receipt['data']['steps']], list(MEMBERS))
@@ -253,7 +255,7 @@ class ConsumerProfileTests(unittest.TestCase):
         self.assertTrue((root / 'boundaries').is_dir())
         sdk_receipt = json.loads(self.command(
             root, str(binary), '--json', 'lint', '--consumer', '--config',
-            'sc-lint.toml', 'ci', '--profile', 'sdk'))
+            'sc-lint.toml', 'ci', '--profile', 'sdk', env=receipt_env))
         self.assertEqual(sdk_receipt['data']['status'], 'pass')
         self.assertEqual([step['name'] for step in sdk_receipt['data']['steps']], list(MEMBERS))
         for name in ANALYZERS:
