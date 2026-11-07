@@ -13,7 +13,7 @@ recommended_model: gpt-6.1-sol
 
 ## Requirements and decisions
 
-- **Requirements:** REQ-RUN-0004 (root lint integration and release pin); REQ-RUN-0307 (consumer install, version pin, recipes and repeated init); NFR-RUN-0005 (isolated, bounded tests); NFR-RUN-0006 (template remains free of copied lint policy).
+- **Requirements:** REQ-RUN-0004 (root lint integration and release pin); REQ-RUN-0307 (consumer install, version pin, recipes and repeated init); REQ-RUN-0308 (generated SQLite store regression); NFR-RUN-0005 (isolated, bounded tests); NFR-RUN-0006 (template remains free of copied lint policy).
 - **ADRs:** ADR-RUN-0005 (sc-lint owns lint and `just` infrastructure).
 - **Scope:** maintenance correction to the current operational contract and regression tests. Historical Phase C acceptance evidence and immutable 0.2-era records are preserved.
 
