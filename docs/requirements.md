@@ -401,7 +401,7 @@ that plain `cargo generate` works without the driver, and therefore runs
 A workflow file under `.github/workflows/` (the crate CI workflow) MUST run
 `just lint` and `just test` at the repository root on every pull request.
 
-`just lint` with no profile runs the sc-lint 0.8.4 full profile through
+`just lint` with no profile runs the sc-lint 0.8.6 full profile through
 `.sc-lint/bootstrap.py` and `sc-lint.toml`: `sc-lint lint sc-boundary` (the
 `boundary` lint), line-counts, `cargo fmt --all -- --check`,
 `cargo clippy --workspace --exclude sc-cron --all-targets -- -D warnings`, and

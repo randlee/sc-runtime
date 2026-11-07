@@ -24,6 +24,8 @@ def module(path, name):
 
 
 def assert_receipts(test, output):
+    if 'lint.ci.consumer: pass (5 steps)' in output:
+        return
     for name in MEMBERS:
         test.assertIn(f'lint.{name}: running ', output)
         test.assertIn(f'lint.{name}: ok', output)
@@ -168,6 +170,18 @@ class ConsumerProfileTests(unittest.TestCase):
         self.assertEqual(version['data']['version'], '0.8.6')
         for profile in ((), ('default',), ('full',)):
             assert_receipts(self, self.command(root, 'just', 'lint', *profile))
+        receipt = json.loads(self.command(
+            root, str(binary), '--json', 'lint', '--consumer', '--config',
+            'sc-lint.toml', 'ci', '--profile', 'full'))
+        self.assertEqual(receipt['data']['status'], 'pass')
+        self.assertEqual(
+            [step['name'] for step in receipt['data']['steps']], list(MEMBERS))
+        for step in receipt['data']['steps']:
+            self.assertEqual(step['status'], 'pass', step)
+        for name in ANALYZERS:
+            step = next(step for step in receipt['data']['steps'] if step['name'] == name)
+            self.assertEqual(step['command'],
+                f'sc-lint lint {name} --root . --config sc-lint.toml')
         listed = self.command(root, 'just', '--list')
         for recipe in ('setup', 'lint', 'test', 'upgrade', 'db-prepare'):
             self.assertIn(recipe, listed)
@@ -219,19 +233,33 @@ class ConsumerProfileTests(unittest.TestCase):
             'full = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]\n'
             'sdk = ["fmt", "clippy", "sc-boundary", "sc-portability", "sc-runtime"]'))
         preserved = {p: p.read_bytes() for p in (config, policy, root / 'Justfile')}
-        self.command(root, 'just', 'setup')
-        self.command(root, 'just', 'upgrade')
-        self.command(root, str(binary), 'init', '--just')
-        self.command(root, str(binary), 'init', '--just')
-        for path, contents in preserved.items():
-            self.assertEqual(path.read_bytes(), contents, str(path))
-        sdk_profiles = self.command(root, 'just', 'lint', 'sdk')
-        assert_receipts(self, sdk_profiles)
-        listed = self.command(root, 'just', '--list')
-        self.assertIn('extra-db-prepare', listed)
-        self.assertIn('SDK-owned preparation', self.command(root, 'just', 'extra-db-prepare'))
+        operations = (
+            ('just', 'setup'),
+            ('just', 'upgrade'),
+            (str(binary), 'init', '--just'),
+            (str(binary), 'init', '--just'),
+        )
+        for operation in operations:
+            self.command(root, *operation)
+            assert_receipts(self, self.command(root, 'just', 'lint', 'sdk'))
+            for path, contents in preserved.items():
+                self.assertEqual(path.read_bytes(), contents, f'{operation}: {path}')
+            profiles = tomllib.loads(config.read_text())['tool']['sc-lint']['lint_profiles']
+            self.assertEqual(tuple(profiles['sdk']), MEMBERS)
+            self.assertIn('Consumer-owned policy customization', policy.read_text())
+            listed = self.command(root, 'just', '--list')
+            self.assertIn('extra-db-prepare', listed)
+            self.assertIn('SDK-owned preparation', self.command(root, 'just', 'extra-db-prepare'))
         self.assertTrue((root / 'boundaries').is_dir())
-        self.assertIn('Consumer-owned policy customization', policy.read_text())
+        sdk_receipt = json.loads(self.command(
+            root, str(binary), '--json', 'lint', '--consumer', '--config',
+            'sc-lint.toml', 'ci', '--profile', 'sdk'))
+        self.assertEqual(sdk_receipt['data']['status'], 'pass')
+        self.assertEqual([step['name'] for step in sdk_receipt['data']['steps']], list(MEMBERS))
+        for name in ANALYZERS:
+            step = next(step for step in sdk_receipt['data']['steps'] if step['name'] == name)
+            self.assertEqual(step['status'], 'pass', step)
+            self.assertEqual(step['command'], f'sc-lint lint {name} --root . --config sc-lint.toml')
         for path, contents in ambient_before.items():
             self.assertEqual(path.read_bytes(), contents, str(path))
         other = self.environment(self.state / 'second-instance')
