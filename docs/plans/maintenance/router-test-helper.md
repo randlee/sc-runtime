@@ -47,6 +47,9 @@ change. The helper has no beads-cache-specific behavior.
 - [ADR-RUN-0001](../../architecture.md): the helper composes existing
   middleware around an ordinary Axum router; it introduces no wrapper type,
   registry, or framework dispatch layer.
+- [ADR-RUN-0004](../../architecture.md): the helper accepts the command-owned
+  `SharedCanonicalLog` handle and adds no observability-provider dependency or
+  initialization; the application retains provider ownership.
 - [REQ-RT-0004](../../sc-runtime/requirements.md): routes remain ordinary Axum
   routers and only existing middleware is composed.
 - Cross-cutting constraints are [NFR-RUN-0002](../../requirements.md),
