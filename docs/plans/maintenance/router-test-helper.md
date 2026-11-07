@@ -96,9 +96,10 @@ start a daemon or introduce an in-memory daemon mode.
 6. Preserve existing default-feature tests and the production 30-second
    default. Do not weaken or skip causal timeout, tracking, or lifecycle tests.
 7. Existing CI exercises the feature test target (`sc-lint.toml`:
-   `sc-runtime-test-util`); Windows also runs the feature-gated library tests
-   in `.github/workflows/crates.yml`. Keep the test in an already exercised
-   target or update the existing target if necessary.
+   `sc-runtime-test-util`); Windows runs the feature-gated library tests in
+   `.github/workflows/crates.yml`, which now call the public helper and cover
+   its runtime behavior. Linux's full feature target includes the external
+   public API integration test.
 8. Validate the focused public feature test, existing runtime feature tests,
    rustdoc/API compilation, formatting, lint/boundary checks, and relevant
    default-feature tests. Record exact commands and outcomes in the handoff.
