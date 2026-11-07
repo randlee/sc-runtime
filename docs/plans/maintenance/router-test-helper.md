@@ -35,6 +35,9 @@ change. The helper has no beads-cache-specific behavior.
 - [ADR-RT-0001](../../sc-runtime/architecture.md): keep daemon assembly and
   lifecycle order unchanged; the helper is not a builder method, callback, or
   lifecycle hook.
+- [ADR-RT-0002](../../sc-runtime/architecture.md): preserve the existing
+  fixture's singleton lock ownership; the router middleware helper does not
+  create, bypass, or substitute for a daemon fixture.
 - [ADR-RT-0003](../../sc-runtime/architecture.md): preserve ordinary router
   composition.
 - [ADR-RT-0004](../../sc-runtime/architecture.md): the router unit test is not
