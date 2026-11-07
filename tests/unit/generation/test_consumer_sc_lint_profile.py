@@ -203,7 +203,7 @@ class ConsumerProfileTests(unittest.TestCase):
                 assert_receipts(self, result.stdout)
             if mutation == 'command':
                 self.assertNotEqual(result.returncode, 0, result.stdout)
-                self.assertIn('PROFILE.UNKNOWN_MEMBER', result.stdout)
+                self.assertIn('CLI.SC_LINT_PROFILE_CONFIG_INVALID', result.stdout)
             config.write_text(original)
         policy = next((root / 'boundaries').glob('*service/*.toml'))
         before = policy.read_text()
