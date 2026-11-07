@@ -24,6 +24,7 @@ recommended_model: gpt-6.1-sol
 - Prove the released 0.8.6 binary preserves actual SDK custom profiles, the consumer-owned `extra-db-prepare` recipe, and an edited external boundary policy through repeated native `init --just` and `setup`/`upgrade` operations. Keep this verification isolated from global installations and consumer policy.
 - Keep the generated SQLite writer regression bounded and deterministic: use two independent one-connection pools, 50 two-party barrier-started insert rounds, and joined futures for 100 writes.
 - Restore successful repeated-init requirements, ADR statements, and regression assertions where they were weakened for the 0.8.4 expected-exit-3 workaround. Remove the #117 waiver only if the released binary passes the preservation proof.
+- Install the root generation-test requirements from the root `just setup` recipe through the official bootstrap `exec` environment, after setup creates the managed venv. Remove the ineffective runner-user-site install from Crate CI.
 
 ## Acceptance criteria
 
@@ -32,6 +33,7 @@ recommended_model: gpt-6.1-sol
 3. The regression exercises a generated SDK-shaped project with its real custom profiles, an `extra-db-prepare` recipe, and an edited external boundary policy. Using the released 0.8.6 binary, repeated native init/setup/upgrade succeeds and preserves customized bytes and recipe behavior.
 4. The test fails on loss of any profile, recipe, or edited policy and asserts successful exit status; no expected exit-3 waiver remains if criterion 3 passes.
 5. Existing consumer-profile and runtime-upgrade regressions pass. No generated template lint policy is added.
+6. Root `just setup` installs `requirements-generation.txt` into the managed test-gateway Python after bootstrap setup; a bounded generation test passes through the bootstrap gateway, and released native `init --just` preserves the extended root Justfile.
 
 ## Owned paths
 
@@ -43,6 +45,8 @@ recommended_model: gpt-6.1-sol
 - `docs/requirements.md`, `docs/architecture.md`
 - `tests/unit/generation/test_consumer_sc_lint_profile.py`, `tests/unit/test_sc_lint_setup_action_pin.py`
 - `template/crates/store-sqlite/src/lib.rs` (bounded regression only)
+- `Justfile` (root maintainer setup dependency environment)
+- `.github/workflows/crates.yml` (remove pre-setup runner-site dependency install)
 
 ## This sprint does not close
 

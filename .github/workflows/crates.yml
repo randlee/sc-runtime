@@ -101,10 +101,6 @@ jobs:
         with:
           just-version: '1.58.0'
 
-      - name: Install generation test dependency
-        if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
-        run: python3 -m pip install -r requirements-generation.txt
-
       - name: Install cargo-generate
         if: ${{ needs.ci-scope.outputs.runtime == 'true' }}
         run: |
