@@ -49,12 +49,13 @@ change. The helper has no beads-cache-specific behavior.
   registry, or framework dispatch layer.
 - [REQ-RT-0004](../../sc-runtime/requirements.md): routes remain ordinary Axum
   routers and only existing middleware is composed.
-- [NFR-RUN-0002](../../requirements.md), [NFR-RUN-0005](../../requirements.md),
-  [NFR-RUN-0009](../../requirements.md), and
+- Cross-cutting constraints are [NFR-RUN-0002](../../requirements.md),
   [NFR-RUN-0003](../../requirements.md), [NFR-RUN-0004](../../requirements.md),
-  [NFR-RT-0002](../../sc-runtime/requirements.md), and
-  [NFR-RT-0003](../../sc-runtime/requirements.md): preserve nonblocking,
-  isolated testing and dependency/public API constraints.
+  [NFR-RUN-0005](../../requirements.md), [NFR-RUN-0008](../../requirements.md),
+  [NFR-RUN-0009](../../requirements.md), and [NFR-RT-0001](../../sc-runtime/requirements.md)
+  through [NFR-RT-0004](../../sc-runtime/requirements.md). They govern async
+  behavior, dependency policy, isolated tests, source length, public API
+  limits, and the public no-panic contract.
 - Relevant middleware constraints are also governed by
   [ADR-RUN-0006](../../architecture.md), [ADR-RUN-0007](../../architecture.md),
   [ADR-RUN-0008](../../architecture.md), [ADR-RUN-0011](../../architecture.md),
