@@ -29,6 +29,46 @@ use crate::config::DaemonConfig;
 use crate::error::{RuntimeError, TransportStep};
 use crate::shutdown::RunControl;
 
+/// Applies the runtime's request timeout and tracking middleware to a test router.
+///
+/// The supplied `limit`, shutdown receiver, and `drain` control only this
+/// instrumented router. The production daemon keeps its private defaults.
+/// When a request exceeds `limit`, the middleware returns a service-unavailable
+/// response and drops the handler future at its next await point.
+///
+/// # Examples
+///
+/// ```no_run
+/// use std::{sync::Arc, time::Duration};
+/// use axum::{Router, routing::get};
+/// use sc_command::observability::{NoopCanonicalLog, SharedCanonicalLog};
+/// use sc_runtime::testing::instrument_router;
+///
+/// let logger: SharedCanonicalLog = Arc::new(NoopCanonicalLog::named_or_default("test"));
+/// let (_stop, shutdown) = tokio::sync::watch::channel(false);
+/// let router = instrument_router(
+///     Router::new().route("/", get(|| async { "ready" })),
+///     logger,
+///     Duration::from_secs(1),
+///     shutdown,
+///     Duration::from_secs(1),
+/// );
+/// # let _ = router;
+/// ```
+pub fn instrument_router(
+    router: axum::Router,
+    logger: sc_command::observability::SharedCanonicalLog,
+    limit: Duration,
+    shutdown: tokio::sync::watch::Receiver<bool>,
+    drain: Duration,
+) -> axum::Router {
+    crate::router::with_request_tracking(
+        crate::router::with_request_timeout(router, limit, shutdown, drain),
+        crate::router::RequestMetrics::new(),
+        logger,
+    )
+}
+
 /// Upper bound for the caller's wait until the daemon thread reports serving.
 const STARTUP_BUDGET: Duration = Duration::from_secs(30);
 

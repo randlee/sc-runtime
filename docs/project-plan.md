@@ -24,6 +24,12 @@ authorization and registry credentials. Merging the release kit onto
 
 `complete` in sprint frontmatter records implementation delivery. This index separately records QA and merge progress; `implemented; QA pending` means those gates remain open.
 
+## Maintenance
+
+| Sprint | Plan | Status | Branch |
+| --- | --- | --- | --- |
+| Router test helper restoration | [router-test-helper](plans/maintenance/router-test-helper.md) | complete | `codex/restore-router-test-helper` |
+
 | Sprint | Plan | Status | Branch |
 | --- | --- | --- | --- |
 | a-1 compatibility spike | [sprint-a-1](plans/phase-a/sprint-a-1-compatibility-spike.md) | complete | `sprint/a-1-compatibility-spike` |
