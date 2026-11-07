@@ -1,5 +1,6 @@
 #![cfg(feature = "test-util")]
 
+use crate::testing::instrument_router;
 use axum::{Router, extract::Path, http::StatusCode, routing::get};
 use sc_command::observability::{RecordingCanonicalLog, RejectingCanonicalLog};
 use sc_observability_types::ServiceName;
@@ -501,23 +502,6 @@ async fn queue_rejection_preserves_deadlines_and_handler_cancellation() {
             task.abort();
         }
     }
-}
-
-/// Applies the daemon's request tracking and deadline middleware to a test router.
-///
-/// This enables deterministic deadline tests without waiting for production limits.
-fn instrument_router(
-    router: axum::Router,
-    logger: sc_command::observability::SharedCanonicalLog,
-    limit: Duration,
-    shutdown: tokio::sync::watch::Receiver<bool>,
-    drain: Duration,
-) -> axum::Router {
-    crate::router::with_request_tracking(
-        crate::router::with_request_timeout(router, limit, shutdown, drain),
-        crate::router::RequestMetrics::new(),
-        logger,
-    )
 }
 
 #[tokio::test]
