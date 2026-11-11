@@ -77,3 +77,9 @@ name = "run-sanity"
 model = "sonnet"
 dir = "/Users/randlee/github/sc-runtime"
 env = { ATM_IDENTITY = "run-sanity", ATM_TEAM = "run", CLAUDE_CODE_TASK_LIST_ID = "run" }
+
+# atm-bd-orchestration: run-sanity is the dev-sanity member (installer-recommended block).
+[startup.run-sanity]
+all = ["Your role is dev-sanity under atm-bd-orchestration: read .claude/agents/dev-sanity.md now (again after every compaction) and run its Startup section",
+       "Use native atm send or atm ack for messages to run-lead",
+       "Use native atm read to read messages from team-members" ]
