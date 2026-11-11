@@ -2,7 +2,7 @@
   "schema": "plan-anchoring/drift-review/1",
   "reviewed_at": "2026-11-11",
   "compared": "Authoring review of anchors against 7c9474a, revised intent.md, the user's planning handover, and owner-authored issues sc-runtime#132/#133 and sc-compose#1041. Consumer: the user adopting the rewritten anchors; gate: anchor adoption before sprint hardening. Observed defects: compound constraints, unsupported ceilings, deliverable duplication, and weak provenance. Retire this review when superseded by the approved/tuned anchor review.",
-  "not_reviewed": "No Phase D live Jev rubric, fixture check, independent question tuning, plan gate, implementation test, or release verification has run in this authoring revision. Existing sprint plans have not been repaired or certified.",
+  "not_reviewed": "Independent planning-question tuning ran for four locked anchors. ANC003 and ANC015 are accepted; ANC005 and ANC012 are unaccepted because of tuner-authored oracle defects. A retained-history correction attempt was refused before transport with TOURNAMENT.ORACLE_CHANGED. No complete Phase D plan gate, development tuning/gate, implementation test, or release verification has passed. Proposed anchors remain unadopted.",
   "findings": [
     {
       "id": "D-ANC-01",
@@ -36,6 +36,14 @@
     {
       "area": "Scope and proof",
       "note": "Non-retired anchors have one constraint, artifact-based relevance scope, an explicit deterministic check, and distinct pass/fail fixtures. Static schema/lint/lexical-deduplication checks are authoring checks only; no semantic or live-gate PASS is claimed."
+    },
+    {
+      "area": "Live question calibration and source-faithful correction",
+      "note": "Two accepted planning question sets each match54/54 role cells and18/18 semantic verdicts across9 cases and2 repeats, with zero regressions. Initial failed and corrected-round-refused calibration evidence is retained locally under anchor-runs; no unaccepted seal is installed. ANC018 was retired because it generalized an issue132 acceptance criterion beyond its quote and duplicated a deliverable."
+    },
+    {
+      "area": "Sprint-plan defects repaired without claiming gate success",
+      "note": "d-1 endpoint acceptance now follows the final allowed high endpoint in both root and consumer resolves. d-1b owns the complete manifest sweep and mandatory root/template/separate-consumer CI. d-2 waits for both dependency sprints and requires released-consumer checks for both advisories, compatible updates, and the restored test helper. Compatibility-policy adoption and full live plan validation remain pending."
     }
   ]
 }

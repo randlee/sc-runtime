@@ -705,7 +705,7 @@ def build(args: argparse.Namespace, run: Runner = run_command) -> Result[dict, T
     template = issue_template(Path(args.repository_root))
     if isinstance(template, Err):
         return template
-    binary = find_sc_compose()
+    binary = find_sc_compose(root.value)
     if isinstance(binary, Err):
         return binary
     now_doc = read_json(anchors, "anchors file")

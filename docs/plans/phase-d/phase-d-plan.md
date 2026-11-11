@@ -60,7 +60,10 @@ amendment and removal of the sqlx-resolve fixture (ruling frozen in
 
 ## Tracks and wave table
 
-One track, two **parallel_safe** wave-1 sprints; publish is the serial tail on d-2.
+One track, three wave-1 work streams in isolated sprint branches; publish is the
+serial tail on d-2. Shared manifest sections have explicit owners in the sprint
+docs. Merge-forward shared files before integration; one writer updates the
+integrated lockfiles at a time.
 
 | Wave | Sprint | `closure_type` | `target_boundary` | Branch | `owned_paths` (summary) |
 | --- | --- | --- | --- | --- | --- |
@@ -100,5 +103,5 @@ plan hardening per `/plan-anchoring`.
 | Risk | Owner sprint |
 | --- | --- |
 | sqlx 0.9 vs rusqlite 0.41 same-process | **Ruled in d-1** — not supported on 0.2.1; sqlx bump out of phase |
-| Dual-version CI cost | d-1 |
+| Minimum/latest CI across root, generated apps, and separate consumers | d-1b; combined qualification before d-2 publication |
 | README / crates.io drift | d-2 + [registry-doc-audit.md](registry-doc-audit.md) |

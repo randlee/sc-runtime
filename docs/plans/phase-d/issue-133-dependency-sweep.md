@@ -7,19 +7,29 @@
 
 Sweep covered all 28 `Cargo.toml` files under the repo root, `crates/`, `template/`, and `tests/`.
 
-Range policy used below, matching #133:
+Range policy follows the approved consumer intent and ANC-016/017/019:
 
-- Latest crates.io version is the high end (`cargo update`).
-- The manifest says `>= <tested floor>`.
-- An upper bound appears only where this doc has evidence of a break, with the comment text the manifest should carry.
-- A caret that already includes today's latest (`"1"`, `"0.4"`, `"10"`) still fails `-Z minimal-versions`, because Cargo treats the bottom of the caret as the floor (`tokio` `"1"` → 1.0.0). Those rows raise the floor to the version already locked on `develop`, which for most of them is also crates.io latest.
+- Declare a tested minimum using Cargo's normal SemVer-compatible range.
+  A requirement such as `"3.9.0"` means `>=3.9.0, <4`; it is not an exact pin.
+- Test the minimum and latest allowed dependency sets in CI. A wider range
+  across compatibility lines requires API, native-link, and toolchain proof.
+- Exact pins, tilde restrictions, and extra upper bounds need a concrete
+  compatibility reason in the owning manifest. Normal Cargo compatibility
+  boundaries do not assert that an unpublished major has an observed defect.
+- The original #133 wording requested blanket `>=`. The user's later intent
+  explicitly concerns non-breaking upgrades. This plan implements compatible
+  upgrades and qualified broader envelopes, rather than promising support for
+  arbitrary future breaking versions. Preserve the original issue wording as
+  provenance; the final report shows this policy clarification for approval.
+- Raise broad caret floors to versions CI actually tests; neither a caret nor
+  an explicit `>=` makes an untested floor truthful.
 
 ## 1. Executive summary
 
 #132 moves **rusqlite** off the `0.39` / `libsqlite3-sys` 0.37 pin so a consumer can take the SQLite advisory (RUSTSEC-2026-0459, fixed in `libsqlite3-sys` ≥ 0.39, first shipped by **rusqlite 0.41**). #133 is the same rule for **every other dependency** in this repo, including the template and the test workspaces:
 
-- Replace `=`, `~`, and a single 0.x minor with `>=` a floor CI actually builds.
-- Put an upper bound on the manifest only after a known break, and comment it.
+- Replace unjustified restrictive pins with a tested floor and a supported compatibility range.
+- Explain extra restrictions in manifest comments; preserve normal Cargo compatibility boundaries.
 - Run CI at both ends: `cargo +nightly update -Z minimal-versions` and `cargo update`.
 - Do that in the generated template, then publish so `cargo update` in a downstream crate picks up a fixed dependency without waiting for another sc-runtime release.
 
@@ -36,13 +46,13 @@ What #133 adds beyond #132:
 
 #133 does not lift the frozen sqlx ruling. sqlx 0.9.0 is already crates.io latest, and `sqlx-sqlite` 0.9.0 still requires `libsqlite3-sys >=0.30.1, <0.38.0`. Rusqlite 0.41 (libsqlite3-sys ^0.39) and 0.42 (^0.40) cannot share a process with template `store-sqlite` on this line.
 
-**Plan conflict to close before implementation.** The frozen d-1 snippet is still a bare minor:
-
-```toml
-rusqlite = { version = "0.41", ... }
-```
-
-That is `^0.41` (`>=0.41.0, <0.42.0`). Crates.io latest on this snapshot is **rusqlite 0.42.0** (libsqlite3-sys ^0.40, rust-version 1.89, inside the workspace MSRV 1.94.1). #132 and #133 both ask for `>=` a tested floor and a `cargo update` high end. d-1 should own that line because it is the libsqlite3-sys graph. High end is 0.42.0 if the hook / interrupt call sites compile; otherwise `>=0.41.0, <0.42` with the compile error as the comment. Leaving `"0.41"` in d-1 reintroduces the pin #133 exists to remove.
+**Rusqlite compatibility envelope.** d-1 tests 0.41.0 and the snapshot's
+0.42.0 in both the root and consumer workspaces. If both qualify, declare
+`>=0.41.0, <0.43`, spanning the two tested pre-1.0 compatibility lines. The
+upper boundary excludes the next unqualified Cargo compatibility line. If
+0.42 fails, keep `"0.41.0"` and document the actual incompatibility; no
+unbounded future-line support is claimed. d-1 owns this decision and the
+matching manifest comments, tests, and ADR amendment.
 
 ## 2. Inventory
 
@@ -52,36 +62,36 @@ That is `^0.41` (`>=0.41.0, <0.42.0`). Crates.io latest on this snapshot is **ru
 
 | Crate / path | Dependency | Current spec | Latest crates.io | Proposed range | BLOCKED? | Blocker reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| `crates/sc-cron`, `crates/sc-runtime-db-sqlite`, `tests/integration/cron-consumer` | rusqlite | `"0.39"` (lock 0.39.0 → libsqlite3-sys 0.37.0) | **0.42.0** (0.41.0 → libsqlite3-sys ^0.39; 0.42.0 → ^0.40) | `>=0.41.0` after 0.42 hook compile; else `>=0.41.0, <0.42` | Conditional | Same-process sqlx is already unsupported at 0.41 (d-1 ruling), so sqlx does not cap rusqlite. 0.42 is same-day and outside the frozen `"0.41"` caret. d-1 must compile hooks before dropping the cap. |
-| `template/crates/store-sqlite`, `store-postgres`, `store-mysql`; `crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve` | sqlx | `"0.9.0"` | **0.9.0** | Keep `>=0.9.0, <0.10` with the window comment. Do not edit in Phase D (defer). sqlx-resolve fixture is **deleted** in d-1, not upgraded. | Yes (transitive) | `sqlx-sqlite` 0.9.0 requires `libsqlite3-sys >=0.30.1, <0.38.0` (crates.io dependency API). No newer sqlx release lifts that. Postgres/MySQL rows are the same crate major, called out in-manifest as a per-engine direct pin (beads `run-ze5` is a later hoist, not a bump). |
-| `crates/sc-runtime` (dep + dev), `crates/sc-command`, `template/crates/daemon` | rmcp | `~3.8` (lock 3.8.0) | **3.9.0** | `>=3.9.0` | No | Advisory floor, not a ceiling. 4.x is unpublished, so no `<4` until a break is observed. d-1b must recompile `StreamableHttpService`, `ServerHandler`, `Tool::new`, `schema_for_input`, `tool` / `tool_router` macros. |
-| `tests/contracts/phase-c/application-control`, `tests/integration/cron-consumer/schema` | rmcp | `=3.8.0` | **3.9.0** | `>=3.9.0` | No | Same advisory. These manifests are separate lockfiles and must match the published range. |
-| `crates/sc-runtime` (dep + dev), `crates/sc-command`, `crates/sc-cron-commands`, `template/Cargo.toml` `[workspace.dependencies]` | utoipa | `=6.0.0` | **6.0.0** | `>=6.0.0` | No | Already latest. No 7.x. The `=` is the defect. Upper bound `<7` would be a guess. |
-| `crates/sc-runtime` (dep + dev), `template/crates/daemon` | utoipa-axum | `=0.3.0` | **0.3.0** | `>=0.3.0` | No | Already latest. Pairs with utoipa 6. |
+| `crates/sc-cron`, `crates/sc-runtime-db-sqlite`, `tests/integration/cron-consumer` | rusqlite | `"0.39"` (lock 0.39.0 → libsqlite3-sys 0.37.0) | **0.42.0** (0.41.0 → libsqlite3-sys ^0.39; 0.42.0 → ^0.40) | `>=0.41.0, <0.43` after 0.42 qualification; otherwise `"0.41.0"` with the observed failure documented | Conditional | Same-process sqlx is already unsupported at 0.41 (d-1 ruling), so sqlx does not cap rusqlite. 0.42 is same-day and outside the frozen `"0.41"` caret. d-1 must qualify hooks and consumer type/native-link compatibility before admitting the 0.42 line. |
+| `template/crates/store-sqlite`, `store-postgres`, `store-mysql`; `crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve` | sqlx | `"0.9.0"` | **0.9.0** | `"0.9.0"`; retain the supported 0.9 compatibility line and explain the native-link limitation. Delete sqlx-resolve in d-1. | Yes (transitive) | `sqlx-sqlite` 0.9.0 requires `libsqlite3-sys >=0.30.1, <0.38.0` (crates.io dependency API). No newer sqlx release lifts that. Postgres/MySQL rows are the same crate major, called out in-manifest as a per-engine direct pin (beads `run-ze5` is a later hoist, not a bump). |
+| `crates/sc-runtime` (dep + dev), `crates/sc-command`, `template/crates/daemon` | rmcp | `~3.8` (lock 3.8.0) | **3.9.0** | `"3.9.0"` | No | Advisory floor, not a ceiling. The normal 3.x compatibility boundary admits compatible fixes without promising 4.x support. d-1b must recompile `StreamableHttpService`, `ServerHandler`, `Tool::new`, `schema_for_input`, `tool` / `tool_router` macros. |
+| `tests/contracts/phase-c/application-control`, `tests/integration/cron-consumer/schema` | rmcp | `=3.8.0` | **3.9.0** | `"3.9.0"` | No | Same advisory. These manifests are separate lockfiles and must match the published range. |
+| `crates/sc-runtime` (dep + dev), `crates/sc-command`, `crates/sc-cron-commands`, `template/Cargo.toml` `[workspace.dependencies]` | utoipa | `=6.0.0` | **6.0.0** | `"6.0.0"` | No | Already latest. No 7.x. The `=` is the defect. The normal Cargo 6.x boundary preserves compatibility; an extra tighter cap needs a known break. |
+| `crates/sc-runtime` (dep + dev), `template/crates/daemon` | utoipa-axum | `=0.3.0` | **0.3.0** | `"0.3.0"` | No | Already latest. Pairs with utoipa 6. |
 | `crates/sc-runtime/tests/fixtures/utoipa5-router` | utoipa-axum | `=0.2.0` | 0.3.0 (this fixture must not follow it) | Keep `=0.2.0` | Yes | Negative compile fixture. Comment in `src/lib.rs`: "Intentionally fails: runtime 0.2 accepts the Utoipa 6 router identity." Moving it to 0.3 makes the rejection test pass for the wrong reason. |
-| `crates/sc-command`, `crates/sc-cron-commands` | schemars | `=1.2.3` | **1.2.3** | `>=1.2.3` | No | Already latest. |
-| `template/Cargo.toml` workspace | schemars | `"1"` (caret) | **1.2.3** | `>=1.2.3` | No | Align the template with the published crates so minimal-versions does not select 1.0.0. |
-| `crates/sc-command`; `template/Cargo.toml` workspace (`sc-observability` and `sc-observability-types`) | sc-observability, sc-observability-types | `=1.5.0` (command overrides the workspace caret) | **1.5.0** | `>=1.5.0` | No | Already latest. Command comment cites ADR-RUN-0017 / issue #97 for the **edge**, not for the `=` operator. Root workspace spec is already `"1.5.0"` (caret). |
-| `crates/sc-runtime`, `crates/sc-command`, `crates/sc-transport`, `template/crates/daemon` | axum | `"0.8.9"` (lock 0.8.9) | **0.8.9** | `>=0.8.9` | No | Latest equals the pin. 0.9 is unpublished. |
-| `crates/sc-runtime`, `sc-command` (dev), `sc-transport`, `sc-cron`, `sc-cron-commands` (dev), cron-consumer, custom-context, logging_consumer, application-control, `template/Cargo.toml` workspace | tokio | `"1"` (root lock **1.54.1**) | **1.54.1** | `>=1.54.1` | No | Latest equals the lock. Spec `"1"` makes minimal-versions select 1.0.0. |
-| Root and template manifests using `serde` / `serde_json` `"1"` | serde, serde_json | `"1"` (lock 1.0.229 / 1.0.154) | **1.0.229** / **1.0.154** | `>=1.0.229` and `>=1.0.154` | No | Same minimal-versions floor problem. Latest equals the lock. |
-| `sc-runtime`, `sc-cron`, template workspace | tracing | `"0.1"` (lock 0.1.44) | **0.1.44** | `>=0.1.44` | No | 0.1 line is the published tracing line. Floor must not be 0.1.0 under minimal-versions. |
-| `sc-cron`, template daemon/cli, cron-consumer, logging_consumer | async-trait | `"0.1"` (lock 0.1.92) | **0.1.92** | `>=0.1.92` | No | Latest equals the lock. |
-| `sc-runtime`, `sc-cron`, template stores/cli/daemon dev | tempfile | `"3"` (lock 3.27.0) | **3.27.0** | `>=3.27.0` | No | Latest equals the lock. |
-| `sc-runtime` dev, template not directly | tower | `"0.5"` (lock 0.5.3) | **0.5.3** | `>=0.5.3` | No | Latest equals the lock. |
-| `sc-runtime` dev, `sc-transport`, `template/crates/cli` dev | reqwest | `"0.13"` (lock 0.13.5) | **0.13.5** | `>=0.13.5` | No | Latest equals the lock. `"0.13"` is a 0.x minor (`<0.14`). |
-| `sc-cron`, cron-consumer dev, template cli dev, logging_consumer | chrono | `"0.4"` (lock 0.4.45) | **0.4.45** | `>=0.4.45` | No | Latest is still 0.4.x. |
-| `sc-cron` | cron | `"0.17"` (lock 0.17.0) | **0.17.0** | `>=0.17.0` | No | Latest equals the lock. Single 0.x minor today; `>=` lets a later 0.17 patch or a reviewed newer minor through. |
-| `sc-cron` | getrandom | `"0.4"` (lock also has transitive 0.2.17 and 0.3.4) | **0.4.3** | `>=0.4.3` on the direct dep | No | Direct requirement already allows 0.4.3. Older getrandom copies are transitive; do not try to collapse them in 0.2.1. |
-| `sc-runtime` | fd-lock | `"4"` (lock 4.0.4) | **4.0.4** | `>=4.0.4` | No | Latest equals the lock. |
-| `sc-cron` dev | libc | `"0.2"` (lock 0.2.191) | **0.2.191** | `>=0.2.191` | No | Latest equals the lock. `"0.2"` minimal-versions would select an ancient 0.2.0. |
-| `sc-cron`, cron-consumer dev | process-wrap | `"10"` (lock 10.0.1) | **10.0.1** (`max_stable`; 8.2.2 / 9.1.1 are older majors touched the same day) | `>=10.0.1, <11` | No | Already on the latest stable major. `<11` matches the major the code is written against (Unix session / job-object features). 8.x/9.x are not an upgrade target. |
+| `crates/sc-command`, `crates/sc-cron-commands` | schemars | `=1.2.3` | **1.2.3** | `"1.2.3"` | No | Already latest. |
+| `template/Cargo.toml` workspace | schemars | `"1"` (caret) | **1.2.3** | `"1.2.3"` | No | Align the template with the published crates so minimal-versions does not select 1.0.0. |
+| `crates/sc-command`; `template/Cargo.toml` workspace (`sc-observability` and `sc-observability-types`) | sc-observability, sc-observability-types | `=1.5.0` (command overrides the workspace caret) | **1.5.0** | `"1.5.0"` | No | Already latest. Command comment cites ADR-RUN-0017 / issue #97 for the **edge**, not for the `=` operator. Root workspace spec is already `"1.5.0"` (caret). |
+| `crates/sc-runtime`, `crates/sc-command`, `crates/sc-transport`, `template/crates/daemon` | axum | `"0.8.9"` (lock 0.8.9) | **0.8.9** | `"0.8.9"` | No | Latest equals the pin. 0.9 is unpublished. |
+| `crates/sc-runtime`, `sc-command` (dev), `sc-transport`, `sc-cron`, `sc-cron-commands` (dev), cron-consumer, custom-context, logging_consumer, application-control, `template/Cargo.toml` workspace | tokio | `"1"` (root lock **1.54.1**) | **1.54.1** | `"1.54.1"` | No | Latest equals the lock. Spec `"1"` makes minimal-versions select 1.0.0. |
+| Root and template manifests using `serde` / `serde_json` `"1"` | serde, serde_json | `"1"` (lock 1.0.229 / 1.0.154) | **1.0.229** / **1.0.154** | `"1.0.229"` and `"1.0.154"` | No | Same minimal-versions floor problem. Latest equals the lock. |
+| `sc-runtime`, `sc-cron`, template workspace | tracing | `"0.1"` (lock 0.1.44) | **0.1.44** | `"0.1.44"` | No | 0.1 line is the published tracing line. Floor must not be 0.1.0 under minimal-versions. |
+| `sc-cron`, template daemon/cli, cron-consumer, logging_consumer | async-trait | `"0.1"` (lock 0.1.92) | **0.1.92** | `"0.1.92"` | No | Latest equals the lock. |
+| `sc-runtime`, `sc-cron`, template stores/cli/daemon dev | tempfile | `"3"` (lock 3.27.0) | **3.27.0** | `"3.27.0"` | No | Latest equals the lock. |
+| `sc-runtime` dev, template not directly | tower | `"0.5"` (lock 0.5.3) | **0.5.3** | `"0.5.3"` | No | Latest equals the lock. |
+| `sc-runtime` dev, `sc-transport`, `template/crates/cli` dev | reqwest | `"0.13"` (lock 0.13.5) | **0.13.5** | `"0.13.5"` | No | Latest equals the lock. `"0.13"` is a 0.x minor (`<0.14`). |
+| `sc-cron`, cron-consumer dev, template cli dev, logging_consumer | chrono | `"0.4"` (lock 0.4.45) | **0.4.45** | `"0.4.45"` | No | Latest is still 0.4.x. |
+| `sc-cron` | cron | `"0.17"` (lock 0.17.0) | **0.17.0** | `"0.17.0"` | No | Latest equals the lock. Single 0.x minor today; `>=` lets a later 0.17 patch or a reviewed newer minor through. |
+| `sc-cron` | getrandom | `"0.4"` (lock also has transitive 0.2.17 and 0.3.4) | **0.4.3** | `"0.4.3"` on the direct dep | No | Direct requirement already allows 0.4.3. Older getrandom copies are transitive; do not try to collapse them in 0.2.1. |
+| `sc-runtime` | fd-lock | `"4"` (lock 4.0.4) | **4.0.4** | `"4.0.4"` | No | Latest equals the lock. |
+| `sc-cron` dev | libc | `"0.2"` (lock 0.2.191) | **0.2.191** | `"0.2.191"` | No | Latest equals the lock. `"0.2"` minimal-versions would select an ancient 0.2.0. |
+| `sc-cron`, cron-consumer dev | process-wrap | `"10"` (lock 10.0.1) | **10.0.1** (`max_stable`; 8.2.2 / 9.1.1 are older majors touched the same day) | `"10.0.1"` | No | Already on the latest stable major. `<11` matches the major the code is written against (Unix session / job-object features). 8.x/9.x are not an upgrade target. |
 | `sc-cron` optional | monty, monty-types | `"1.4.0"` (caret, lock **1.4.0**) | **1.6.0** | `>=1.4.0, <1.6` | Yes for 1.6.0 | monty 1.4.0 and 1.5.0 declare rust-version **1.96**. **1.6.0 declares rust-version 1.98.** Workspace monty CI is `+1.96.1` (`.github/workflows/crates.yml`). `cargo update` on the current caret pulls 1.6.0 and breaks that job. 1.5.0 is the highest version inside the toolchain. Comment the cap. |
-| `sc-cron` and cron-consumer, Windows dev | win32job | `=2.0.3` | **2.1.0** | `>=2.0.3` | No | Exact pin on a test-only crate. 2.1.0 is a minor. Prove it on the existing Windows hook job; cap only if that job fails. |
-| same | waitpid-any | `=0.3.0` | **0.3.0** | `>=0.3.0` | No | Exact pin equals latest. |
-| `template/crates/store-sqlite`, `store-postgres`, `store-mysql` | futures-util | `"0.3.31"` | **0.3.34** | `>=0.3.31` | No | Caret already allows 0.3.34. Not in the root lockfile. |
-| `template/Cargo.toml` workspace | clap | `"4.5"` | **4.6.7** | `>=4.5.0` | No | Caret already allows 4.6.7. Explicit floor keeps minimal-versions off 4.0.0. |
-| `template/Cargo.toml` workspace (`toml = "0.8"`), used by `template/crates/schema` and store-adaptor | toml | `"0.8"` | **1.2.1+spec-1.1.0** (0.8 line ends at **0.8.23**; 0.9.12 exists) | Keep `>=0.8.23, <0.9` | Yes | `toml::from_str` in `template/crates/schema/tests/common/membership_toml.rs` and the adaptor membership path. 0.9 and 1.x are breaking lines. Out of 0.2.1. |
+| `sc-cron` and cron-consumer, Windows dev | win32job | `=2.0.3` | **2.1.0** | `"2.0.3"` | No | Exact pin on a test-only crate. 2.1.0 is a minor. Prove it on the existing Windows hook job; cap only if that job fails. |
+| same | waitpid-any | `=0.3.0` | **0.3.0** | `"0.3.0"` | No | Exact pin equals latest. |
+| `template/crates/store-sqlite`, `store-postgres`, `store-mysql` | futures-util | `"0.3.31"` | **0.3.34** | `"0.3.31"` | No | Caret already allows 0.3.34. Not in the root lockfile. |
+| `template/Cargo.toml` workspace | clap | `"4.5"` | **4.6.7** | `"4.5.0"` | No | Caret already allows 4.6.7. Explicit floor keeps minimal-versions off 4.0.0. |
+| `template/Cargo.toml` workspace (`toml = "0.8"`), used by `template/crates/schema` and store-adaptor | toml | `"0.8"` | **1.2.1+spec-1.1.0** (0.8 line ends at **0.8.23**; 0.9.12 exists) | Keep `"0.8.23"` | Yes | `toml::from_str` in `template/crates/schema/tests/common/membership_toml.rs` and the adaptor membership path. 0.9 and 1.x are breaking lines. Out of 0.2.1. |
 | `template/Cargo.toml` workspace | sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands | `"0.2.0"` | published 0.2.0; this repo's next release is 0.2.1 | d-2 sets `"0.2.1"` | n/a | These are this repo's own crates. A `>=0.2.0` range would let a generated app resolve a future 0.3 during 0.2.1. d-2 publish tail bumps them with the release. |
 
 ### In-repo path versions (not a crates.io sweep)
@@ -98,27 +108,27 @@ Owns the crates that select `libsqlite3-sys` in a lockfile shared with rusqlite:
 
 | Path | Change |
 | --- | --- |
-| `crates/sc-cron/Cargo.toml` | rusqlite line only → `>=0.41.0` (or `<0.42` if 0.42 hooks fail). Replace the 0.39 / sqlx-sharing comment with the frozen ruling. |
+| `crates/sc-cron/Cargo.toml` | rusqlite line only → `>=0.41.0, <0.43` after 0.42 qualification, otherwise `"0.41.0"` with the known incompatibility documented. Replace the 0.39 / sqlx-sharing comment with the frozen ruling. |
 | `crates/sc-runtime-db-sqlite/Cargo.toml` | same, features stay `bundled` without `hooks`. |
 | `tests/integration/cron-consumer/Cargo.toml` | rusqlite line only. Separate `Cargo.lock`. |
 | `crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve/` | **Delete.** Its lockfile is the coexistence gate d-1 removes. |
 
-d-1 does not retarget axum, tokio, rmcp, monty, or template sqlx. High/low proof for this graph: minimal end rusqlite **0.41.0**, high end **0.42.0** if the range has no cap (libsqlite3-sys 0.40). That replaces the frozen "highest 0.41.x" sentence once the snippet is `>=0.41.0`.
+d-1 does not retarget axum, tokio, rmcp, monty, or template sqlx. High/low proof for this graph: minimal end rusqlite **0.41.0**, high end **0.42.0** when qualified (libsqlite3-sys 0.40); otherwise latest compatible 0.41.x. The final range and both endpoint resolves must agree.
 
 `tests/integration/cron-consumer/Cargo.lock` and the root `Cargo.lock` both move. Template `store-sqlite` is a different workspace and stays on sqlx 0.9.
 
 ### d-1b (wave-1 sibling) — rmcp and the other non-sqlite ranges
 
-Parallel to d-1 on issue ownership. Both edit lockfiles; merge-forward the second onto `integrate/phase-d` before the d-2 publish tail. d-1b's current owned-path list omits `crates/sc-cron/Cargo.toml`. Add the non-rusqlite lines below or `cargo update` in d-1b will pull **monty 1.6.0** and fail the 1.96.1 job.
+Parallel to d-1 on issue ownership. Both edit lockfiles; merge-forward the second onto `integrate/phase-d` before the d-2 publish tail. d-1b owns all non-rusqlite manifest ranges, including the sc-cron lines below; without the Monty cap, `cargo update` in d-1b will pull **monty 1.6.0** and fail the 1.96.1 job.
 
 | Bucket | Paths | Work |
 | --- | --- | --- |
-| MCP stack | `crates/sc-runtime/Cargo.toml`, `crates/sc-command/Cargo.toml`, `template/crates/daemon/Cargo.toml`, `tests/contracts/phase-c/application-control/Cargo.toml`, `tests/integration/cron-consumer/schema/Cargo.toml` | `rmcp` `>=3.9.0`. Recompile the call sites named in the table. |
-| OpenAPI / schema exact pins | `sc-runtime`, `sc-command`, `sc-cron-commands`, `template/Cargo.toml`, `template/crates/daemon` | `utoipa` `>=6.0.0`, `utoipa-axum` `>=0.3.0`, `schemars` `>=1.2.3`. Leave `utoipa5-router`'s `=0.2.0` alone. |
-| Observability exact pins | `crates/sc-command/Cargo.toml`, `template/Cargo.toml` | `>=1.5.0` for both observability crates. |
+| MCP stack | `crates/sc-runtime/Cargo.toml`, `crates/sc-command/Cargo.toml`, `template/crates/daemon/Cargo.toml`, `tests/contracts/phase-c/application-control/Cargo.toml`, `tests/integration/cron-consumer/schema/Cargo.toml` | `rmcp = "3.9.0"` (normal compatible range). Recompile the call sites named in the table. |
+| OpenAPI / schema exact pins | `sc-runtime`, `sc-command`, `sc-cron-commands`, `template/Cargo.toml`, `template/crates/daemon` | Normal compatible requirements at tested floors: utoipa 6.0.0, utoipa-axum 0.3.0, schemars 1.2.3. Leave `utoipa5-router`'s `=0.2.0` alone. |
+| Observability exact pins | `crates/sc-command/Cargo.toml`, `template/Cargo.toml` | Normal compatible requirements at floor 1.5.0 for both observability crates. |
 | Floors that minimal-versions would otherwise sink | Every `"1"` / `"0.1"` / `"0.4"` / `"0.5"` / `"0.13"` / `"3"` / `"4"` row in the table, including template `clap` and `futures-util` | Raise to the locked or latest-on-line floor. |
 | monty cap | `crates/sc-cron/Cargo.toml` optional deps only | `>=1.4.0, <1.6` plus the rust-version comment. Optional: lock the high end at 1.5.0 if that compile is clean on 1.96.1. |
-| Windows test exact pins | `sc-cron` and `tests/integration/cron-consumer` target dev-deps | `win32job` `>=2.0.3`, `waitpid-any` `>=0.3.0`. |
+| Windows test exact pins | `sc-cron` and `tests/integration/cron-consumer` target dev-deps | Normal compatible requirements at win32job 2.0.3 and waitpid-any 0.3.0; qualify Windows tests. |
 | CI | `Justfile`, and a job or step in `.github/workflows/crates.yml` | Section 4. |
 
 d-1b does not edit rusqlite lines and does not publish.
@@ -152,7 +162,7 @@ What exists today:
 
 How to extend, without a second workflow file:
 
-1. **d-1 keeps a named sqlite pair** until the rusqlite spec is `>=0.41.0`. After that, the workspace job below is the pair: minimal-versions resolves 0.41.0, `cargo update` resolves 0.42.0 (or 0.41.x if the cap stays). Document both commands in the d-1 PR. Do not commit the minimal lockfile.
+1. **d-1 keeps a named sqlite pair** until the final tested rusqlite range is declared. After that, the workspace job below is the pair: minimal-versions resolves 0.41.0, `cargo update` resolves 0.42.0 (or 0.41.x if the cap stays). Document both commands in the d-1 PR. Do not commit the minimal lockfile.
 2. **d-1b adds two `Justfile` recipes** the crates workflow can call. Sketch:
 
 ```just
@@ -206,7 +216,7 @@ Evidence is the manifest comment, the crates.io dependency requirement, or the f
    `crates/sc-runtime/tests/fixtures/utoipa5-router/Cargo.toml` pins `utoipa-axum = "=0.2.0"`. Production code is already on latest utoipa **6.0.0** and utoipa-axum **0.3.0**. Do not move the fixture to latest.
 
 7. **Rusqlite 0.42 is not in the frozen d-1 snippet.**  
-   This is a process block, not an sqlx block. `"0.41"` cannot resolve 0.42.0. d-1 either proves 0.42 (hooks / `InterruptHandle` / progress and commit hooks) and publishes `>=0.41.0`, or publishes `>=0.41.0, <0.42` with the failing compile as the comment. Shipping another bare `"0.41"` fails #133's done-when for this dependency.
+   This is a process block, not an sqlx block. `"0.41"` cannot resolve 0.42.0. d-1 either qualifies 0.42 and publishes `>=0.41.0, <0.43`, or retains the normal `"0.41.0"` range with the actual incompatibility documented. Shipping another bare `"0.41"` fails #133's done-when for this dependency.
 
 Not on this list: **rmcp 3.9.0** (that *is* latest; the work is to leave `~3.8`), **utoipa 6 / schemars 1.2.3 / sc-observability 1.5.0 / axum 0.8.9 / tokio 1.54.1** (already latest; the work is to delete `=` and to stop bare carets from collapsing under minimal-versions).
 

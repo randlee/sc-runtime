@@ -141,25 +141,25 @@
       "id": "ANC-003",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Template generation MUST accept compatible sc-compose upgrades independently of this repository's CI version pin.",
+      "statement": "Template generation MUST succeed with sc-compose 1.8.0 when the CLI commands used by the template remain compatible.",
       "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-11",
       "context": "Phase D planning session 2026-11-11",
-      "summary": "Independent consumer generation-tool upgrades",
+      "summary": "Template accepts compatible sc-compose 1.8.0",
       "scope": "Changes scripts/new_project.py, the sc-compose executable selection logic, or generated-app generation instructions; excludes Rust crate dependency resolution.",
       "deterministic_check": "Plan: names independent consumer CLI selection. Development: run the generation driver with SC_COMPOSE selecting a compatible version above the CI pin; verify the selected executable is invoked and generation succeeds.",
       "fixtures": {
         "pass": [
-          "Template generation honors SC_COMPOSE pointing to a compatible newer sc-compose while CI retains its existing tool pin."
+          "The generation driver selects sc-compose 1.8.0; all CLI commands used by the template remain compatible and generation succeeds."
         ],
         "fail": [
-          "Template generation rejects a compatible newer sc-compose solely because its version differs from the repository CI pin."
+          "The template requires sc-compose 1.7.0 and rejects the compatible sc-compose 1.8.0 release."
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -200,6 +200,16 @@
             "fixtures"
           ],
           "previous_statement": "scripts/new_project.py MUST honor SC_COMPOSE when set; this repository's CI sc-compose pin MUST NOT require downstream generated apps to use the same CLI version."
+        },
+        {
+          "at": "2026-11-11T21:03:33+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "summary",
+            "fixtures"
+          ],
+          "previous_statement": "Template generation MUST accept compatible sc-compose upgrades independently of this repository's CI version pin."
         }
       ]
     },
@@ -714,25 +724,25 @@
       "id": "ANC-012",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Published sc-runtime crates MUST exclude sc-compose and agent-team-mail from their production dependency graphs.",
+      "statement": "Production release crates MUST NOT depend on sc-compose or ATM crates.",
       "quote": "sc-compose and atm crates should be blocked from any production release crate.",
       "kind": "prohibition",
       "stated_by": "randlee",
       "stated_at": "2026-11-11",
       "context": "Phase D planning session 2026-11-11",
       "summary": "Generation and orchestration tools stay outside production graphs",
-      "scope": "Changes Cargo.toml dependencies or features of the six published crates, including workspace-inherited dependencies and transitive normal/build dependency edges; excludes dev-only tools.",
+      "scope": "Changes normal/build dependency declarations or resolved production dependency graphs of published sc-runtime crates. ATM denotes the agent-team-mail workspace crates covered by ADR-RUN-0013, including agent-team-mail and atm-core. Dev-only test and benchmark references are excluded.",
       "deterministic_check": "Plan: inspect proposed normal/build dependencies. Development: inspect cargo metadata and cargo tree normal/build graphs for each published crate and supported feature set for sc-compose or agent-team-mail.",
       "fixtures": {
         "pass": [
-          "Published crate normal and build dependency graphs contain neither sc-compose nor agent-team-mail; generation uses external executables."
+          "Production release crates have no normal or build dependency on sc-compose or ATM crates; adapters invoke external executables."
         ],
         "fail": [
-          "A published sc-runtime crate adds sc-compose as a normal dependency for template rendering."
+          "A production release crate adds the ATM crate atm-core as a normal dependency."
         ]
       },
       "question_overrides": {},
-      "version": 3,
+      "version": 4,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -773,6 +783,16 @@
             "fixtures"
           ],
           "previous_statement": "Phase d sprints MUST NOT add sc-compose or agent-team-mail production crate dependencies to release crates."
+        },
+        {
+          "at": "2026-11-11T21:03:33+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "fixtures"
+          ],
+          "previous_statement": "Published sc-runtime crates MUST exclude sc-compose and agent-team-mail from their production dependency graphs."
         }
       ]
     },
@@ -1001,31 +1021,31 @@
       "id": "ANC-016",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Published crate and generated application manifests MUST permit non-breaking dependency upgrades without requiring a new sc-runtime release.",
+      "statement": "Published crate and template dependency requirements MUST allow consumers to select newer Cargo SemVer-compatible dependency releases.",
       "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-11",
       "context": "User planning handover in this conversation, 2026-11-11; revised intent.md Purpose and Dependency policy direction. Proposed interpretation: normal Cargo-compatible ranges, with known incompatibilities justified separately; blanket unbounded >= is not implied.",
       "summary": "Consumers can take compatible dependency upgrades",
-      "scope": "Changes registry dependency requirements in published crates or template manifests. Non-breaking means compatible with the supported API, native-library links, and Rust toolchain; includes compatible Cargo version updates where no incompatibility is demonstrated.",
+      "scope": "Changes registry dependency requirements in published crates or template manifests. Cargo-compatible versions share the leftmost nonzero version component with the tested minimum. An upstream release with a demonstrated API, links, or toolchain break is outside the non-breaking guarantee.",
       "deterministic_check": "Plan: proposed requirements admit compatible updates without republishing sc-runtime. Development: resolve and build a registry consumer at the minimum and a newer compatible dependency version without changing the sc-runtime crate version or adding a path/patch override.",
       "fixtures": {
         "pass": [
-          "The consumer keeps the same sc-runtime release and resolves a newer compatible rmcp fix using cargo update, without local patches."
+          "A published crate declares rmcp 3.9.0 with the normal Cargo-compatible range, allowing the consumer to select a compatible 3.9.1 release."
         ],
         "fail": [
-          "A consumer must wait for another sc-runtime release because an unjustified exact rmcp pin excludes a newer compatible fix."
+          "A published crate requires rmcp =3.9.0 with no demonstrated incompatibility and blocks a compatible 3.9.1 release."
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "proposed",
+      "version": 4,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-41jv",
+        "plan_questions": "run-41jv.1",
+        "dev_questions": "run-41jv.2"
       },
       "history": [
         {
@@ -1039,6 +1059,32 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T21:03:34+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "fixtures"
+          ],
+          "previous_statement": "Published crate and generated application manifests MUST permit non-breaking dependency upgrades without requiring a new sc-runtime release."
+        },
+        {
+          "at": "2026-11-11T21:23:12+00:00",
+          "event": "locked",
+          "previous_status": "proposed",
+          "approval": "request_user_input_async/call_1bb282cd72514f579f36e1144d681cff/item1",
+          "user_answer": "Adopt these four constraints"
+        },
+        {
+          "at": "2026-11-11T21:28:09+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-41jv",
+            "plan_questions": "run-41jv.1",
+            "dev_questions": "run-41jv.2"
+          }
         }
       ]
     },
@@ -1064,13 +1110,13 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "proposed",
+      "version": 3,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-qxzw",
+        "plan_questions": "run-qxzw.1",
+        "dev_questions": "run-qxzw.2"
       },
       "history": [
         {
@@ -1084,6 +1130,22 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T21:23:12+00:00",
+          "event": "locked",
+          "previous_status": "proposed",
+          "approval": "request_user_input_async/call_1bb282cd72514f579f36e1144d681cff/item1",
+          "user_answer": "Adopt these four constraints"
+        },
+        {
+          "at": "2026-11-11T21:29:04+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-qxzw",
+            "plan_questions": "run-qxzw.1",
+            "dev_questions": "run-qxzw.2"
+          }
         }
       ]
     },
@@ -1109,8 +1171,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "proposed",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": null,
@@ -1129,6 +1191,12 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T21:03:34+00:00",
+          "event": "retired",
+          "replaced_by": null,
+          "reason": "Live rubric exposed a provenance/scope problem: an SQLite advisory acceptance criterion was generalized to all Phase D advisory validation. It duplicates issue132 release acceptance, not an independent user how-to-work constraint. Retain the released-consumer advisory requirement in issue132, intent.md, and d-2."
         }
       ]
     },
@@ -1136,31 +1204,31 @@
       "id": "ANC-019",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Each exact pin, tilde restriction, or extra upper bound on a third-party dependency MUST explain its known incompatibility in the owning manifest.",
+      "statement": "Each additional dependency upper bound MUST have a manifest comment identifying the known break that requires it.",
       "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-11",
       "context": "randlee-authored GitHub issue #133, Requested change item 2 and Done when: https://github.com/randlee/sc-runtime/issues/133. This candidate captures justification of extra restrictions; it does not adopt the older blanket >= prescription.",
-      "summary": "Restrictions have concrete compatibility reasons",
-      "scope": "Adds or retains a restrictive third-party requirement in any published crate, generated template, or test manifest. Extra upper bound means tighter than the normal Cargo compatibility line; internal path package versions and a negative compatibility fixture with an explicit reason are distinguishable.",
+      "summary": "Additional upper bounds explain their known break",
+      "scope": "Adds or retains an explicit third-party dependency upper bound beyond Cargo standard SemVer compatibility. Normal caret compatibility boundaries and internal path package identity versions are excluded. Applies to published crates, generated templates, and test manifests.",
       "deterministic_check": "Plan: each retained extra restriction names the incompatibility and the owning manifest comment. Development: enumerate exact/tilde/extra-upper requirements and inspect comments for the affected API, links conflict, toolchain limit, or deliberate negative-test compatibility boundary.",
       "fixtures": {
         "pass": [
-          "The manifest caps monty below 1.6 with a comment identifying its Rust 1.98 requirement and the supported Rust 1.96.1 test toolchain."
+          "The manifest explicitly caps monty below 1.6 and explains in a comment that monty 1.6 requires Rust 1.98 while the supported toolchain is Rust 1.96.1."
         ],
         "fail": [
-          "The manifest caps rmcp below an unpublished major with no known break or explanatory comment."
+          "The manifest explicitly caps rmcp below an unpublished major without a comment identifying a known breaking change."
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "proposed",
+      "version": 4,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-weer",
+        "plan_questions": "run-weer.1",
+        "dev_questions": "run-weer.2"
       },
       "history": [
         {
@@ -1174,6 +1242,46 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T21:03:34+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "fixtures"
+          ],
+          "previous_statement": "Each exact pin, tilde restriction, or extra upper bound on a third-party dependency MUST explain its known incompatibility in the owning manifest."
+        },
+        {
+          "at": "2026-11-11T21:23:12+00:00",
+          "event": "locked",
+          "previous_status": "proposed",
+          "approval": "request_user_input_async/call_1bb282cd72514f579f36e1144d681cff/item1",
+          "user_answer": "Adopt these four constraints"
+        },
+        {
+          "at": "2026-11-11T21:29:05+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-weer",
+            "plan_questions": "run-weer.1",
+            "dev_questions": "run-weer.2"
+          }
+        },
+        {
+          "at": "2026-11-11T21:42:02+00:00",
+          "event": "excluded",
+          "item": "d-1",
+          "reason": "d-1 uses normal compatibility boundaries for separately qualified rusqlite0.41/0.42 lines; its range is broader than the default0.41 range and adds no tighter upper bound. Extra caps such as the Monty toolchain limit are owned by d-1b; d-2 verifies packaged comments. This exclusion removes no range-testing or compatibility obligation.",
+          "replaced": false
+        }
+      ],
+      "exclude": [
+        {
+          "item": "d-1",
+          "reason": "d-1 uses normal compatibility boundaries for separately qualified rusqlite0.41/0.42 lines; its range is broader than the default0.41 range and adds no tighter upper bound. Extra caps such as the Monty toolchain limit are owned by d-1b; d-2 verifies packaged comments. This exclusion removes no range-testing or compatibility obligation."
         }
       ]
     },
@@ -1181,7 +1289,7 @@
       "id": "ANC-020",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "CI MUST install pinned sc-compose versions from the corresponding GitHub Release binaries.",
+      "statement": "The primary CI installation path for sc-compose MUST use GitHub Release archives.",
       "quote": "**Primary install path for CI and production** — GitHub Release tarballs/zip + `checksums.txt` (already published). Treat these as the **stability contract** for a tagged version.",
       "kind": "directive",
       "stated_by": "randlee",
@@ -1192,20 +1300,20 @@
       "deterministic_check": "Plan: requires versioned release-binary installation. Development: exercise the CI cache-miss installer against the selected release archive and checksums, verify its CLI version, and verify that no cargo install sc-compose recompilation path supplies that tool.",
       "fixtures": {
         "pass": [
-          "On a cache miss CI downloads the selected sc-compose GitHub Release binary and verifies its checksum and version."
+          "The primary CI installation path fetches the selected sc-compose GitHub Release archive and verifies its checksums.txt entry."
         ],
         "fail": [
-          "On a cache miss CI recompiles the pinned sc-compose crate using cargo install instead of installing its GitHub Release binary."
+          "The primary CI installation path recompiles sc-compose with cargo install against the current crates.io index."
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "proposed",
+      "version": 4,
+      "status": "locked",
       "promoted_to": null,
       "beads": {
-        "anchor": null,
-        "plan_questions": null,
-        "dev_questions": null
+        "anchor": "run-kaze",
+        "plan_questions": "run-kaze.1",
+        "dev_questions": "run-kaze.2"
       },
       "history": [
         {
@@ -1219,6 +1327,31 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T21:03:34+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "fixtures"
+          ],
+          "previous_statement": "CI MUST install pinned sc-compose versions from the corresponding GitHub Release binaries."
+        },
+        {
+          "at": "2026-11-11T21:23:12+00:00",
+          "event": "locked",
+          "previous_status": "proposed",
+          "approval": "request_user_input_async/call_1bb282cd72514f579f36e1144d681cff/item1",
+          "user_answer": "Adopt these four constraints"
+        },
+        {
+          "at": "2026-11-11T21:29:07+00:00",
+          "event": "beads_set",
+          "beads": {
+            "anchor": "run-kaze",
+            "plan_questions": "run-kaze.1",
+            "dev_questions": "run-kaze.2"
+          }
         }
       ]
     }

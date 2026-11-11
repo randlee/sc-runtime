@@ -20,6 +20,7 @@ adrs:
 github_issues:
   - 131
   - 132
+  - 133
 parallel_safe:
   - d-1
 must_follow: []
@@ -35,9 +36,15 @@ recommended_model: grok-4.7-high-fast
 
 ## Goal
 
-Integration closure for **#131** and **#132**: consumer READMEs and registry
+Integration closure for **#131**, **#132**, and **#133**: consumer READMEs and registry
 truth can land in parallel with d-1; **0.2.1** publish and advisory clearance
-run only after d-1 merges to `integrate/phase-d`.
+run only after both d-1 and d-1b merge to `integrate/phase-d` and their combined
+dependency-resolution CI passes.
+
+Release preparation changes sc-runtime package version fields, not third-party
+dependency requirements. Compatible third-party updates remain permitted by
+the qualified requirements supplied by d-1/d-1b; the registry proof targets
+sc-runtime 0.2.1 without imposing new third-party exact pins or tighter caps.
 
 Evidence (read-only): [registry-doc-audit.md](registry-doc-audit.md).
 
@@ -77,20 +84,22 @@ MCP. Publish order and template usage are documented in the repository README.
 3. **req:RUN-0702-sqlite-readme** — `crates/sc-runtime-db-sqlite/README.md` does not claim crates.io publication.
 4. **integration:readme-manifest** — `crates/sc-cron-commands/Cargo.toml` sets `readme = "README.md"`; `cargo package -p sc-cron-commands --list` includes `README.md`.
 
-### Publish tail (after d-1 merge + merge-forward)
+### Publish tail (after both dependency sprints merge + merge-forward)
 
-5. **req:132** — Published **0.2.1** clears RUSTSEC-2026-0459 on the documented consumer path (`cargo deny check advisories` recorded in `docs/releases/v0.2.1.md`).
-6. **integration:pre-publish** — Kit dry-run or `cargo package --list` on each published crate shows README with scaffolding blurb in the artifact.
+5. **req:132/133-advisories** — A consumer of the published **0.2.1** crates resolves fixed SQLite and rmcp dependencies and clears **RUSTSEC-2026-0459** and **RUSTSEC-2026-0462** using `cargo deny check advisories`. Match the affected beads-cache configuration; inspect registry package identities in metadata/lockfiles and exclude local path/patch substitutes. Record the targeted advisory results and supported configuration in `docs/releases/v0.2.1.md`.
+6. **integration:pre-publish** — Inspect each package archive: its README contains the scaffolding blurb. Each additional dependency upper bound has a TOML source-manifest comment immediately beside the requirement, naming the concrete breaking change requiring that specific bound (ANC-019). Check `Cargo.toml.orig` when Cargo normalizes the packaged manifest. For example, the Monty `<1.6` comments identify Rust 1.98 versus the supported Rust 1.96.1 toolchain.
 7. **integration:post-publish** — Each `https://crates.io/crates/<name>` @ **0.2.1** shows the blurb (crate page or `.crate` tarball).
-8. **integration:workspace** — `just lint` and `just test` green on `integrate/phase-d` at **0.2.1** versions.
+8. **integration:workspace** — `just lint` and `just test` pass on the final **0.2.1** integration candidate. The existing production-tool dependency guard verifies that published crates' normal/build graphs contain neither sc-compose nor ATM crates, including transitive identities (ANC-012); external CLI invocation remains permitted.
+9. **req:133-consumer-updates** — The released manifests contain the qualified ranges from both dependency sprints. Required minimum/latest CI passes on their combined integrated revision, including generated-template and separate consumer resolves. A registry consumer can update a compatible dependency within the supported range while keeping sc-runtime at 0.2.1.
+10. **req:131-published-helper** — A registry consumer enables `sc-runtime/test-util` and compiles the documented `testing::instrument_router` usage against released 0.2.1, preserving PR131's public signature. README presence alone does not demonstrate that the release contains the helper.
 
 ## Closure sequence
 
 1. Land doc-wave deliverables on the sprint branch; run doc-wave ACs and sprint QA-1 on that head.
-2. Merge-forward d-1 into this branch when d-1 development pushes (before publish tail edits).
-3. Bump versions, regenerate `Cargo.lock`, run publish tail deliverables.
+2. Merge-forward the integration revision containing **both d-1 and d-1b** before publish-tail edits. Verify both dependency changes are present; a dependency label alone does not satisfy this handoff.
+3. Bump versions, regenerate `Cargo.lock`, and run combined workspace, minimum/latest, package, and pre-publication checks on that exact candidate. A range or manifest change after qualification invalidates affected checks.
 4. Merge to `integrate/phase-d`; authorized kit publish.
-5. Record post-publish registry verification (AC 7) in sprint close-out / release notes.
+5. Run the released registry-consumer advisory, compatible-update, and helper checks; record post-publish verification in release notes. Close #132/#133 only after their released-consumer acceptance passes. A publish command or README check alone cannot close either security issue.
 
 ## Owned paths
 
@@ -106,7 +115,7 @@ MCP. Publish order and template usage are documented in the repository README.
 - `crates/sc-cron-commands/README.md`
 - `crates/sc-cron-commands/Cargo.toml` (`readme` key only)
 
-### Publish tail (after d-1; may touch manifests d-1 edited — version fields only)
+### Publish tail (after d-1 and d-1b; shared manifest edits are version fields only)
 
 - `Cargo.toml` (`[workspace.package] version`)
 - `Cargo.lock`
@@ -117,7 +126,7 @@ MCP. Publish order and template usage are documented in the repository README.
 - `crates/sc-cron/Cargo.toml`
 - `crates/sc-cron-commands/Cargo.toml` (version field)
 - `release/sc-publish-consumer-input.json`
-- `template/Cargo.toml` (`workspace.dependencies` 0.2.1 pins if required)
+- `template/Cargo.toml` (release-compatible sc-* 0.2.1 requirements)
 - `docs/releases/v0.2.1.md`
 - `docs/project-plan.md` (phase d status only)
 - `docs/plans/phase-d/registry-doc-audit.md` (mark closed)

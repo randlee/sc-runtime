@@ -1,0 +1,250 @@
+{
+  "ANC-003": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "No explicit step or constraint states the policy, including silence, topic-only discussion, and contrary instructions.",
+          "unclear": "The text is ambiguous about the specific obligation; distinguish explicit omission from an indeterminate commitment.",
+          "yes": "The item accepts compatible sc-compose 1.8.0 for template generation, including selecting that executable and succeeding."
+        },
+        "instructions": "Does the item carry this policy as a concrete step or constraint: template generation succeeds using sc-compose 1.8.0 when its used CLI commands are compatible? Equivalent wording counts; do not infer compliance from a topic mention or silence.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No rule-breaking decision is stated. An unstated policy is not a violation; exclude Rust crate dependency resolution alone.",
+          "unclear": "An explicit decision may break the rule but its relevant details are unresolved.",
+          "yes": "The item rejects compatible sc-compose 1.8.0 or requires an older exact CLI version for generation."
+        },
+        "instructions": "Does an explicit decision in `item.text` break this anchor rule: template generation succeeds using sc-compose 1.8.0 when its used CLI commands are compatible? Evaluate only actual conflicting decisions within scope.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The item concerns Rust crate dependency resolution alone or a wholly unrelated activity.",
+          "unclear": "The item could concern either the included or excluded area and does not resolve which.",
+          "yes": "The item changes template generation driver, sc-compose executable selection, or generated-app generation instructions."
+        },
+        "instructions": "Determine whether this item falls inside the locked anchor scope. Include template generation driver, sc-compose executable selection, or generated-app generation instructions; apply its explicit exclusions.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-005": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "No explicit step or constraint states the policy, including silence, topic-only discussion, and contrary instructions.",
+          "unclear": "The text is ambiguous about the specific obligation; distinguish explicit omission from an indeterminate commitment.",
+          "yes": "The item declares the repository sc-compose CLI minimum as 1.8.0 or higher, for example minimum_version in .sc/generation-tools.json."
+        },
+        "instructions": "Does the item carry this policy as a concrete step or constraint: repository tooling declares a sc-compose CLI minimum version of at least 1.8.0? Equivalent wording counts; do not infer compliance from a topic mention or silence.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No rule-breaking decision is stated. An unstated policy is not a violation; exclude the sc-compose Rust crate graph alone.",
+          "unclear": "An explicit decision may break the rule but its relevant details are unresolved.",
+          "yes": "The item declares a repository sc-compose CLI minimum below 1.8.0, or removes the required minimum."
+        },
+        "instructions": "Does an explicit decision in `item.text` break this anchor rule: repository tooling declares a sc-compose CLI minimum version of at least 1.8.0? Evaluate only actual conflicting decisions within scope.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The item concerns the sc-compose Rust crate graph alone or a wholly unrelated activity.",
+          "unclear": "The item could concern either the included or excluded area and does not resolve which.",
+          "yes": "The item changes repository sc-compose CLI requirements, generation-tool setup, or plan-anchoring CLI dependency checks."
+        },
+        "instructions": "Determine whether this item falls inside the locked anchor scope. Include repository sc-compose CLI requirements, generation-tool setup, or plan-anchoring CLI dependency checks; apply its explicit exclusions.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-012": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The exclusion policy is unstated, is only a topic, or is violated. An unrelated dependency, dev-only fixture reference, or external help edit alone states no exclusion policy.",
+          "unclear": "The text is ambiguous about the specific obligation; distinguish explicit omission from an indeterminate commitment.",
+          "yes": "The text explicitly commits to production normal/build graphs excluding BOTH sc-compose and ATM workspace crates; equivalent copy/removal or external-only adapter architecture with this exclusion counts."
+        },
+        "instructions": "Does `item.text` explicitly commit to production release crates have no normal or build dependency on sc-compose or ATM agent-team-mail workspace crates, including agent-team-mail and atm-core? Judge the presence of this obligation only; silence is absence, not conflict. Require an explicit production-graph exclusion policy; adding an unrelated permitted dependency or saying no graph changed does not itself state that policy.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "There is no explicit incompatible policy, including omission, unrelated work, or the scoped exception: dev-only test or benchmark references and external-executable invocation without a normal/build crate dependency.",
+          "unclear": "A stated policy is ambiguous about whether it conflicts.",
+          "yes": "The item adds or retains sc-compose or an ATM workspace crate such as agent-team-mail or atm-core in a production normal/build dependency graph."
+        },
+        "instructions": "Does `item.text` explicitly adopt a policy incompatible with production release crates have no normal or build dependency on sc-compose or ATM agent-team-mail workspace crates, including agent-team-mail and atm-core? Judge conflict only. Silence and topic discussion alone are not conflict.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The item is exclusively a dev-only test/benchmark reference, external executable command/help change, or documentation without a production dependency policy, with no normal/build declaration or production graph change.",
+          "unclear": "The work area cannot be determined.",
+          "yes": "The item changes normal/build dependencies or resolved production graphs of published sc-runtime crates, or explicitly sets/preserves the production graph constraint excluding sc-compose and ATM crates. An external invocation mentioned alongside an explicit production-graph constraint does not erase that graph subject."
+        },
+        "instructions": "Does `item.text` change the area governed by `anchor.scope`: normal or build dependencies or resolved production graphs of published sc-runtime release crates? Judge subject overlap only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-015": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The specific obligation is absent, merely topical, or replaced by a contrary policy.",
+          "unclear": "The text is ambiguous about the specific obligation; distinguish explicit omission from an indeterminate commitment.",
+          "yes": "The skill check accepts CLI versions equal to or above its declared minimum and rejects versions below it; >= floor language also states this."
+        },
+        "instructions": "Does `item.text` explicitly commit to repository skills enforce the declared sc-compose CLI minimum as a lower bound and accept versions above that floor rather than exact-version matching? Judge the presence of this obligation only; silence is absence, not conflict.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "There is no explicit incompatible policy, including omission, unrelated work, or the scoped exception: CI selection of a reproducible binary and Rust crate version requirements.",
+          "unclear": "A stated policy is ambiguous about whether it conflicts.",
+          "yes": "The skill check requires equality to the configured minimum or rejects a CLI solely for being above the minimum."
+        },
+        "instructions": "Does `item.text` explicitly adopt a policy incompatible with repository skills enforce the declared sc-compose CLI minimum as a lower bound and accept versions above that floor rather than exact-version matching? Judge conflict only. Silence and topic discussion alone are not conflict.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The item concerns CI selection of a reproducible binary and Rust crate version requirements or a wholly unrelated activity.",
+          "unclear": "The work area cannot be determined.",
+          "yes": "The item changes skill scripts or instructions that check the sc-compose CLI version."
+        },
+        "instructions": "Does `item.text` change the area governed by `anchor.scope`: skill scripts or instructions that check the sc-compose CLI version? Judge subject overlap only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-016": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The specific obligation is absent, merely topical, replaced by a contrary decision, or untriggered because the item is expressly outside the anchor scope.",
+          "unclear": "An obligation is alluded to but its presence cannot be determined.",
+          "yes": "The item permits newer Cargo-compatible releases using a normal compatible range or an explicit equivalent; compatible versions share the leftmost nonzero component."
+        },
+        "instructions": "Is the required outcome actually stated: published crate and template registry requirements allow newer Cargo SemVer-compatible dependency releases? Equivalent wording counts; do not infer an unstated policy.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No such compatible consumer release is disallowed. Permitting the entire original compatible line plus another independently qualified line is an allowed superset, not a restriction. A test/CI lockfile choice, an upper boundary beyond the original compatible line, silence, or an unrelated demonstrated break does not establish blocking a compatible consumer upgrade.",
+          "unclear": "The item appears to restrict a compatible consumer release, but the admitted compatibility line or the demonstrated break is not specified sufficiently to determine rejection.",
+          "yes": "An explicit consumer requirement disallows a newer release inside the minimum version's Cargo-compatible line, and no demonstrated API, links, or toolchain break justifies rejecting that release."
+        },
+        "instructions": "Is an explicit dependency requirement narrowing consumer choices inside the original Cargo-compatible line? A broader requirement that still admits that line cannot contradict this anchor merely because it also supports another line. Judge actual compatible-version rejection, not whether the range equals the normal caret syntax.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work concerns only non-range edits or releases with demonstrated API, links, or toolchain breaks outside the non-breaking guarantee or unrelated activities.",
+          "unclear": "The work area is insufficiently specified.",
+          "yes": "The item changes, preserves, or explicitly specifies registry dependency requirements of published crates or template manifests."
+        },
+        "instructions": "Would this item make or preserve a decision within registry dependency requirements of published crates or template manifests? Its policy can be unstated and still be in scope.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-017": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The specific obligation is absent, merely topical, replaced by a contrary decision, or untriggered because the item is expressly outside the anchor scope.",
+          "unclear": "An obligation is alluded to but its presence cannot be determined.",
+          "yes": "CI resolves the lowest allowed set and the latest allowed set and runs affected tests at both endpoints, including affected generated/consumer workspaces."
+        },
+        "instructions": "Does a concrete step or constraint in the item carry this policy: dependency CI resolves and tests both minimum and latest allowed versions of changed registry ranges in every affected workspace and feature set? Distinguish a commitment from merely discussing its subject.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No explicit incompatible decision is stated, including silence, topic-only discussion, compliance, and excluded work: prose-only README edits without range or validation changes.",
+          "unclear": "A stated action may conflict, but its relevant details cannot be determined.",
+          "yes": "CI explicitly tests only one endpoint, skips affected workspace endpoint tests, or substitutes a documented command for actual endpoint tests."
+        },
+        "instructions": "Does a stated decision within scope break this rule: dependency CI resolves and tests both minimum and latest allowed versions of changed registry ranges in every affected workspace and feature set? Evaluate actual incompatible actions, not omissions.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work concerns only prose-only README edits without range or validation changes or unrelated activities.",
+          "unclear": "The work area is insufficiently specified.",
+          "yes": "The item changes, preserves, or explicitly specifies registry dependency range changes or dependency validation for root, generated-template features, or separate consumer/test workspaces."
+        },
+        "instructions": "Determine whether the described work falls within registry dependency range changes or dependency validation for root, generated-template features, or separate consumer/test workspaces. Apply the scope exclusions even when excluded work mentions the same tool or dependency.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-019": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The specific obligation is absent, merely topical, replaced by a contrary decision, or untriggered because the item is expressly outside the anchor scope.",
+          "unclear": "An obligation is alluded to but its presence cannot be determined.",
+          "yes": "For the additional bound the item specifies a manifest comment identifying a concrete known API break, links conflict, toolchain limit, or deliberate negative-test compatibility boundary."
+        },
+        "instructions": "Does `item.text` explicitly commit to each additional third-party dependency upper bound has a manifest comment identifying the known break requiring that bound? Presence alone is the judgment; topic mention and silence supply no commitment.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "The item does not explicitly state missing/false manifest justification. In particular, a description giving no information about a reason or comment leaves the manifest unknown; retaining a bound while omitting comment details from this description is not itself a conflict. Compliant comments and scoped exclusions also do not conflict.",
+          "unclear": "The item asserts something about the actual manifest comment, but it is ambiguous whether the required known-break explanation is present.",
+          "yes": "The text explicitly states that an additional bound has no manifest comment identifying a known break, that no known break exists, or that the manifest will omit the required comment. An explicit statement about the manifest lacking justification counts."
+        },
+        "instructions": "Does `item.text` expressly contradict the rule requiring a known-break manifest comment for an additional dependency upper bound? Distinguish a missing comment IN THE MANIFEST from missing comment details IN THIS ITEM DESCRIPTION. Do not infer the former from the latter.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work concerns only normal caret compatibility boundaries and internal path-package identity versions or unrelated activities.",
+          "unclear": "The work area is insufficiently specified.",
+          "yes": "The item changes, preserves, or explicitly specifies added or retained explicit third-party dependency upper bounds beyond normal Cargo SemVer compatibility in published, template, or test manifests."
+        },
+        "instructions": "Does `item.text` touch the recorded scope: added or retained explicit third-party dependency upper bounds beyond normal Cargo SemVer compatibility in published, template, or test manifests? Judge subject overlap only.",
+        "type": "choice"
+      }
+    }
+  },
+  "ANC-020": {
+    "questions": {
+      "addressed": {
+        "criteria": {
+          "no": "The specific obligation is absent, merely topical, replaced by a contrary decision, or untriggered because the item is expressly outside the anchor scope.",
+          "unclear": "An obligation is alluded to but its presence cannot be determined.",
+          "yes": "The primary or cache-miss CI installation fetches a selected sc-compose GitHub Release tarball/zip, optionally via a cache of that release archive."
+        },
+        "instructions": "Does `item.text` explicitly commit to the primary CI sc-compose installation uses a GitHub Release binary archive? Presence alone is the judgment; topic mention and silence supply no commitment.",
+        "type": "choice"
+      },
+      "contradicted": {
+        "criteria": {
+          "no": "No explicit incompatible decision is stated, including silence, topic-only discussion, compliance, and excluded work: published sc-runtime Cargo dependencies without CI CLI installation/caching changes.",
+          "unclear": "A stated action may conflict, but its relevant details cannot be determined.",
+          "yes": "The primary CI installation compiles sc-compose with cargo install or uses another non-GitHub-Release-archive source."
+        },
+        "instructions": "Does `item.text` explicitly adopt a decision incompatible with the primary CI sc-compose installation uses a GitHub Release binary archive? Judge conflict only; silence is not conflict.",
+        "type": "choice"
+      },
+      "relevant": {
+        "criteria": {
+          "no": "The work concerns only published sc-runtime Cargo dependencies without CI CLI installation/caching changes or unrelated activities.",
+          "unclear": "The work area is insufficiently specified.",
+          "yes": "The item changes, preserves, or explicitly specifies CI sc-compose CLI installation or caching in workflow setup or rust-build-cache."
+        },
+        "instructions": "Does `item.text` touch the recorded scope: CI sc-compose CLI installation or caching in workflow setup or rust-build-cache? Judge subject overlap only.",
+        "type": "choice"
+      }
+    }
+  }
+}
