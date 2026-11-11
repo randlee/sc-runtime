@@ -69,24 +69,33 @@ The earlier d-1/d-1b split overlapped Cargo.toml/Cargo.lock and treated sections
 of a file as independent paths. It is replaced by one manifest owner. The old
 hybrid d-2 doc/publish wave is split into a docs sprint and a release sprint.
 Only unmerged planning identifiers are renamed; merged history is unchanged.
+Generation-tool/skill-floor work is independent of the Cargo defect and belongs
+to the sibling d-4. Shared Justfile/crates.yml/template.yml have one owner, d-1;
+d-4 alone owns the whole existing Rust/tool cache action and preserves its input
+contract. d-3 owns its registry workflow and consumer together, avoiding an
+undefined d-1-to-d-3 runtime seam.
 
 | Wave | Track | Sprint / closure | Target | Branch and worktree | Owned paths summary |
 | --- | --- | --- | --- | --- | --- |
-| 1 | dependency-compatibility | [d-1](sprint-d-1-dependency-compatibility.md), integration | runtime-ecosystem-dependency-compatibility | sprint/d-1-dependency-compatibility | all existing manifests/locks, affected code/tests, CI/tooling, boundaries and architecture/NFR text |
+| 1 | dependency-compatibility | [d-1](sprint-d-1-dependency-compatibility.md), integration | runtime-ecosystem-dependency-compatibility | sprint/d-1-dependency-compatibility | all existing manifests/locks, affected code/tests, dependency CI, boundaries and architecture/NFR text |
 | 1 | consumer-docs | [d-2](sprint-d-2-consumer-docs.md), docs | runtime-ecosystem-consumer-docs | sprint/d-2-consumer-docs | root and seven crate READMEs only |
-| 2 | consumer-release | [d-3](sprint-d-3-release.md), integration | runtime-ecosystem-release-0-2-1 | sprint/d-3-release | registry consumer proof, release notes, project status and required release benchmark reports |
+| 1 | generation-tooling | [d-4](sprint-d-4-generation-tooling.md), integration | runtime-ecosystem-generation-tooling | sprint/d-4-generation-tooling | generator driver, existing Rust/tool action, CLI manifest, three skill checks and dedicated tool tests |
+| 2 | consumer-release | [d-3](sprint-d-3-release.md), integration | runtime-ecosystem-release-0-2-1 | sprint/d-3-release | registry consumer/workflow proof, release notes, project status and required release benchmark reports |
 
-**Critical path:** 2 sprints. **Usable width:** 2. **Sprint count:** 3.
-No sprint was added: the same three units now have disjoint file ownership,
-correct numeric IDs, and one closure type each. Authoritative `owned_paths`
+**Critical path:** 2 sprints. **Usable width:** 3. **Sprint count:** 4.
+Hardening separates the independent generator/tooling work into d-4. The
+additional sprint raises usable width from2 to3 without adding a serial wave.
+All four units have disjoint file ownership and one closure type each. Authoritative `owned_paths`
 are frontmatter in each sprint doc; within a wave, no file matches two owners.
 Single-layer development tracks can run as independent stacks; shared source
 artifacts are integrated before the release stack. No shared-file serial edge
-is manufactured. d-3's dependencies name actual API/manifest and README artifacts.
+is manufactured. d-3's dependencies name actual API/manifests, README bodies, and the
+qualified generation CLI/action used by kit generated-consumer preflight.
 
 ## Acceptance ownership
 
-- d-1 closes source dependency/API/tooling qualification and required endpoint CI.
+- d-1 closes source dependency/API qualification and required endpoint CI.
+- d-4 closes generation CLI installation/selection and skill-floor behavior.
 - d-2 closes README accuracy and consumer instructions.
 - d-3 alone closes published security clearance, compatible registry updates,
   packaged README verification, published helper proof, and #132/#133.
@@ -103,6 +112,11 @@ supported configurations and the unsupported combined graph. The beads-cache
 registry proof must use its actual affected configuration; deleting a fixture
 or auditing a source-path consumer is insufficient. SQLx major upgrades,
 sc-dolt, and unrelated features are outside this maintenance phase.
+
+**Hardening HOLD:** the prior SQLx/rusqlite split and legacy-template policy
+below are not approved decisions. The user expects cron to use the same SQLite
+database as the application. Per run-lead, CRIT-001/005/006 and related SQLite
+support wording await direction; no SQLite correction from this pass is shipped.
 
 The plan remains **planned**. Final human approval, normal plan hardening/QA,
 and merge to develop precede implementation branch dispatch. Jev anchor

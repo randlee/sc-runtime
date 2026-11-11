@@ -20,6 +20,7 @@ adrs:
 github_issues: [131]
 parallel_safe:
   - d-1
+  - d-4
 parallel_safe_rationale: README-only ownership is disjoint from every d-1 manifest, code, CI, and policy path. No manifest edit is performed here.
 must_follow: []
 owned_paths:

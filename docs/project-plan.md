@@ -140,3 +140,4 @@ documented by d-2 and verified on the published SDK by d-3. See the
 | d-1 dependency compatibility | [d-1](plans/phase-d/sprint-d-1-dependency-compatibility.md) | planned | `sprint/d-1-dependency-compatibility` |
 | d-2 consumer documentation | [d-2](plans/phase-d/sprint-d-2-consumer-docs.md) | planned | `sprint/d-2-consumer-docs` |
 | d-3 published consumer closure | [d-3](plans/phase-d/sprint-d-3-release.md) | planned | `sprint/d-3-release` |
+| d-4 generation tooling | [d-4](plans/phase-d/sprint-d-4-generation-tooling.md) | planned | `sprint/d-4-generation-tooling` |

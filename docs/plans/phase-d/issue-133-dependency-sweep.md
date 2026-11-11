@@ -49,7 +49,7 @@ What #133 adds beyond #132:
 | **Floors for wide carets** | `tokio = "1"`, `serde = "1"`, `tracing = "0.1"`, and the same pattern elsewhere. Latest already resolves. Minimal-versions does not, until the floor is explicit. |
 | **Template workspace** | `template/Cargo.toml` and `template/crates/**` are a second resolve (no checked-in template lockfile). #132 does not edit them. |
 | **Dual-end CI for the whole graph** | d-1's check is `cargo update -p rusqlite --precise 0.41.0` plus the high 0.41.x pin. #133 asks for minimal-versions and `cargo update` across manifests. |
-| **Publish** | Stays in d-2. #133's "consumer can cargo update" is true only after **0.2.1** is on crates.io. |
+| **Publish** | Owned by d-3. #133's "consumer can cargo update" is true only after **0.2.1** is on crates.io. |
 
 #133 does not lift the frozen sqlx ruling. sqlx 0.9.0 is already crates.io latest, and `sqlx-sqlite` 0.9.0 still requires `libsqlite3-sys >=0.30.1, <0.38.0`. Rusqlite 0.41 (libsqlite3-sys ^0.39) and 0.42 (^0.40) cannot share a process with template `store-sqlite` on this line.
 
@@ -82,7 +82,7 @@ matching manifest comments, tests, and ADR amendment.
 | `crates/sc-runtime`, `crates/sc-command`, `crates/sc-transport`, `template/crates/daemon` | axum | `"0.8.9"` (lock 0.8.9) | **0.8.9** | `"0.8.9"` | No | Latest equals the pin. 0.9 is unpublished. |
 | `crates/sc-runtime`, `sc-command` (dev), `sc-transport`, `sc-cron`, `sc-cron-commands` (dev), cron-consumer, custom-context, logging_consumer, application-control, `template/Cargo.toml` workspace | tokio | `"1"` (root lock **1.54.1**) | **1.54.1** | `"1.54.1"` | No | Latest equals the lock. Spec `"1"` makes minimal-versions select 1.0.0. |
 | Root and template manifests using `serde` / `serde_json` `"1"` | serde, serde_json | `"1"` (lock 1.0.229 / 1.0.154) | **1.0.229** / **1.0.154** | `"1.0.229"` and `"1.0.154"` | No | Same minimal-versions floor problem. Latest equals the lock. |
-| `sc-runtime`, `sc-cron`, template workspace | tracing | `"0.1"` (lock 0.1.44) | **0.1.44** | `"0.1.44"` | No | 0.1 line is the published tracing line. Floor must not be 0.1.0 under minimal-versions. |
+| template workspace (remove unused direct edges from sc-runtime/sc-cron) | tracing | `"0.1"` (lock 0.1.44) | **0.1.44** | `"0.1.44"` | No | 0.1 line is the published tracing line. Floor must not be 0.1.0 under minimal-versions. |
 | `sc-cron`, template daemon/cli, cron-consumer, logging_consumer | async-trait | `"0.1"` (lock 0.1.92) | **0.1.92** | `"0.1.92"` | No | Latest equals the lock. |
 | `sc-runtime`, `sc-cron`, template stores/cli/daemon dev | tempfile | `"3"` (lock 3.27.0) | **3.27.0** | `"3.27.0"` | No | Latest equals the lock. |
 | `sc-runtime` dev, template not directly | tower | `"0.5"` (lock 0.5.3) | **0.5.3** | `"0.5.3"` | No | Latest equals the lock. |
@@ -99,7 +99,7 @@ matching manifest comments, tests, and ADR amendment.
 | `template/crates/store-sqlite`, `store-postgres`, `store-mysql` | futures-util | `"0.3.31"` | **0.3.34** | `"0.3.31"` | No | Caret already allows 0.3.34. Not in the root lockfile. |
 | `template/Cargo.toml` workspace | clap | `"4.5"` | **4.6.7** | `"4.5.0"` | No | Caret already allows 4.6.7. Explicit floor keeps minimal-versions off 4.0.0. |
 | `template/Cargo.toml` workspace (`toml = "0.8"`), used by `template/crates/schema` and store-adaptor | toml | `"0.8"` | **1.2.1+spec-1.1.0** (0.8 line ends at **0.8.23**; 0.9.12 exists) | Keep `"0.8.23"` | Yes | `toml::from_str` in `template/crates/schema/tests/common/membership_toml.rs` and the adaptor membership path. 0.9 and 1.x are breaking lines. Out of 0.2.1. |
-| `template/Cargo.toml` workspace | sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands | `"0.2.0"` | published 0.2.0; this repo's next release is 0.2.1 | d-1 qualifies 0.2.1 floors, with the documented 0.2.0 cron-family floor exception for SQLx-SQLite templates | n/a | These are this repo's own crates. A `>=0.2.0` range would let a generated app resolve a future 0.3 during 0.2.1. d-3 publish tail bumps them with the release. |
+| `template/Cargo.toml` workspace | sc-config, sc-transport, sc-command, sc-runtime, sc-cron, sc-cron-commands | `"0.2.0"` | published 0.2.0; this repo's next release is 0.2.1 | d-1 qualifies 0.2.1 floors, with the documented 0.2.0 cron-family floor exception for SQLx-SQLite templates | n/a | These are this repo's own crates. A `>=0.2.0` range would let a generated app resolve a future 0.3 during 0.2.1. d-1 bumps these manifest versions before d-3 publishes. |
 
 ### In-repo path versions (not a crates.io sweep)
 
@@ -110,11 +110,13 @@ Manifests with no direct third-party pin of their own: `crates/sc-cron-commands/
 ## 3. Ownership and validation
 
 [d-1](sprint-d-1-dependency-compatibility.md) owns every existing manifest,
-lockfile, dependency call site, boundary/NFR amendment, and CI/tool qualification.
+lockfile, dependency call site, boundary/NFR amendment, and dependency CI qualification.
+[d-4](sprint-d-4-generation-tooling.md) owns the independent generator/tool action
+and skill-floor qualification.
 [d-2](sprint-d-2-consumer-docs.md) owns README content only.
 [d-3](sprint-d-3-release.md) consumes those source artifacts and closes publication
 and released-consumer acceptance. Their frontmatter owned_paths are authoritative;
-the former overlapping d-1/d-1 cut is retired.
+the former overlapping d-1/d-1b cut is retired.
 
 CI implementation, endpoint commands, prerequisite handling, separate resolves,
 platform/feature coverage, and retirement of nightly machinery are specified once

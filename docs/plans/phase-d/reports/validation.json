@@ -174,5 +174,8 @@
     "runs_considered": 3,
     "carried_from_earlier_run": {},
     "exclusion_removed_rejudge": {}
-  }
+  },
+  "source_revision": "7e084a6bef61b06507fbd02fa8029a78c6dca926",
+  "historical": true,
+  "superseded_reason": "Later scope/critical review failed; four-sprint corrections and held SQLite direction require new review. Stored run verdicts are unchanged historical evidence."
 }

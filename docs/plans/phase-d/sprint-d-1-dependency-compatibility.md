@@ -17,9 +17,6 @@ requirements:
   - REQ-RUN-0005
   - REQ-RUN-0301
   - REQ-RUN-0303
-  - REQ-RUN-0305
-  - REQ-RUN-0501
-  - REQ-RUN-0502
   - REQ-RUN-0701
   - REQ-CMD-0002
   - REQ-CMD-0005
@@ -52,7 +49,8 @@ adrs:
 github_issues: [132, 133]
 parallel_safe:
   - d-2
-parallel_safe_rationale: d-2 owns README content only; this sprint owns every manifest, lockfile, code, policy and CI edit. No owned path intersects.
+  - d-4
+parallel_safe_rationale: d-2 owns README bodies; d-4 owns the generator driver, tool action and version checks. This sprint alone edits shared Justfile/crates.yml/template.yml; their existing action inputs stay unchanged. All owned paths are disjoint.
 must_follow: []
 owned_paths:
   - Cargo.toml
@@ -70,23 +68,16 @@ owned_paths:
   - template/crates/**/src/**
   - tests/contracts/**
   - tests/integration/**
-  - tests/unit/generation/**
-  - scripts/new_project.py
+  - tests/unit/generation/test_runtime_ecosystem_upgrade.py
   - Justfile
   - .github/workflows/crates.yml
   - .github/workflows/template.yml
-  - .github/actions/rust-build-cache/action.yml
-  - .sc/generation-tools.json
-  - .claude/skills/plan-anchoring/scripts/change_report.py
-  - .codex/skills/plan-anchoring/scripts/change_report.py
-  - .cursor/skills/plan-anchoring/scripts/change_report.py
   - boundaries/**
   - docs/architecture.md
   - docs/requirements.md
   - docs/sc-*/architecture.md
   - docs/sc-*/requirements.md
   - docs/development/ci.md
-  - docs/development/generation-tools.md
   - release/sc-publish-consumer-input.json
 paths_to_delete:
   - crates/sc-runtime-db-sqlite/tests/fixtures/sqlx-resolve
@@ -112,8 +103,7 @@ one boundary is independently closed. Published-artifact acceptance belongs to
 | Required minimum/latest CI recipes for root, generated fixtures, separate consumers, Windows dependencies and optional Monty | REQ-RUN-0002, REQ-RUN-0301, NFR-RUN-0007 |
 | Amend NFR-RUN-0007's old rmcp minor-pin requirement to the approved compatible-floor policy; align the sc-command bridge version sentence while retaining ADR-RUN-0017's temporary edge and upstream-proof obligation | NFR-RUN-0007, REQ-CMD-0002, ADR-RUN-0017 |
 | Amend ADR-RUN-0203's frozen runtime matrix for the rmcp upgrade and repeat its runtime/schema qualification, preserving negative router/type-identity tests | ADR-RUN-0203, REQ-CMD-0005 |
-| Qualify reproducible sc-compose installation, independent executable selection, and skill lower-bound version checks | REQ-RUN-0005, REQ-RUN-0305; ANC-003/005/015/020 |
-| Remove unused direct tracing from sc-cron/sc-runtime with matching boundary/NFR text; set workspace/published crate and core template requirements to 0.2.1 with the native-link floor exception below; set sc-cron-commands readme key | REQ-RUN-0002/0005, NFR-CRON-0001, NFR-RT-0003 |
+| Remove unused direct tracing from sc-cron/sc-runtime with matching boundary/NFR text; set workspace/published crate and core template requirements to 0.2.1 with the explicit native-link constraint below; set sc-cron-commands readme key | REQ-RUN-0002/0005, NFR-CRON-0001, NFR-RT-0003 |
 
 The [dependency snapshot](issue-133-dependency-sweep.md) identifies existing
 manifests and observed blockers. It is evidence, not a second acceptance list.
@@ -172,11 +162,11 @@ non-conflicting graph; it must not substitute this older template graph.
 
 ## Acceptance and validation
 
-1. **integration:ranges** — Every snapshot row has a tested compatible range
+1. **req:REQ-RUN-0002/ranges** — Every existing Cargo.toml dependency requirement and rendered manifest input has a tested compatible range
    or a concrete in-manifest incompatibility exception. No unexplained exact
    pin, tilde restriction or extra cap remains in published/template requirements.
    All feature-gated dependency budgets and production-tool exclusions remain enforced.
-2. **integration:endpoints** — Required CI runs minimum and latest allowed
+2. **req:NFR-RUN-0007/endpoints** — Required CI runs minimum and latest allowed
    resolves plus affected tests for root and each changed separate workspace.
    Execute full minimal-versions first; a named transitive-floor failure may
    justify direct-minimal-versions with actual direct floors checked. Install
@@ -184,25 +174,11 @@ non-conflicting graph; it must not substitute this older template graph.
    Run all affected generated fixture features, including SQLx-SQLite with cron
    disabled and the supported legacy-floor configuration, Windows jobs and Monty toolchain
    tests. Keep low/high locks isolated and restore the qualified high lockfiles.
-   Extend existing `.github/workflows/crates.yml` to expose a `proof` dispatch input:
-   `source` for ordinary CI, `registry` for post-publication consumer proof.
-   d-1 owns that workflow wiring: registry mode runs d-3's `tests/registry/phase-d/`
-   consumer at minimum/latest shipped dependency sets after publication. A
-   missing consumer/release fails registry mode; ordinary source CI does not
-   claim registry proof. d-3 invokes the mode once its consumer exists and
-   records the required post-publication CI result.
-3. **integration:sqlite** — Root and cron-consumer tests pass at both qualified
+   Source CI has no registry mode; d-3 owns its registry workflow and consumer.
+3. **req:REQ-DBSQ-0001/sqlite** — Root and cron-consumer tests pass at both qualified
    endpoints; hook/interrupt behavior and one libsqlite3-sys identity hold.
    Architecture and supported-configuration guidance match the actual graph.
-4. **integration:generation-tool** — CI declares sc-compose CLI minimum 1.8.0
-   and installs its selected GitHub Release archive with checksum/version checks.
-   Real generation succeeds on compatible sc-compose 1.8.0. `SC_COMPOSE` selects
-   an independent compatible executable without changing the CI pin.
-5. **integration:skill-floor** — Skill version checks accept installed versions
-   equal to or above the declared minimum and reject lower/malformed versions.
-   Controlled version inputs test the comparison; real generation/report commands
-   verify execution. Controlled inputs alone are not live-generation proof.
-6. **integration:source-candidate** — `just lint && just test`, workspace build,
+4. **req:REQ-RUN-0002/source-candidate** — `just lint && just test`, workspace build,
    and `sc-lint lint sc-boundary --root . --config sc-lint.toml` pass at 0.2.1.
    Production normal/build dependency graphs exclude sc-compose and ATM crates,
    including external/transitive identities (ANC-012). No stubs or bypasses remain.
@@ -212,11 +188,10 @@ updates and prevent the observed rusqlite/rmcp advisory lockout. Replace nightly
 minimum-resolution machinery when stable Cargo provides the equivalent checks;
 retain ordinary endpoint coverage. Use controlled inputs and causal synchronization;
 no sleep, race, load or event-loop-order correctness assertions.
-Retire the dedicated registry dispatch mode when the kit's normal post-publish
-consumer hook executes the same required endpoint checks.
 
 ## This sprint does not close
 
+Generator CLI selection, release installation and skill floors are d-4.
 README content is d-2. Registry publication, released-consumer advisory clearance,
 published helper proof, and final #132/#133 closure are d-3. Source tests do not
 claim those published outcomes. No SQLx major upgrade or unrelated feature is added.

@@ -15,8 +15,14 @@ triage:d-2 a triage:Sprint ;
   triage:criteria "docs/plans/phase-d/sprint-d-2-consumer-docs.md" .
 
 triage:d-3 a triage:Sprint ;
-  triage:dependsOn triage:d-1, triage:d-2 ;
+  triage:dependsOn triage:d-1, triage:d-2, triage:d-4 ;
   triage:inPhase triage:PhaseD ;
   triage:order 2 ;
   triage:branch "sprint/d-3-release" ;
   triage:criteria "docs/plans/phase-d/sprint-d-3-release.md" .
+
+triage:d-4 a triage:Sprint ;
+  triage:inPhase triage:PhaseD ;
+  triage:order 1 ;
+  triage:branch "sprint/d-4-generation-tooling" ;
+  triage:criteria "docs/plans/phase-d/sprint-d-4-generation-tooling.md" .
