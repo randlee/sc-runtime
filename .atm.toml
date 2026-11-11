@@ -1,0 +1,75 @@
+# ATM configuration for sc-runtime (SC runtime crate family).
+#
+# Runtime identity (see `atm help identity`):
+#   export ATM_IDENTITY=run-lead ATM_TEAM=run
+#
+# Register the team on the ATM daemon before first use:
+#   atm teams add-member run run-lead   --agent-type lead  --model opus           --home-dir "$HOME/github/sc-runtime"
+#   atm teams add-member run run-qa     --agent-type qa    --model sonnet         --home-dir "$HOME/github/sc-runtime"
+#   atm teams add-member run run-sanity --agent-type sanity --model sonnet        --home-dir "$HOME/github/sc-runtime"
+#   atm teams add-member run runt       --agent-type dev   --model gpt-6.1-terra  --home-dir "$HOME/github/sc-runtime"
+#   atm teams add-member run runl       --agent-type dev   --model gpt-6-luna     --home-dir "$HOME/github/sc-runtime"
+#   atm teams add-member run runs       --agent-type dev   --model gpt-6.1-sol    --home-dir "$HOME/github/sc-runtime"
+#   (then, per codex member: atm teams update-member run <name> --harness codex-cli)
+#
+# Conventions: 'run-' prefix keeps herdr agent names unique machine-wide; the
+# codex dev names encode the model (runt=terra, runl=luna, runs=sol). Codex panes
+# run --no-daemon because under codex 0.16x the shared app-server does not inherit
+# the pane environment, so ATM_IDENTITY/BEADS_ACTOR arrive empty.
+#
+# run-sanity is deliberately a claude pane, not codex: an independent verifier
+# that shares the devs' model family is a weaker check.
+
+[atm]
+default_team = "run"
+
+[rmux]
+session = "run"
+
+[[rmux.windows]]
+name = "lead"
+layout = "even-horizontal"
+
+[[rmux.windows.panes]]
+name = "run-lead"
+model = "opus"
+dir = "/Users/randlee/github/sc-runtime"
+env = { ATM_IDENTITY = "run-lead", ATM_TEAM = "run", CLAUDE_CODE_TASK_LIST_ID = "run" }
+
+[[rmux.windows.panes]]
+name = "run-qa"
+model = "sonnet"
+dir = "/Users/randlee/github/sc-runtime"
+env = { ATM_IDENTITY = "run-qa", ATM_TEAM = "run", CLAUDE_CODE_TASK_LIST_ID = "run" }
+
+[[rmux.windows]]
+name = "devs"
+layout = "even-horizontal"
+
+[[rmux.windows.panes]]
+name = "runt"
+command = "codex --no-daemon -c features.hooks=true --model gpt-6.1-terra --yolo"
+dir = "/Users/randlee/github/sc-runtime"
+env = { ATM_IDENTITY = "runt", ATM_TEAM = "run", CLAUDE_CODE_TASK_LIST_ID = "run" }
+
+[[rmux.windows.panes]]
+name = "runl"
+command = "codex --no-daemon -c features.hooks=true --model gpt-6-luna --yolo"
+dir = "/Users/randlee/github/sc-runtime"
+env = { ATM_IDENTITY = "runl", ATM_TEAM = "run", CLAUDE_CODE_TASK_LIST_ID = "run" }
+
+[[rmux.windows.panes]]
+name = "runs"
+command = "codex --no-daemon -c features.hooks=true --model gpt-6.1-sol --yolo"
+dir = "/Users/randlee/github/sc-runtime"
+env = { ATM_IDENTITY = "runs", ATM_TEAM = "run", CLAUDE_CODE_TASK_LIST_ID = "run" }
+
+[[rmux.windows]]
+name = "sanity"
+layout = "even-horizontal"
+
+[[rmux.windows.panes]]
+name = "run-sanity"
+model = "sonnet"
+dir = "/Users/randlee/github/sc-runtime"
+env = { ATM_IDENTITY = "run-sanity", ATM_TEAM = "run", CLAUDE_CODE_TASK_LIST_ID = "run" }
