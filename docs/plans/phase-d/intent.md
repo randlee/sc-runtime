@@ -31,10 +31,10 @@ already on the sprint docs.
   sweep inventory in [issue-133-dependency-sweep.md](issue-133-dependency-sweep.md)),
   and a **minimal-versions** (or equivalent) recipe that fails when a bare caret
   collapses too far.
-- **This repo’s CI** installs generation CLIs from **immutable release binaries**
-  (checksum-verified), not `cargo install`, so a chosen `sc-compose` pin survives
-  unrelated `sc-composer` releases until maintainers deliberately bump
-  `compose-version`.
+- **This repo’s CI** installs the **sc-compose CLI** at **≥ 1.8.0** (see
+  `.sc/generation-tools.json`) from **immutable release binaries**, not
+  `cargo install`, matching plan-anchoring 0.11.0. Unrelated `sc-composer`
+  publishes must not break that pin until maintainers bump the JSON.
 - **Generated / downstream consumers** can set `SC_COMPOSE` or PATH to another
   compatible `sc-compose` release without this repository being forced to the same
   pin for its own generation jobs.
@@ -58,5 +58,6 @@ candidates** from the 2026-11-11 session (confirm or edit before lock):
 | --- | --- | --- |
 | 1 | “we need a robust model both for ci and for downstream consumers (which could not upgrade rusqlite w/ had a security violation)” | Phase d MUST document and implement separate **registry-floor** policy (CI proves low/high resolve) and **consumer lag** policy (explicit caps and ADR text when security fix cannot ride latest). |
 | 2 | “sc-runtime is not tolerant of 'upgrades' which occur outside of itself” | CI MUST NOT compile pinned external CLIs from crates.io when GitHub release binaries exist for that pin. |
-| 3 | “A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue” | Generation driver MUST remain compatible with `SC_COMPOSE` override; this repo’s CI pin MUST NOT require downstream to match the same `sc-compose` version. |
-| 4 | “If there is an issue w/ sc-compose release/distribution process, there needs to be a clear gh issue” | Phase d MUST open or link a **randlee/sc-compose** GitHub issue describing distribution improvements for multi-consumer version pins. |
+| 3 | “A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue” | Generation driver MUST remain compatible with `SC_COMPOSE` override; this repo pins the **CLI** at ≥ 1.8.0 in `.sc/generation-tools.json` without forcing downstream to match. |
+| 5 | “you need to make sure this repo pins sc-compose tool at 1.8+ … sc-compose crates … is a separate concern” | `.sc/generation-tools.json` MUST pin `sc-compose` CLI ≥ 1.8.0 for CI and docs; production manifests MUST NOT treat that as a crate dependency pin. |
+| 4 | “If there is an issue w/ sc-compose release/distribution process, there needs to be a clear gh issue” | Phase d MUST link [sc-compose#1041](https://github.com/randlee/sc-compose/issues/1041) (filed 2026-11-11); locked anchor cites that URL. |

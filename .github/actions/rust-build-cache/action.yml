@@ -14,8 +14,8 @@ inputs:
     description: Install the pinned generation tool
     default: 'true'
   compose-version:
-    description: Exact sc-compose release to install from GitHub (not crates.io compile)
-    default: '1.7.0'
+    description: Optional override; default is .sc/generation-tools.json tools.sc-compose.version
+    default: ''
 runs:
   using: composite
   steps:
@@ -28,6 +28,26 @@ runs:
         echo "CARGO_TARGET_DIR=$RUNNER_TEMP/cargo-target/$TARGET_PARTITION" >> "$GITHUB_ENV"
         echo "SC_RUNTIME_GENERATED_TARGET_DIR=$RUNNER_TEMP/cargo-target/generated" >> "$GITHUB_ENV"
         echo "CARGO_INCREMENTAL=0" >> "$GITHUB_ENV"
+    - name: Resolve sc-compose version
+      if: inputs.compose == 'true'
+      shell: bash
+      env:
+        COMPOSE_OVERRIDE: ${{ inputs.compose-version }}
+      run: |
+        set -euo pipefail
+        manifest="$GITHUB_WORKSPACE/.sc/generation-tools.json"
+        test -f "$manifest"
+        if [ -n "$COMPOSE_OVERRIDE" ]; then
+          version="$COMPOSE_OVERRIDE"
+        else
+          version="$(jq -r '.tools["sc-compose"].version' "$manifest")"
+        fi
+        minimum="$(jq -r '.tools["sc-compose"].minimum_version' "$manifest")"
+        if [ "$(printf '%s\n' "$minimum" "$version" | sort -V | head -1)" != "$minimum" ]; then
+          echo "sc-compose pin $version is below minimum $minimum in $manifest" >&2
+          exit 1
+        fi
+        echo "SC_COMPOSE_VERSION=$version" >> "$GITHUB_ENV"
     # Never cache Cargo credentials, generated source, databases or tool venvs.
     # A commit suffix lets successful runs refresh immutable caches; the prefix
     # reuses dependencies on source-only changes. Cargo validates fingerprints.
@@ -39,20 +59,18 @@ runs:
           ~/.cargo/registry/src
           ~/.cargo/git/db
           ${{ runner.temp }}/cargo-target
-        key: rust-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.namespace }}-${{ inputs.toolchains }}-${{ hashFiles('Cargo.lock', '**/Cargo.toml', 'sc-lint.toml') }}-${{ github.sha }}
+        key: rust-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.namespace }}-${{ inputs.toolchains }}-${{ hashFiles('Cargo.lock', '**/Cargo.toml', 'sc-lint.toml', '.sc/generation-tools.json') }}-${{ github.sha }}
         restore-keys: |
-          rust-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.namespace }}-${{ inputs.toolchains }}-${{ hashFiles('Cargo.lock', '**/Cargo.toml', 'sc-lint.toml') }}-
+          rust-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.namespace }}-${{ inputs.toolchains }}-${{ hashFiles('Cargo.lock', '**/Cargo.toml', 'sc-lint.toml', '.sc/generation-tools.json') }}-
     - uses: actions/cache@v4
       if: inputs.compose == 'true'
       id: compose-cache
       with:
         path: ${{ runner.temp }}/sc-compose
-        key: sc-compose-v2-${{ runner.os }}-${{ runner.arch }}-${{ inputs.compose-version }}-release-binary
+        key: sc-compose-v2-${{ runner.os }}-${{ runner.arch }}-${{ env.SC_COMPOSE_VERSION }}-release-binary
     - name: Install sc-compose
       if: inputs.compose == 'true' && steps.compose-cache.outputs.cache-hit != 'true'
       shell: bash
-      env:
-        SC_COMPOSE_VERSION: ${{ inputs.compose-version }}
       run: |
         set -euo pipefail
         root="$RUNNER_TEMP/sc-compose"
@@ -74,8 +92,6 @@ runs:
     - name: Verify sc-compose and expose binary
       if: inputs.compose == 'true'
       shell: bash
-      env:
-        SC_COMPOSE_VERSION: ${{ inputs.compose-version }}
       run: |
         set -euo pipefail
         "$RUNNER_TEMP/sc-compose/bin/sc-compose" --version | grep -Fx "sc-compose ${SC_COMPOSE_VERSION}"

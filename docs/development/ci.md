@@ -29,18 +29,19 @@ limit cache size. Cache misses run the same checks; caches never decide whether
 to test. The cache action saves after successful jobs and scopes entries by
 branch as documented by [actions/cache](https://github.com/actions/cache).
 
-A separate exact-version cache installs the pinned `sc-compose` release binary
-from [randlee/sc-compose](https://github.com/randlee/sc-compose) GitHub
-Releases (default `compose-version` `1.7.0` on `rust-build-cache`), with
-`checksums.txt` verification, into a runner-temporary tool root. CI does not run
-`cargo install sc-compose`: that path recompiles the crate against the current
-crates.io index, so an unrelated upstream release (for example a newer
-`sc-composer`) can break a pin that still targets `sc-compose` 1.7.0. Release
-binaries are immutable at publish time; bump `compose-version` only when this
-repository deliberately moves generation to a newer CLI. Generated applications
-and downstream templates may install another `sc-compose` release locally via
-`SC_COMPOSE` or `PATH`; that choice does not require this pin to change unless
-this repo adopts the newer tool for its own generation jobs. Every restored
+A separate exact-version cache installs the pinned `sc-compose` **CLI** release
+binary from [randlee/sc-compose](https://github.com/randlee/sc-compose) GitHub
+Releases. The pin lives in
+[`.sc/generation-tools.json`](../../.sc/generation-tools.json) (currently **1.8.0**,
+aligned with plan-anchoring’s minimum); `rust-build-cache` reads it unless
+`compose-version` overrides. Install uses `checksums.txt` verification into a
+runner-temporary tool root. CI does not run `cargo install sc-compose`: that path
+recompiles against the live crates.io index. Release binaries are immutable;
+bump the JSON when this repo moves generation or anchoring to a newer CLI. That
+pin is **not** the `sc-compose` **crate** dependency graph (production crates
+must not depend on sc-compose crates; see
+[generation-tools.md](generation-tools.md)). Generated applications may use
+another `sc-compose` via `SC_COMPOSE` or `PATH`. Every restored
 binary must report the exact version before entering PATH. No Cargo credentials,
 generated application source, databases, logs or Python environments are cached.
 Jobs have separate runner filesystems; competing saves of the same immutable tool

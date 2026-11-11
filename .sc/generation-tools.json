@@ -1,0 +1,11 @@
+{
+  "tools": {
+    "sc-compose": {
+      "version": "1.8.0",
+      "minimum_version": "1.8.0",
+      "repository": "randlee/sc-compose",
+      "install": "github-release-binary",
+      "notes": "CLI for template generation (just new) and plan-anchoring (change_report.py). Not the sc-compose Rust crate dependency graph; production crates must not depend on sc-compose per boundary lint."
+    }
+  }
+}
