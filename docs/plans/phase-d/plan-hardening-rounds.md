@@ -3,10 +3,11 @@
 | Round | Step | Reviewer | reviewed_commit | status | blocking | important | minor | findings_hash | supersedes | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | — | parent | (pre-hardening) | draft | — | — | — | — | — | Initial fast draft; **not** guidelines-compliant |
-| 1 | 1 | developer | f05b875 | PASS | 0 | 0 | 0 | — | 0 | Step-1 JSON: guidelines pass; beads run-ajx; `.sprints/d/structure.ttl` pending same commit |
+| 1 | 1 | developer | 6e6a754 | PASS | 0 | 0 | 0 | — | 0 | Step-1 JSON: guidelines pass; beads run-ajx; `.sprints/d/structure.ttl` on PR #135 |
 | 2 | 2 | plan-scope-reviewer | pending | pending | — | — | — | — | — | |
 | 3 | 3 | developer | pending | pending | — | — | — | — | — | |
-| 4 | 4 | critical-plan-reviewer | pending | pending | — | — | — | — | — | |
+| 4 | 4 | critical-plan-reviewer | 518022a | FAIL | 1 | 6 | 6 | phase-d-518022a-CRIT-R1 | — | Background [Phase d critical plan](8ba0bcb7-5d70-4493-96b0-7e3ff51989ae); step-3 developer pass addresses PLAN-CRIT-001..007 |
+| 3b | 3 | developer | pending | pending | — | — | — | — | 4 | Routed CRIT findings → sprint/plan edits |
 | 5 | 5 | developer | pending | pending | — | — | — | — | — | |
 | 6 | 6 | cursor-quality-mgr | pending | pending | — | — | — | — | — | Plan QA-1 after steps 1–5 PASS |
 
