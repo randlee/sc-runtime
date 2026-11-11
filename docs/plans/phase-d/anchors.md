@@ -6,21 +6,26 @@ Intent: `docs/plans/phase-d/intent.md`
 
 | ID | Status | Summary | Stated |
 | --- | --- | --- | --- |
-| ANC-001 | locked | Registry floors and consumer lag policy | 2026-11-11 |
-| ANC-002 | locked | Hermetic external CLI install | 2026-11-11 |
-| ANC-003 | locked | SC_COMPOSE override independence | 2026-11-11 |
-| ANC-004 | locked | Upstream sc-compose distribution issue | 2026-11-11 |
-| ANC-005 | locked | CLI pin separate from crate graph | 2026-11-11 |
-| ANC-006 | locked | Plan gate before implementation | 2026-11-11 |
-| ANC-007 | locked | Rusqlite #132 clearance | 2026-11-11 |
+| ANC-001 | retired | Registry floors and consumer lag policy | 2026-11-11 |
+| ANC-002 | retired | Hermetic external CLI install | 2026-11-11 |
+| ANC-003 | locked | Independent consumer generation-tool upgrades | 2026-11-11 |
+| ANC-004 | retired | Upstream sc-compose distribution issue | 2026-11-11 |
+| ANC-005 | locked | Repository sc-compose CLI minimum | 2026-11-11 |
+| ANC-006 | retired | Plan gate before implementation | 2026-11-11 |
+| ANC-007 | retired | Rusqlite #132 clearance | 2026-11-11 |
 | ANC-008 | retired | Frozen sqlx vs rusqlite ruling | 2026-11-11 |
-| ANC-009 | locked | #133 floor sweep | 2026-11-11 |
-| ANC-010 | locked | Publish after dependency sprints | 2026-11-11 |
-| ANC-011 | locked | rmcp >=3.9 floor | 2026-11-11 |
-| ANC-012 | locked | Production tool boundary | 2026-11-11 |
-| ANC-013 | locked | #131 consumer router docs | 2026-11-11 |
-| ANC-014 | locked | Dedicated plan PR | 2026-11-11 |
-| ANC-015 | locked | Skills use CLI floor not exact pin | 2026-11-11 |
+| ANC-009 | retired | #133 floor sweep | 2026-11-11 |
+| ANC-010 | retired | Publish after dependency sprints | 2026-11-11 |
+| ANC-011 | retired | rmcp >=3.9 floor | 2026-11-11 |
+| ANC-012 | locked | Generation and orchestration tools stay outside production graphs | 2026-11-11 |
+| ANC-013 | retired | #131 consumer router docs | 2026-11-11 |
+| ANC-014 | retired | Dedicated plan PR | 2026-11-11 |
+| ANC-015 | locked | Skill checks accept versions above the minimum | 2026-11-11 |
+| ANC-016 | proposed | Consumers can take compatible dependency upgrades | 2026-11-11 |
+| ANC-017 | proposed | CI proves dependency range endpoints | 2026-11-11 |
+| ANC-018 | proposed | Advisory proof uses the released consumer graph | 2026-11-11 |
+| ANC-019 | proposed | Restrictions have concrete compatibility reasons | 2026-11-11 |
+| ANC-020 | proposed | Pinned generation tools use release binaries | 2026-11-11 |
 
 ## ANC-001
 
@@ -28,7 +33,7 @@ Anchor: Phase d MUST document and implement tested registry dependency floors wi
 
 > we need a robust model both for ci and for downstream consumers (which could not upgrade rusqlite w/ had a security violation)
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 4.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 5.
 
 Summary: Registry floors and consumer lag policy
 
@@ -48,7 +53,7 @@ Anchor: CI MUST install pinned external CLIs from immutable GitHub release binar
 
 > sc-runtime is not tolerant of 'upgrades' which occur outside of itself
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 3.
 
 Summary: Hermetic external CLI install
 
@@ -64,23 +69,23 @@ Fixtures:
 
 ## ANC-003
 
-Anchor: scripts/new_project.py MUST honor SC_COMPOSE when set; this repository's CI sc-compose pin MUST NOT require downstream generated apps to use the same CLI version.
+Anchor: Template generation MUST accept compatible sc-compose upgrades independently of this repository's CI version pin.
 
 > A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 3.
 
-Summary: SC_COMPOSE override independence
+Summary: Independent consumer generation-tool upgrades
 
-Scope: template generation driver and .sc/generation-tools.json
+Scope: Changes scripts/new_project.py, the sc-compose executable selection logic, or generated-app generation instructions; excludes Rust crate dependency resolution.
 
-Deterministic check to pair with the development gate: new_project.py resolves SC_COMPOSE before PATH; generation-tools.json documents tool pin separate from consumer choice.
+Deterministic check to pair with the development gate: Plan: names independent consumer CLI selection. Development: run the generation driver with SC_COMPOSE selecting a compatible version above the CI pin; verify the selected executable is invoked and generation succeeds.
 
 Beads: anchor `run-d4yq`, plan questions `run-d4yq.1`, dev questions `run-d4yq.2`
 
 Fixtures:
-- pass: Generation honors SC_COMPOSE while CI uses generation-tools.json version pin.
-- fail: The driver ignores SC_COMPOSE and hard-codes one global sc-compose path.
+- pass: Template generation honors SC_COMPOSE pointing to a compatible newer sc-compose while CI retains its existing tool pin.
+- fail: Template generation rejects a compatible newer sc-compose solely because its version differs from the repository CI pin.
 
 ## ANC-004
 
@@ -88,7 +93,7 @@ Anchor: Phase d MUST link sc-compose#1041 for upstream distribution improvements
 
 > If there is an issue w/ sc-compose release/distribution process, there needs to be a clear gh issue
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 3.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 4.
 
 Summary: Upstream sc-compose distribution issue
 
@@ -104,23 +109,23 @@ Fixtures:
 
 ## ANC-005
 
-Anchor: .sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version >= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.
+Anchor: Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.
 
 > you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 3.
 
-Summary: CLI pin separate from crate graph
+Summary: Repository sc-compose CLI minimum
 
-Scope: generation-tools.json, boundary lint, plan-anchoring skills
+Scope: Changes the repository sc-compose CLI requirement in .sc/generation-tools.json, generation-tool setup instructions, or plan-anchoring dependency checks; excludes the sc-compose Rust crate graph.
 
-Deterministic check to pair with the development gate: generation-tools.json exists with minimum_version 1.8.0; boundaries reject production sc-compose crate deps.
+Deterministic check to pair with the development gate: Plan: declares a CLI minimum >=1.8.0. Development: inspect .sc/generation-tools.json minimum_version and the setup checks that consume it; reject a declared minimum below 1.8.0.
 
 Beads: anchor `run-7ahk`, plan questions `run-7ahk.1`, dev questions `run-7ahk.2`
 
 Fixtures:
-- pass: generation-tools.json sets minimum_version 1.8.0; boundaries forbid production sc-compose crate deps.
-- fail: sc-runtime adds sc-compose as a production crate dependency.
+- pass: Repository tooling declares sc-compose CLI minimum_version 1.8.0 in .sc/generation-tools.json.
+- fail: Repository tooling declares sc-compose CLI minimum_version 1.7.0.
 
 ## ANC-006
 
@@ -128,7 +133,7 @@ Anchor: Plan QA-1 MUST pass and the phase-d plan MUST merge to develop before an
 
 > No sprint branches until this plan merges to develop.
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 3.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 4.
 
 Summary: Plan gate before implementation
 
@@ -148,7 +153,7 @@ Anchor: Sprint d-1 MUST ship rusqlite >=0.41.0 with tested low/high resolve and 
 
 > Close maintenance gaps after Phase C 0.2.0: Issue #132 — rusqlite 0.41+ with tested minimum/latest range; RUSTSEC-2026-0459 clearance.
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 3.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 4.
 
 Summary: Rusqlite #132 clearance
 
@@ -188,7 +193,7 @@ Anchor: Sprint d-1b MUST add a documented minimal-versions validation recipe and
 
 > Issue #133 — dependency >= tested floors (not ~ / = pins); rmcp ≥ 3.9 and dual lockfile CI.
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 3.
 
 Summary: #133 floor sweep
 
@@ -208,7 +213,7 @@ Anchor: The d-2 publish tail MUST not run until d-1 and d-1b lockfile changes me
 
 > Compatibility precedes publication
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 3.
 
 Summary: Publish after dependency sprints
 
@@ -228,7 +233,7 @@ Anchor: Sprint d-1b MUST raise rmcp to >=3.9.0 with tested low and highest <4 re
 
 > Phase C checks the released rmcp versions and upgrades rmcp to its latest release.
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 3.
 
 Summary: rmcp >=3.9 floor
 
@@ -244,23 +249,23 @@ Fixtures:
 
 ## ANC-012
 
-Anchor: Phase d sprints MUST NOT add sc-compose or agent-team-mail production crate dependencies to release crates.
+Anchor: Published sc-runtime crates MUST exclude sc-compose and agent-team-mail from their production dependency graphs.
 
 > sc-compose and atm crates should be blocked from any production release crate.
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 3.
 
-Summary: Production tool boundary
+Summary: Generation and orchestration tools stay outside production graphs
 
-Scope: every phase-d sprint touching Cargo.toml
+Scope: Changes Cargo.toml dependencies or features of the six published crates, including workspace-inherited dependencies and transitive normal/build dependency edges; excludes dev-only tools.
 
-Deterministic check to pair with the development gate: cargo tests/dependencies.rs and boundary lint stay green on production crates
+Deterministic check to pair with the development gate: Plan: inspect proposed normal/build dependencies. Development: inspect cargo metadata and cargo tree normal/build graphs for each published crate and supported feature set for sc-compose or agent-team-mail.
 
 Beads: anchor `run-2ucg`, plan questions `run-2ucg.1`, dev questions `run-2ucg.2`
 
 Fixtures:
-- pass: No phase-d PR adds sc-compose as a production dependency in release crates.
-- fail: sc-runtime adds sc-compose crate to sc-cron production dependencies.
+- pass: Published crate normal and build dependency graphs contain neither sc-compose nor agent-team-mail; generation uses external executables.
+- fail: A published sc-runtime crate adds sc-compose as a normal dependency for template rendering.
 
 ## ANC-013
 
@@ -268,7 +273,7 @@ Anchor: Sprint d-2 MUST document test-util instrument_router for consumers per m
 
 > document test-util / instrument_router for consumers
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 7.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 8.
 
 Summary: #131 consumer router docs
 
@@ -288,7 +293,7 @@ Anchor: Phase d planning MUST stay on branch plan/phase-d and ship through a ded
 
 > have a separate pull request targeting develop.
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: retired. Version 3.
 
 Summary: Dedicated plan PR
 
@@ -304,20 +309,110 @@ Fixtures:
 
 ## ANC-015
 
-Anchor: Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a >= floor, not an exact version match.
+Anchor: Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.
 
 > grep all skills and verify they are tolerant of sc-compose >= a floor threshold
 
-Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 2.
+Said by randlee, Phase D planning session 2026-11-11, 2026-11-11. Status: locked. Version 3.
 
-Summary: Skills use CLI floor not exact pin
+Summary: Skill checks accept versions above the minimum
 
-Scope: plan-anchoring change_report.py and orchestration skills
+Scope: Changes a skill script or skill instruction that checks the sc-compose CLI version; excludes CI selection of a reproducible binary and Rust crate version requirements.
 
-Deterministic check to pair with the development gate: change_report.py rejects sc-compose below minimum_version; SKILL step 1 documents >= floor
+Deterministic check to pair with the development gate: Plan: specifies lower-bound CLI validation. Development: controlled version-output inputs below, equal to, and above the declared minimum produce reject, accept, and accept respectively; malformed version output is rejected.
 
 Beads: anchor `run-tngz`, plan questions `run-tngz.1`, dev questions `run-tngz.2`
 
 Fixtures:
-- pass: change_report.py rejects sc-compose below minimum_version; accepts 1.9.0 when floor is 1.8.0.
-- fail: Skills require sc-compose --version to match exactly 1.8.0 and reject 1.9.0.
+- pass: The skill requires sc-compose >=1.8.0 and accepts installed sc-compose 1.8.1.
+- fail: The skill rejects installed sc-compose 1.8.1 because its configured minimum is exactly 1.8.0.
+
+## ANC-016
+
+Anchor: Published crate and generated application manifests MUST permit non-breaking dependency upgrades without requiring a new sc-runtime release.
+
+> we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.
+
+Said by randlee, User planning handover in this conversation, 2026-11-11; revised intent.md Purpose and Dependency policy direction. Proposed interpretation: normal Cargo-compatible ranges, with known incompatibilities justified separately; blanket unbounded >= is not implied., 2026-11-11. Status: proposed. Version 2.
+
+Summary: Consumers can take compatible dependency upgrades
+
+Scope: Changes registry dependency requirements in published crates or template manifests. Non-breaking means compatible with the supported API, native-library links, and Rust toolchain; includes compatible Cargo version updates where no incompatibility is demonstrated.
+
+Deterministic check to pair with the development gate: Plan: proposed requirements admit compatible updates without republishing sc-runtime. Development: resolve and build a registry consumer at the minimum and a newer compatible dependency version without changing the sc-runtime crate version or adding a path/patch override.
+
+Fixtures:
+- pass: The consumer keeps the same sc-runtime release and resolves a newer compatible rmcp fix using cargo update, without local patches.
+- fail: A consumer must wait for another sc-runtime release because an unjustified exact rmcp pin excludes a newer compatible fix.
+
+## ANC-017
+
+Anchor: Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.
+
+> Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.
+
+Said by randlee, randlee-authored GitHub issue #133, Requested change item 3: https://github.com/randlee/sc-runtime/issues/133; same method required in #132., 2026-11-11. Status: proposed. Version 2.
+
+Summary: CI proves dependency range endpoints
+
+Scope: Changes a registry dependency range or dependency validation for the root workspace, generated template features, or separate tests/consumer workspaces; excludes prose-only README edits.
+
+Deterministic check to pair with the development gate: Plan: requires passing low/latest CI for each changed dependency resolve and affected features. Development: inspect CI commands, resolved package versions, and test results for both endpoints; a written command or toolchain-prerequisite note alone fails.
+
+Fixtures:
+- pass: CI resolves minimum and latest allowed dependency sets in the root and affected generated/consumer workspaces, then runs their affected tests at both endpoints.
+- fail: The PR documents a minimal-versions command but CI tests only the committed latest lockfile.
+
+## ANC-018
+
+Anchor: Phase D security-advisory validation MUST run against a consumer depending on the released registry crates.
+
+> `cargo deny check advisories` is clean for RUSTSEC-2026-0459 in a consumer that depends on the released crates.
+
+Said by randlee, randlee-authored GitHub issue #132, Done when: https://github.com/randlee/sc-runtime/issues/132; applied to Phase D advisory proof including the rmcp advisory in #133., 2026-11-11. Status: proposed. Version 2.
+
+Summary: Advisory proof uses the released consumer graph
+
+Scope: Claims advisory clearance or closes #132/#133 using release evidence; includes the d-2 publish tail and beads-cache consumer proof, not prepublication unit-test sprints.
+
+Deterministic check to pair with the development gate: Plan: names a released-crate consumer for advisory validation. Development: inspect consumer Cargo.lock/cargo metadata for registry identities at 0.2.1, exclude local path/patch substitutes, and run cargo deny check advisories on that graph for the targeted advisories.
+
+Fixtures:
+- pass: A consumer resolves sc-cron 0.2.1 from crates.io with no local overrides and passes the targeted cargo deny advisory check.
+- fail: Advisory clearance is claimed from a workspace test using a path-patched sc-cron while the consumer still resolves the vulnerable released crate.
+
+## ANC-019
+
+Anchor: Each exact pin, tilde restriction, or extra upper bound on a third-party dependency MUST explain its known incompatibility in the owning manifest.
+
+> Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.
+
+Said by randlee, randlee-authored GitHub issue #133, Requested change item 2 and Done when: https://github.com/randlee/sc-runtime/issues/133. This candidate captures justification of extra restrictions; it does not adopt the older blanket >= prescription., 2026-11-11. Status: proposed. Version 2.
+
+Summary: Restrictions have concrete compatibility reasons
+
+Scope: Adds or retains a restrictive third-party requirement in any published crate, generated template, or test manifest. Extra upper bound means tighter than the normal Cargo compatibility line; internal path package versions and a negative compatibility fixture with an explicit reason are distinguishable.
+
+Deterministic check to pair with the development gate: Plan: each retained extra restriction names the incompatibility and the owning manifest comment. Development: enumerate exact/tilde/extra-upper requirements and inspect comments for the affected API, links conflict, toolchain limit, or deliberate negative-test compatibility boundary.
+
+Fixtures:
+- pass: The manifest caps monty below 1.6 with a comment identifying its Rust 1.98 requirement and the supported Rust 1.96.1 test toolchain.
+- fail: The manifest caps rmcp below an unpublished major with no known break or explanatory comment.
+
+## ANC-020
+
+Anchor: CI MUST install pinned sc-compose versions from the corresponding GitHub Release binaries.
+
+> **Primary install path for CI and production** — GitHub Release tarballs/zip + `checksums.txt` (already published). Treat these as the **stability contract** for a tagged version.
+
+Said by randlee, randlee-authored sc-compose issue #1041, What consumers need item 1: https://github.com/randlee/sc-compose/issues/1041. Replaces ANC-002 with direct provenance for the binary-install mechanism., 2026-11-11. Status: proposed. Version 2.
+
+Summary: Pinned generation tools use release binaries
+
+Scope: Changes CI installation or caching of the sc-compose CLI in .github/actions/rust-build-cache or workflow setup; excludes Cargo dependencies of published sc-runtime crates.
+
+Deterministic check to pair with the development gate: Plan: requires versioned release-binary installation. Development: exercise the CI cache-miss installer against the selected release archive and checksums, verify its CLI version, and verify that no cargo install sc-compose recompilation path supplies that tool.
+
+Fixtures:
+- pass: On a cache miss CI downloads the selected sc-compose GitHub Release binary and verifies its checksum and version.
+- fail: On a cache miss CI recompiles the pinned sc-compose crate using cargo install instead of installing its GitHub Release binary.

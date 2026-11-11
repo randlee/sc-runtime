@@ -25,8 +25,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 4,
-      "status": "locked",
+      "version": 5,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-a4wv",
@@ -68,6 +68,12 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T20:49:58+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-016",
+          "reason": "Compound anchor mixes endpoint CI, manifest policy, caps, and ADR edits. Replaced by separately proposed consumer-upgrade, endpoint-CI, and restriction-justification constraints grounded in direct user/issue text."
         }
       ]
     },
@@ -93,8 +99,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "locked",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-r85j",
@@ -122,6 +128,12 @@
             "plan_questions": "run-r85j.1",
             "dev_questions": "run-r85j.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:49:59+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-020",
+          "reason": "The generic original quote does not establish the prescribed binary-install mechanism. Replaced by a proposed anchor with direct owner-authored sc-compose#1041 provenance."
         }
       ]
     },
@@ -129,25 +141,25 @@
       "id": "ANC-003",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "scripts/new_project.py MUST honor SC_COMPOSE when set; this repository's CI sc-compose pin MUST NOT require downstream generated apps to use the same CLI version.",
+      "statement": "Template generation MUST accept compatible sc-compose upgrades independently of this repository's CI version pin.",
       "quote": "A downstream template should be able to upgrade to sc-compose 1.8.0 and assuming there were no breaking changes, this should NOT be an issue",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-11",
       "context": "Phase D planning session 2026-11-11",
-      "summary": "SC_COMPOSE override independence",
-      "scope": "template generation driver and .sc/generation-tools.json",
-      "deterministic_check": "new_project.py resolves SC_COMPOSE before PATH; generation-tools.json documents tool pin separate from consumer choice.",
+      "summary": "Independent consumer generation-tool upgrades",
+      "scope": "Changes scripts/new_project.py, the sc-compose executable selection logic, or generated-app generation instructions; excludes Rust crate dependency resolution.",
+      "deterministic_check": "Plan: names independent consumer CLI selection. Development: run the generation driver with SC_COMPOSE selecting a compatible version above the CI pin; verify the selected executable is invoked and generation succeeds.",
       "fixtures": {
         "pass": [
-          "Generation honors SC_COMPOSE while CI uses generation-tools.json version pin."
+          "Template generation honors SC_COMPOSE pointing to a compatible newer sc-compose while CI retains its existing tool pin."
         ],
         "fail": [
-          "The driver ignores SC_COMPOSE and hard-codes one global sc-compose path."
+          "Template generation rejects a compatible newer sc-compose solely because its version differs from the repository CI pin."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -176,6 +188,18 @@
             "plan_questions": "run-d4yq.1",
             "dev_questions": "run-d4yq.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:49:52+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check",
+            "fixtures"
+          ],
+          "previous_statement": "scripts/new_project.py MUST honor SC_COMPOSE when set; this repository's CI sc-compose pin MUST NOT require downstream generated apps to use the same CLI version."
         }
       ]
     },
@@ -201,8 +225,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
-      "status": "locked",
+      "version": 4,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-lhqu",
@@ -237,6 +261,12 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T20:49:59+00:00",
+          "event": "retired",
+          "replaced_by": null,
+          "reason": "Filing/linking sc-compose#1041 is an already-recorded task, not an independent constraint for judging sprint content. The issue remains linked from intent.md."
         }
       ]
     },
@@ -244,25 +274,25 @@
       "id": "ANC-005",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": ".sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version >= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin.",
+      "statement": "Repository tooling MUST declare a sc-compose CLI minimum version of at least 1.8.0.",
       "quote": "you need to make sure this repo pins sc-compose tool at 1.8+ .  /plan-anchoring uses the sc-compose tool.  we also reference sc-compose crates which is a spearate concern",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-11",
       "context": "Phase D planning session 2026-11-11",
-      "summary": "CLI pin separate from crate graph",
-      "scope": "generation-tools.json, boundary lint, plan-anchoring skills",
-      "deterministic_check": "generation-tools.json exists with minimum_version 1.8.0; boundaries reject production sc-compose crate deps.",
+      "summary": "Repository sc-compose CLI minimum",
+      "scope": "Changes the repository sc-compose CLI requirement in .sc/generation-tools.json, generation-tool setup instructions, or plan-anchoring dependency checks; excludes the sc-compose Rust crate graph.",
+      "deterministic_check": "Plan: declares a CLI minimum >=1.8.0. Development: inspect .sc/generation-tools.json minimum_version and the setup checks that consume it; reject a declared minimum below 1.8.0.",
       "fixtures": {
         "pass": [
-          "generation-tools.json sets minimum_version 1.8.0; boundaries forbid production sc-compose crate deps."
+          "Repository tooling declares sc-compose CLI minimum_version 1.8.0 in .sc/generation-tools.json."
         ],
         "fail": [
-          "sc-runtime adds sc-compose as a production crate dependency."
+          "Repository tooling declares sc-compose CLI minimum_version 1.7.0."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -291,6 +321,18 @@
             "plan_questions": "run-7ahk.1",
             "dev_questions": "run-7ahk.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:49:52+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check",
+            "fixtures"
+          ],
+          "previous_statement": ".sc/generation-tools.json MUST pin the sc-compose CLI at minimum_version >= 1.8.0; production Cargo.toml files MUST NOT treat that file as a crate dependency pin."
         }
       ]
     },
@@ -316,8 +358,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
-      "status": "locked",
+      "version": 4,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-tx9g",
@@ -352,6 +394,12 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T20:50:00+00:00",
+          "event": "retired",
+          "replaced_by": null,
+          "reason": "Branch-opening and plan-merge order are orchestration rules retained in phase-d-plan.md, not a product constraint to judge against each sprint. The quote does not establish the added QA-1 clause."
         }
       ]
     },
@@ -377,8 +425,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 3,
-      "status": "locked",
+      "version": 4,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-49x2",
@@ -413,6 +461,12 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T20:50:00+00:00",
+          "event": "retired",
+          "replaced_by": null,
+          "reason": "Repeats #132 deliverables and incorrectly assigns released-artifact closure to d-1, whose plan excludes publication. #132 acceptance remains authoritative; endpoint testing and released-consumer proof are captured separately."
         }
       ]
     },
@@ -498,8 +552,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "locked",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-yypr",
@@ -527,6 +581,12 @@
             "plan_questions": "run-yypr.1",
             "dev_questions": "run-yypr.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:50:00+00:00",
+          "event": "retired",
+          "replaced_by": "ANC-017",
+          "reason": "Repeats d-1b deliverables and bundles a recipe with range policy; documentation alone is weaker than #133 CI execution. Issue requirements remain in scope; proposed endpoint and compatibility anchors preserve the method."
         }
       ]
     },
@@ -552,8 +612,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "locked",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-gyab",
@@ -581,6 +641,12 @@
             "plan_questions": "run-gyab.1",
             "dev_questions": "run-gyab.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:50:01+00:00",
+          "event": "retired",
+          "replaced_by": null,
+          "reason": "Release sequencing is already a d-2 dependency/quality-gate rule. Its generic quote does not establish the specific sprint names or lockfile merge mechanics. Keep the workflow rule in the plan."
         }
       ]
     },
@@ -606,8 +672,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "locked",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-vepv",
@@ -635,6 +701,12 @@
             "plan_questions": "run-vepv.1",
             "dev_questions": "run-vepv.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:50:01+00:00",
+          "event": "retired",
+          "replaced_by": null,
+          "reason": "Repeats the rmcp security-upgrade deliverable, adds an unsupported <4 ceiling, and cites a Phase C quote for Phase D. #133 remains authoritative for the advisory fix without this inaccurate anchor."
         }
       ]
     },
@@ -642,25 +714,25 @@
       "id": "ANC-012",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Phase d sprints MUST NOT add sc-compose or agent-team-mail production crate dependencies to release crates.",
+      "statement": "Published sc-runtime crates MUST exclude sc-compose and agent-team-mail from their production dependency graphs.",
       "quote": "sc-compose and atm crates should be blocked from any production release crate.",
       "kind": "prohibition",
       "stated_by": "randlee",
       "stated_at": "2026-11-11",
       "context": "Phase D planning session 2026-11-11",
-      "summary": "Production tool boundary",
-      "scope": "every phase-d sprint touching Cargo.toml",
-      "deterministic_check": "cargo tests/dependencies.rs and boundary lint stay green on production crates",
+      "summary": "Generation and orchestration tools stay outside production graphs",
+      "scope": "Changes Cargo.toml dependencies or features of the six published crates, including workspace-inherited dependencies and transitive normal/build dependency edges; excludes dev-only tools.",
+      "deterministic_check": "Plan: inspect proposed normal/build dependencies. Development: inspect cargo metadata and cargo tree normal/build graphs for each published crate and supported feature set for sc-compose or agent-team-mail.",
       "fixtures": {
         "pass": [
-          "No phase-d PR adds sc-compose as a production dependency in release crates."
+          "Published crate normal and build dependency graphs contain neither sc-compose nor agent-team-mail; generation uses external executables."
         ],
         "fail": [
-          "sc-runtime adds sc-compose crate to sc-cron production dependencies."
+          "A published sc-runtime crate adds sc-compose as a normal dependency for template rendering."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -689,6 +761,18 @@
             "plan_questions": "run-2ucg.1",
             "dev_questions": "run-2ucg.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:49:53+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check",
+            "fixtures"
+          ],
+          "previous_statement": "Phase d sprints MUST NOT add sc-compose or agent-team-mail production crate dependencies to release crates."
         }
       ]
     },
@@ -714,8 +798,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 7,
-      "status": "locked",
+      "version": 8,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-pddk",
@@ -778,6 +862,12 @@
           "fields": [
             "fixtures"
           ]
+        },
+        {
+          "at": "2026-11-11T20:50:02+00:00",
+          "event": "retired",
+          "replaced_by": null,
+          "reason": "Consumer helper documentation is a d-2 deliverable traceable to merged PR131, not a separate how-to-work constraint. It remains explicitly required in intent.md and d-2."
         }
       ]
     },
@@ -803,8 +893,8 @@
         ]
       },
       "question_overrides": {},
-      "version": 2,
-      "status": "locked",
+      "version": 3,
+      "status": "retired",
       "promoted_to": null,
       "beads": {
         "anchor": "run-zn66",
@@ -832,6 +922,12 @@
             "plan_questions": "run-zn66.1",
             "dev_questions": "run-zn66.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:50:02+00:00",
+          "event": "retired",
+          "replaced_by": null,
+          "reason": "Dedicated PR and branch naming are repository workflow bookkeeping retained in the phase plan. They do not constrain consumer compatibility or provide a useful sprint-content judgment."
         }
       ]
     },
@@ -839,25 +935,25 @@
       "id": "ANC-015",
       "source_type": "ANC",
       "source_ref": null,
-      "statement": "Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a >= floor, not an exact version match.",
+      "statement": "Repository skills invoking sc-compose MUST enforce the declared minimum as a lower bound rather than an exact-version match.",
       "quote": "grep all skills and verify they are tolerant of sc-compose >= a floor threshold",
       "kind": "directive",
       "stated_by": "randlee",
       "stated_at": "2026-11-11",
       "context": "Phase D planning session 2026-11-11",
-      "summary": "Skills use CLI floor not exact pin",
-      "scope": "plan-anchoring change_report.py and orchestration skills",
-      "deterministic_check": "change_report.py rejects sc-compose below minimum_version; SKILL step 1 documents >= floor",
+      "summary": "Skill checks accept versions above the minimum",
+      "scope": "Changes a skill script or skill instruction that checks the sc-compose CLI version; excludes CI selection of a reproducible binary and Rust crate version requirements.",
+      "deterministic_check": "Plan: specifies lower-bound CLI validation. Development: controlled version-output inputs below, equal to, and above the declared minimum produce reject, accept, and accept respectively; malformed version output is rejected.",
       "fixtures": {
         "pass": [
-          "change_report.py rejects sc-compose below minimum_version; accepts 1.9.0 when floor is 1.8.0."
+          "The skill requires sc-compose >=1.8.0 and accepts installed sc-compose 1.8.1."
         ],
         "fail": [
-          "Skills require sc-compose --version to match exactly 1.8.0 and reject 1.9.0."
+          "The skill rejects installed sc-compose 1.8.1 because its configured minimum is exactly 1.8.0."
         ]
       },
       "question_overrides": {},
-      "version": 2,
+      "version": 3,
       "status": "locked",
       "promoted_to": null,
       "beads": {
@@ -886,6 +982,243 @@
             "plan_questions": "run-tngz.1",
             "dev_questions": "run-tngz.2"
           }
+        },
+        {
+          "at": "2026-11-11T20:49:53+00:00",
+          "event": "updated",
+          "fields": [
+            "statement",
+            "scope",
+            "summary",
+            "deterministic_check",
+            "fixtures"
+          ],
+          "previous_statement": "Repository skills that invoke sc-compose MUST enforce minimum_version from .sc/generation-tools.json as a >= floor, not an exact version match."
+        }
+      ]
+    },
+    {
+      "id": "ANC-016",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Published crate and generated application manifests MUST permit non-breaking dependency upgrades without requiring a new sc-runtime release.",
+      "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "User planning handover in this conversation, 2026-11-11; revised intent.md Purpose and Dependency policy direction. Proposed interpretation: normal Cargo-compatible ranges, with known incompatibilities justified separately; blanket unbounded >= is not implied.",
+      "summary": "Consumers can take compatible dependency upgrades",
+      "scope": "Changes registry dependency requirements in published crates or template manifests. Non-breaking means compatible with the supported API, native-library links, and Rust toolchain; includes compatible Cargo version updates where no incompatibility is demonstrated.",
+      "deterministic_check": "Plan: proposed requirements admit compatible updates without republishing sc-runtime. Development: resolve and build a registry consumer at the minimum and a newer compatible dependency version without changing the sc-runtime crate version or adding a path/patch override.",
+      "fixtures": {
+        "pass": [
+          "The consumer keeps the same sc-runtime release and resolves a newer compatible rmcp fix using cargo update, without local patches."
+        ],
+        "fail": [
+          "A consumer must wait for another sc-runtime release because an unjustified exact rmcp pin excludes a newer compatible fix."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-11T20:49:54+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-11T20:49:54+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-017",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase D dependency CI MUST test both the minimum and latest allowed versions of changed registry dependency ranges.",
+      "quote": "Run CI at both ends of the range: the lowest allowed versions (`cargo +nightly update -Z minimal-versions`) and the latest (`cargo update`). Every floor is then a tested claim, not a guess.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored GitHub issue #133, Requested change item 3: https://github.com/randlee/sc-runtime/issues/133; same method required in #132.",
+      "summary": "CI proves dependency range endpoints",
+      "scope": "Changes a registry dependency range or dependency validation for the root workspace, generated template features, or separate tests/consumer workspaces; excludes prose-only README edits.",
+      "deterministic_check": "Plan: requires passing low/latest CI for each changed dependency resolve and affected features. Development: inspect CI commands, resolved package versions, and test results for both endpoints; a written command or toolchain-prerequisite note alone fails.",
+      "fixtures": {
+        "pass": [
+          "CI resolves minimum and latest allowed dependency sets in the root and affected generated/consumer workspaces, then runs their affected tests at both endpoints."
+        ],
+        "fail": [
+          "The PR documents a minimal-versions command but CI tests only the committed latest lockfile."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-11T20:49:55+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-11T20:49:55+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-018",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Phase D security-advisory validation MUST run against a consumer depending on the released registry crates.",
+      "quote": "`cargo deny check advisories` is clean for RUSTSEC-2026-0459 in a consumer that depends on the released crates.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored GitHub issue #132, Done when: https://github.com/randlee/sc-runtime/issues/132; applied to Phase D advisory proof including the rmcp advisory in #133.",
+      "summary": "Advisory proof uses the released consumer graph",
+      "scope": "Claims advisory clearance or closes #132/#133 using release evidence; includes the d-2 publish tail and beads-cache consumer proof, not prepublication unit-test sprints.",
+      "deterministic_check": "Plan: names a released-crate consumer for advisory validation. Development: inspect consumer Cargo.lock/cargo metadata for registry identities at 0.2.1, exclude local path/patch substitutes, and run cargo deny check advisories on that graph for the targeted advisories.",
+      "fixtures": {
+        "pass": [
+          "A consumer resolves sc-cron 0.2.1 from crates.io with no local overrides and passes the targeted cargo deny advisory check."
+        ],
+        "fail": [
+          "Advisory clearance is claimed from a workspace test using a path-patched sc-cron while the consumer still resolves the vulnerable released crate."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-11T20:49:56+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-11T20:49:56+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-019",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "Each exact pin, tilde restriction, or extra upper bound on a third-party dependency MUST explain its known incompatibility in the owning manifest.",
+      "quote": "Declare the allowed range as `>=` a reasonable, tested floor, instead of `=x.y.z`, `~x.y` or a single 0.x minor. Use an upper bound only where a known break requires one, and say why in a comment.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored GitHub issue #133, Requested change item 2 and Done when: https://github.com/randlee/sc-runtime/issues/133. This candidate captures justification of extra restrictions; it does not adopt the older blanket >= prescription.",
+      "summary": "Restrictions have concrete compatibility reasons",
+      "scope": "Adds or retains a restrictive third-party requirement in any published crate, generated template, or test manifest. Extra upper bound means tighter than the normal Cargo compatibility line; internal path package versions and a negative compatibility fixture with an explicit reason are distinguishable.",
+      "deterministic_check": "Plan: each retained extra restriction names the incompatibility and the owning manifest comment. Development: enumerate exact/tilde/extra-upper requirements and inspect comments for the affected API, links conflict, toolchain limit, or deliberate negative-test compatibility boundary.",
+      "fixtures": {
+        "pass": [
+          "The manifest caps monty below 1.6 with a comment identifying its Rust 1.98 requirement and the supported Rust 1.96.1 test toolchain."
+        ],
+        "fail": [
+          "The manifest caps rmcp below an unpublished major with no known break or explanatory comment."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-11T20:49:57+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-11T20:49:57+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ANC-020",
+      "source_type": "ANC",
+      "source_ref": null,
+      "statement": "CI MUST install pinned sc-compose versions from the corresponding GitHub Release binaries.",
+      "quote": "**Primary install path for CI and production** — GitHub Release tarballs/zip + `checksums.txt` (already published). Treat these as the **stability contract** for a tagged version.",
+      "kind": "directive",
+      "stated_by": "randlee",
+      "stated_at": "2026-11-11",
+      "context": "randlee-authored sc-compose issue #1041, What consumers need item 1: https://github.com/randlee/sc-compose/issues/1041. Replaces ANC-002 with direct provenance for the binary-install mechanism.",
+      "summary": "Pinned generation tools use release binaries",
+      "scope": "Changes CI installation or caching of the sc-compose CLI in .github/actions/rust-build-cache or workflow setup; excludes Cargo dependencies of published sc-runtime crates.",
+      "deterministic_check": "Plan: requires versioned release-binary installation. Development: exercise the CI cache-miss installer against the selected release archive and checksums, verify its CLI version, and verify that no cargo install sc-compose recompilation path supplies that tool.",
+      "fixtures": {
+        "pass": [
+          "On a cache miss CI downloads the selected sc-compose GitHub Release binary and verifies its checksum and version."
+        ],
+        "fail": [
+          "On a cache miss CI recompiles the pinned sc-compose crate using cargo install instead of installing its GitHub Release binary."
+        ]
+      },
+      "question_overrides": {},
+      "version": 2,
+      "status": "proposed",
+      "promoted_to": null,
+      "beads": {
+        "anchor": null,
+        "plan_questions": null,
+        "dev_questions": null
+      },
+      "history": [
+        {
+          "at": "2026-11-11T20:49:57+00:00",
+          "event": "created",
+          "status": "proposed"
+        },
+        {
+          "at": "2026-11-11T20:49:58+00:00",
+          "event": "updated",
+          "fields": [
+            "fixtures"
+          ]
         }
       ]
     }

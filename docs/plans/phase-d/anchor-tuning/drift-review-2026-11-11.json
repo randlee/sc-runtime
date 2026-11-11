@@ -1,0 +1,41 @@
+{
+  "schema": "plan-anchoring/drift-review/1",
+  "reviewed_at": "2026-11-11",
+  "compared": "Authoring review of anchors against 7c9474a, revised intent.md, the user's planning handover, and owner-authored issues sc-runtime#132/#133 and sc-compose#1041. Consumer: the user adopting the rewritten anchors; gate: anchor adoption before sprint hardening. Observed defects: compound constraints, unsupported ceilings, deliverable duplication, and weak provenance. Retire this review when superseded by the approved/tuned anchor review.",
+  "not_reviewed": "No Phase D live Jev rubric, fixture check, independent question tuning, plan gate, implementation test, or release verification has run in this authoring revision. Existing sprint plans have not been repaired or certified.",
+  "findings": [
+    {
+      "id": "D-ANC-01",
+      "severity": "material",
+      "location": "ANC-016 and ANC-019; issue #133 dependency-range prescription",
+      "what_changed": "New proposed anchors express compatible consumer upgrades and evidence for extra restrictions. They do not require unbounded >= across future breaking dependency versions. The older issue requests blanket >=; this policy difference is explicit and remains proposed.",
+      "authority": {
+        "ref": "User planning handover, 2026-11-11; sc-runtime#133 Requested change item 2",
+        "quote": "we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades."
+      },
+      "suggested_fix": "Have the user adopt or revise ANC-016 through ANC-020 before locking; then reconcile #133's range prescription and the sprint acceptance criteria without weakening either advisory unblock.",
+      "status": "owner_decision",
+      "fix_note": "ANC-016 through ANC-020 are stored as proposed, with original source quotes and discriminating fixtures. Existing issue acceptance remains authoritative; no incompatible policy was silently marked approved."
+    }
+  ],
+  "acceptable_choices": [
+    {
+      "location": "ANC-001/002/004/006/007/009/010/011/013/014",
+      "note": "Retirement removes these records from anchor judgments while retaining immutable quotes, IDs, Beads references, and append-only history. Issue deliverables and plan workflow instructions remain in force; retirement does not waive them or close the feature issues."
+    },
+    {
+      "location": "ANC-003/005/012/015",
+      "note": "Clarity edits retain the existing directives: independent compatible CLI upgrades, a CLI minimum >=1.8.0, exclusion of generation/orchestration crates from production graphs, and lower-bound skill version checks. Source quotes are unchanged."
+    }
+  ],
+  "confirmations": [
+    {
+      "area": "Provenance and lifecycle",
+      "note": "All 15 baseline records retain their original quotes, IDs, Beads references, and history prefixes. ANC-008 remains retired. New issue-derived quotes are attributed to randlee-authored issue sections rather than presented as conversation quotes."
+    },
+    {
+      "area": "Scope and proof",
+      "note": "Non-retired anchors have one constraint, artifact-based relevance scope, an explicit deterministic check, and distinct pass/fail fixtures. Static schema/lint/lexical-deduplication checks are authoring checks only; no semantic or live-gate PASS is claimed."
+    }
+  ]
+}
