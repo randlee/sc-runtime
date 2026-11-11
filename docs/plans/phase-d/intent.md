@@ -51,7 +51,8 @@ already on the sprint docs.
 
 ## Anchors
 
-Fifteen anchors were locked on 2026-11-11 (ANC-001–ANC-015). The record of truth
-is [`anchors.json`](anchors.json); the human-readable register is
-[`anchors.md`](anchors.md). Jev gates judge beads against those statements, not
-this intent page.
+Anchors were captured on 2026-11-11 (ANC-001–ANC-015). **ANC-008** is **retired**
+(sqlx/rusqlite same-process is already in [sprint d-1](sprint-d-1-rusqlite-0-41.md),
+not a user anchor). The record of truth is [`anchors.json`](anchors.json); the
+register is [`anchors.md`](anchors.md). Jev gates judge beads against locked
+statements, not this intent page.
