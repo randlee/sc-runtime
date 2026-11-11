@@ -2,93 +2,96 @@
 id: d-2
 phase: d
 status: planned
-closure_type: release
-target_boundary: ecosystem-documentation
+closure_type: integration
+target_boundary: runtime-ecosystem-release-0-2-1
+track: supply-chain
+wave: 2
 branch: sprint/d-2-readme-and-release
+worktree: ../sc-runtime-worktrees/sprint/d-2-readme-and-release
 pr_target: integrate/phase-d
 requirements:
   - REQ-RUN-0002
   - REQ-RUN-0702
   - REQ-RUN-0701
+  - REQ-RUN-0005
   - NFR-RT-0001
 adrs:
   - ADR-RT-0005
+  - ADR-RUN-0012
 github_issues:
   - 131
   - 132
-must_follow: [d-1]
+must_follow:
+  - d-1
+recommended_agent: rust-developer
+recommended_model: grok-4.7-high-fast
 ---
 
 # Sprint d-2 — README truth and 0.2.1 release
 
 ## Goal
 
-1. Close documentation for **[issue #131](https://github.com/randlee/sc-runtime/issues/131)**
-   (`sc_runtime::testing::instrument_router`, `test-util` feature) in user-facing
-   READMEs.
-2. Close **[issue #132](https://github.com/randlee/sc-runtime/issues/132)** via
-   authorized **0.2.1** publication after d-1 lands on `integrate/phase-d`.
-3. Align **root and crate READMEs** with the shipped 0.2.x ecosystem.
+Integration closure for issues **#131** and **#132**: consumer-facing docs,
+registry truth, and authorized **0.2.1** publication after d-1 merges to
+`integrate/phase-d`.
+
+Authority: [registry-doc-audit.md](registry-doc-audit.md).
 
 ## Deliverables
 
-Registry audit input: [registry-doc-audit.md](registry-doc-audit.md) (crates.io +
-PyPI scope, framework blurb template, `sc-cron-commands` readme key).
-
-### README updates (all required)
-
-| Path | Must reflect |
+| Deliverable | Serves |
 | --- | --- |
-| `README.md` | Six public crates at 0.2.x, `sc-cron` + `sc-cron-commands`, template wizard, MSRV 1.94.1, link to 0.2.0/0.2.1 release notes |
-| `crates/sc-config/README.md` | Role, features, publish name |
-| `crates/sc-transport/README.md` | Client/server feature split |
-| `crates/sc-command/README.md` | Envelope, `server` feature |
-| `crates/sc-runtime/README.md` | Daemon builder, **`test-util` / `instrument_router`** pointer to `docs/plans/maintenance/router-test-helper.md` |
-| `crates/sc-runtime-db-sqlite/README.md` | Writer actor, rusqlite floor from d-1 |
-| `crates/sc-cron/README.md` | rusqlite floor, observability-types edge |
-| `crates/sc-cron-commands/README.md` | Optional adapter crate, 0.2.0 status |
+| Root `README.md` — six crates, 0.2.x, wizard, MSRV 1.94.1 | REQ-RUN-0701 |
+| Each published crate README — **Part of sc-runtime** scaffolding blurb | REQ-RUN-0702 |
+| `sc-cron-commands/Cargo.toml` — `readme = "README.md"` | REQ-RUN-0002 |
+| `sc-runtime` README — `test-util` / `instrument_router` (#131) | NFR-RT-0001 |
+| `docs/releases/v0.2.1.md` | REQ-RUN-0702 |
+| sc-publish kit run → crates.io 0.2.1 | REQ-RUN-0702, #132 done-when |
+| Close GitHub #131, #132 | — |
 
-Remove stale "0.1.0 only" or "four crates" claims unless marked historical in a
-**Prior releases** subsection.
+### README inventory
 
-Every **published** crate README must include a **Part of sc-runtime** section
-(scaffolding framework blurb per audit). Add `readme = "README.md"` to
-`crates/sc-cron-commands/Cargo.toml`. Refresh `sc-runtime-db-sqlite/README.md`
-as workspace-only (no false crates.io publish claim).
-
-### Release
-
-- `docs/releases/v0.2.1.md` (or project release doc pattern used for 0.2.0).
-- sc-publish kit run per `docs/development/sc-publish.md` after QA PASS + green CI.
-- Close GitHub issues #131 and #132 with release reference.
+| Path |
+| --- |
+| `README.md` |
+| `crates/sc-config/README.md` |
+| `crates/sc-transport/README.md` |
+| `crates/sc-command/README.md` |
+| `crates/sc-runtime/README.md` |
+| `crates/sc-runtime-db-sqlite/README.md` (workspace-only; no publish claim) |
+| `crates/sc-cron/README.md` |
+| `crates/sc-cron-commands/README.md` |
 
 ## Acceptance criteria
 
-1. Every row in the README table updated; `git diff` shows no contradictory
-   version text between root and crate READMEs.
-2. `sc-runtime` README documents `instrument_router` behind `test-util`.
-3. Published **0.2.1** includes d-1 rusqlite changes; consumer advisory check
-   passes per issue #132 "Done when".
-4. QA-1 PASS, `reviewer_spawn_gate: pass`, CI green on release PR.
+1. **req:131** — `sc-runtime` README documents `instrument_router` behind `test-util`.
+2. **req:132** — Published 0.2.1 clears RUSTSEC-2026-0459 for a documented consumer path.
+3. **req:RUN-0702** — All six crates.io READMEs include the standard scaffolding section from the audit.
+4. **integration:publish** — Kit publish completes; `release/sc-publish-consumer-input.json` unchanged in intent except versions produced by kit.
+5. **integration:qa** — Sprint QA-1 PASS, `reviewer_spawn_gate: pass`, required CI green.
 
 ## Owned paths
 
 - `README.md`
-- `crates/*/README.md` (seven workspace crates listed above)
-- `crates/sc-cron-commands/Cargo.toml` (`readme` key)
-- `docs/plans/phase-d/registry-doc-audit.md` (close audit when d-2 lands)
+- `crates/sc-config/README.md`
+- `crates/sc-transport/README.md`
+- `crates/sc-command/README.md`
+- `crates/sc-runtime/README.md`
+- `crates/sc-runtime-db-sqlite/README.md`
+- `crates/sc-cron/README.md`
+- `crates/sc-cron-commands/README.md`
+- `crates/sc-cron-commands/Cargo.toml`
 - `docs/releases/v0.2.1.md`
-- `docs/project-plan.md` (phase d sprint status)
-- Publish manifests / kit inputs only as required by sc-publish (no hand-written
-  registry bypass)
+- `docs/project-plan.md` (phase d status only)
+- `docs/plans/phase-d/registry-doc-audit.md` (mark closed)
+- Release kit outputs per `docs/development/sc-publish.md` (no manual registry bypass)
 
 ## This sprint does not close
 
-- rusqlite code changes (d-1).
+- `rusqlite` code changes (**d-1**).
 - sc-dolt planning.
 
 ## Validation
 
-- Spot-check generated project docs still link correctly from root README.
-- Post-release: `cargo deny` smoke from `tests/integration/cron-consumer` or
-  documented consumer fixture.
+- Post-publish spot-check each `https://crates.io/crates/<name>` README render.
+- `cargo deny` smoke documented in release notes.
