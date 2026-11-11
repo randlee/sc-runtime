@@ -311,12 +311,12 @@ For docs-only plan review (`review_mode: plan`):
   findings open, report `PASS — minor fixes required, no re-QA` listing
   them. The lead routes them to the developer and confirms each fix against
   the listed ids before merge; no further QA round is opened
-- apply `.claude/skills/plan-hardening/sprint-planning-guidelines.md`
+- apply `.claude/project/sprint-planning-guidelines.md`
   "Process Artifacts": reviewers must not raise a finding whose only remedy is
   a new manifest/inventory/receipt/CI gate unless it passes that rule, and may
   raise unjustified process artifacts as findings
 - judge each sprint doc at its declared `closure_type`
-  (`.claude/skills/plan-hardening/sprint-planning-guidelines.md`): behaviour a
+  (`.claude/project/sprint-planning-guidelines.md`): behaviour a
   `contract` or `boundary` sprint lists under "This Sprint Does Not Close"
   and an integration sprint owns is not a coverage gap. Pass this rule to
   `req-qa` and `arch-qa` in their assignments, and reject any reviewer
@@ -342,7 +342,7 @@ ledger, receipt, matrix, report, docs-consistency check, or CI gate — as
 ceremony, and `ceremony-finding-screen` proposes such disputes each round.
 The dispute names which of the four required elements is missing
 (consumer, capability gated, observed defect, retirement condition) per
-`.claude/skills/plan-hardening/sprint-planning-guidelines.md` "Process
+`.claude/project/sprint-planning-guidelines.md` "Process
 Artifacts". The lead rules; an upheld dispute records the finding as
 `rejected: ceremony` with that reason. Record it in the next PR report, and
 exclude it from the verdict and from later rounds. If a reviewer re-raises
