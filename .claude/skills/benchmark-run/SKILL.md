@@ -36,7 +36,8 @@ ssh atmbench@rand-m5
 ```
 
 On `atmbench@rand-m5`, the tree must be clean before you publish. Install the
-Monty toolchain (Rust 1.96.1) and have `sc-compose` on `PATH`. Python cases
+Monty toolchain (Rust 1.96.1) and have `sc-compose` on `PATH` at **≥** the repo
+floor (`.sc/generation-tools.json` when present; newer CLI is fine). Python cases
 also need `import sc_compose`.
 
 ```sh

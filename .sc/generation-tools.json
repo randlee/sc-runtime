@@ -5,7 +5,7 @@
       "minimum_version": "1.8.0",
       "repository": "randlee/sc-compose",
       "install": "github-release-binary",
-      "notes": "CLI for template generation (just new) and plan-anchoring (change_report.py). Not the sc-compose Rust crate dependency graph; production crates must not depend on sc-compose per boundary lint."
+      "notes": "CLI floor for skills/CI: minimum_version is enforced as >= not ==. version is the release binary CI installs. 1.8+ CLI renders 1.7-era templates. Not the sc-compose Rust crate graph (boundary lint)."
     }
   }
 }

@@ -89,10 +89,14 @@ Rerun the installer for the install folder with the other `--tracker` value. It 
 
 - Install: `brew install steveyegge/beads/bd` (or your team's tap), or with Go `go install github.com/steveyegge/beads/cmd/bd@latest` and `$HOME/go/bin` on PATH.
 
-**sc-compose** (1.8.0 or newer)
+**sc-compose** (minimum floor, not an exact pin)
 
-- Install it from the Synaptic Canvas `sc-compose` release or team package
-  source, then confirm `sc-compose --version` reports at least 1.8.0.
+- Default floor **1.8.0**; in sc-runtime read
+  `.sc/generation-tools.json` → `tools.sc-compose.minimum_version`. **Any newer
+  release on PATH is valid.** CLI 1.8+ renders templates authored for 1.7.
+- Install from the Synaptic Canvas `sc-compose` release or team package source,
+  then confirm `sc-compose --version` is **≥** the floor (not necessarily equal
+  to the repo’s `version` field, which is the CI pin).
 - The skill uses strict checked-in Jinja2 templates for every anchor-tuning
   request/result. Do not continue with hand-built JSON when this CLI is absent.
 
@@ -139,15 +143,15 @@ Use the full path, or `export PATH="/opt/homebrew/bin:$PATH"` for the session.
 | python3 | 3.9 | tested floor; standard library only, except `anchor_tracker.py` |
 | PyYAML | 5.1 | `SafeLoader`-based strict reading of `.sc/plan-anchor/settings.yaml`; CI tests 5.1 and the latest release |
 | bd | 1.x, Dolt-backed `.beads/` only | `--parent`, `--labels`, `--silent`, `--body-file`, `show --json`, `children --json`, `comment --file`, `ready --exclude-label` |
-| sc-compose | 1.8.0 | strict render, declared-variable validation, and `--check-render` |
+| sc-compose | ≥ 1.8.0 (floor; newer OK) | strict render, declared-variable validation, and `--check-render` |
 | jq | any current release | gate agents read question-override beads |
 | Jev | `jev-latest` | pin a version once thresholds are tuned |
 
 ## PATH troubleshooting
 
 - A tool works in your terminal but not in the skill: Claude Code's bash did not source the shell init that added it to PATH. Export the directory in the session or use the full path.
-- `sc-compose` is missing: install 1.8.0 or newer and rerun the dependency
-  gate; do not hand-assemble the fenced tuning payload.
+- `sc-compose` is missing or below the floor: install a release **≥** the floor
+  and rerun the dependency gate; do not hand-assemble the fenced tuning payload.
 - `bd show --json` errors with "no database": run from the repo root that has `.beads/`, or pass `--db <path>` or `-C <repo root>`.
 - The key works in your terminal but the skill says it is missing: it was exported after Claude Code started, or only in an interactive rc file. Put it in `~/.zshenv`; restart Claude Code.
 

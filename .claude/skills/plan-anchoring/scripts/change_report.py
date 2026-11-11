@@ -589,11 +589,65 @@ def drift_vars(d: dict) -> dict:
             "copy_json": json.dumps(d, indent=2, sort_keys=True, ensure_ascii=False), "context_text": drift_context(d)}
 
 
-def find_sc_compose() -> Result[str, ToolError]:
+def sc_compose_floor(repo_root: Path) -> str:
+    """Minimum CLI version: repo manifest when present, else plan-anchoring default."""
+    manifest = repo_root / ".sc" / "generation-tools.json"
+    if manifest.is_file():
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+            floor = data.get("tools", {}).get("sc-compose", {}).get("minimum_version")
+            if isinstance(floor, str) and floor.strip():
+                return floor.strip()
+        except (OSError, ValueError, AttributeError, TypeError):
+            pass
+    return "1.8.0"
+
+
+def parse_sc_compose_version(version_line: str) -> Optional[str]:
+    match = re.search(r"sc-compose\s+(\d+\.\d+(?:\.\d+)?)", version_line.strip())
+    return match.group(1) if match else None
+
+
+def version_at_least(installed: str, floor: str) -> bool:
+    def parts(version: str) -> Tuple[int, ...]:
+        return tuple(int(piece) for piece in version.split(".")[:3])
+
+    try:
+        inst = parts(installed)
+        need = parts(floor)
+    except ValueError:
+        return False
+    while len(inst) < 3:
+        inst = (*inst, 0)
+    while len(need) < 3:
+        need = (*need, 0)
+    return inst >= need
+
+
+def find_sc_compose(repo_root: Path) -> Result[str, ToolError]:
     binary = shutil.which("sc-compose")
     if binary is None:
-        return err("DEPENDENCY.SC_COMPOSE", "sc-compose is not on PATH; the report is rendered with it",
-                   "Install sc-compose 1.8.0 or newer and put it on PATH (references/installation-and-troubleshooting.md).")
+        floor = sc_compose_floor(repo_root)
+        return err(
+            "DEPENDENCY.SC_COMPOSE",
+            "sc-compose is not on PATH; the report is rendered with it",
+            f"Install sc-compose>={floor} and put it on PATH (references/installation-and-troubleshooting.md).",
+        )
+    floor = sc_compose_floor(repo_root)
+    code, stdout, stderr = run_command([binary, "--version"], repo_root)
+    if code != 0:
+        return err(
+            "DEPENDENCY.SC_COMPOSE",
+            f"sc-compose --version failed (exit {code}): {(stderr or stdout).strip()[-500:]}",
+            f"Install sc-compose>={floor} and put it on PATH.",
+        )
+    installed = parse_sc_compose_version(stdout)
+    if installed is None or not version_at_least(installed, floor):
+        return err(
+            "DEPENDENCY.SC_COMPOSE",
+            f"sc-compose on PATH is {installed or 'unrecognized'}; need >={floor} (newer is fine)",
+            f"Upgrade sc-compose; 1.7-era templates work on 1.8+ CLI. Floor may be set in .sc/generation-tools.json.",
+        )
     return Ok(binary)
 
 
