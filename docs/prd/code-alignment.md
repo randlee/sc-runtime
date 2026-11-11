@@ -91,3 +91,7 @@ The widget entity appears in 22 non-test source files. The target is two structs
 | `template/crates/store-adaptor*` (three crates) | synchronization is deferred (PRD §9). They depend on `EngineStore`, so they break when section 3 removes it; decide then whether to park or delete them. |
 | Per-interface permissions | wanted (PRD-CMD-7) but not specified; today only transport-level access control exists (`sc-transport`, ADR-TRN-0005). |
 | `sc-config`, `sc-transport`, `sc-command`, `sc-runtime` | not examined against the PRD beyond what is listed here. |
+
+## 6. `sc-config` (PRD-ENG-5)
+
+No code change is required: the crate may stay synchronous today. One mechanical prohibition on async remains and should go when reload is taken up, or sooner if the owner prefers: `boundaries/sc-config/sc-config.toml` allows only `serde` and `serde_json` (line 25) and a cargo-tree check keeps `tokio` out, mirrored in the REQ-RUN-0005 and ADR-RUN-0003 edge tables.
