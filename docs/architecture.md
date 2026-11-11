@@ -1057,6 +1057,8 @@ constructs of point 3 reachable from public functions.
 ## ADR-RUN-0007: Async end to end on Tokio; `sc-config` is synchronous
 
 **Status:** Active  
+**Amended 2026-11-11 (PRD §9, PRD-ENG-1).** Point 5 (`sc-config` is synchronous because it loads once at start-up) rests on an assumption the owner has not made; see the note on [ADR-CFG-0003](sc-config/architecture.md). The rest of this ADR is what PRD-ENG-1 restates.
+
 **Decision Date:** 2026-09-19  
 **Source:** sc-runtime design, 2026-09-19: "everything is async end to end: handler, service function, sqlx pool" stated by the owner and carried unchanged from the earlier SC scaffold decisions; the synchronous `sc-config` follows from the design's dependency list for that crate. Point 4 (library crates, and what is outside the request path) is decided in this document; not stated by the sc-runtime design  
 
