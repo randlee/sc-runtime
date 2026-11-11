@@ -130,3 +130,15 @@ The user answered:
 This is export authorization, not adoption of the five proposed anchors or a
 claim that validation passed. Existing approval and independent-verification
 requirements for anchor adoption remain in force.
+
+### Phase D plan assessment clarification
+
+Later in the same conversation on November 11, 2026, the user directed:
+
+> tuning is send to jev, access ancors + plan -> fix -> run jev (repeat until all pass)
+
+This extends the Phase D validation payload scope to the owning sprint plan
+text, one complete sprint per Jev request, for plan assessment and rechecks
+after fixes. Anchor validation and independent question tuning retain their
+existing requirements. The source-code, full-diff, raw-log, credential, and
+unrelated-private-data exclusions above remain in force.
