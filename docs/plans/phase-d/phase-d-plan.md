@@ -17,7 +17,6 @@ adrs:
   - ADR-RUN-0012
   - ADR-RUN-0013
   - ADR-RT-0005
-  - ADR-RUN-0013
 ---
 
 # Phase d — 0.2.1 advisory fix and documentation truth
@@ -26,9 +25,11 @@ adrs:
 
 `d`. Integration branch: **`integrate/phase-d`**. Plan branch: `plan/phase-d`.
 
-**Readiness:** **not hardened.** Requires `/plan-hardening` steps 1–6 and plan
-QA-1 PASS before implementation. No sprint branches until this plan merges to
+**Readiness:** **hardening in flight.** `/plan-hardening` steps 1–6 and plan QA-1
+must PASS before implementation. No sprint branches until this plan merges to
 `develop`.
+
+**Beads:** epic `run-ajx` (Phase D).
 
 ## Objective
 
@@ -81,7 +82,7 @@ release artifact.
 - Plan hardening: [plan-hardening-rounds.md](plan-hardening-rounds.md).
 - Implementation: `.cursor/skills/cursor-orchestration/SKILL.md`; enforcer
   **`cursor-quality-mgr`** only.
-- Beads epic **`run-phase-d`** (file before first dev spawn).
+- Beads epic **`run-ajx`** (children filed at dev dispatch).
 
 ## Risks
 

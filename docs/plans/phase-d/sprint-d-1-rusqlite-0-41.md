@@ -29,6 +29,7 @@ adrs:
 github_issues:
   - 132
 parallel_safe: []
+must_follow: []
 ---
 
 # Sprint d-1 — rusqlite 0.41 advisory floor
