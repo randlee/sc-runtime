@@ -1,58 +1,95 @@
-# Intent — phase-d
+# Intent — Phase D: easy adoption and compatible upgrades
 
-Written 2026-11-11 by randlee (plan-anchoring capture). Jev judges locked anchors,
-not this page. Anchors live in `anchors.json` once locked; sprint delivery is in
-[phase-d-plan.md](phase-d-plan.md).
+Updated 2026-11-11 following the user's planning handover. This is the working
+intent for revising [the phase plan](phase-d-plan.md); sprint and anchor
+reconciliation follows this revision.
 
-## What this plan is for
+## Purpose
 
-Phase C shipped **0.2.0**. Maintenance **0.2.1** must clear **security and advisory
-debt** (notably **rusqlite** / RUSTSEC-2026-0459 via [#132](https://github.com/randlee/sc-runtime/issues/132))
-and **dependency truth** ([#133](https://github.com/randlee/sc-runtime/issues/133)):
-tested `>=` floors, explicit caps when crates.io “latest” cannot land, and CI that
-proves **low** and **high** resolve without surprising consumers.
+Phase D makes sc-runtime easy for consumers to adopt, build, and maintain.
+Published libraries and generated applications should fit into a consumer's
+dependency graph and let that consumer take non-breaking fixes and upgrades on
+their own schedule. The framework should remove avoidable integration work and
+dependency restrictions throughout that lifecycle.
 
-A separate failure mode is **supply chain outside the workspace**: pinned **registry
-crates** and **external CLIs** (for example `sc-compose`) must not flip CI red when
-an unrelated upstream publish moves on crates.io. Downstream generated applications
-may hold older floors (they could not move rusqlite when blocked by sqlx coexistence
-or security trade-offs) while this repository upgrades on its own schedule. Phase d
-must make both models **explicit and durable**—not ad hoc pin bumps after every
-crates.io drift event.
+The immediate failure is concrete: **beads-cache is blocked by the rusqlite /
+SQLite security advisory** because published `sc-cron` 0.2.0 prevents resolution
+to a fixed SQLite dependency. [Issue #132](https://github.com/randlee/sc-runtime/issues/132)
+records RUSTSEC-2026-0459 and the native-library conflict. Phase D must deliver a
+published **0.2.1** that unblocks that consumer, together with a dependency policy
+that prevents the same avoidable restriction from recurring.
 
-Plan anchoring for phase d exists to **lock those constraints** as testable anchors
-and to judge sprints d-1 / d-1b / d-2 against them, alongside REQ/ADR citations
-already on the sprint docs.
+## Consumer outcomes
 
-## What success looks like
+- A consumer can use the released crates and build a generated application
+  using the documented features and supported Rust toolchain.
+- A consumer can use `cargo update` to take compatible dependency fixes without
+  waiting for another sc-runtime release or adding local patches to its crates.
+- The released dependency graph clears the rusqlite advisory blocking
+  beads-cache and the rmcp advisory identified in
+  [#133](https://github.com/randlee/sc-runtime/issues/133).
+- Manifest floors describe versions that are actually tested. CI exercises the
+  supported minimum and latest allowed dependency sets, including the relevant
+  template features and separate consumer workspaces.
+- README examples, feature instructions, and package metadata describe the
+  published product. This includes the `test-util` / `instrument_router` helper
+  restored in [PR #131](https://github.com/randlee/sc-runtime/pull/131).
+- Maintainers and consumers can choose generation-tool versions independently.
+  CI can reproduce its chosen sc-compose release from immutable binaries;
+  compatible consumer overrides through `SC_COMPOSE` or PATH remain supported.
+  Distribution improvements are tracked in
+  [sc-compose#1041](https://github.com/randlee/sc-compose/issues/1041).
 
-- **Registry consumers** get honest manifests: `>=` tested floors, documented
-  `<next-major` caps where latest fails compile or ADR (rusqlite/sqlx ruling in d-1;
-  sweep inventory in [issue-133-dependency-sweep.md](issue-133-dependency-sweep.md)),
-  and a **minimal-versions** (or equivalent) recipe that fails when a bare caret
-  collapses too far.
-- **This repo’s CI** installs the **sc-compose CLI** at **≥ 1.8.0** (see
-  `.sc/generation-tools.json`) from **immutable release binaries**, not
-  `cargo install`, matching plan-anchoring 0.11.0. Unrelated `sc-composer`
-  publishes must not break that pin until maintainers bump the JSON.
-- **Generated / downstream consumers** can set `SC_COMPOSE` or PATH to another
-  compatible `sc-compose` release without this repository being forced to the same
-  pin for its own generation jobs.
-- **sc-compose distribution** is tracked upstream:
-  [sc-compose#1041](https://github.com/randlee/sc-compose/issues/1041) (immutable
-  release installs vs `cargo install` drift; multi-consumer pins).
+## Dependency policy direction
 
-## What is deliberately out of scope
+The proposed default is a tested minimum with Cargo's normal SemVer-compatible
+upgrade range. Exact pins, narrower ranges, and toolchain restrictions need a
+specific compatibility reason. Reproducibility belongs in application/CI
+lockfiles and immutable tool installs while published library requirements leave
+room for compatible consumer upgrades.
 
-- sqlx major bump and sqlx 0.9 + rusqlite 0.41 same-process writer (ruled in d-1;
-  not 0.2.1).
-- Forcing every dependency to crates.io latest in one release (sweep §1 blockers).
-- Rewriting sc-compose or sc-composer inside sc-runtime (upstream + CI contract only).
+Cargo's [dependency guidance](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html)
+explains that a requirement such as `1.2.3` already permits compatible upgrades;
+an unbounded `>=1.2.3` also admits future breaking versions. Pre-1.0 minor
+versions cross Cargo compatibility boundaries. Public dependency types and
+native-library `links` constraints also require attention when widening a range;
+see [dependency resolution](https://doc.rust-lang.org/cargo/reference/resolver.html).
 
-## Anchors
+The existing #133 wording and [sweep inventory](issue-133-dependency-sweep.md)
+request blanket `>=` ranges. Reconcile that prescription with this consumer
+compatibility goal before finalizing manifest changes and acceptance criteria.
+Support across a Cargo compatibility boundary, including rusqlite 0.41 / 0.42,
+requires explicit validation of the affected APIs and dependency graph.
 
-Anchors were captured on 2026-11-11 (ANC-001–ANC-015). **ANC-008** is **retired**
-(sqlx/rusqlite same-process is already in [sprint d-1](sprint-d-1-rusqlite-0-41.md),
-not a user anchor). The record of truth is [`anchors.json`](anchors.json); the
-register is [`anchors.md`](anchors.md). Jev gates judge beads against locked
-statements, not this intent page.
+The rusqlite/sqlx native-library conflict needs an explicit supported
+configuration and consumer migration guidance. The current d-1 proposal drops
+same-process coexistence with sqlx 0.9. Its adequacy must be checked against the
+actual beads-cache unblock; deleting the coexistence fixture alone cannot prove
+that outcome.
+
+## Proof and scope
+
+Success includes a registry consumer using released 0.2.1 crates, resolving the
+fixed dependencies, passing the relevant advisory checks, and building/running
+the affected integration. Consumer proof must exclude local path/patch
+substitutes. Repository tests accompany this proof. Regression tests use
+controlled inputs and deterministic synchronization.
+
+This maintenance phase covers dependency constraints, generated defaults,
+consumer documentation, reproducible generation tooling, and the release needed
+to deliver those improvements. Breaking dependency migrations and new product
+features require separate justification. A reported upstream incompatibility
+stays explicit until a supported consumer path is demonstrated.
+
+## User provenance and planning status
+
+The user stated during the 2026-11-11 planning handover:
+
+> The intention of phase-d is to make sc-runtime easy for consumers to use.
+> today beads-cache is blocked because of the security warning on rusqlite.
+> we need to be following 'best practices' for a scaffolding framework which does not block consumers from building or upgrading dependencies w/ non-breaking changes/upgrades.
+
+Existing [anchors](anchors.json) and [their rendered register](anchors.md) retain
+their prior records, including retired ANC-008. This intent revision does not
+re-lock anchors or certify existing sprint plans. Reconcile their wording and
+acceptance criteria with this intent before implementation begins.
