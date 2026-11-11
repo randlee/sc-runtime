@@ -64,16 +64,18 @@ This sprint **commits** the architecture change; it is not an optional note.
 `crates/sc-cron/Cargo.toml`:
 
 ```toml
-rusqlite = { version = "0.41", default-features = false, features = ["bundled", "hooks"] }
+rusqlite = { version = ">=0.41.0", default-features = false, features = ["bundled", "hooks"] }
 ```
 
 `crates/sc-runtime-db-sqlite/Cargo.toml`:
 
 ```toml
-rusqlite = { version = "0.41", default-features = false, features = ["bundled"] }
+rusqlite = { version = ">=0.41.0", default-features = false, features = ["bundled"] }
 ```
 
-`tests/integration/cron-consumer/Cargo.toml` — same line as `sc-cron` (direct or path dependency aligned to 0.41).
+`tests/integration/cron-consumer/Cargo.toml` — same floor as `sc-cron`.
+
+**High end:** prove **rusqlite 0.42.0** (latest) via hook tests; if compile fails, ship `>=0.41.0, <0.42` with the error in the manifest comment ([#133 inventory](issue-133-dependency-sweep.md) §1).
 
 ### Source touch set (not `trace_v2`)
 

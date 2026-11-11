@@ -42,7 +42,8 @@ Implement the **non-rusqlite** portions of [#133](https://github.com/randlee/sc-
 
 | Deliverable | Serves |
 | --- | --- |
-| `rmcp` `>=3.9.0, <4` in `sc-runtime`, `sc-command`, `template/crates/daemon`, contract/integration test manifests | #133, RUSTSEC-2026-0462 |
+| `rmcp` `>=3.9.0` in `sc-runtime`, `sc-command`, `template/crates/daemon`, contract/integration test manifests | #133, RUSTSEC-2026-0462 |
+| `monty` / `monty-types` `>=1.4.0, <1.6` on `sc-cron` optional deps | #133 — blocks `cargo update` → rustc 1.98 monty 1.6 on CI 1.96.1 |
 | Replace `~3.8`, `=3.8.0` MCP pins with ranged specs + comments | #133 |
 | `utoipa` / `schemars` optional deps: `>=` current floor, bounded upper if major breaks | #133 |
 | Template `workspace.dependencies`: ranges where kit allows (see sweep table) | #133 point 4 |
@@ -67,6 +68,7 @@ rmcp = { version = ">=3.9.0, <4", default-features = false, features = [ /* unch
 
 - `crates/sc-command/Cargo.toml`
 - `crates/sc-runtime/Cargo.toml`
+- `crates/sc-cron/Cargo.toml` (optional `monty` / `monty-types` caps only — **not** rusqlite; see sweep §3)
 - `crates/sc-cron-commands/Cargo.toml` (utoipa/schemars only)
 - `template/Cargo.toml`
 - `template/crates/daemon/Cargo.toml`
