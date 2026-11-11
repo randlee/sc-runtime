@@ -1,0 +1,18 @@
+@prefix triage: <urn:atm:triage:> .
+
+# Serial maintenance track: d-1 advisory floor, then d-2 integration release.
+
+triage:PhaseD a triage:Phase .
+
+triage:d-1 a triage:Sprint ;
+  triage:inPhase triage:PhaseD ;
+  triage:order 1 ;
+  triage:branch "sprint/d-1-rusqlite-0-41" ;
+  triage:criteria "docs/plans/phase-d/sprint-d-1-rusqlite-0-41.md" .
+
+triage:d-2 a triage:Sprint ;
+  triage:dependsOn triage:d-1 ;
+  triage:inPhase triage:PhaseD ;
+  triage:order 2 ;
+  triage:branch "sprint/d-2-readme-and-release" ;
+  triage:criteria "docs/plans/phase-d/sprint-d-2-readme-and-release.md" .
